@@ -17,8 +17,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Zaimoni.Data;
 
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
 namespace djack.RogueSurvivor.Gameplay.AI
@@ -554,7 +554,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // do not worry about inside vs. outside here
       foreach(var loc in FOVloc) {
         var o = loc.MapObject;
-        if (null != o && !o.IsWalkable && !o.IsJumpable && m_Actor.CanPush(o)) food_blockers.Add(pt, o);
+        if (null != o && !o.IsWalkable && !o.IsJumpable && m_Actor.CanPush(o)) food_blockers.Add(loc, o);
       }
       if (0 >= food_blockers.Count) return null;
 

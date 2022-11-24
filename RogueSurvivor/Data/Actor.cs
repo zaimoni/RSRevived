@@ -16,7 +16,7 @@ using System.Threading;
 using Zaimoni.Data;
 using static Zaimoni.Data.Functor;
 
-using Point = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
 
 using Color = System.Drawing.Color;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;

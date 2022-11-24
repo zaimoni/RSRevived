@@ -2,7 +2,7 @@
 using djack.RogueSurvivor.Data;
 
 using OrderableAI = djack.RogueSurvivor.Gameplay.AI.OrderableAI;
-using Point = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {

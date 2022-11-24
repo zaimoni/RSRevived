@@ -6,7 +6,7 @@
 
 using System;
 
-using Point = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Data
 {

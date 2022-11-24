@@ -11,8 +11,8 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using Zaimoni.Data;
 
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 
 #nullable enable
 
@@ -574,13 +574,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return world[world.CHAR_CityLimits.convert(rules.Roll(0, world.CHAR_CityLimits.Width* world.CHAR_CityLimits.Height))];
     }
 
-    static protected int force_QuadSplit_width = 0; // assumes map generation is single-threaded (true 2021-07-22)
-    static protected int force_QuadSplit_height = 0;
+    static protected short force_QuadSplit_width = 0; // assumes map generation is single-threaded (true 2021-07-22)
+    static protected short force_QuadSplit_height = 0;
     static protected Point? exclude_QuadSplit_width = null;
     static protected Point? exclude_QuadSplit_height = null;
     // historically in BaseTownGenerator
     // historical out parameters splitX, splitY unused by callers
-    protected void QuadSplit(Rectangle rect, int minWidth, int minHeight, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight)
+    protected void QuadSplit(Rectangle rect, short minWidth, short minHeight, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight)
     {
       // allow map generation to force specific RNG results
       if (null != exclude_QuadSplit_width) force_QuadSplit_width = exclude_QuadSplit_width.Value.X;
@@ -593,35 +593,36 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (force_QuadSplit_height < rect.Height / 3 || 2 * rect.Height / 3 <= force_QuadSplit_height) force_QuadSplit_width = 0;
       }
 
-      int width1 = (0 < force_QuadSplit_width) ? force_QuadSplit_width : m_DiceRoller.Roll(rect.Width / 3, 2 * rect.Width / 3);
-      int height1 = (0 < force_QuadSplit_height) ? force_QuadSplit_height : m_DiceRoller.Roll(rect.Height / 3, 2 * rect.Height / 3);
+      short width1 = (0 < force_QuadSplit_width) ? force_QuadSplit_width : (short)(m_DiceRoller.Roll(rect.Width / 3, 2 * rect.Width / 3));
+      short height1 = (0 < force_QuadSplit_height) ? force_QuadSplit_height : (short)(m_DiceRoller.Roll(rect.Height / 3, 2 * rect.Height / 3));
 
       force_QuadSplit_width = 0; // clear the forcing after one use
       force_QuadSplit_height = 0;
 
       if (width1 < minWidth) width1 = minWidth;
       if (height1 < minHeight) height1 = minHeight;
-      int width2 = rect.Width - ((null != exclude_QuadSplit_width) ? exclude_QuadSplit_width.Value.Y : width1);
-      int height2 = rect.Height - ((null != exclude_QuadSplit_height) ? exclude_QuadSplit_height.Value.Y : height1);
+      var size2 = rect.Size;
+      size2.X -= (null != exclude_QuadSplit_width) ? exclude_QuadSplit_width.Value.Y : width1;
+      size2.Y -= (null != exclude_QuadSplit_height) ? exclude_QuadSplit_height.Value.Y : height1;
 
       bool flag1 = true;
       bool flag2 = true;
-      if (width2 < minWidth) {
+      if (size2.X < minWidth) {
         width1 = rect.Width;
-        width2 = 0;
+        size2.X = 0;
         flag2 = false;
       }
-      if (height2 < minHeight) {
+      if (size2.Y < minHeight) {
         height1 = rect.Height;
-        height2 = 0;
+        size2.Y = 0;
         flag1 = false;
       }
-      int splitX = (null != exclude_QuadSplit_width) ? exclude_QuadSplit_width.Value.Y : rect.Left + width1;
-      int splitY = (null != exclude_QuadSplit_height) ? exclude_QuadSplit_height.Value.Y : rect.Top + height1;
+      short splitX = (null != exclude_QuadSplit_width) ? exclude_QuadSplit_width.Value.Y : (short)(rect.Left + width1);
+      short splitY = (null != exclude_QuadSplit_height) ? exclude_QuadSplit_height.Value.Y : (short)(rect.Top + height1);
       topLeft = new Rectangle(rect.Left, rect.Top, width1, height1);
-      topRight = (flag2 ? new Rectangle(splitX, rect.Top, width2, height1) : Rectangle.Empty);
-      bottomLeft = (flag1 ? new Rectangle(rect.Left, splitY, width1, height2) : Rectangle.Empty);
-      bottomRight = ((flag2 && flag1) ? new Rectangle(splitX, splitY, width2, height2) : Rectangle.Empty);
+      topRight = (flag2 ? new Rectangle(splitX, rect.Top, size2.X, height1) : Rectangle.Empty);
+      bottomLeft = (flag1 ? new Rectangle(rect.Left, splitY, width1, size2.Y) : Rectangle.Empty);
+      bottomRight = ((flag2 && flag1) ? new Rectangle(splitX, splitY, size2.X, size2.Y) : Rectangle.Empty);
       exclude_QuadSplit_width = null;
       exclude_QuadSplit_height = null;
     }

@@ -21,9 +21,9 @@ using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using ItemMeleeWeapon = djack.RogueSurvivor.Engine.Items.ItemMeleeWeapon;
 
 // map coordinate definitions.  Want to switch this away from System.Drawing.Point to get a better hash function in.
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
-using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
+using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
 
 namespace djack.RogueSurvivor.Data
 {
@@ -555,7 +555,7 @@ namespace djack.RogueSurvivor.Data
     /// GetTileAt does not bounds-check for efficiency reasons;
     /// the typical use case is known to be in bounds by construction.
     /// </summary>
-    public Tile GetTileAt(int x, int y)
+    public Tile GetTileAt(short x, short y)
     {
       int i = y*Width+x;
       return new Tile(m_TileIDs[x,y],(0!=(m_IsInside[i/8] & (1<<(i%8)))),new Location(this,new Point(x,y)));
@@ -755,13 +755,13 @@ namespace djack.RogueSurvivor.Data
       }
       if (explicit_edge) {
         for(short x = 0; x<Width; x++) {
-          Point test = new Point(x, Height - 1);
+          Point test = new Point(x, (short)(Height - 1));
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
           test.Y = 0;
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
         }
         for(short y = 1; y<Height-1; y++) {
-          Point test = new Point(Width - 1, y);
+          Point test = new Point((short)(Width - 1), y);
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
           test.X = 0;
           if (GetTileModelAt(test).IsWalkable) ret.Add(test);
@@ -1161,7 +1161,7 @@ retry:
                 ub = src.Height;
                 ok = 0;
                 while (0 <= --ub) {
-                  test = new Location(this, new Point(src.X - 1, src.Y + ub));
+                  test = new Location(this, src.X - 1, src.Y + ub);
                   if (null != ClearableZoneAt(test.Position)) {
                     ok = 0;
                     break;
@@ -1171,7 +1171,7 @@ retry:
                   ub = src.Height;
                   while (0 <= --ub) {
                     if (!scan[ub]) {
-                      test = new Location(this, new Point(src.X - 2, src.Y + ub));
+                      test = new Location(this, src.X - 2, src.Y + ub);
                       if (scan[ub] = test.BlocksLivingPathfinding) ok++;
                     }
                   }
@@ -1185,7 +1185,7 @@ retry:
                 ub = src.Height;
                 ok = 0;
                 while (0 <= --ub) {
-                  test = new Location(this, new Point(src.X + src.Width, src.Y + ub));
+                  test = new Location(this, src.X + src.Width, src.Y + ub);
                   if (null != ClearableZoneAt(test.Position)) {
                     ok = 0;
                     break;
@@ -1195,7 +1195,7 @@ retry:
                   ub = src.Height;
                   while (0 <= --ub) {
                     if (!scan[ub]) {
-                      test = new Location(this, new Point(src.X + src.Width + 1, src.Y + ub));
+                      test = new Location(this, src.X + src.Width + 1, src.Y + ub);
                       if (scan[ub] = test.BlocksLivingPathfinding) ok++;
                     }
                   }
@@ -1209,7 +1209,7 @@ retry:
                 ub = src.Width;
                 ok = 0;
                 while (0 <= --ub) {
-                  test = new Location(this, new Point(src.X + ub, src.Y - 1));
+                  test = new Location(this, src.X + ub, src.Y - 1);
                   if (null != ClearableZoneAt(test.Position)) {
                     ok = 0;
                     break;
@@ -1219,7 +1219,7 @@ retry:
                   ub = src.Width;
                   while (0 <= --ub) {
                     if (!scan[ub]) {
-                      test = new Location(this, new Point(src.X + ub, src.Y - 2));
+                      test = new Location(this, src.X + ub, src.Y - 2);
                       if (scan[ub] = test.BlocksLivingPathfinding) ok++;
                     }
                   }
@@ -1233,7 +1233,7 @@ retry:
                 ub = src.Width;
                 ok = 0;
                 while (0 <= --ub) {
-                  test = new Location(this, new Point(src.X + ub, src.Y + src.Height));
+                  test = new Location(this, src.X + ub, src.Y + src.Height);
                   if (null != ClearableZoneAt(test.Position)) {
                     ok = 0;
                     break;
@@ -1243,7 +1243,7 @@ retry:
                   ub = src.Width;
                   while (0 <= --ub) {
                     if (!scan[ub]) {
-                      test = new Location(this, new Point(src.X + ub, src.Y + src.Height + 1));
+                      test = new Location(this, src.X + ub, src.Y + src.Height + 1);
                       if (scan[ub] = test.BlocksLivingPathfinding) ok++;
                     }
                   }
@@ -2292,7 +2292,7 @@ retry:
       return tile_loc.Value.MapObject?.IsTransparent ?? true;
     }
 
-    public bool IsWalkable(int x, int y) { return IsWalkable(new Point(x,y)); }
+    public bool IsWalkable(int x, int y) => IsWalkable(new Point((short)x, (short)y));
 
     public bool IsWalkable(Point pt)
     {
@@ -2912,10 +2912,10 @@ retry:
         p = crm_decode(i);
         if (wall_horz3[i] && wall_vert3[i]) {
           // nw corner candidate
-          if (   space_horz3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y+1))]
+          if (   space_horz3[tmp_i = crm_encode(tmp = new((short)(p.X + 1), (short)(p.Y + 1)))]
               && space_vert3[tmp_i]
               && space_horz3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y+2))]
-              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+2,p.Y+1))]) m_FullCorner_nw.Add(new(p.X+1,p.Y+1));
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+2,p.Y+1))]) m_FullCorner_nw.Add(new((short)(p.X + 1), (short)(p.Y + 1)));
         }
         // [tmp_i = crm_encode(tmp = new Vector2D_int_stack(p.X,p.Y))]
         if (wall_horz3[i]) {
@@ -2923,44 +2923,44 @@ retry:
           // can test for cleanly: corner ne
           if (   Rect.Height-2 > p.Y
               && space_horz3[tmp_i = crm_encode(tmp = new(p.X, p.Y+1))]
-              && space_horz3[tmp_i = crm_encode(tmp = new(p.X, p.Y+2))]) m_FlushWall_n.Add(new(p.X+1,p.Y+1));
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X, p.Y+2))]) m_FlushWall_n.Add(new((short)(p.X + 1), (short)(p.Y + 1)));
           if (   2 <= p.Y
               && space_horz3[tmp_i = crm_encode(tmp = new(p.X, p.Y-1))]
-              && space_horz3[tmp_i = crm_encode(tmp = new(p.X, p.Y-2))]) m_FlushWall_s.Add(new(p.X+1,p.Y-1));
+              && space_horz3[tmp_i = crm_encode(tmp = new(p.X, p.Y-2))]) m_FlushWall_s.Add(new((short)(p.X + 1), (short)(p.Y - 1)));
           if (   Rect.Width-2 > p.X
               && 1 <= p.X
               && wall_vert3[tmp_i = crm_encode(tmp = new(p.X+2, p.Y))]
               && space_horz3[tmp_i = crm_encode(tmp = new(p.X-1,p.Y+1))]
               && space_horz3[tmp_i = crm_encode(tmp = new(p.X-1,p.Y+2))]
               && space_vert3[tmp_i = crm_encode(tmp = new(p.X  ,p.Y+1))]
-              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y+1))]) m_FullCorner_ne.Add(new(p.X-1,p.Y+1));
+              && space_vert3[tmp_i = crm_encode(tmp = new((short)(p.X + 1), (short)(p.Y + 1)))]) m_FullCorner_ne.Add(new((short)(p.X - 1), (short)(p.Y + 1)));
           // do SE here as well
           if (   Rect.Width-2 > p.X
               && 1 <= p.X
               && 3 <= p.Y
               && wall_vert3[tmp_i = crm_encode(tmp = new(p.X+2, p.Y-2))]
-              && space_horz3[tmp_i = crm_encode(tmp = new(p.X-1,p.Y-1))]
+              && space_horz3[tmp_i = crm_encode(tmp = new((short)(p.X - 1), (short)(p.Y - 1)))]
               && space_horz3[tmp_i = crm_encode(tmp = new(p.X-1,p.Y-2))]
               && space_vert3[tmp_i = crm_encode(tmp = new(p.X  ,p.Y-3))]
-              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y-3))]) m_FullCorner_se.Add(new(p.X-1,p.Y-1));
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y-3))]) m_FullCorner_se.Add(new((short)(p.X - 1), (short)(p.Y - 1)));
         }
         if (wall_vert3[i]) {
           // must test for: flush wall e/w
           // can test for cleanly: corner sw
           if (   Rect.Width-2 > p.X
               && space_vert3[tmp_i = crm_encode(tmp = new(p.X+1, p.Y))]
-              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+2, p.Y))]) m_FlushWall_w.Add(new(p.X+1,p.Y+1));
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+2, p.Y))]) m_FlushWall_w.Add(new((short)(p.X + 1), (short)(p.Y + 1)));
           if (   2 <= p.X
               && space_vert3[tmp_i = crm_encode(tmp = new(p.X-1, p.Y))]
-              && space_vert3[tmp_i = crm_encode(tmp = new(p.X-2, p.Y))]) m_FlushWall_e.Add(new(p.X-1,p.Y+1));
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X-2, p.Y))]) m_FlushWall_e.Add(new((short)(p.X - 1), (short)(p.Y + 1)));
           if (   Rect.Width-2 > p.X
               && 1 <= p.Y
               && Rect.Height - 2 > p.Y
               && wall_horz3[tmp_i = crm_encode(tmp = new(p.X, p.Y+2))]
               && space_horz3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y))]
-              && space_horz3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y+1))]
-              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+1,p.Y-1))]
-              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+2,p.Y-1))]) m_FullCorner_sw.Add(new(p.X+1,p.Y-1));
+              && space_horz3[tmp_i = crm_encode(tmp = new((short)(p.X + 1), (short)(p.Y + 1)))]
+              && space_vert3[tmp_i = crm_encode(tmp = new((short)(p.X + 1), (short)(p.Y - 1)))]
+              && space_vert3[tmp_i = crm_encode(tmp = new(p.X+2,p.Y-1))]) m_FullCorner_sw.Add(new((short)(p.X + 1), (short)(p.Y - 1)));
         }
       } // end while(0 < i--)
     }

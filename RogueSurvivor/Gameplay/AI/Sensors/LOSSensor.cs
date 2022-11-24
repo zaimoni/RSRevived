@@ -11,7 +11,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Zaimoni.Data;
 
-using Point = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using Sensor = djack.RogueSurvivor.Engine.AI.Sensor;
 using LOS = djack.RogueSurvivor.Engine.LOS;

@@ -15,8 +15,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Zaimoni.Data;
 
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
+using Size = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
@@ -316,13 +317,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       const uint S_W = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
 
         if (geometry.ContainsLineSegment(N_E)) {	// N ok; E two too high i.e. wanted rail.Y as rail.Y-2
-          for (int x = rail.X; x < m.Width; x++) lay_NE_SW_rail(new Point(x,x-rail.X-height));
+          for (short x = rail.X; x < m.Width; x++) lay_NE_SW_rail(new Point(x,(short)(x-rail.X-height)));
         } else if (geometry.ContainsLineSegment(S_W)) {	// W ok; slope 2 short of S endpoint i.e. wanted rail.Y as rail.Y-2
-          for (int x = 0; m.Height > rail.Y+x; x++) lay_NE_SW_rail(new Point(x, rail.Y + x));
+          for (short x = 0; m.Height > rail.Y+x; x++) lay_NE_SW_rail(new Point(x, (short)(rail.Y + x)));
         } else if (geometry.ContainsLineSegment(N_W)) {	// ok (rail.X==rail.Y as constructed)
-          for (int x = 0; x <= rail.X - 1 +height; x++) lay_NW_SE_rail(new Point(x, rail.Y - 1 - x));
+          for (short x = 0; x <= rail.X - 1 +height; x++) lay_NW_SE_rail(new Point(x, (short)(rail.Y - 1 - x)));
         } else if (geometry.ContainsLineSegment(S_E)) {	// ok (rail.X==rail.Y as constructed)
-          for (int y = 0; m.Width > rail.X + y; y++) lay_NW_SE_rail(new Point(rail.X+y,m.Height-1-y));
+          for (short y = 0; m.Width > rail.X + y; y++) lay_NW_SE_rail(new Point((short)(rail.X+y), (short)(m.Height-1-y)));
         }
     }
 
@@ -355,7 +356,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       void lay_NW_SE_rail(Point pt)
       {
         if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.FLOOR_GRASS_SENW_CONCRETE_E);
-        var pt2 = new Point(pt.X, pt.Y + height);
+        var pt2 = new Point(pt.X, (short)(pt.Y + height));
         if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.FLOOR_GRASS_SENW_CONCRETE_W);
         pt2 += Direction.N;
         if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.ROAD_ASPHALT_SENW_CONCRETE_E);
@@ -369,7 +370,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       void lay_NE_SW_rail(Point pt)
       {
         if (map.IsInBounds(pt)) map.SetTileModelAt(pt, GameTiles.FLOOR_GRASS_SWNE_CONCRETE_W);
-        var pt2 = new Point(pt.X, pt.Y + height);
+        var pt2 = new Point(pt.X, (short)(pt.Y + height));
         if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.FLOOR_GRASS_SWNE_CONCRETE_E);
         pt2 += Direction.N;
         if (map.IsInBounds(pt2)) map.SetTileModelAt(pt2, GameTiles.ROAD_ASPHALT_SWNE_CONCRETE_W);
@@ -394,24 +395,24 @@ namespace djack.RogueSurvivor.Gameplay.Generators
          bool have_NS = false;
          bool have_EW = false;
         if (geometry.ContainsLineSegment(N_S) && !circling_NS) {
-             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
+             exclude_QuadSplit_width = new Point(rail.X, (short)(rail.X + height));
              TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X, 0, map.Height);
-             DoForEachTile(new Rectangle(rail.X+1, 0, height-2, map.Height), lay_NS_road);
-             TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X + 5, 0, map.Height);
+             DoForEachTile(new Rectangle((short)(rail.X+1), 0, height-2, map.Height), lay_NS_road);
+             TileVLine(map, GameTiles.FLOOR_CONCRETE, (short)(rail.X + 5), 0, map.Height);
              have_NS = true;
         }
         if (geometry.ContainsLineSegment(E_W)) {
-             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
+             exclude_QuadSplit_height = new Point(rail.Y, (short)(rail.Y + height));
              TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y, map.Width);
-             DoForEachTile(new Rectangle(0, rail.Y+1, map.Width, height - 2), lay_EW_road);
-             TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y + 5, map.Width);
+             DoForEachTile(new Rectangle(0, (short)(rail.Y+1), map.Width, height - 2), lay_EW_road);
+             TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, (short)(rail.Y + 5), map.Width);
              have_EW = true;
         }
         if (geometry.ContainsLineSegment(N_S) && circling_NS) {
-             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
+             exclude_QuadSplit_width = new Point(rail.X, (short)(rail.X + height));
              TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X, 0, map.Height);
-             DoForEachTile(new Rectangle(rail.X+1, 0, height-2, map.Height), lay_NS_road);
-             TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X + 5, 0, map.Height);
+             DoForEachTile(new Rectangle((short)(rail.X+1), 0, height-2, map.Height), lay_NS_road);
+             TileVLine(map, GameTiles.FLOOR_CONCRETE, (short)(rail.X + 5), 0, map.Height);
              have_NS = true;
         }
 
@@ -419,23 +420,23 @@ namespace djack.RogueSurvivor.Gameplay.Generators
          {
          case N_E:
              force_QuadSplit_width = rail.X;
-             force_QuadSplit_height = rail.Y + height;
+             force_QuadSplit_height = (short)(rail.Y + height);
              break;
          case N_W:
-            force_QuadSplit_width = rail.X + height;
-            force_QuadSplit_height = rail.Y + height;
+            force_QuadSplit_width = (short)(rail.X + height);
+            force_QuadSplit_height = (short)(rail.Y + height);
              break;
          case S_E:
              force_QuadSplit_width = rail.X;
              force_QuadSplit_height = rail.Y;
              break;
          case S_W:
-             force_QuadSplit_width = rail.X + height;
+             force_QuadSplit_width = (short)(rail.X + height);
              force_QuadSplit_height = rail.Y;
              break;
          case FOUR_WAY:
-             exclude_QuadSplit_width = new Point(rail.X, rail.X + height);
-             exclude_QuadSplit_height = new Point(rail.Y, rail.Y + height);
+             exclude_QuadSplit_width = new Point(rail.X, (short)(rail.X + height));
+             exclude_QuadSplit_height = new Point(rail.Y, (short)(rail.Y + height));
              break;
          }
 
@@ -1019,15 +1020,17 @@ restart:
       {
         if (10 > y) return;
         if (subway.Height-10 < y) return;
-        toolroom_superposition.Add(new Rectangle(rail.X - toolsRoomWidth, y- toolsRoomHeight / 2, 5,5));
-        toolroom_superposition.Add(new Rectangle(rail.X+height, y- toolsRoomHeight / 2, 5,5));
+        short origin_y = (short)(y - toolsRoomHeight / 2);
+        toolroom_superposition.Add(new Rectangle((short)(rail.X - toolsRoomWidth), origin_y, 5,5));
+        toolroom_superposition.Add(new Rectangle((short)(rail.X+height), origin_y, 5,5));
       }
       void add_toolroomNSofEW(int x)
       {
         if (10 > x) return;
         if (subway.Width-10 < x) return;
-        toolroom_superposition.Add(new Rectangle(x - toolsRoomWidth / 2, rail.Y - toolsRoomHeight, 5,5));
-        toolroom_superposition.Add(new Rectangle(x - toolsRoomWidth / 2, rail.Y+height,5,5));
+        short origin_x = (short)(x - toolsRoomWidth / 2);
+        toolroom_superposition.Add(new Rectangle(origin_x, (short)(rail.Y - toolsRoomHeight), 5,5));
+        toolroom_superposition.Add(new Rectangle(origin_x, (short)(rail.Y+height),5,5));
       }
 
       bool have_NS = false;
@@ -1037,7 +1040,7 @@ restart:
         Rectangle tmp = new Rectangle(rail.X, 0, height, subway.Height); // start as rails
         DoForEachTile(tmp, lay_NS_rail);
         subway.AddZone(MakeUniqueZone("rails", tmp));
-        DoForEachTile(new Rectangle(rail.X-1, 0, height+2, subway.Height), PoliceEnlightenment);
+        DoForEachTile(new Rectangle((short)(rail.X-1), 0, height+2, subway.Height), PoliceEnlightenment);
         foreach(int y in Enumerable.Range(10, subway.Height-20)) add_toolroomEWofNS(y);
       }
       if (geometry.ContainsLineSegment(E_W)) {
@@ -1045,7 +1048,7 @@ restart:
         Rectangle tmp = new Rectangle(0, rail.Y, subway.Width, height); // start as rails
         DoForEachTile(tmp, lay_EW_rail);
         subway.AddZone(MakeUniqueZone("rails", tmp));
-        DoForEachTile(new Rectangle(0, rail.Y-1, subway.Width, height+2), PoliceEnlightenment);
+        DoForEachTile(new Rectangle(0, (short)(rail.Y-1), subway.Width, height+2), PoliceEnlightenment);
         foreach(int x in Enumerable.Range(10, subway.Width-20)) add_toolroomNSofEW(x);
       }
       if (have_EW && !have_NS) {
@@ -1053,14 +1056,16 @@ restart:
           Rectangle tmp = new Rectangle(rail.X, 0, height, rail.Y); // start as rails
           DoForEachTile(tmp, lay_NS_rail);
           subway.AddZone(MakeUniqueZone("rails", tmp));
-          DoForEachTile(new Rectangle(rail.X-1, 0, height+2, rail.Y), PoliceEnlightenment);
-          foreach(int y in Enumerable.Range(10, rail.Y- toolsRoomHeight / 2-10)) add_toolroomEWofNS(y);
+          DoForEachTile(new Rectangle((short)(rail.X-1), 0, height+2, rail.Y), PoliceEnlightenment);
+          foreach(int y in Enumerable.Range(10, rail.Y - toolsRoomHeight / 2 - 10)) add_toolroomEWofNS(y);
         } else if (geometry.ContainsLineSegment(S_NEUTRAL)) {
-          Rectangle tmp = new Rectangle(rail.X, rail.Y+height, height, subway.Height-(rail.Y + height)); // start as rails
+          short origin_y = (short)(rail.Y + height);
+          short extent_y = (short)(subway.Height - origin_y);
+          Rectangle tmp = new Rectangle(rail.X, origin_y, height, extent_y); // start as rails
           DoForEachTile(tmp, lay_NS_rail);
           subway.AddZone(MakeUniqueZone("rails", tmp));
-          DoForEachTile(new Rectangle(rail.X-1, rail.Y + height, height+2, subway.Height-(rail.Y + height)), PoliceEnlightenment);
-          foreach(int y in Enumerable.Range(rail.Y+height+ toolsRoomHeight / 2, subway.Height-10)) add_toolroomEWofNS(y);
+          DoForEachTile(new Rectangle((short)(rail.X-1), origin_y, height+2, extent_y), PoliceEnlightenment);
+          foreach(int y in Enumerable.Range(rail.Y + height + toolsRoomHeight / 2, subway.Height - 10)) add_toolroomEWofNS(y);
         }
       }
       if (have_NS && !have_EW) {
@@ -1068,14 +1073,16 @@ restart:
           Rectangle tmp = new Rectangle(0, rail.Y, rail.X, height); // start as rails
           DoForEachTile(tmp, lay_EW_rail);
           subway.AddZone(MakeUniqueZone("rails", tmp));
-          DoForEachTile(new Rectangle(0, rail.Y-1, rail.X, height+2), PoliceEnlightenment);
+          DoForEachTile(new Rectangle(0, (short)(rail.Y - 1), rail.X, height+2), PoliceEnlightenment);
           foreach(int x in Enumerable.Range(10, rail.X- toolsRoomWidth / 2-10)) add_toolroomNSofEW(x);
         } else if (geometry.ContainsLineSegment(E_NEUTRAL)) {
-          Rectangle tmp = new Rectangle(rail.X+height, rail.Y, subway.Width-(rail.X + height), height); // start as rails
+          short origin_x = (short)(rail.X + height);
+          short extent_y = (short)(subway.Width - origin_x);
+          Rectangle tmp = new Rectangle(origin_x, rail.Y, extent_y, height); // start as rails
           DoForEachTile(tmp, lay_EW_rail);
           subway.AddZone(MakeUniqueZone("rails", tmp));
-          DoForEachTile(new Rectangle(rail.X + height, rail.Y-1, subway.Width-(rail.X + height), height+2), PoliceEnlightenment);
-          foreach(int x in Enumerable.Range(rail.X+height+ toolsRoomWidth / 2, subway.Width-10)) add_toolroomNSofEW(x);
+          DoForEachTile(new Rectangle(origin_x, (short)(rail.Y - 1), extent_y, height+2), PoliceEnlightenment);
+          foreach(int x in Enumerable.Range(origin_x + toolsRoomWidth / 2, subway.Width-10)) add_toolroomNSofEW(x);
         }
       }
       // handle the four diagonals (more synthetic tiles needed
@@ -1083,7 +1090,7 @@ restart:
       void lay_NW_SE_rail(Point pt)
       {
         if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SENW_WALL_W);
-        var pt2 = new Point(pt.X, pt.Y + height);
+        var pt2 = new Point(pt.X, (short)(pt.Y + height));
         if (subway.IsInBounds(pt2)) subway.SetTileModelAt(pt2, GameTiles.RAIL_SENW_WALL_E);
         foreach (int delta in Enumerable.Range(1, height-1)) {
           pt.Y++;
@@ -1093,7 +1100,7 @@ restart:
       void lay_NE_SW_rail(Point pt)
       {
         if (subway.IsInBounds(pt)) subway.SetTileModelAt(pt, GameTiles.RAIL_SWNE_WALL_E);
-        var pt2 = new Point(pt.X, pt.Y + height);
+        var pt2 = new Point(pt.X, (short)(pt.Y + height));
         if (subway.IsInBounds(pt2)) subway.SetTileModelAt(pt2, GameTiles.RAIL_SWNE_WALL_W);
         foreach (int delta in Enumerable.Range(1, height-1)) {
           pt.Y++;
@@ -1121,16 +1128,16 @@ restart:
 #region 3.  Small tools room.
       // filter out not-valid choices
       {
-      foreach(int x in Enumerable.Range(10 - toolsRoomWidth / 2, subway.Width - 10 + toolsRoomWidth / 2)) {
-        Point pt = new Point(x, rail.Y - 1);
+      foreach(short x in Enumerable.Range(10 - toolsRoomWidth / 2, subway.Width - 10 + toolsRoomWidth / 2)) {
+        Point pt = new Point(x, (short)(rail.Y - 1));
         if (subway.GetTileModelAt(pt).IsWalkable) toolroom_superposition.RemoveWhere(r => r.Contains(pt));
-        pt = new Point(x, rail.Y + height);
+        pt = new Point(x, (short)(rail.Y + height));
         if (subway.GetTileModelAt(pt).IsWalkable) toolroom_superposition.RemoveWhere(r => r.Contains(pt));
       }
-      foreach(int y in Enumerable.Range(10 - toolsRoomHeight / 2, subway.Height - 10 +toolsRoomHeight / 2)) {
-        Point pt = new Point(rail.X - 1,y);
+      foreach(short y in Enumerable.Range(10 - toolsRoomHeight / 2, subway.Height - 10 +toolsRoomHeight / 2)) {
+        Point pt = new Point((short)(rail.X - 1),y);
         if (subway.GetTileModelAt(pt).IsWalkable) toolroom_superposition.RemoveWhere(r => r.Contains(pt));
-        pt = new Point(rail.X + height, y);
+        pt = new Point((short)(rail.X + height), y);
         if (subway.GetTileModelAt(pt).IsWalkable) toolroom_superposition.RemoveWhere(r => r.Contains(pt));
       }
       }
@@ -1214,13 +1221,16 @@ restart:
     // district size 50: raw split range 16..33. railY=25; tolerances 17,35 (moderately difficult)
     private void _MakeBlocks(Map map, bool makeRoads, List<Block> list, Rectangle rect)
     {
-      QuadSplit(rect, m_Params.MinBlockSize + 1, m_Params.MinBlockSize + 1, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
+      short tiny_block = (short)(m_Params.MinBlockSize + 1);
+      QuadSplit(rect, tiny_block, tiny_block, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
       if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
         if (makeRoads) { // \todo? nullable function parameter
-          MakeRoad(map, GameTiles.ROAD_ASPHALT_EW, new Rectangle(rect.Left, rect.Top, rect.Width, 1));
-          MakeRoad(map, GameTiles.ROAD_ASPHALT_EW, new Rectangle(rect.Left, rect.Bottom - 1, rect.Width, 1));
-          MakeRoad(map, GameTiles.ROAD_ASPHALT_NS, new Rectangle(rect.Left, rect.Top, 1, rect.Height));
-          MakeRoad(map, GameTiles.ROAD_ASPHALT_NS, new Rectangle(rect.Right - 1, rect.Top, 1, rect.Height));
+          Size horz_size = new(rect.Width, 1);
+          Size vert_size = new(1, rect.Height);
+          MakeRoad(map, GameTiles.ROAD_ASPHALT_EW, new Rectangle(rect.Location, horz_size));
+          MakeRoad(map, GameTiles.ROAD_ASPHALT_EW, new Rectangle(rect.Anchor(Compass.XCOMlike.SW), horz_size));
+          MakeRoad(map, GameTiles.ROAD_ASPHALT_NS, new Rectangle(rect.Location, vert_size));
+          MakeRoad(map, GameTiles.ROAD_ASPHALT_NS, new Rectangle(rect.Anchor(Compass.XCOMlike.NE), vert_size));
           topLeft.Location += Direction.SE;
           topLeft.Size += 2*Direction.NW;
         }
@@ -1380,7 +1390,7 @@ restart:
         // alpha10 music
         shopBasement.BgMusic = GameMusics.SEWERS;
 
-        Point basementCorner = new Point((m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2),(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2));
+        Point basementCorner = new Point((short)(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2), (short)(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2));
         rectangle = b.InsideRect;
         Point shopCorner = basementCorner + rectangle.Location + Direction.NW;
         AddExit(shopBasement, basementCorner, map, shopCorner, GameImages.DECO_STAIRS_UP);
@@ -1488,25 +1498,29 @@ restart:
       CHAR_guard_locs[0] = tmp - 2*direction;
       Point chokepoint_door_pos = CHAR_guard_locs[0] - direction;
       if (direction == Direction.N) {
-        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, chokepoint_door_pos.Y, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+        short extent_y = (short)(b.InsideRect.Height - 3);
+        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, chokepoint_door_pos.Y, b.InsideRect.Width, extent_y)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
         map.AddZone(new Zone("Foyer", new Rectangle(b.InsideRect.Left, b.BuildingRect.Top, b.InsideRect.Width, 4)));
-        map.AddZone(new Zone("Hallway", new Rectangle(chokepoint_door_pos.X, b.BuildingRect.Top + 3, 1, b.InsideRect.Height-3)));
+        map.AddZone(new Zone("Hallway", new Rectangle(chokepoint_door_pos.X, (short)(b.BuildingRect.Top + 3), 1, extent_y)));
       } else if (direction == Direction.S) {
-        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
-        map.AddZone(new Zone("Foyer", new Rectangle(b.InsideRect.Left, chokepoint_door_pos.Y + 1, b.InsideRect.Width, 4)));
-        map.AddZone(new Zone("Hallway", new Rectangle(chokepoint_door_pos.X, b.BuildingRect.Top, 1, b.InsideRect.Height - 3)));
+        short extent_y = (short)(b.InsideRect.Height - 3);
+        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, extent_y)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+        map.AddZone(new Zone("Foyer", new Rectangle(b.InsideRect.Left, (short)(chokepoint_door_pos.Y + 1), b.InsideRect.Width, 4)));
+        map.AddZone(new Zone("Hallway", new Rectangle(chokepoint_door_pos.X, b.BuildingRect.Top, 1, extent_y)));
       } else if (direction == Direction.E) {
-        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
-        map.AddZone(new Zone("Foyer", new Rectangle(chokepoint_door_pos.X + 1, b.InsideRect.Top, 4, b.InsideRect.Height)));
-        map.AddZone(new Zone("Hallway", new Rectangle(b.InsideRect.Left, chokepoint_door_pos.Y, b.InsideRect.Width-3, 1)));
+        short extent_x = (short)(b.InsideRect.Width - 3);
+        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, extent_x, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+        map.AddZone(new Zone("Foyer", new Rectangle((short)(chokepoint_door_pos.X + 1), b.InsideRect.Top, 4, b.InsideRect.Height)));
+        map.AddZone(new Zone("Hallway", new Rectangle(b.InsideRect.Left, chokepoint_door_pos.Y, extent_x, 1)));
 #if DEBUG
       } else if (direction == Direction.W) {
 #else
       } else {
 #endif
-        map.AddZone(new Zone("NoCivSpawn", new Rectangle(chokepoint_door_pos.X, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+        short extent_x = (short)(b.InsideRect.Width - 3);
+        map.AddZone(new Zone("NoCivSpawn", new Rectangle(chokepoint_door_pos.X, b.InsideRect.Top, extent_x, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
         map.AddZone(new Zone("Foyer", new Rectangle(chokepoint_door_pos.X, b.InsideRect.Top, 4, b.InsideRect.Height)));
-        map.AddZone(new Zone("Hallway", new Rectangle(b.InsideRect.Left + 3, chokepoint_door_pos.Y, b.InsideRect.Width - 3, 1)));
+        map.AddZone(new Zone("Hallway", new Rectangle((short)(b.InsideRect.Left + 3), chokepoint_door_pos.Y, extent_x, 1)));
       }
 #if DEBUG
       else throw new InvalidOperationException("unhandled door side");
@@ -1518,17 +1532,17 @@ restart:
       var midpoint = b.Rectangle.Location + b.Rectangle.Size/2;
       Rectangle restricted_zone;
       if (direction == Direction.N) {
-        restricted_zone = new Rectangle(midpoint.X - 1, chokepoint_door_pos.Y, 3, b.BuildingRect.Height - 1 - 3);
+        restricted_zone = new Rectangle((short)(midpoint.X - 1), chokepoint_door_pos.Y, 3, (short)(b.BuildingRect.Height - 1 - 3));
       } else if (direction == Direction.S) {
-        restricted_zone = new Rectangle(midpoint.X - 1, b.BuildingRect.Top, 3, b.BuildingRect.Height - 1 - 3);
+        restricted_zone = new Rectangle((short)(midpoint.X - 1), b.BuildingRect.Top, 3, (short)(b.BuildingRect.Height - 1 - 3));
       } else if (direction == Direction.E) {
-        restricted_zone = new Rectangle(b.BuildingRect.Left, midpoint.Y - 1, b.BuildingRect.Width - 1 - 3, 3);
+        restricted_zone = new Rectangle(b.BuildingRect.Left, (short)(midpoint.Y - 1), (short)(b.BuildingRect.Width - 1 - 3), 3);
 #if DEBUG
       } else if (direction == Direction.W) {
 #else
       } else {
 #endif
-        restricted_zone = new Rectangle(chokepoint_door_pos.X, midpoint.Y - 1, b.BuildingRect.Width - 1 - 3, 3);
+        restricted_zone = new Rectangle(chokepoint_door_pos.X, (short)(midpoint.Y - 1), (short)(b.BuildingRect.Width - 1 - 3), 3);
       }
 #if DEBUG
       else throw new InvalidOperationException("unhandled door side");
@@ -1545,14 +1559,14 @@ restart:
         var left = restricted_zone.Left;
         var top = b.BuildingRect.Top;
         var width = restricted_zone.Width;
-        rect2 = new Rectangle(left, top, width, midpoint.Y - top);
-        rect3 = new Rectangle(left, midpoint.Y + 1, width, b.BuildingRect.Bottom - midpoint.Y -1);
+        rect2 = new Rectangle(left, top, width, (short)(midpoint.Y - top));
+        rect3 = new Rectangle(left, (short)(midpoint.Y + 1), width, (short)(b.BuildingRect.Bottom - midpoint.Y -1));
       } else {
         var left = b.BuildingRect.Left;
         var top = restricted_zone.Top;
         var height = restricted_zone.Height;
-        rect2 = new Rectangle(left, top, midpoint.X - left, height);
-        rect3 = new Rectangle(midpoint.X + 1, top, b.BuildingRect.Right - midpoint.X -1, height);
+        rect2 = new Rectangle(left, top, (short)(midpoint.X - left), height);
+        rect3 = new Rectangle((short)(midpoint.X + 1), top, (short)(b.BuildingRect.Right - midpoint.X -1), height);
       }
       var list1 = MakeRoomsPlan(map, rect2, 4);
       var list2 = MakeRoomsPlan(map, rect3, 4);
@@ -1776,41 +1790,31 @@ restart:
             //////////////////////////          
             bool horizontalCorridor = (b.InsideRect.Width >= b.InsideRect.Height);
 
-            /////////////////////////////////////
-            // 3. Entry door and opposite window
-            /////////////////////////////////////
-            #region
-            int midX = b.Rectangle.Left + b.Rectangle.Width / 2;
-            int midY = b.Rectangle.Top + b.Rectangle.Height / 2;
+#region 3. Entry door and opposite window
+            var midpoint = b.Rectangle.Location + b.Rectangle.Size / 2;
 
             Direction doorSide = (horizontalCorridor) ? (m_DiceRoller.RollChance(50) ? Direction.W : Direction.E)
                                                       : (m_DiceRoller.RollChance(50) ? Direction.N : Direction.S);
 
             PlaceDoor(map, b.BuildingRect.Anchor((Compass.XCOMlike)(doorSide.Index)), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
             PlaceDoor(map, b.BuildingRect.Anchor((Compass.XCOMlike)((-doorSide).Index)), GameTiles.FLOOR_PLANKS, MakeObjWindow());
-            #endregion
+#endregion
 
-            //////////////////////////////////////////////
-            // 4. Make central corridor & side apartments
-            //////////////////////////////////////////////
-            #region
+#region 4. Make central corridor & side apartments
             Rectangle corridorRect;
             if (doorSide == Direction.N)
-                corridorRect = new Rectangle(midX, b.InsideRect.Top, 1, b.BuildingRect.Height - 1);
+                corridorRect = new Rectangle(midpoint.X, b.InsideRect.Top, 1, (short)(b.BuildingRect.Height - 1));
             else if (doorSide == Direction.S)
-                corridorRect = new Rectangle(midX, b.BuildingRect.Top, 1, b.BuildingRect.Height - 1);
+                corridorRect = new Rectangle(midpoint.X, b.BuildingRect.Top, 1, (short)(b.BuildingRect.Height - 1));
             else if (doorSide == Direction.E)
-                corridorRect = new Rectangle(b.BuildingRect.Left, midY, b.BuildingRect.Width - 1, 1);
+                corridorRect = new Rectangle(b.BuildingRect.Left, midpoint.Y, (short)(b.BuildingRect.Width - 1), 1);
             else if (doorSide == Direction.W)
-                corridorRect = new Rectangle(b.InsideRect.Left, midY, b.BuildingRect.Width - 1, 1);
+                corridorRect = new Rectangle(b.InsideRect.Left, midpoint.Y, (short)(b.BuildingRect.Width - 1), 1);
             else
                 throw new InvalidOperationException("apartment: unhandled door side");
-            #endregion
+#endregion
 
-            //////////////////////
-            // 5. Make apartments
-            //////////////////////
-            #region
+#region 5. Make apartments
             // make wings.
             Rectangle wingOne;
             Rectangle wingTwo;
@@ -1828,12 +1832,12 @@ restart:
 
             // make apartements in each wing with doors leaving toward corridor and windows to the outside
             // pick sizes so the apartements are not cut into multiple rooms by MakeRoomsPlan
-            int apartmentMinXSize, apartmentMinYSize;
+            short apartmentMinXSize, apartmentMinYSize;
             if (horizontalCorridor) {
                 apartmentMinXSize = 4;
-                apartmentMinYSize = b.BuildingRect.Height / 2;
+                apartmentMinYSize = (short)(b.BuildingRect.Height / 2);
             } else {
-                apartmentMinXSize = b.BuildingRect.Width / 2;
+                apartmentMinXSize = (short)(b.BuildingRect.Width / 2);
                 apartmentMinYSize = 4;
             }
 
@@ -1888,7 +1892,7 @@ restart:
                 // living room
                 FillHousingRoomContents(map, apartRect, 5);
             }
-            #endregion
+#endregion
 
             ///////////
             // 6. Zone
@@ -2154,7 +2158,7 @@ restart:
         map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt + orthogonal);
         map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt - orthogonal);
       }
-      for (int x2 = exitPosition.X - 1; x2 <= exitPosition.X + 1; ++x2) {
+      for (short x2 = (short)(exitPosition.X - 1); x2 <= exitPosition.X + 1; ++x2) {
         Point point = new Point(x2, exitPosition.Y);
         AddExit(map, point, linkedMap, point, (isSurface ? GameImages.DECO_STAIRS_DOWN : GameImages.DECO_STAIRS_UP));
       }
@@ -2174,10 +2178,10 @@ restart:
         Rectangle corridor() {
           switch(direction.Index)
           {
-          case (int)Compass.XCOMlike.N: return new Rectangle(doorAt.X - 1, centralGateAt.Y, 3, doorAt.Y - centralGateAt.Y + 1);
-          case (int)Compass.XCOMlike.S: return new Rectangle(doorAt.X - 1, doorAt.Y, 3, centralGateAt.Y - doorAt.Y + 1);
-          case (int)Compass.XCOMlike.W: return new Rectangle(centralGateAt.X, doorAt.Y - 1, doorAt.X - centralGateAt.X + 1, 3);
-          case (int)Compass.XCOMlike.E: return new Rectangle(doorAt.X, doorAt.Y - 1, centralGateAt.X - doorAt.X + 1, 3);
+          case (int)Compass.XCOMlike.N: return new Rectangle((short)(doorAt.X - 1), centralGateAt.Y, 3, (short)(centralGateAt.Y - doorAt.Y + 1));
+          case (int)Compass.XCOMlike.S: return new Rectangle((short)(doorAt.X - 1), doorAt.Y, 3, (short)(centralGateAt.Y - doorAt.Y + 1));
+          case (int)Compass.XCOMlike.W: return new Rectangle(centralGateAt.X, (short)(doorAt.Y - 1), (short)(doorAt.X - centralGateAt.X + 1), 3);
+          case (int)Compass.XCOMlike.E: return new Rectangle(doorAt.X, (short)(doorAt.Y - 1), (short)(doorAt.X - centralGateAt.X + 1), 3);
           default: throw new InvalidOperationException("unhandled direction");
           }
         }
@@ -2249,12 +2253,13 @@ restart:
             break;
           default: throw new InvalidOperationException("unhandled direction");
           }
+          short extent_xy = (short)(right - left);
           switch(direction.Index)
           {
-          case (int)Compass.XCOMlike.N: return new Rectangle(left, p.Y + 1, right - left, 3);
-          case (int)Compass.XCOMlike.S: return new Rectangle(left, centralGateAt.Y + 1, right - left, 3);
-          case (int)Compass.XCOMlike.W: return new Rectangle(p.X + 1, left, 3, right - left);
-          case (int)Compass.XCOMlike.E: return new Rectangle(centralGateAt.X + 1, left, 3, right - left);
+          case (int)Compass.XCOMlike.N: return new Rectangle((short)left, (short)(p.Y + 1), extent_xy, 3);
+          case (int)Compass.XCOMlike.S: return new Rectangle((short)left, (short)(centralGateAt.Y + 1), extent_xy, 3);
+          case (int)Compass.XCOMlike.W: return new Rectangle((short)(p.X + 1), (short)left, 3, extent_xy);
+          case (int)Compass.XCOMlike.E: return new Rectangle((short)(centralGateAt.X + 1), (short)left, 3, extent_xy);
           default: throw new InvalidOperationException("unhandled direction");
           }
         }
@@ -2296,8 +2301,8 @@ restart:
         });
         DoForEachTile(rect2, map, loc => Session.Get.ForcePoliceKnown(loc));
       }
-      for (var left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
-        for (int y = b.InsideRect.Top + 1; y < b.InsideRect.Bottom - 1; ++y) {
+      for (short left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
+        for (short y = (short)(b.InsideRect.Top + 1); y < b.InsideRect.Bottom - 1; ++y) {
           var pt = new Point(left, y);
           if (CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && !Rules.IsAdjacent(in pt, in doorAt))
             map.PlaceAt(MakeObjIronBench(), pt);
@@ -2316,7 +2321,7 @@ restart:
     }
 
     // alpha10.1 allow different x and y min size
-    private void _MakeRoomsPlan(Map map, List<Rectangle> list, Rectangle rect, int minRoomsXSize, int minRoomsYSize)
+    private void _MakeRoomsPlan(Map map, List<Rectangle> list, Rectangle rect, short minRoomsXSize, short minRoomsYSize)
     {
       QuadSplit(rect, minRoomsXSize, minRoomsYSize, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
       if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
@@ -2340,7 +2345,7 @@ restart:
       }
     }
 
-    protected List<Rectangle> MakeRoomsPlan(Map map, Rectangle rect, int minRoomsXSize, int minRoomsYSize=0, List<Rectangle>? list = null)
+    protected List<Rectangle> MakeRoomsPlan(Map map, Rectangle rect, short minRoomsXSize, short minRoomsYSize =0, List<Rectangle>? list = null)
     {
         if (0 >= minRoomsYSize) minRoomsYSize = minRoomsXSize;    // backward compatibility
         if (null == list) list = new(); // retain this parameter for Waterfall software lifecycle
@@ -2350,7 +2355,7 @@ restart:
         return list;
     }
 
-    protected void MakeRoomsPlan(Map map, Rectangle rect, int minRoomsXSize, List<Rectangle> list)
+    protected void MakeRoomsPlan(Map map, Rectangle rect, short minRoomsXSize, List<Rectangle> list)
     {
         _MakeRoomsPlan(map, list, rect, minRoomsXSize, minRoomsXSize);
     }
@@ -2738,10 +2743,14 @@ restart:
       // XXX
       // X.X
       // XXX
+      short origin_x = (short)(basement.Rect.Right - 2);
+      short origin_y = (short)(basement.Rect.Bottom - 2);
+      short extent_x = (short)(basement.Rect.Right - 3);
+      short extent_y = (short)(basement.Rect.Bottom - 3);
       _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(1,1), new Point(2,2));
-      _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(1, basement.Rect.Bottom-2), new Point(2, basement.Rect.Bottom - 3));
-      _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(basement.Rect.Right - 2, 1), new Point(basement.Rect.Right - 3, 2));
-      _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(basement.Rect.Right - 2, basement.Rect.Bottom - 2), new Point(basement.Rect.Right - 3, basement.Rect.Bottom - 3));
+      _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(1, origin_y), new Point(2, extent_y));
+      _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(origin_x, 1), new Point(extent_x, 2));
+      _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(origin_x, origin_y), new Point(extent_x, extent_y));
 
       var inner = new Rectangle(Direction.SE.Vector,basement.Rect.Size+2*Direction.NW);   // \todo ? could precalculate this in constructor
 restart:
@@ -3013,12 +3022,14 @@ restart:
         Point position2 = rectangle.Anchor(rectangle.Top < underground.Height / 2 ? Compass.XCOMlike.S : Compass.XCOMlike.N);
         if (!underground.HasMapObjectAt(position2)) PlaceDoorIfAccessibleAndNotAdjacent(underground, position2, GameTiles.FLOOR_OFFICE, 6, MakeObjCharDoor());
       }
+      short origin_y = (short)(rect1.Bottom - 1);
       for (var right = rect1.Right; right < rect4.Left; ++right) {
-        PlaceDoor(underground, new Point(right, rect1.Bottom - 1), GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
+        PlaceDoor(underground, new Point(right, origin_y), GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
         PlaceDoor(underground, new Point(right, rect3.Top), GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
       }
+      short origin_x = (short)(rect1.Right - 1);
       for (var bottom = rect1.Bottom; bottom < rect3.Top; ++bottom) {
-        PlaceDoor(underground, new Point(rect1.Right - 1, bottom), GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
+        PlaceDoor(underground, new Point(origin_x, bottom), GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
         PlaceDoor(underground, new Point(rect2.Left, bottom), GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
       }
       foreach (Rectangle wallsRect in list)
@@ -3059,8 +3070,8 @@ restart:
       underground.AddZone(MakeUniqueZone("north-south hallway", new Rectangle(entrance_foyer_anchor.X, 0, 3, BASE_HEIGHT)));
       underground.AddZone(MakeUniqueZone("east-west hallway", new Rectangle(0, entrance_foyer_anchor.Y, BASE_WIDTH, 3)));
 
-      for (int x = 0; x < underground.Width; ++x) {
-        for (int y = 0; y < underground.Height; ++y) {
+      for (short x = 0; x < underground.Width; ++x) {
+        for (short y = 0; y < underground.Height; ++y) {
           if (m_DiceRoller.RollChance(25)) {    // \todo map generation break: optimize RNG usage
             Tile tileAt = underground.GetTileAt(x, y);
             if (tileAt.Model.IsWalkable) continue;
@@ -3922,8 +3933,9 @@ restart:
         MakeHospitalPatientRoom(map, "patient room", patient_room, true);
         patient_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
-      Rectangle rectangle2 = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
-      patient_room = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
+      short origin_x = (short)(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT);
+      Rectangle rectangle2 = new Rectangle(origin_x, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
+      patient_room = new Rectangle(origin_x, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
       while (patient_room.Y <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
         MakeHospitalPatientRoom(map, "patient room", patient_room, false);
         patient_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
@@ -3960,8 +3972,9 @@ restart:
         MakeHospitalOfficeRoom(map, "office", offices_room, true);
         offices_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
-      Rectangle rectangle2 = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
-      offices_room = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
+      short origin_x = (short)(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT);
+      Rectangle rectangle2 = new Rectangle(origin_x, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
+      offices_room = new Rectangle(origin_x, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
       while (offices_room.Y <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
         MakeHospitalOfficeRoom(map, "office", offices_room, false);
         offices_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
@@ -3988,14 +4001,15 @@ restart:
       Rectangle rect = new Rectangle(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1, 0, 5, map.Height);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect);
       map.AddZone(MakeUniqueZone("corridor", rect));
-      Rectangle rectangle1 = new Rectangle(0, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
-      Rectangle patient_room = new Rectangle(0,0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
+      Rectangle rectangle1 = new(0, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
+      Rectangle patient_room = new(0,0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
       while (patient_room.Y <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
         MakeHospitalPatientRoom(map, "patient room", patient_room, true);
         patient_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
-      Rectangle rectangle2 = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
-      patient_room = new Rectangle(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
+      short origin_x = (short)(map.Rect.Right - HOSPITAL_TYPICAL_WIDTH_HEIGHT);
+      Rectangle rectangle2 = new(origin_x, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, map.Height);
+      patient_room = new(origin_x, 0, HOSPITAL_TYPICAL_WIDTH_HEIGHT, HOSPITAL_TYPICAL_WIDTH_HEIGHT);
       while (patient_room.Y <= map.Height - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
         MakeHospitalPatientRoom(map, "patient room", patient_room, false);
         patient_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
@@ -4034,18 +4048,19 @@ restart:
       map.SetTileModelAt(1, rect2.Top, GameTiles.FLOOR_TILES);
       map.PlaceAt(MakeObjIronGate(), new Point(1, rect2.Top));
       map.AddZone(MakeUniqueZone("central corridor", rect2));
-      Rectangle rectangle1 = new Rectangle(2, rect2.Bottom - 1, map.Width - 2, STORAGE_ROOM_DEPTH);
-      Rectangle storage_room = new Rectangle(2, rect2.Bottom - 1, HOSPITAL_TYPICAL_WIDTH_HEIGHT, STORAGE_ROOM_DEPTH);
+      short origin_y = (short)(rect2.Bottom - 1);
+      Rectangle rectangle1 = new(2, origin_y, (short)(map.Width - 2), STORAGE_ROOM_DEPTH);
+      Rectangle storage_room = new(2, origin_y, HOSPITAL_TYPICAL_WIDTH_HEIGHT, STORAGE_ROOM_DEPTH);
       while (storage_room.X <= map.Width - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
         MakeHospitalStorageRoom(map, "storage", storage_room);
         storage_room.X += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
       map.SetTileModelAt(1, storage_room.Y, GameTiles.FLOOR_TILES);
-      var rect3 = ext_Vector.FromLTRB_short(0, rectangle1.Bottom - 1, map.Width, rectangle1.Bottom - 1 + 4);
+      var rect3 = ext_Vector.FromLTRB_short(0, (short)(rectangle1.Bottom - 1), map.Width, rectangle1.Bottom - 1 + 4);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, rect3);
       map.SetTileModelAt(1, rect3.Top, GameTiles.FLOOR_TILES);
       map.AddZone(MakeUniqueZone("south corridor", rect3));
-      storage_room = new Rectangle(2, rect3.Bottom - 1, HOSPITAL_TYPICAL_WIDTH_HEIGHT, STORAGE_ROOM_DEPTH);
+      storage_room = new Rectangle(2, (short)(rect3.Bottom - 1), HOSPITAL_TYPICAL_WIDTH_HEIGHT, STORAGE_ROOM_DEPTH);
       while (storage_room.X <= map.Width - HOSPITAL_TYPICAL_WIDTH_HEIGHT) {
         MakeHospitalStorageRoom(map, "storage", storage_room);
         storage_room.X += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;

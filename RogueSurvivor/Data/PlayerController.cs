@@ -14,8 +14,8 @@ using System.Linq;
 using Zaimoni.Data;
 using static Zaimoni.Data.Functor;
 
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 using Color = System.Drawing.Color;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using ItemLight = djack.RogueSurvivor.Engine.Items.ItemLight;

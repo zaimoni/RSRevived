@@ -11,8 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Zaimoni.Data;
 
-using Point = Zaimoni.Data.Vector2D_short;
-using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
+using Point = Zaimoni.Data.Vector2D<short>;
+using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
 using PointF = Zaimoni.Data.Vector2D<float>;
 
 // XXX C# Point is not a point in a vector space at all.

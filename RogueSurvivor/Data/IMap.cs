@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Zaimoni.Data;
 
-using Point = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
 
 #nullable enable
 

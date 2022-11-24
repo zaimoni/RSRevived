@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 
 namespace Zaimoni.Data
 {
@@ -33,13 +33,13 @@ namespace Zaimoni.Data
         {
         switch(dir_code)
         {
-        case XCOMlike.N: return new Point(src.Width / 2 + src.Left, src.Top);
-        case XCOMlike.NE: return new Point(src.Right - 1, src.Top);
-        case XCOMlike.E: return new Point(src.Right - 1, src.Height / 2 + src.Top);
-        case XCOMlike.SE: return new Point(src.Right - 1, src.Bottom - 1);
-        case XCOMlike.S: return new Point(src.Width / 2 + src.Left, src.Bottom - 1);
-        case XCOMlike.SW: return new Point(src.Left, src.Bottom - 1);
-        case XCOMlike.W: return new Point(src.Left, src.Height / 2 + src.Top);
+        case XCOMlike.N: return new Point((short)(src.Width / 2 + src.Left), src.Top);
+        case XCOMlike.NE: return new Point((short)(src.Right - 1), src.Top);
+        case XCOMlike.E: return new Point((short)(src.Right - 1), (short)(src.Height / 2 + src.Top));
+        case XCOMlike.SE: return new Point((short)(src.Right - 1), (short)(src.Bottom - 1));
+        case XCOMlike.S: return new Point((short)(src.Width / 2 + src.Left), (short)(src.Bottom - 1));
+        case XCOMlike.SW: return new Point(src.Left, (short)(src.Bottom - 1));
+        case XCOMlike.W: return new Point(src.Left, (short)(src.Height / 2 + src.Top));
         case XCOMlike.NW: return src.Location;
         default: throw new InvalidOperationException("direction code out of range");
         }

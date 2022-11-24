@@ -10,7 +10,7 @@ using System.Runtime.Serialization;
 using Zaimoni.Data;
 
 using ItemBarricadeMaterial = djack.RogueSurvivor.Engine.Items.ItemBarricadeMaterial;
-using Point = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Data
 {

@@ -12,9 +12,9 @@ using Zaimoni.Data;
 using static Zaimoni.Data.Compass;
 
 using UpdateMoveDelta = djack.RogueSurvivor.Engine.Actions.UpdateMoveDelta;
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
-using Size = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
+using Size = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Data
 {

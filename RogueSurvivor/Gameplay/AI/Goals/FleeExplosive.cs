@@ -5,7 +5,7 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Items;
 
-using Point = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public List<Point>? FilterLegalSteps(Location origin, List<Point>? steps) {
             if (null == steps) return null;
             bool starting_in = m_Fear.ContainsExt(origin);
-            Location center = new(m_Fear.m, m_Fear.Rect.Location + new Point(m_Fear.Rect.Width / 2, m_Fear.Rect.Height / 2));
+            Location center = new(m_Fear.m, m_Fear.Rect.Location + m_Fear.Rect.Size / 2);
             var radius = Rules.GridDistance(center, new Location(m_Fear.m, m_Fear.Rect.Location));
             var start_radius = Rules.GridDistance(center, origin);
             if (radius + 2 <= start_radius) return steps;
@@ -66,7 +66,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         {
             if (null == path) return null;
             bool starting_in = m_Fear.ContainsExt(origin);
-            Location center = new(m_Fear.m, m_Fear.Rect.Location + new Point(m_Fear.Rect.Width / 2, m_Fear.Rect.Height / 2));
+            Location center = new(m_Fear.m, m_Fear.Rect.Location + m_Fear.Rect.Size/2);
             var radius = Rules.GridDistance(center, new Location(m_Fear.m, m_Fear.Rect.Location));
             var start_radius = Rules.GridDistance(center, origin);
             if (radius + 2 <= start_radius) return path;

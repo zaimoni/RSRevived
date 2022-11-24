@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using Zaimoni.Data;
 
-using Point = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {

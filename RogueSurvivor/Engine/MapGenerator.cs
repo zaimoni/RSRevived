@@ -9,8 +9,8 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using System.Collections.Generic;
 
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 
 namespace djack.RogueSurvivor.Engine
 {

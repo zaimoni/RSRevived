@@ -10,9 +10,9 @@ using System.Linq;
 using Zaimoni.Data;
 
 // map coordinate definitions.  Want to switch this away from System.Drawing.Point to get a better hash function in.
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
-using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
+using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
 
 namespace djack.RogueSurvivor.Data
 {
@@ -30,6 +30,16 @@ namespace djack.RogueSurvivor.Data
 #endif
       ;
       Position = position;
+    }
+
+    public Location(Map map, int x, int y)
+    {
+      Map = map
+#if DEBUG
+        ?? throw new ArgumentNullException(nameof(map))
+#endif
+      ;
+      Position = new((short)x, (short)y);
     }
 
     // projection functions for Linq

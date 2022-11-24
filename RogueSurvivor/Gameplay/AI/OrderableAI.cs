@@ -21,8 +21,8 @@ using System.Linq;
 using Zaimoni.Data;
 using static Zaimoni.Data.Functor;
 
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using djack.RogueSurvivor.Gameplay.AI.Goals;
 using System.Runtime.Serialization;

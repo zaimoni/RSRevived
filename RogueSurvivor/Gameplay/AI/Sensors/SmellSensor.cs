@@ -9,7 +9,7 @@ using djack.RogueSurvivor.Engine.AI;
 using System;
 using System.Collections.Generic;
 
-using Rectangle = Zaimoni.Data.Box2D_short;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 {

@@ -32,8 +32,8 @@ using static Zaimoni.Data.Functor;
 
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 // game coordinate types
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 // GDI+ types
 using Color = System.Drawing.Color;
 using GDI_Point = System.Drawing.Point;
@@ -3959,8 +3959,9 @@ namespace djack.RogueSurvivor.Engine
               || CANVAS_WIDTH-4  < staging_size[^1].Width)
             throw new InvalidOperationException("test case");
 #endif
-          if (centered) working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) /2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) /2));
-          else working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((CANVAS_WIDTH - 4 - staging_size[^1].Width), (CANVAS_HEIGHT - 4 - staging_size[^1].Height) /2));
+          short working_y = (short)((CANVAS_HEIGHT - 4 - staging_size[^1].Height) / 2);
+          if (centered) working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((short)((CANVAS_WIDTH - 4 - staging_size[^1].Width) /2), working_y));
+          else working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((short)(CANVAS_WIDTH - 4 - staging_size[^1].Width), working_y));
           AddOverlay(working);
         }
         RedrawPlayScreen();
@@ -12569,14 +12570,14 @@ namespace djack.RogueSurvivor.Engine
     private Point MouseToMap(GDI_Point mouse)
     {
       var logical = LogicalPixel(mouse) / TILE_SIZE;
-      return new Point(MapViewRect.Left + logical.X, MapViewRect.Top + logical.Y);
+      return new Point((short)(MapViewRect.Left + logical.X), (short)(MapViewRect.Top + logical.Y));
     }
 
     private Location? MouseToLoc(int mousex, int mousey)
     {
       var pixel = LogicalPixel(new GDI_Point(mousex, mousey));
       var logical = pixel / TILE_SIZE;
-      Point pos = new(MapViewRect.Left + logical.X, MapViewRect.Top + logical.Y);
+      Point pos = new((short)(MapViewRect.Left + logical.X), (short)(MapViewRect.Top + logical.Y));
       if (IsInViewRect(pos)) {
         Location loc = new(CurrentMap, pos);
         if (Map.Canonical(ref loc)) return loc;
@@ -12584,7 +12585,7 @@ namespace djack.RogueSurvivor.Engine
       var e = m_MapView.Center.Exit;
       if (null != e) {
         Rectangle bounds = new(new(EXIT_SLOT_X, EXIT_SLOT_Y0), new(TILE_SIZE, 2* TILE_SIZE));
-        if (bounds.Contains(new Point(pixel.X, pixel.Y))) return e.Location;
+        if (bounds.Contains((short)pixel.X, (short)pixel.Y)) return e.Location;
       }
       return null;
     }
@@ -13360,8 +13361,8 @@ namespace djack.RogueSurvivor.Engine
           }
       };
 
-      for (int x1 = 0; x1 < world.Size; ++x1) {
-        for (int y1 = 0; y1 < world.Size; ++y1) {
+      for (short x1 = 0; x1 < world.Size; ++x1) {
+        for (short y1 = 0; y1 < world.Size; ++y1) {
           if (isVerbose) m_UI.DrawHeadNote(string.Format("Linking District@{0}...", World.CoordToString(x1, y1)));
           Point dest = new Point(x1, y1);
 

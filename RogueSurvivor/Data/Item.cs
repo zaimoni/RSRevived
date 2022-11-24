@@ -11,7 +11,7 @@ using System.Threading;
 using Zaimoni.Data;
 using djack.RogueSurvivor.Engine;
 
-using Point = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
 
 #nullable enable
 

@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-using Point = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
 #nullable enable

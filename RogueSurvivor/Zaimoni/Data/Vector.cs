@@ -865,9 +865,9 @@ namespace Zaimoni.Data
             throw new InvalidOperationException("unimplemented");
         }
 
-        static public Box2D_short FromLTRB_short<U>(U left, U top, U right, U bottom) where U:IConvertible, ISubtractionOperators<U,U,U>
+        static public Box2D<short> FromLTRB_short<U>(U left, U top, U right, U bottom) where U:IConvertible, ISubtractionOperators<U,U,U>
         {
-            return new Box2D_short(left.To<U,short>(), top.To<U, short>(), (right - left).To<U, short>(), (bottom - top).To<U, short>());
+            return new Box2D<short>(left.To<U,short>(), top.To<U, short>(), (right - left).To<U, short>(), (bottom - top).To<U, short>());
         }
 
         public static void Normalize(ref this Vector2D<float> src) {
@@ -880,10 +880,10 @@ namespace Zaimoni.Data
             }
         }
 
-        public static bool Hull(this IEnumerable<Vector2D_short> src, ref Span<Vector2D_short> hull)
+        public static bool Hull(this IEnumerable<Vector2D<short>> src, ref Span<Vector2D<short>> hull)
         {
-            hull[0] = new Vector2D_short(short.MaxValue, short.MaxValue);
-            hull[1] = new Vector2D_short(short.MinValue, short.MinValue);
+            hull[0] = Vector2D<short>.MaxValue;
+            hull[1] = Vector2D<short>.MinValue;
             short tmp;
             foreach(var pt in src) {
                 if ((tmp = pt.X) < hull[0].X) hull[0].X = tmp;
@@ -892,7 +892,7 @@ namespace Zaimoni.Data
                 if (tmp > hull[1].Y) hull[1].Y = tmp;
             }
             if (hull[0].X <= hull[1].X) {
-                hull[1] += (Vector2D_short)1;
+                hull[1] += (Vector2D<short>)1;
                 return true;
             }
             return false;

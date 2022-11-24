@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Point = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -38,8 +38,9 @@ namespace djack.RogueSurvivor.Engine
       List<Point> tmp = new List<Point>();
       // Cf. ComputeFOVFor
       double edge_of_maxrange = range+0.5;
-      Point origin = new Point(0,0);
-      Point pt = new Point();
+      Point origin = Point.Empty;
+      Point pt = new();
+      Point stage;
       for (pt.X = range; pt.X > 0; --pt.X) {
         for (pt.Y = pt.X; pt.Y >= 0; --pt.Y) {
           // We want to reject points that are out of range, but still look circular in an open space
@@ -50,18 +51,18 @@ namespace djack.RogueSurvivor.Engine
           tmp.Add(pt);
           tmp.Add(-pt);
           if (pt.X == pt.Y) { // diagonal
-            tmp.Add(new Point(pt.X,-pt.Y));
-            tmp.Add(new Point(-pt.X,pt.Y));
+            tmp.Add(stage = new(pt.X, (short)(-pt.Y)));
+            tmp.Add(-stage);
           } else if (0 == pt.Y) {   // cardinal
-            tmp.Add(new Point(0,pt.X));
-            tmp.Add(new Point(0,-pt.X));
+            tmp.Add(stage = new(0,pt.X));
+            tmp.Add(-stage);
           } else { // typical
-            tmp.Add(new Point(pt.X,-pt.Y));
-            tmp.Add(new Point(-pt.X,pt.Y));
-            tmp.Add(new Point(pt.Y,pt.X));
-            tmp.Add(new Point(pt.Y,-pt.X));
-            tmp.Add(new Point(-pt.Y,pt.X));
-            tmp.Add(new Point(-pt.Y,-pt.X));
+            tmp.Add(stage = new(pt.X,(short)(-pt.Y)));
+            tmp.Add(-stage);
+            tmp.Add(stage = new(pt.Y, pt.X));
+            tmp.Add(-stage);
+            tmp.Add(stage = new(pt.Y, (short)(-pt.X)));
+            tmp.Add(-stage);
           }
         }
       }

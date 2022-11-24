@@ -12,7 +12,7 @@ namespace Zaimoni.Data
     // 2r...4r: x constant r, y decrement r to -r
     // 4r..64: y constant -r, x decrement r to -r
     // 4r to 8r i.e. 0: x constant -r, y increment -r to r
-    public static Vector2D_short RadarSweep(in this Vector2D_short origin,short radius,int i)
+    public static Vector2D<short> RadarSweep(in this Vector2D<short> origin, short radius, int i)
     {
 #if DEBUG
       if (0 >= radius /* || int.MaxValue/8 < radius */) throw new ArgumentOutOfRangeException(nameof(radius),radius,"must be in 1.."+(int.MaxValue / 8).ToString());
@@ -24,10 +24,10 @@ namespace Zaimoni.Data
       if (0>i) i+=8*radius;
 
       // parentheses are to deny compiler the option to reorder to overflow
-      if (2*radius>i) return new Vector2D_short((short)(i-radius),radius) + origin;
-      if (4*radius>i) return new Vector2D_short(radius, (short)(3*radius- i)) + origin;
-      if (6*radius>i) return new Vector2D_short((short)(5*radius-i), (short)(-radius)) + origin;
-      /* if (8*radius>i) */ return new Vector2D_short((short)(-radius), (short)(i-7* radius)) + origin;
+      if (2*radius>i) return new Vector2D<short>((short)(i-radius),radius) + origin;
+      if (4*radius>i) return new Vector2D<short>(radius, (short)(3*radius- i)) + origin;
+      if (6*radius>i) return new Vector2D<short>((short)(5*radius-i), (short)(-radius)) + origin;
+      /* if (8*radius>i) */ return new Vector2D<short>((short)(-radius), (short)(i-7* radius)) + origin;
     }
 
     // null testFn is a different signature for efficiency reasons
@@ -833,18 +833,18 @@ namespace Zaimoni.Data
 
     // interpreting points to linear arrays
     // candidate for generated code
-    public static int convert(this Box2D_short rect, Vector2D_short pt)
+    public static int convert(this Box2D<short> rect, Vector2D<short> pt)
     {
       if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
       if (!rect.Contains(pt)) throw new InvalidOperationException("tried to encode point not in rectangle");
       return (pt.X - rect.Left) + rect.Width*(pt.Y - rect.Top);
     }
 
-    public static Vector2D_short convert(this Box2D_short rect, int i)
+    public static Vector2D<short> convert(this Box2D<short> rect, int i)
     {
       if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
       if (0 > i) throw new InvalidOperationException("index not in rectangle");
-      return new Vector2D_short(i % rect.Width + rect.Left, i / rect.Width + rect.Top);
+      return new Vector2D<short>((short)(i % rect.Width + rect.Left), (short)(i / rect.Width + rect.Top));
     }
 
     // HashSet not useful as dictionary key (need value equality rather than underlying C pointer equality to be useful)
@@ -858,7 +858,7 @@ namespace Zaimoni.Data
       return new string(new char[] { (char)(256 * (pt.X - rect.Left) + (pt.Y - rect.Top)) });
     }
 
-    public static string Encode(this Box2D_short rect, Vector2D_short pt)
+    public static string Encode(this Box2D<short> rect, Vector2D<short> pt)
     {
       // C# char is 16-bit unsigned
       if (0>=rect.Width || 0>=rect.Height) throw new InvalidOperationException("empty rectangle");
@@ -899,7 +899,7 @@ namespace Zaimoni.Data
       return string.Concat(tmp.Select(pt => rect.Encode(pt)+((uint)(src[pt])).Encode()));
     }
 
-    public static string Encode(this Box2D_short rect, Dictionary<Vector2D_short, int> src)
+    public static string Encode(this Box2D<short> rect, Dictionary<Vector2D<short>, int> src)
     {
       if (null==src || 0 >= src.Count) return string.Empty;
       var tmp = src.Keys.ToList();

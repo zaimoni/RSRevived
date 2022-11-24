@@ -13,8 +13,8 @@ using System.Runtime.Serialization;
 using System.Threading;
 using Zaimoni.Data;
 
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 
 #nullable enable
 
@@ -337,9 +337,11 @@ namespace djack.RogueSurvivor.Data
         encode.LinearSave(m_Ready);
     }
 
+#if PROTOTYPE
     public Point toWorldPos(int n) { return new Point(n % m_Size, n / m_Size); }
     public int fromWorldPos(Point pt) { return pt.X + m_Size*pt.Y; }
     public int fromWorldPos(int x, int y) { return x + m_Size*y; }
+#endif
 
 #nullable enable
 #region raid timings

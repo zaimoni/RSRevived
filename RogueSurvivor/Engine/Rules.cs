@@ -19,9 +19,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Zaimoni.Data;
 
-using Rectangle = Zaimoni.Data.Box2D_short;
-using Point = Zaimoni.Data.Vector2D_short;
-using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
+using Rectangle = Zaimoni.Data.Box2D<short>;
+using Point = Zaimoni.Data.Vector2D<short>;
+using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -791,7 +791,7 @@ retry:
         if (null == e) throw new InvalidProgramException("should be able to ascend to surface");
 #endif
         Size raw_delta = loc.Position - e.Value.Key;
-        Size delta = new Size(raw_delta.Y,-raw_delta.X);
+        Size delta = new(raw_delta.Y, (short)(-raw_delta.X));
         loc = new Location(e.Value.Value.Location.Map,e.Value.Value.Location.Position+delta);
         goto retry;
       }

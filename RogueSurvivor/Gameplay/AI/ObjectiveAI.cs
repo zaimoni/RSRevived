@@ -16,8 +16,8 @@ using Zaimoni.Data;
 
 using static Zaimoni.Data.Functor;
 
-using Point = Zaimoni.Data.Vector2D_short;
-using Rectangle = Zaimoni.Data.Box2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
@@ -3203,7 +3203,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           } else {
             var move = new ActionMoveDelta(m_Actor, e.Location, loc);
             int cost = Map.PathfinderMoveCosts(move) + Map.TrapMoveCostFor(move, m_Actor);
-            if (short.MaxValue-cost > dists.Y) waypoint_dist[e.Location] = dists + new Point(cost,cost);
+            if (short.MaxValue-cost > dists.Y) waypoint_dist[e.Location] = dists + new Point((short)cost, (short)cost);
           }
         }
       }
@@ -3495,7 +3495,7 @@ Restart:
           } else {
             var move = new ActionMoveDelta(m_Actor, e.Location, loc);
             int cost = Map.PathfinderMoveCosts(move) + Map.TrapMoveCostFor(move, m_Actor);
-            if (short.MaxValue-cost > dists.Y) waypoint_dist[e.Location] = dists + new Point(cost,cost);
+            if (short.MaxValue-cost > dists.Y) waypoint_dist[e.Location] = dists + new Point((short)cost, (short)cost);
           }
         }
       }

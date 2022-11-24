@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.AI;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
-using Rectangle = Zaimoni.Data.Box2D_short;
-using Size = Zaimoni.Data.Vector2D_short;
-
+using Rectangle = Zaimoni.Data.Box2D<short>;
+using Size = Zaimoni.Data.Vector2D<short>;
 
 #nullable enable
 

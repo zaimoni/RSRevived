@@ -19,7 +19,7 @@ using System.Runtime.Serialization;
 using System.Linq;
 using Zaimoni.Data;
 
-using Point = Zaimoni.Data.Vector2D_short;
+using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using djack.RogueSurvivor.Engine.Actions;
 
