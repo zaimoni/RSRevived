@@ -871,6 +871,7 @@ namespace Zaimoni.Data
         }
 
         public static void Normalize(ref this Vector2D<float> src) {
+            // \todo? try to be clever about floating point overflow here (likely not needed)
             float EuclideanNorm = (float)Math.Sqrt((double)(src.X * src.X + src.Y * src.Y));
             if (0.0 < EuclideanNorm) {
                 src /= EuclideanNorm;

@@ -40,7 +40,7 @@ namespace Zaimoni.Data
         case XCOMlike.S: return new Point(src.Width / 2 + src.Left, src.Bottom - 1);
         case XCOMlike.SW: return new Point(src.Left, src.Bottom - 1);
         case XCOMlike.W: return new Point(src.Left, src.Height / 2 + src.Top);
-        case XCOMlike.NW: return new Point(src.Left, src.Top);
+        case XCOMlike.NW: return src.Location;
         default: throw new InvalidOperationException("direction code out of range");
         }
         }
@@ -49,10 +49,10 @@ namespace Zaimoni.Data
         {
         switch(dir_code)
         {
-        case XCOMlike.N: return new Rectangle(src.Left,src.Top,src.Width,1);
-        case XCOMlike.S: return new Rectangle(src.Left, src.Bottom-1, src.Width, 1);
-        case XCOMlike.W: return new Rectangle(src.Left, src.Top, 1, src.Height);
-        case XCOMlike.E: return new Rectangle(src.Right-1, src.Top, 1, src.Height);
+        case XCOMlike.N: return new Rectangle(src.Location, new(src.Width, 1));
+        case XCOMlike.S: return new Rectangle(src.Anchor(XCOMlike.SW), new(src.Width, 1));
+        case XCOMlike.W: return new Rectangle(src.Location, new(1, src.Height));
+        case XCOMlike.E: return new Rectangle(src.Anchor(XCOMlike.NE), new(1, src.Height));
         default: throw new InvalidOperationException("direction code out of range");
         }
         }
