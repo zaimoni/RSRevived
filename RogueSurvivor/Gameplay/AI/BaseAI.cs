@@ -549,11 +549,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.AbleToPush) return null;
       // Substantial re-implementation.  Historical one can make the police offices very hard to write a correct pathing for.
       // Some of these reality checks can be weakened for mentally disturbed livings
-      var food_blockers = new Dictionary<Point,MapObject>();
+      Dictionary<Location,MapObject> food_blockers = new();
       Map map = m_Actor.Location.Map;
       // do not worry about inside vs. outside here
-      foreach(var pt in FOV) {
-        var o = map.GetMapObjectAtExt(pt);
+      foreach(var loc in FOVloc) {
+        var o = loc.MapObject;
         if (null != o && !o.IsWalkable && !o.IsJumpable && m_Actor.CanPush(o)) food_blockers.Add(pt, o);
       }
       if (0 >= food_blockers.Count) return null;
@@ -569,10 +569,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var verified = new Dictionary<Point,MapObject>();
       var unclear = new Dictionary<Point,MapObject>();
       foreach(var x in food_blockers) {
-        var loc = new Location(map,x.Key);
-        Map.Canonical(ref loc);
+        var loc = x.Key;
         if (null != loc.Exit) { // on same-district exit is clearly bad
-          verified.Add(x.Key,x.Value);
+          verified.Add(loc.Position, x.Value);
           continue;
         }
         // flush against a wall, or in a corner, is fine
@@ -584,7 +583,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (loc.Map.IsNECorner(loc.Position)) continue;
         if (loc.Map.IsSWCorner(loc.Position)) continue;
         if (loc.Map.IsSECorner(loc.Position)) continue;
-        unclear.Add(x.Key, x.Value);
+        unclear.Add(x.Key.Position, x.Value);
       }
       if (0 >= verified.Count && 0 >=unclear.Count) return null;
 
