@@ -13,7 +13,7 @@ using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D_short;
 using Size = Zaimoni.Data.Vector2D_short;   // likely to go obsolete with transition to a true vector type
-using PointF = System.Drawing.PointF;
+using PointF = Zaimoni.Data.Vector2D<float>;
 
 // XXX C# Point is not a point in a vector space at all.
 // C# Size  is closer (closed under + but doesn't honor left/right multiplication by a scalar)
@@ -44,8 +44,8 @@ namespace djack.RogueSurvivor.Data
       Index = (sbyte)index;
       m_Name = name;
       Vector = vector;
-      float num = (float) Math.Sqrt((double) (vector.X * vector.X + vector.Y * vector.Y));
-      NormalizedVector = num != 0.0f ? new PointF((float)vector.X / num, (float)vector.Y / num) : PointF.Empty;
+      NormalizedVector = new(vector.X, vector.Y);
+      NormalizedVector.Normalize();
     }
 
     public static Point operator +(Point lhs, Direction rhs) { return lhs + rhs.Vector; }
@@ -180,11 +180,9 @@ diagonalExit:
 
     public static Direction ApproximateFromVector(Point v)
     {
-      PointF pointF = new PointF(v.X, v.Y);
-      float num1 = (float) Math.Sqrt((double) pointF.X * (double) pointF.X + (double) pointF.Y * (double) pointF.Y);
-      if ((double) num1 == 0.0) return N;
-      pointF.X /= num1;
-      pointF.Y /= num1;
+      PointF pointF = new(v.X, v.Y);
+      pointF.Normalize();
+      if (PointF.Empty == pointF) return N;
       Direction dir = COMPASS.Minimize(d=> Math.Abs(pointF.X - d.NormalizedVector.X) + Math.Abs(pointF.Y - d.NormalizedVector.Y));
       return dir ?? N;
     }

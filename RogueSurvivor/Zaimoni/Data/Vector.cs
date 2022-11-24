@@ -870,6 +870,15 @@ namespace Zaimoni.Data
             return new Box2D_short(left.To<U,short>(), top.To<U, short>(), (right - left).To<U, short>(), (bottom - top).To<U, short>());
         }
 
+        public static void Normalize(ref this Vector2D<float> src) {
+            float EuclideanNorm = (float)Math.Sqrt((double)(src.X * src.X + src.Y * src.Y));
+            if (0.0 < EuclideanNorm) {
+                src /= EuclideanNorm;
+            } else {
+                src = Vector2D<float>.Empty;
+            }
+        }
+
         public static bool Hull(this IEnumerable<Vector2D_short> src, ref Span<Vector2D_short> hull)
         {
             hull[0] = new Vector2D_short(short.MaxValue, short.MaxValue);
