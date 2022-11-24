@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Engine
       TileFill(map, model, 0, 0, map.Width, map.Height, inside);
     }
 
-    protected static void TileFill(Map map, TileModel model, Action<Tile, TileModel, int, int> decoratorFn=null)
+    protected static void TileFill(Map map, TileModel model, Action<Tile, TileModel, short, short> decoratorFn=null)
     {
       TileFill(map, model, 0, 0, map.Width, map.Height, decoratorFn);
     }
@@ -36,19 +36,19 @@ namespace djack.RogueSurvivor.Engine
       TileFill(map, model, rect.Left, rect.Top, rect.Width, rect.Height, inside);
     }
 
-    protected static void TileFill(Map map, TileModel model, Rectangle rect, Action<Tile, TileModel, int, int> decoratorFn=null)
+    protected static void TileFill(Map map, TileModel model, Rectangle rect, Action<Tile, TileModel, short, short> decoratorFn=null)
     {
       TileFill(map, model, rect.Left, rect.Top, rect.Width, rect.Height, decoratorFn);
     }
 
-    protected static void TileFill(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, int, int> decoratorFn=null)
+    protected static void TileFill(Map map, TileModel model, short left, short top, int width, int height, Action<Tile, TileModel, short, short> decoratorFn=null)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));
       if (null == model) throw new ArgumentNullException(nameof(model));
 #endif
-      for (int x = left; x < left + width; ++x) {
-        for (int y = top; y < top + height; ++y) {
+      for (short x = left; x < left + width; ++x) {
+        for (short y = top; y < top + height; ++y) {
           TileModel model1 = map.GetTileModelAt(x, y);
           map.SetTileModelAt(x, y, model);
           decoratorFn?.Invoke(map.GetTileAt(x, y), model1, x, y);
@@ -56,14 +56,14 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    protected static void TileFill(Map map, TileModel model, int left, int top, int width, int height, bool inside)
+    protected static void TileFill(Map map, TileModel model, short left, short top, int width, int height, bool inside)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));
       if (null == model) throw new ArgumentNullException(nameof(model));
 #endif
-      for (int x = left; x < left + width; ++x) {
-        for (int y = top; y < top + height; ++y) {
+      for (short x = left; x < left + width; ++x) {
+        for (short y = top; y < top + height; ++y) {
           map.SetTileModelAt(x, y, model);
           map.SetIsInsideAt(x, y, inside);
         }
@@ -103,7 +103,7 @@ namespace djack.RogueSurvivor.Engine
       TileRectangle(map, model, rect.Left, rect.Top, rect.Width, rect.Height);
     }
 
-    protected static void TileRectangle(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, Point> decoratorFn=null)
+    protected static void TileRectangle(Map map, TileModel model, short left, short top, int width, int height, Action<Tile, TileModel, Point> decoratorFn=null)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));

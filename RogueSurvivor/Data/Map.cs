@@ -605,7 +605,7 @@ namespace djack.RogueSurvivor.Data
       return null!=test && test.Value.Map.IsInsideAt(test.Value.Position);
     }
 
-    public void SetTileModelAt(int x, int y, TileModel model)
+    public void SetTileModelAt(short x, short y, TileModel model)
     {
 #if DEBUG
       if (!IsInBounds(new Point(x, y))) throw new ArgumentOutOfRangeException("("+nameof(x)+","+nameof(y)+")", "(" + x.ToString() + "," + y.ToString() + ")", "!IsInBounds(x,y)");

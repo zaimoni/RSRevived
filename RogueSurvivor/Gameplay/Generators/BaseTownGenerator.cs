@@ -1242,7 +1242,7 @@ restart:
 
     protected virtual void MakeRoad(Map map, TileModel roadModel, Rectangle rect)
     {
-      TileFill(map, roadModel, rect, (Action<Tile, TileModel, int, int>) ((tile, prevmodel, x, y) =>
+      TileFill(map, roadModel, rect, (Action<Tile, TileModel, short, short>) ((tile, prevmodel, x, y) =>
       {
         if (!GameTiles.IsRoadModel(prevmodel)) return;
         map.SetTileModelAt(x, y, prevmodel);
@@ -1433,10 +1433,9 @@ restart:
     {
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_CHAR_OFFICE, b.BuildingRect);
-      TileFill(map, GameTiles.FLOOR_OFFICE, b.InsideRect, (Action<Tile, TileModel, int, int>) ((tile, prevmodel, x, y) =>
-      {
-        map.SetIsInsideAt(x,y);
-        tile.AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO);
+      TileFill(map, GameTiles.FLOOR_OFFICE, b.InsideRect, ((tile, prevmodel, x, y) => {
+          map.SetIsInsideAt(x, y);
+          tile.AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO);
       }));
       PlaceShoplikeEntrance(map, b, GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor);
       DecorateOutsideWalls(map, b.BuildingRect, pt => {
@@ -1448,7 +1447,7 @@ restart:
         if (CountAdjWalls(map, pt) < 3) return null;
         return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
       }));
-      TileFill(map, GameTiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Location + b.InsideRect.Size / 2 + Direction.NW, 3, 2), (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS))));
+      TileFill(map, GameTiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Location + b.InsideRect.Size / 2 + Direction.NW, 3, 2), ((tile, model, x, y) => tile.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS))));
       DecorateOutsideWalls(map, b.BuildingRect, pt => {
         if (map.AnyAdjacent<DoorWindow>(pt)) return null;
         if (m_DiceRoller.RollChance(25)) return m_DiceRoller.Choose(CHAR_POSTERS);
@@ -3161,17 +3160,15 @@ restart:
 
     private void MakeCHARLivingRoom(Map map, Rectangle roomRect)
     {
-      TileFill(map, GameTiles.FLOOR_PLANKS, roomRect, (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO)));
-      MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
-      {
+      TileFill(map, GameTiles.FLOOR_PLANKS, roomRect, ((tile, model, x, y) => tile.AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO)));
+      MapObjectFill(map, roomRect, (pt => {
         if (CountAdjWalls(map, pt) < 3) return null;
         if (map.HasExitAt(in pt)) return null;
         if (!m_DiceRoller.RollChance(30)) return null;
         if (m_DiceRoller.RollChance(50)) return MakeObjBed(GameImages.OBJ_BED);
         return MakeObjFridge();
       }));
-      MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
-      {
+      MapObjectFill(map, roomRect, (pt => {
         if (CountAdjWalls(map, pt) > 0) return null;
         if (map.HasExitAt(in pt)) return null;
         if (!m_DiceRoller.RollChance(30)) return null;
