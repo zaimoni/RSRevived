@@ -374,8 +374,9 @@ namespace Zaimoni.Data
         IDivisionOperators<Vector2D<T>, T, Vector2D<T>>,
         IMinMaxValue<Vector2D<T>>,
         IMultiplyOperators<Vector2D<T>, T, Vector2D<T>>,
-        ISubtractionOperators<Vector2D<T>, Vector2D<T>, Vector2D<T>>
-        where T:INumberBase<T>,
+        ISubtractionOperators<Vector2D<T>, Vector2D<T>, Vector2D<T>>,
+        IUnaryNegationOperators<Vector2D<T>, Vector2D<T>>
+        where T :INumberBase<T>,
                 IMinMaxValue<T>,
                 IConvertible
     {
@@ -429,6 +430,13 @@ namespace Zaimoni.Data
             lhs.X -= rhs.X;
             lhs.Y -= rhs.Y;
             return lhs;
+        }
+
+        public static Vector2D<T> operator -(Vector2D<T> src)
+        {
+            src.X -= src.X;
+            src.Y -= src.Y;
+            return src;
         }
 
         public static Vector2D<T> operator checked *(Vector2D<T> lhs, T rhs)

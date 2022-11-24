@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using djack.RogueSurvivor.Data;
-using Point = Zaimoni.Data.Vector2D_short;
-
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {

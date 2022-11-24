@@ -7,8 +7,6 @@
 using djack.RogueSurvivor.Data;
 using System;
 
-using Point = Zaimoni.Data.Vector2D_short;
-
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Actions

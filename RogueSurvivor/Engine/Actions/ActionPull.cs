@@ -1,8 +1,6 @@
 ﻿using System;
 using djack.RogueSurvivor.Data;
 
-using Point = Zaimoni.Data.Vector2D_short;
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
     internal interface ObjectOrigin

@@ -7,7 +7,6 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
 
 using Point = Zaimoni.Data.Vector2D_short;

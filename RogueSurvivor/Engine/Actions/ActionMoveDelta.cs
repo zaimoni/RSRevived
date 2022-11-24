@@ -5,8 +5,6 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
 using Zaimoni.Data;
 
-using Point = Zaimoni.Data.Vector2D_short;
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
   // relevant interfaces
