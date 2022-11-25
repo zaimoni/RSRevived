@@ -26,8 +26,10 @@ namespace Zaimoni.Serialization
         static void InlineSave(EncodeObjects encode, ISerialize src) => src.save(encode);
 #endregion
 
-#region 7bit support
+#region 7bit support, basis cases
+#if PROTOTYPE
         static abstract void Serialize7bit(Stream dest, object src);
+#endif
         static void Serialize7bit(Stream dest, ulong src) => Formatter.Serialize7bit(dest, src);
         static void Serialize7bit(Stream dest, uint src) => Formatter.Serialize7bit(dest, src);
         static void Serialize7bit(Stream dest, ushort src) => Formatter.Serialize7bit(dest, src);
@@ -35,7 +37,9 @@ namespace Zaimoni.Serialization
         static void Serialize7bit(Stream dest, int src) => Formatter.Serialize7bit(dest, src);
         static void Serialize7bit(Stream dest, short src) => Formatter.Serialize7bit(dest, src);
 
+#if PROTOTYPE
         static abstract void Deserialize7bit(Stream src, ref object dest);
+#endif
         static void Deserialize7bit(Stream src, ref ulong dest) => Formatter.Deserialize7bit(src, ref dest);
         static void Deserialize7bit(Stream src, ref uint dest) => Formatter.Deserialize7bit(src, ref dest);
         static void Deserialize7bit(Stream src, ref ushort dest) => Formatter.Deserialize7bit(src, ref dest);

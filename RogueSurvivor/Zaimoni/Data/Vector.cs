@@ -1,7 +1,6 @@
-﻿using djack.RogueSurvivor.Engine;
-using djack.RogueSurvivor.Engine.AI;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Numerics;
 
 /*
@@ -261,7 +260,7 @@ namespace Zaimoni.Data
         public override int GetHashCode() => throw new NotSupportedException();
     }
 
-    public record struct Box2D<T>
+    public record struct Box2D<T> : Fn_to_s
         where T:IConvertible,
                 IComparable<T>,
                 System.Numerics.INumberBase<T>,
@@ -372,7 +371,7 @@ namespace Zaimoni.Data
         // these are not the safest implementations for integer math
         private bool ContainsX(T origin) => 0 >= _anchor.X.CompareTo(origin) && 0 > origin.CompareTo(Right);
         private bool ContainsY(T origin) => 0 >= _anchor.X.CompareTo(origin) && 0 > origin.CompareTo(Bottom);
-        public bool Contains(T x, T y) => ContainsX(x) && ContainsY(Y);
+        public bool Contains(T x, T y) => ContainsX(x) && ContainsY(y);
         public bool Contains(Vector2D<T> src) => ContainsX(src.X) && ContainsY(src.Y);
 
         public bool Contains(Box2D<T> src) {
@@ -505,6 +504,7 @@ namespace Zaimoni.Data
             }
         }
 #nullable restore
+        public string to_s() => "[" + _anchor.to_s() + "," + _dim.to_s() + "]";
 
         public override int GetHashCode() => _anchor.GetHashCode() ^ _dim.GetHashCode();
     }
@@ -549,5 +549,26 @@ namespace Zaimoni.Data
             }
             return false;
         }
+    }
+}
+
+// dogfood our own savefile infrastructure
+
+namespace Zaimoni.Serialization
+{
+    public partial interface ISave
+    {
+#region 7bit support
+        static void Serialize7bit(Stream dest, in Data.Vector2D<short> src)
+        {
+            Serialize7bit(dest, src.X);
+            Serialize7bit(dest, src.Y);
+        }
+        static void Deserialize7bit(Stream dest, ref Data.Vector2D<short> src)
+        {
+            Deserialize7bit(dest, ref src.X);
+            Deserialize7bit(dest, ref src.Y);
+        }
+#endregion
     }
 }

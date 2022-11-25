@@ -538,7 +538,13 @@ namespace djack.RogueSurvivor.Data
 
     private KeyValuePair<DistrictKind, DistrictKind> ExtremeZoning(Span<short> stats, DistrictKind[] zoning, Point view) {
         var scan = new Rectangle(view + Direction.NW, (Point)3);
-        if (!CHAR_CityLimits.Contains(scan.Location) || !CHAR_CityLimits.Contains(scan.Location+scan.Size+Direction.NW)) return default;
+        if (!CHAR_CityLimits.Contains(scan.Location) || !CHAR_CityLimits.Contains(scan.Location+scan.Size+Direction.NW))
+#if DEBUG
+            // invariant violation
+            throw new InvalidOperationException("not-interior district sample: "+ CHAR_CityLimits.to_s()+" "+view.to_s()+" " + scan.to_s() + " " + scan.Location.to_s() + " " + CHAR_CityLimits.Contains(scan.Location).to_s() + " " + (scan.Location + scan.Size + Direction.NW).to_s() + " "+ CHAR_CityLimits.Contains(scan.Location + scan.Size + Direction.NW).to_s());
+#else
+            return default;
+#endif
         stats.Fill(0);
         stats[(int)zoning[CHAR_CityLimits.convert(view)]]++;
         foreach(var dir in Direction.COMPASS) stats[(int)zoning[CHAR_CityLimits.convert(view + dir)]]++;
