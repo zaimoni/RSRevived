@@ -260,6 +260,7 @@ namespace Zaimoni.Data
         public override int GetHashCode() => throw new NotSupportedException();
     }
 
+    [Serializable]
     public record struct Box2D<T> : Fn_to_s
         where T:IConvertible,
                 IComparable<T>,

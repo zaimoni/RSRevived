@@ -113,8 +113,6 @@ namespace djack.RogueSurvivor.Data
         Kind = (DistrictKind)(relay_b);
 
         Zaimoni.Serialization.ISave.Deserialize7bit(decode.src, ref WorldPosition);
-        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref WorldPosition.X);
-        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref WorldPosition.Y);
         Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_Name);
 
         m_Maps = new();
@@ -167,8 +165,6 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)Kind);
         // don't want to support negative world pos coordinates here; if we have to extend west/north dynamically, that's a constructor call
         Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, in WorldPosition);
-        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, WorldPosition.X);
-        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, WorldPosition.Y);
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_Name);
         encode.SaveTo(m_Maps);
 

@@ -188,7 +188,7 @@ namespace djack.RogueSurvivor.Data
       m_Lighting = light;
       IsSecret = secret;
       m_TileIDs = new byte[width, height];
-      m_IsInside = new byte[width*height-1/8+1];
+      m_IsInside = new byte[(width*height-1)/8+1];
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Viewpoints = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findViewpoints);
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
@@ -298,12 +298,10 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref tmp_byte);
       m_Lighting = (Lighting)tmp_byte;
 
-      Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref Extent.X);
-      Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref Extent.Y);
+      Zaimoni.Serialization.ISave.Deserialize7bit(decode.src, ref Extent);
       Rect = new Rectangle(Point.Empty,Extent);
 
-      Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref DistrictPos.X);
-      Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref DistrictPos.Y);
+      Zaimoni.Serialization.ISave.Deserialize7bit(decode.src, ref DistrictPos);
       RepairHash(ref _hash);
       LocalTime = decode.LoadInline<WorldTime>();
 
@@ -350,10 +348,8 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.Formatter.Serialize(encode.dest, Seed);
       Zaimoni.Serialization.Formatter.Serialize(encode.dest, Name);
       Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)m_Lighting);
-      Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, Extent.X);
-      Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, Extent.Y);
-      Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, DistrictPos.X);
-      Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, DistrictPos.Y);
+      Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, Extent);
+      Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, DistrictPos);
       Zaimoni.Serialization.ISave.InlineSave(encode, in LocalTime);
       Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_BgMusic ?? string.Empty); // alpha10
       encode.SaveTo(m_IsInside);
