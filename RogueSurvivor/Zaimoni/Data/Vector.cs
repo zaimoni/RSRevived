@@ -370,7 +370,7 @@ namespace Zaimoni.Data
 
         // these are not the safest implementations for integer math
         private bool ContainsX(T origin) => 0 >= _anchor.X.CompareTo(origin) && 0 > origin.CompareTo(Right);
-        private bool ContainsY(T origin) => 0 >= _anchor.X.CompareTo(origin) && 0 > origin.CompareTo(Bottom);
+        private bool ContainsY(T origin) => 0 >= _anchor.Y.CompareTo(origin) && 0 > origin.CompareTo(Bottom);
         public bool Contains(T x, T y) => ContainsX(x) && ContainsY(y);
         public bool Contains(Vector2D<T> src) => ContainsX(src.X) && ContainsY(src.Y);
 
