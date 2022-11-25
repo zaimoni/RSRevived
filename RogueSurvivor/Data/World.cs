@@ -578,7 +578,8 @@ namespace djack.RogueSurvivor.Data
             var unbalanced = ExtremeZoning(stats);
             var rare_priority = Array.IndexOf(ZonePriority, unbalanced.Key);
             var glut_priority = Array.IndexOf(ZonePriority, unbalanced.Value);
-            while(expected_all > stats[(int)unbalanced.Key]) {
+
+            while (expected_all > stats[(int)unbalanced.Key]) {
                 int delta = stats[(int)unbalanced.Value] - stats[(int)unbalanced.Key];
                 if (rare_priority > glut_priority && expected_all/2 >= delta) break;
                 Rezone(stats, ret, unbalanced.Key, unbalanced.Value);
@@ -590,6 +591,7 @@ namespace djack.RogueSurvivor.Data
             var city_center = CHAR_City_Origin + CHAR_CityLimits.Size / 2;
             const int expected_neighborhood = 9 / in_city_district_ub;
             const int require_neighborhood = (expected_neighborhood+1)/2;
+            const int fluky_neighborhood = expected_neighborhood+1;
 
             var translation = new Rectangle(CHAR_City_Origin + Direction.SE, CHAR_CityLimits.Size + 2 * Direction.NW);
             Point pt_relay = default;
@@ -597,7 +599,7 @@ namespace djack.RogueSurvivor.Data
             while(0 <= -- ub) {
                 pt_relay = translation.convert(ub);
                 unbalanced = ExtremeZoning(sample, ret, pt_relay);
-                if (require_neighborhood <= sample[(int)unbalanced.Key]) continue;
+                if (require_neighborhood <= sample[(int)unbalanced.Key] && fluky_neighborhood >= sample[(int)unbalanced.Value]) continue;
                 SwapZones(ret, pt_relay, unbalanced.Key, unbalanced.Value);
                 ub = translation.Size.X*translation.Size.Y;
             }
