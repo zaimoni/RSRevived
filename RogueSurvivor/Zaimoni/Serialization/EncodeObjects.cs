@@ -112,7 +112,21 @@ namespace Zaimoni.Serialization
             return true;
         }
 
-#region Likely don't actually want to build this out as C# is not designed to simulate C++ template functions efficiently
+        public void SaveObject(object? src) {
+            if (null == src) {
+                Formatter.SerializeNull(dest);
+                return;
+            }
+            if (src is ISerialize origin) {
+                var code = Saving(origin);
+                if (0 == code) Formatter.SerializeNull(dest);
+                else Formatter.SerializeObjCode(dest, code);
+                return;
+            }
+            throw new InvalidOperationException("fell through EncodeObjects::SaveObject: "+src.GetType().Name);
+        }
+
+        #region Likely don't actually want to build this out as C# is not designed to simulate C++ template functions efficiently
         private Dictionary<Type, Action<Stream, object>> m_LinearizedElement_cache = new();
         private Action<Stream, object> LinearizedElement<T>()
         {

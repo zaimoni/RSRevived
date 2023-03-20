@@ -20,8 +20,9 @@ namespace Zaimoni.Serialization
 
         public const sbyte null_code = sbyte.MaxValue;
         public const sbyte obj_ref_code = sbyte.MinValue;
-        public const sbyte type_code = sbyte.MinValue + 1;
-        public const sbyte type_ref_code = sbyte.MinValue + 2;
+        private const sbyte type_code = sbyte.MinValue + 1;
+        private const sbyte type_ref_code = sbyte.MinValue + 2;
+        public const sbyte inline_type_code = sbyte.MinValue + 3;
 
         public Formatter(StreamingContext context) {
             _context = context;

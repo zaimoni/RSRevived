@@ -126,32 +126,19 @@ namespace Zaimoni.Serialization
             throw new InvalidOperationException("unhandled type "+type.AssemblyQualifiedName);
         }
 
-#if PROTOTYPE
-        public object? LoadObject(out ulong o_code)
-        {
-            format.DeserializeTypeCode(src, type_for_code);
-            if (Formatter.null_code == format.Preview) {
-                o_code = 0;
+        public KeyValuePair<object?,ulong> LoadObject() {
+            if (Formatter.null_code == format.Peek(src)) {
                 format.ClearPeek();
-                return null;
+                return new KeyValuePair<object?, ulong>(null, 0);
             }
-
             if (Formatter.obj_ref_code == format.Preview) {
-                o_code = format.DeserializeObjCodeAfterTypecode(src);
+                var o_code = format.DeserializeObjCodeAfterTypecode(src);
                 format.ClearPeek();
-                return Seen(o_code); // no type checks possible
+                var obj = Seen(o_code);
+                return new KeyValuePair<object?, ulong>(obj, o_code);
             }
-
-            var t_code = format.DeserializeTypeCode(src);
-            if (!type_for_code.TryGetValue(t_code, out var type)) throw new InvalidOperationException("requested type code not mapped");
-            o_code = format.DeserializeObjCodeAfterTypecode(src);
-
-            var coop_constructor = type.GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, integrated_constructor, null);
-            if (null != coop_constructor) return coop_constructor.Invoke(new object[] { this });
-
-            throw new InvalidOperationException("unhandled type " + type.AssemblyQualifiedName);
+            throw new InvalidOperationException("fell through DecodeObjects::LoadObject: "+ format.Preview);
         }
-#endif
 
         public T LoadInline<T>()
         {
