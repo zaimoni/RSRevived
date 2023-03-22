@@ -137,6 +137,10 @@ namespace Zaimoni.Serialization
                 var obj = Seen(o_code);
                 return new KeyValuePair<object?, ulong>(obj, o_code);
             }
+            if (Formatter.inline_type_code == format.Preview) {
+                var obj = format.LoadObject(src);
+                if (null != obj) return new KeyValuePair<object?, ulong>(obj, 0);
+            }
             throw new InvalidOperationException("fell through DecodeObjects::LoadObject: "+ format.Preview);
         }
 

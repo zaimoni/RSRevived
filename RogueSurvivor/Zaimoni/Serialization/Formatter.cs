@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace Zaimoni.Serialization
 {
@@ -414,6 +415,24 @@ namespace Zaimoni.Serialization
             if (0 == code) throw new InvalidOperationException("found null type code");
             return code;
         }
+
+        static private void SerializeInlineCode(Stream dest, ulong code)
+        {
+            Serialize(dest, inline_type_code);
+            Serialize7bit(dest, code);
+        }
+
+        public int DeserializeInlineCode(Stream src)
+        {
+            if (inline_type_code != Preview) {
+                throw new InvalidOperationException("did not find expected type code: " + Preview);
+            }
+            ulong code = 0;
+            ClearPeek();
+            Deserialize7bit(src, ref code);
+            if (0 == code) throw new InvalidOperationException("found null type code");
+            return (int)code;
+        }
 #endregion
 
 #region strings
@@ -575,6 +594,53 @@ namespace Zaimoni.Serialization
             }
         }
         #endregion
+
+#region save/load object helpers
+        static private void SaveByte(object src, Stream dest) {
+            if (src is byte origin) {
+                Serialize(dest, origin);
+                return;
+            }
+            throw new InvalidOperationException("tracing");
+        }
+
+        static private void SaveSByte(object src, Stream dest)
+        {
+            if (src is sbyte origin) {
+                Serialize(dest, origin);
+                return;
+            }
+            throw new InvalidOperationException("tracing");
+        }
+        static private object LoadByte(Stream src) => ReadByte(src);
+        static private object LoadSByte(Stream src) => (sbyte)ReadByte(src);
+
+
+        static private List<KeyValuePair<Type, KeyValuePair<Func<Stream, object>, Action<object, Stream>>>> s_LoadSave = new() {
+            new(typeof(byte), new(LoadByte, SaveByte)),
+            new(typeof(sbyte), new(LoadSByte, SaveSByte))
+        };
+
+        static public bool SaveObject(object src, Stream dest) {
+            var ub = s_LoadSave.Count;
+            while (0 <= --ub) {
+                var sl = s_LoadSave[ub];
+                if (sl.Key == src.GetType()) {
+                    SerializeInlineCode(dest, (ulong)(ub+1));
+                    sl.Value.Value(src, dest);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public object? LoadObject(Stream src) {
+            var n = DeserializeInlineCode(src);
+            if (0 >= n) return null;
+            if (s_LoadSave.Count < n) throw new InvalidOperationException("reading future format?");
+            return s_LoadSave[n-1].Value.Key(src);
+        }
+#endregion
 
         // Policy decision needed regarding where types from the standard library go (Formatter vs. DecodeObjects/EncodeObjects pair)
 #region thin-wrappers around core types specified above

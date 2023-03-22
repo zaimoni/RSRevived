@@ -123,6 +123,7 @@ namespace Zaimoni.Serialization
                 else Formatter.SerializeObjCode(dest, code);
                 return;
             }
+            if (Formatter.SaveObject(src, dest)) return;
             throw new InvalidOperationException("fell through EncodeObjects::SaveObject: "+src.GetType().Name);
         }
 
