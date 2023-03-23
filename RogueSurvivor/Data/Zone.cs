@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Data
 {
 #nullable enable
   [Serializable]
-  internal struct AVtable // attribute-value table
+  public struct AVtable : Zaimoni.Serialization.ISerialize // attribute-value table
   {
     private Dictionary<string, object>? m_Attributes;
 
@@ -56,6 +56,23 @@ namespace djack.RogueSurvivor.Data
         if (0 >= attr.Count) m_Attributes = null;
       }
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    public AVtable(Zaimoni.Serialization.DecodeObjects decode)
+    {
+        m_Attributes = new();
+        var self = this;
+        void onLoaded(KeyValuePair<string, object>[] src) {
+                foreach (var x in src) self.m_Attributes!.Add(x.Key, x.Value);
+        };
+//      decode.LinearLoad<KeyValuePair<string, object> >(onLoaded); // doesn't build: KeyValuePair is a struct
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
+    {
+//        encode.LinearSave(m_Attributes);
+    }
+#endregion
   }
 #nullable restore
 
