@@ -2962,15 +2962,15 @@ restart:
 #if DEBUG
       if (null == surfaceMap) throw new ArgumentNullException(nameof(surfaceMap));
 #endif
-      Zone zone1 = null;
-      Point surfaceExit = new Point();
+      Zone? zone1 = null;
+      Point surfaceExit = new();
       {
       bool flag = false;
       do {
         // We do not want to evaluate this for each point in the office
         do {
           var pt = m_DiceRoller.Choose(officeZone.Bounds);
-          List<Zone> zonesAt = surfaceMap.GetZonesAt(pt);
+          var zonesAt = surfaceMap.GetZonesAt(pt);
           if (0 < (zonesAt?.Count ?? 0)) {
             foreach (Zone zone2 in zonesAt) {
               if (zone2.Name.Contains("room")) {
@@ -2980,8 +2980,8 @@ restart:
             }
           }
         }
-        while (zone1 == null);
-        var candidates = new List<Point>();
+        while (null == zone1);
+        List<Point> candidates = new();
         zone1.Bounds.DoForEach(pt => candidates.Add(pt),pt => surfaceMap.IsWalkable(pt));
         if (0 >= candidates.Count) continue;
         surfaceExit = m_DiceRoller.Choose(candidates);

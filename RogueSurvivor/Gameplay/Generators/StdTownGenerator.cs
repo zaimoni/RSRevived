@@ -26,9 +26,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       bool inside_test(Point pt) { return map.IsInsideAt(pt) && !map.HasZonePartiallyNamedAt(pt, "NoCivSpawn"); }
       bool has_subway = null!=map.GetZoneByPartialName("Subway Station");
       bool has_CHAR_office = null!=map.GetZoneByPartialName("CHAR Office");
-      List<Zone> unclaimed_sheds = map.GetZonesByPartialName("Shed");
-      List<Zone> claimed_sheds = null;
-      List<Zone> full_sheds = null;
+      var unclaimed_sheds = map.GetZonesByPartialName("Shed");
+      List<Zone>? claimed_sheds = null;
+      List<Zone>? full_sheds = null;
 
       for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index) {
         if (m_DiceRoller.RollChance(m_Params.PolicemanChance)) {
@@ -147,12 +147,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           } else if (shed_claimed.Contains(newCivilian.Location.Position)) {
             int i = unclaimed_sheds.FindIndex(z => z.Bounds.Contains(newCivilian.Location.Position));
             if (0 <= i) {
-              (claimed_sheds ??= new List<Zone>()).Add(unclaimed_sheds[i]);
+              (claimed_sheds ??= new()).Add(unclaimed_sheds[i]);
               unclaimed_sheds.RemoveAt(i);
             } else {
               i = claimed_sheds.FindIndex(z => z.Bounds.Contains(newCivilian.Location.Position));
               if (0 <= i) {
-                (full_sheds ??= new List<Zone>()).Add(claimed_sheds[i]);
+                (full_sheds ??= new()).Add(claimed_sheds[i]);
                 claimed_sheds.RemoveAt(i);
               }
             }

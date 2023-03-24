@@ -126,8 +126,8 @@ namespace djack.RogueSurvivor.Engine
       Actor named = GameActors.SewersThing.CreateNamed(GameFactions.TheUndeads, "The Sewers Thing", 0);
       DiceRoller roller = new DiceRoller(map.Seed);
       if (!MapGenerator.ActorPlace(roller, map, named)) throw new InvalidOperationException("could not spawn unique The Sewers Thing");
-      Zone zoneByPartialName = map.GetZoneByPartialName("Sewers Maintenance");
-      if (zoneByPartialName != null)
+      Zone? zoneByPartialName = map.GetZoneByPartialName("Sewers Maintenance");
+      if (null != zoneByPartialName)
         MapGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, pt => {
            return map.IsWalkable(pt) && !map.HasActorAt(in pt) && !map.HasItemsAt(pt) && !map.HasExitAt(in pt);
         }, roller, pt => BaseMapGenerator.MakeObjBoard(GameImages.OBJ_BOARD, new string[] {

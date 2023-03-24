@@ -4906,11 +4906,11 @@ restart_single_exit:
 
 restart_chokepoints:
       // jump to chokepoints
-      var zone_test = new Dictionary<Map,HashSet<Zone>>();
+      Dictionary<Map,HashSet<Zone>> zone_test = new();
       foreach(var goal in goals) {
         var zones_at = goal.Map.GetZonesAt(goal.Position);
         if (null != zones_at) {
-          if (!zone_test.TryGetValue(goal.Map, out var cache)) zone_test.Add(goal.Map, (cache = new HashSet<Zone>()));
+          if (!zone_test.TryGetValue(goal.Map, out var cache)) zone_test.Add(goal.Map, (cache = new()));
           cache.UnionWith(zones_at);
         }
       }

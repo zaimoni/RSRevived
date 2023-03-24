@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Data
 
   // not meant to be self-contained
   [Serializable]
-  internal class Zone
+  public class Zone
   {
     private readonly string m_Name = "unnamed zone";
     private Rectangle m_Bounds; // assumed to be fully in bounds of the underlying map
@@ -183,20 +183,20 @@ namespace djack.RogueSurvivor.Data
           z0.VolatileAttribute.Set("exits", prior_exits);
         }
 
-        var zones = new Dictionary<Map,HashSet<Zone>>(); // using default pointer-equality, so duplicate coordinates aren't deduplicated
+        Dictionary<Map,HashSet<Zone>> zones = new(); // using default pointer-equality, so duplicate coordinates aren't deduplicated
         foreach(var loc in prior_exits) {
           var dest_zones = loc.Map.GetZonesAt(loc.Position);
           if (null != dest_zones) {
-            if (!zones.TryGetValue(loc.Map, out var cache)) zones.Add(loc.Map,(cache = new HashSet<Zone>()));
+            if (!zones.TryGetValue(loc.Map, out var cache)) zones.Add(loc.Map,(cache = new()));
             cache.UnionWith(dest_zones);
           }
         }
-        var ordered_zones = new List<ZoneLoc>();
-        var order_staging = new Dictionary<int, List<Zone>>();
+        List<ZoneLoc> ordered_zones = new();
+        Dictionary<int, List<Zone>> order_staging = new();
         foreach(var mapzone in zones) {
           foreach(var x in mapzone.Value) {
             var area = (x.Bounds.Right-x.Bounds.Left)*(x.Bounds.Bottom-x.Bounds.Top);
-            if (!order_staging.TryGetValue(area, out var cache)) order_staging.Add(area, (cache = new List<Zone>()));
+            if (!order_staging.TryGetValue(area, out var cache)) order_staging.Add(area, (cache = new()));
             cache.Add(x);
           }
           while(0 < order_staging.Count) {

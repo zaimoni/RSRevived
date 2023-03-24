@@ -13425,8 +13425,8 @@ namespace djack.RogueSurvivor.Engine
           entryMap.Rect.DoForEach(pt => player.Controller.ForceKnown(pt),
           pt => {
             if (!entryMap.IsInsideAt(pt)) return true;
-            List<Zone> zonesAt2 = entryMap.GetZonesAt(pt);
-            return zonesAt2 != null && zonesAt2[0] == zone;
+            var zonesAt2 = entryMap.GetZonesAt(pt);
+            return null != zonesAt2 && zonesAt2[0] == zone;
           });
         }
       }
@@ -13471,7 +13471,7 @@ namespace djack.RogueSurvivor.Engine
     private UniqueMap CreateUniqueMap_CHARUndegroundFacility(World world)
     {
       District district = BaseTownGenerator.GetCHARbaseDistrict();
-      var zoneList = new List<Zone>();
+      List<Zone> zoneList = new();
       foreach (var zone in district.EntryMap.Zones) {
         if (zone.Attribute.HasKey("CHAR Office")) zoneList.Add(zone);
       }

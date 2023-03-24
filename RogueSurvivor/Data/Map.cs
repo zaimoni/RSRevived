@@ -65,10 +65,10 @@ namespace djack.RogueSurvivor.Data
     public Point Origin { get { return Rect.Location; } }
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;
-    private readonly Dictionary<Point,HashSet<string>> m_Decorations = new Dictionary<Point,HashSet<string>>();
-    private readonly Dictionary<Point, Exit> m_Exits = new Dictionary<Point, Exit>();
-    private readonly List<Zone> m_Zones = new List<Zone>(5);
-    private readonly List<Actor> m_ActorsList = new List<Actor>(5);
+    private readonly Dictionary<Point,HashSet<string>> m_Decorations = new();
+    private readonly Dictionary<Point, Exit> m_Exits = new();
+    private readonly List<Zone> m_Zones = new(5);
+    private readonly List<Actor> m_ActorsList = new(5);
     private int m_iCheckNextActorIndex;
     private readonly Dictionary<Point, MapObject> m_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
 #if BOOTSTRAP_Z_DICTIONARY
