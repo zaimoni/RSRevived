@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Data
 
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
     {
-//        encode.LinearSave(m_Attributes);
+        Zaimoni.Serialization.ISave.LinearSave(encode, m_Attributes);
     }
 #endregion
   }

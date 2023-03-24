@@ -19,11 +19,20 @@ namespace Zaimoni.Serialization
     {
         // C# 11.  Forces compiler error until we actually know what we're doing.
 #region ISerialize support
+#if PROTOTYPE
         static abstract void Save(EncodeObjects encode, object src);
         static abstract void InlineSave(EncodeObjects encode, object src);
+#endif
 
         static void Save(EncodeObjects encode, ISerialize src) => encode.Saving(src);
+
         static void InlineSave(EncodeObjects encode, ISerialize src) => src.save(encode);
+
+        static void Save(EncodeObjects encode, KeyValuePair<string, object> src) {
+            Formatter.Serialize(encode.dest, src.Key);
+            encode.SaveObject(src.Value);
+        }
+
 #endregion
 
 #region 7bit support, basis cases
@@ -49,6 +58,15 @@ namespace Zaimoni.Serialization
 #endregion
 
         static void LinearSave<T>(EncodeObjects encode, IEnumerable<T>? src) where T:ISerialize {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src!) Save(encode, x);
+            }
+        }
+
+        static void LinearSave(EncodeObjects encode, IEnumerable<KeyValuePair<string, object> >? src)
+        {
             var count = src?.Count() ?? 0;
             Formatter.Serialize7bit(encode.dest, count);
             if (0 < count) {
