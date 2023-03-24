@@ -334,7 +334,7 @@ namespace djack.RogueSurvivor.Data
         code = encode.Saving(m_SimDistrict);
         if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
         else Zaimoni.Serialization.Formatter.SerializeNull(encode.dest);
-        encode.LinearSave(m_Ready);
+        Zaimoni.Serialization.ISave.LinearSave(encode, m_Ready);
     }
 
 #if PROTOTYPE

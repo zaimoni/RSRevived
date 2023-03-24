@@ -47,6 +47,14 @@ namespace Zaimoni.Serialization
         static void Deserialize7bit(Stream src, ref int dest) => Formatter.Deserialize7bit(src, ref dest);
         static void Deserialize7bit(Stream src, ref short dest) => Formatter.Deserialize7bit(src, ref dest);
 #endregion
+
+        static void LinearSave<T>(EncodeObjects encode, IEnumerable<T>? src) where T:ISerialize {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src!) Save(encode, x);
+            }
+        }
     }
 
     public class EncodeObjects
@@ -126,43 +134,6 @@ namespace Zaimoni.Serialization
             if (Formatter.SaveObject(src, dest)) return;
             throw new InvalidOperationException("fell through EncodeObjects::SaveObject: "+src.GetType().Name);
         }
-
-        #region Likely don't actually want to build this out as C# is not designed to simulate C++ template functions efficiently
-        private Dictionary<Type, Action<Stream, object>> m_LinearizedElement_cache = new();
-        private Action<Stream, object> LinearizedElement<T>()
-        {
-            var t_info = typeof(T);
-            if (m_LinearizedElement_cache.TryGetValue(t_info, out var handler)) return handler;
-            // \todo interface as easy mode
-            // \todo check for direct formatter support
-            if (t_info.IsEnum) {
-                var method_candidates = typeof(Formatter).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
-                // \todo route to Formatter::SerializeEnum<T>
-                throw new InvalidOperationException("unhandled enum: " + t_info.FullName + "\n" + method_candidates.to_s()); // need to determine what is needed here
-            }
-
-            if (t_info.IsGenericType) { // will not handle arrays
-                // expect KeyValuePair to route this way
-                throw new InvalidOperationException("unhandled generic: "+t_info.FullName); // need to debug what is needed here
-            } else {
-                var method_candidates = typeof(Formatter).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
-                // todo: check for Formatter::Serialize variant
-                throw new InvalidOperationException(t_info.FullName + "\n" + method_candidates.to_s()); // need to determine what is needed here
-            }
-
-            throw new InvalidOperationException(t_info.FullName + "\nattempting to return null");
-            return null; // non-functional shim to get things building
-        }
-
-        public void LinearSave<T>(IEnumerable<T>? src) {
-            var count = src?.Count() ?? 0;
-            Formatter.Serialize7bit(dest, count);
-            if (0 < count) {
-                var handler = LinearizedElement<T>();
-                foreach (var x in src) handler(dest, x);
-            }
-        }
-#endregion
 
 #region example boilerplate based on LinearizedElement<T>
         private void SaveTo(string src) => Formatter.Serialize(dest, src);
