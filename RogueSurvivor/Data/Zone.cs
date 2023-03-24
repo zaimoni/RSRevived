@@ -65,7 +65,7 @@ namespace djack.RogueSurvivor.Data
         void onLoaded(KeyValuePair<string, object>[] src) {
                 foreach (var x in src) self.m_Attributes!.Add(x.Key, x.Value);
         };
-//      decode.LinearLoad<KeyValuePair<string, object> >(onLoaded); // doesn't build: KeyValuePair is a struct
+        Zaimoni.Serialization.ISave.LinearLoad(decode, onLoaded);
     }
 
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)

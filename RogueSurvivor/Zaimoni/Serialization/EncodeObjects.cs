@@ -127,6 +127,37 @@ namespace Zaimoni.Serialization
             }
             stage.Verify();
         }
+
+        static void LinearLoad(DecodeObjects decode, Action<KeyValuePair<string, object>[]> handler)
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new KeyValuePair<string, object>[count];
+            var stage = new StageArray<KeyValuePair<string, object>>(dest, handler);
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                string t_str = null;
+                Formatter.Deserialize(decode.src, ref t_str);
+                var code = decode.LoadObject();
+                if (null != code.Key) {
+                    dest[n++] = new(t_str, code.Key);
+                    continue;
+                }
+                if (0 >= code.Value) throw new InvalidOperationException("object not loaded");
+
+                var i = n;
+                decode.Schedule(code.Value, (o) => {
+                    dest[i] = new(t_str, o);
+                    stage.Verify();
+                });
+                n++;
+            }
+            stage.Verify();
+        }
     }
 
     public class EncodeObjects
