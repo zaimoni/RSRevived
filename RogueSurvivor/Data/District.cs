@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Data
 
         m_Maps = new();
         void onLoaded(Map[] src) { m_Maps.AddRange(src); }
-        decode.LinearLoad<Map>(onLoaded);
+        Zaimoni.Serialization.ISave.LinearLoad<Map>(decode, onLoaded);
 
         ulong code;
         m_EntryMap = decode.Load<Map>(out code);

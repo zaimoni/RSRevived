@@ -306,7 +306,7 @@ namespace djack.RogueSurvivor.Data
                 m_Ready.Enqueue(x);
             }
         }
-        decode.LinearLoad<District>(onLoaded);
+        Zaimoni.Serialization.ISave.LinearLoad<District>(decode, onLoaded);
 
         m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
         s_Recent = this;

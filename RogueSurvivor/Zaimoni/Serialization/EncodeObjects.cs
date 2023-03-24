@@ -8,6 +8,27 @@ using Zaimoni.Data;
 
 namespace Zaimoni.Serialization
 {
+    // assistant class
+    public class StageArray<T>
+    {
+        private readonly T?[] relay;
+        private readonly Action<T[]> onDone;
+
+        public StageArray(T?[] src, Action<T[]> handler)
+        {
+            relay = src;
+            onDone = handler;
+        }
+
+        public void Verify()
+        {
+            foreach (var x in relay) {
+                if (null == x) return;
+            }
+            onDone(relay!);
+        }
+    }
+
     // should not implement this on structs, to avoid boxing
     public interface ISerialize
     {   // need something heavier as the second parameter
@@ -72,6 +93,39 @@ namespace Zaimoni.Serialization
             if (0 < count) {
                 foreach (var x in src!) Save(encode, x);
             }
+        }
+
+        static void LinearLoad<T>(DecodeObjects decode, Action<T[]> handler) where T:class
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new T[count];
+            var stage = new StageArray<T>(dest, handler);
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                var code = Formatter.DeserializeObjCode(decode.src);
+                if (0 < code) {
+                    var obj = decode.Seen(code);
+                    if (null != obj) {
+                        if (obj is T w) dest[n] = w;
+                        else throw new InvalidOperationException(nameof(T) + " object not loaded");
+                    } else {
+                        var i = n;
+                        decode.Schedule(code, (o) => {
+                            if (o is T w) dest[i] = w;
+                            else throw new InvalidOperationException(nameof(T) + " object not loaded");
+                            stage.Verify();
+                        });
+                    }
+                }
+                else throw new InvalidOperationException(nameof(T) + " object not loaded");
+                n++;
+            }
+            stage.Verify();
         }
     }
 
