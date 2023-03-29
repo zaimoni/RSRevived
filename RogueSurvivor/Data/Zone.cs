@@ -78,8 +78,8 @@ namespace djack.RogueSurvivor.Data
 
   // not meant to be self-contained
   [Serializable]
-  public class Zone
-  {
+  public class Zone : Zaimoni.Serialization.ISerialize
+    {
     private readonly string m_Name = "unnamed zone";
     private Rectangle m_Bounds; // assumed to be fully in bounds of the underlying map
     // while zone attributes have great potential, RS Alpha 9 underwhelms in its use of them.
@@ -97,6 +97,22 @@ namespace djack.RogueSurvivor.Data
       m_Name = name;
       m_Bounds = bounds;
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    public Zone(Zaimoni.Serialization.DecodeObjects decode)
+    {
+        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_Name);
+        Zaimoni.Serialization.ISave.Deserialize7bit(decode.src, ref m_Bounds);
+        Attribute = new(decode);
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
+    {
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_Name);
+        Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, in m_Bounds);
+        (Attribute as Zaimoni.Serialization.ISerialize).save(encode);
+    }
+#endregion
   }
 
   [Serializable]    // just in case

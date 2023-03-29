@@ -570,6 +570,20 @@ namespace Zaimoni.Serialization
             Deserialize7bit(dest, ref src.X);
             Deserialize7bit(dest, ref src.Y);
         }
+
+        static void Serialize7bit(Stream dest, in Data.Box2D<short> src)
+        {
+            Serialize7bit(dest, src.Location);
+            Serialize7bit(dest, src.Size);
+        }
+        static void Deserialize7bit(Stream dest, ref Data.Box2D<short> src)
+        {
+            Data.Vector2D<short> stage = default;
+            Deserialize7bit(dest, ref stage);
+            src.Location = stage;
+            Deserialize7bit(dest, ref stage);
+            src.Size = stage;
+        }
 #endregion
     }
 }
