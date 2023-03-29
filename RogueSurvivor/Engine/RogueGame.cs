@@ -12848,7 +12848,6 @@ namespace djack.RogueSurvivor.Engine
           case Keys.Delete:
             pc.RemoveWaypoint(x.dest);
             return true;
-            break;
           case Keys.D1: // walk 1-9 steps to ....
           case Keys.D2:
           case Keys.D3:
@@ -12860,12 +12859,11 @@ namespace djack.RogueSurvivor.Engine
           case Keys.D9:
             pc.WalkTo(x.dest, (int)key.KeyCode - (int)Keys.D0);
             return true;
-            break;
           }
           return false;
         }
 
-        var tmp = new List<string>();
+        List<string> tmp = new();
         tmp.Insert(0, "Walk 1) to 9) steps towards the waypoint, or DEL)ete the waypoint.");
         ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
         return true;
