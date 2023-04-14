@@ -2178,10 +2178,10 @@ restart:
         Rectangle corridor() {
           switch(direction.Index)
           {
-          case (int)Compass.XCOMlike.N: return new Rectangle((short)(doorAt.X - 1), centralGateAt.Y, 3, (short)(centralGateAt.Y - doorAt.Y + 1));
+          case (int)Compass.XCOMlike.N: return new Rectangle((short)(doorAt.X - 1), centralGateAt.Y, 3, (short)(doorAt.Y - centralGateAt.Y + 1));
           case (int)Compass.XCOMlike.S: return new Rectangle((short)(doorAt.X - 1), doorAt.Y, 3, (short)(centralGateAt.Y - doorAt.Y + 1));
           case (int)Compass.XCOMlike.W: return new Rectangle(centralGateAt.X, (short)(doorAt.Y - 1), (short)(doorAt.X - centralGateAt.X + 1), 3);
-          case (int)Compass.XCOMlike.E: return new Rectangle(doorAt.X, (short)(doorAt.Y - 1), (short)(doorAt.X - centralGateAt.X + 1), 3);
+          case (int)Compass.XCOMlike.E: return new Rectangle(doorAt.X, (short)(doorAt.Y - 1), (short)(centralGateAt.X - doorAt.X + 1), 3);
           default: throw new InvalidOperationException("unhandled direction");
           }
         }

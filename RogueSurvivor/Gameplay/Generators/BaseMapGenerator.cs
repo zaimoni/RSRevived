@@ -560,7 +560,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     // this is not a legitimate Zone constructor (signature conflict), it's a preprocessing.
     static protected Zone MakeUniqueZone(string basename, Rectangle rect)
     {
-      return new Zone(string.Format("{0}@{1}-{2}", (object) basename, (object) (rect.Left + rect.Width / 2), (object) (rect.Top + rect.Height / 2)), rect);
+      return new Zone(string.Format("{0}@{1}-{2}", basename, (rect.Left + rect.Width / 2), (rect.Top + rect.Height / 2)), rect);
     }
 
     // start RNG-dependent map generation utilities
