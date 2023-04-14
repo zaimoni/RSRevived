@@ -615,10 +615,23 @@ namespace Zaimoni.Serialization
         static private object LoadByte(Stream src) => ReadByte(src);
         static private object LoadSByte(Stream src) => (sbyte)ReadByte(src);
 
+        static private void SaveBool(object src, Stream dest)
+        {
+            if (src is bool origin)
+            {
+                byte stage = (byte)(origin ? 1 : 0);
+                Serialize(dest, stage);
+                return;
+            }
+            throw new InvalidOperationException("tracing");
+        }
+        static private object LoadBool(Stream src) => 0!=ReadByte(src);
+
 
         static private List<KeyValuePair<Type, KeyValuePair<Func<Stream, object>, Action<object, Stream>>>> s_LoadSave = new() {
             new(typeof(byte), new(LoadByte, SaveByte)),
-            new(typeof(sbyte), new(LoadSByte, SaveSByte))
+            new(typeof(sbyte), new(LoadSByte, SaveSByte)),
+            new(typeof(bool), new(LoadBool, SaveBool))
         };
 
         static public bool SaveObject(object src, Stream dest) {

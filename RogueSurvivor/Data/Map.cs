@@ -311,6 +311,10 @@ namespace djack.RogueSurvivor.Data
       decode.LoadFrom(ref m_IsInside);
       decode.LoadFrom(ref m_TileIDs); // dimensions should agree with Extent
 
+      m_Zones = new();
+      void onLoaded(Zone[] src) { m_Zones.AddRange(src); }
+      Zaimoni.Serialization.ISave.LinearLoad<Zone>(decode, onLoaded);
+
 /*
       info.read(ref m_Exits, "m_Exits");
       info.read(ref m_Zones, "m_Zones");
@@ -354,6 +358,7 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_BgMusic ?? string.Empty); // alpha10
       encode.SaveTo(m_IsInside);
       encode.SaveTo(m_TileIDs); // dimensions should agree with Extent
+      encode.SaveTo(m_Zones);
 
 /*
       info.AddValue("m_Exits", m_Exits);
