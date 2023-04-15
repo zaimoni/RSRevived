@@ -4491,36 +4491,9 @@ namespace djack.RogueSurvivor.Engine
       if (null == itemsAt[index2]) return null;
       return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(new InvOrigin(Player.Location), itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
     }
-
-#if OBSOLETE
-    private Item? MouseToInventoryItem(GDI_Point screen, out Inventory? inv, out GDI_Point itemPos)
-    {
-      inv = null;
-      itemPos = GDI_Point.Empty;
-      var inventory = Player.Inventory;
-      if (null == inventory) return null;
-      var inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen);
-      int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
-      if (index1 >= 0 && index1 < inventory.MaxCapacity) {
-        inv = inventory;
-        itemPos = InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1);
-        return inventory[index1];
-      }
-      var itemsAt = Player.Location.Items;
-      var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen);
-      itemPos = InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2);
-      if (itemsAt == null) return null;
-      int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
-      if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
-      inv = itemsAt;
-      return itemsAt[index2];
-    }
-
-    private Item? MouseToInventoryItem(GDI_Point screen, out Inventory? inv) { return MouseToInventoryItem(screen, out inv, out _); }
-#endif
 #nullable restore
 
-        private bool HandleMouseOverCorpses(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
+    private bool HandleMouseOverCorpses(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
       hasDoneAction = false;
       var corpse = MouseToCorpse(mousePos, out var corpsePos);
