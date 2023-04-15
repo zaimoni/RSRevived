@@ -7550,7 +7550,7 @@ restart_chokepoints:
       if (null == ground_inv) return null;
 
       // set up pattern-matching for ranged weapons
-      InventorySource<Item> viewpoint_inventory = new(m_Actor); // intentionally chosen to be impossible, as a flag
+      InventorySource<Item> viewpoint_inventory = new(new InvOrigin(m_Actor)); // intentionally chosen to be impossible, as a flag
       Dictionary<InventorySource<Item>, ItemRangedWeapon[]> best_rw = new();
       Dictionary<InventorySource<Item>, ItemRangedWeapon[]> reload_empty_rw = new();
       Dictionary<InventorySource<Item>, ItemRangedWeapon[]> discard_empty_rw = new();

@@ -4428,9 +4428,11 @@ namespace djack.RogueSurvivor.Engine
     private bool HandleMouseInventory(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
       hasDoneAction = false;
-      var inventoryItem = MouseToInventoryItem(mousePos, out var inv, out var itemPos);
-      if (null == inv) return false;
-      bool isPlayerInventory = inv == Player.Inventory;
+
+      var invSpec = MouseToInventoryItem(mousePos);
+      if (null == invSpec) return false; // this command can work against ground inventory
+
+      bool isPlayerInventory = invSpec.Value.Key.a_owner == Player;
 
       bool OnRMBItem(Item it)
       {
@@ -4456,19 +4458,37 @@ namespace djack.RogueSurvivor.Engine
       }
 
       ClearOverlays();
+      var itemPos = invSpec.Value.Value; // backward compatibility
       AddOverlay(new OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos.X, itemPos.Y, TILE_SIZE, TILE_SIZE)));
       AddOverlay(new OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos.X + 1, itemPos.Y + 1, TILE_SIZE-2, TILE_SIZE-2)));
-      if (inventoryItem != null) {
-        AddOverlay(SetInfoOverlay(new OverlayPopup(DescribeItemLong(inventoryItem, isPlayerInventory), Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(itemPos.X, itemPos.Y + TILE_SIZE))));
-        if (mouseButtons.HasValue) {
+      var inventoryItem = invSpec.Value.Key.it!;
+      AddOverlay(SetInfoOverlay(new OverlayPopup(DescribeItemLong(inventoryItem, isPlayerInventory), Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(itemPos.X, itemPos.Y + TILE_SIZE))));
+      if (mouseButtons.HasValue) {
           if (MouseButtons.Left == mouseButtons.Value) hasDoneAction = OnLMBItem(inventoryItem);
           else if (MouseButtons.Right == mouseButtons.Value) hasDoneAction = OnRMBItem(inventoryItem);
-        }
       }
       return true;
     }
 
 #nullable enable
+    private KeyValuePair<InventorySource<Item>, GDI_Point>? MouseToInventoryItem(GDI_Point screen)
+    {
+      var inventory = Player.Inventory;
+      if (null == inventory) return null;
+      var inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen);
+      int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
+      if (index1 >= 0 && index1 < inventory.MaxCapacity) {
+        return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(new InvOrigin(Player), inventory[index1]), InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1));
+      }
+      var itemsAt = Player.Location.Items;
+      if (null == itemsAt) return null;
+      var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen);
+      int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
+      if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
+      return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(new InvOrigin(Player.Location), itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
+    }
+
+#if OBSOLETE
     private Item? MouseToInventoryItem(GDI_Point screen, out Inventory? inv, out GDI_Point itemPos)
     {
       inv = null;
@@ -4493,9 +4513,10 @@ namespace djack.RogueSurvivor.Engine
     }
 
     private Item? MouseToInventoryItem(GDI_Point screen, out Inventory? inv) { return MouseToInventoryItem(screen, out inv, out _); }
+#endif
 #nullable restore
 
-    private bool HandleMouseOverCorpses(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
+        private bool HandleMouseOverCorpses(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
       hasDoneAction = false;
       var corpse = MouseToCorpse(mousePos, out var corpsePos);
@@ -4780,28 +4801,30 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerUnloadItem(PlayerController pc, GDI_Point screen)
     {
-      var inventoryItem = MouseToInventoryItem(screen, out var inv);
-      if (null == inv || null == inventoryItem) return false; // this command can work against ground inventory
-      if (!(inventoryItem is ItemRangedWeapon rw)) return false;
+      var invSpec = MouseToInventoryItem(screen);
+      if (null == invSpec) return false; // this command can work against ground inventory
+
+      if (!(invSpec.Value.Key.it is ItemRangedWeapon rw)) return false;
 
       var original_ammo = rw.Ammo;
       if (0 >= original_ammo) return false;
 
       var player = pc.ControlledActor;
-      InventorySource<ItemRangedWeapon> src = (inv == player.Inventory) ? new(player, rw) : new(player.Location, player, rw);
+      InventorySource<ItemRangedWeapon> src = new(invSpec.Value.Key.Origin, rw);
+//    InventorySource<ItemRangedWeapon> src = (inv == player.Inventory) ? new(player, rw) : new(player.Location, player, rw);
 
       // try unloading to our own inventory first
-      var dest = new InventorySource<Item>(player);
+      InventorySource<Item> dest = new(new InvOrigin(player));
       if (DoUnload(player, src, dest)) return true;
 
       // If that fails, and we are unloading from a container, try the container's inventory
       if (null != src.obj_owner) {
-        dest = new(player.Location, player);
+        dest = new(new InvOrigin(player.Location,  player));
         if (DoUnload(player, src, dest)) return true;
       }
 
       // If that fails, try unload to ground inventory
-      dest = new InventorySource<Item>(player.Location,  player);
+      dest = new(new InvOrigin(player.Location,  player));
       return DoUnload(player, src, dest);
     }
 
@@ -4810,8 +4833,9 @@ namespace djack.RogueSurvivor.Engine
     {
       const string GIVE_MODE_TEXT = "GIVE MODE - directions to give item to someone, ESC cancels";
 
-      var inventoryItem = MouseToInventoryItem(screen, out var inv);
-      if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
+      var invSpec = MouseToInventoryItem(screen);
+      if (null == invSpec || invSpec.Value.Key.a_owner != player) return false;
+
       ClearOverlays();
       AddOverlay(new OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
@@ -4822,16 +4846,16 @@ namespace djack.RogueSurvivor.Engine
 
         var actorAt = player.Location.Map.GetActorAtExt(pos.Value);
         if (actorAt != null) {
-          if (player.CanGiveTo(actorAt, inventoryItem, out string reason)) {
-            DoGiveItemTo(player, actorAt, inventoryItem);
+          if (player.CanGiveTo(actorAt, invSpec.Value.Key.it!, out string reason)) {
+            DoGiveItemTo(player, actorAt, invSpec.Value.Key.it!);
             return true;
           }
-          ErrorPopup(string.Format("Can't give {0} to {1} : {2}.", inventoryItem.TheName, actorAt.TheName, reason));
+          ErrorPopup(string.Format("Can't give {0} to {1} : {2}.", invSpec.Value.Key.it!.TheName, actorAt.TheName, reason));
           return false;
         } else {
           var container = Rules.CanActorPutItemIntoContainer(player, pos.Value);
           if (null != container) {
-            DoPutItemInContainer(player, container, inventoryItem);
+            DoPutItemInContainer(player, container, invSpec.Value.Key.it!);
             return true;
           }
         }
@@ -4891,8 +4915,8 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerInitiateTrade(PlayerController pc, GDI_Point screen)
     {
       var player = pc.ControlledActor;
-      var inventoryItem = MouseToInventoryItem(screen, out var inv);
-      if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
+      var invSpec = MouseToInventoryItem(screen);
+      if (null == invSpec || invSpec.Value.Key.a_owner != player) return false;
 
       ClearOverlays();
       AddOverlay(new OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
@@ -4907,7 +4931,7 @@ namespace djack.RogueSurvivor.Engine
             if (player.CanTradeWith(actorAt, out string reason)) {
               ClearOverlays();
               RedrawPlayScreen();
-              if (DoTrade(pc, inventoryItem, actorAt, true)) player.SpendActionPoints();
+              if (DoTrade(pc, invSpec.Value.Key.it!, actorAt, true)) player.SpendActionPoints();
               return true;
             } else {
               ErrorPopup(string.Format("Can't trade with {0} : {1}.", actorAt.TheName, reason));
@@ -4929,7 +4953,7 @@ namespace djack.RogueSurvivor.Engine
           if (null != ground_inv && ground_inv.IsEmpty) ground_inv = null;
         }
         if (null != ground_inv) {
-          DoTrade(pc, inventoryItem, ground_inv);
+          DoTrade(pc, invSpec.Value.Key.it!, ground_inv);
           return true;
         }
         ErrorPopup("Noone there.");

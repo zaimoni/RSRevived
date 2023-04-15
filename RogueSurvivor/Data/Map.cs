@@ -1863,7 +1863,7 @@ retry:
         if (!Canonical(ref loc)) continue;
         var obj = loc.MapObject;
         if (null != obj && obj.IsContainer) {
-          InventorySource<Item> stage = new(obj);
+          InventorySource<Item> stage = new( new InvOrigin(obj));
 
           // ultimately, we'd like some notion of stance *if* that doesn't make the UI too complicated.
           // \todo for now, A Miracle Occurs

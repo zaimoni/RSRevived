@@ -22,6 +22,55 @@ using ItemTrap = djack.RogueSurvivor.Engine.Items.ItemTrap;
 
 namespace djack.RogueSurvivor.Data
 {
+  internal readonly struct InvOrigin {
+        public readonly Inventory inv;
+        public readonly Actor? a_owner = null;
+        public readonly MapObject? obj_owner = null;
+        public readonly Location? loc = null;
+
+        public InvOrigin(Inventory _inv, Actor? _a_owner, MapObject? _obj_owner, Location? _loc) {
+            inv = _inv;
+            a_owner = _a_owner;
+            obj_owner = _obj_owner;
+            loc = _loc;
+        }
+
+        public InvOrigin(Actor owner) {
+            a_owner = owner
+#if DEBUG
+                 ?? throw new ArgumentNullException(nameof(owner))
+#endif
+            ;
+            inv = owner.Inventory
+#if DEBUG
+                 ?? throw new ArgumentNullException("owner.Inventory")
+#endif
+            ;
+        }
+
+        public InvOrigin(MapObject owner) {
+#if DEBUG
+            if (!owner.IsContainer) throw new ArgumentNullException("!owner.IsContainer");
+#endif
+            obj_owner = owner;
+            inv = owner.Inventory;
+        }
+
+        public InvOrigin(Location src) {
+            loc = src;
+            inv = src.Items
+#if DEBUG
+               ?? throw new ArgumentNullException("src.Items")
+#endif
+            ;
+        }
+
+        public InvOrigin(Location src, Actor agent) : this(src) {
+          a_owner = agent;
+        }
+
+    }
+
   [Serializable]
   internal readonly record struct InventorySource<T> where T:Item
   {
@@ -31,104 +80,26 @@ namespace djack.RogueSurvivor.Data
      public readonly MapObject? obj_owner = null;
      public readonly Location? loc = null;
 
-     public InventorySource(Actor owner, T? obj = null) {
+     public InventorySource(InvOrigin src, T? obj = null) {
+       inv = src.inv
 #if DEBUG
-       if (null == owner.Inventory) throw new ArgumentNullException("owner.Inventory");
+            ?? throw new ArgumentNullException("src.inv");
 #endif
-       inv = owner.Inventory;
-       a_owner = owner;
-       if (null != obj) {
-#if DEBUG
-         if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
-#endif
-         it = obj;
-       }
-     }
-
-     public InventorySource(MapObject owner, T? obj = null) {
-#if DEBUG
-       if (!owner.IsContainer) throw new ArgumentNullException("!owner.IsContainer");
-#endif
-       inv = owner.Inventory;
-       obj_owner = owner;
-       if (null != obj) {
-#if DEBUG
-         if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
-#endif
-         it = obj;
-       }
-     }
-
-#if DEAD_FUNC
-     public InventorySource(MapObject owner, Actor agent, T? obj = null) {
-#if DEBUG
-       if (!owner.IsContainer) throw new ArgumentNullException("!owner.IsContainer");
-#endif
-       inv = owner.Inventory;
-       obj_owner = owner;
-       a_owner = agent;
-       if (null != obj) {
-#if DEBUG
-         if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
-#endif
-         it = obj;
-       }
-     }
-#endif
-
-     public InventorySource(Location src) {
-        inv = src.Items
-#if DEBUG
-            ?? throw new ArgumentNullException("src.Items")
-#endif
-        ;
-        loc = src;
-     }
-
-#if DEAD_FUNC
-     public InventorySource(Location src, T obj) {
-        var floor_inv = src.Items;
-#if DEBUG
-       if (null == floor_inv && null != obj) throw new ArgumentNullException("src.Items");
-#endif
-       inv = floor_inv;
-       loc = src;
-       if (null != obj) {
-#if DEBUG
-         if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
-#endif
-         it = obj;
-       }
-     }
-#endif
-
-        public InventorySource(Location src, Actor agent, T? obj = null) {
-        var floor_inv = src.Items;
-#if DEBUG
-       if (null == floor_inv && null != obj) throw new ArgumentNullException("src.Items");
-#endif
-       inv = floor_inv;
-       loc = src;
-       a_owner = agent;
-       if (null != obj) {
-#if DEBUG
-         if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
-#endif
-         it = obj;
-       }
-     }
-
-     public InventorySource(InventorySource<T> src, T obj) {
-       inv = src.inv;
+       ;
        a_owner = src.a_owner;
        obj_owner = src.obj_owner;
        loc = src.loc;
+       if (null != obj) {
 #if DEBUG
-       if (null == inv) throw new ArgumentNullException(nameof(inv));
-       if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
+          if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
 #endif
-       it = obj;
+          it = obj;
+       }
      }
+
+    public InvOrigin Origin {
+      get { return new InvOrigin(inv, a_owner, obj_owner, loc); }
+    }
 
     public Location Location {
       get {
@@ -891,14 +862,14 @@ namespace djack.RogueSurvivor.Data
         static public InventorySource<Item>? GroundInv(this Location loc)
         {
             var g_inv = loc.Items;
-            if (null != g_inv && !g_inv.IsEmpty) return new(loc);
+            if (null != g_inv && !g_inv.IsEmpty) return new(new InvOrigin(loc));
             return null;
         }
 
         static public InventorySource<Item>? ShelfInv(this Location loc)
         {
             var o_inv = loc.MapObject?.NonEmptyInventory;
-            if (null != o_inv /* && !o_inv.IsEmpty */) return new(loc.MapObject);
+            if (null != o_inv /* && !o_inv.IsEmpty */) return new( new InvOrigin(loc.MapObject!));
             return null;
         }
 

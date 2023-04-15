@@ -125,7 +125,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       foreach(var stack in stacks) {
         m_Item = stack.inv.GetFirstByModel(model);
         if (null != m_Item) {
-          m_InvSrc = new(stack, m_Item);
+          m_InvSrc = new(stack.Origin, m_Item);
           return;
         }
       }
