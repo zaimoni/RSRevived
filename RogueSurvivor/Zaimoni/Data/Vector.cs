@@ -83,8 +83,8 @@ namespace Zaimoni.Data
 
         public static Vector2D<T> operator -(Vector2D<T> src)
         {
-            src.X -= src.X;
-            src.Y -= src.Y;
+            src.X = -src.X;
+            src.Y = -src.Y;
             return src;
         }
 

@@ -3092,6 +3092,8 @@ namespace djack.RogueSurvivor.Engine
       GC.WaitForPendingFinalizers();
       play_timer.Stop();
 
+      // debug inspection checkpoint -- use InfoPopup, etc. UI
+
       int hotkey_turns = 0;
       bool flag1 = true;
       do {

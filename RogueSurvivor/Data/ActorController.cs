@@ -207,15 +207,9 @@ namespace djack.RogueSurvivor.Data
     // we would like to use the CanSee function name for these, but we probably don't need the overhead for sleeping special cases
     private bool _IsVisibleTo(Map map, Point position)
     {
-      var a_loc = m_Actor.Location;
-      var e = map.GetExitAt(position);
-      if (null != e && e.Location == a_loc) return true;
-      var a_map = a_loc.Map;
-      if (map != a_map) {
-        Location? tmp = a_map.Denormalize(new Location(map, position));
-        return null!=tmp && _IsVisibleTo(a_map, tmp.Value.Position);
-      }
-      return map.IsValid(position) && FOV.Contains(position);
+      Location loc = new (map, position);
+      if (!Map.Canonical(ref loc)) return false;
+      return 0 <= Array.IndexOf(FOVloc, loc);
     }
 
 #nullable enable

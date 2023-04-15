@@ -35,7 +35,7 @@ namespace djack.RogueSurvivor.Engine
     public static System.Collections.ObjectModel.ReadOnlyCollection<Point> OptimalFOV(short range)
     {
       if (OptimalFOVOffsets.TryGetValue(range,out var ret)) return ret;    // TryGetValue indicated
-      List<Point> tmp = new List<Point>();
+      List<Point> tmp = new();
       // Cf. ComputeFOVFor
       double edge_of_maxrange = range+0.5;
       Point origin = Point.Empty;
