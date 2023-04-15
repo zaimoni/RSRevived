@@ -4480,6 +4480,7 @@ namespace djack.RogueSurvivor.Engine
       var inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen);
       int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
       if (index1 >= 0 && index1 < inventory.MaxCapacity) {
+        if (null == inventory[index1]) return null;
         return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(new InvOrigin(Player), inventory[index1]), InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1));
       }
       var itemsAt = Player.Location.Items;
@@ -4487,6 +4488,7 @@ namespace djack.RogueSurvivor.Engine
       var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen);
       int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
       if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
+      if (null == itemsAt[index2]) return null;
       return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(new InvOrigin(Player.Location), itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
     }
 
