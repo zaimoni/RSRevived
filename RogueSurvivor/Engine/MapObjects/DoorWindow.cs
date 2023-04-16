@@ -79,7 +79,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       : base(images[(int)(_type)][STATE_CLOSED], hitPoints, MapObject.Fire.BURNABLE)
     {
       m_type = (byte)_type;
-      _SetState(STATE_CLOSED);
+      SetState(STATE_CLOSED);
     }
 
     public void Barricade(int delta)
@@ -106,28 +106,22 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       return string.IsNullOrEmpty(reason);
     }
 
-    public bool CanBarricade() { return string.IsNullOrEmpty(ReasonCantBarricade()); }
+    public bool CanBarricade() => string.IsNullOrEmpty(ReasonCantBarricade());
+    override protected string StateToID(int x) => images[m_type][x];
 
-    override protected string StateToID(int x)
-    {
-#if DEBUG
-      if (0>x || MAX_STATE<= x) throw new ArgumentOutOfRangeException("newState unhandled");
-#endif
-      return images[m_type][x];
-    }
-
-    private void _SetState(int newState)
+    public override void SetState(int newState)
     { // cf IsTransparent
+#if DEBUG
+      if (0 > newState || MAX_STATE <= newState) throw new ArgumentOutOfRangeException("newState unhandled");
+#endif
       var old_vis = IsTransparent;
-      base.SetState(newState);
+      _update(newState);
       if (STATE_BROKEN == State) {
           _break();
           m_BarricadePoints = 0;
       }
       if (old_vis != IsTransparent) InvalidateLOS();
     }
-
-    public override void SetState(int newState) { _SetState(newState); }
 
     protected override void _destroy()
     {

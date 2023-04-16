@@ -23,19 +23,11 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    protected StateMapObject(string hiddenImageID)
-      : base(hiddenImageID)
-    {
-    }
+    protected StateMapObject(string hiddenImageID) : base(hiddenImageID) {}
+    protected StateMapObject(string hiddenImageID, int hitPoints, Fire burnable) : base(hiddenImageID, hitPoints, burnable) {}
 
-    protected StateMapObject(string hiddenImageID, int hitPoints, Fire burnable)
-      : base(hiddenImageID, hitPoints, burnable)
-    {
-    }
-
-    public virtual void SetState(int newState)
-    {
-       m_State = newState;
-    }
+    // 2023-04-16: Conditional attributes don't work on override member functions in C#11 (hard syntax error)
+    protected void _update(int newState) => m_State = newState;
+    abstract public void SetState(int newState);
   }
 }
