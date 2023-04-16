@@ -163,21 +163,12 @@ namespace djack.RogueSurvivor.Engine
       return UniformDistribution.Get(damageValue / 2, damageValue);
     }
 
-    static public MapObject? CanActorPutItemIntoContainer(Actor actor, in Point position)
+    static public ShelfLike? CanActorPutItemIntoContainer(Actor actor, in Point position)
     {
-      var mapObjectAt = actor.Location.Map.GetMapObjectAtExt(position);
+      var mapObjectAt = actor.Location.Map.GetMapObjectAtExt(position) as ShelfLike;
       if (null == mapObjectAt) return null;
       return string.IsNullOrEmpty(mapObjectAt.ReasonCantPutItemIn(actor)) ? mapObjectAt : null;
     }
-
-#if DEAD_FUNC
-    static public MapObject? CanActorPutItemIntoContainer(Actor actor, in Point pos, out string reason)
-    {
-      var obj = actor.Location.Map.GetMapObjectAt(pos);
-      reason = obj?.ReasonCantPutItemIn(actor) ?? "object is not a container";
-      return string.IsNullOrEmpty(reason) ? obj : null;
-    }
-#endif
 #nullable restore
 
     static public bool CanActorEatFoodOnGround(Actor actor, Item it, out string reason)
@@ -277,7 +268,7 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
         }
-        var act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt);
+        var act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
         if (null != act) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause
@@ -501,7 +492,7 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
         }
-        var act = ai?.WouldGetFrom(mapObjectAt);
+        var act = ai?.WouldGetFrom(mapObjectAt as ShelfLike);
         if (null != act) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause

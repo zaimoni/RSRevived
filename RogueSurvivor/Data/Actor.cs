@@ -2740,7 +2740,7 @@ namespace djack.RogueSurvivor.Data
       if (null!=src) foreach(var pt in src) {
         var loc = new Location(m, pt);
         var obj = loc.MapObject;
-        if (CanEnter(loc) && (null == obj || !obj.IsContainer)) {
+        if (CanEnter(loc) && !(obj is ShelfLike)) {
           ret.Add(pt);
           continue;
         } else {
@@ -3484,7 +3484,7 @@ namespace djack.RogueSurvivor.Data
       if (Location == loc) return true;
       if (1 != Rules.GridDistance(in m_Location, in loc)) return false; // Rules.IsAdjacent would also check the other side of the stairs
       // currently all containers are not-walkable for UI reasons.
-      return loc.Map.GetMapObjectAt(loc.Position)?.IsContainer ?? false;
+      return loc.Map.GetMapObjectAt(loc.Position) is ShelfLike;
     }
 
     public bool StackIsBlocked(in Location loc)
@@ -3492,7 +3492,7 @@ namespace djack.RogueSurvivor.Data
       if (Location == loc) return false;
       var obj = loc.MapObject;    // XXX this check should affect BehaviorResupply
       if (null == obj) return false;
-      if (!obj.IsContainer && !loc.IsWalkableFor(this)) {
+      if (!(obj is ShelfLike) && !loc.IsWalkableFor(this)) {
         // Cf. Actor::CanOpen
         if (obj is DoorWindow doorWindow && doorWindow.IsBarricaded) return true;
         // Cf. Actor::CanPush; closed door/window is not pushable but can be handled

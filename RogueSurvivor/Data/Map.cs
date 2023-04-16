@@ -1765,7 +1765,7 @@ retry:
 #if DEBUG
       if (null != mapObjectAt) throw new ArgumentOutOfRangeException(nameof(position), position, "null != GetMapObjectAt(position)");
 #endif
-      bool update_item_memory = null != mapObj.NonEmptyInventory;
+      bool update_item_memory = null != (mapObj as ShelfLike)?.NonEmptyInventory;
       // cf Map::PlaceAt(Actor,Position)
       if (null != mapObj.Location.Map) {
         if (HasMapObject(mapObj)) {
@@ -1861,8 +1861,8 @@ retry:
       foreach(var adjacent in origin.Position.Adjacent()) {
         var loc = new Location(origin.Map, adjacent);
         if (!Canonical(ref loc)) continue;
-        var obj = loc.MapObject;
-        if (null != obj && obj.IsContainer) {
+        var obj = loc.MapObject as ShelfLike;
+        if (null != obj) {
           InventorySource<Item> stage = new( new InvOrigin(obj));
 
           // ultimately, we'd like some notion of stance *if* that doesn't make the UI too complicated.
@@ -1889,7 +1889,7 @@ retry:
       if (District.Maps.Contains(this)) throw new InvalidOperationException("do not use GetInventoryHaving except during map generation");
       foreach (var x in m_GroundItemsByPosition) if (x.Value.Has(id)) return x;
       foreach (var x in m_MapObjectsByPosition) {
-         var obj_inv = x.Value.NonEmptyInventory;
+         var obj_inv = (x.Value as ShelfLike)?.NonEmptyInventory;
          if (null != obj_inv && obj_inv.Has(id)) return new KeyValuePair<Point, Inventory>(x.Key, obj_inv);
       }
       return null;
@@ -2030,8 +2030,8 @@ retry:
         }
 
         foreach(var x in m_MapObjectsByPosition) {
-          if (!x.Value.IsContainer) continue;
-          var inv = x.Value.Inventory;
+          var inv = (x.Value as ShelfLike)?.NonEmptyInventory;
+          if (null == inv) continue;
           foreach (var it in inv.Items) {
             if (!ret.TryGetValue(it.ModelID, out var cache)) ret.Add(it.ModelID, cache = new());
             if (!cache.TryGetValue(x.Key, out var cache2)) cache.Add(x.Key, cache2 = new());
@@ -2048,7 +2048,7 @@ retry:
 
         foreach (var x in m_MapObjectsByPosition) {
             if (!view.Contains(x.Key)) continue;
-            var inv = x.Value.Inventory;
+            var inv = (x.Value as ShelfLike)?.Inventory;
             if (null != inv && inv.IsEmpty) ret.Add(inv);
         }
 

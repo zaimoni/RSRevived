@@ -13,10 +13,10 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionGetFromContainer : ActorAction   // XXX reskinned ActionTakeItem
   {
-    private readonly MapObject m_Container;
+    private readonly ShelfLike m_Container;
 
     // error checks in ...::create
-    private ActionGetFromContainer(PlayerController pc, MapObject obj) : base(pc.ControlledActor)
+    private ActionGetFromContainer(PlayerController pc, ShelfLike obj) : base(pc.ControlledActor)
     {
       m_Container = obj;
     }
@@ -36,9 +36,11 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     static private string ReasonCantGetFrom(MapObject? obj)
     {
-      if (null == obj || !obj.IsContainer) return "object is not a container";
-      if (obj.Inventory.IsEmpty) return "nothing to take there";
-      return "";
+      if (obj is ShelfLike shelf) {
+        if (shelf.Inventory.IsEmpty) return "nothing to take there";
+        return "";
+      }
+      return "object is not a container";
     }
 
     static private bool CanGetFrom(MapObject? obj, out string reason)
@@ -49,8 +51,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     static public ActionGetFromContainer? create(PlayerController pc, Location loc) {
         if (!Map.Canonical(ref loc)) return null;
-        var obj = loc.MapObject;
-        if (null == obj || !obj.IsContainer || obj.Inventory.IsEmpty) return null;
+        var obj = loc.MapObject as ShelfLike;
+        if (null == obj || obj.Inventory.IsEmpty) return null;
         return new ActionGetFromContainer(pc, obj);
     }
   }

@@ -120,7 +120,7 @@ namespace djack.RogueSurvivor.Data
                                 }
                             }
                         }
-                        _process_inv(tmp_obj.NonEmptyInventory, x, y);
+                        if (tmp_obj is ShelfLike shelf) _process_inv(shelf.NonEmptyInventory, x, y);
                     }
 #endregion
                     _process_inv(GetItemsAt(pt), x, y);

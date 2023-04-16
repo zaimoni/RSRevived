@@ -4121,9 +4121,11 @@ namespace djack.RogueSurvivor.Engine
 
         List<KeyValuePair<Location, int> > tmp_where = new();
         foreach(var loc_qty in catalog) {
-          var obj = loc_qty.Key.MapObject;
           if (Player.CanEnter(loc_qty.Key)) tmp_where.Add(loc_qty);
-          else if (null != obj && obj.IsContainer) tmp_where.Add(loc_qty);
+          else {
+            var obj = loc_qty.Key.MapObject as ShelfLike;
+            if (null != obj) tmp_where.Add(loc_qty);
+          }
         }
 
         Dictionary<Location, int> loc_distances = new();
@@ -4921,11 +4923,11 @@ namespace djack.RogueSurvivor.Engine
         if (null != ground_inv) {
           if (ground_inv.IsEmpty) ground_inv = null;
           else if (next_to) {
-            var obj = player.Location.Map.GetMapObjectAtExt(pos);
-            if (null == obj || !obj.IsContainer) ground_inv = null;
+            var obj = player.Location.Map.GetMapObjectAtExt(pos) as ShelfLike;
+            if (null == obj) ground_inv = null;
           }
         } else if (next_to) {
-          var obj_inv = player.Location.Map.GetMapObjectAtExt(pos)?.NonEmptyInventory;
+          var obj_inv = (player.Location.Map.GetMapObjectAtExt(pos) as ShelfLike)?.NonEmptyInventory;
           if (null != obj_inv) ground_inv = obj_inv;
           if (null != ground_inv && ground_inv.IsEmpty) ground_inv = null;
         }
@@ -7523,7 +7525,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (0 < (tmp_i = obj.Weight)) lines.Add(string.Format("Weight    : {0}", tmp_i));
-      var itemsAt = obj.NonEmptyInventory;
+      var itemsAt = (obj as ShelfLike)?.NonEmptyInventory;
       if (null != itemsAt) lines.AddRange(DescribeInventory(itemsAt));
       itemsAt = obj.Location.Items;
       if (itemsAt != null) lines.AddRange(DescribeInventory(itemsAt));
@@ -9447,13 +9449,9 @@ namespace djack.RogueSurvivor.Engine
       inv.RejectCrossLink(dest);
     }
 
-    public void DoTradeWithContainer(Actor actor, in MapObject obj, Item give, Item take)
+    public void DoTradeWithContainer(Actor actor, in ShelfLike obj, Item give, Item take)
     {
-      var dest = obj.Inventory;
-#if DEBUG
-      if (null == dest) throw new ArgumentNullException(nameof(dest));
-#endif
-      DoTradeWith(actor, dest, give, take);
+      DoTradeWith(actor, obj.Inventory, give, take);
     }
 
     public void DoTradeWithGround(Actor actor, in Location loc, Item give, Item take)
@@ -9697,12 +9695,12 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new(string.Format("{0} : {1}", actor.Name, text), actor.Location.Map.LocalTime.TurnCounter, isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
     }
 
-    public void HandlePlayerTakeItemFromContainer(PlayerController pc, MapObject container)
+    public void HandlePlayerTakeItemFromContainer(PlayerController pc, ShelfLike container)
     {
       var player = pc.ControlledActor;
       var inv = container.Inventory;
 #if DEBUG
-      if (null==inv || inv.IsEmpty) throw new ArgumentNullException(nameof(container)+".Inventory");
+      if (inv.IsEmpty) throw new ArgumentNullException(nameof(container)+".Inventory");
       if (1 != Rules.GridDistance(player.Location,container.Location)) throw new ArgumentOutOfRangeException(nameof(container), container, "not adjacent");
 #endif
       if (2 > inv.CountItems) {
@@ -9744,7 +9742,7 @@ namespace djack.RogueSurvivor.Engine
       if (Player==actor) RedrawPlayScreen();
     }
 
-    public void DoTakeItem(Actor actor, MapObject container, Item it)
+    public void DoTakeItem(Actor actor, ShelfLike container, Item it)
     {
       var g_inv = container.Inventory;
 #if DEBUG
@@ -9761,7 +9759,7 @@ namespace djack.RogueSurvivor.Engine
       if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
         it.EquippedBy(actor);
       if (Player==actor) RedrawPlayScreen();
-      container.Inventory?.RejectCrossLink(actor.Inventory);
+      g_inv.RejectCrossLink(actor.Inventory);
     }
 
     public void DoTakeItem(Actor actor, in Location loc, Item it)
@@ -9889,7 +9887,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(actor, string.Format("{0} {1} to", VERB_GIVE.Conjugate(actor), gift.TheName), target));
     }
 
-    public void DoPutItemInContainer(Actor actor, MapObject container, Item gift)
+    public void DoPutItemInContainer(Actor actor, ShelfLike container, Item gift)
     {
       actor.SpendActionPoints();
       if (container.PutItemIn(gift)) actor.Remove(gift, false);
@@ -11613,7 +11611,7 @@ namespace djack.RogueSurvivor.Engine
             flag2 = true;
             if (player) {
               // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
-              var itemsAt = mapObjectAt.NonEmptyInventory;  // will not handle concealed inventory
+              var itemsAt = (mapObjectAt as ShelfLike)?.NonEmptyInventory;  // will not handle concealed inventory
               if (null != itemsAt) DrawItemsStack(itemsAt, screen, tint);
             }
           }

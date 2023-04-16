@@ -86,7 +86,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         static public ActionTradeWith Cast(Location loc, Actor actor, Item give, Item take)
         {
-            var obj = loc.MapObject;
+            var obj = loc.MapObject as ShelfLike;
             var obj_inv = obj?.NonEmptyInventory;
             if (null != obj_inv && obj_inv.Contains(take)) return new ActionTradeWithContainer(actor, give, take, obj);
             var g_inv = loc.Items;
@@ -108,13 +108,13 @@ namespace djack.RogueSurvivor.Engine.Actions
     [Serializable]
     internal class ActionTradeWithContainer : ActionTradeWith,Target<MapObject>
     {
-        private readonly MapObject m_obj;
+        private readonly ShelfLike m_obj;
 
-        public ActionTradeWithContainer(Actor actor, Item give, Item take, MapObject obj) : base(actor, give, take)
+        public ActionTradeWithContainer(Actor actor, Item give, Item take, ShelfLike obj) : base(actor, give, take)
         {
 #if DEBUG
             var inv = obj.Inventory;
-            if (null == inv || inv.Contains(m_GiveItem) || !inv.Contains(m_TakeItem)) throw new ArgumentNullException(nameof(obj)+".Inventory");
+            if (inv.Contains(m_GiveItem) || !inv.Contains(m_TakeItem)) throw new ArgumentNullException(nameof(obj)+".Inventory");
 #endif
             m_obj = obj;
             actor.Activity = Activity.IDLE;

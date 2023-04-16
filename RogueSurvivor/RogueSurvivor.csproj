@@ -54,6 +54,7 @@
 
   <ItemGroup>
     <Compile Include="Data\BatteryPowered.cs" />
+    <Compile Include="Data\IInventory.cs" />
     <Compile Include="Data\Waypoint.cs" />
     <Compile Include="Data\IMap.cs" />
     <Compile Include="Data\LinearChokepoint.cs" />

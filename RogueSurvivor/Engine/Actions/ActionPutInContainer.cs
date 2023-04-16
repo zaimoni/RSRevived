@@ -7,12 +7,12 @@ namespace djack.RogueSurvivor.Engine.Actions
     internal class ActionPutInContainer : ActorAction,ActorGive,Target<MapObject>
     {
         private readonly Item m_Item;
-        private readonly MapObject m_Container;
+        private readonly ShelfLike m_Container;
 
         public Item Give { get { return m_Item; } }
         public MapObject What { get { return m_Container; } }
 
-        public ActionPutInContainer(Actor actor, Item it, MapObject container) : base(actor)
+        public ActionPutInContainer(Actor actor, Item it, ShelfLike container) : base(actor)
         {
             m_Item = it;
             m_Container = container;

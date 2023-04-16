@@ -5524,7 +5524,7 @@ restart_chokepoints:
 #nullable enable
     abstract protected ActorAction? BehaviorWouldGrabFromStack(in Location loc, Inventory? stack);
 
-    public ActorAction? WouldGetFrom(MapObject? obj)
+    public ActorAction? WouldGetFrom(ShelfLike? obj)
     {
       var stack = obj?.NonEmptyInventory;
       if (null == stack) return null;
@@ -5784,19 +5784,16 @@ restart_chokepoints:
       var tmp = _PrefilterDrop(it);
       if (null != tmp) return tmp;
 
-      var has_container = new Zaimoni.Data.Stack<MapObject>(new MapObject[8]);
+      var has_container = new Zaimoni.Data.Stack<ShelfLike>(new ShelfLike[8]);
       foreach(var dir in Direction.COMPASS) {
         var pos = m_Actor.Location.Position + dir;
         var container = Rules.CanActorPutItemIntoContainer(m_Actor, in pos);
         if (null == container) continue;
         var itemsAt = container.Inventory;
-        if (null != itemsAt)
-          {
-          if (itemsAt.CountItems+1 >= itemsAt.MaxCapacity) continue; // practical consideration
+        if (itemsAt.CountItems+1 >= itemsAt.MaxCapacity) continue; // practical consideration
 #if DEBUG
-          if (itemsAt.IsFull) throw new InvalidOperationException("illegal put into container attempted");
+        if (itemsAt.IsFull) throw new InvalidOperationException("illegal put into container attempted");
 #endif
-          }
         has_container.push(container);
       }
       if (0 < has_container.Count) return new ActionPutInContainer(m_Actor, it, Rules.Get.DiceRoller.Choose(has_container));

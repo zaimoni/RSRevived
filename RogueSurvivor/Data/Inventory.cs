@@ -25,10 +25,10 @@ namespace djack.RogueSurvivor.Data
   internal readonly struct InvOrigin {
         public readonly Inventory inv;
         public readonly Actor? a_owner = null;
-        public readonly MapObject? obj_owner = null;
+        public readonly ShelfLike? obj_owner = null;
         public readonly Location? loc = null;
 
-        public InvOrigin(Inventory _inv, Actor? _a_owner, MapObject? _obj_owner, Location? _loc) {
+        public InvOrigin(Inventory _inv, Actor? _a_owner, ShelfLike? _obj_owner, Location? _loc) {
             inv = _inv;
             a_owner = _a_owner;
             obj_owner = _obj_owner;
@@ -48,10 +48,7 @@ namespace djack.RogueSurvivor.Data
             ;
         }
 
-        public InvOrigin(MapObject owner) {
-#if DEBUG
-            if (!owner.IsContainer) throw new ArgumentNullException("!owner.IsContainer");
-#endif
+        public InvOrigin(ShelfLike owner) {
             obj_owner = owner;
             inv = owner.Inventory;
         }
@@ -77,7 +74,7 @@ namespace djack.RogueSurvivor.Data
      public readonly Inventory inv;
      public readonly T? it = null;
      public readonly Actor? a_owner = null;
-     public readonly MapObject? obj_owner = null;
+     public readonly ShelfLike? obj_owner = null;
      public readonly Location? loc = null;
 
      public InventorySource(InvOrigin src, T? obj = null) {
@@ -868,8 +865,9 @@ namespace djack.RogueSurvivor.Data
 
         static public InventorySource<Item>? ShelfInv(this Location loc)
         {
-            var o_inv = loc.MapObject?.NonEmptyInventory;
-            if (null != o_inv /* && !o_inv.IsEmpty */) return new( new InvOrigin(loc.MapObject!));
+            var shelf = loc.MapObject as ShelfLike;
+            var o_inv = shelf?.NonEmptyInventory;
+            if (null != o_inv /* && !o_inv.IsEmpty */) return new( new InvOrigin(shelf!));
             return null;
         }
 

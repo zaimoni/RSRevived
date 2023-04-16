@@ -59,8 +59,8 @@ namespace djack.RogueSurvivor.Engine._Action
                 var ret = new List<Location>();
                 if (m_Actor.CanEnter(m_loc)) ret.Add(m_loc);    // future-proofing
                 // handle containers (will go obsolete eventually)
-                var obj = m_loc.MapObject;
-                if (null != obj && obj.IsContainer) {
+                var obj = m_loc.MapObject as ShelfLike;
+                if (null != obj) {
                     foreach (var pt in m_loc.Position.Adjacent()) {
                         var test = new Location(m_loc.Map, pt);
                         if (m_Actor.CanEnter(ref test)) ret.Add(test);
@@ -138,8 +138,8 @@ namespace djack.RogueSurvivor.Engine.Op
                 var ret = new List<Location>();
                 if (m_loc.TileModel.IsWalkable) ret.Add(m_loc);    // future-proofing
                 // handle containers (will go obsolete eventually)
-                var obj = m_loc.MapObject;
-                if (null != obj && obj.IsContainer) {
+                var obj = m_loc.MapObject as ShelfLike;
+                if (null != obj) {
                     foreach (var pt in m_loc.Position.Adjacent()) {
                         var test = new Location(m_loc.Map, pt);
                         if (Map.Canonical(ref test) && test.TileModel.IsWalkable) ret.Add(test);

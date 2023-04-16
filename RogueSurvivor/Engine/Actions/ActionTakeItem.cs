@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Location m_Location;
     private readonly Item m_Item;
-    private readonly MapObject? m_Container = null;
+    private readonly ShelfLike? m_Container = null;
 
     public ActionTakeItem(Actor actor, in Location loc, Item it) : base(actor)
     {
@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Location = loc;
       if (!Map.Canonical(ref m_Location)) throw new ArgumentNullException(nameof(loc));
       m_Item = it;
-      var obj = loc.MapObject;
+      var obj = loc.MapObject as ShelfLike;
       var obj_inv = obj?.NonEmptyInventory;
       if (null != obj_inv && obj_inv.Contains(it)) m_Container = obj;
 

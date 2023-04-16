@@ -443,9 +443,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject(carImageID);
     }
 
-    static protected MapObject MakeObjShelf()
+    static protected ShelfLike MakeObjShelf()
     {
-      return new MapObject(GameImages.OBJ_SHOP_SHELF, DoorWindow.BASE_HITPOINTS);
+      return new ShelfLike(GameImages.OBJ_SHOP_SHELF, DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjBench()
@@ -463,14 +463,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject(bedImageID, 2* DoorWindow.BASE_HITPOINTS);
     }
 
-    static protected MapObject MakeObjWardrobe(string wardrobeImageID)
+    static protected ShelfLike MakeObjWardrobe(string wardrobeImageID)
     {
-      return new MapObject(wardrobeImageID, 6* DoorWindow.BASE_HITPOINTS);
+      return new ShelfLike(wardrobeImageID, 6* DoorWindow.BASE_HITPOINTS);
     }
 
-    static protected MapObject MakeObjDrawer()
+    static protected ShelfLike MakeObjDrawer()
     {
-      return new MapObject(GameImages.OBJ_DRAWER, DoorWindow.BASE_HITPOINTS);
+      return new ShelfLike(GameImages.OBJ_DRAWER, DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjTable(string tableImageID)
@@ -488,9 +488,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject(nightTableImageID, DoorWindow.BASE_HITPOINTS/3);
     }
 
-    static protected MapObject MakeObjFridge()
+    static protected ShelfLike MakeObjFridge()
     {
-      return new MapObject(GameImages.OBJ_FRIDGE, 6* DoorWindow.BASE_HITPOINTS);
+      return new ShelfLike(GameImages.OBJ_FRIDGE, 6* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjJunk()

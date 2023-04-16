@@ -35,7 +35,6 @@ namespace djack.RogueSurvivor.Data
     private int m_HitPoints;
     private Fire m_FireState;
     [NonSerialized] private Location m_Location;
-    private Inventory? m_Inventory = null;
 
     public string AName { get { return IsPlural ? _ID_Name(m_ID).PrefixIndefinitePluralArticle() : _ID_Name(m_ID).PrefixIndefiniteSingularArticle(); } }
     public string TheName { get { return _ID_Name(m_ID).PrefixDefiniteSingularArticle(); } }
@@ -77,10 +76,10 @@ namespace djack.RogueSurvivor.Data
     virtual public bool IsWalkable { get { return GetFlag(Flags.IS_WALKABLE); } }
     public int JumpLevel { get { return m_JumpLevel; } }
     public bool IsJumpable { get { return m_JumpLevel > 0; } }
-    public bool IsContainer { get { return null != m_Inventory; } }
     public bool IsCouch { get { return GetFlag(Flags.IS_COUCH); } }
     public bool IsBreakable { get { return m_BreakState == Break.BREAKABLE; } }
 
+    // 2023-04-16: a broken object still retains its shelf-like status
     public Break BreakState {
       get { return m_BreakState; }
       protected set { // Cf IsTransparent which affects LOS calculations
@@ -88,6 +87,7 @@ namespace djack.RogueSurvivor.Data
         m_BreakState = value;
         bool now_broken = Break.BROKEN == value;
         if ((Break.BROKEN == old)!= now_broken) InvalidateLOS();
+#if OBSOLETE
         if (now_broken) {
           if (null != m_Inventory) {
             if (!m_Inventory.IsEmpty) {
@@ -103,7 +103,8 @@ namespace djack.RogueSurvivor.Data
             }
             m_Inventory = null;
           }
-        } else if (_ID_IsContainer(m_ID) && null == m_Inventory) m_Inventory = new Inventory(Map.GROUND_INVENTORY_SLOTS);
+        }
+#endif
       }
     }
 
@@ -309,19 +310,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    static private bool _ID_IsContainer(IDs x)
-    {
-      switch (x) {
-        case IDs.DRAWER: return true;
-        case IDs.FRIDGE: return true;
-        case IDs.WARDROBE: return true;
-        case IDs.HOSPITAL_WARDROBE: return true;
-        case IDs.SHOP_SHELF: return true;
-//      case IDs.: return true;
-        default: return false;
-      }
-    }
-
     static private int _ID_Jumplevel(IDs x)
     {
       switch (x) {
@@ -404,13 +392,6 @@ namespace djack.RogueSurvivor.Data
       m_HitPoints = MaxHitPoints = hitPoints;
     }
 
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
-    {
-#if DEBUG
-      m_Inventory?.RepairZeroQty();
-#endif
-    }
-
     public void RepairLoad(Map m, Point pos)
     {
       if (null == m_Location.Map && null != m) m_Location = new Location(m, pos);
@@ -427,7 +408,6 @@ namespace djack.RogueSurvivor.Data
       if (_ID_IsCouch(m_ID)) m_Flags |= Flags.IS_COUCH;
       if (_ID_IsPlural(m_ID)) m_Flags |= Flags.IS_PLURAL;
       if (_ID_MaterialIsTransparent(m_ID)) m_Flags |= Flags.IS_MATERIAL_TRANSPARENT;
-      if (_ID_IsContainer(m_ID)) m_Inventory = new Inventory(Map.GROUND_INVENTORY_SLOTS);
       if (_ID_IsWalkable(m_ID)) m_Flags |= Flags.IS_WALKABLE;
       m_JumpLevel = _ID_Jumplevel(m_ID);
 
@@ -454,41 +434,6 @@ namespace djack.RogueSurvivor.Data
     }
 
 #nullable enable
-    public string ReasonCantPutItemIn(Actor actor)
-    {
-      if (!IsContainer) return "object is not a container";
-      if (   !actor.Model.Abilities.HasInventory
-          || !actor.Model.Abilities.CanUseMapObjects
-          ||  actor.Inventory == null)
-          return "cannot take an item";
-      var itemsAt = Inventory;
-      if (null != itemsAt && itemsAt.IsFull) return "container is full";
-      return "";
-    }
-
-    public bool PutItemIn(Item gift)
-    {
-#if DEBUG
-      if (!IsContainer) throw new InvalidOperationException("cannot put "+gift+" into non-container "+this+" @ "+Location);
-#endif
-      if (gift is Engine.Items.ItemTrap trap) trap.Desactivate();    // alpha10
-      return m_Inventory.AddAll(gift);
-    }
-
-    public Inventory Inventory { get {
-#if DEBUG
-      if (!IsContainer) throw new InvalidOperationException("cannot get contents of non-container "+this+" @ "+Location);
-#endif
-      return m_Inventory!;
-    } }
-
-    // nullability analysis doesn't see through IsContainer to its implementation 2021-07-23 zaimoni
-    public Inventory? NonEmptyInventory { get {
-      return (null == m_Inventory || m_Inventory.IsEmpty) ? null : m_Inventory;
-    } }
-
-    public void TransferFrom(Item it, Inventory dest) { m_Inventory.Transfer(it, dest); }
-
     private string ReasonCantPushTo(Point toPos)
     {
       var tile_loc = Location.Map.GetTileModelLocation(toPos);
@@ -545,13 +490,6 @@ namespace djack.RogueSurvivor.Data
         if (rules.RollChance(Engine.Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE)) {
           Location.Drop((rules.RollChance(50) ? Gameplay.GameItems.IMPROVISED_CLUB : Gameplay.GameItems.IMPROVISED_SPEAR).instantiate());
         }
-      }
-      if (null != m_Inventory) {
-        foreach (Item it in m_Inventory.Items.ToArray()) {
-          if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
-          Location.Drop(it);
-        }
-        m_Inventory.Clear(); // if it wasn't dropped, it's gone; disallows cross-linking
       }
       _destroy();
       if (must_rebuild_clearable_zones) m_Location.Map.RebuildClearableZones(m_Location.Position);
@@ -720,6 +658,64 @@ namespace djack.RogueSurvivor.Data
     }
   } // MapObject
 
+#nullable enable
+  [Serializable]
+  internal class ShelfLike : MapObject, IInventory
+  {
+    private readonly Inventory m_Inventory;
+    public Inventory Inventory { get { return m_Inventory; } }
+    public Inventory? NonEmptyInventory { get {
+      return m_Inventory.IsEmpty ? null : m_Inventory;
+    } }
+
+    public ShelfLike(string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
+    : base(hiddenImageID, hitPoints, burnable)
+    {
+#if DEBUG
+      if (!ID.HasShelf()) throw new InvalidOperationException("!ID.HasShelf()");
+#endif
+
+      m_Inventory = new Inventory(Map.GROUND_INVENTORY_SLOTS);
+    }
+
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    {
+#if DEBUG
+      m_Inventory?.RepairZeroQty();
+#endif
+    }
+
+    public void TransferFrom(Item it, Inventory dest) { m_Inventory.Transfer(it, dest); }
+
+    public string ReasonCantPutItemIn(Actor actor)
+    {
+      if (   !actor.Model.Abilities.HasInventory
+          || !actor.Model.Abilities.CanUseMapObjects
+          ||  actor.Inventory == null)
+          return "cannot take an item";
+      if (m_Inventory.IsFull) return "container is full";
+      return "";
+    }
+
+    public bool PutItemIn(Item gift)
+    {
+      if (gift is Engine.Items.ItemTrap trap) trap.Desactivate();    // alpha10
+      return m_Inventory.AddAll(gift);
+    }
+
+    protected override void _destroy() {
+      if (!m_Inventory.IsEmpty) {
+        foreach (Item it in m_Inventory.Items.ToArray()) {
+          if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
+          Location.Drop(it);
+        }
+        m_Inventory.Clear(); // if it wasn't dropped, it's gone; disallows cross-linking
+      }
+      base._destroy();
+    }
+  }
+#nullable restore
+
   static class MapObject_ext
   {
     // We use a switch to do this translation because this is hand-maintained, and the relative ordering of the enumeration values is not expected to be stable.
@@ -816,5 +812,21 @@ namespace djack.RogueSurvivor.Data
         default: throw new ArgumentOutOfRangeException(nameof(x), x, "not mapped to an MapObject ID");
       }
     }
+
+    // i.e.: has a flat surface at roughly arm height, so no crouching needed to reach (unlike ground inventory)
+    static public bool HasShelf(this MapObject.IDs x)
+    {
+      switch (x) {
+        case MapObject.IDs.DRAWER: return true;
+        case MapObject.IDs.FRIDGE: return true;
+        case MapObject.IDs.WARDROBE: return true;
+        case MapObject.IDs.HOSPITAL_WARDROBE: return true;
+        case MapObject.IDs.SHOP_SHELF: return true;
+//      case IDs.: return true;
+        default: return false;
+      }
+    }
+
+
   } // MapObject_ext
 }

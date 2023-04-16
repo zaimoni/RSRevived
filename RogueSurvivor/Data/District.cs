@@ -206,8 +206,8 @@ namespace djack.RogueSurvivor.Data
       });
       // we're bringing up containers
       map.DoForAllGroundInventories((loc,inv) => {
-          var obj = loc.MapObject;
-          if (null != obj && obj.IsContainer) throw new InvalidOperationException("failed to convert to proper container use at game start");
+          var obj = loc.MapObject as ShelfLike;
+          if (null != obj) throw new InvalidOperationException("failed to convert to proper container use at game start");
       });
 #endif
     }
