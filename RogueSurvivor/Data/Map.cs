@@ -2270,12 +2270,11 @@ retry:
       short mapOdorDecayRate = 1;
       if (District.IsSewersMap(this)) mapOdorDecayRate += 2;
 
-      var discard = new List<OdorScent>();
       List<Point>? discard2 = null;
       foreach(var tmp in m_ScentsByPosition) {
         short odorDecayRate = (3==mapOdorDecayRate ? mapOdorDecayRate : new Location(this,tmp.Key).OdorsDecay()); // XXX could micro-optimize further
         tmp.Value.OnlyIfNot(scent => scent.Decay(odorDecayRate));
-        if (0 >= tmp.Value.Count) (discard2 ??= new List<Point>()).Add(tmp.Key);
+        if (0 >= tmp.Value.Count) (discard2 ??= new()).Add(tmp.Key);
       }
       if (null != discard2) foreach(var x in discard2) m_ScentsByPosition.Remove(x);
     }
