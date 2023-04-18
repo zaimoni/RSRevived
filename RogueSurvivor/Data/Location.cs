@@ -4,6 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,7 @@ using Zaimoni.Data;
 
 // map coordinate definitions.  Want to switch this away from System.Drawing.Point to get a better hash function in.
 using Point = Zaimoni.Data.Vector2D<short>;
+using UPoint = Zaimoni.Data.Vector2D<ushort>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
 
@@ -63,11 +65,10 @@ namespace djack.RogueSurvivor.Data
 
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
     {
+        Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, Position); // assumes normalized
         var code = encode.Saving(Map); // obligatory, in spite of type prefix/suffix
         if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
         else throw new ArgumentNullException(nameof(Map));
-
-        Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, Position); // not really...
     }
 #endregion
 
@@ -317,4 +318,78 @@ namespace djack.RogueSurvivor.Data
       return Map.Name+"@"+Position.X.ToString()+","+Position.Y.ToString();
     }
   }
+}
+
+namespace Zaimoni.Serialization {
+
+    public partial interface ISave
+    {
+        // handler must save to the target location field, or else
+        internal static void Load(DecodeObjects decode, ref Location dest, Action<Map, Point> handler) {
+            Point stage_pos = new();
+            Deserialize7bit(decode.src, ref stage_pos); // assumes normalized
+
+            ulong code;
+            var stage_map = decode.Load<Map>(out code);
+            if (null != stage_map) {
+                dest = new(stage_map, stage_pos);
+                return;
+            }
+            if (0 >= code) throw new InvalidOperationException("Location.Map must ultimately be non-null");
+            decode.Schedule(code, (o) => {
+              if (o is Map m) handler(m, stage_pos); // local copy doesn't work for structs
+              else throw new InvalidOperationException("Map object not loaded");
+            });
+        }
+
+        internal static void LoadDenormalized(DecodeObjects decode, ref Location dest, Action<Map, Point> handler)
+        {
+            byte sign_code = default;
+            Formatter.Deserialize(decode.src, ref sign_code);
+
+            UPoint stage_upos = default;
+            Deserialize7bit(decode.src, ref stage_upos); // assumes normalized
+
+            Point stage_pos = new((short)stage_upos.X, (short)stage_upos.Y);
+            if (0 != (1 & sign_code)) stage_pos.X = (short)-stage_pos.X;
+            if (0 != (2 & sign_code)) stage_pos.Y = (short)-stage_pos.Y;
+
+            ulong code;
+            var stage_map = decode.Load<Map>(out code);
+            if (null != stage_map)
+            {
+                dest = new(stage_map, stage_pos);
+                return;
+            }
+            if (0 >= code) throw new InvalidOperationException("Location.Map must ultimately be non-null");
+            decode.Schedule(code, (o) => {
+                if (o is Map m) handler(m, stage_pos); // local copy doesn't work for structs
+                else throw new InvalidOperationException("Map object not loaded");
+            });
+        }
+
+        internal static void SaveDenormalized(Zaimoni.Serialization.EncodeObjects encode, in Location src)
+        {
+            byte sign_code = default;
+            UPoint stage_upos = default;
+            if (0 <= src.Position.X) {
+                stage_upos.X = (ushort)src.Position.X;
+            } else {
+                sign_code |= 1;
+                stage_upos.X = (ushort)-src.Position.X;
+            }
+            if (0 <= src.Position.Y) {
+                stage_upos.Y = (ushort)src.Position.Y;
+            } else {
+                sign_code |= 1;
+                stage_upos.Y = (ushort)-src.Position.Y;
+            }
+
+            Serialize7bit(encode.dest, sign_code);
+            Serialize7bit(encode.dest, stage_upos);
+            var code = encode.Saving(src.Map); // obligatory, in spite of type prefix/suffix
+            if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+            else throw new ArgumentNullException(nameof(Map));
+        }
+    }
 }
