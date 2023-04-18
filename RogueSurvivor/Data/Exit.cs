@@ -11,8 +11,8 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal class Exit
-  {
+  internal class Exit : Zaimoni.Serialization.ISerialize
+    {
     private Location m_Location;	// XXX this cannot be public readonly Location: load fails in the runtime library Nov 5 2016.  Retry after compiler upgrade.
 
     public Map ToMap { get { return m_Location.Map; } }
@@ -23,6 +23,19 @@ namespace djack.RogueSurvivor.Data
     {
       m_Location = new Location(toMap,toPosition);
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected Exit(Zaimoni.Serialization.DecodeObjects decode)
+    {
+      Zaimoni.Serialization.ISave.Load(decode, ref m_Location, (m, pt) => m_Location = new(m, pt));
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
+    {
+      Zaimoni.Serialization.ISave.Save(encode, m_Location);
+    }
+#endregion
+
 
     // note that if we are pathfinding, we do not have actor anyway.  All livings can jump, however
     // we do not consider actors to block exits when pathfinding
