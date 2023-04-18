@@ -3018,3 +3018,60 @@ retry:
     }
   }
 }
+
+namespace Zaimoni.Serialization
+{
+
+    public partial interface ISave
+    {
+        static void LinearSave<T>(EncodeObjects encode, Dictionary<Point, T>? src) where T : ISerialize
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count)
+            {
+                foreach (var x in src!) Save(encode, x);
+            }
+        }
+
+        static void Save<T>(EncodeObjects encode, KeyValuePair<Point, T> src) where T : ISerialize
+        {
+            Serialize7bit(encode.dest, src.Key);
+            Save(encode, src.Value);
+        }
+
+        static void LinearLoad<T>(DecodeObjects decode, Action<KeyValuePair<Point, T>[]> handler) where T : class, ISerialize
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new KeyValuePair<Point, T>[count];
+            var stage = new Zaimoni.Lazy.Join<KeyValuePair<Point, T>[]>(dest, handler);
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                Point stage_pos = default;
+                Deserialize7bit(decode.src, ref stage_pos);
+                var obj = decode.Load<T>(out var code);
+                if (null != obj) {
+                    dest[n++] = new(stage_pos, obj);
+                    continue;
+                }
+                if (0 >= code) throw new InvalidOperationException("object not loaded");
+
+                var i = n;
+                decode.Schedule(code, (o) => {
+                    if (o is T src) dest[i] = new(stage_pos, src);
+                    else throw new InvalidOperationException("requested object is not a " + typeof(T).AssemblyQualifiedName);
+                    stage.signal();
+                });
+                stage.Schedule();
+                n++;
+            }
+            stage.isDone();
+        }
+
+    }
+}

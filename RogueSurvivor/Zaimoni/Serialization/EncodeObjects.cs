@@ -13,6 +13,7 @@ namespace Zaimoni.Serialization
     {
         private readonly T?[] relay;
         private readonly Action<T[]> onDone;
+        private ulong scheduled = 0;
 
         public StageArray(T?[] src, Action<T[]> handler)
         {
@@ -22,10 +23,22 @@ namespace Zaimoni.Serialization
 
         public void Verify()
         {
+            if (0 < scheduled) return;
             foreach (var x in relay) {
                 if (null == x) return;
             }
             onDone(relay!);
+        }
+
+        public void Schedule() {
+            scheduled++;
+        }
+
+        public void Complete()
+        {
+            if (0 < scheduled) {
+                if (0 >= --scheduled) onDone(relay!);
+            }
         }
     }
 
@@ -78,16 +91,8 @@ namespace Zaimoni.Serialization
         static void Deserialize7bit(Stream src, ref short dest) => Formatter.Deserialize7bit(src, ref dest);
 #endregion
 
+#region LinearSave/Load basis
         static void LinearSave<T>(EncodeObjects encode, IEnumerable<T>? src) where T:ISerialize {
-            var count = src?.Count() ?? 0;
-            Formatter.Serialize7bit(encode.dest, count);
-            if (0 < count) {
-                foreach (var x in src!) Save(encode, x);
-            }
-        }
-
-        static void LinearSave(EncodeObjects encode, IEnumerable<KeyValuePair<string, object> >? src)
-        {
             var count = src?.Count() ?? 0;
             Formatter.Serialize7bit(encode.dest, count);
             if (0 < count) {
@@ -126,6 +131,16 @@ namespace Zaimoni.Serialization
                 n++;
             }
             stage.Verify();
+        }
+#endregion
+
+        static void LinearSave(EncodeObjects encode, IEnumerable<KeyValuePair<string, object> >? src)
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src!) Save(encode, x);
+            }
         }
 
         static void LinearLoad(DecodeObjects decode, Action<KeyValuePair<string, object>[]> handler)
