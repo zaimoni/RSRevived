@@ -595,6 +595,41 @@ namespace Zaimoni.Serialization
             Deserialize7bit(dest, ref stage);
             src.Size = stage;
         }
-#endregion
+
+
+        static void SaveSigned(Stream dest, in Data.Vector2D<short> src)
+        {
+            Data.Vector2D<ushort> stage = default;
+            sbyte code = 0;
+            if (0 <= src.X) stage.X = (ushort)src.X;
+            else {
+                stage.X = (ushort)-src.X;
+                code |= 1;
+            }
+            if (0 <= src.Y) stage.Y = (ushort)src.Y;
+            else {
+                stage.Y = (ushort)-src.Y;
+                code |= 2;
+            }
+
+            Formatter.Serialize(dest, code);
+            Serialize7bit(dest, stage);
+        }
+
+        static void LoadSigned(Stream src, ref Data.Vector2D<short> dest)
+        {
+            Data.Vector2D<ushort> stage = default;
+            sbyte code = 0;
+            Formatter.Deserialize(src, ref code);
+            Deserialize7bit(src, ref stage);
+
+            if (0 == (code & 1)) dest.X = (short)stage.X;
+            else dest.X = (short)-(short)stage.X;
+
+            if (0 == (code & 2)) dest.Y = (short)stage.Y;
+            else dest.Y = (short)-(short)stage.Y;
+
+        }
+        #endregion
     }
 }

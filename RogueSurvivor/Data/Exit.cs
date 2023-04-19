@@ -27,12 +27,12 @@ namespace djack.RogueSurvivor.Data
 #region implement Zaimoni.Serialization.ISerialize
     protected Exit(Zaimoni.Serialization.DecodeObjects decode)
     {
-      Zaimoni.Serialization.ISave.Load(decode, ref m_Location, (m, pt) => m_Location = new(m, pt));
+      Zaimoni.Serialization.ISave.LoadSigned(decode, ref m_Location, (m, pt) => m_Location = new(m, pt));
     }
 
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
     {
-      Zaimoni.Serialization.ISave.Save(encode, m_Location);
+      Zaimoni.Serialization.ISave.SaveSigned(encode, m_Location);
     }
 #endregion
 

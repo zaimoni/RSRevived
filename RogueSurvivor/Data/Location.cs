@@ -325,39 +325,14 @@ namespace Zaimoni.Serialization {
     public partial interface ISave
     {
         // handler must save to the target location field, or else
-        internal static void Load(DecodeObjects decode, ref Location dest, Action<Map, Point> handler) {
-            Point stage_pos = new();
-            Deserialize7bit(decode.src, ref stage_pos); // assumes normalized
+        internal static void LoadSigned(DecodeObjects decode, ref Location dest, Action<Map, Point> handler)
+        {
+            Point stage_pos = default;
+            LoadSigned(decode.src, ref stage_pos);
 
             ulong code;
             var stage_map = decode.Load<Map>(out code);
             if (null != stage_map) {
-                dest = new(stage_map, stage_pos);
-                return;
-            }
-            if (0 >= code) throw new InvalidOperationException("Location.Map must ultimately be non-null");
-            decode.Schedule(code, (o) => {
-              if (o is Map m) handler(m, stage_pos); // local copy doesn't work for structs
-              else throw new InvalidOperationException("Map object not loaded");
-            });
-        }
-
-        internal static void LoadDenormalized(DecodeObjects decode, ref Location dest, Action<Map, Point> handler)
-        {
-            byte sign_code = default;
-            Formatter.Deserialize(decode.src, ref sign_code);
-
-            UPoint stage_upos = default;
-            Deserialize7bit(decode.src, ref stage_upos); // assumes normalized
-
-            Point stage_pos = new((short)stage_upos.X, (short)stage_upos.Y);
-            if (0 != (1 & sign_code)) stage_pos.X = (short)-stage_pos.X;
-            if (0 != (2 & sign_code)) stage_pos.Y = (short)-stage_pos.Y;
-
-            ulong code;
-            var stage_map = decode.Load<Map>(out code);
-            if (null != stage_map)
-            {
                 dest = new(stage_map, stage_pos);
                 return;
             }
@@ -368,25 +343,10 @@ namespace Zaimoni.Serialization {
             });
         }
 
-        internal static void SaveDenormalized(Zaimoni.Serialization.EncodeObjects encode, in Location src)
+        internal static void SaveSigned(Zaimoni.Serialization.EncodeObjects encode, in Location src)
         {
-            byte sign_code = default;
-            UPoint stage_upos = default;
-            if (0 <= src.Position.X) {
-                stage_upos.X = (ushort)src.Position.X;
-            } else {
-                sign_code |= 1;
-                stage_upos.X = (ushort)-src.Position.X;
-            }
-            if (0 <= src.Position.Y) {
-                stage_upos.Y = (ushort)src.Position.Y;
-            } else {
-                sign_code |= 1;
-                stage_upos.Y = (ushort)-src.Position.Y;
-            }
+            SaveSigned(encode.dest, src.Position);
 
-            Serialize7bit(encode.dest, sign_code);
-            Serialize7bit(encode.dest, stage_upos);
             var code = encode.Saving(src.Map); // obligatory, in spite of type prefix/suffix
             if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
             else throw new ArgumentNullException(nameof(Map));

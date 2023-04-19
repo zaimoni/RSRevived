@@ -3034,15 +3034,14 @@ namespace Zaimoni.Serialization
         {
             var count = src?.Count() ?? 0;
             Formatter.Serialize7bit(encode.dest, count);
-            if (0 < count)
-            {
-                foreach (var x in src!) Save(encode, x);
+            if (0 < count) {
+                foreach (var x in src!) SaveSigned(encode, x);
             }
         }
 
-        static void Save<T>(EncodeObjects encode, KeyValuePair<Point, T> src) where T : ISerialize
+        static void SaveSigned<T>(EncodeObjects encode, KeyValuePair<Point, T> src) where T : ISerialize
         {
-            Serialize7bit(encode.dest, src.Key);
+            SaveSigned(encode.dest, src.Key);
             Save(encode, src.Value);
         }
 
@@ -3059,7 +3058,7 @@ namespace Zaimoni.Serialization
             while (0 < count) {
                 --count;
                 Point stage_pos = default;
-                Deserialize7bit(decode.src, ref stage_pos);
+                LoadSigned(decode.src, ref stage_pos);
                 var obj = decode.Load<T>(out var code);
                 if (null != obj) {
                     dest[n++] = new(stage_pos, obj);
