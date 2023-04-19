@@ -348,7 +348,7 @@ namespace Zaimoni.Serialization {
             SaveSigned(encode.dest, src.Position);
 
             var code = encode.Saving(src.Map); // obligatory, in spite of type prefix/suffix
-            if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+            if (0 < code) Formatter.SerializeObjCode(encode.dest, code);
             else throw new ArgumentNullException(nameof(Map));
         }
     }

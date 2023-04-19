@@ -382,6 +382,7 @@ namespace Zaimoni.Serialization
 
         public void DeserializeTypeCode(Stream src, Dictionary<ulong, Type> dest)
         {
+            last_type_code = null;
             while (type_code == Peek(src)) {
                 ulong stage_code = 0;
                 string stage_name = string.Empty;
@@ -407,7 +408,7 @@ namespace Zaimoni.Serialization
         {
             if (type_ref_code != Preview) {
                 if (last_type_code.HasValue) return last_type_code.Value;
-                throw new InvalidOperationException("did not find expected type code: " + Preview);
+                throw new InvalidOperationException("did not find expected type code: " + Preview + " at "+src.Position);
             }
             ulong code = 0;
             ClearPeek();

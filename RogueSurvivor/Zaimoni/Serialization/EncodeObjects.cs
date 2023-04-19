@@ -58,7 +58,11 @@ namespace Zaimoni.Serialization
         static abstract void InlineSave(EncodeObjects encode, object src);
 #endif
 
-        static void Save(EncodeObjects encode, ISerialize src) => encode.Saving(src);
+        static void Save(EncodeObjects encode, ISerialize src) {
+            var code = encode.Saving(src); // obligatory, in spite of type prefix/suffix
+            if (0 < code) Formatter.SerializeObjCode(encode.dest, code);
+            else throw new ArgumentNullException("src");
+        }
 
         static void InlineSave(EncodeObjects encode, ISerialize src) => src.save(encode);
 
@@ -185,7 +189,6 @@ namespace Zaimoni.Serialization
         private Dictionary<Type, ulong> type_code_of = new();
         private Dictionary<Type, Dictionary<object, ulong>> encodings = new();
         private List<Action<Stream>> to_save = new();
-        private List<Action<Stream>> to_save_type = new();
 
         public EncodeObjects(Stream _dest)
         {
@@ -200,7 +203,7 @@ namespace Zaimoni.Serialization
             if (null == src) return 0; // likely should handle this at a higher level; signals writing a null code rather than an object reference
 
             var type = src.GetType();
-            var t_code = getTypeCode(type);
+            var t_code = getTypeCode(type, out var handler);
             if (encodings.TryGetValue(type, out var cache)) {
                 if (cache.TryGetValue(src, out ulong code)) return code;
             } else encodings.Add(type, cache = new());
@@ -210,6 +213,7 @@ namespace Zaimoni.Serialization
             // \todo handle polymorphism -- loader must know which subclass to load
             // yes, appears to be subverting historical architecture
             to_save.Add(dest => {
+                if (null != handler) handler(dest);
                 Formatter.SerializeTypeCode(dest, t_code);
                 Formatter.SerializeObjCode(dest, local_seen);
                 if (src is IOnSerializing x) x.OnSerializing(in context);
@@ -221,16 +225,6 @@ namespace Zaimoni.Serialization
 
         public bool SaveNext() {
             if (0 >= to_save.Count) return false;
-            // if there are type code entries, flush them
-            var save_type_ub = to_save_type.Count;
-            if (0 < save_type_ub) {
-                int i = 0;
-                while (i < save_type_ub) {
-                    to_save_type[i](dest);
-                    to_save_type[i++] = null;  // early GC
-                }
-                to_save_type = new();   // force GC
-            }
 
             var next = to_save[0];
             to_save.RemoveAt(0);
@@ -403,13 +397,13 @@ namespace Zaimoni.Serialization
         }
 #endregion
 
-        private ulong getTypeCode(Type src) {
+        private ulong getTypeCode(Type src, out Action<Stream>? exec) {
+            exec = null;
             if (type_code_of.TryGetValue(src, out var code)) return code;
             type_code_of.Add(src, ++type_seen);
 
-            to_save_type.Add(dest => {
-                Formatter.SerializeTypeCode(dest, type_seen, src.FullName);
-            });
+            var t_code = type_seen;
+            exec = dest => Formatter.SerializeTypeCode(dest, t_code, src.FullName);
 
             return type_seen;
         }

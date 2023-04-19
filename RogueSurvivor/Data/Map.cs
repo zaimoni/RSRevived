@@ -320,7 +320,6 @@ namespace djack.RogueSurvivor.Data
       });
 
 /*
-      info.read(ref m_Exits, "m_Exits");
       info.read(ref m_ActorsList, "m_ActorsList");
       info.read(ref m_MapObjectsByPosition, "m_MapObjectsByPosition");
       info.read(ref m_GroundItemsByPosition, "m_GroundItemsByPosition");
@@ -366,7 +365,6 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.ISave.LinearSave(encode, m_Exits);
 
 /*
-      info.AddValue("m_Exits", m_Exits);
       info.AddValue("m_ActorsList", m_ActorsList);  // this fails when Actor is ISerializable(!): length ok, all values null
       info.AddValue("m_MapObjectsByPosition", m_MapObjectsByPosition);
       info.AddValue("m_GroundItemsByPosition", m_GroundItemsByPosition);
