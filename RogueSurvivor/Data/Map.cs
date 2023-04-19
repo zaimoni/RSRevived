@@ -66,7 +66,7 @@ namespace djack.RogueSurvivor.Data
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;
     private readonly Dictionary<Point,HashSet<string>> m_Decorations = new();
-    private readonly Dictionary<Point, Exit> m_Exits = new();
+    private readonly Dictionary<Point, Exit> m_Exits = new();   // keys may have negative coordinates
     private readonly List<Zone> m_Zones = new(5);
     private readonly List<Actor> m_ActorsList = new(5);
     private int m_iCheckNextActorIndex;
@@ -312,8 +312,12 @@ namespace djack.RogueSurvivor.Data
       decode.LoadFrom(ref m_TileIDs); // dimensions should agree with Extent
 
       m_Zones = new();
-      void onLoaded(Zone[] src) { m_Zones.AddRange(src); }
-      Zaimoni.Serialization.ISave.LinearLoad<Zone>(decode, onLoaded);
+      Zaimoni.Serialization.ISave.LinearLoad<Zone>(decode, src => m_Zones.AddRange(src));
+
+      m_Exits = new();
+      Zaimoni.Serialization.ISave.LinearLoad<Exit>(decode, src => {
+          foreach (var x in src) m_Exits.Add(x.Key, x.Value);
+      });
 
 /*
       info.read(ref m_Exits, "m_Exits");
@@ -358,6 +362,8 @@ namespace djack.RogueSurvivor.Data
       encode.SaveTo(m_IsInside);
       encode.SaveTo(m_TileIDs); // dimensions should agree with Extent
       encode.SaveTo(m_Zones);
+
+      Zaimoni.Serialization.ISave.LinearSave(encode, m_Exits);
 
 /*
       info.AddValue("m_Exits", m_Exits);
@@ -3046,7 +3052,7 @@ namespace Zaimoni.Serialization
             Formatter.Deserialize7bit(decode.src, ref count);
             if (0 >= count) return; // no action needed
             var dest = new KeyValuePair<Point, T>[count];
-            var stage = new Zaimoni.Lazy.Join<KeyValuePair<Point, T>[]>(dest, handler);
+            var stage = new Lazy.Join<KeyValuePair<Point, T>[]>(dest, handler);
 
             // function extraction target does not work -- out/ref parameter needs accessing from lambda function
             int n = 0;
