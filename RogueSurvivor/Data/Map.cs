@@ -315,7 +315,7 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.ISave.LinearLoad<Zone>(decode, src => m_Zones.AddRange(src));
 
       m_Exits = new();
-      Zaimoni.Serialization.ISave.LinearLoad<Exit>(decode, src => {
+      Zaimoni.Serialization.ISave.LinearLoadSigned<Exit>(decode, src => {
           foreach (var x in src) m_Exits.Add(x.Key, x.Value);
       });
 
@@ -362,7 +362,7 @@ namespace djack.RogueSurvivor.Data
       encode.SaveTo(m_TileIDs); // dimensions should agree with Extent
       encode.SaveTo(m_Zones);
 
-      Zaimoni.Serialization.ISave.LinearSave(encode, m_Exits);
+      Zaimoni.Serialization.ISave.LinearSaveSigned(encode, m_Exits);
 
 /*
       info.AddValue("m_ActorsList", m_ActorsList);  // this fails when Actor is ISerializable(!): length ok, all values null
@@ -3028,7 +3028,7 @@ namespace Zaimoni.Serialization
 
     public partial interface ISave
     {
-        static void LinearSave<T>(EncodeObjects encode, Dictionary<Point, T>? src) where T : ISerialize
+        static void LinearSaveSigned<T>(EncodeObjects encode, Dictionary<Point, T>? src) where T : ISerialize
         {
             var count = src?.Count() ?? 0;
             Formatter.Serialize7bit(encode.dest, count);
@@ -3043,7 +3043,7 @@ namespace Zaimoni.Serialization
             Save(encode, src.Value);
         }
 
-        static void LinearLoad<T>(DecodeObjects decode, Action<KeyValuePair<Point, T>[]> handler) where T : class, ISerialize
+        static void LinearLoadSigned<T>(DecodeObjects decode, Action<KeyValuePair<Point, T>[]> handler) where T : class, ISerialize
         {
             int count = 0;
             Formatter.Deserialize7bit(decode.src, ref count);
