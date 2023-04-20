@@ -1986,17 +1986,21 @@ namespace djack.RogueSurvivor.Engine
 
       var rules = Rules.Get;
       if ((sim & RogueGame.SimFlags.LODETAIL_TURN) == RogueGame.SimFlags.NOT_SIMULATING) {
-        if (Session.Get.HasCorpses && map.CountCorpses > 0) {
+        if (Session.Get.HasCorpses && map.HasCorpses) {
 #region corpses: decide who zombify or rots.
-          var corpseList1 = new List<Corpse>(map.CountCorpses);
-          var corpseList2 = new List<Corpse>(map.CountCorpses);
-          foreach (var corpse in map.Corpses) {
+          List<Corpse> corpseList1 = new();
+          List<Corpse> corpseList2 = new();
+
+          void classify_corpse(Corpse corpse) {
             if (rules.RollChance(corpse.ZombifyChance(map.LocalTime, true))) {
               corpseList1.Add(corpse);
             } else if (corpse.TakeDamage(Corpse.DecayPerTurn())) {
               corpseList2.Add(corpse);
             }
           }
+
+          map.DoForAll(classify_corpse);
+
           foreach (var corpse in corpseList1) {
               if (!map.HasActorAt(corpse.Position)) {
                 Zombify(null, corpse.DeadGuy, false);

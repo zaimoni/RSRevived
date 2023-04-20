@@ -137,8 +137,7 @@ namespace djack.RogueSurvivor.Data
     public IEnumerable<Zone> Zones { get { return m_Zones; } }
     public IEnumerable<Exit> Exits { get { return m_Exits.Values; } }
     public IEnumerable<Actor> Actors { get { return m_ActorsList; } }
-    public IEnumerable<Corpse> Corpses { get { return m_CorpsesList; } }
-    public int CountCorpses { get { return m_CorpsesList.Count; } }
+    public bool HasCorpses { get { return 0<m_CorpsesList.Count; } }
 
     // there is a very rare multi-threading related crash due to m_ActorsList (the parameter for these) being adjusted
     // mid-enumeration
@@ -2173,6 +2172,16 @@ retry:
             if (0 < staging.Count) (ret ??= new Dictionary<Point, List<Corpse>>(ub+1)).Add(x.Key, staging);
         }
         return ret;
+    }
+
+    public void DoForAll(Action<Corpse> op)
+    {
+        var ub = m_aux_CorpsesByPosition.Count;
+        if (0 >= ub) return;
+
+        foreach (var x in m_aux_CorpsesByPosition) {
+            foreach(var c in x.Value) op(c);
+        }
     }
 
     public void AddTimer(TimedTask t) { m_Timers.Add(t); }
