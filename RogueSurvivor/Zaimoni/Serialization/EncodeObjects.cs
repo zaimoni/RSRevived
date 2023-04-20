@@ -177,6 +177,31 @@ namespace Zaimoni.Serialization
             }
             stage.Verify();
         }
+
+        static void LinearSave(EncodeObjects encode, IEnumerable<string>? src)
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src!) Formatter.Serialize(encode.dest, x);
+            }
+        }
+
+        static void LinearLoad(DecodeObjects decode, out string[]? dest)
+        {
+            dest = null;
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            dest = new string[count];
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                Formatter.Deserialize(decode.src, ref dest[n++]);
+            }
+        }
     }
 
     public class EncodeObjects

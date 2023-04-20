@@ -319,6 +319,20 @@ namespace djack.RogueSurvivor.Data
           foreach (var x in src) m_Exits.Add(x.Key, x.Value);
       });
 
+      m_Decorations = new();
+
+      void format_deco(KeyValuePair<Point, string[]>[] src) {
+          var ub = src.Length;
+          while (0 < ub) {
+              var x = src[--ub];
+              string[] arr = x.Value;
+              m_Decorations.Add(x.Key, new(arr));
+              src[ub] = default;    // to force early GC
+          };
+      };
+
+      Zaimoni.Serialization.ISave.LinearLoad(decode, format_deco);
+
 /*
       info.read(ref m_ActorsList, "m_ActorsList");
       info.read(ref m_MapObjectsByPosition, "m_MapObjectsByPosition");
@@ -326,7 +340,6 @@ namespace djack.RogueSurvivor.Data
       info.read(ref m_CorpsesList, "m_CorpsesList");
       info.read(ref m_ScentsByPosition, "m_ScentsByPosition");
       info.read(ref m_Timers, "m_Timers");
-      info.read(ref m_Decorations, "m_Decorations");
 
       // readonly block
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
@@ -363,6 +376,7 @@ namespace djack.RogueSurvivor.Data
       encode.SaveTo(m_Zones);
 
       Zaimoni.Serialization.ISave.LinearSaveSigned(encode, m_Exits);
+      Zaimoni.Serialization.ISave.LinearSave(encode, m_Decorations);
 
 /*
       info.AddValue("m_ActorsList", m_ActorsList);  // this fails when Actor is ISerializable(!): length ok, all values null
@@ -371,7 +385,6 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_CorpsesList", m_CorpsesList);
       info.AddValue("m_ScentsByPosition", m_ScentsByPosition);
       info.AddValue("m_Timers", m_Timers);
-      info.AddValue("m_Decorations", m_Decorations);
  */
     }
 #endregion
@@ -3028,6 +3041,7 @@ namespace Zaimoni.Serialization
 
     public partial interface ISave
     {
+#region save/load m_Exits
         static void LinearSaveSigned<T>(EncodeObjects encode, Dictionary<Point, T>? src) where T : ISerialize
         {
             var count = src?.Count() ?? 0;
@@ -3075,6 +3089,93 @@ namespace Zaimoni.Serialization
             }
             stage.isDone();
         }
+#endregion
+
+#region save/load ...
+        static void LinearSave<T>(EncodeObjects encode, Dictionary<Point, T>? src) where T : ISerialize
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src!) Save(encode, x);
+            }
+        }
+
+        static void Save<T>(EncodeObjects encode, KeyValuePair<Point, T> src) where T : ISerialize
+        {
+            Serialize7bit(encode.dest, src.Key);
+            Save(encode, src.Value);
+        }
+
+        static void LinearLoad<T>(DecodeObjects decode, Action<KeyValuePair<Point, T>[]> handler) where T : class, ISerialize
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new KeyValuePair<Point, T>[count];
+            var stage = new Lazy.Join<KeyValuePair<Point, T>[]>(dest, handler);
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                Point stage_pos = default;
+                Deserialize7bit(decode.src, ref stage_pos);
+                var obj = decode.Load<T>(out var code);
+                if (null != obj) {
+                    dest[n++] = new(stage_pos, obj);
+                    continue;
+                }
+                if (0 >= code) throw new InvalidOperationException("object not loaded");
+
+                var i = n;
+                decode.Schedule(code, (o) => {
+                    if (o is T src) dest[i] = new(stage_pos, src);
+                    else throw new InvalidOperationException("requested object is not a " + typeof(T).AssemblyQualifiedName);
+                    stage.signal();
+                });
+                stage.Schedule();
+                n++;
+            }
+            stage.isDone();
+        }
+#endregion
+
+#region save/load Dictionary<Point,HashSet<string>> m_Decorations
+        static void LinearSave(EncodeObjects encode, Dictionary<Point, HashSet<string>>? src)
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src!) Save(encode, x);
+            }
+        }
+
+        static void Save(EncodeObjects encode, KeyValuePair<Point, HashSet<string>> src)
+        {
+            Serialize7bit(encode.dest, src.Key);
+            LinearSave(encode, src.Value);
+        }
+
+        static void LinearLoad(DecodeObjects decode, Action<KeyValuePair<Point, string[]>[]> handler)
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new KeyValuePair<Point, string[]>[count];
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                Point stage_pos = default;
+                Deserialize7bit(decode.src, ref stage_pos);
+                LinearLoad(decode, out string[] stage_strings);
+                dest[n++] = new(stage_pos, stage_strings);
+            }
+            handler(dest);
+        }
+#endregion
 
     }
 }
