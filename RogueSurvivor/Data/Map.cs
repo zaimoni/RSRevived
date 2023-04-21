@@ -2096,28 +2096,41 @@ retry:
     public bool HasCorpsesAt(Point p) { return m_aux_CorpsesByPosition.ContainsKey(p); }
     public bool Has(Corpse c) { return m_CorpsesList.Contains(c); }
 
-    public void AddAt(Corpse c, Point p)
+#region Corpse::Location support
+    public void Add(Corpse c)
     {
       if (m_CorpsesList.Contains(c)) throw new ArgumentException("corpse already in this map");
-      c.Position = p;
       m_CorpsesList.Add(c);
-      InsertAtPos(c);
-      c.DeadGuy.Location = new Location(this, p);
+      var dest = c.Location.Position;
+      if (m_aux_CorpsesByPosition.TryGetValue(dest, out var corpseList))
+        corpseList.Insert(0, c);
+      else
+        m_aux_CorpsesByPosition.Add(dest, new List<Corpse>(1) { c });
     }
 
-    public void MoveTo(Corpse c, Point newPos)
+    public void UpdateCache(Corpse c, Point origin)
     {
-      if (!m_CorpsesList.Contains(c)) throw new ArgumentException("corpse not in this map");
-      RemoveFromPos(c);
-      c.Position = newPos;
-      InsertAtPos(c);
-      c.DeadGuy.Location = new Location(this, newPos);
+      if (!m_CorpsesList.Contains(c)) throw new ArgumentException("corpse not supposed to be in this map");
+
+      if (m_aux_CorpsesByPosition.TryGetValue(origin, out var src)) {
+        if (src.Remove(c) && 0 >= src.Count) { m_aux_CorpsesByPosition.Remove(origin); }
+      }
+
+      if (m_aux_CorpsesByPosition.TryGetValue(c.Location.Position, out var dest)) {
+        if (!dest.Contains(c)) dest.Add(c);
+      } else {
+        m_aux_CorpsesByPosition.Add(c.Location.Position, new(1){ c });
+      }
     }
+#endregion
 
     public void Remove(Corpse c)
     {
       if (!m_CorpsesList.Remove(c)) throw new ArgumentException("corpse not in this map");
-      RemoveFromPos(c);
+      var src = c.Location.Position;
+      if (!m_aux_CorpsesByPosition.TryGetValue(src, out var corpseList)) return;
+      corpseList.Remove(c);
+      if (0 >= corpseList.Count) m_aux_CorpsesByPosition.Remove(src);
     }
 
     public void Destroy(Corpse c)
@@ -2141,21 +2154,6 @@ retry:
     {
       foreach (var c in m_CorpsesList) if (c.DeadGuy == a) return true;
       return false;
-    }
-
-    private void RemoveFromPos(Corpse c)
-    {
-      if (!m_aux_CorpsesByPosition.TryGetValue(c.Position, out var corpseList)) return;
-      corpseList.Remove(c);
-      if (0 >= corpseList.Count) m_aux_CorpsesByPosition.Remove(c.Position);
-    }
-
-    private void InsertAtPos(Corpse c)
-    {
-      if (m_aux_CorpsesByPosition.TryGetValue(c.Position, out var corpseList))
-        corpseList.Insert(0, c);
-      else
-        m_aux_CorpsesByPosition.Add(c.Position, new List<Corpse>(1) { c });
     }
 
     public Dictionary<Point, List<Corpse>>? FilterCorpses(Predicate<Corpse> ok)
@@ -3016,10 +3014,11 @@ retry:
       }
       m_aux_CorpsesByPosition.Clear();
       foreach (var mCorpses in m_CorpsesList) {
-        if (m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out var corpseList))
+        var dest = mCorpses.Location.Position;
+        if (m_aux_CorpsesByPosition.TryGetValue(dest, out var corpseList))
           corpseList.Add(mCorpses);
         else
-          m_aux_CorpsesByPosition.Add(mCorpses.Position, new List<Corpse>(1) { mCorpses });
+          m_aux_CorpsesByPosition.Add(dest, new(1){ mCorpses });
       }
     }
 

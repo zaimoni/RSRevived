@@ -89,7 +89,6 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     public Actor? Actor { get { return Map.GetActorAt(Position); } }
     public bool StrictHasActorAt { get { return Map.StrictHasActorAt(Position); } }
-    public void Add(Corpse c) { Map.AddAt(c, Position); }
 #nullable restore
     public void Place(Actor actor) { Map.PlaceAt(actor, in Position); }
     public void Place(MapObject obj) { Map.PlaceAt(obj, Position); }

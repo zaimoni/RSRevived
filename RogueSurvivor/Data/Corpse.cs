@@ -21,7 +21,6 @@ namespace djack.RogueSurvivor.Data
 
     public readonly Actor DeadGuy;
     public readonly int Turn;
-    public Point Position;
     public float HitPoints;
     public readonly int MaxHitPoints;
     public readonly float Rotation;
@@ -38,6 +37,7 @@ namespace djack.RogueSurvivor.Data
       MaxHitPoints = deadGuy.MaxHPs;
       Rotation = rotation;
       Scale = Math.Max(0.0f, Math.Min(1f, scale));
+      DeadGuy.Location.Map.Add(this);
     }
 
 #region Implement ISerializable
@@ -45,7 +45,6 @@ namespace djack.RogueSurvivor.Data
     {
       info.read(ref DeadGuy, "DeadGuy");
       info.read_nullsafe(ref DraggedBy, "DraggedBy");
-      info.read_s(ref Position, "Position");
       Turn = info.GetInt32("Turn");
       MaxHitPoints = info.GetInt32("MaxHitPoints");
       HitPoints = info.GetSingle("HitPoints");
@@ -57,7 +56,6 @@ namespace djack.RogueSurvivor.Data
     {
       info.AddValue("DeadGuy", DeadGuy);
       info.AddValue("DraggedBy", DraggedBy);
-      info.AddValue("Position", Position);
       info.AddValue("Turn", Turn);
       info.AddValue("MaxHitPoints", MaxHitPoints);
       info.AddValue("HitPoints", HitPoints);
@@ -65,6 +63,18 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("Scale", Scale);
      }
 #endregion
+
+    public Location Location {
+        get { return DeadGuy.Location; }
+        set {
+          Point? same_map = default;
+          if (DeadGuy.Location.Map == value.Map) same_map = DeadGuy.Location.Position;
+          if (null == same_map) DeadGuy.Location.Map.Remove(this);
+          DeadGuy.Location = value;
+          if (null == same_map) DeadGuy.Location.Map.Add(this);
+          else DeadGuy.Location.Map.UpdateCache(this, same_map.Value);
+        }
+    }
 
     public int FreshnessPercent {
       get {

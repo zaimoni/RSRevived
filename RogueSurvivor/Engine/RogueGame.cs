@@ -2002,9 +2002,9 @@ namespace djack.RogueSurvivor.Engine
           map.DoForAll(classify_corpse);
 
           foreach (var corpse in corpseList1) {
-              if (!map.HasActorAt(corpse.Position)) {
+              if (!corpse.Location.StrictHasActorAt) {
                 Zombify(null, corpse.DeadGuy, false);
-                var witnesses = _ForceVisibleToPlayer(map, corpse.Position);
+                var witnesses = _ForceVisibleToPlayer(corpse.Location);
                 if (null != witnesses) {
                     RedrawPlayScreen(witnesses.Value, new("The " + corpse.ToString() + " rises again!!", map.LocalTime.TurnCounter, Color.Red));
                     m_MusicManager.Play(GameSounds.UNDEAD_RISE, MusicPriority.PRIORITY_EVENT);
@@ -2016,7 +2016,7 @@ namespace djack.RogueSurvivor.Engine
           // don't really have the RAM to do anything complex, like inanimate skeletons.
           foreach (Corpse c in corpseList2) {
             map.Destroy(c);
-            var witnesses = _ForceVisibleToPlayer(map, c.Position);
+            var witnesses = _ForceVisibleToPlayer(c.Location);
             if (null != witnesses) RedrawPlayScreen(witnesses.Value, new("The " + c.ToString() + " turns into dust.", map.LocalTime.TurnCounter, Color.Purple));
           }
 #endregion
@@ -8060,7 +8060,7 @@ namespace djack.RogueSurvivor.Engine
       bool dest_seen = ForceVisibleToPlayer(actor);
       var draggedCorpse = actor.DraggedCorpse;
       if (draggedCorpse != null) {
-        location.Map.MoveTo(draggedCorpse, newLocation.Position);
+        draggedCorpse.Location = actor.Location;
         if (dest_seen || ForceVisibleToPlayer(in location))
           AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", VERB_DRAG.Conjugate(actor), draggedCorpse.DeadGuy.TheName)));
       }
@@ -8313,15 +8313,13 @@ namespace djack.RogueSurvivor.Engine
       }
       if (origin_seen && !is_cross_district) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_LEAVE.Conjugate(actor), map.Name)));
       actor.RemoveFromMap();
-      var dragged_corpse = actor.DraggedCorpse;
-      if (null != dragged_corpse) map.Remove(dragged_corpse);
 
       exitAt.Location.Place(actor); // Adds at last position by default
       if (   !is_cross_district // If we can see what we're getting into, we shouldn't visibly double-move (except that is the point of running)
           || run_was_free_move)
         exit_map.MoveActorToFirstPosition(actor);
 
-      if (null != dragged_corpse) exitAt.Location.Add(dragged_corpse);
+      if (null != actor.DraggedCorpse) actor.DraggedCorpse.Location = actor.Location;
       if ((ForceVisibleToPlayer(actor) || isPlayer) && !is_cross_district) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_ENTER.Conjugate(actor), exit_map.Name)));
       if (is_cross_district)
         actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exit_map.District.Name));
@@ -10793,7 +10791,7 @@ namespace djack.RogueSurvivor.Engine
       var rules = Rules.Get;
       float rotation = rules.Roll(30, 60);
       if (rules.RollChance(50)) rotation = -rotation;
-      deadGuy.Location.Map.AddAt(new Corpse(deadGuy, rotation), deadGuy.Location.Position);
+      new Corpse(deadGuy, rotation); // XXX constructor inserts into containing map
     }
 #nullable restore
 

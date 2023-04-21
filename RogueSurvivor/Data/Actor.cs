@@ -2890,7 +2890,7 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCantButcher(Corpse corpse) // XXX \todo enable AI for this
     {
       if (IsTired) return "tired";
-      if (corpse.Position != Location.Position || !Location.Map.Has(corpse)) return "not in same location";
+      if (corpse.Location != Location || !Location.Map.Has(corpse)) return "not in same location";
       return "";
     }
 
@@ -2916,7 +2916,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (corpse.IsDragged) return new KeyValuePair<int, string>(0, "corpse is already being dragged");
       if (IsTired) return new KeyValuePair<int, string>(0, "tired");
-      if (corpse.Position != Location.Position || !Location.Map.Has(corpse)) return new KeyValuePair<int, string>(0, "not in same location");
+      if (corpse.Location != Location || !Location.Map.Has(corpse)) return new KeyValuePair<int, string>(0, "not in same location");
       return new KeyValuePair<int, string>(1, string.Empty); // we may start dragging this;
     }
 
@@ -2935,7 +2935,7 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCantRevive(Corpse corpse)
     {
       if (0 == Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC)) return "lack medic skill";
-      if (corpse.Position != Location.Position) return "not there";
+      if (corpse.Location != Location) return "not there";
       if (corpse.RotLevel > 0) return "corpse not fresh";
       if (!m_Inventory.Has(Gameplay.GameItems.IDs.MEDICINE_MEDIKIT)) return "no medikit";
       return "";
