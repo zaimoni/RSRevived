@@ -24,6 +24,7 @@ using ItemMeleeWeapon = djack.RogueSurvivor.Engine.Items.ItemMeleeWeapon;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
+using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -324,7 +325,7 @@ namespace djack.RogueSurvivor.Data
           var ub = src.Length;
           while (0 < ub) {
               var x = src[--ub];
-              string[] arr = x.Value;
+              var arr = x.Value;
               m_Decorations.Add(x.Key, new(arr));
               src[ub] = default;    // to force early GC
           };
@@ -332,12 +333,27 @@ namespace djack.RogueSurvivor.Data
 
       Zaimoni.Serialization.ISave.LinearLoad(decode, format_deco);
 
+
+      m_ScentsByPosition = new();
+
+      void format_scents(KeyValuePair<Point, OdorScent[]>[] src) {
+          var ub = src.Length;
+          while (0 < ub) {
+              var x = src[--ub];
+              var arr = x.Value;
+              m_ScentsByPosition.Add(x.Key, new(arr));
+              src[ub] = default;    // to force early GC
+          };
+      };
+
+
+      Zaimoni.Serialization.ISave.LinearLoadInline(decode, format_scents);
+
 /*
       info.read(ref m_ActorsList, "m_ActorsList");
       info.read(ref m_MapObjectsByPosition, "m_MapObjectsByPosition");
       info.read(ref m_GroundItemsByPosition, "m_GroundItemsByPosition");
       info.read(ref m_CorpsesList, "m_CorpsesList");
-      info.read(ref m_ScentsByPosition, "m_ScentsByPosition");
       info.read(ref m_Timers, "m_Timers");
 
       // readonly block
@@ -376,13 +392,13 @@ namespace djack.RogueSurvivor.Data
 
       Zaimoni.Serialization.ISave.LinearSaveSigned(encode, m_Exits);
       Zaimoni.Serialization.ISave.LinearSave(encode, m_Decorations);
+      Zaimoni.Serialization.ISave.LinearSaveInline(encode, m_ScentsByPosition);
 
 /*
       info.AddValue("m_ActorsList", m_ActorsList);  // this fails when Actor is ISerializable(!): length ok, all values null
       info.AddValue("m_MapObjectsByPosition", m_MapObjectsByPosition);
       info.AddValue("m_GroundItemsByPosition", m_GroundItemsByPosition);
       info.AddValue("m_CorpsesList", m_CorpsesList);
-      info.AddValue("m_ScentsByPosition", m_ScentsByPosition);
       info.AddValue("m_Timers", m_Timers);
  */
     }
@@ -3184,6 +3200,63 @@ namespace Zaimoni.Serialization
             handler(dest);
         }
 #endregion
+
+        static void LinearLoadInline(DecodeObjects decode, out OdorScent[] dest)
+        {
+            dest = null;
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            dest = new OdorScent[count];
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                dest[n++] = new(decode);
+            }
+        }
+
+
+        static void LinearLoadInline(DecodeObjects decode, Action<KeyValuePair<Point, OdorScent[]>[]> handler)
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new KeyValuePair<Point, OdorScent[]>[count];
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                Point stage_pos = default;
+                Deserialize7bit(decode.src, ref stage_pos);
+                LinearLoadInline(decode, out OdorScent[] stage_strings);
+                dest[n++] = new(stage_pos, stage_strings);
+            }
+            handler(dest);
+        }
+
+        static void LinearSaveInline<T>(EncodeObjects encode, IEnumerable<T>? src) where T:ISerialize
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src) InlineSave(encode, x);
+            }
+        }
+
+        static void LinearSaveInline<T>(EncodeObjects encode, Dictionary<Point, List<T>>? src) where T:ISerialize
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src) {
+                    Serialize7bit(encode.dest, x.Key);
+                    LinearSaveInline(encode, x.Value);
+                }
+            }
+        }
 
     }
 }
