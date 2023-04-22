@@ -247,6 +247,7 @@ namespace Zaimoni.Data
       }
     }
 
+#if PROTOTYPE
     // convention: pixels are unit length/width squares whose centers are on the integer coordinates
     // x0,y0 pair is the top left corner
     public static void Ellipse(this Bitmap img, Color tint, int x0, int y0, int width, int height)
@@ -283,7 +284,6 @@ namespace Zaimoni.Data
       img.Ellipse(tint, x0, y0, radius, radius);
     }
 
-#if PROTOTYPE
     public static Bitmap SkewCopy(this Bitmap img, int w, int h, Func<Point,Point> transform)
     {
 #if DEBUG
@@ -319,6 +319,25 @@ namespace Zaimoni.Data
       for (pt.X = 0; pt.X < w; ++pt.X ) {
         for (pt.Y = 0; pt.Y < h; ++pt.Y) {
           dest.SetPixel(pt.X,pt.Y,(use_src(pt) ? src : splice).GetPixel(pt.X,pt.Y));
+        }
+      }
+      return dest;
+    }
+
+    public static Bitmap Recolor(this Bitmap src, Point origin, Color color)
+    {
+#if DEBUG
+      if (null == src) throw new ArgumentNullException(nameof(src));
+#endif
+      int w = src.Width;
+      int h = src.Height;
+      Bitmap dest = new Bitmap(w,h);
+      var old = src.GetPixel(origin.X, origin.Y);
+      Point pt = new Point(0,0);
+      for (pt.X = 0; pt.X < w; ++pt.X ) {
+        for (pt.Y = 0; pt.Y < h; ++pt.Y) {
+          var test = src.GetPixel(pt.X, pt.Y);
+          dest.SetPixel(pt.X,pt.Y,(test == old ? color : test));
         }
       }
       return dest;

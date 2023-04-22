@@ -11775,6 +11775,7 @@ namespace djack.RogueSurvivor.Engine
 
     private static string? RunIcon(Actor actor) {
         if (actor.IsRunning) return GameImages.ICON_RUNNING;
+        else if (actor.IsCrouching) return GameImages.ICON_CROUCHING;
         else if (actor.Model.Abilities.CanRun && !actor.CanRun()) return GameImages.ICON_CANT_RUN;
         return null;
     }

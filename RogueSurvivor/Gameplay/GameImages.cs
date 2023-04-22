@@ -41,6 +41,7 @@ namespace djack.RogueSurvivor.Gameplay
     public const string ICON_THREAT_DANGER = "Icons\\threat_danger";
     public const string ICON_THREAT_HIGH_DANGER = "Icons\\threat_high_danger";
     public const string ICON_CANT_RUN = "Icons\\cant_run";
+    public const string ICON_CROUCHING = "Icons\\crouching";
     public const string ICON_EXPIRED_FOOD = "Icons\\expired_food";
     public const string ICON_SPOILED_FOOD = "Icons\\spoiled_food";
     public const string ICON_FOOD_ALMOST_HUNGRY = "Icons\\food_almost_hungry";
@@ -491,7 +492,10 @@ namespace djack.RogueSurvivor.Gameplay
       Load(ICON_RANGED_ATTACK);
       Load(ICON_RANGED_MISS);
       Load(ICON_RANGED_DAMAGE);
+#if CGI_ICONS
+#else
       Load(ICON_RUNNING);
+#endif
       Load(ICON_ROT_ALMOST_HUNGRY);
       Load(ICON_ROT_HUNGRY);
       Load(ICON_ROT_STARVING);
@@ -890,8 +894,18 @@ namespace djack.RogueSurvivor.Gameplay
       MonochromeBorderTile(PLAYER_FOLLOWER, Color.Transparent, Color.FromArgb(0x00,0x99,0x99));
       MonochromeBorderTile(PLAYER_FOLLOWER_TRUST, Color.Transparent, Color.Cyan);
       MonochromeDropshadowTile(ITEM_SLOT, Color.Transparent, Color.Silver, Color.Gray);
+/*
+running icon: #4CFF00
+can't run icon: #FF0000
+
+considering for crouching: #00FF00
+ */
+
+      Recolor(ICON_RUNNING, s_Images[ICON_CANT_RUN], new Point(2, 29), Color.FromArgb(0x4C, 0xFF, 0));
       // we need more synthetic rail tiles : scaled rotation, or if that is too difficult skew 45 degrees left, skew 45 degrees right
 #endif
+      Recolor(ICON_CROUCHING, s_Images[ICON_CANT_RUN], new Point(2, 29), Color.FromArgb(0, 0xFF, 0));
+
       // 5 synthetic rail tiles to be constructed from TILE_RAIL_SWNE
       VReflect(TILE_RAIL_SENW,TILE_RAIL_SWNE);
       TLBRSplice(TILE_RAIL_SWNE_WALL_E,TILE_RAIL_SENW, TILE_WALL_BRICK);
@@ -1032,6 +1046,14 @@ namespace djack.RogueSurvivor.Gameplay
       s_Images[id] = s_Images[lhs].Splice(s_Images[rhs], TopRightExclusive);
       s_GrayLevelImages[id] = s_GrayLevelImages[lhs].Splice(s_GrayLevelImages[rhs], TopRightExclusive);
     }
+
+    private static void Recolor(string id_dest, Bitmap src, Point origin, Color color)
+    {
+      var stage = src.Recolor(origin, color);
+      s_Images[id_dest] = stage;
+      s_GrayLevelImages[id_dest] = MakeGrayLevel(stage);
+    }
+
 
     private static Bitmap MakeGrayLevel(Bitmap img)
     {
