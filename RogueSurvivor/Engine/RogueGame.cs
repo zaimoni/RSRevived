@@ -12238,6 +12238,7 @@ namespace djack.RogueSurvivor.Engine
     static private ColorString ActorRunningStatus(Actor actor)
     {
       if (actor.IsRunning) return new ColorString(Color.LightGreen, "RUNNING!");
+      if (actor.IsCrouching) return new ColorString(Color.LightGreen, "CROUCHING");
       if (actor.CanRun()) return new ColorString(Color.Green, "can run");
       if (actor.IsTired) return new ColorString(Color.Gray, "TIRED");
       return new ColorString(Color.Red,string.Empty);

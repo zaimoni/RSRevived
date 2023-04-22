@@ -307,7 +307,32 @@ namespace djack.RogueSurvivor.Data
       set { SetFlag(Flags.IS_RUNNING, value); }
     }
     public void Walk() { Clear(Flags.IS_RUNNING); }
-    public void Run() { if (CanRun()) Set(Flags.IS_RUNNING); }
+    public void Run() {
+      if (CanRun() && !IsRunning) {
+        if (IsCrouching) StandUp();
+        Set(Flags.IS_RUNNING);
+      }
+    }
+
+    // 2023-04-22: new posture crouching
+    // This is to allow using ground inventories without stepping over them (i.e., lower what arm height means)
+    // This is NOT something we want to use keystrokes on, at least without good reason.
+    // we might want to allow manual crouching if we got useful stealth gameplay (e.g., crouching behind a window might be
+    // good for cover against ranged weapons, or creating asymmetric LoS)
+    // for now, we don't worry about stamina costs (STA for standing up is defensible)
+    // crouch-walk-run stance changes are "free" because our time resolution is so large (2 minutes/turn)
+    public bool IsCrouching {
+      get { return GetFlag(Flags.IS_CROUCHING); }
+      set { SetFlag(Flags.IS_CROUCHING, value); }
+    }
+    public void StandUp() { Clear(Flags.IS_CROUCHING); }
+    public void Crouch() {
+      if (CanCrouch() && !IsCrouching) {
+        if (IsRunning) Walk();
+        Set(Flags.IS_CROUCHING);
+      }
+    }
+
 
     public Inventory? Inventory { get { return m_Inventory; } }
 
@@ -2597,10 +2622,31 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // 2023-04-22: For now, assume conditions for crouching are those for running.
+    // revisit the stamina, etc. questions later
+    // e.g., if we introduce the WEAK trait then *standing up* is problematic for a WEAK living
+    private string ReasonCantCrouch()
+    {
+      if (!Model.Abilities.CanRun) return "no ability to crouch";
+      if (StaminaPoints < STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to crouch";
+      return "";
+    }
+
+    public bool CanCrouch(out string reason)
+    {
+      reason = ReasonCantCrouch();
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanCrouch()
+    {
+      return string.IsNullOrEmpty(ReasonCantCrouch());
+    }
+
     private string ReasonCantRun()
     {
       if (!Model.Abilities.CanRun) return "no ability to run";
-      if (StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to run";
+      if (StaminaPoints < STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to run";
       return "";
     }
 
@@ -4006,6 +4052,7 @@ namespace djack.RogueSurvivor.Data
       IS_DEAD = 8,
       IS_RUNNING = 16,
       IS_SLEEPING = 32,
+      IS_CROUCHING = 64,
     }
   }
 
