@@ -46,6 +46,9 @@ namespace djack.RogueSurvivor.Data
             QtyLike = qty;
             Flags = flags;
         }
+
+        public ItemModel Model { get { return Gameplay.GameItems.From(ModelID); } }
+        public bool Consume() => 0 >= Interlocked.Decrement(ref QtyLike);
     }
 #endif
 
