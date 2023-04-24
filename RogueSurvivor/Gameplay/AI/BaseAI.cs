@@ -1079,7 +1079,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a is Resolvable res) return IsValidMoveTowardGoalAction(res.ConcreteAction);
       // blacklist actions inappropriate for bump movement
       if (a is ActionChat) return false;
-      if (a is ActionGetFromContainer) return false;
+      if (a is PlayerTakeFrom) return false;
       if (a is ActionRechargeItemBattery) return false;
       if (a is ActionSwitchPlaceEmergency) return false;
       if (a is ActionSwitchPowerGenerator) return false;

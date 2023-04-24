@@ -3245,11 +3245,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 #nullable enable
-    protected override ActorAction? BehaviorWouldGrabFromStack(in Location loc, Inventory? stack)
-    {
-      return BehaviorGrabFromStack(in loc,stack,false);
-    }
-
     protected override ActorAction? BehaviorWouldGrabFrom(in Location loc)
     {
       var stack = loc.Items;

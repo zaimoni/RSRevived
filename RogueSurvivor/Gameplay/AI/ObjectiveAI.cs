@@ -5522,7 +5522,6 @@ restart_chokepoints:
     }
 
 #nullable enable
-    abstract protected ActorAction? BehaviorWouldGrabFromStack(in Location loc, Inventory? stack);
     abstract protected ActorAction? BehaviorWouldGrabFrom(in Location loc);
     abstract protected ActorAction? BehaviorWouldGrabFrom(ShelfLike obj);
 

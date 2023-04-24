@@ -240,7 +240,6 @@
     <Compile Include="Engine\Actions\ActionDropItem.cs" />
     <Compile Include="Engine\Actions\ActionEatCorpse.cs" />
     <Compile Include="Engine\Actions\ActionMoveStep.cs" />
-    <Compile Include="Engine\Actions\ActionGetFromContainer.cs" />
     <Compile Include="Engine\Actions\ActionCloseDoor.cs" />
     <Compile Include="Engine\Actions\ActionStartDragCorpse.cs" />
     <Compile Include="Engine\Actions\ActionReviveCorpse.cs" />

@@ -667,11 +667,6 @@ namespace djack.RogueSurvivor.Data
     }
 
 #nullable enable
-    protected override ActorAction? BehaviorWouldGrabFromStack(in Location loc, Inventory? stack)
-    {
-      return Engine.Actions.ActionGetFromContainer.create(this, loc);
-    }
-
     protected override ActorAction? BehaviorWouldGrabFrom(in Location loc)
     {
       return Engine.Actions.PlayerTakeFrom.create(this, loc);
