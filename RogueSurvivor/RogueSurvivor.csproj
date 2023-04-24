@@ -71,6 +71,7 @@
     <Compile Include="Engine\Actions\ActionSequence.cs" />
     <Compile Include="Engine\Actions\ActionMoveDelta.cs" />
     <Compile Include="Engine\Action\Chain.cs" />
+    <Compile Include="Engine\Action\Choice.cs" />
     <Compile Include="Engine\Action\MoveStep.cs" />
     <Compile Include="Engine\Goal\DeathTrapped.cs" />
     <Compile Include="Engine\Goal\NextAction.cs" />

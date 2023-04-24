@@ -230,6 +230,10 @@ namespace djack.RogueSurvivor.Data
     public string VisibleIdentity(MapObject mapObj) => IsVisibleTo(mapObj.Location) ? mapObj.TheName : "something";
 
     public abstract ActorAction? GetAction();
+
+    // for _Action.Choice
+    public virtual ActorAction Choose(List<ActorAction> src) => Rules.Get.DiceRoller.Choose(src);
+
 #nullable restore
 
     /// <returns>number of turns of trap activation it takes to kill, or int.MaxValue for no known problem</returns>

@@ -416,15 +416,23 @@ namespace djack.RogueSurvivor.Data
     }
 
 #nullable enable
-    public override ActorAction? GetAction()
-    {
-      throw new InvalidOperationException("do not call PlayerController.GetAction()");
+    public override ActorAction? GetAction() => throw new InvalidOperationException("do not call PlayerController.GetAction()");
+    protected override ActorAction? SelectAction() => throw new InvalidOperationException("do not call PlayerController.SelectAction()");
+
+    public override ActorAction Choose(List<ActorAction> src) {
+        ActorAction ret = src[0];
+        if (1 < src.Count) {
+            string label(int index) { return src[index].ToString(); }
+            bool details(int index) {
+                ret = src[index];
+                return true;
+            }
+
+            RogueGame.Game.PagedPopup(m_Actor.UnmodifiedName+"'s options", src.Count, label, details);
+        }
+        return ret;
     }
 
-    protected override ActorAction? SelectAction()
-    {
-      throw new InvalidOperationException("do not call PlayerController.SelectAction()");
-    }
 #nullable restore
 
     // originally in Actor
