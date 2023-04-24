@@ -22,6 +22,7 @@ using Zaimoni.Data;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
+using djack.RogueSurvivor.Engine._Action;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -199,7 +200,10 @@ namespace djack.RogueSurvivor.Engine
 #endif
       reason = "";
       Location loc = new Location(map,point);
-
+      if (!actor.CanEnter(ref loc)) {
+        reason = "blocked";
+        return null;
+      }
       if (1>=actor.Controller.FastestTrapKill(in loc)) {
         reason = "deathtrapped";
         return null;
@@ -242,16 +246,33 @@ namespace djack.RogueSurvivor.Engine
         return (null!=target ? new ActionMeleeAttack(actor, target) : null);
 #endif
       }
+      var mapObjectAt = loc.MapObject;
       if (!map.IsInBounds(point)) {
-	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, in point) : null);
+        if (!actor.CanLeaveMap(point, out reason)) return null;
+        var obj_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
+        var inv_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(in loc);
+        if (null != obj_act || null != inv_act) {
+          List<ActorAction> stage = new() { new ActionLeaveMap(actor, in point) };
+          if (null != obj_act) stage.Add(obj_act);
+          if (null != inv_act) stage.Add(inv_act);
+          return new Choice(actor, stage);
+        }
+	    return new ActionLeaveMap(actor, in point);
       }
       var actionMoveStep = new ActionMoveStep(actor, in point);
       if (actionMoveStep.IsPerformable()) {
         reason = "";
+        var obj_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike); // null
+        var inv_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(in loc); // inventory is there
+        if (null != obj_act || null != inv_act) {
+          List<ActorAction> stage = new() { actionMoveStep };
+          if (null != obj_act) stage.Add(obj_act);
+          if (null != inv_act) stage.Add(inv_act);
+          return new Choice(actor, stage);
+        }
         return actionMoveStep;
       }
       reason = actionMoveStep.FailReason;
-      var mapObjectAt = map.GetMapObjectAt(point);
       if (mapObjectAt != null) {
         if (mapObjectAt is DoorWindow door) {
           if (door.IsClosed) {

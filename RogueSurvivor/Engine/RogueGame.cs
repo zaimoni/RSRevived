@@ -8055,6 +8055,7 @@ namespace djack.RogueSurvivor.Engine
       Location location = actor.Location;
       if (location.Map != newLocation.Map) throw new NotImplementedException("DoMoveActor : illegal to change map.");
 	  // committed to move now
+      actor.StandUp();  // movement cancels crouching, for now (duck walk very low priority to implement)
 	  actor.Moved();
       newLocation.Place(actor);
       bool dest_seen = ForceVisibleToPlayer(actor);
@@ -8301,6 +8302,7 @@ namespace djack.RogueSurvivor.Engine
       bool need_stamina_regen = (is_running ? !run_is_free_move : !actor.WalkIsFreeMove) && null!=exit_map.NextActorToAct;
       actor.SpendActionPoints(is_running ? Actor.BASE_ACTION_COST/2 : Actor.BASE_ACTION_COST);
       if (is_running) actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
+      else actor.StandUp();  // movement cancels crouching, for now (duck walk very low priority to implement)
       bool origin_seen = ForceVisibleToPlayer(actor);
       var mapObjectAt = exitAt.Location.MapObject;
       if (null != mapObjectAt && mapObjectAt.IsJumpable) {
@@ -9724,6 +9726,34 @@ namespace djack.RogueSurvivor.Engine
       PagedMenu("Taking...", inv.CountItems, label, details);
     }
 
+    public void HandlePlayerTakeItem(PlayerController pc, InvOrigin src)
+    {
+      var player = pc.ControlledActor;
+      var inv = src.inv;
+#if DEBUG
+      if (inv.IsEmpty) throw new ArgumentNullException(nameof(src)+".inv");
+      if (null == src.obj_owner && null == src.loc) throw new InvalidOperationException("only take from unresisting targets");
+      if (1 < Rules.GridDistance(player.Location, src.Location)) throw new ArgumentOutOfRangeException(nameof(src), src, "not adjacent");
+#endif
+      if (2 > inv.CountItems) {
+        DoTakeItem(player, new InventorySource<Item>(src, inv.TopItem!));
+        return;
+      }
+
+      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index])); }
+      bool details(int index) {
+        Item obj = inv[index]!;
+        if (player.CanGet(obj, out string reason)) {
+          DoTakeItem(player, new InventorySource<Item>(src, obj));
+          return true;
+        }
+        ErrorPopup(string.Format("{0} take {1} : {2}.", player.TheName, DescribeItemShort(obj), reason));
+        return false;
+      }
+
+      PagedMenu("Taking...", inv.CountItems, label, details);
+    }
+
     public void DoTakeItem(Actor actor, in InventorySource<Item> src)
     {
       var it = src.it;  // backward compatibility
@@ -9733,6 +9763,15 @@ namespace djack.RogueSurvivor.Engine
       if (null == src.obj_owner && null == src.loc) throw new InvalidOperationException("do not take from actor inventory");
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
 #endif
+      // stance changes
+      if (null != src.loc && 1==Rules.GridDistance(actor.Location, src.loc.Value)) {
+        // need to crouch to make this work
+        actor.Crouch();
+      } else if (null != src.obj_owner) {
+        // need to stand to make this work
+        actor.StandUp();
+      }
+
       actor.SpendActionPoints();
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
       g_inv.RepairCrossLink(actor.Inventory);

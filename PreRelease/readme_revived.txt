@@ -3,7 +3,7 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 
 REVIVED 0.10.0 CHANGES
 ------------------
-* minimum required .NET is now 6.0.
+* minimum required .NET is now 7.0.
 * The city planners have improved zoning regulations for districts.
 * Z-detectors can clear threat tracking caused by Z.
 * New command Countermand PC, default key ALT-SHIFT-O.  Use this to inspect which self-orders are active, and cancel them.
@@ -20,6 +20,8 @@ REVIVED 0.10.0 CHANGES
 *** all PC self-orders are new-style objectives.
 ** Ordering followers to go somewhere, is done from the Far Look command.  (This sets an objective).  The follower will *not* stay there once arrived.
 ** Ordering followers to go pick up an item, is done from the Item Memory listings.  (This sets an objective.)
+* There is a new stance, crouching.  Manual control of crouching, will require gameplay useful/fun enough to justify the extra keystrokes.
+** Crouching allows using ground inventories as if they were on shop shelves.
 
 2020-11-09 and earlier
 * Cf. main manual's commands section for how self-orders work.

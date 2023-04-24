@@ -897,14 +897,13 @@ namespace djack.RogueSurvivor.Gameplay
 /*
 running icon: #4CFF00
 can't run icon: #FF0000
-
-considering for crouching: #00FF00
+crouching: #0000FF
  */
 
       Recolor(ICON_RUNNING, s_Images[ICON_CANT_RUN], new Point(2, 29), Color.FromArgb(0x4C, 0xFF, 0));
       // we need more synthetic rail tiles : scaled rotation, or if that is too difficult skew 45 degrees left, skew 45 degrees right
 #endif
-      Recolor(ICON_CROUCHING, s_Images[ICON_CANT_RUN], new Point(2, 29), Color.FromArgb(0, 0xFF, 0));
+      Recolor(ICON_CROUCHING, s_Images[ICON_CANT_RUN], new Point(2, 29), Color.FromArgb(0, 0, 0xFF));
 
       // 5 synthetic rail tiles to be constructed from TILE_RAIL_SWNE
       VReflect(TILE_RAIL_SENW,TILE_RAIL_SWNE);

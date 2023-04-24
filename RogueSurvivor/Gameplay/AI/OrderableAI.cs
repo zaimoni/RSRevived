@@ -3250,6 +3250,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorGrabFromStack(in loc,stack,false);
     }
 
+    protected override ActorAction? BehaviorWouldGrabFrom(in Location loc)
+    {
+      var stack = loc.Items;
+      if (null == stack || stack.IsEmpty) return null;
+      return BehaviorGrabFromStack(in loc, loc.Items, false);
+    }
+
+    protected override ActorAction? BehaviorWouldGrabFrom(ShelfLike obj)
+    {
+      var inv = obj.NonEmptyInventory;
+      if (null == inv) return null;
+      return BehaviorGrabFromStack(obj.Location, inv, false);
+    }
+
+
     public bool WouldGrabFromStack(in Location loc, Inventory? stack)
     {
 #if DEBUG

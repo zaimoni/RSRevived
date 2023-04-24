@@ -671,6 +671,16 @@ namespace djack.RogueSurvivor.Data
     {
       return Engine.Actions.ActionGetFromContainer.create(this, loc);
     }
+
+    protected override ActorAction? BehaviorWouldGrabFrom(in Location loc)
+    {
+      return Engine.Actions.PlayerTakeFrom.create(this, loc);
+    }
+
+    protected override ActorAction? BehaviorWouldGrabFrom(ShelfLike obj)
+    {
+      return Engine.Actions.PlayerTakeFrom.create(this, obj);
+    }
 #nullable restore
 
     // while the following is "valid" for any actor, messages are shown *only* to the player

@@ -1229,7 +1229,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
              if (x.Value.IsEmpty) continue;
              if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
              var inv = x.Key.Items;
-             if (null!=inv && !inv.IsEmpty && (BehaviorWouldGrabFromStack(x.Key, inv)?.IsLegal() ?? false)) {    // items seen cache can be obsolete
+             if (null!=inv && !inv.IsEmpty && (BehaviorWouldGrabFrom(x.Key)?.IsLegal() ?? false)) {    // items seen cache can be obsolete
                ret |= ReactionCode.ITEM;
                break;
              }
@@ -5523,13 +5523,23 @@ restart_chokepoints:
 
 #nullable enable
     abstract protected ActorAction? BehaviorWouldGrabFromStack(in Location loc, Inventory? stack);
+    abstract protected ActorAction? BehaviorWouldGrabFrom(in Location loc);
+    abstract protected ActorAction? BehaviorWouldGrabFrom(ShelfLike obj);
 
     public ActorAction? WouldGetFrom(ShelfLike? obj)
     {
       var stack = obj?.NonEmptyInventory;
-      if (null == stack) return null;
-      return BehaviorWouldGrabFromStack(obj.Location, stack);
+      if (null == stack || stack.IsEmpty) return null;
+      return BehaviorWouldGrabFrom(obj!);
     }
+
+    public ActorAction? WouldGetFrom(in Location loc)
+    {
+      var stack = loc.Items;
+      if (null == stack || stack.IsEmpty) return null;
+      return BehaviorWouldGrabFrom(loc);
+    }
+
 #nullable restore
 
     protected Dictionary<Location, Inventory> GetInterestingInventoryStacks(Predicate<Inventory> want_now)   // technically could be ActorController
@@ -5551,7 +5561,7 @@ restart_chokepoints:
         if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
         if (!m_Actor.CanEnter(x.Key)) continue;    // XXX ignore buggy stack placement
         if (x.Value.IsEmpty) continue;  // got changed on us?
-        if (!BehaviorWouldGrabFromStack(x.Key, x.Value)?.IsLegal() ?? true) {
+        if (!BehaviorWouldGrabFrom(x.Key)?.IsLegal() ?? true) {
           boringStacks.Add(new Percept(x.Value, t0, x.Key));
           continue;
         }

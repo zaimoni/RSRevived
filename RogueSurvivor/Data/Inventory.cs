@@ -66,6 +66,14 @@ namespace djack.RogueSurvivor.Data
           a_owner = agent;
         }
 
+        public Location Location {
+            get {
+                if (null != loc) return loc.Value;
+                if (null != obj_owner) return obj_owner.Location;
+                return a_owner.Location;
+            }
+        }
+
     }
 
   [Serializable]
