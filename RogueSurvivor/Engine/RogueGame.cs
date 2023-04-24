@@ -8126,6 +8126,8 @@ namespace djack.RogueSurvivor.Engine
         if (!actor.IsDead) KillActor(owner, actor, "trap");
       }
     }
+
+    // \todo OnActorReachIntoTile
 #nullable restore
 
     public bool TryActorLeaveTile(Actor actor)

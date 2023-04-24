@@ -5,14 +5,12 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define POLICE_NO_QUESTIONS_ASKED
-// #define VERIFY_MOVES
 #define B_MOVIE_MARTIAL_ARTS
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
-using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -318,13 +316,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static ActorAction IsBumpableFor(Actor actor, in Location location)
     {
-#if VERIFY_MOVES
-      var ret = IsBumpableFor(actor, in location, out string reason);
-      if (ret is ActorDest a_dest && !actor.CanEnter(a_dest.dest)) throw new InvalidOperationException(actor.Name+" considered illegal destination "+a_dest.dest);
-      return ret;
-#else
       return IsBumpableFor(actor, in location, out string reason);
-#endif
     }
 
     public static ActorAction IsBumpableFor(Actor actor, in Location location, out string reason)
@@ -575,13 +567,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static ActorAction IsPathableFor(Actor actor, in Location location)
     {
-#if VERIFY_MOVES
-      var ret = IsPathableFor(actor, location, out string reason);
-      if (ret is ActorDest a_dest && !actor.CanEnter(a_dest.dest)) throw new InvalidOperationException(actor.Name+" considered illegal destination "+a_dest.dest);
-      return ret;
-#else
       return IsPathableFor(actor, location, out string reason);
-#endif
     }
 
     // These two somewhat counter-intuitively consider "same location" as adjacent
