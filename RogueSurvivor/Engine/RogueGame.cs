@@ -4154,7 +4154,7 @@ namespace djack.RogueSurvivor.Engine
 
           bool details_follower(int index) {
             var src = x.Key.Inv(item_type).Value;
-            (available_followers[index].Controller as ObjectiveAI).Track(in src, item_type);
+            (available_followers[index].Controller as ObjectiveAI).Track(src.Origin, item_type);
             return true;
           };
 

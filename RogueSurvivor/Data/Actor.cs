@@ -3516,12 +3516,11 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantGet(it));
     }
 
-    public bool MayTakeFrom(in InventorySource<Item> stack)
+    public bool MayTakeFrom(in InvOrigin stack)
     {
-      if (null != stack.loc && Location == stack.loc.Value) return true;
-      // currently all containers are not-walkable for UI reasons.
       // Rules.IsAdjacent would also check the other side of the stairs.
-      if (null != stack.obj_owner && 1 == Rules.GridDistance(in m_Location, stack.obj_owner.Location)) return true;
+      if (1 == Rules.GridDistance(in m_Location, stack.Location)) return true;
+      if (null != stack.loc && Location == stack.loc.Value) return true;
       return false;
     }
 

@@ -54,7 +54,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         static public PlayerTakeFrom? create(PlayerController pc, ShelfLike obj)
         {
-            if (null == obj || obj.Inventory.IsEmpty) return null;
+            if (null == obj?.NonEmptyInventory) return null;
             return new PlayerTakeFrom(pc, new InvOrigin(obj));
         }
 

@@ -59,7 +59,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override abstract void Perform();
 
-        static public ActionTradeWith Cast(in InventorySource<Item> dest, Actor actor, Item give, Item take)
+        static public ActionTradeWith Cast(in InvOrigin dest, Actor actor, Item give, Item take)
         {
             if (null == dest.inv || !dest.inv.Contains(take)) {
 #if DEBUG
@@ -167,7 +167,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         public override bool IsPerformable()
         {
             if (!base.IsPerformable()) return false;
-            return m_Actor.Location == m_Location;
+            return 1 >= Rules.GridDistance(m_Actor.Location, m_Location);
         }
 
         public override void Perform()

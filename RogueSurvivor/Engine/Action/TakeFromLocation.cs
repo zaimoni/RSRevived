@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public override bool IsPerformable() {
             if (!IsLegal()) return false;
-            var stacks = Map.GetAccessibleInventorySources(m_Actor.Location);
+            var stacks = Map.GetAccessibleInventoryOrigins(m_Actor.Location);
             if (null == stacks) return false;
             foreach (var stack in stacks) {
                 if (null != stack.loc && stack.loc.Value == m_loc) {

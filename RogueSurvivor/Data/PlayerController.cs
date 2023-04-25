@@ -182,28 +182,28 @@ namespace djack.RogueSurvivor.Data
     }
 
     // check-in with leader
-    public override bool ReportBlocked(in InventorySource<Item> src, Actor who) {
+    public override bool ReportBlocked(in InvOrigin src, Actor who) {
       var code = CommunicationMethodCode(who);
       if (0 >= code) return false;
 
       _handleReport(src.ToString() + " is blocked.", code, who);
       return true;
     }
-    public override bool ReportGone(in InventorySource<Item> src, Actor who) {
+    public override bool ReportGone(in InvOrigin src, Actor who) {
       var code = CommunicationMethodCode(who);
       if (0 >= code) return false;
 
       _handleReport("Nothing at " + src.ToString() + ".", code, who);
       return true;
     }
-    public override bool ReportNotThere(in InventorySource<Item> src, Gameplay.GameItems.IDs what, Actor who) {
+    public override bool ReportNotThere(in InvOrigin src, Gameplay.GameItems.IDs what, Actor who) {
       var code = CommunicationMethodCode(who);
       if (0 >= code) return false;
 
       _handleReport(what.ToString()+" is not at " + src.ToString() + ".", code, who);
       return true;
     }
-    public override bool ReportTaken(in InventorySource<Item> src, Item it, Actor who)  {
+    public override bool ReportTaken(in InvOrigin src, Item it, Actor who)  {
       var code = CommunicationMethodCode(who);
       if (0 >= code) return false;
 

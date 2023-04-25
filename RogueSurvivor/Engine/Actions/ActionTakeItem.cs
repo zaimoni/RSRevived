@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 #endif
     }
 
-    public ActionTakeItem(Actor actor, in InventorySource<Item> stack, Item it) : base(actor)
+    public ActionTakeItem(Actor actor, in InvOrigin stack, Item it) : base(actor)
     {
 #if DEBUG
       if (actor.Controller is not Gameplay.AI.ObjectiveAI ai) throw new ArgumentNullException(nameof(ai));  // not for a trained dog fetching something
@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (null != m_Item && m_InvSrc.Value.inv.Contains(m_Item)) return;
 
-      var stacks = Map.GetAccessibleInventorySources(m_Actor.Location);
+      var stacks = Map.GetAccessibleInventoryOrigins(m_Actor.Location);
       if (null == stacks) return;
 
       ItemModel model = Gameplay.GameItems.From(m_ID);
@@ -125,7 +125,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       foreach(var stack in stacks) {
         m_Item = stack.inv.GetFirstByModel(model);
         if (null != m_Item) {
-          m_InvSrc = new(stack.Origin, m_Item);
+          m_InvSrc = new(stack, m_Item);
           return;
         }
       }

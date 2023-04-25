@@ -22,7 +22,7 @@ using ItemTrap = djack.RogueSurvivor.Engine.Items.ItemTrap;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal readonly struct InvOrigin {
+  internal readonly record struct InvOrigin {
         public readonly Inventory inv;
         public readonly Actor? a_owner = null;
         public readonly ShelfLike? obj_owner = null;
@@ -73,6 +73,21 @@ namespace djack.RogueSurvivor.Data
                 return a_owner.Location;
             }
         }
+
+        // not really...some extra conditions involved
+        public bool IsAccessible(Location origin)
+        {
+            if (1 == Rules.GridDistance(origin, Location)) return true;
+            if (null != loc) return loc.Value == origin;
+            return false;
+        }
+
+        public bool Exists { get {
+            if (null != loc) return null != loc.Value.Items;
+            if (null != obj_owner) return obj_owner.Location.MapObject == obj_owner;
+            // must be actor inventory.
+            return !a_owner!.IsDead;
+        } }
 
         public override string ToString()
         {

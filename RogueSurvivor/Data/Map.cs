@@ -1881,33 +1881,29 @@ retry:
        return ret;
     }
 
-    public static List<InventorySource<Item>>? GetAccessibleInventorySources(Location origin)
+    public static List<InvOrigin>? GetAccessibleInventoryOrigins(Location origin)
     {
-      List<InventorySource<Item>> ret = new();
+      List<InvOrigin> ret = new();
 
-      var g_stage = origin.GroundInv();
-      if (null != g_stage) ret.Add(g_stage.Value);
+      var obj = origin.MapObject as ShelfLike;
+      if (null != obj && obj.IsJumpable) {
+        // shelf is our ground level
+        ret.Add(new(obj));
+      } else {
+        if (null != origin.Items) ret.Add(new(origin));
+      }
 
       foreach(var adjacent in origin.Position.Adjacent()) {
         var loc = new Location(origin.Map, adjacent);
         if (!Canonical(ref loc)) continue;
-        var obj = loc.MapObject as ShelfLike;
-        if (null != obj) {
-          InventorySource<Item> stage = new( new InvOrigin(obj));
+        obj = loc.MapObject as ShelfLike;
+        if (null != obj?.NonEmptyInventory) ret.Add(new(obj));
 
-          // ultimately, we'd like some notion of stance *if* that doesn't make the UI too complicated.
-          // \todo for now, A Miracle Occurs
-          var losing_inv = loc.Items;
-          while(null != losing_inv && !stage.inv.IsFull) {
-            loc.Map.TransferFrom(losing_inv.TopItem, loc.Position, stage.inv);
-            losing_inv = loc.Items;
-          }
-#if DEBUG
-          if (null != losing_inv) throw new InvalidOperationException("lost ground inventory");
-#endif
-
-          if (!stage.inv.IsEmpty) ret.Add(stage);
-        }
+        var inv = loc.Items;
+        if (null == inv) continue;
+        var test = loc.MapObject;
+        if (null != test && test.BlocksLivingPathfinding) continue;
+        ret.Add(new(loc));
       }
 
       return 0<ret.Count ? ret : null;

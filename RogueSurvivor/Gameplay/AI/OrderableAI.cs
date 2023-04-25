@@ -2462,7 +2462,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 #nullable enable
     public ActorAction? WouldUseAccessibleStack(in Location dest,bool is_real=false) {
-      var stacks = Map.GetAccessibleInventorySources(dest);
+      var stacks = Map.GetAccessibleInventoryOrigins(dest);
       if (null != stacks) {
         ActorAction? act;
         foreach(var stack in stacks) {
@@ -3270,7 +3270,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #nullable restore
 
-    private ActorAction? _takeThis(in InventorySource<Item> stack, Item obj, ActorAction recover, bool is_real)
+    private ActorAction? _takeThis(in InvOrigin stack, Item obj, ActorAction recover, bool is_real)
     {
 #if DEBUG
       if (null == stack.obj_owner && null == stack.loc) throw new InvalidOperationException("do not try to take from actor inventory");
@@ -3323,7 +3323,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    public ActorAction? WouldGrabFromAccessibleStack(in InventorySource<Item> stack, bool is_real=false)
+    public ActorAction? WouldGrabFromAccessibleStack(in InvOrigin stack, bool is_real=false)
     {
 #if DEBUG
       if (null == stack.obj_owner && null == stack.loc) throw new InvalidOperationException("do not try to grab from actor inventory");
