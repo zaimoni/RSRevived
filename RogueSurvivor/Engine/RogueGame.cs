@@ -8127,7 +8127,33 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    // \todo OnActorReachIntoTile
+    public int OnActorReachIntoTile(Actor actor, Location dest)
+    {
+      List<Actor>? trap_owners = null;
+      int old_hp = actor.HitPoints;
+      int cur_hp = old_hp;
+      dest.Map.RemoveAt<ItemTrap>(trap => {
+          bool trap_gone = TryTriggerTrap(trap, actor);
+          int new_hp = actor.HitPoints;
+          if (cur_hp > new_hp) {
+              var owner = trap.Owner;
+              if (null != owner) (trap_owners ??= new List<Actor>()).Add(owner);
+              cur_hp = new_hp;
+          }
+          return trap_gone;
+      }, dest.Position);
+      if (0 >= cur_hp) {
+        var owner = trap_owners?[0];
+        if (null != owner && actor.IsFirstClassCitizen()) {
+          if (owner.IsFirstClassCitizen()) owner = null; // look the other way when it comes to friendly trap kills
+        }
+        // the above can trigger killing of actor already; hard crash
+        if (!actor.IsDead) KillActor(owner, actor, "trap");
+        return 0;
+      }
+      return old_hp > cur_hp ? -1 : 1;
+    }
+
 #nullable restore
 
     public bool TryActorLeaveTile(Actor actor)
@@ -9769,6 +9795,11 @@ namespace djack.RogueSurvivor.Engine
       if (null != src.loc && 1==Rules.GridDistance(actor.Location, src.loc.Value)) {
         // need to crouch to make this work
         actor.Crouch();
+        var code = OnActorReachIntoTile(actor, src.loc.Value);
+        if (0 >= code) { // we took a hit -- cancel taking item
+          actor.SpendActionPoints();
+          return;
+        }
       } else if (null != src.obj_owner) {
         // need to stand to make this work
         actor.StandUp();

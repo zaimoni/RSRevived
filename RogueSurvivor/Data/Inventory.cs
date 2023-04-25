@@ -74,6 +74,13 @@ namespace djack.RogueSurvivor.Data
             }
         }
 
+        public override string ToString()
+        {
+            if (null != obj_owner) return obj_owner.ToString();
+            if (null != loc) return loc.Value.ToString();
+            if (null != a_owner) return a_owner.Name;
+            return "(invalid inventory source)";
+        }
     }
 
   [Serializable]

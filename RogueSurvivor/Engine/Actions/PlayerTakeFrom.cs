@@ -47,6 +47,8 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (!Map.Canonical(ref loc)) return null;
             var inv = loc.Items;
             if (null == inv || inv.IsEmpty) return null;
+            var obj = loc.MapObject;
+            if (null != obj && obj.BlocksLivingPathfinding) return null;
             return new PlayerTakeFrom(pc, new InvOrigin(loc));
         }
 
@@ -55,5 +57,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (null == obj || obj.Inventory.IsEmpty) return null;
             return new PlayerTakeFrom(pc, new InvOrigin(obj));
         }
+
+        public override string ToString() => "take from: " + m_Src;
     }
 }
