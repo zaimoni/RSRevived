@@ -371,7 +371,7 @@ namespace djack.RogueSurvivor.Data
       return !IsJumpable && !IsWalkable && (!IsMovable || IsOnFire);
     } }
 
-    public MapObject(string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
+    protected MapObject(string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(hiddenImageID)) throw new ArgumentNullException(nameof(hiddenImageID));
@@ -390,6 +390,15 @@ namespace djack.RogueSurvivor.Data
 
       if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
       m_HitPoints = MaxHitPoints = hitPoints;
+    }
+
+
+    static public MapObject create(string hiddenImageID, int hitPoints = 0, Fire burnable = Fire.UNINFLAMMABLE)
+    {
+#if DEBUG
+        if (hiddenImageID.MapObject_ID().HasShelf()) throw new InvalidOperationException("ID.HasShelf()");
+#endif
+        return new MapObject(hiddenImageID, hitPoints, burnable);
     }
 
     public void RepairLoad(Map m, Point pos)
