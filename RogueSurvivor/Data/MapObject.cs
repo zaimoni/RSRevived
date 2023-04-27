@@ -826,6 +826,15 @@ namespace djack.RogueSurvivor.Data
     static public bool HasShelf(this MapObject.IDs x)
     {
       switch (x) {
+         // 2023-04-27 revised in to make crouching stance not trigger
+        case MapObject.IDs.CHAIR: return true;
+        case MapObject.IDs.HOSPITAL_CHAIR: return true;
+        case MapObject.IDs.CHAR_CHAIR: return true;
+        case MapObject.IDs.TABLE: return true;
+        case MapObject.IDs.CHAR_TABLE: return true;
+        case MapObject.IDs.NIGHT_TABLE: return true;
+        case MapObject.IDs.HOSPITAL_NIGHT_TABLE: return true;
+         // 2023-04-27 end revised in to make crouching stance not trigger
         case MapObject.IDs.DRAWER: return true;
         case MapObject.IDs.FRIDGE: return true;
         case MapObject.IDs.WARDROBE: return true;

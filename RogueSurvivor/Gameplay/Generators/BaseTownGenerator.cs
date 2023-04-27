@@ -2076,9 +2076,10 @@ restart:
         MapObjectPlaceInGoodPosition(map, b.InsideRect, pt => {
           return CountAdjWalls(map, pt) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
         }, m_DiceRoller, pt => {
-          map.DropItemAt(MakeShopConstructionItem(), in pt);
+          var table = MakeObjTable(GameImages.OBJ_TABLE);
+          table.Inventory.AddAll(MakeShopConstructionItem());
           Session.Get.Police.Investigate.Record(map, in pt);
-          return MakeObjTable(GameImages.OBJ_TABLE);
+          return table;
         });
       if (m_DiceRoller.RollChance(33)) {
         MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
@@ -2405,9 +2406,10 @@ restart:
                 return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) &&  CountAdjWalls(map, pt2) > 0 && map.CountAdjacent<MapObject>(pt2) < 5;
               }), m_DiceRoller, (Func<Point, MapObject>) (pt2 =>
               {
-                map.DropItemAt(MakeRandomBedroomItem(), in pt2);
+                var table = MakeObjNightTable(GameImages.OBJ_NIGHT_TABLE);
+                table.Inventory.AddAll(MakeRandomBedroomItem());
                 Session.Get.Police.Investigate.Record(map, in pt2);
-                return MakeObjNightTable(GameImages.OBJ_NIGHT_TABLE);
+                return table;
               }));
               return MakeObjBed(GameImages.OBJ_BED);
             }));
@@ -2434,8 +2436,9 @@ restart:
               return CountAdjWalls(map, pt) == 0 &&  !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
+              var table = MakeObjTable(GameImages.OBJ_TABLE);
               for (int index = 0; index < HOUSE_LIVINGROOM_ITEMS_ON_TABLE; ++index) {
-                map.DropItemAt(MakeRandomKitchenItem(), in pt);
+                table.Inventory.AddAll(MakeRandomKitchenItem());
               }
               Session.Get.Police.Investigate.Record(map, in pt);
               Rectangle rect = new Rectangle(pt + Direction.NW, 3, 3);
@@ -2444,7 +2447,7 @@ restart:
               {
                 return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) && map.CountAdjacent<MapObject>(pt2) < 5;
               }), m_DiceRoller, pt2 => MakeObjChair(GameImages.OBJ_CHAIR));
-              return MakeObjTable(GameImages.OBJ_TABLE);
+              return table;
             }));
           int num4 = m_DiceRoller.Roll(1, 3);
           for (int index = 0; index < num4; ++index)
@@ -2460,15 +2463,16 @@ restart:
             return CountAdjWalls(map, pt) == 0 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
+            var table = MakeObjTable(GameImages.OBJ_TABLE);
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_ON_TABLE; ++index) {
-              map.DropItemAt(MakeRandomKitchenItem(), in pt);
+              table.Inventory.AddAll(MakeRandomKitchenItem());
             }
             Session.Get.Police.Investigate.Record(map, in pt);
             MapObjectPlaceInGoodPosition(map, new Rectangle(pt + Direction.NW, 3, 3), (Func<Point, bool>) (pt2 =>
             {
               return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) && map.CountAdjacent<MapObject>(pt2) < 5;
             }), m_DiceRoller, pt2 => MakeObjChair(GameImages.OBJ_CHAIR));
-            return MakeObjTable(GameImages.OBJ_TABLE);
+            return table;
           }));
           MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
           {
@@ -2906,8 +2910,11 @@ restart:
           case 0: return MakeObjJunk();
           case 1: return MakeObjBarrels();
           case 2:
-            basement.DropItemAt(MakeShopConstructionItem(), in pt);
-            return MakeObjTable(GameImages.OBJ_TABLE);
+            {
+            var table = MakeObjTable(GameImages.OBJ_TABLE);
+            table.Inventory.AddAll(MakeShopConstructionItem());
+            return table;
+            }
           case 3:
             {
             var drawer = MakeObjDrawer();
@@ -3176,8 +3183,9 @@ restart:
         if (map.HasExitAt(in pt)) return null;
         if (!m_DiceRoller.RollChance(30)) return null;
         if (!m_DiceRoller.RollChance(30)) return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
-        map.DropItemAt(MakeItemCannedFood(), in pt);
-        return MakeObjTable(GameImages.OBJ_CHAR_TABLE);
+        var table = MakeObjTable(GameImages.OBJ_CHAR_TABLE);
+        table.Inventory.AddAll(MakeItemCannedFood());
+        return table;
       }));
     }
 
@@ -4158,7 +4166,7 @@ restart:
         }
       }
 
-      if (m_DiceRoller.RollChance(50)) map.DropItemAt(furnish(), in pt);
+      if (m_DiceRoller.RollChance(50)) table.Inventory.AddAll(furnish());
       Direction wardrobe_dir = isFacingEast ? Direction.NW : Direction.NE;
       map.PlaceAt(MakeObjWardrobe(GameImages.OBJ_HOSPITAL_WARDROBE), room.Anchor((Compass.XCOMlike)wardrobe_dir.Index)- wardrobe_dir);
     }

@@ -215,12 +215,9 @@ namespace djack.RogueSurvivor.Data
 #endif
     }
 
-    public void AddUniqueMap(Map map)   // XXX \todo do we really need a public thin wrapper for a protected function (mapgen so cold path)
-    {
-      AddMap(map);
-    }
-
-    protected void RemoveMap(Map map) { m_Maps.Remove(map); }
+    // XXX \todo do we really need a public thin wrapper for a protected function (mapgen so cold path)
+    public void AddUniqueMap(Map map) => AddMap(map);
+    protected void RemoveMap(Map map) => m_Maps.Remove(map);
 
     [Serializable]
     public struct MapCode {

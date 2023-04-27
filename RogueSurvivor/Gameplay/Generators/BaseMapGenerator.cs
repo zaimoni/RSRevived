@@ -408,9 +408,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static protected MapObject MakeObjBed(string bedImageID) => MapObject.create(bedImageID, 2* DoorWindow.BASE_HITPOINTS);
     static protected ShelfLike MakeObjWardrobe(string wardrobeImageID) => new ShelfLike(wardrobeImageID, 6 * DoorWindow.BASE_HITPOINTS);
     static protected ShelfLike MakeObjDrawer() => new ShelfLike(GameImages.OBJ_DRAWER, DoorWindow.BASE_HITPOINTS);
-    static protected MapObject MakeObjTable(string tableImageID) => MapObject.create(tableImageID, DoorWindow.BASE_HITPOINTS);
-    static protected MapObject MakeObjChair(string chairImageID) => MapObject.create(chairImageID, DoorWindow.BASE_HITPOINTS / 3);
-    static protected MapObject MakeObjNightTable(string nightTableImageID) => MapObject.create(nightTableImageID, DoorWindow.BASE_HITPOINTS/3);
+    static protected ShelfLike MakeObjTable(string tableImageID) => new ShelfLike(tableImageID, DoorWindow.BASE_HITPOINTS);
+    static protected ShelfLike MakeObjChair(string chairImageID) => new ShelfLike(chairImageID, DoorWindow.BASE_HITPOINTS / 3);
+    static protected ShelfLike MakeObjNightTable(string nightTableImageID) => new ShelfLike(nightTableImageID, DoorWindow.BASE_HITPOINTS/3);
     static protected ShelfLike MakeObjFridge() => new ShelfLike(GameImages.OBJ_FRIDGE, 6* DoorWindow.BASE_HITPOINTS);
     static protected MapObject MakeObjJunk() => MapObject.create(GameImages.OBJ_JUNK, DoorWindow.BASE_HITPOINTS);
     static protected MapObject MakeObjBarrels() => MapObject.create(GameImages.OBJ_BARRELS, 2* DoorWindow.BASE_HITPOINTS);

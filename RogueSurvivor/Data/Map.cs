@@ -1888,7 +1888,7 @@ retry:
       var obj = origin.MapObject as ShelfLike;
       if (null != obj && obj.IsJumpable) {
         // shelf is our ground level
-        ret.Add(new(obj));
+        if (null != obj?.NonEmptyInventory) ret.Add(new(obj));
       } else {
         if (null != origin.Items) ret.Add(new(origin));
       }

@@ -3519,8 +3519,7 @@ namespace djack.RogueSurvivor.Data
     public bool MayTakeFrom(in InvOrigin stack)
     {
       // Rules.IsAdjacent would also check the other side of the stairs.
-      if (1 == Rules.GridDistance(in m_Location, stack.Location)) return true;
-      if (null != stack.loc && Location == stack.loc.Value) return true;
+      if (1 >= Rules.GridDistance(in m_Location, stack.Location)) return true;
       return false;
     }
 

@@ -199,6 +199,24 @@ namespace djack.RogueSurvivor.Engine
       reason = "";
       Location loc = new Location(map,point);
       if (!actor.CanEnter(ref loc)) {
+        // generator is ok regardless
+        if (loc.MapObject is PowerGenerator powGen) {
+          if (powGen.IsOn) {
+            Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
+            if (tmp != null && actor.CanRecharge(tmp, out reason))
+              return new ActionRechargeItemBattery(actor, tmp);
+            tmp = actor.GetEquippedItem(DollPart.RIGHT_HAND);   // formal correctness
+            if (tmp != null && actor.CanRecharge(tmp, out reason))
+              return new ActionRechargeItemBattery(actor, tmp);
+            tmp = actor.GetEquippedItem(DollPart.HIP_HOLSTER);   // the police tracker
+            if (tmp != null && actor.CanRecharge(tmp, out reason))
+              return new ActionRechargeItemBattery(actor, tmp);
+          }
+          if (actor.CanSwitch(powGen, out reason)) {
+             if (actor.IsPlayer || !powGen.IsOn) return new ActionSwitchPowerGenerator(actor, powGen);
+          }
+          return null;
+        }
         reason = "blocked";
         return null;
       }
@@ -247,26 +265,30 @@ namespace djack.RogueSurvivor.Engine
       var mapObjectAt = loc.MapObject;
       if (!map.IsInBounds(point)) {
         if (!actor.CanLeaveMap(point, out reason)) return null;
-        var obj_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
-        var inv_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(in loc);
-        if (null != obj_act || null != inv_act) {
-          List<ActorAction> stage = new() { new ActionLeaveMap(actor, in point) };
-          if (null != obj_act) stage.Add(obj_act);
-          if (null != inv_act) stage.Add(inv_act);
-          return new Choice(actor, stage);
+        if (actor.IsPlayer) {
+          var obj_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
+          var inv_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(in loc);
+          if (null != obj_act || null != inv_act) {
+            List<ActorAction> stage = new() { new ActionLeaveMap(actor, in point) };
+            if (null != obj_act) stage.Add(obj_act);
+            if (null != inv_act) stage.Add(inv_act);
+            return new Choice(actor, stage);
+          }
         }
 	    return new ActionLeaveMap(actor, in point);
       }
       var actionMoveStep = new ActionMoveStep(actor, in point);
       if (actionMoveStep.IsPerformable()) {
         reason = "";
-        var obj_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike); // null
-        var inv_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(in loc); // inventory is there
-        if (null != obj_act || null != inv_act) {
-          List<ActorAction> stage = new() { actionMoveStep };
-          if (null != obj_act) stage.Add(obj_act);
-          if (null != inv_act) stage.Add(inv_act);
-          return new Choice(actor, stage);
+        if (actor.IsPlayer) {
+          var obj_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
+          var inv_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(in loc);
+          if (null != obj_act || null != inv_act) {
+            List<ActorAction> stage = new() { actionMoveStep };
+            if (null != obj_act) stage.Add(obj_act);
+            if (null != inv_act) stage.Add(inv_act);
+            return new Choice(actor, stage);
+          }
         }
         return actionMoveStep;
       }
