@@ -55,11 +55,7 @@ namespace djack.RogueSurvivor.Data
 
         public InvOrigin(Location src) {
             loc = src;
-            inv = src.Items
-#if DEBUG
-               ?? throw new ArgumentNullException("src.Items")
-#endif
-            ;
+            inv = src.Items;
         }
 
         public InvOrigin(Location src, Actor agent) : this(src) {
@@ -108,11 +104,7 @@ namespace djack.RogueSurvivor.Data
      public readonly Location? loc = null;
 
      public InventorySource(InvOrigin src, T? obj = null) {
-       inv = src.inv
-#if DEBUG
-            ?? throw new ArgumentNullException("src.inv");
-#endif
-       ;
+       inv = src.inv;
        a_owner = src.a_owner;
        obj_owner = src.obj_owner;
        loc = src.loc;
