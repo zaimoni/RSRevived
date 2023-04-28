@@ -9489,15 +9489,18 @@ namespace djack.RogueSurvivor.Engine
     private void DoTrade(PlayerController pc, Item itSpeaker, InvOrigin target)
     {
       var speaker = pc.ControlledActor;
-      if (null != target.loc && speaker.Location != target.loc) {
-        if (!speaker.IsCrouching) {
-          if (speaker.CanCrouch()) speaker.Crouch();
-          else {
-            ErrorPopup("too tired to crouch for trading");
+      if (speaker.Location != target.Location) {
+        if (null != target.loc) {
+          if (!speaker.IsCrouching) {
+            if (speaker.CanCrouch()) speaker.Crouch();
+            else {
+              ErrorPopup("too tired to crouch for trading");
+              return;
+            }
           }
         }
+        if (null != target.obj_owner) speaker.StandUp();
       }
-      if (null != target.obj_owner && speaker.Location != target.loc) speaker.StandUp();
       DoTrade(pc, itSpeaker, target.inv);
     }
 
