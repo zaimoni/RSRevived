@@ -4904,6 +4904,29 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
+      List<InvOrigin>? trade_where_alt(Direction dir) { return Map.GetTradingInventoryOrigins(player, dir); }
+      bool trade_alt(List<InvOrigin>? src) {
+        if (null == src) {
+          ErrorPopup("Noone there.");
+          return false;
+        }
+        var actorAt = src[0].a_owner; // backward compatibility
+        if (null != actorAt) {
+          if (player.CanTradeWith(actorAt, out string reason)) {
+            ClearOverlays();
+            RedrawPlayScreen();
+            if (DoTrade(pc, invSpec.Value.Key.it!, actorAt, true)) player.SpendActionPoints();
+            return true;
+          } else {
+            ErrorPopup(string.Format("Can't trade with {0} : {1}.", actorAt.TheName, reason));
+            return false;
+          }
+        }
+        DoTrade(pc, invSpec.Value.Key.it!, src[0].inv);
+        DoTrade(pc, invSpec.Value.Key.it!, src[0]);
+        return true;
+      }
+
       Point trade_where(Direction dir) { return player.Location.Position + dir; }
       bool trade(Point pos) {
         if (!player.Location.Map.IsValid(pos)) return false;
@@ -4943,7 +4966,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
-      bool actionDone = DirectionCommand(trade_where, trade);
+      bool actionDone = DirectionCommand(trade_where_alt, trade_alt);
 
       ClearOverlays();
       return actionDone;
@@ -9461,6 +9484,21 @@ namespace djack.RogueSurvivor.Engine
       speaker.Inventory.AddAsMuchAsPossible(trade);
       speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))), witnesses);
       target.RejectCrossLink(speaker.Inventory);
+    }
+
+    private void DoTrade(PlayerController pc, Item itSpeaker, InvOrigin target)
+    {
+      var speaker = pc.ControlledActor;
+      if (null != target.loc && speaker.Location != target.loc) {
+        if (!speaker.IsCrouching) {
+          if (speaker.CanCrouch()) speaker.Crouch();
+          else {
+            ErrorPopup("too tired to crouch for trading");
+          }
+        }
+      }
+      if (null != target.obj_owner && speaker.Location != target.loc) speaker.StandUp();
+      DoTrade(pc, itSpeaker, target.inv);
     }
 
     private void DoTradeWith(Actor actor, Inventory dest, Item give, Item take)

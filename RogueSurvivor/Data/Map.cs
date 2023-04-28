@@ -1909,6 +1909,42 @@ retry:
       return 0<ret.Count ? ret : null;
     }
 
+    public static List<InvOrigin>? GetTradingInventoryOrigins(Actor a, Direction dir)
+    {
+      List<InvOrigin> ret = new();
+      var origin = a.Location;
+
+      if (Direction.NEUTRAL == dir) {
+        var standing_on = origin.MapObject as ShelfLike;
+        if (null != standing_on && standing_on.IsJumpable) {
+          // shelf is our ground level
+          if (null != standing_on?.NonEmptyInventory) ret.Add(new(standing_on));
+        } else {
+          if (null != origin.Items) ret.Add(new(origin));
+        }
+        return 0<ret.Count ? ret : null;
+      }
+
+      var dest = origin + dir;
+      if (!Canonical(ref dest)) return null;
+      var actor = dest.Actor;
+      if (null != actor) {
+        var a_inv = actor.Inventory;
+        if (null != a_inv && !a_inv.IsEmpty && !a.IsEnemyOf(actor)) ret.Add(new(actor));
+        return 0<ret.Count ? ret : null;
+      }
+
+      var test = dest.MapObject;
+      var obj = test as ShelfLike;
+      if (null != obj?.NonEmptyInventory) ret.Add(new(obj));
+
+      var inv = dest.Items;
+      if (null != inv) {
+        if (null == test || !test.BlocksLivingPathfinding) ret.Add(new(dest));
+      }
+      return 0<ret.Count ? ret : null;
+    }
+
     // Clairvoyant.  Useful for fine-tuning map generation and little else
     public KeyValuePair<Point, Inventory>? GetInventoryHaving(Gameplay.GameItems.IDs id)
     {
