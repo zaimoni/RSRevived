@@ -419,8 +419,8 @@ namespace djack.RogueSurvivor.Data
     public override ActorAction? GetAction() => throw new InvalidOperationException("do not call PlayerController.GetAction()");
     protected override ActorAction? SelectAction() => throw new InvalidOperationException("do not call PlayerController.SelectAction()");
 
-    public override ActorAction Choose(List<ActorAction> src) {
-        ActorAction ret = src[0];
+    public override ActorAction? Choose(List<ActorAction> src) {
+        ActorAction? ret = null;
         if (1 < src.Count) {
             string label(int index) { return src[index].ToString(); }
             bool details(int index) {
