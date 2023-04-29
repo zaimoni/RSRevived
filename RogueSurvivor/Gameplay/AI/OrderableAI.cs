@@ -2489,6 +2489,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var reject = new HashSet<Location>();
         foreach(var x in src) {
           seen.Add(x.Key);
+          if (x.Key == m_Actor.Location) continue;
           if (!VetoAction(x.Value)) {
             final_range.Add(x.Key,x.Value);
             continue;
