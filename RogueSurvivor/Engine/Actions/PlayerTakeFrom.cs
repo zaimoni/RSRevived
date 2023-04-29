@@ -49,12 +49,39 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (null == inv || inv.IsEmpty) return null;
             var obj = loc.MapObject;
             if (null != obj && obj.BlocksLivingPathfinding) return null;
+            var player = pc.ControlledActor;
+            var p_inv = player.Inventory;
+            if (null == p_inv) return null;
+            if (p_inv.IsFull) {
+                var ok = false;
+                foreach (var it in inv.Items) {
+                    if (p_inv.CanAddAtLeastOne(it)) {
+                        ok = true;
+                        break;
+                    }
+                }
+                if (!ok) return null;
+            }
             return new PlayerTakeFrom(pc, new InvOrigin(loc));
         }
 
         static public PlayerTakeFrom? create(PlayerController pc, ShelfLike obj)
         {
-            if (null == obj?.NonEmptyInventory) return null;
+            var inv = obj?.NonEmptyInventory;
+            if (null == inv) return null;
+            var player = pc.ControlledActor;
+            var p_inv = player.Inventory;
+            if (null == p_inv) return null;
+            if (p_inv.IsFull) {
+                var ok = false;
+                foreach (var it in inv.Items) {
+                    if (p_inv.CanAddAtLeastOne(it)) {
+                        ok = true;
+                        break;
+                    }
+                }
+                if (!ok) return null;
+            }
             return new PlayerTakeFrom(pc, new InvOrigin(obj));
         }
 

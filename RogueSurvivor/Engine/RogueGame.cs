@@ -39,6 +39,7 @@ using Color = System.Drawing.Color;
 using GDI_Point = System.Drawing.Point;
 using GDI_Rectangle = System.Drawing.Rectangle;
 using GDI_Size = System.Drawing.Size;
+using System.Numerics;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -4822,12 +4823,14 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      Point? give_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
-      bool give(Point? pos) {
-        if (null == pos) return false;
-        if (!player.Location.Map.IsValid(pos.Value)) return false;
+      List<InvOrigin>? give_where_alt(Direction dir) { return Map.GetGivingInventoryOrigins(player, dir); }
+      bool give_alt(List<InvOrigin>? src) {
+        if (null == src) {
+          ErrorPopup("Noone there.");
+          return false;
+        }
 
-        var actorAt = player.Location.Map.GetActorAtExt(pos.Value);
+        var actorAt = src[0].a_owner; // backward compatibility
         if (actorAt != null) {
           if (player.CanGiveTo(actorAt, invSpec.Value.Key.it!, out string reason)) {
             DoGiveItemTo(player, actorAt, invSpec.Value.Key.it!);
@@ -4835,18 +4838,24 @@ namespace djack.RogueSurvivor.Engine
           }
           ErrorPopup(string.Format("Can't give {0} to {1} : {2}.", invSpec.Value.Key.it!.TheName, actorAt.TheName, reason));
           return false;
-        } else {
-          var container = Rules.CanActorPutItemIntoContainer(player, pos.Value);
-          if (null != container) {
-            DoPutItemInContainer(player, container, invSpec.Value.Key.it!);
+        }
+        if (null != src[0].obj_owner) {
+          var reason = src[0].obj_owner.ReasonCantPutItemIn(player);
+          if (string.IsNullOrEmpty(reason)) {
+            player.StandUp();
+            DoPutItemInContainer(player, src[0].obj_owner, invSpec.Value.Key.it!);
             return true;
           }
+          ErrorPopup(string.Format("Can't put {0} in {1} : {2}.", invSpec.Value.Key.it!.TheName, src[0].obj_owner.TheName, reason));
+          return false;
         }
-        ErrorPopup("Noone there.");
+        if (null != src[0].loc) {
+          DoDropItem(player, invSpec.Value.Key.it!, src[0].loc.Value);
+        }
         return false;
       }
 
-      bool actionDone = DirectionCommand(give_where, give);
+      bool actionDone = DirectionCommand(give_where_alt, give_alt);
 
       ClearOverlays();
       return actionDone;
@@ -4925,45 +4934,6 @@ namespace djack.RogueSurvivor.Engine
         DoTrade(pc, invSpec.Value.Key.it!, src[0].inv);
         DoTrade(pc, invSpec.Value.Key.it!, src[0]);
         return true;
-      }
-
-      Point trade_where(Direction dir) { return player.Location.Position + dir; }
-      bool trade(Point pos) {
-        if (!player.Location.Map.IsValid(pos)) return false;
-        bool next_to = (player.Location.Position != pos);
-        if (next_to) {
-          var actorAt = player.Location.Map.GetActorAtExt(pos);
-          if (actorAt != null) {
-            if (player.CanTradeWith(actorAt, out string reason)) {
-              ClearOverlays();
-              RedrawPlayScreen();
-              if (DoTrade(pc, invSpec.Value.Key.it!, actorAt, true)) player.SpendActionPoints();
-              return true;
-            } else {
-              ErrorPopup(string.Format("Can't trade with {0} : {1}.", actorAt.TheName, reason));
-              return false;
-            }
-          }
-        }
-        // RS revived: Trading with inventory.
-        var ground_inv = player.Location.Map.GetItemsAtExt(pos);
-        if (null != ground_inv) {
-          if (ground_inv.IsEmpty) ground_inv = null;
-          else if (next_to) {
-            var obj = player.Location.Map.GetMapObjectAtExt(pos) as ShelfLike;
-            if (null == obj) ground_inv = null;
-          }
-        } else if (next_to) {
-          var obj_inv = (player.Location.Map.GetMapObjectAtExt(pos) as ShelfLike)?.NonEmptyInventory;
-          if (null != obj_inv) ground_inv = obj_inv;
-          if (null != ground_inv && ground_inv.IsEmpty) ground_inv = null;
-        }
-        if (null != ground_inv) {
-          DoTrade(pc, invSpec.Value.Key.it!, ground_inv);
-          return true;
-        }
-        ErrorPopup("Noone there.");
-        return false;
       }
 
       bool actionDone = DirectionCommand(trade_where_alt, trade_alt);
@@ -10039,6 +10009,44 @@ namespace djack.RogueSurvivor.Engine
       actor.Location.Items?.RejectCrossLink(actor.Inventory);
     }
 
+    public void DoDropItem(Actor actor, Item it, Location dest)
+    {
+      if (actor.Location != dest) {
+          if (!actor.IsCrouching) {
+            if (actor.CanCrouch()) actor.Crouch();
+            else {
+              ErrorPopup("too tired to crouch for trading");
+              return;
+            }
+          }
+      }
+
+      if (actor.CanUnequip(it)) it.UnequippedBy(actor,false);
+      actor.SpendActionPoints();
+      Item obj = it;
+      if (it is ItemTrap trap) {
+        ItemTrap clone = trap.Clone();
+        if (trap.IsActivated) clone.Activate(actor);  // alpha10
+        obj = clone;
+        clone.Activate(actor); // alpha10
+        trap.Desactivate();  // alpha10
+#if FALSE_POSITIVE
+        if (!clone.IsActivated) throw new ArgumentOutOfRangeException(nameof(it)," trap being dropped intentionally must be activated");
+#endif
+      }
+      var witnesses = PlayersInLOS(actor.Location);
+      if (it.IsUseless) {
+        DiscardItem(actor, it);
+        if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), it));
+        return;
+      }
+      // XXX using containers can go here, but we may want a different action anyway
+      if (obj == it) DropItem(actor, it, in dest);
+      else DropCloneItem(actor, it, obj, in dest);
+      if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_DROP.Conjugate(actor), obj));
+      dest.Items?.RejectCrossLink(actor.Inventory);
+    }
+
     static private void DiscardItem(Actor actor, Item it)
     {
       actor.Inventory.RemoveAllQuantity(it);
@@ -10052,10 +10060,25 @@ namespace djack.RogueSurvivor.Engine
       it.Unequip();
     }
 
+    static private void DropItem(Actor actor, Item it, in Location dest)
+    {
+      actor.Inventory.RemoveAllQuantity(it);
+      dest.Drop(it);
+      it.Unequip();
+    }
+
+
     static private void DropCloneItem(Actor actor, Item it, Item clone)
     {
       actor.Inventory.Consume(it);
       actor.Location.Drop(clone);
+      clone.Unequip();
+    }
+
+    static private void DropCloneItem(Actor actor, Item it, Item clone, in Location dest)
+    {
+      actor.Inventory.Consume(it);
+      dest.Drop(clone);
       clone.Unequip();
     }
 

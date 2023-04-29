@@ -1945,6 +1945,40 @@ retry:
       return 0<ret.Count ? ret : null;
     }
 
+    public static List<InvOrigin>? GetGivingInventoryOrigins(Actor a, Direction dir)
+    {
+      List<InvOrigin> ret = new();
+      var origin = a.Location;
+
+      if (Direction.NEUTRAL == dir) {
+        var standing_on = origin.MapObject as ShelfLike;
+        if (null != standing_on && standing_on.IsJumpable) {
+          // shelf is our ground level
+          ret.Add(new(standing_on));
+        } else {
+          ret.Add(new(origin));
+        }
+        return ret;
+      }
+
+      var dest = origin + dir;
+      if (!Canonical(ref dest)) return null;
+      var actor = dest.Actor;
+      if (null != actor) {
+        var a_inv = actor.Inventory;
+        if (null != a_inv && !a.IsEnemyOf(actor)) ret.Add(new(actor));
+        return 0<ret.Count ? ret : null;
+      }
+
+      var test = dest.MapObject;
+      var obj = test as ShelfLike;
+      if (null != obj) ret.Add(new(obj));
+      if (a.IsCrouching || a.CanCrouch()) {
+        if (null == test || !test.BlocksLivingPathfinding) ret.Add(new(dest));
+      }
+      return 0<ret.Count ? ret : null;
+    }
+
     // Clairvoyant.  Useful for fine-tuning map generation and little else
     public KeyValuePair<Point, Inventory>? GetInventoryHaving(Gameplay.GameItems.IDs id)
     {
