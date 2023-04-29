@@ -4931,7 +4931,6 @@ namespace djack.RogueSurvivor.Engine
             return false;
           }
         }
-        DoTrade(pc, invSpec.Value.Key.it!, src[0].inv);
         DoTrade(pc, invSpec.Value.Key.it!, src[0]);
         return true;
       }
