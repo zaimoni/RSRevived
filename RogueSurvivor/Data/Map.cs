@@ -1888,19 +1888,11 @@ retry:
       var g_inv = origin.InventoryAtFeet();
       if (null != g_inv) ret.Add(g_inv.Value);
 
-      var shelf = origin.MapObject as ShelfLike;
-      if (null != shelf && shelf.IsJumpable) {
-        // shelf is our ground level
-        if (null != shelf?.NonEmptyInventory) ret.Add(new(shelf));
-      } else {
-        if (null != origin.Items) ret.Add(new(origin));
-      }
-
       foreach(var adjacent in origin.Position.Adjacent()) {
         var loc = new Location(origin.Map, adjacent);
         if (!Canonical(ref loc)) continue;
         var obj = loc.MapObject;
-        shelf = obj as ShelfLike;
+        var shelf = obj as ShelfLike;
         if (null != shelf?.NonEmptyInventory) ret.Add(new(shelf));
 
         var inv = loc.Items;
