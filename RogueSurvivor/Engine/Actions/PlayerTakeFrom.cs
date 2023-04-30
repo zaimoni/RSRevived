@@ -1,4 +1,5 @@
 ﻿using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine.MapObjects;
 
 #nullable enable
 
@@ -48,7 +49,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             var inv = loc.Items;
             if (null == inv || inv.IsEmpty) return null;
             var obj = loc.MapObject;
-            if (null != obj && obj.BlocksLivingPathfinding) return null;
+            if (null != obj && obj.BlocksReachInto()) return null;
             var player = pc.ControlledActor;
             var p_inv = player.Inventory;
             if (null == p_inv) return null;

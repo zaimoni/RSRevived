@@ -4,6 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -845,6 +846,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    static public bool BlocksReachInto(this MapObject obj) {
+        if (null != obj) {
+            if (obj.BlocksLivingPathfinding) return true;
+            if (obj is DoorWindow door && door.IsClosed) return true;
+        }
+        return false;
+    }
 
   } // MapObject_ext
 }

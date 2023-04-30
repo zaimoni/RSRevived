@@ -1885,10 +1885,10 @@ retry:
     {
       List<InvOrigin> ret = new();
 
-      var obj = origin.MapObject as ShelfLike;
-      if (null != obj && obj.IsJumpable) {
+      var shelf = origin.MapObject as ShelfLike;
+      if (null != shelf && shelf.IsJumpable) {
         // shelf is our ground level
-        if (null != obj?.NonEmptyInventory) ret.Add(new(obj));
+        if (null != shelf?.NonEmptyInventory) ret.Add(new(shelf));
       } else {
         if (null != origin.Items) ret.Add(new(origin));
       }
@@ -1896,13 +1896,13 @@ retry:
       foreach(var adjacent in origin.Position.Adjacent()) {
         var loc = new Location(origin.Map, adjacent);
         if (!Canonical(ref loc)) continue;
-        obj = loc.MapObject as ShelfLike;
-        if (null != obj?.NonEmptyInventory) ret.Add(new(obj));
+        var obj = loc.MapObject;
+        shelf = obj as ShelfLike;
+        if (null != shelf?.NonEmptyInventory) ret.Add(new(shelf));
 
         var inv = loc.Items;
         if (null == inv) continue;
-        var test = loc.MapObject;
-        if (null != test && test.BlocksLivingPathfinding) continue;
+        if (null != obj && obj.BlocksReachInto()) continue;
         ret.Add(new(loc));
       }
 
@@ -1934,13 +1934,13 @@ retry:
         return 0<ret.Count ? ret : null;
       }
 
-      var test = dest.MapObject;
-      var obj = test as ShelfLike;
-      if (null != obj?.NonEmptyInventory) ret.Add(new(obj));
+      var obj = dest.MapObject;
+      var shelf = obj as ShelfLike;
+      if (null != shelf?.NonEmptyInventory) ret.Add(new(shelf));
 
       var inv = dest.Items;
       if (null != inv) {
-        if (null == test || !test.BlocksLivingPathfinding) ret.Add(new(dest));
+        if (null == obj || !obj.BlocksReachInto()) ret.Add(new(dest));
       }
       return 0<ret.Count ? ret : null;
     }
@@ -1970,11 +1970,10 @@ retry:
         return 0<ret.Count ? ret : null;
       }
 
-      var test = dest.MapObject;
-      var obj = test as ShelfLike;
-      if (null != obj) ret.Add(new(obj));
+      var obj = dest.MapObject;
+      if (obj is ShelfLike shelf) ret.Add(new(shelf));
       if (a.IsCrouching || a.CanCrouch()) {
-        if (null == test || !test.BlocksLivingPathfinding) ret.Add(new(dest));
+        if (null == obj || !obj.BlocksReachInto()) ret.Add(new(dest));
       }
       return 0<ret.Count ? ret : null;
     }
