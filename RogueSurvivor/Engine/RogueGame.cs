@@ -10057,9 +10057,23 @@ namespace djack.RogueSurvivor.Engine
 
     static private void DropItem(Actor actor, Item it)
     {
-      actor.Inventory.RemoveAllQuantity(it);
-      actor.Location.Drop(it);
-      it.Unequip();
+      var dest = actor.Location;
+      var invspec = actor.Location.DropOntoInventory();
+
+      if (null == invspec.obj_owner) {
+         DropItem(actor, it, in dest);
+         return;
+      }
+
+      if (!invspec.inv.IsFull) {
+         actor.Inventory.RemoveAllQuantity(it);
+         invspec.inv.AddAll(it);
+         it.Unequip();
+         return;
+      }
+
+      // \todo XXX replace this failover later
+      DropItem(actor, it, in dest);
     }
 
     static private void DropItem(Actor actor, Item it, in Location dest)

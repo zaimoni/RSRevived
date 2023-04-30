@@ -916,5 +916,12 @@ namespace djack.RogueSurvivor.Data
             }
             return null;
         }
+
+        static public InvOrigin DropOntoInventory(this Location origin)
+        {
+            var shelf = origin.MapObject as ShelfLike;
+            if (null != shelf && shelf.IsJumpable) return new(shelf);
+            return new(origin);
+        }
     }
 }
