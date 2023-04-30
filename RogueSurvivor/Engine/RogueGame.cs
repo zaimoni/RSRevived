@@ -4490,13 +4490,15 @@ namespace djack.RogueSurvivor.Engine
         if (null == inventory[index1]) return null;
         return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(new InvOrigin(Player), inventory[index1]), InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1));
       }
-      var itemsAt = Player.Location.Items;
-      if (null == itemsAt) return null;
+      var invspec = Player.Location.InventoryAtFeet();
+      if (null == invspec) return null;
+
+      var itemsAt = invspec.Value.inv!;
       var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen);
       int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
       if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
       if (null == itemsAt[index2]) return null;
-      return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(new InvOrigin(Player.Location), itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
+      return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(invspec.Value, itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
     }
 #nullable restore
 
@@ -9848,7 +9850,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoTakeItem(Actor actor, in Location loc, Item it)
     {
-      var g_inv = loc.Items;
+      var invspec = loc == actor.Location ? loc.InventoryAtFeet() : new InvOrigin(loc);
+      var g_inv = null == invspec ? null : invspec.Value.inv;
 #if DEBUG
       if (null == g_inv || !g_inv.Contains(it)) throw new InvalidOperationException(it.ToString()+" not where expected");
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
@@ -9857,7 +9860,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints();
       if (it is ItemTrap trap) trap.Desactivate(); // alpha10
       g_inv.RepairCrossLink(actor.Inventory);
-      loc.Map.TransferFrom(it, loc.Position, actor.Inventory);   // invalidates g_inv if that was the last item
+      (new InventorySource<Item>(invspec.Value, it)).TransferFrom(actor.Inventory);
 
       var witnesses = _ForceVisibleToPlayer(actor);
       var see_take = PlayersInLOS(loc);
@@ -11573,7 +11576,8 @@ namespace djack.RogueSurvivor.Engine
                   DrawActorStatus(Player, RIGHTPANEL_TEXT_X, RIGHTPANEL_TEXT_Y);
                   if (Player.Inventory != null && Player.Model.Abilities.HasInventory)
                     DrawInventory(Player.Inventory, "Inventory", true, Map.GROUND_INVENTORY_SLOTS, Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
-                  DrawInventory(Player.Location.Items, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
+                  var invspec = Player.Location.InventoryAtFeet();
+                  DrawInventory(null == invspec ? null : invspec.Value.inv, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
                   DrawCorpsesList(Player.Location.Corpses, "Corpses on ground", Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, CORPSESPANEL_Y);
                   if (0 < Player.Sheet.SkillTable.CountSkills)
                     DrawActorSkillTable(Player, SKILLTABLE_X, SKILLTABLE_Y);

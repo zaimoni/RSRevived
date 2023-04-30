@@ -853,6 +853,5 @@ namespace djack.RogueSurvivor.Data
         }
         return false;
     }
-
   } // MapObject_ext
 }

@@ -904,5 +904,17 @@ namespace djack.RogueSurvivor.Data
             if (null != ret) return ret;
             return ret2;
         }
+
+        static public InvOrigin? InventoryAtFeet(this Location origin)
+        {
+            var shelf = origin.MapObject as ShelfLike;
+            if (null != shelf && shelf.IsJumpable) {
+                // shelf is our ground level
+                if (null != shelf?.NonEmptyInventory) return new(shelf);
+            } else {
+                if (null != origin.Items) return new(origin);
+            }
+            return null;
+        }
     }
 }

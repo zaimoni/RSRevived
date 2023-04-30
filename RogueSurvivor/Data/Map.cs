@@ -1885,6 +1885,9 @@ retry:
     {
       List<InvOrigin> ret = new();
 
+      var g_inv = origin.InventoryAtFeet();
+      if (null != g_inv) ret.Add(g_inv.Value);
+
       var shelf = origin.MapObject as ShelfLike;
       if (null != shelf && shelf.IsJumpable) {
         // shelf is our ground level
@@ -2041,18 +2044,6 @@ retry:
       if (null == tmp) throw new ArgumentOutOfRangeException(nameof(position),position,"invalid position for Item "+nameof(it));
 #endif
       tmp.Value.Map.DropItemAt(it,tmp.Value.Position);
-    }
-
-    public void TransferFrom(Item it, in Point position, Inventory dest) {
-#if DEBUG
-      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
-      if (0 >= it.Quantity) throw new InvalidOperationException("already zero");
-#endif
-      var itemsAt = GetItemsAt(position);
-#if DEBUG
-      if (null == itemsAt) throw new ArgumentNullException(nameof(itemsAt),":= GetItemsAt(position)");
-#endif
-      if (itemsAt.Transfer(it, dest)) m_GroundItemsByPosition.Remove(position);
     }
 
     public bool RemoveAt<T>(Predicate<T> test, in Point pos) where T:Item
@@ -3322,6 +3313,5 @@ namespace Zaimoni.Serialization
                 }
             }
         }
-
     }
 }
