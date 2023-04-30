@@ -4005,57 +4005,6 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
       return ret;
     }
-
-    private bool PagedMenu(string header,int strict_ub, Func<int,string> label, Predicate<int> details)
-    {
-      const int MENU_VIEW = MAX_MESSAGES - 2; // breaks down if this exceeds 7
-      const int C_assert_MENU_VIEW = 1/(8 > MENU_VIEW ? 1 : 0);
-
-      int turn = Session.Get.WorldTime.TurnCounter;
-      int num1 = 0;
-      int num2;
-      var mode = new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
-      AddOverlay(mode);
-
-      void display(int origin) {
-        ClearMessages();
-        AddMessage(new(header, turn, Color.Yellow));
-        for (num2 = 0; num2 < MENU_VIEW && origin + num2 < strict_ub; ++num2) {
-          int index = origin + num2;
-          AddMessage(new((1+num2).ToString()+" "+label(index), turn, Color.LightGreen));
-        }
-        if (2 * MENU_VIEW < strict_ub) AddMessage(new("8. prev  9. next", turn, Color.LightGreen));
-        else if (MENU_VIEW < strict_ub) AddMessage(new("9. next", turn, Color.LightGreen));
-        RedrawPlayScreen();
-      }
-
-      bool? handler(KeyEventArgs key) {
-        int choiceNumber = KeyToChoiceNumber(key.KeyCode);
-        switch(choiceNumber) {
-          case 8:
-            num1 -= MENU_VIEW;
-            if (0 > num1) num1 = (strict_ub / MENU_VIEW) * MENU_VIEW;
-            break;
-          case 9:
-            num1 += MENU_VIEW;
-            if (num1 >= strict_ub) num1 = 0;
-            break;
-          default:
-            if (choiceNumber >= 1 && choiceNumber <= num2) {
-             int index = num1 + choiceNumber - 1;
-             if (details(index)) return true;
-            };
-            return null;
-        }
-        display(num1);
-        return null;
-      }
-
-      display(num1);
-      var ret = m_UI.Modal(handler);
-      RemoveOverlay(mode);
-      return ret;
-    }
 #nullable restore
 
     private void HandleItemInfo()
@@ -6362,7 +6311,7 @@ namespace djack.RogueSurvivor.Engine
         return true;
       }
 
-      return PagedMenu(string.Format("Ordering {0} to give...", follower.Name), can_give.Count, label, details);
+      return PagedPopup(string.Format("Ordering {0} to give...", follower.Name), can_give.Count, label, details);
     }
 
 #nullable enable
@@ -9770,7 +9719,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
-      PagedMenu("Taking...", inv.CountItems, label, details);
+      PagedPopup("Taking...", inv.CountItems, label, details);
     }
 
     public void HandlePlayerTakeItem(PlayerController pc, InvOrigin src)
@@ -9798,7 +9747,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
-      PagedMenu("Taking...", inv.CountItems, label, details);
+      PagedPopup("Taking...", inv.CountItems, label, details);
     }
 
     public void DoTakeItem(Actor actor, in InventorySource<Item> src)
@@ -12828,7 +12777,7 @@ namespace djack.RogueSurvivor.Engine
             return true;
         }
 
-        PagedMenu("Advising...", considering.Count, label, details);
+        PagedPopup("Advising...", considering.Count, label, details);
         return ret;
     }
 #nullable restore
