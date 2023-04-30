@@ -40,6 +40,7 @@ using GDI_Point = System.Drawing.Point;
 using GDI_Rectangle = System.Drawing.Rectangle;
 using GDI_Size = System.Drawing.Size;
 using System.Numerics;
+using System.Runtime;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -10055,47 +10056,50 @@ namespace djack.RogueSurvivor.Engine
       it.Unequip();
     }
 
-    static private void DropItem(Actor actor, Item it)
+    static private void _Drop(Item it, in Location dest)
     {
-      var dest = actor.Location;
-      var invspec = actor.Location.DropOntoInventory();
+      var invspec = dest.DropOntoInventory();
 
       if (null == invspec.obj_owner) {
-         DropItem(actor, it, in dest);
+         dest.Drop(it);
+         it.Unequip();
          return;
       }
 
       if (!invspec.inv.IsFull) {
-         actor.Inventory.RemoveAllQuantity(it);
          invspec.inv.AddAll(it);
          it.Unequip();
          return;
       }
 
       // \todo XXX replace this failover later
-      DropItem(actor, it, in dest);
+      dest.Drop(it);
+      it.Unequip();
+    }
+
+    static private void DropItem(Actor actor, Item it)
+    {
+      actor.Inventory.RemoveAllQuantity(it);
+      _Drop(it, actor.Location);
     }
 
     static private void DropItem(Actor actor, Item it, in Location dest)
     {
       actor.Inventory.RemoveAllQuantity(it);
-      dest.Drop(it);
-      it.Unequip();
+      _Drop(it, in dest);
     }
 
 
     static private void DropCloneItem(Actor actor, Item it, Item clone)
     {
       actor.Inventory.Consume(it);
-      actor.Location.Drop(clone);
-      clone.Unequip();
+      _Drop(clone, actor.Location);
     }
 
     static private void DropCloneItem(Actor actor, Item it, Item clone, in Location dest)
     {
       actor.Inventory.Consume(it);
-      dest.Drop(clone);
-      clone.Unequip();
+      _Drop(clone, in dest);
     }
 
     public bool DoUnload(Actor actor, InventorySource<ItemRangedWeapon> src, InventorySource<Item> dest)
