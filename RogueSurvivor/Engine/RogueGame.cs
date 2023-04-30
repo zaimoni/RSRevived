@@ -4269,7 +4269,13 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleFactionInfo()
     {
-      var options = new List<string> { "Status", "Enemies by aggression" };
+      List<string> options = new(){ "Status", "Enemies by aggression" };
+      string header = "Reviewing...";
+
+      if (null == Player.Aggressing && null == Player.Aggressors) {
+        options.RemoveAt(1);
+        header = "No personal enemies";
+      }
 
       string label(int index) { return options[index]; }
       bool details(int index) {
@@ -4352,7 +4358,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
-      PagedMenu("Reviewing...", options.Count, label, details);
+      PagedPopup(header, options.Count, label, details);
     }
 
     private void HandleDaimonMap()
