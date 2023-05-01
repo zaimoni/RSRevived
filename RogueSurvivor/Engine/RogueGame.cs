@@ -4454,7 +4454,8 @@ namespace djack.RogueSurvivor.Engine
       int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
       if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
       if (null == itemsAt[index2]) return null;
-      return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(invspec.Value, Player, itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
+      // hard crash if this inventory is flagged as seen by player
+      return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(invspec.Value, itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
     }
 #nullable restore
 
