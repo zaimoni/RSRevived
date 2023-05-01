@@ -4454,7 +4454,7 @@ namespace djack.RogueSurvivor.Engine
       int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
       if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
       if (null == itemsAt[index2]) return null;
-      return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(invspec.Value, itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
+      return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(invspec.Value, Player, itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
     }
 #nullable restore
 
@@ -4756,17 +4756,16 @@ namespace djack.RogueSurvivor.Engine
 //    InventorySource<ItemRangedWeapon> src = (inv == player.Inventory) ? new(player, rw) : new(player.Location, player, rw);
 
       // try unloading to our own inventory first
-      InventorySource<Item> dest = new(new InvOrigin(player));
+      InvOrigin dest = new(player);
       if (DoUnload(player, src, dest)) return true;
 
       // If that fails, and we are unloading from a container, try the container's inventory
       if (null != src.obj_owner) {
-        dest = new(new InvOrigin(player.Location,  player));
-        if (DoUnload(player, src, dest)) return true;
+        if (DoUnload(player, src, src.Origin)) return true;
       }
 
       // If that fails, try unload to ground inventory
-      dest = new(new InvOrigin(player.Location,  player));
+      dest = new(player.Location,  player);
       return DoUnload(player, src, dest);
     }
 
@@ -10057,7 +10056,7 @@ namespace djack.RogueSurvivor.Engine
       _Drop(clone, in dest);
     }
 
-    public bool DoUnload(Actor actor, InventorySource<ItemRangedWeapon> src, InventorySource<Item> dest)
+    public bool DoUnload(Actor actor, InventorySource<ItemRangedWeapon> src, InvOrigin dest)
     {
       var ammo = ItemAmmo.make(src.it.ModelID);
       ammo.Quantity = src.it.Ammo;

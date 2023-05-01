@@ -85,6 +85,14 @@ namespace djack.RogueSurvivor.Data
             return !a_owner!.IsDead;
         } }
 
+       public void fireChange() {
+         // Police ai cheats
+         if (null == a_owner || !a_owner.IsFaction(GameFactions.IDs.ThePolice)) {
+         if (null != loc) Session.Get.Police.Investigate.Record(loc.Value);
+         if (null != obj_owner) Session.Get.Police.Investigate.Record(obj_owner.Location);
+       }
+    }
+
         public override string ToString()
         {
             if (null != obj_owner) return obj_owner.ToString();
@@ -106,6 +114,19 @@ namespace djack.RogueSurvivor.Data
      public InventorySource(InvOrigin src, T? obj = null) {
        inv = src.inv;
        a_owner = src.a_owner;
+       obj_owner = src.obj_owner;
+       loc = src.loc;
+       if (null != obj) {
+#if DEBUG
+          if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
+#endif
+          it = obj;
+       }
+     }
+
+     public InventorySource(InvOrigin src, Actor a, T? obj = null) {
+       inv = src.inv;
+       a_owner = a;
        obj_owner = src.obj_owner;
        loc = src.loc;
        if (null != obj) {
