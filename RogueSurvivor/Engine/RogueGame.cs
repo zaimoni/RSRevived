@@ -12904,11 +12904,21 @@ namespace djack.RogueSurvivor.Engine
             if (null != lines) inspect = new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
           } else {
             List<string> lines = null;
+            var allies = Player.Allies;
+            if (null != allies) {
+                foreach(var a in allies) {
+                    if (viewpoint != a.Location) continue;
+                    if (Player.Controller is ObjectiveAI p_oai && p_oai.InCommunicationWith(a)) {
+                      (lines ??= new()).Add(a.Name);
+                      break;
+                    }
+                }
+            }
             var threat = Player.Threats;
             if (null != threat) {
                 var compromised = threat.ThreatAt(in viewpoint);
                 if (0 < compromised.Count) {
-                   lines = new List<string> { "Possibly here:" };
+                   (lines ??= new()).Add("Possibly here:");
                    foreach(var x in compromised) lines.Add(x.Name);
                 }
             }
