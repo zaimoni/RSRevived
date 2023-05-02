@@ -2526,20 +2526,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is Engine._Action.Join) return null;
       if (x is Engine._Action.MoveStep) return null; // these are from new-AI
 
+      const bool tracing = false;
+
       // exit-related processing.
       var e = m_Actor.Location.Exit;
       if (x is ActorDest a_dest) {
         if (null == e) {
           // crowd control
           var gasping = NeedsAir(a_dest.dest, m_Actor);
-#if DEBUG
-          if (m_Actor.IsDebuggingTarget && !RogueGame.IsSimulating && null != gasping) RogueGame.Game.InfoPopup("gasping for air: "+gasping.ToString());
-#endif
+          if (tracing && !RogueGame.IsSimulating && null != gasping) RogueGame.Game.InfoPopup("gasping for air: "+gasping.ToString());
           if (null != gasping && x is ActionOpenDoor) return null;
           var act = BehaviorTradeWithinClan();
-#if DEBUG
-          if (m_Actor.IsDebuggingTarget && !RogueGame.IsSimulating && null != act) RogueGame.Game.InfoPopup("trade within clan: "+act.ToString());
-#endif
+          if (tracing && !RogueGame.IsSimulating && null != act) RogueGame.Game.InfoPopup("trade within clan: "+act.ToString());
           if (null != act) return act;
           if (null != gasping) {
             act = BehaviorMakeTime();
@@ -2552,17 +2550,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (x is ActionOpenDoor) return null;
           var act = BehaviorMakeTime();
           if (act is ActorDest a_dest2 && null != _damage_field) act = null; // don't make time by moving when in combat
-#if DEBUG
-          if (m_Actor.IsDebuggingTarget && !RogueGame.IsSimulating && null != act) RogueGame.Game.InfoPopup("making time: "+act.ToString());
-#endif
+          if (tracing && !RogueGame.IsSimulating && null != act) RogueGame.Game.InfoPopup("making time: "+act.ToString());
           if (null != act) return act;
         }
       }
       // clear staged actions here
       if (null != _staged_action) {
-#if DEBUG
-        if (m_Actor.IsDebuggingTarget && !RogueGame.IsSimulating && null != _staged_action) RogueGame.Game.InfoPopup("staged action: "+_staged_action.ToString());
-#endif
+        if (tracing && !RogueGame.IsSimulating && null != _staged_action) RogueGame.Game.InfoPopup("staged action: "+_staged_action.ToString());
         if (_staged_action.IsPerformable() && !VetoAction(_staged_action)) {
           if (_staged_action is ActionCloseDoor close && x is ActionCloseDoor o_close && close.Door.Location==o_close.Door.Location) {
             // double close.  Use ours (it's free)

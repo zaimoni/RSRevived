@@ -175,15 +175,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       const bool tracing = false; // debugging hook
 
       // New objectives system
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
-#endif
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(Objectives.Count.ToString() + " objectives");
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
         foreach(Objective o in new List<Objective>(Objectives)) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget && !o.IsExpired)  Logger.WriteLine(Logger.Stage.RUN_MAIN, o.ToString());
-#endif
+          if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(o.ToString());
           if (o.IsExpired) Objectives.Remove(o);
           else if (o.UrgentAction(out goal_action)) {
             if (null==goal_action) Objectives.Remove(o);
@@ -192,21 +188,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #else
             else if (!goal_action.IsPerformable()) Objectives.Remove(o);
 #endif
-#if TRACE_SELECTACTION
             else {
-              if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returning to task: "+o.ToString());
+              if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("returning to task: " + o.ToString());
               return goal_action;
             }
-#else
-            else return goal_action;
-#endif
           }
         }
       }
 
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == _enemies ? "null == _enemies" : _enemies.Count.ToString()+" enemies"));
-#endif
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == _enemies ? "null == _enemies" : _enemies.Count.ToString() + " enemies");
 
       if (!Directives.CanThrowGrenades && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) grenade.UnequippedBy(m_Actor);
 
@@ -227,9 +217,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk: "+tmpAction);
-#endif
       if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("managing melee risk: "+tmpAction.ToString());
       if (null != tmpAction) return tmpAction;
 

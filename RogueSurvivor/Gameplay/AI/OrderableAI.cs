@@ -327,6 +327,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         RefreshLocations();
         if (ai is PlayerController) return false;   // do not hijack player (use case is threat detection)
+        ret = (ai as OrderableAI).NoncombatEquipWeapon();
+        if (null != ret) return true;
         if (ObjectiveAI.ReactionCode.SLEEPY < ai.InterruptLongActivity()) return false;
         // XXX \todo really want inverse-FOVs for destinations; trigger calculation/retrieval from cache here
         ai.ClearLastMove();
@@ -1267,6 +1269,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       return ret;
+    }
+
+    public ActorAction? NoncombatEquipWeapon()
+    {
+      if (null != _enemies) return null;
+      var available_ranged_weapons = GetAvailableRangedWeapons();
+#if DEBUG
+      if ((null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
+#endif
+
+      // if no ranged weapons, use BaseAI
+      // OrderableAI::GetAvailableRangedWeapons knows about AI disabling of ranged weapons
+      if (null == available_ranged_weapons) return base.BehaviorEquipWeapon();
+
+      // if no enemies in sight, reload all ranged weapons and then equip longest-range weapon
+      // XXX there may be more important objectives than this
+      foreach(ItemRangedWeapon rw in available_ranged_weapons) {
+        if (rw.Model.MaxAmmo <= rw.Ammo) continue;
+        ItemAmmo am = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
+        if (null == am) continue;
+        if (0 == rw.Ammo || (rw.Model.MaxAmmo - rw.Ammo) >= am.Quantity) return Equip(rw) ?? new ActionUseItem(m_Actor, am);
+      }
+      return Equip(GetBestRangedWeaponWithAmmo());
     }
 
     // forked from BaseAI::BehaviorEquipWeapon

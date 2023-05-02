@@ -81,15 +81,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 if (!oai.InCommunicationWith(friend)) continue;
                 if (_locs.Any(loc => friend.Controller.CanSee(in loc))) {
                     _isExpired = true;
-#if DEBUG
-                    if (oai.ControlledActor.IsDebuggingTarget) throw new InvalidOperationException("tracing");
-#endif
                     return true;
                 }
             }
-#if DEBUG
-            if (0 < oai.InterruptLongActivity() && oai.ControlledActor.IsDebuggingTarget) throw new InvalidOperationException("tracing");
-#endif
+
             // defer actual pathing action to allow other non-combat heuristics to cut in
             return false;
         }
@@ -99,9 +94,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public bool update(Location[] src) {
             if (_locs.Any(x => 0 <= Array.IndexOf(src, x))) {
                 _isExpired = true;
-#if DEBUG
-                if (oai.ControlledActor.IsDebuggingTarget) throw new InvalidOperationException("tracing");
-#endif
                 return true;
             }
             return false;
