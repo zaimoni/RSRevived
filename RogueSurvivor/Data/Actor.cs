@@ -17,6 +17,7 @@ using Zaimoni.Data;
 using static Zaimoni.Data.Functor;
 
 using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 
 using Color = System.Drawing.Color;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
@@ -678,7 +679,15 @@ namespace djack.RogueSurvivor.Data
     public bool IsDebuggingTarget {
       get {
 #if TRACER
-        if ("" == Name) return true;
+        if (   Controller is Gameplay.AI.CivilianAI
+            && !IsSleeping
+            && Controller.InCombat) return true;
+/*      if (Controller is Gameplay.AI.CivilianAI && Location.Map == Location.Map.District.EntryMap && new Rectangle(new Point(0,0),new Point(3,3)).Contains(Location.Map.District.WorldPosition)) return true;
+        var denorm = RogueGame.Player.Location.Map.Denormalize(Location);
+        if (   Controller is Gameplay.AI.CivilianAI
+            && null != denorm
+            && RogueGame.Player.Location.LocalView.Contains(denorm.Value.Position)) return true;
+*/
 #endif
         return false;
       }

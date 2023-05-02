@@ -5,7 +5,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define AUDIT_ACTOR_MOVEMENT
 // #define AUDIT_ITEM_INVARIANTS
 // #define BOOTSTRAP_Z_DICTIONARY
 
@@ -1481,33 +1480,14 @@ retry:
         bool already_on_map = m_ActorsList.Contains(actor);
         if (already_on_map) {
           if (!knows_on_map) throw new InvalidOperationException(actor.Name+" did not know s/he was in the map");
-#if AUDIT_ACTOR_MOVEMENT
-          if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name + " is double-included");
-          if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position)) {
-            foreach(var x in m_aux_ActorsByPosition) {
-              if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
-            }
-            throw new InvalidOperationException("map location cache out of sync");
-          }
-          if (m_aux_ActorsByPosition[actor.Location.Position]!=actor) {
-            foreach(var x in m_aux_ActorsByPosition) {
-             if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
-            }
-            throw new InvalidOperationException("map location cache out of sync");
-          }
-#endif
           m_aux_ActorsByPosition.Remove(actor.Location.Position);
+          actor.Location = new Location(this, position);
         } else {
-#if AUDIT_ACTOR_MOVEMENT
-          foreach(var x in m_aux_ActorsByPosition) {
-           if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
-          }
-#endif
           if (!knows_on_map) actor.RemoveFromMap();
           m_ActorsList.Add(actor);
+          actor.Location = new Location(this, position);
           Recalc(actor);
         }
-        actor.Location = new Location(this, position);
         m_aux_ActorsByPosition.Add(position, actor);
       } // lock(m_aux_ActorsByPosition)
       m_iCheckNextActorIndex = 0;
@@ -1517,9 +1497,6 @@ retry:
     {
 #if DEBUG
       if (!m_ActorsList.Contains(actor)) throw new ArgumentException("actor not in map");
-#endif
-#if AUDIT_ACTOR_MOVEMENT
-      if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name + " is double-included");
 #endif
       if (1 == m_ActorsList.Count) return;
       m_ActorsList.Remove(actor);
@@ -1535,33 +1512,11 @@ retry:
       if (this!=actor.Location.Map) throw new InvalidOperationException(actor.Name + " does not think he is in map to be removed from");
 #endif
       lock(m_aux_ActorsByPosition) {
-#if AUDIT_ACTOR_MOVEMENT
-        if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name+" is double-included");
-#endif
         if (m_ActorsList.Remove(actor)) {
-#if AUDIT_ACTOR_MOVEMENT
-          if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position)) {
-            foreach(var x in m_aux_ActorsByPosition) {
-              if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
-            }
-            throw new InvalidOperationException("map location cache out of sync");
-          }
-          if (m_aux_ActorsByPosition[actor.Location.Position]!=actor) {
-            foreach(var x in m_aux_ActorsByPosition) {
-              if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
-            }
-            throw new InvalidOperationException("map location cache out of sync");
-          }
-#endif
           m_aux_ActorsByPosition.Remove(actor.Location.Position);
           m_iCheckNextActorIndex = 0;
           Recalc(actor);
         }
-#if AUDIT_ACTOR_MOVEMENT
-        foreach(var x in m_aux_ActorsByPosition) {
-          if (x.Value == actor) throw new InvalidOperationException(actor.Name+" still in position cache");
-        }
-#endif
       }
     }
 
