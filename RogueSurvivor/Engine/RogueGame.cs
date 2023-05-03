@@ -2719,7 +2719,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 >= landing_zones.Count) return;
       n = Rules.Get.DiceRoller.Roll(0, landing_zones.Count); // choose a valid landing zone
       var turn = map.LocalTime.TurnCounter;
-      var party = new Actor[BIKERS_RAID_SIZE + 1];
+      var party = new Actor[BIKERS_RAID_SIZE];
       party[BIKERS_RAID_SIZE - 1] = SpawnNewBikerLeader(turn, Rules.Get.DiceRoller.Choose(GameGangs.BIKERS));
 
       var leader = party[BIKERS_RAID_SIZE - 1];
@@ -2734,7 +2734,7 @@ namespace djack.RogueSurvivor.Engine
       party[(BIKERS_RAID_SIZE - 1)/2] = leader;
 
       var lz = landing_zones[n].Value.Key.Listing;
-      i = BIKERS_RAID_SIZE + 1;
+      i = BIKERS_RAID_SIZE;
       while(0 <= --i) lz[i].Place(party[i]);
 
       var dir = entering_from(landing_zones[n].Value.Key.Rect, landing_zones[n].Key);
@@ -2776,7 +2776,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 >= landing_zones.Count) return;
       n = Rules.Get.DiceRoller.Roll(0, landing_zones.Count); // choose a valid landing zone
       var turn = map.LocalTime.TurnCounter;
-      var party = new Actor[GANGSTAS_RAID_SIZE + 1];
+      var party = new Actor[GANGSTAS_RAID_SIZE ];
       party[GANGSTAS_RAID_SIZE - 1] = SpawnNewGangstaLeader(turn, Rules.Get.DiceRoller.Choose(GameGangs.GANGSTAS));
 
       var leader = party[GANGSTAS_RAID_SIZE - 1];
@@ -2795,7 +2795,7 @@ namespace djack.RogueSurvivor.Engine
       // \todo postprocess: firearms on edge
 
       var lz = landing_zones[n].Value.Key.Listing;
-      i = GANGSTAS_RAID_SIZE + 1;
+      i = GANGSTAS_RAID_SIZE;
       while(0 <= --i) lz[i].Place(party[i]);
 
       var dir = entering_from(landing_zones[n].Value.Key.Rect, landing_zones[n].Key);

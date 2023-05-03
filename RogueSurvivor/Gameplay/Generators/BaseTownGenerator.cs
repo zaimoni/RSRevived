@@ -4398,7 +4398,7 @@ restart:
 
     public Actor CreateNewArmyNationalGuard(string rankName, Actor leader)
     {
-      var actor = CreateNewArmyNationalGuard(leader.Location.Map.LocalTime.TurnCounter, rankName);
+      var actor = CreateNewArmyNationalGuard(leader.SpawnTime, rankName);
       while(null != leader.FirstFollower(a => a.Name == actor.Name)) GiveNameToActor(m_DiceRoller, actor, rankName);
       return actor;
     }
@@ -4417,7 +4417,7 @@ restart:
 
     public Actor CreateNewBikerMan(Actor leader)
     {
-      var actor = CreateNewBikerMan(leader.Location.Map.LocalTime.TurnCounter, leader.GangID);
+      var actor = CreateNewBikerMan(leader.SpawnTime, leader.GangID);
       while(null != leader.FirstFollower(a => a.Name == actor.Name)) GiveNameToActor(m_DiceRoller, actor);
       return actor;
     }
@@ -4436,7 +4436,7 @@ restart:
 
     public Actor CreateNewGangstaMan(Actor leader)
     {
-      var actor = CreateNewGangstaMan(leader.Location.Map.LocalTime.TurnCounter, leader.GangID);
+      var actor = CreateNewGangstaMan(leader.SpawnTime, leader.GangID);
       while(null != leader.FirstFollower(a => a.Name == actor.Name)) GiveNameToActor(m_DiceRoller, actor);
       return actor;
     }
@@ -4455,7 +4455,7 @@ restart:
 
     public Actor CreateNewBlackOps(string rankName, Actor leader)
     {
-      var actor = CreateNewBlackOps(leader.Location.Map.LocalTime.TurnCounter, rankName);
+      var actor = CreateNewBlackOps(leader.SpawnTime, rankName);
       while(null != leader.FirstFollower(a => a.Name == actor.Name)) GiveNameToActor(m_DiceRoller, actor, rankName);
       return actor;
     }
