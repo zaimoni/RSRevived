@@ -147,12 +147,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_LastAction<T> : Objective
+    internal class Goal_LastAction<T> : Objective where T:ActorAction
     {
       public readonly T Intent;
 
-      public Goal_LastAction(int t0, Actor who, T intent)
-      : base(t0,who)
+      public Goal_LastAction(int t0, Actor who, T intent) : base(t0,who)
       {
 #if DEBUG
         if (null == intent) throw new ArgumentNullException(nameof(intent));
@@ -168,6 +167,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         ret = null;
         if (2 <= m_Actor.Location.Map.LocalTime.TurnCounter - TurnCounter) {
+          _isExpired = true;
+          return true;
+        }
+        if ((m_Actor.Controller as ObjectiveAI).VetoAction(Intent)) {
           _isExpired = true;
           return true;
         }
@@ -1872,8 +1875,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             // proceed
             ActionCloseDoor tmp = new ActionCloseDoor(m_Actor, door, m_Actor.Location == PrevLocation);
-            Objectives.Add(new Goal_LastAction<ActionCloseDoor>(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,tmp));
-            return tmp;
+            if (!VetoAction(tmp)) {
+              Objectives.Add(new Goal_LastAction<ActionCloseDoor>(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,tmp));
+              return tmp;
+            }
           }
           want_to_resolve[position] = Rules.GridDistance(in position, m_Actor.Location.Position);
         }
