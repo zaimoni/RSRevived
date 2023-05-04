@@ -4809,6 +4809,7 @@ namespace djack.RogueSurvivor.Engine
         }
         if (null != src[0].loc) {
           DoDropItem(player, invSpec.Value.Key.it!, src[0].loc.Value);
+          return true;
         }
         return false;
       }
