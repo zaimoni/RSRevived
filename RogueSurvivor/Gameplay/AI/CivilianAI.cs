@@ -272,11 +272,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
+      var leader = m_Actor.LiveLeader;
       // attempting extortion from cops should have consequences.
       // XXX as should doing it to a civilian whose leader is a cop (and in communication)
       if (   RogueGame.Options.IsAggressiveHungryCiviliansOn
           && current != null
-          && !m_Actor.HasLeader
+          && null == leader
           && !m_Actor.Model.Abilities.IsLawEnforcer
           && (m_Actor.IsHungry
           && !m_Actor.Has<ItemFood>())) {
@@ -336,7 +337,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX if we have item memory, check whether "critical items" have a known location.  If so, head for them (floodfill pathfinding)
       // XXX leaders should try to check what their followers use as well.
       var items = WhatHaveISeen();
-      if (!m_Actor.HasLeader || DontFollowLeader) {
+      if (null == leader || DontFollowLeader) {
       if (null != items && null != _legal_path) {
         HashSet<Gameplay.GameItems.IDs> critical = WhatDoINeedNow();    // out of ammo, or hungry without food
         // while we want to account for what our followers want, we don't want to block our followers from the items either
@@ -411,17 +412,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      if (m_Actor.HasLeader && !DontFollowLeader) {
+      if (null != leader && !DontFollowLeader) {
         // \todo interposition target for pathing hints, etc. from leader
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorFollowActor");
 #endif
-        tmpAction = BehaviorFollowActor(m_Actor.Leader, 1);
+        tmpAction = BehaviorFollowActor(leader, 1);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorFollowActor: "+(tmpAction?.ToString() ?? "null"));
 #endif
         if (null != tmpAction) {
-          m_Actor.TargetedActivity(Activity.FOLLOWING, m_Actor.Leader);
+          m_Actor.TargetedActivity(Activity.FOLLOWING, leader);
           return tmpAction;
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {

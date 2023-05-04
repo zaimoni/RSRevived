@@ -59,8 +59,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction? tmpAction;
 
       // dogs target their leader's enemy before the usual check for enemies
-      if (m_Actor.HasLeader) {
-        var targetActor = m_Actor.Leader.TargetActor;
+      var leader = m_Actor.LiveLeader;
+      if (null != leader) {
+        var targetActor = leader.TargetActor;
         if (targetActor != null && targetActor.Location.Map == m_Actor.Location.Map) {
           RogueGame.DoSay(m_Actor, targetActor, "GRRRRRR WAF WAF", RogueGame.Sayflags.IS_FREE_ACTION | RogueGame.Sayflags.IS_DANGER);
           tmpAction = BehaviorStupidBumpToward(targetActor.Location, true, false);
@@ -98,8 +99,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (m_Actor.IsTired) return new ActionWait(m_Actor);
       if (m_Actor.IsSleepy) return new ActionSleep(m_Actor);
-      if (m_Actor.HasLeader) {
-        tmpAction = BehaviorFollowActor(m_Actor.Leader, 1);
+      if (null != leader) {
+        tmpAction = BehaviorFollowActor(leader, 1);
         if (null != tmpAction) {
           m_Actor.Walk();
           m_Actor.TargetedActivity(Activity.FOLLOWING, m_Actor.Leader);

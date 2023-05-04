@@ -1903,7 +1903,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return a.IsSleeping && Rules.LOUD_NOISE_RADIUS >= Rules.GridDistance(a.Location, m_Actor.Location);
       }
 
-      if (m_Actor.HasLeader && need_waking(m_Actor.Leader)) return new ActionShout(m_Actor);
+      var leader = m_Actor.LiveLeader;
+      if (null != leader && need_waking(leader)) return new ActionShout(m_Actor);
       foreach (var friend in friends) {
         var actor = friend.Percepted;
         if (actor != m_Actor && need_waking(actor) && !m_Actor.IsEnemyOf(actor) && actor.IsEnemyOf(nearestEnemy)) {
@@ -2139,9 +2140,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmpAction = BehaviorUseExit(UseExitFlags.NONE);
           if (null != tmpAction) {
             bool flag3 = true;
-            if (m_Actor.HasLeader) {
+            var leader = m_Actor.LiveLeader;
+            if (null != leader) {
               var exitAt = m_Actor.Location.Exit;
-              if (exitAt != null) flag3 = m_Actor.Leader.Location.Map == exitAt.ToMap;
+              if (exitAt != null) flag3 = leader.Location.Map == exitAt.ToMap;
             }
             if (flag3) {
               m_Actor.Activity = Activity.FLEEING;

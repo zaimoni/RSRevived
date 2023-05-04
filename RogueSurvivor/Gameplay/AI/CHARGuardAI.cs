@@ -245,10 +245,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      if (m_Actor.HasLeader && !DontFollowLeader) {
-        tmpAction = BehaviorFollowActor(m_Actor.Leader, 1);
+      var leader = m_Actor.LiveLeader;
+      if (null != leader && !DontFollowLeader) {
+        tmpAction = BehaviorFollowActor(leader, 1);
         if (null != tmpAction) {
-          m_Actor.TargetedActivity(Activity.FOLLOWING, m_Actor.Leader);
+          m_Actor.TargetedActivity(Activity.FOLLOWING, leader);
           return tmpAction;
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {

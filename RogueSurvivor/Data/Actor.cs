@@ -382,6 +382,7 @@ namespace djack.RogueSurvivor.Data
     public Actor? Leader { get { return m_Leader; } }
     public Actor? LiveLeader { get { return (null != m_Leader && !m_Leader.IsDead) ? m_Leader : null; } }
     public bool HasLeader { get { return !(m_Leader?.IsDead ?? true); } }
+    // null != LiveLeader is equivalent to HasLeader
 
     public int TrustInLeader {
       get { return m_TrustInLeader; }

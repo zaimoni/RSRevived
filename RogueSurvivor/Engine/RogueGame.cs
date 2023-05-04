@@ -4159,7 +4159,10 @@ namespace djack.RogueSurvivor.Engine
       List<Actor> allies = player_allies.ToList();
       allies.Sort((a,b)=> string.Compare(a.Name,b.Name));
 
-      string label_a(Actor a) { return a.Name + (a.IsSleeping ? " (ZZZ)" : "") + (a.HasLeader ? "(leader " + a.Leader.Name + ")" : ""); }
+      string label_a(Actor a) {
+        var leader = a.LiveLeader;
+        return a.Name + (a.IsSleeping ? " (ZZZ)" : "") + (null != leader ? "(leader " + leader.Name + ")" : "");
+      }
       string label(int index) { return label_a(allies[index]); }
       bool details(int index) {
         Actor a = allies[index];
@@ -11275,7 +11278,8 @@ namespace djack.RogueSurvivor.Engine
     {
       foreach (Actor actor in map.Actors) {
         if (actor.Model.Abilities.IsUndead) continue;
-        if (actor.HasLeader && actor.Leader.IsPlayer) continue; // leader triggers upgrade
+        var leader = actor.LiveLeader;
+        if (null != leader && leader.IsPlayer) continue; // leader triggers upgrade
         if (actor.IsPlayer) {
           HandlePlayerDecideUpgrade(actor);
           continue;
@@ -11292,7 +11296,8 @@ namespace djack.RogueSurvivor.Engine
         if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(actor.Model)) continue;
         if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.RatsUpgrade) && GameActors.IsRatBranch(actor.Model)) continue;
         if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(actor.Model)) continue;
-        if (actor.HasLeader && actor.Leader.IsPlayer) continue; // leader triggers upgrade
+        var leader = actor.LiveLeader;
+        if (null != leader && leader.IsPlayer) continue; // leader triggers upgrade
         if (actor.IsPlayer) {
           HandlePlayerDecideUpgrade(actor);
           continue;

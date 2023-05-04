@@ -234,16 +234,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      if (m_Actor.HasLeader && !DontFollowLeader) {
+      var leader = m_Actor.LiveLeader;
+      if (null != leader && !DontFollowLeader) {
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorHangAroundActor");
 #endif
-        tmpAction = BehaviorHangAroundActor(m_Actor.Leader, FOLLOW_LEADER_MIN_DIST, FOLLOW_LEADER_MAX_DIST);    // SoldierAI difference here probably ok
+        tmpAction = BehaviorHangAroundActor(leader, FOLLOW_LEADER_MIN_DIST, FOLLOW_LEADER_MAX_DIST);    // SoldierAI difference here probably ok
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorHangAroundActor: "+(tmpAction?.ToString() ?? "null"));
 #endif
         if (null != tmpAction) {
-          m_Actor.TargetedActivity(Activity.FOLLOWING, m_Actor.Leader);
+          m_Actor.TargetedActivity(Activity.FOLLOWING, leader);
           return tmpAction;
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {

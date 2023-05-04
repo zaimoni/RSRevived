@@ -741,9 +741,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
           if (null != tmpAction) {
             bool flag3 = true;
-            if (m_Actor.HasLeader) {
+            var leader = m_Actor.LiveLeader;
+            if (null != leader) {
               var exitAt = m_Actor.Location.Exit;
-              if (exitAt != null) flag3 = m_Actor.Leader.Location.Map == exitAt.ToMap;
+              if (exitAt != null) flag3 = leader.Location.Map == exitAt.ToMap;
             }
             if (flag3) {
               m_Actor.Activity = Activity.FLEEING;
