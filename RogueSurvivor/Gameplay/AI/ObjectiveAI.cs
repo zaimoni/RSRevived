@@ -6837,21 +6837,23 @@ restart_chokepoints:
         }
       }
 
-      if (it is ItemFood food && stack.IsAccessible(m_Actor.Location)) {
+      if (it is ItemFood food) {
         // if we can eat it *now* without wasting, consider more extreme measures
         var val = m_Actor.ItemNutritionValue(food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter)); // \todo consider allowing for travel time
         if (val > m_Actor.MaxFood-m_Actor.FoodPoints) return null;
-        // heuristic: find least interesting item, exchange it out for the food, eat food, take or exchange-out food for item
-        // flashlights tend to not be very disruptive to other pathing
-        var discard = inv.GetFirstMatching<ItemLight>();
-        if (null != discard) {
-          var initiate = ActionTradeWith.Cast(in stack, m_Actor, discard, it);
-          if (null != initiate) {
-            var actions = new List<ActorAction> { initiate };
-            actions.Add(new ActionUseItem(m_Actor, it)); // won't be performable, but would be after initiation
-            if (1 < it.Quantity) { }  // \todo abstract version of trade with cast
-            else actions.Add(new ActionTake(m_Actor, discard.ModelID));
-            return new ActionChain(m_Actor, actions);
+        if (stack.IsAccessible(m_Actor.Location)) {
+          // heuristic: find least interesting item, exchange it out for the food, eat food, take or exchange-out food for item
+          // flashlights tend to not be very disruptive to other pathing
+          var discard = inv.GetFirstMatching<ItemLight>();
+          if (null != discard) {
+            var initiate = ActionTradeWith.Cast(in stack, m_Actor, discard, it);
+            if (null != initiate) {
+              var actions = new List<ActorAction> { initiate };
+              actions.Add(new ActionUseItem(m_Actor, it)); // won't be performable, but would be after initiation
+              if (1 < it.Quantity) { }  // \todo abstract version of trade with cast
+              else actions.Add(new ActionTake(m_Actor, discard.ModelID));
+              return new ActionChain(m_Actor, actions);
+            }
           }
         }
       }

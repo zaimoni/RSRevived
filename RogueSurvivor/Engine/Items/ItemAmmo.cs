@@ -43,7 +43,11 @@ namespace djack.RogueSurvivor.Engine.Items
 #endif
       if (null != _rw) {
         if (!inv.Contains(_rw)) _rw = null;
-        else if (!_rw.IsEquipped) _rw.EquippedBy(actor);
+        else if (!_rw.IsEquipped) {
+          var curr_rw = actor.GetEquippedWeapon() as ItemRangedWeapon;
+          if (null != curr_rw && curr_rw.AmmoType == _rw.AmmoType) _rw = curr_rw;
+          else _rw.EquippedBy(actor);
+        }
       }
       actor.SpendActionPoints();
       var rw = (_rw ?? (actor.GetEquippedWeapon() as ItemRangedWeapon))!;
