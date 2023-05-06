@@ -10805,6 +10805,7 @@ namespace djack.RogueSurvivor.Engine
       // If m_Player has just died, then we should be in the current district and thus clear to find a player
       // furthermore, the viewport didn't pan away to another player
       if (Player == deadGuy) FindPlayer();
+      if (null == m_SimThread) StartSimThread();
     }
 
     // alpha10

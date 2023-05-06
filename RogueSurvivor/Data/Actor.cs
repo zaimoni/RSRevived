@@ -3999,7 +3999,7 @@ namespace djack.RogueSurvivor.Data
     public void PrepareForPlayerControl()
     {
       var leader = Leader;
-      if (!(leader?.IsPlayer ?? false)) leader.RemoveFollower(this);   // needed if leader is NPC
+      if (null != leader && !leader.IsPlayer) leader.RemoveFollower(this);   // needed if leader is NPC
     }
 
     // This is a backstop for bugs elsewhere.
