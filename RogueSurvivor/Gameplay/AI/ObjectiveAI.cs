@@ -2486,6 +2486,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var trade = BehaviorTradeWithinClan();
       if (null != trade) return trade;
 
+      // break action loop
+      if (m_Actor.IsSleepy) {
+        var couch = m_Actor.Location.MapObject;
+        if (null != couch && couch.IsCouch) return null;
+      }
+
       if (null == _legal_path) return null;
       var tolerable_moves = _legal_path.CloneCast<Location,ActorAction,ActorDest>(step => null == NeedsAir(step.dest, m_Actor));
       if (tracing) RogueGame.Game.InfoPopup("considering moving: " + tolerable_moves.to_s());
