@@ -8009,7 +8009,7 @@ namespace djack.RogueSurvivor.Engine
       Location location = actor.Location;
       if (location.Map != newLocation.Map) throw new NotImplementedException("DoMoveActor : illegal to change map.");
 	  // committed to move now
-      actor.StandUp();  // movement cancels crouching, for now (duck walk very low priority to implement)
+      actor.Walk();  // movement cancels crouching, for now (duck walk very low priority to implement)
 	  actor.Moved();
       newLocation.Place(actor);
       bool dest_seen = ForceVisibleToPlayer(actor);
@@ -8284,7 +8284,7 @@ namespace djack.RogueSurvivor.Engine
       bool need_stamina_regen = (is_running ? !run_is_free_move : !actor.WalkIsFreeMove) && null!=exit_map.NextActorToAct;
       actor.SpendActionPoints(is_running ? Actor.BASE_ACTION_COST/2 : Actor.BASE_ACTION_COST);
       if (is_running) actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
-      else actor.StandUp();  // movement cancels crouching, for now (duck walk very low priority to implement)
+      else actor.Walk();  // movement cancels crouching, for now (duck walk very low priority to implement)
       bool origin_seen = ForceVisibleToPlayer(actor);
       var mapObjectAt = exitAt.Location.MapObject;
       if (null != mapObjectAt && mapObjectAt.IsJumpable) {

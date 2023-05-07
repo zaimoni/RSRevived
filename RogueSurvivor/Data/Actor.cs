@@ -305,13 +305,16 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsRunning {
       get { return GetFlag(Flags.IS_RUNNING); }
-      set { SetFlag(Flags.IS_RUNNING, value); }
+      set { 
+        SetFlag(Flags.IS_RUNNING, value);
+        if (value) Clear(Flags.IS_CROUCHING);
+      }
     }
-    public void Walk() { Clear(Flags.IS_RUNNING); }
+    public void Walk() { Clear(Flags.IS_RUNNING | Flags.IS_CROUCHING); }
     public void Run() {
       if (CanRun() && !IsRunning) {
-        if (IsCrouching) StandUp();
         Set(Flags.IS_RUNNING);
+        Clear(Flags.IS_CROUCHING);
       }
     }
 
@@ -324,13 +327,12 @@ namespace djack.RogueSurvivor.Data
     // crouch-walk-run stance changes are "free" because our time resolution is so large (2 minutes/turn)
     public bool IsCrouching {
       get { return GetFlag(Flags.IS_CROUCHING); }
-      set { SetFlag(Flags.IS_CROUCHING, value); }
     }
     public void StandUp() { Clear(Flags.IS_CROUCHING); }
     public void Crouch() {
       if (CanCrouch() && !IsCrouching) {
-        if (IsRunning) Walk();
         Set(Flags.IS_CROUCHING);
+        Clear(Flags.IS_RUNNING);
       }
     }
 
