@@ -86,6 +86,6 @@ namespace djack.RogueSurvivor.Engine.Actions
             return new PlayerTakeFrom(pc, new InvOrigin(obj));
         }
 
-        public override string ToString() => "take from: " + m_Src;
+        public override string ToString() => "take from: " + m_Src + "; "+m_Src.inv;
     }
 }
