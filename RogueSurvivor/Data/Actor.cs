@@ -438,28 +438,48 @@ namespace djack.RogueSurvivor.Data
     }
 #nullable restore
 
-    // Formally would make sense to break this up into target-independent and target-dependent checks for AI processing,
-    // but this is profile-cold 2020-9-20 zaimoni
+    public string ReasonCannotBeLed()
+    {
+      if (Model.Abilities.IsUndead) return "undead";
+      if (IsSleeping) return "sleeping";
+      if (HasLeader) return "already has a leader";
+      if (CountFollowers > 0) return "is a leader";  // XXX organized force would have a chain of command
+      if (Controller.InCombat && !IsPlayer) return Name+" in combat";
+      return "";
+    }
+
+    public string ReasonCannotLead()
+    {
+      int num = MaxFollowers;
+      if (num == 0) return "can't lead";
+      if (CountFollowers >= num) return "too many followers";
+      // this should need refinement (range 1 might be ok)
+      if (!IsPlayer && Controller.InCombat) return "in combat";
+      return "";
+    }
+
+    public string ReasonCannotLead(Actor target)
+    {
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
+      if (IsEnemyOf(target)) return "enemy";
+      if (Faction != target.Faction && target.Faction.LeadOnlyBySameFaction) return string.Format("{0} can't lead {1}", Faction.Name, target.Faction.Name);
+      // to support savefile hacking.  AI in charge of player is a problem.
+      if (target.IsPlayer && !IsPlayer) return "is player";
+      return "";
+    }
+
     private string ReasonCantTakeLeadOf(Actor target)
     {
 #if DEBUG
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
-      if (target.Model.Abilities.IsUndead) return "undead";
-      if (IsEnemyOf(target)) return "enemy";
-      if (target.IsSleeping) return "sleeping";
-      if (target.HasLeader) return "already has a leader";
-      if (target.CountFollowers > 0) return "is a leader";  // XXX organized force would have a chain of command
-      int num = MaxFollowers;
-      if (num == 0) return "can't lead";
-      if (CountFollowers >= num) return "too many followers";
-      if (Faction != target.Faction && target.Faction.LeadOnlyBySameFaction) return string.Format("{0} can't lead {1}", Faction.Name, target.Faction.Name);
-      // to support savefile hacking.  AI in charge of player is a problem.
-      if (target.IsPlayer && !IsPlayer) return "is player";
-      // this should need refinement (range 1 might be ok)
-      if (!IsPlayer && Controller.InCombat) return "in combat";
-      if (target.Controller.InCombat && !target.IsPlayer) return target.Name+" in combat";
-      return "";
+      var ret = target.ReasonCannotBeLed();
+      if (!string.IsNullOrEmpty(ret)) return ret;
+      ret = ReasonCannotLead();
+      if (!string.IsNullOrEmpty(ret)) return ret;
+      return ReasonCannotLead(target);
     }
 
     public bool CanTakeLeadOf(Actor target, out string reason)
@@ -1428,6 +1448,7 @@ namespace djack.RogueSurvivor.Data
           } else {
             if (!actor.HasActiveArmyRadio) continue;
           }
+          if (actor.IsDead) continue;
           if (actor.IsSleeping) continue;   // can't hear when sleeping (this is debatable; might be interesting to be woken up by high-priority messages once radio alarms are implemented)
           var dest_radio_location = Rules.PoliceRadioLocation(actor.Location);
           if (RogueGame.POLICE_RADIO_RANGE < Rules.GridDistance(radio_location, in dest_radio_location)) continue;

@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Linq;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -26,6 +27,12 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsLegal()
     {
       return m_Actor.CanTakeLeadOf(m_Target);
+    }
+
+    public override bool IsPerformable()
+    {
+      if (!base.IsPerformable()) return false;
+      return !m_Actor.Followers?.Contains(m_Target) ?? true;
     }
 
     public override void Perform()
