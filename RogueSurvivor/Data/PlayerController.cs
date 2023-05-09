@@ -430,7 +430,7 @@ namespace djack.RogueSurvivor.Data
 
             RogueGame.Game.PagedPopup(m_Actor.UnmodifiedName+"'s options", src.Count, label, details);
         }
-        return ret;
+        return src[0];
     }
 
 #nullable restore
