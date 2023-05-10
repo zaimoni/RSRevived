@@ -53,7 +53,6 @@ namespace djack.RogueSurvivor.Engine.Items
       Batteries = model.MaxBatteries;
     }
 
-#if USE_ITEM_STRUCT
     public override Item_s toStruct() { return new Item_s(ModelID, m_Batteries); }
     public override void toStruct(ref Item_s dest)
     {
@@ -61,7 +60,6 @@ namespace djack.RogueSurvivor.Engine.Items
         dest.QtyLike = m_Batteries;
         dest.Flags = 0;
     }
-#endif
 
     public override string ToString()
     {

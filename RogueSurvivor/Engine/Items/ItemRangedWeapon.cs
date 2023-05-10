@@ -5,9 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-#if USE_ITEM_STRUCT
 using Item_s = djack.RogueSurvivor.Data.Item_s;
-#endif
 
 #nullable enable
 
@@ -23,7 +21,6 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public ItemRangedWeapon(ItemRangedWeaponModel model) : base(model) { Ammo = model.MaxAmmo; }
 
-#if USE_ITEM_STRUCT
     public override Item_s toStruct() { return new Item_s(ModelID, Ammo); }
     public override void toStruct(ref Item_s dest)
     {
@@ -31,7 +28,6 @@ namespace djack.RogueSurvivor.Engine.Items
         dest.QtyLike = Ammo;
         dest.Flags = 0;
     }
-#endif
 
     public override Gameplay.GameItems.IDs InventoryMemoryID { get {
         return 0 == Ammo ? base.InventoryMemoryID.UnloadedVersion() : base.InventoryMemoryID;

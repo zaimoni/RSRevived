@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define USE_ITEM_STRUCT
-
 using System;
 using System.Threading;
 using Zaimoni.Data;
@@ -32,7 +30,6 @@ namespace djack.RogueSurvivor.Data
         bool FreeSlotByUse(Actor a);
     }
 
-#if USE_ITEM_STRUCT
     [Serializable]
     internal struct Item_s    // for item memmory
     {
@@ -50,7 +47,6 @@ namespace djack.RogueSurvivor.Data
         public ItemModel Model { get { return Gameplay.GameItems.From(ModelID); } }
         public bool Consume() => 0 >= Interlocked.Decrement(ref QtyLike);
     }
-#endif
 
     [Serializable]
   internal class Item
@@ -62,14 +58,12 @@ namespace djack.RogueSurvivor.Data
     public ItemModel Model { get { return Gameplay.GameItems.From(ModelID); } }
     public virtual string ImageID { get { return Model.ImageID; } }
     public virtual Gameplay.GameItems.IDs InventoryMemoryID { get { return ModelID; }  }
-#if USE_ITEM_STRUCT
     public virtual Item_s toStruct() { return new Item_s(ModelID, m_Quantity);  }
     public virtual void toStruct(ref Item_s dest) {
         dest.ModelID = ModelID;
         dest.QtyLike = m_Quantity;
         dest.Flags = 0;
     }
-#endif
 
     public string TheName {
       get {
