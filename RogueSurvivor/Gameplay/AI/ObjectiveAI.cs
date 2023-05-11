@@ -4744,10 +4744,8 @@ restart:
               throw new InvalidProgramException("need to handle enemy blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
 #endif
           }
-          // needs implementation
-#if DEBUG
-          throw new InvalidProgramException("need to handle adjacent to blocked exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
-#endif
+          // \todo should try to get guidance from allies
+          return new ActionWait(m_Actor);
         }
 #if DEBUG
         throw new InvalidProgramException("non-pathing to adjacent location: "+goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
