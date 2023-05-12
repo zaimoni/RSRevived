@@ -744,6 +744,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                         if (0 >= dest_view) dests = update_path.Unstage(loc => leaving.dest.Map != loc.Map);
                         else dests = update_path.Unstage(loc => dest_view != District.UsesCrossDistrictView(loc.Map));
                         if (0 < dests.Count) {
+                            if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("LoS on cross-district dests: "+dests.to_s());
                             var goal = new Goals.AcquireLineOfSight(m_Actor, dests);
                             SetObjective(goal);
                             AddFOVevent(goal);
@@ -756,6 +757,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (2 != dest_view) {
                     var dests = update_path.Unstage(loc => dest_view != District.UsesCrossDistrictView(loc.Map));
                     if (0 < dests.Count) {
+                        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("LoS on dests: "+dests.to_s());
                         var goal = new Goals.AcquireLineOfSight(m_Actor, dests);
                         SetObjective(goal);
                         AddFOVevent(goal);
@@ -768,6 +770,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               var considering = GetPreviousGoals(m_Actor.Location);
               var unseen = considering?.Where(loc => !CanSee(loc)).ToHashSet();
               if (null != unseen && 0 < unseen.Count) {
+                if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("LoS on unseen: "+unseen.to_s());
                 var goal = new Goals.AcquireLineOfSight(m_Actor, unseen);
                 SetObjective(goal);
                 AddFOVevent(goal);
