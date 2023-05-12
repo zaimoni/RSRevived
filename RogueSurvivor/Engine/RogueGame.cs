@@ -4161,7 +4161,7 @@ namespace djack.RogueSurvivor.Engine
 
       string label_a(Actor a) {
         var leader = a.LiveLeader;
-        return a.Name + (a.IsSleeping ? " (ZZZ)" : "") + (null != leader ? "(leader " + leader.Name + ")" : "");
+        return a.Name + (a.IsSleeping ? " (ZZZ)" : "") + (null == a.Followers ? "" : "[L]") + (null != leader ? "(leader " + leader.Name + ")" : "");
       }
       string label(int index) { return label_a(allies[index]); }
       bool details(int index) {
