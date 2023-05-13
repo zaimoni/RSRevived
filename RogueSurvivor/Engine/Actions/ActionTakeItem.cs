@@ -71,6 +71,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsPerformable()
     {
       if (!base.IsPerformable()) return false;
+      if (!m_Actor.Inventory?.Contains(m_Item) ?? true) return false;
       return m_Actor.MayTakeFromStackAt(_loc);
     }
 
