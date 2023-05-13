@@ -1655,18 +1655,6 @@ namespace djack.RogueSurvivor.Data
     {
       if (other?.IsDead ?? true) return false;
 
-      // my leader enemies are my enemies.
-      // my mates enemies are my enemies.
-      static bool IsEnemyOfMyLeaderOrMates(Actor groupActor, Actor target)
-      {
-        var leader = groupActor.LiveLeader;
-        if (null == leader) return false;
-        if (leader.IsEnemyOf(target, false)) return true;
-        foreach (Actor mate in leader.m_Followers)
-          if (mate != groupActor && mate.IsEnemyOf(target, false)) return true;
-        return false;
-      }
-
       // my followers enemies are my enemies
       static bool IsEnemyOfMyFollowers(Actor groupActor, Actor target)
       {
@@ -1674,6 +1662,16 @@ namespace djack.RogueSurvivor.Data
         foreach (Actor follower in groupActor.m_Followers)
           if (follower.IsEnemyOf(target, false)) return true;
         return false;
+      }
+
+      // my leader enemies are my enemies.
+      // my mates enemies are my enemies.
+      static bool IsEnemyOfMyLeaderOrMates(Actor groupActor, Actor target)
+      {
+        var leader = groupActor.LiveLeader;
+        if (null == leader) return false;
+        if (leader.IsEnemyOf(target, false)) return true;
+        return IsEnemyOfMyFollowers(leader, target);
       }
 
       if (IsEnemyOfMyLeaderOrMates(this, other)) return true;
