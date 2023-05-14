@@ -172,16 +172,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == _enemies) AdviseFriendsOfSafety();
       else m_LastEnemySaw = Rules.Get.DiceRoller.Choose(_enemies);
 
-      const bool tracing = false; // debugging hook
+      const bool tracing = false;
 
       // New objectives system
       if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(Objectives.Count.ToString() + " objectives");
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
         foreach(Objective o in new List<Objective>(Objectives)) {
-          if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(o.ToString());
+          if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(o.ToString()+(o.IsExpired ? " : expired" : ""));
           if (o.IsExpired) Objectives.Remove(o);
           else if (o.UrgentAction(out goal_action)) {
+            if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == goal_action ? "expiring by null"  : "proceeding : "+ goal_action.ToString());
             if (null==goal_action) Objectives.Remove(o);
 #if DEBUG
             else if (!goal_action.IsPerformable()) throw new InvalidOperationException("result of UrgentAction should be legal");
@@ -192,8 +193,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("returning to task: " + o.ToString());
               return goal_action;
             }
-          }
-        }
+          } else if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("deferred goal");                }
       }
 
       if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == _enemies ? "null == _enemies" : _enemies.Count.ToString() + " enemies");

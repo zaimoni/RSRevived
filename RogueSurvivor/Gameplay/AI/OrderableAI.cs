@@ -433,6 +433,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       private bool _removeInvalidStacks()
       {
         _inventory_actions = null;
+
+        const bool tracing = false;
+        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("in Goal_PathToStack::_removeInvalidStacks");
+
         int i = _stacks.Count;
         while(0 < i--) {
           Inventory? inv;
@@ -442,6 +446,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (    null == inv    // can crash otherwise in presence of bugs
                || !m_Actor.CanEnter(p.Location)
                || (m_Actor.Controller.CanSee(p.Location) && m_Actor.StackIsBlocked(p.Location))) {
+              if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("removing (blocked) "+p.to_s());
               _stacks.RemoveAt(i);
               ordai.ClearLastMove();
               continue;
@@ -450,16 +455,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
           } // end scope var p
 
           if (inv.IsEmpty || !ordai.WouldGrabFromStack(_stacks[i].Location, inv)) {
+              if (tracing && !Engine.RogueGame.IsSimulating) RogueGame.Game.InfoPopup("removing (boring) "+ _stacks[i].to_s());
             _stacks.RemoveAt(i);
             continue;
           } else {
             var act = ordai.WouldGrabFromAccessibleStack(_stacks[i].Location, inv);
             if (null == act || !act.IsLegal()) {
+              if (tracing && !Engine.RogueGame.IsSimulating) RogueGame.Game.InfoPopup("removing (illegal) "+ _stacks[i].to_s());
               _stacks.RemoveAt(i);
               continue;
             }
+            if (tracing && !Engine.RogueGame.IsSimulating) RogueGame.Game.InfoPopup(_stacks[i].Location.ToString() + "(may, doable) " + (m_Actor.MayTakeFromStackAt(_stacks[i].Location) ? "true" : "false")+" "+(act.IsPerformable() ? "true" : "false")+" "+act.ToString());
             if (m_Actor.MayTakeFromStackAt(_stacks[i].Location) && act.IsPerformable()) {
-              (_inventory_actions ??= new List<KeyValuePair<Location, ActorAction>>()).Add(new KeyValuePair<Location, ActorAction>(_stacks[i].Location, act));
+              if (tracing && !Engine.RogueGame.IsSimulating) RogueGame.Game.InfoPopup("want to do "+ act.ToString());
+              (_inventory_actions ??= new()).Add(new(_stacks[i].Location, act));
             }
           }
         }
@@ -470,6 +479,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         ret = null;
 
+        const bool tracing = false;
+        if (tracing && !Engine.RogueGame.IsSimulating) Engine.RogueGame.Game.InfoPopup("in Goal_PathToStack::UrgentAction"+(m_Actor.Controller.IsEngaged ? " : engaged" : ""));
+
         if (_removeInvalidStacks()) {
           _isExpired = true;
           return true;
@@ -478,6 +490,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.Controller.IsEngaged) return false;
 
         if (null != _inventory_actions) {
+          if (tracing && !Engine.RogueGame.IsSimulating) Engine.RogueGame.Game.InfoPopup(_inventory_actions.Count.ToString());
           // prefilter
           if (2 <= _inventory_actions.Count) {
             var ub = _inventory_actions.Count;

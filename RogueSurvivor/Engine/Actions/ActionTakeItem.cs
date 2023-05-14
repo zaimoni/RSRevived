@@ -71,7 +71,6 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsPerformable()
     {
       if (!base.IsPerformable()) return false;
-      if (!m_Actor.Inventory?.Contains(m_Item) ?? true) return false;
       return m_Actor.MayTakeFromStackAt(_loc);
     }
 
@@ -144,7 +143,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       }
       return m_Actor.CanGet(it, out m_FailReason);
     }
-
     public override void Perform()
     {
       Item it = Take!;  // cf IsLegal(), above
