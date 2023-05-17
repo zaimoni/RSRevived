@@ -479,11 +479,11 @@ namespace djack.RogueSurvivor.Data
       int num = 0;
       if (a.Controller.IsEngaged) {
         foreach (var obj in m_Items) {
-          if (obj is ItemTrap trap && !trap.IsSafeFor(a)) num += trap.Model.Damage;
+          if (obj is ItemTrap trap && trap.IsActivated && !trap.IsSafeFor(a)) num += trap.Model.Damage;
         }
       } else {
         foreach (var obj in m_Items) {
-          if (obj is ItemTrap trap && !trap.IsSafeFor(a) && !trap.WouldLearnHowToBypass(a)) num += trap.Model.Damage;
+          if (obj is ItemTrap trap && trap.IsActivated && !trap.IsSafeFor(a) && !trap.WouldLearnHowToBypass(a)) num += trap.Model.Damage;
         }
       }
       return num;
