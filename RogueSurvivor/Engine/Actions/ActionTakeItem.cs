@@ -187,6 +187,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       // can happen if double-executing
       if (null != received && !m_Target.Inventory.Contains(received)) { m_FailReason = "no longer had received"; return false; }
       if (null==Give) { m_FailReason = "not in inventory"; return false; }
+      if ((m_Target.Controller as Gameplay.AI.ObjectiveAI)!.ItemIsUseless(gift)) return false;
       return true;
     }
 
@@ -203,7 +204,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       }
       if (!m_Target.IsPlayer && m_Target.Inventory.IsFull && !RogueGame.CanPickItemsToTrade(m_Actor, m_Target, gift)) {
         if (m_Target.CanGet(gift)) return true;
-        var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI).BehaviorMakeRoomFor(gift,m_Actor.Location,false); // unsure if this works cross-map
+        var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI)!.BehaviorMakeRoomFor(gift,m_Actor.Location,false); // unsure if this works cross-map
         if (null == recover) return false;
         if (recover is ActionTradeWithActor trade && trade.Whom == m_Target) {
           if (trade.IsPerformable()) {
