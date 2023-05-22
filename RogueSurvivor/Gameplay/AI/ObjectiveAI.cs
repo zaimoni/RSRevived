@@ -4697,11 +4697,11 @@ restart:
 #endif
       bool moveloop_risk = (null != _last_move && goals.Contains(_last_move.origin));
 
+      const bool tracing = false;
+
       {
       var moves = m_Actor.OnePath(m_Actor.Location);    // this usage needs to know about invalid moves
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: checking for moves "+(moves?.to_s() ?? "null")+" to adjacent goals "+goals.to_s());
-#endif
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: checking for moves " + (moves?.to_s() ?? "null") + " to adjacent goals " + goals.to_s());
       {
       bool null_return = false;
       ActorAction? movelooping = null;
@@ -4757,9 +4757,7 @@ restart:
       // check for pre-existing relevant path (approaching dead code)
       {
       var path_pt = GetMinStepPath<Point>();
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: pre-existing point path: "+(path_pt?.to_s() ?? "null") );
-#endif
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: pre-existing point path: " + (path_pt?.to_s() ?? "null"));
       if (null != path_pt) {
         var this_map_goals = goals.Where(loc => loc.Map == m_Actor.Location.Map).Select(Location.pos);
         int path_contains_our_goals_pt(List<List<Point>> path) {
@@ -4798,9 +4796,7 @@ restart:
       }
 
       if (0<near_tainted.Count) {
-#if TRACE_GOALS
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: near goals: "+near_tainted.to_s());
-#endif
+        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: near goals: " + near_tainted.to_s());
         var candidates = new List<Location>(moves.Count + 1) { m_Actor.Location };
         candidates.AddRange(moves.Keys);
         var goals_in_sight = DestsinLoS(candidates, near_tainted);
@@ -4810,9 +4806,7 @@ restart:
       }
       }
       }
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: past GreedyStep check");
-#endif
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: past GreedyStep check");
 
        // remove a degenerate case from consideration
        if (   !District.IsSewersMap(m_Actor.Location.Map)
@@ -4820,9 +4814,7 @@ restart:
          _current_goals = goals;
          return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(Location.pos))),goals);
        }
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: past single map pathfinder reduction");
-#endif
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: past single map pathfinder reduction");
 
 #if PROTOTYPE
       if (   1==m_Actor.Location.Map.destination_maps.Get.Count
@@ -4894,9 +4886,7 @@ restart:
       }
 
 restart_single_exit:
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: iterating restart_single_exit");
-#endif
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: iterating restart_single_exit");
       foreach(var x in map_goals) {
         if (m_Actor.Location.Map == x.Key) continue;    // do not try to goal-rewrite the map we are in
         var tmp = x.Key.destination_maps.Get;
@@ -5011,23 +5001,22 @@ restart_chokepoints:
 
       {
       var path_pt = GetMinStepPath<Location>();
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: pre-existing location path: "+(path_pt?.to_s() ?? "null") );
-#endif
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: pre-existing location path: " + (path_pt?.to_s() ?? "null"));
       if (null != path_pt) {
         if (GetPreviousGoals().ValueEqual(goals) || 0< path_contains_our_goals_loc(path_pt)) {
               var alt_act = UsePreexistingPath(goals);
-              if (null != alt_act) _recordPathfinding(alt_act, goals);
+              if (null != alt_act) {
+                var test = _recordPathfinding(alt_act, goals);
+                if (null != test) return test;
+                if (tracing && !RogueGame.IsSimulating) { RogueGame.Game.InfoPopup("BehaviorPathTo: UsePreexistingPath(goals) returned "+((null != alt_act) ? alt_act.ToString() : "null")); }
+              }
+              _sparse.Unset(SparseData.PathingTo);
         }
-#if TRACE_GOALS
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorPathTo: pre-existing location path did not contain any goals: "+goals.to_s());
-#endif
+        if (tracing && !RogueGame.IsSimulating) { RogueGame.Game.InfoPopup("BehaviorPathTo: pre-existing location path did not contain any goals: " + goals.to_s()); }
       }
       }
 
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "main exit: "+goal_costs.to_s()+", "+excluded.to_s());
-#endif
+      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("main exit: " + goal_costs.to_s() + ", " + excluded.to_s());
       _current_goals = goals;
       return _recordPathfinding(BehaviorPathTo(PathfinderFor(goal_costs, excluded, excluded_zones)),goals);
     }
