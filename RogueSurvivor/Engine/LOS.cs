@@ -19,14 +19,20 @@ namespace djack.RogueSurvivor.Engine
     // 0.9.9 unstable 2017-02-17 had a measured load time of over 3 minutes 30 seconds at turn 0, and one minute 45 seconds at turn 90.
     // at that version, the game seems to run perfectly fast once loaded (on the development machine) so trading speed of the game for speed of loading
     // makes sense.
-    // 2019-04-14: while we would like to lock access to FOVcache (there is a multi-threading crash issue manifesting as an "impossible" null cache value,
-    // this deadlocks on PC district change
     private static readonly Dictionary<Map,Zaimoni.Data.Cache.Associative<KeyValuePair<Point,int>,HashSet<Point>>> FOVcache = new();
 
-    public static void Expire(Map m) { if (FOVcache.TryGetValue(m,out var target) && target.Expire()) FOVcache.Remove(m); }
+    public static void Expire(Map m) {
+      lock (FOVcache) {
+        if (FOVcache.TryGetValue(m,out var target) && target.Expire()) FOVcache.Remove(m);
+      }
+    }
 
     public static void Validate(Map map, Predicate<HashSet<Point>> fn) {
-      if (FOVcache.TryGetValue(map,out var target)) target.Validate(fn);
+      Zaimoni.Data.Cache.Associative<KeyValuePair<Point, int>, HashSet<Point>>? target = default;
+      lock (FOVcache) {
+        if (!FOVcache.TryGetValue(map,out target)) return;
+      }
+       target.Validate(fn);
     }
 
     // Optimal FOV offset subsystem to deal with some ugly inverse problems
@@ -362,8 +368,11 @@ namespace djack.RogueSurvivor.Engine
 
     public static HashSet<Point> ComputeFOVFor(in Location a_loc, short maxRange)
     {
-      if (!FOVcache.TryGetValue(a_loc.Map,out var cache)) {
-        FOVcache[a_loc.Map] = (cache = new()); // \todo? could use Add if using a lock
+      Zaimoni.Data.Cache.Associative<KeyValuePair<Point, int>, HashSet<Point>>? cache = default;
+      lock (FOVcache) {
+        if (!FOVcache.TryGetValue(a_loc.Map,out cache)) {
+          FOVcache.Add(a_loc.Map, cache = new()); // \todo? could use Add if using a lock
+        }
       }
       if (cache.TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out var visibleSet)) return new(visibleSet);
       visibleSet = new HashSet<Point>{ a_loc.Position };
@@ -421,7 +430,9 @@ namespace djack.RogueSurvivor.Engine
 #endif
       }
       visibleSet.UnionWith(pointList2);
-      FOVcache[a_loc.Map].Set(new(a_loc.Position,maxRange), new(visibleSet));
+      lock(FOVcache) {
+        FOVcache[a_loc.Map].Set(new(a_loc.Position,maxRange), new(visibleSet));
+      }
       return visibleSet;
     }
 
