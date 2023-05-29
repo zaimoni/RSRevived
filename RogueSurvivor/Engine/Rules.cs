@@ -21,6 +21,9 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
 using djack.RogueSurvivor.Engine._Action;
+using static djack.RogueSurvivor.Gameplay.GameActors;
+using System.Drawing;
+using System.Numerics;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -190,7 +193,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private static ActorAction IsBumpableFor(Actor actor, Map map, Point point, out string reason)
+    private static ActorAction? IsBumpableFor(Actor actor, Map map, Point point, out string reason)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));
@@ -199,24 +202,11 @@ namespace djack.RogueSurvivor.Engine
       reason = "";
       Location loc = new Location(map,point);
       if (!actor.CanEnter(ref loc)) {
-        // generator is ok regardless
-        if (loc.MapObject is PowerGenerator powGen) {
-          if (powGen.IsOn) {
-            Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
-            if (tmp != null && actor.CanRecharge(tmp, out reason))
-              return new ActionRechargeItemBattery(actor, tmp);
-            tmp = actor.GetEquippedItem(DollPart.RIGHT_HAND);   // formal correctness
-            if (tmp != null && actor.CanRecharge(tmp, out reason))
-              return new ActionRechargeItemBattery(actor, tmp);
-            tmp = actor.GetEquippedItem(DollPart.HIP_HOLSTER);   // the police tracker
-            if (tmp != null && actor.CanRecharge(tmp, out reason))
-              return new ActionRechargeItemBattery(actor, tmp);
-          }
-          if (actor.CanSwitch(powGen, out reason)) {
-             if (actor.IsPlayer || !powGen.IsOn) return new ActionSwitchPowerGenerator(actor, powGen);
-          }
-          return null;
-        }
+        var targets = actor.GetMoveBlockingActors(point);
+        var m_attack = targets.CanBumpMelee(actor, point, out reason);
+        if (null != m_attack) return m_attack;
+        var act = loc.MapObject?.IsBumpableFor(actor, out reason);
+        if (null != act) return act;
         reason = "blocked";
         return null;
       }
@@ -226,21 +216,9 @@ namespace djack.RogueSurvivor.Engine
       }
 
       var actors_in_way = actor.GetMoveBlockingActors(point);
+      var melee = actors_in_way.CanBumpMelee(actor, point, out reason);
+      if (null != melee) return melee;
       if (actors_in_way.TryGetValue(point,out Actor actorAt)) {
-        if (actor.IsEnemyOf(actorAt)) {
-          return (actor.CanMeleeAttack(actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
-        }
-#if B_MOVIE_MARTIAL_ARTS
-        if (1<actors_in_way.Count) {
-          Actor? target = null;
-          foreach(var pt_actor in actors_in_way.Values) {
-            if (pt_actor == actorAt) continue;
-            if (!actor.CanMeleeAttack(pt_actor, out reason)) continue;
-            if (null == target || target.HitPoints>pt_actor.HitPoints) target = pt_actor;
-          }
-          return (null!=target ? new ActionMeleeAttack(actor, target) : null);
-        }
-#endif
 		// player as leader should be able to switch with player as follower
 		// NPCs shouldn't be leading players anyway
         if ((actor.IsPlayer || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))
@@ -252,15 +230,6 @@ namespace djack.RogueSurvivor.Engine
           }
         }
         return new ActionChat(actor, actorAt);
-#if B_MOVIE_MARTIAL_ARTS
-      } else if (0<actors_in_way.Count) {   // range-2 issue.  Identify weakest enemy.
-        Actor? target = null;
-        foreach(var pt_actor in actors_in_way.Values) {
-          if (!actor.CanMeleeAttack(pt_actor,out reason)) continue;
-          if (null == target || target.HitPoints>pt_actor.HitPoints) target = pt_actor;
-        }
-        return (null!=target ? new ActionMeleeAttack(actor, target) : null);
-#endif
       }
       var mapObjectAt = loc.MapObject;
       if (!map.IsInBounds(point)) {
@@ -293,47 +262,7 @@ namespace djack.RogueSurvivor.Engine
         return actionMoveStep;
       }
       reason = actionMoveStep.FailReason;
-      if (mapObjectAt != null) {
-        if (mapObjectAt is DoorWindow door) {
-          if (door.IsClosed) {
-            if (actor.CanOpen(door, out reason)) return new ActionOpenDoor(actor, door);
-            if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
-            return null;
-          }
-          // covers barricaded broken windows...otherwise redundant.
-          if (door.BarricadePoints > 0) {
-            // Z will bash barricaded doors but livings won't, except for specific overrides
-            // this does conflict with the tourism behavior
-            if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
-            reason = "cannot bash the barricade";
-            return null;
-          }
-        }
-        var act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
-        if (null != act) return act;
-        // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
-        // only Z want to break arbitrary objects; thus the guard clause
-        if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
-          return new ActionBreak(actor, mapObjectAt);
-        if (mapObjectAt is PowerGenerator powGen) {
-          if (powGen.IsOn) {
-            Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
-            if (tmp != null && actor.CanRecharge(tmp, out reason))
-              return new ActionRechargeItemBattery(actor, tmp);
-            tmp = actor.GetEquippedItem(DollPart.RIGHT_HAND);   // formal correctness
-            if (tmp != null && actor.CanRecharge(tmp, out reason))
-              return new ActionRechargeItemBattery(actor, tmp);
-            tmp = actor.GetEquippedItem(DollPart.HIP_HOLSTER);   // the police tracker
-            if (tmp != null && actor.CanRecharge(tmp, out reason))
-              return new ActionRechargeItemBattery(actor, tmp);
-          }
-          if (actor.CanSwitch(powGen, out reason)) {
-             if (actor.IsPlayer || !powGen.IsOn) return new ActionSwitchPowerGenerator(actor, powGen);
-          }
-          return null;
-        }
-      }
-      return null;
+      return mapObjectAt?.IsBumpableFor(actor, out reason);
     }
 
     public static ActorAction IsBumpableFor(Actor actor, in Location location)
@@ -838,6 +767,79 @@ retry:
       } else {
         return diag_delta < abs_delta.Y; // we are constrained by (X+1,Y-1) so 0 < 1 must pass
       }
+    }
+
+    public static ActorAction? IsBumpableFor(this MapObject mapObjectAt, Actor actor,  out string reason) {
+      reason = null;
+      if (mapObjectAt is DoorWindow door) {
+          if (door.IsClosed) {
+            if (actor.CanOpen(door, out reason)) return new ActionOpenDoor(actor, door);
+            if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
+            return null;
+          }
+          // covers barricaded broken windows...otherwise redundant.
+          if (door.BarricadePoints > 0) {
+            // Z will bash barricaded doors but livings won't, except for specific overrides
+            // this does conflict with the tourism behavior
+            if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
+            reason = "cannot bash the barricade";
+            return null;
+          }
+      }
+      var act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
+      if (null != act) return act;
+        // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
+        // only Z want to break arbitrary objects; thus the guard clause
+      if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
+          return new ActionBreak(actor, mapObjectAt);
+      if (mapObjectAt is PowerGenerator powGen) {
+          if (powGen.IsOn) {
+            Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
+            if (tmp != null && actor.CanRecharge(tmp, out reason))
+              return new ActionRechargeItemBattery(actor, tmp);
+            tmp = actor.GetEquippedItem(DollPart.RIGHT_HAND);   // formal correctness
+            if (tmp != null && actor.CanRecharge(tmp, out reason))
+              return new ActionRechargeItemBattery(actor, tmp);
+            tmp = actor.GetEquippedItem(DollPart.HIP_HOLSTER);   // the police tracker
+            if (tmp != null && actor.CanRecharge(tmp, out reason))
+              return new ActionRechargeItemBattery(actor, tmp);
+          }
+          if (actor.CanSwitch(powGen, out reason)) {
+             if (actor.IsPlayer || !powGen.IsOn) return new ActionSwitchPowerGenerator(actor, powGen);
+                }
+                return null;
+            }
+            return null;
+        }
+
+    public static ActionMeleeAttack? CanBumpMelee(this Dictionary<Point, Actor> actors_in_way, Actor actor, Point point, out string reason) {
+#if B_MOVIE_MARTIAL_ARTS
+      ActionMeleeAttack? find_target(Dictionary<Point, Actor> actors_in_way, Actor actorAt, out string reason) {
+          reason = null;
+          Actor? target = null;
+          foreach(var pt_actor in actors_in_way.Values) {
+            if (pt_actor == actorAt) continue;
+            if (!actor.CanMeleeAttack(pt_actor, out reason)) continue;
+            if (null == target || target.HitPoints>pt_actor.HitPoints) target = pt_actor;
+          }
+          return (null != target ? new ActionMeleeAttack(actor, target) : null);
+      }
+#endif
+
+      reason = null;
+      if (actors_in_way.TryGetValue(point,out Actor actorAt)) {
+        if (actor.IsEnemyOf(actorAt)) {
+          return (actor.CanMeleeAttack(actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
+        }
+#if B_MOVIE_MARTIAL_ARTS
+        if (1<actors_in_way.Count) return find_target(actors_in_way, actorAt, out reason);
+#endif
+#if B_MOVIE_MARTIAL_ARTS
+      } else if (0 < actors_in_way.Count) {   // range-2 issue.  Identify weakest enemy.
+         return find_target(actors_in_way, actor, out reason); // not really
+#endif
+      }
+      return null;
     }
   }
 }
