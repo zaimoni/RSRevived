@@ -1764,6 +1764,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
 
       lock (district) {
+      if (!world.WantToAdvancePlay(district)) return;
       bool IsPCdistrict = (0 < district.PlayerCount);
 
       do {

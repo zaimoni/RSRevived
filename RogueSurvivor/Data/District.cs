@@ -99,6 +99,8 @@ namespace djack.RogueSurvivor.Data
       return m == m.District.m_SubwayMap || m == m.District.m_SewersMap;
     }
 
+    public WorldTime LocalTime { get { return m_EntryMap.LocalTime; } }
+
     public District(Point worldPos, DistrictKind kind)
     {
       WorldPosition = worldPos;

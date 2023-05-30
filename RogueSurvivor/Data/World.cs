@@ -238,6 +238,15 @@ namespace djack.RogueSurvivor.Data
     public void DoForAllActors(Action<Actor> op) { foreach(District d in m_DistrictsGrid) d.DoForAllActors(op); }
     public void DoForAllGroundInventories(Action<Location,Inventory> op) { foreach (District d in m_DistrictsGrid) d.DoForAllGroundInventories(op); }
 
+    public bool WantToAdvancePlay(District x) {
+        // 2023-05-30: last test game had problems with the Last district getting ahead of the others in time.
+        if (x == Last) {
+            var t0 = Last.LocalTime.TurnCounter;
+            foreach(District d in m_DistrictsGrid) if (t0  > d.LocalTime.TurnCounter) return false;
+        }
+        return true;
+    }
+
     public World()
     {
       var size = Engine.RogueGame.Options.CitySize;
