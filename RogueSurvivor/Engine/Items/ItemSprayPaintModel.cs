@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int MaxPaintQuantity;
     public readonly string TagImageID;
 
-    public ItemSprayPaintModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int paintQuantity, string tagImageID, string flavor)
+    public ItemSprayPaintModel(Gameplay.Item_IDs _id, string aName, string theNames, string imageID, int paintQuantity, string tagImageID, string flavor)
       : base(_id, aName, theNames, imageID, flavor, DollPart.LEFT_HAND)
     {
 #if DEBUG

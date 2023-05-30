@@ -44,10 +44,10 @@ namespace djack.RogueSurvivor.Engine.Actions
   [Serializable]
   internal class ActionUse : ActorAction, Use<Item>
     {
-    private readonly Gameplay.GameItems.IDs m_ID;
+    private readonly Gameplay.Item_IDs m_ID;
     [NonSerialized] private Item? m_Item = null;
 
-    public ActionUse(Actor actor, Gameplay.GameItems.IDs it) : base(actor)
+    public ActionUse(Actor actor, Gameplay.Item_IDs it) : base(actor)
     {
 #if DEBUG
       if (!(Gameplay.GameItems.From(it).create() is UsableItem)) throw new ArgumentNullException(nameof(it));
@@ -55,7 +55,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_ID = it;
     }
 
-    public Gameplay.GameItems.IDs ID { get { return m_ID; } } // for completeness
+    public Gameplay.Item_IDs ID { get { return m_ID; } } // for completeness
 
     public Item? Use {
       get {

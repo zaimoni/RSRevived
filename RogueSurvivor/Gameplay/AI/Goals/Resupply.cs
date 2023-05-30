@@ -12,11 +12,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     [Serializable]
     internal class Resupply : Objective, LatePathable
     {
-        private readonly GameItems.IDs[] critical;
+        private readonly Item_IDs[] critical;
         private readonly Location[] dests;
         [NonSerialized] private ObjectiveAI oai;
 
-        public Resupply(Actor who, IEnumerable<GameItems.IDs> what, IEnumerable<Location> head_for) : base(who.Location.Map.LocalTime.TurnCounter, who)
+        public Resupply(Actor who, IEnumerable<Item_IDs> what, IEnumerable<Location> head_for) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
             if (!(who.Controller is ObjectiveAI ai)) throw new InvalidOperationException("need an ai with inventory");
             oai = ai;
@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             oai = (m_Actor.Controller as ObjectiveAI)!;
         }
 
-        private bool desires_changed(HashSet<GameItems.IDs> src) {
+        private bool desires_changed(HashSet<Item_IDs> src) {
             if (critical.Length != src.Count) return true;
             foreach (var x in critical) if (!src.Contains(x)) return true;
             var seen = oai.items_in_FOV;

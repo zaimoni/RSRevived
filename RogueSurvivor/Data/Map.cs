@@ -1929,7 +1929,7 @@ retry:
     }
 
     // Clairvoyant.  Useful for fine-tuning map generation and little else
-    public KeyValuePair<Point, Inventory>? GetInventoryHaving(Gameplay.GameItems.IDs id)
+    public KeyValuePair<Point, Inventory>? GetInventoryHaving(Gameplay.Item_IDs id)
     {
       if (District.Maps.Contains(this)) throw new InvalidOperationException("do not use GetInventoryHaving except during map generation");
       foreach (var x in m_GroundItemsByPosition) if (x.Value.Has(id)) return x;
@@ -2018,7 +2018,7 @@ retry:
     }
 
     // Clairvoyant.
-    public bool TakeItemType(Gameplay.GameItems.IDs id, Inventory dest)
+    public bool TakeItemType(Gameplay.Item_IDs id, Inventory dest)
     {
       var src = GetInventoryHaving(id);
       if (null == src) return false;
@@ -2029,7 +2029,7 @@ retry:
     }
 
     // Clairvoyant.
-    public bool SwapItemTypes(Gameplay.GameItems.IDs want, Gameplay.GameItems.IDs donate, Inventory dest)
+    public bool SwapItemTypes(Gameplay.Item_IDs want, Gameplay.Item_IDs donate, Inventory dest)
     {
       var giving = dest.GetFirst(donate);
       if (null == giving) return TakeItemType(want, dest);
@@ -2048,11 +2048,11 @@ retry:
     }
 
     // Panoptic.
-    public Dictionary<Gameplay.GameItems.IDs, Dictionary<Point, List<Inventory> > > ItemOverview()
+    public Dictionary<Gameplay.Item_IDs, Dictionary<Point, List<Inventory> > > ItemOverview()
     {
         if (District.Maps.Contains(this)) throw new InvalidOperationException("do not use ItemOverview except during map generation");
 
-        Dictionary<Gameplay.GameItems.IDs, Dictionary<Point, List<Inventory> > > ret = new();
+        Dictionary<Gameplay.Item_IDs, Dictionary<Point, List<Inventory> > > ret = new();
 
         foreach(var x in m_GroundItemsByPosition) {
           foreach(var it in x.Value.Items) {
@@ -2089,14 +2089,14 @@ retry:
 //      return (0 < ret.Count) ? ret : null;
     }
 
-    static public void InventoryCounts(Dictionary<Gameplay.GameItems.IDs, Dictionary<Point, List<Inventory>>> src, Span<int> dest) {
-      int ub = (int)Gameplay.GameItems.IDs._COUNT;
+    static public void InventoryCounts(Dictionary<Gameplay.Item_IDs, Dictionary<Point, List<Inventory>>> src, Span<int> dest) {
+      int ub = (int)Gameplay.Item_IDs._COUNT;
       if (dest.Length < ub) throw new InvalidOperationException("out of bounds write");
 
       // yes, this skips the negative values for no-ammo ranged weapons
       while(0 < ub--) {
         dest[ub] = 0;
-        if (src.TryGetValue((Gameplay.GameItems.IDs)ub, out var cache)) {
+        if (src.TryGetValue((Gameplay.Item_IDs)ub, out var cache)) {
           foreach(var x in cache.Values) dest[ub] += x.Count;
         }
       }

@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Data.Model
         public bool IsEmpty { get { return null == m_Items || 0 == m_Items.Length; } }
 
         /// <returns>0: no; 1: ok; -1: discard on drop</returns>
-        static public int QtyLikeZero_ok(Gameplay.GameItems.IDs ModelID) {
+        static public int QtyLikeZero_ok(Gameplay.Item_IDs ModelID) {
             var model = Gameplay.GameItems.From(ModelID);
             if (model is ItemRangedWeaponModel) return 1;
             // simulate is BatteryPowered test
@@ -110,7 +110,7 @@ namespace djack.RogueSurvivor.Data.Model
             if (m_Items![n].Consume()) RemoveAt(n);
         }
 
-        public void Consume(Gameplay.GameItems.IDs ModelID) {
+        public void Consume(Gameplay.Item_IDs ModelID) {
             var target = GetBestDestackable(Gameplay.GameItems.From(ModelID));
             if (null == target)
 #if DEBUG

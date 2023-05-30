@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Data
   internal class PlayerController : ObjectiveAI
     {
     private readonly Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
-    private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_itemMemory;
+    private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int> m_itemMemory;
     private List<Waypoint_s>? m_Waypoints = null;
     public readonly MessageManager Messages;
 
@@ -88,7 +88,7 @@ namespace djack.RogueSurvivor.Data
 	public PlayerController(Actor src, PlayerController? upgrading = null) : base(src) {
       m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES(), src);   // deal with vision capabilities
       m_itemMemory = m_Actor.IsFaction(GameFactions.IDs.ThePolice) ? Session.Get.Police.ItemMemory
-                                                                   : new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
+                                                                   : new();
 
       const int MESSAGES_SPACING = RogueGame.LINE_SPACING;
       const int MAX_MESSAGES = (RogueGame.CANVAS_HEIGHT - RogueGame.LOCATIONPANEL_Y) / MESSAGES_SPACING; // historically 7
@@ -196,7 +196,7 @@ namespace djack.RogueSurvivor.Data
       _handleReport("Nothing at " + src.ToString() + ".", code, who);
       return true;
     }
-    public override bool ReportNotThere(in InvOrigin src, Gameplay.GameItems.IDs what, Actor who) {
+    public override bool ReportNotThere(in InvOrigin src, Gameplay.Item_IDs what, Actor who) {
       var code = CommunicationMethodCode(who);
       if (0 >= code) return false;
 
@@ -247,16 +247,16 @@ namespace djack.RogueSurvivor.Data
 
     public IReadOnlyList<Waypoint_s>? Waypoints { get { return m_Waypoints; } }
 
-    public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>? ItemMemory { get { return m_itemMemory; } }
+    public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int>? ItemMemory { get { return m_itemMemory; } }
 
-    private bool ShowThis(Gameplay.GameItems.IDs src, in Location loc) {
-      if (Gameplay.GameItems.IDs.TRAP_EMPTY_CAN == src) return false;
+    private bool ShowThis(Gameplay.Item_IDs src, in Location loc) {
+      if (Gameplay.Item_IDs.TRAP_EMPTY_CAN == src) return false;
       return true;
     }
 
-    public override IEnumerable<Gameplay.GameItems.IDs>? RejectUnwanted(IEnumerable<Gameplay.GameItems.IDs>? src, Location loc) {
+    public override IEnumerable<Gameplay.Item_IDs>? RejectUnwanted(IEnumerable<Gameplay.Item_IDs>? src, Location loc) {
       if (null == src) return null;
-      List<Gameplay.GameItems.IDs> ret = new();
+      List<Gameplay.Item_IDs> ret = new();
       // \todo need a UI for this (cf. Angband)
       foreach(var it in src) {
         if (ShowThis(it, in loc)) ret.Add(it);
@@ -552,7 +552,7 @@ namespace djack.RogueSurvivor.Data
       var generators = m_Actor.Location.Map.PowerGenerators.Get.Where(power => Rules.IsAdjacent(m_Actor.Location,power.Location)).ToList();
       if (0 < generators.Count) {
         var lights = m_Actor?.Inventory.GetItemsByType<ItemLight>(it => it.MaxBatteries-1>it.Batteries);
-        var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO != it.ModelID && it.MaxBatteries - 1 > it.Batteries);
+        var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => Gameplay.Item_IDs.TRACKER_POLICE_RADIO != it.ModelID && it.MaxBatteries - 1 > it.Batteries);
         if (null != lights || null != trackers) {
           ret.Add(new("Recharge everything to full", () => {
               SetObjective(new Goal_RechargeAll(m_Actor));
@@ -663,7 +663,7 @@ namespace djack.RogueSurvivor.Data
 
     public override bool IsInterestingTradeItem(Actor speaker, Item offeredItem)
     {
-      if (Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO == offeredItem.ModelID && m_Actor.IsFaction(GameFactions.IDs.ThePolice)) return false; // very selective extraction from ItIsUseleess
+      if (Gameplay.Item_IDs.TRACKER_POLICE_RADIO == offeredItem.ModelID && m_Actor.IsFaction(GameFactions.IDs.ThePolice)) return false; // very selective extraction from ItIsUseleess
       return true;
     }
 

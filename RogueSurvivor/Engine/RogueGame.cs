@@ -2596,11 +2596,11 @@ namespace djack.RogueSurvivor.Engine
     }
 
     private const int army_supply_drop_checksum = 100;
-    private static readonly KeyValuePair<GameItems.IDs, int>[] army_supply_drop_stock = {
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.FOOD_ARMY_RATION,80),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_MEDIKIT,20)
+    private static readonly KeyValuePair<Item_IDs, int>[] army_supply_drop_stock = {
+        new(Item_IDs.FOOD_ARMY_RATION,80),
+        new(Item_IDs.MEDICINE_MEDIKIT,20)
     };
-    private static readonly GameItems.IDs[] army_supply_drop_stock_domain = army_supply_drop_stock.Select(x => x.Key).ToArray();
+    private static readonly Item_IDs[] army_supply_drop_stock_domain = army_supply_drop_stock.Select(x => x.Key).ToArray();
 
     private void FireEvent_ArmySupplies(Map map)
     {
@@ -2614,7 +2614,7 @@ namespace djack.RogueSurvivor.Engine
           Session.Get.Police.Investigate.Record(map, in pt);
           Location loc = new Location(map, pt);
           // inaccurate, but ensures proper prioritzation
-          var already_known = Session.Get.Police.ItemMemory.WhatIsAt(loc) ?? new HashSet<GameItems.IDs>();
+          var already_known = Session.Get.Police.ItemMemory.WhatIsAt(loc) ?? new();
           already_known.UnionWith(army_supply_drop_stock_domain);
           Session.Get.Police.ItemMemory.Set(loc, already_known, map.LocalTime.TurnCounter);
         },pt => AirdropWithoutIncident(map, in pt));
@@ -4070,7 +4070,7 @@ namespace djack.RogueSurvivor.Engine
           return PagedPopup("Walk 1) to 9) steps to the item, recording a waypoint.", sights_to_see.Count, label_tourism, details_tourism, false);
         }
 
-        GameItems.IDs item_type = item_classes[index];
+        var item_type = item_classes[index];
         var catalog = Player.Controller.WhereIs(item_type);
         var pc = Player.Controller as PlayerController;
 
@@ -4181,12 +4181,12 @@ namespace djack.RogueSurvivor.Engine
         }
         var items = (a.Controller as ObjectiveAI).WhatHaveISeen();
 
-        HashSet<GameItems.IDs> critical = (a.Controller as ObjectiveAI).WhatDoINeedNow();
+        var critical = (a.Controller as ObjectiveAI).WhatDoINeedNow();
         if (null != items) critical.IntersectWith(items);
         else critical.Clear();
 ;       if (0<critical.Count) {
           string msg = "need now:";
-          foreach(GameItems.IDs x in critical) {
+          foreach(var x in critical) {
             if (60<msg.Length) {
               tmp.Add(msg);
               msg = "need now:";
@@ -4200,7 +4200,7 @@ namespace djack.RogueSurvivor.Engine
           else critical.Clear();
           if (0<critical.Count) {
             string msg = "want now:";
-            foreach(GameItems.IDs x in critical) {
+            foreach(var x in critical) {
               if (60<msg.Length) {
                 tmp.Add(msg);
                 msg = "want now:";
@@ -9582,51 +9582,51 @@ namespace djack.RogueSurvivor.Engine
       switch(itSpeaker.ModelID)
       {
       // two weapons for the ammo
-      case GameItems.IDs.RANGED_PRECISION_RIFLE:
-      case GameItems.IDs.RANGED_ARMY_RIFLE:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.AMMO_HEAVY_RIFLE);
+      case Item_IDs.RANGED_PRECISION_RIFLE:
+      case Item_IDs.RANGED_ARMY_RIFLE:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.AMMO_HEAVY_RIFLE);
         break;
-      case GameItems.IDs.AMMO_HEAVY_RIFLE:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.RANGED_PRECISION_RIFLE && it.Model.ID!= GameItems.IDs.RANGED_ARMY_RIFLE);
+      case Item_IDs.AMMO_HEAVY_RIFLE:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.RANGED_PRECISION_RIFLE && it.Model.ID != Item_IDs.RANGED_ARMY_RIFLE);
         break;
-      case GameItems.IDs.RANGED_PISTOL:
-      case GameItems.IDs.RANGED_KOLT_REVOLVER:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.AMMO_LIGHT_PISTOL);
+      case Item_IDs.RANGED_PISTOL:
+      case Item_IDs.RANGED_KOLT_REVOLVER:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.AMMO_LIGHT_PISTOL);
         break;
-      case GameItems.IDs.AMMO_LIGHT_PISTOL:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.RANGED_PISTOL && it.Model.ID!= GameItems.IDs.RANGED_KOLT_REVOLVER);
+      case Item_IDs.AMMO_LIGHT_PISTOL:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.RANGED_PISTOL && it.Model.ID != Item_IDs.RANGED_KOLT_REVOLVER);
         break;
       // one weapon for the ammo
-      case GameItems.IDs.RANGED_ARMY_PISTOL:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.AMMO_HEAVY_PISTOL);
+      case Item_IDs.RANGED_ARMY_PISTOL:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.AMMO_HEAVY_PISTOL);
         break;
-      case GameItems.IDs.AMMO_HEAVY_PISTOL:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.RANGED_ARMY_PISTOL);
+      case Item_IDs.AMMO_HEAVY_PISTOL:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.RANGED_ARMY_PISTOL);
         break;
-      case GameItems.IDs.RANGED_HUNTING_CROSSBOW:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.AMMO_BOLTS);
+      case Item_IDs.RANGED_HUNTING_CROSSBOW:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.AMMO_BOLTS);
         break;
-      case GameItems.IDs.AMMO_BOLTS:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.RANGED_HUNTING_CROSSBOW);
+      case Item_IDs.AMMO_BOLTS:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.RANGED_HUNTING_CROSSBOW);
         break;
-      case GameItems.IDs.RANGED_HUNTING_RIFLE:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.AMMO_LIGHT_RIFLE);
+      case Item_IDs.RANGED_HUNTING_RIFLE:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.AMMO_LIGHT_RIFLE);
         break;
-      case GameItems.IDs.AMMO_LIGHT_RIFLE:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.RANGED_HUNTING_RIFLE);
+      case Item_IDs.AMMO_LIGHT_RIFLE:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.RANGED_HUNTING_RIFLE);
         break;
-      case GameItems.IDs.RANGED_SHOTGUN:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.AMMO_SHOTGUN);
+      case Item_IDs.RANGED_SHOTGUN:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.AMMO_SHOTGUN);
         break;
-      case GameItems.IDs.AMMO_SHOTGUN:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.RANGED_SHOTGUN);
+      case Item_IDs.AMMO_SHOTGUN:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.RANGED_SHOTGUN);
         break;
       // flashlights.  larger radius and longer duration are independently better...do not trade if both are worse
-      case GameItems.IDs.LIGHT_FLASHLIGHT:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.LIGHT_BIG_FLASHLIGHT || (itSpeaker as BatteryPowered).Batteries<=(it as BatteryPowered).Batteries);
+      case Item_IDs.LIGHT_FLASHLIGHT:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.LIGHT_BIG_FLASHLIGHT || (itSpeaker as BatteryPowered).Batteries<=(it as BatteryPowered).Batteries);
         break;
-      case GameItems.IDs.LIGHT_BIG_FLASHLIGHT:
-        tmp = tmp.Where(it=> it.ModelID!= GameItems.IDs.LIGHT_FLASHLIGHT || (itSpeaker as BatteryPowered).Batteries>=(it as BatteryPowered).Batteries);
+      case Item_IDs.LIGHT_BIG_FLASHLIGHT:
+        tmp = tmp.Where(it=> it.ModelID != Item_IDs.LIGHT_FLASHLIGHT || (itSpeaker as BatteryPowered).Batteries>=(it as BatteryPowered).Batteries);
         break;
       }
       if (!tmp.Any()) return null;
@@ -10130,9 +10130,9 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints();
       actor.RegenSanity(actor.ScaleSanRegen(ent.Model.Value));
       switch(ent.ModelID) {
-      case GameItems.IDs.ENT_CHAR_GUARD_MANUAL:
+      case Item_IDs.ENT_CHAR_GUARD_MANUAL:
         if (Player==actor) {  // this manual is highly informative
-          var display = new List<string>();
+          List<string> display = new();
           display.Add("It appears CHAR management had done some contingency planning for what is currently happening.");
           display.Add("The absence of an exemption for police when clearing CHAR offices in event of losing communications with HQ,");
           display.Add("seems imprudent.  Even if there had been a law enforcement raid on the HQ.");
@@ -12279,7 +12279,7 @@ namespace djack.RogueSurvivor.Engine
           int detection_range = (null != rw ? rw.Model.Attack.Range : 1);
           var fr_enemies = fr.Controller.enemies_in_FOV;
           if (null == fr_enemies) continue;
-          if (1 == detection_range && null != fr.Inventory?.GetFirst(GameItems.IDs.UNIQUE_FATHER_TIME_SCYTHE)) detection_range=2;
+          if (1 == detection_range && null != fr.Inventory?.GetFirst(Item_IDs.UNIQUE_FATHER_TIME_SCYTHE)) detection_range=2;
           foreach(var en in fr_enemies.Values) {
             if (detection_range < Rules.InteractionDistance(fr.Location, en.Location)) continue;
             if (en.IsDead) continue;

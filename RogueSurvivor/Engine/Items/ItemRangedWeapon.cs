@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine.Items
         dest.Flags = 0;
     }
 
-    public override Gameplay.GameItems.IDs InventoryMemoryID { get {
+    public override Gameplay.Item_IDs InventoryMemoryID { get {
         return 0 == Ammo ? base.InventoryMemoryID.UnloadedVersion() : base.InventoryMemoryID;
     } }
 
@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Engine.Items
     static public Predicate<ItemRangedWeapon> is_empty = rw => 0 >= rw.Ammo;
     static public Predicate<ItemRangedWeapon> is_not_empty = rw => 0 < rw.Ammo;
 
-    static public ItemRangedWeapon make(Gameplay.GameItems.IDs x)
+    static public ItemRangedWeapon make(Gameplay.Item_IDs x)
     {
       if (Gameplay.GameItems.From(x) is ItemRangedWeaponModel rw_model) return new ItemRangedWeapon(rw_model);
       throw new ArgumentOutOfRangeException(nameof(x), x, "not a ranged weapon");
@@ -55,20 +55,20 @@ namespace djack.RogueSurvivor {
 
   static public partial class RS_ext
   {
-        static internal Gameplay.GameItems.IDs UnloadedVersion(this Gameplay.GameItems.IDs x)
+        static internal Gameplay.Item_IDs UnloadedVersion(this Gameplay.Item_IDs x)
         {
             switch (x)
             {
-                case Gameplay.GameItems.IDs.RANGED_ARMY_PISTOL: return Gameplay.GameItems.IDs.UNLOADED_ARMY_PISTOL;
-                case Gameplay.GameItems.IDs.RANGED_ARMY_RIFLE: return Gameplay.GameItems.IDs.UNLOADED_ARMY_RIFLE;
-                case Gameplay.GameItems.IDs.RANGED_HUNTING_CROSSBOW: return Gameplay.GameItems.IDs.UNLOADED_HUNTING_CROSSBOW;
-                case Gameplay.GameItems.IDs.RANGED_HUNTING_RIFLE: return Gameplay.GameItems.IDs.UNLOADED_HUNTING_RIFLE;
-                case Gameplay.GameItems.IDs.RANGED_PISTOL: return Gameplay.GameItems.IDs.UNLOADED_PISTOL;
-                case Gameplay.GameItems.IDs.RANGED_KOLT_REVOLVER: return Gameplay.GameItems.IDs.UNLOADED_KOLT_REVOLVER;
-                case Gameplay.GameItems.IDs.RANGED_PRECISION_RIFLE: return Gameplay.GameItems.IDs.UNLOADED_PRECISION_RIFLE;
-                case Gameplay.GameItems.IDs.RANGED_SHOTGUN: return Gameplay.GameItems.IDs.UNLOADED_SHOTGUN;
-                case Gameplay.GameItems.IDs.UNIQUE_SANTAMAN_SHOTGUN: return Gameplay.GameItems.IDs.UNLOADED_SANTAMAN_SHOTGUN;
-                case Gameplay.GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL: return Gameplay.GameItems.IDs.UNLOADED_HANS_VON_HANZ_PISTOL;
+                case Gameplay.Item_IDs.RANGED_ARMY_PISTOL: return Gameplay.Item_IDs.UNLOADED_ARMY_PISTOL;
+                case Gameplay.Item_IDs.RANGED_ARMY_RIFLE: return Gameplay.Item_IDs.UNLOADED_ARMY_RIFLE;
+                case Gameplay.Item_IDs.RANGED_HUNTING_CROSSBOW: return Gameplay.Item_IDs.UNLOADED_HUNTING_CROSSBOW;
+                case Gameplay.Item_IDs.RANGED_HUNTING_RIFLE: return Gameplay.Item_IDs.UNLOADED_HUNTING_RIFLE;
+                case Gameplay.Item_IDs.RANGED_PISTOL: return Gameplay.Item_IDs.UNLOADED_PISTOL;
+                case Gameplay.Item_IDs.RANGED_KOLT_REVOLVER: return Gameplay.Item_IDs.UNLOADED_KOLT_REVOLVER;
+                case Gameplay.Item_IDs.RANGED_PRECISION_RIFLE: return Gameplay.Item_IDs.UNLOADED_PRECISION_RIFLE;
+                case Gameplay.Item_IDs.RANGED_SHOTGUN: return Gameplay.Item_IDs.UNLOADED_SHOTGUN;
+                case Gameplay.Item_IDs.UNIQUE_SANTAMAN_SHOTGUN: return Gameplay.Item_IDs.UNLOADED_SANTAMAN_SHOTGUN;
+                case Gameplay.Item_IDs.UNIQUE_HANS_VON_HANZ_PISTOL: return Gameplay.Item_IDs.UNLOADED_HANS_VON_HANZ_PISTOL;
                 default: throw new ArgumentOutOfRangeException(nameof(x), x.ToString());
             }
         }

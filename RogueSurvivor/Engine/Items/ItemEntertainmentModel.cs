@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int Value;
     public readonly int BoreChance;
 
-    public ItemEntertainmentModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int value, int boreChance, int stacking, string flavor)
+    public ItemEntertainmentModel(Gameplay.Item_IDs _id, string aName, string theNames, string imageID, int value, int boreChance, int stacking, string flavor)
       : base(_id, aName, theNames, imageID, flavor)
     {
       Value = value;

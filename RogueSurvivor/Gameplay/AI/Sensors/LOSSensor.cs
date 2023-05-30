@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       }
     }
 
-    private void _seeItems(List<Percept> perceptList, Location[] normalized_FOV, Ary2Dictionary<Location, GameItems.IDs, int> items)
+    private void _seeItems(List<Percept> perceptList, Location[] normalized_FOV, Ary2Dictionary<Location, Item_IDs, int> items)
     {
       _items = null;
       foreach (var loc in normalized_FOV) {
@@ -98,11 +98,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
           items.Set(loc,null,loc.Map.LocalTime.TurnCounter);
           continue;
         }
-        HashSet<GameItems.IDs>? staging = new HashSet<GameItems.IDs>();
+        HashSet<Item_IDs>? staging = new();
         foreach(var inv in allItems) {
           staging.UnionWith(inv.inv.Items.Select(x => x.InventoryMemoryID));
           perceptList.Add(new Percept(inv, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));
-          (_items ??= new Dictionary<Location, Inventory>())[loc] = inv.inv; // \todo may have to retype this
+          (_items ??= new())[loc] = inv.inv; // \todo may have to retype this
         }
         items.Set(loc, staging, loc.Map.LocalTime.TurnCounter);
       }
@@ -124,7 +124,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       if ((Filters & SensingFilter.ACTORS) != SensingFilter.NONE) ret = _seeActors;
       if ((Filters & SensingFilter.ITEMS) != SensingFilter.NONE) {
         var items = m_Actor.Controller.ItemMemory;
-        ret = ret.Compose(null != items ? items.Bind<List<Percept>, Location[], Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>>(_seeItems)
+        ret = ret.Compose(null != items ? items.Bind<List<Percept>, Location[], Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int>>(_seeItems)
                                         : _seeItems);
       }
       if ((Filters & SensingFilter.CORPSES) != SensingFilter.NONE) ret = ret.Compose(_seeCorpses);

@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly TrackingFlags Tracking;
     public readonly int MaxBatteries;
 
-    public ItemTrackerModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, TrackingFlags tracking, int maxBatteries, DollPart part, string flavor)
+    public ItemTrackerModel(Gameplay.Item_IDs _id, string aName, string theNames, string imageID, TrackingFlags tracking, int maxBatteries, DollPart part, string flavor)
       : base(_id, aName, theNames, imageID, flavor, part, true)
     {
        Tracking = tracking;

@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     [Serializable]
     internal class PathToStack : Objective, LatePathable, PreciseCountermand
     {
-        private readonly List<KeyValuePair<InvOrigin, GameItems.IDs>> _stacks = new(1);
+        private readonly List<KeyValuePair<InvOrigin, Item_IDs>> _stacks = new(1);
         [NonSerialized] private ObjectiveAI oai;
         [NonSerialized] private List<KeyValuePair<InvOrigin, ActorAction>>? _inventory_actions = null;
 
@@ -21,12 +21,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public IEnumerable<Location> Destinations { get { return _stacks.Select(p => p.Key.Location); } }
 #endif
 
-        public PathToStack(Actor who, in InvOrigin src, GameItems.IDs take) : base(who.Location.Map.LocalTime.TurnCounter, who)
+        public PathToStack(Actor who, in InvOrigin src, Item_IDs take) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
             if (!(who.Controller is ObjectiveAI ai)) throw new InvalidOperationException("need an ai with inventory");
             oai = ai;
 
-            KeyValuePair<InvOrigin, GameItems.IDs> stage = new(src, take);
+            KeyValuePair<InvOrigin, Item_IDs> stage = new(src, take);
             if (!_stacks.Contains(stage)) _stacks.Add(stage);
         }
 
@@ -38,12 +38,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             oai = m_Actor.Controller as ObjectiveAI;
         }
 
-        public void Add(in InvOrigin src, GameItems.IDs take) {
-            KeyValuePair<InvOrigin, GameItems.IDs> stage = new(src, take);
+        public void Add(in InvOrigin src, Item_IDs take) {
+            KeyValuePair<InvOrigin, Item_IDs> stage = new(src, take);
             if (!_stacks.Contains(stage)) _stacks.Add(stage);
         }
 
-        private static ActorAction? Take(Actor who, in InvOrigin src, GameItems.IDs what) {
+        private static ActorAction? Take(Actor who, in InvOrigin src, Item_IDs what) {
           var take = src.inv.GetWorstDestackable(GameItems.From(what));
           if (null == take) return null;
           bool src_is_inanimate = null != src.loc || null != src.obj_owner;

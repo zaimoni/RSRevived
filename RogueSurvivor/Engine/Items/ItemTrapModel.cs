@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool IsFlammable { get { return (m_Flags & Flags.IS_FLAMMABLE) != Flags.NONE; } }
     public bool ActivatesWhenDropped { get { return (m_Flags & Flags.DROP_ACTIVATE) != Flags.NONE; } }
 
-    public ItemTrapModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int stackLimit, int triggerChance, int damage, bool dropActivate, bool useToActivate, bool IsOneTimeUse, int breakChance, int blockChance, int breakChanceWhenEscape, bool IsNoisy, string noiseName, bool IsFlammable, string flavor)
+    public ItemTrapModel(Gameplay.Item_IDs _id, string aName, string theNames, string imageID, int stackLimit, int triggerChance, int damage, bool dropActivate, bool useToActivate, bool IsOneTimeUse, int breakChance, int blockChance, int breakChanceWhenEscape, bool IsNoisy, string noiseName, bool IsFlammable, string flavor)
       : base(_id, aName, theNames, imageID, flavor)
     {
       if (stackLimit > 1) StackingLimit = stackLimit;

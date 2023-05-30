@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Engine
     [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
     private Scoring m_Scoring = new();
     private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
-    public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO);
+    public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.Item_IDs.TRACKER_POLICE_RADIO);
 
     private static int s_seed = 0;  // We're a compiler-enforced singleton so this only looks weird
     static public int Seed { get { return s_seed; } }
@@ -277,7 +277,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == allItems) {
         Police.ItemMemory.Set(loc, null, 0);
       } else {
-        var seen_items = new HashSet<Gameplay.GameItems.IDs>();
+        HashSet<Gameplay.Item_IDs> seen_items = new();
         foreach(var inv in allItems) seen_items.UnionWith(inv.inv.Items.Select(x => x.InventoryMemoryID));
         Police.ItemMemory.Set(loc, seen_items, 0);
       }

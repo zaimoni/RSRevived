@@ -1017,7 +1017,7 @@ namespace djack.RogueSurvivor.Data
       get {
         if (IsRunning) return 0;
         if (GetEquippedWeapon() is ItemMeleeWeapon melee && melee.Model.IsMartialArts) {
-          if (Gameplay.GameItems.IDs.UNIQUE_FATHER_TIME_SCYTHE != melee.ModelID) return 0; // Cf Tai Chi for why the scythe can be weaponized
+          if (Gameplay.Item_IDs.UNIQUE_FATHER_TIME_SCYTHE != melee.ModelID) return 0; // Cf Tai Chi for why the scythe can be weaponized
           return Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
         }
         return 0;
@@ -3013,7 +3013,7 @@ namespace djack.RogueSurvivor.Data
       if (0 == Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC)) return "lack medic skill";
       if (corpse.Location != Location) return "not there";
       if (corpse.RotLevel > 0) return "corpse not fresh";
-      if (!m_Inventory.Has(Gameplay.GameItems.IDs.MEDICINE_MEDIKIT)) return "no medikit";
+      if (!m_Inventory.Has(Gameplay.Item_IDs.MEDICINE_MEDIKIT)) return "no medikit";
       return "";
     }
 
@@ -3355,7 +3355,7 @@ namespace djack.RogueSurvivor.Data
       return m_Inventory?.GetFirst<Item>(obj => obj.EquippedPart == part);
     }
 
-    public Item? GetEquippedItem(Gameplay.GameItems.IDs id)
+    public Item? GetEquippedItem(Gameplay.Item_IDs id)
     {
       return m_Inventory?.GetFirst<Item>(obj => obj.ModelID == id && DollPart.NONE != obj.EquippedPart);
     }
@@ -3365,7 +3365,7 @@ namespace djack.RogueSurvivor.Data
     public bool HasEquipedRangedWeapon() { return GetEquippedWeapon() is ItemRangedWeapon; }
 
     // maybe this should be over on the Inventory object
-    public Item? GetItem(Gameplay.GameItems.IDs id) { return m_Inventory?.GetFirst(id); }
+    public Item? GetItem(Gameplay.Item_IDs id) { return m_Inventory?.GetFirst(id); }
 
     private string ReasonCantTradeWith(Actor target)
     {

@@ -14,7 +14,7 @@ namespace djack.RogueSurvivor.Engine.Items
   {
     public readonly int BarricadingValue;
 
-    public ItemBarricadeMaterialModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int barricadingValue, int stackingLimit, string flavor)
+    public ItemBarricadeMaterialModel(Gameplay.Item_IDs _id, string aName, string theNames, string imageID, int barricadingValue, int stackingLimit, string flavor)
       : base(_id, aName, theNames, imageID, flavor)
     {
       BarricadingValue = barricadingValue;

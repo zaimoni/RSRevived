@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly Odor Odor;
     public readonly int Strength;
 
-    public ItemSprayScentModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int sprayQuantity, Odor odor, int strength, string flavor)
+    public ItemSprayScentModel(Gameplay.Item_IDs _id, string aName, string theNames, string imageID, int sprayQuantity, Odor odor, int strength, string flavor)
       : base(_id, aName, theNames, imageID, flavor, DollPart.LEFT_HAND)
     {
       MaxSprayQuantity = sprayQuantity;

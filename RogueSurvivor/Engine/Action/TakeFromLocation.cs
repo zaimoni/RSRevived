@@ -10,11 +10,11 @@ namespace djack.RogueSurvivor.Engine._Action
     [Serializable]
     class TakeFromLocation : ActorAction,Zaimoni.Data.BackwardPlan<Actions.ActionMoveDelta>    // similar to ActionTake
     {
-        private readonly Gameplay.GameItems.IDs m_ID;
+        private readonly Gameplay.Item_IDs m_ID;
         private readonly Location m_loc;    // ground inventory; mapobject would be a different class once fully developed
         [NonSerialized] private Item? m_Item;
 
-        public TakeFromLocation(Actor actor, Gameplay.GameItems.IDs id, Location loc) : base(actor)
+        public TakeFromLocation(Actor actor, Gameplay.Item_IDs id, Location loc) : base(actor)
         {
             if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc), loc, "has no canonical form");
             m_ID = id;
@@ -91,13 +91,13 @@ namespace djack.RogueSurvivor.Engine.Op
     [Serializable]
     class TakeFromLocation_memory : WorldUpdate    // similar to ActionTake
     {
-        private readonly Gameplay.GameItems.IDs m_ID;
+        private readonly Gameplay.Item_IDs m_ID;
         private readonly Location m_loc;    // ground inventory; mapobject would be a different class once fully developed
-        private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_memory;
+        private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int> m_memory;
         [NonSerialized] private Location[]? m_origin;
         [NonSerialized] private Item? m_Item;
 
-        public TakeFromLocation_memory(Gameplay.GameItems.IDs id, Location loc, Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items)
+        public TakeFromLocation_memory(Gameplay.Item_IDs id, Location loc, Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int> items)
         {
             if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc), loc, "has no canonical form");
             m_ID = id;

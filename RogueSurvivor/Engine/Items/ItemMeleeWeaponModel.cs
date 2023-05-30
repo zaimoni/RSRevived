@@ -20,14 +20,14 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly float ToolBuildBonus;
     public bool IsTool { get { return ToolBashDamageBonus != 0 || ToolBuildBonus != 0; } }
 
-    public ItemMeleeWeaponModel(Gameplay.GameItems.IDs _id, string aName, string imageID, Attack attack, string flavor, int bash, float build, bool is_artifact = false)
+    public ItemMeleeWeaponModel(Gameplay.Item_IDs _id, string aName, string imageID, Attack attack, string flavor, int bash, float build, bool is_artifact = false)
       : base(_id, aName, is_artifact ? aName : aName.Plural(true), imageID, attack, flavor, is_artifact)
     {
       ToolBashDamageBonus = bash;
       ToolBuildBonus = build;
     }
 
-    public ItemMeleeWeaponModel(Gameplay.GameItems.IDs _id, string aName, string imageID, Attack attack, string flavor, int bash, float build, int stackingLimit, bool fragile)
+    public ItemMeleeWeaponModel(Gameplay.Item_IDs _id, string aName, string imageID, Attack attack, string flavor, int bash, float build, int stackingLimit, bool fragile)
       : base(_id, aName, aName.Plural(true), imageID, attack, flavor, false)
     {
       StackingLimit = stackingLimit;
@@ -42,8 +42,8 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public bool IsMartialArts {
       get {
-        if (Gameplay.GameItems.IDs.UNIQUE_FATHER_TIME_SCYTHE==ID) return true;
-        if (Gameplay.GameItems.IDs.UNIQUE_FAMU_FATARU_KATANA==ID) return true;
+        if (Gameplay.Item_IDs.UNIQUE_FATHER_TIME_SCYTHE==ID) return true;
+        if (Gameplay.Item_IDs.UNIQUE_FAMU_FATARU_KATANA==ID) return true;
         return false;
       }
     }

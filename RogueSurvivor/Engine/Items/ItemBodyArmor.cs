@@ -15,16 +15,16 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemBodyArmor : Item
   {
-    private static readonly GameItems.IDs[] BAD_POLICE_OUTFITS = new GameItems.IDs[]{
-      GameItems.IDs.ARMOR_HELLS_SOULS_JACKET,
-      GameItems.IDs.ARMOR_FREE_ANGELS_JACKET
+    private static readonly Item_IDs[] BAD_POLICE_OUTFITS = new[]{
+      Item_IDs.ARMOR_HELLS_SOULS_JACKET,
+      Item_IDs.ARMOR_FREE_ANGELS_JACKET
     };
-    private static readonly GameItems.IDs[] GOOD_POLICE_OUTFITS = new GameItems.IDs[]{
-      GameItems.IDs.ARMOR_POLICE_JACKET,
-      GameItems.IDs.ARMOR_POLICE_RIOT
+    private static readonly Item_IDs[] GOOD_POLICE_OUTFITS = new[]{
+      Item_IDs.ARMOR_POLICE_JACKET,
+      Item_IDs.ARMOR_POLICE_RIOT
     };
 
-    private const int MIN_GANG_ARMOR_ID = (int)GameItems.IDs.ARMOR_HELLS_SOULS_JACKET;
+    private const int MIN_GANG_ARMOR_ID = (int)Item_IDs.ARMOR_HELLS_SOULS_JACKET;
     private const int MIN_GANG_ID = (int)GameGangs.IDs.NONE+1;
 
     new public ItemBodyArmorModel Model { get {return (base.Model as ItemBodyArmorModel)!; } }

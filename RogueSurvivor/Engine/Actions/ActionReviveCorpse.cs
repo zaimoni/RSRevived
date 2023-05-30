@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
 
     public Corpse What { get { return m_Target; } }
-    public ItemMedicine Use { get { return m_Actor.Inventory?.GetFirst(Gameplay.GameItems.IDs.MEDICINE_MEDIKIT) as ItemMedicine; } } // assume legal
+    public ItemMedicine Use { get { return m_Actor.Inventory?.GetFirst(Gameplay.Item_IDs.MEDICINE_MEDIKIT) as ItemMedicine; } } // assume legal
 
     public override bool IsLegal()
     {

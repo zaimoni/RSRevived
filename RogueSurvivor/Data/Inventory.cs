@@ -443,12 +443,12 @@ namespace djack.RogueSurvivor.Data
 
     public ItemAmmo? GetCompatibleAmmoItem(ItemRangedWeaponModel rw)  // XXX layering violation
     {
-      return GetBestDestackable(Gameplay.GameItems.From((int)rw.AmmoType + (int)(Gameplay.GameItems.IDs.AMMO_LIGHT_PISTOL))) as ItemAmmo;
+      return GetBestDestackable(Gameplay.GameItems.From((int)rw.AmmoType + (int)(Gameplay.Item_IDs.AMMO_LIGHT_PISTOL))) as ItemAmmo;
     }
 
     public ItemAmmo? GetCompatibleAmmoItem(ItemRangedWeapon rw)  // XXX layering violation
     {
-      return GetBestDestackable(Gameplay.GameItems.From((int)rw.AmmoType + (int)(Gameplay.GameItems.IDs.AMMO_LIGHT_PISTOL))) as ItemAmmo;
+      return GetBestDestackable(Gameplay.GameItems.From((int)rw.AmmoType + (int)(Gameplay.Item_IDs.AMMO_LIGHT_PISTOL))) as ItemAmmo;
     }
 
     // we prefer to return weapons that need reloading.
@@ -463,7 +463,7 @@ namespace djack.RogueSurvivor.Data
       return GetCompatibleRangedWeapon(am.Model);
     }
 
-    public ItemRangedWeapon? GetCompatibleRangedWeapon(Gameplay.GameItems.IDs am)
+    public ItemRangedWeapon? GetCompatibleRangedWeapon(Gameplay.Item_IDs am)
     {
       return GetCompatibleRangedWeapon(Gameplay.GameItems.From(am) as ItemAmmoModel);
     }
@@ -672,17 +672,17 @@ namespace djack.RogueSurvivor.Data
       return num;
     }
 
-    public bool Has(Gameplay.GameItems.IDs id) => null != GetFirst(id);
+    public bool Has(Gameplay.Item_IDs id) => null != GetFirst(id);
 
-    public Item? GetFirst(Gameplay.GameItems.IDs id)
+    public Item? GetFirst(Gameplay.Item_IDs id)
     {
       foreach (Item it in m_Items) if (id == it.ModelID) return it;
       return null;
     }
 
-    public bool HasPrecise(Gameplay.GameItems.IDs id) => null != GetFirstPrecise(id);
+    public bool HasPrecise(Gameplay.Item_IDs id) => null != GetFirstPrecise(id);
 
-    public Item? GetFirstPrecise(Gameplay.GameItems.IDs id)
+    public Item? GetFirstPrecise(Gameplay.Item_IDs id)
     {
       foreach (Item it in m_Items) if (id == it.InventoryMemoryID) return it;
       return null;
@@ -916,7 +916,7 @@ namespace djack.RogueSurvivor.Data
 
         // historical behavior: favor shelf inventory over ground inventory (RS Alpha 10.1- does not support both at once at same location)
         // but only limited clairvoyance allowed
-        static public InventorySource<Item>? Inv(this Location loc, Gameplay.GameItems.IDs item_type)
+        static public InventorySource<Item>? Inv(this Location loc, Gameplay.Item_IDs item_type)
         {
             var ret = loc.ShelfInv();
             if (null != ret && ret.Value.inv.HasPrecise(item_type)) return ret;

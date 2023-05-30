@@ -92,16 +92,16 @@ namespace djack.RogueSurvivor.Engine.Actions
   [Serializable]
   internal class ActionTake : ActorAction,ActorTake,Target<MapObject?>
   {
-    private readonly Gameplay.GameItems.IDs m_ID;
+    private readonly Gameplay.Item_IDs m_ID;
     [NonSerialized] private Item? m_Item;
     [NonSerialized] private InventorySource<Item>? m_InvSrc;
 
-    public ActionTake(Actor actor, Gameplay.GameItems.IDs it) : base(actor)
+    public ActionTake(Actor actor, Gameplay.Item_IDs it) : base(actor)
     {
       m_ID = it;
     }
 
-    public Gameplay.GameItems.IDs ID { get { return m_ID; } }
+    public Gameplay.Item_IDs ID { get { return m_ID; } }
 
     public Item? Take { get {
       init();
@@ -160,13 +160,13 @@ namespace djack.RogueSurvivor.Engine.Actions
   [Serializable]
   internal class ActionGiveTo : ActorAction,ActorGive,TargetActor
   {
-    private readonly Gameplay.GameItems.IDs m_ID;
+    private readonly Gameplay.Item_IDs m_ID;
     private readonly Actor m_Target;
     [NonSerialized] Item? gift;
     [NonSerialized] Item? received;
     [NonSerialized] ActorAction? m_ConcreteAction; // not meant to be Resolvable
 
-    public ActionGiveTo(Actor actor, Actor target, Gameplay.GameItems.IDs it) : base(actor)
+    public ActionGiveTo(Actor actor, Actor target, Gameplay.Item_IDs it) : base(actor)
     {
       m_ID = it;
       m_Target = target;
@@ -174,7 +174,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public Actor Whom { get { return m_Target; } }
 
-    public Gameplay.GameItems.IDs ID { get { return m_ID; } }
+    public Gameplay.Item_IDs ID { get { return m_ID; } }
 
     public Item? Give { get {
       gift = m_Actor.Inventory.GetBestDestackable(Gameplay.GameItems.From(m_ID)); // force regeneration

@@ -33,11 +33,11 @@ namespace djack.RogueSurvivor.Data
     [Serializable]
     internal struct Item_s    // for item memmory
     {
-        public Gameplay.GameItems.IDs ModelID;
+        public Gameplay.Item_IDs ModelID;
         public int QtyLike; // meaning depends on ModelID
         public uint Flags; // meaning depends on ModelID
 
-        public Item_s(Gameplay.GameItems.IDs id, int qty, uint flags = 0)
+        public Item_s(Gameplay.Item_IDs id, int qty, uint flags = 0)
         {
             ModelID = id;
             QtyLike = qty;
@@ -51,13 +51,13 @@ namespace djack.RogueSurvivor.Data
     [Serializable]
   internal class Item
   {
-    public readonly Gameplay.GameItems.IDs ModelID;
+    public readonly Gameplay.Item_IDs ModelID;
     private int m_Quantity;
     public DollPart EquippedPart { get; private set; }
 
     public ItemModel Model { get { return Gameplay.GameItems.From(ModelID); } }
     public virtual string ImageID { get { return Model.ImageID; } }
-    public virtual Gameplay.GameItems.IDs InventoryMemoryID { get { return ModelID; }  }
+    public virtual Gameplay.Item_IDs InventoryMemoryID { get { return ModelID; }  }
     public virtual Item_s toStruct() { return new Item_s(ModelID, m_Quantity);  }
     public virtual void toStruct(ref Item_s dest) {
         dest.ModelID = ModelID;

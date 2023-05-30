@@ -81,11 +81,11 @@ namespace djack.RogueSurvivor.Data
     // check-in with leader
     public virtual bool ReportBlocked(in InvOrigin src, Actor who) { return true; }
     public virtual bool ReportGone(in InvOrigin src, Actor who) { return true; }
-    public virtual bool ReportNotThere(in InvOrigin src, Gameplay.GameItems.IDs what, Actor who) { return true; }
+    public virtual bool ReportNotThere(in InvOrigin src, Gameplay.Item_IDs what, Actor who) { return true; }
     public virtual bool ReportTaken(in InvOrigin src, Item it, Actor who) { return true; }
 #endregion
 
-    public virtual Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>? ItemMemory {
+    public virtual Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int>? ItemMemory {
        get {
          return (m_Actor.IsFaction(GameFactions.IDs.ThePolice)) ? Session.Get.Police.ItemMemory : null;
        }
@@ -104,10 +104,10 @@ namespace djack.RogueSurvivor.Data
       ItemMemory?.Set(new Location(map, x), null, map.LocalTime.TurnCounter);
     }
 
-    public List<Gameplay.GameItems.IDs>? WhatHaveISeen() { return ItemMemory?.WhatHaveISeen(); }
-    public Dictionary<Location, int>? WhereIs(Gameplay.GameItems.IDs x) { return ItemMemory?.WhereIs(x); }
+    public List<Gameplay.Item_IDs>? WhatHaveISeen() { return ItemMemory?.WhatHaveISeen(); }
+    public Dictionary<Location, int>? WhereIs(Gameplay.Item_IDs x) { return ItemMemory?.WhereIs(x); }
 
-    virtual public IEnumerable<Gameplay.GameItems.IDs>? RejectUnwanted(IEnumerable<Gameplay.GameItems.IDs>? src, Location loc) { return src; }
+    virtual public IEnumerable<Gameplay.Item_IDs>? RejectUnwanted(IEnumerable<Gameplay.Item_IDs>? src, Location loc) { return src; }
 
     public Dictionary<Location, int>? Filter(Dictionary<Location, int> src, Predicate<Inventory> ok) {
       var it_memory = ItemMemory;
@@ -129,7 +129,7 @@ namespace djack.RogueSurvivor.Data
         }
         if (loc_ok) ret.Add(x.Key, x.Value);
         else {
-          var staging = new HashSet<Gameplay.GameItems.IDs>(allItems[0].inv.Items.Select(x => x.InventoryMemoryID));
+          HashSet<Gameplay.Item_IDs> staging = new(allItems[0].inv.Items.Select(x => x.InventoryMemoryID));
           ub = allItems.Count;
           while (1 < ub) {
             var itemsAt = allItems[--ub];
@@ -141,12 +141,12 @@ namespace djack.RogueSurvivor.Data
       return 0 < ret.Count ? ret : null;
     }
 
-    public HashSet<Point>? WhereIs(IEnumerable<Gameplay.GameItems.IDs> src, Map map) {
+    public HashSet<Point>? WhereIs(IEnumerable<Gameplay.Item_IDs> src, Map map) {
       var it_memory = ItemMemory;
       if (null == it_memory) return null;
       var ret = new HashSet<Point>();
       bool IsInHere(Location loc) { return loc.Map == map; }
-      foreach(Gameplay.GameItems.IDs it in src) {
+      foreach(var it in src) {
         var tmp = it_memory.WhereIs(it, IsInHere);
         if (null == tmp) continue;
         tmp.OnlyIf(loc => !m_Actor.StackIsBlocked(in loc));

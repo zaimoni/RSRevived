@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int Encumbrance;
     public readonly int Weight;
 
-    public ItemBodyArmorModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int protection_hit, int protection_shot, int encumbrance, int weight, string flavor)
+    public ItemBodyArmorModel(Gameplay.Item_IDs _id, string aName, string theNames, string imageID, int protection_hit, int protection_shot, int encumbrance, int weight, string flavor)
       : base(_id, aName, theNames, imageID, flavor, DollPart.TORSO)
     {
       Protection_Hit = protection_hit;

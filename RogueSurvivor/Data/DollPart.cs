@@ -9,7 +9,7 @@ using System;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal enum DollPart
+  public enum DollPart
   {
     NONE = 0,
     RIGHT_HAND = 1,

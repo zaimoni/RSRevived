@@ -149,18 +149,18 @@ namespace djack.RogueSurvivor.Data
     [Serializable]
     class RadioFaction
     {
-        public readonly Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory = new Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
-        public readonly ThreatTracking Threats = new ThreatTracking();
-        public readonly LocationSet Investigate = new LocationSet();
+        public readonly Ary2Dictionary<Location, Gameplay.Item_IDs, int> ItemMemory = new();
+        public readonly ThreatTracking Threats = new();
+        public readonly LocationSet Investigate = new();
 #if PROTOTYPE
         private readonly List<KeyValuePair<Actor, Actor>> m_Aggressors = new List<KeyValuePair<Actor, Actor>>(); // \todo? migrate from RogueGame::KillActor?
 #endif
         static private ImplicitRadio? s_implicitRadio = null;
 
         public readonly GameFactions.IDs FactionID;
-        public readonly Gameplay.GameItems.IDs RadioID;
+        public readonly Gameplay.Item_IDs RadioID;
 
-        public RadioFaction(GameFactions.IDs faction, Gameplay.GameItems.IDs radio)
+        public RadioFaction(GameFactions.IDs faction, Gameplay.Item_IDs radio)
         {
             FactionID = faction;
             RadioID = radio;

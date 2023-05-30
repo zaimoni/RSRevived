@@ -180,10 +180,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [Serializable]
     internal class Goal_DoNotPickup : Objective
     {
-      public readonly GameItems.IDs Avoid;
+      public readonly Item_IDs Avoid;
 
-      public Goal_DoNotPickup(int t0, Actor who, GameItems.IDs avoid)
-      : base(t0,who)
+      public Goal_DoNotPickup(int t0, Actor who, Item_IDs avoid) : base(t0,who)
       {
         Avoid = avoid;
       }
@@ -2852,7 +2851,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionSleep(m_Actor);
     }
 
-    private ActorAction BehaviorNavigateToSleep(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> item_memory)
+    private ActorAction BehaviorNavigateToSleep(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int> item_memory)
     {
 #if DEBUG
         if (null == item_memory) throw new ArgumentNullException(nameof(item_memory));
@@ -2861,7 +2860,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         const bool tracing = false; // debugging hook
 
-        var med_slp = item_memory.WhereIs(GameItems.IDs.MEDICINE_PILLS_SLP);    // \todo precalculate sleep-relevant medicines at game start
+        var med_slp = item_memory.WhereIs(Item_IDs.MEDICINE_PILLS_SLP);    // \todo precalculate sleep-relevant medicines at game start
         bool known_bed(Location loc) {  // XXX depending on incoming events this may not be conservative enough
             if (null!=med_slp && med_slp.ContainsKey(loc)) return true;
             if (!loc.Map.IsInsideAt(loc.Position)) return false;
@@ -3255,7 +3254,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (null == Items) throw new ArgumentNullException(nameof(Items));
 #endif
-      var exclude = new HashSet<GameItems.IDs>(Objectives.Where(o=>o is Goal_DoNotPickup).Select(o=>(o as Goal_DoNotPickup).Avoid));
+      HashSet<Item_IDs> exclude = new(Objectives.Where(o=>o is Goal_DoNotPickup).Select(o=>(o as Goal_DoNotPickup).Avoid));
 #if REPAIR_DO_NOT_PICKUP
       exclude.ExceptWith(WhatDoINeedNow());
       exclude.ExceptWith(WhatDoIWantNow());
@@ -3753,8 +3752,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return false;
         });
         if (0 >= critical.Count) return null;
-        var insurance = new Dictionary<Actor, GameItems.IDs>();   // trading CPU for lower GC might be empirically ok here (null with alloc on first use)
-        var want = new Dictionary<Actor, GameItems.IDs>();
+        Dictionary<Actor, Item_IDs> insurance = new();   // trading CPU for lower GC might be empirically ok here (null with alloc on first use)
+        Dictionary<Actor, Item_IDs> want = new();
         foreach (var a in clan) {
             if (!CanSee(a.Location)) continue;  // don't want to mention this sort of thing over radio
             if (!InCommunicationWith(a)) continue;
@@ -3862,7 +3861,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == clan) return null;
         var have = NonCriticalInInventory();
         if (null == have.Key && null == have.Value) return null;
-        List<GameItems.IDs> precious = null;
+        List<Item_IDs>? precious = null;
         foreach(var a in clan) {
           var critical = (a.Controller as ObjectiveAI)?.WhatDoINeedNow();   // yes, we also defend vs player leader
           if (null == critical || 0 >= critical.Count) continue;
@@ -3874,7 +3873,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   var rw = a.Inventory.GetCompatibleRangedWeapon(x);
                   if (null == rw || rw.Ammo == rw.Model.MaxAmmo) continue;
                 }
-                if (critical.Contains(x)) (precious ??= new List<GameItems.IDs>()).Add(x);
+                if (critical.Contains(x)) (precious ??= new()).Add(x);
             }
           }
           if (null != have.Value) {
@@ -3883,7 +3882,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   var rw = a.Inventory.GetCompatibleRangedWeapon(x);
                   if (null == rw || rw.Ammo == rw.Model.MaxAmmo) continue;
                 }
-                if (critical.Contains(x)) (precious ??= new List<GameItems.IDs>()).Add(x);
+                if (critical.Contains(x)) (precious ??= new()).Add(x);
             }
           }
           if (null != precious) foreach(var it in precious) {
@@ -3895,7 +3894,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               continue;
             }
             // different medicines need different handling.  The immediate-use ones can be ceded immediately.
-            if (GameItems.IDs.MEDICINE_MEDIKIT==it || GameItems.IDs.MEDICINE_BANDAGES==it || GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL==it) continue;
+            if (Item_IDs.MEDICINE_MEDIKIT==it || Item_IDs.MEDICINE_BANDAGES==it || Item_IDs.MEDICINE_PILLS_ANTIVIRAL==it) continue;
             if (GameItems.restoreSAN.Contains(it)) {    // only have to defend if we ourselves are critical
 #if REDUNDANT
               if (3 > WantRestoreSAN) continue; // only have to consider action loops

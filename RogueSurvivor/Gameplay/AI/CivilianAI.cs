@@ -339,14 +339,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var items = WhatHaveISeen();
       if (null == leader || DontFollowLeader) {
       if (null != items && null != _legal_path) {
-        HashSet<Gameplay.GameItems.IDs> critical = WhatDoINeedNow();    // out of ammo, or hungry without food
+        var critical = WhatDoINeedNow();    // out of ammo, or hungry without food
         // while we want to account for what our followers want, we don't want to block our followers from the items either
         critical.IntersectWith(items);
         if (0 < critical.Count) {
           // Unfortunately, this used to cause bizarrely long hang times in the sewers.  What we really want is some way to properly record
           // multi-pathing such that an ai that can reach an inventory target "first" excludes it from its allies' consideration
           // this is unstable if it's *JUST* critical items; include want to mitigate pathing loops
-          HashSet<Gameplay.GameItems.IDs> want = WhatDoIWantNow();
+          var want = WhatDoIWantNow();
           want.IntersectWith(items);
           critical.UnionWith(want);
 #if TRACE_SELECTACTION
@@ -524,7 +524,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering advanced pathing");
 #endif
         if (null == combat_unready) combat_unready = CombatUnready();
-        HashSet<Gameplay.GameItems.IDs> want = (null != items ? WhatDoIWantNow() : new HashSet<Gameplay.GameItems.IDs>());    // non-emergency things
+        HashSet<Gameplay.Item_IDs> want = (null != items ? WhatDoIWantNow() : new());    // non-emergency things
         // while we want to account for what our followers want, we don't want to block our followers from the items either
         if (null != items) want.IntersectWith(items);
 #if TRACE_SELECTACTION

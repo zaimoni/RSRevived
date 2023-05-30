@@ -61,7 +61,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     };
 
     // not going full read-only types on these two for now (relying on access control instead)
-    private readonly KeyValuePair<GameItems.IDs,GameItems.IDs>[] survivalist_ranged_candidates;
+    private readonly KeyValuePair<Item_IDs, Item_IDs>[] survivalist_ranged_candidates;
 
     protected Parameters m_Params = DEFAULT_PARAMS;
     private const int HOSPITAL_TYPICAL_WIDTH_HEIGHT = 5;
@@ -157,25 +157,25 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       // holder [registered private army] under the 1934 automatic weapons ban.)
       // true military weapons not represented here, the ammo is assumed too hard to get pre-apocalypse
       // no duplication of ammo between primary and secondary ranged weapon
-      List<KeyValuePair<GameItems.IDs, GameItems.IDs>> working_survivalist = new List<KeyValuePair<GameItems.IDs, GameItems.IDs>> {
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_CROSSBOW, GameItems.IDs.RANGED_HUNTING_RIFLE),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_CROSSBOW, GameItems.IDs.RANGED_SHOTGUN),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_CROSSBOW, GameItems.IDs.RANGED_PISTOL),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_CROSSBOW, GameItems.IDs.RANGED_KOLT_REVOLVER),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_RIFLE, GameItems.IDs.RANGED_HUNTING_CROSSBOW),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_RIFLE, GameItems.IDs.RANGED_SHOTGUN),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_RIFLE, GameItems.IDs.RANGED_PISTOL),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_RIFLE, GameItems.IDs.RANGED_KOLT_REVOLVER),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_SHOTGUN, GameItems.IDs.RANGED_HUNTING_CROSSBOW),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_SHOTGUN, GameItems.IDs.RANGED_HUNTING_RIFLE),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_SHOTGUN, GameItems.IDs.RANGED_PISTOL),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_SHOTGUN, GameItems.IDs.RANGED_KOLT_REVOLVER),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_PISTOL, GameItems.IDs.RANGED_HUNTING_CROSSBOW),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_PISTOL, GameItems.IDs.RANGED_HUNTING_RIFLE),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_PISTOL, GameItems.IDs.RANGED_SHOTGUN),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_KOLT_REVOLVER, GameItems.IDs.RANGED_HUNTING_CROSSBOW),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_KOLT_REVOLVER, GameItems.IDs.RANGED_HUNTING_RIFLE),
-        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_KOLT_REVOLVER, GameItems.IDs.RANGED_SHOTGUN),
+      List<KeyValuePair<Item_IDs, Item_IDs>> working_survivalist = new(){
+        new(Item_IDs.RANGED_HUNTING_CROSSBOW, Item_IDs.RANGED_HUNTING_RIFLE),
+        new(Item_IDs.RANGED_HUNTING_CROSSBOW, Item_IDs.RANGED_SHOTGUN),
+        new(Item_IDs.RANGED_HUNTING_CROSSBOW, Item_IDs.RANGED_PISTOL),
+        new(Item_IDs.RANGED_HUNTING_CROSSBOW, Item_IDs.RANGED_KOLT_REVOLVER),
+        new(Item_IDs.RANGED_HUNTING_RIFLE, Item_IDs.RANGED_HUNTING_CROSSBOW),
+        new(Item_IDs.RANGED_HUNTING_RIFLE, Item_IDs.RANGED_SHOTGUN),
+        new(Item_IDs.RANGED_HUNTING_RIFLE, Item_IDs.RANGED_PISTOL),
+        new(Item_IDs.RANGED_HUNTING_RIFLE, Item_IDs.RANGED_KOLT_REVOLVER),
+        new(Item_IDs.RANGED_SHOTGUN, Item_IDs.RANGED_HUNTING_CROSSBOW),
+        new(Item_IDs.RANGED_SHOTGUN, Item_IDs.RANGED_HUNTING_RIFLE),
+        new(Item_IDs.RANGED_SHOTGUN, Item_IDs.RANGED_PISTOL),
+        new(Item_IDs.RANGED_SHOTGUN, Item_IDs.RANGED_KOLT_REVOLVER),
+        new(Item_IDs.RANGED_PISTOL, Item_IDs.RANGED_HUNTING_CROSSBOW),
+        new(Item_IDs.RANGED_PISTOL, Item_IDs.RANGED_HUNTING_RIFLE),
+        new(Item_IDs.RANGED_PISTOL, Item_IDs.RANGED_SHOTGUN),
+        new(Item_IDs.RANGED_KOLT_REVOLVER, Item_IDs.RANGED_HUNTING_CROSSBOW),
+        new(Item_IDs.RANGED_KOLT_REVOLVER, Item_IDs.RANGED_HUNTING_RIFLE),
+        new(Item_IDs.RANGED_KOLT_REVOLVER, Item_IDs.RANGED_SHOTGUN),
       };
       survivalist_ranged_candidates = working_survivalist.ToArray();
     }
@@ -620,13 +620,13 @@ restart:
     }
 
     private const int sewer_checksum = 12;
-    private readonly KeyValuePair<GameItems.IDs, int>[] sewer_stock = {
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.LIGHT_BIG_FLASHLIGHT,4),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_CROWBAR,4),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT1,1),  // RS9: all spray paints equal weight due to function
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT2,1),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT3,1),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT4,1)
+    private readonly KeyValuePair<Item_IDs, int>[] sewer_stock = new KeyValuePair<Item_IDs, int>[] {
+        new(Item_IDs.LIGHT_BIG_FLASHLIGHT,4),
+        new(Item_IDs.MELEE_CROWBAR,4),
+        new(Item_IDs.SPRAY_PAINT1,1),  // RS9: all spray paints equal weight due to function
+        new(Item_IDs.SPRAY_PAINT2,1),
+        new(Item_IDs.SPRAY_PAINT3,1),
+        new(Item_IDs.SPRAY_PAINT4,1)
     };
 
     public virtual Map GenerateSewersMap(int seed, District district)
@@ -2509,20 +2509,20 @@ restart:
     private Item PostprocessQuantity(Item it)   // relies on Item being a class rather than a struct
     {
       switch(it.ModelID) {
-      case GameItems.IDs.TRAP_SPIKES:
+      case Item_IDs.TRAP_SPIKES:
         it.Quantity = m_DiceRoller.Roll(1, GameItems.BARBED_WIRE.StackingLimit);  // XXX V.0.10.0 align?  RS Alpha 9 has this as well.
         break;
       //
-      case GameItems.IDs.TRAP_BARBED_WIRE:
-      case GameItems.IDs.MELEE_CROWBAR:
-      case GameItems.IDs.FOOD_CANNED_FOOD:
-      case GameItems.IDs.ENT_MAGAZINE:
-      case GameItems.IDs.EXPLOSIVE_GRENADE:
-      case GameItems.IDs.MEDICINE_BANDAGES:
-      case GameItems.IDs.MEDICINE_PILLS_SLP:
-      case GameItems.IDs.MEDICINE_PILLS_STA:
-      case GameItems.IDs.MEDICINE_PILLS_SAN:
-      case GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL:
+      case Item_IDs.TRAP_BARBED_WIRE:
+      case Item_IDs.MELEE_CROWBAR:
+      case Item_IDs.FOOD_CANNED_FOOD:
+      case Item_IDs.ENT_MAGAZINE:
+      case Item_IDs.EXPLOSIVE_GRENADE:
+      case Item_IDs.MEDICINE_BANDAGES:
+      case Item_IDs.MEDICINE_PILLS_SLP:
+      case Item_IDs.MEDICINE_PILLS_STA:
+      case Item_IDs.MEDICINE_PILLS_SAN:
+      case Item_IDs.MEDICINE_PILLS_ANTIVIRAL:
         it.Quantity = m_DiceRoller.Roll(1, it.Model.StackingLimit);
         break;
       }
@@ -2536,14 +2536,14 @@ restart:
 
     // hospital and pharmacy use similar item lists
     private const int hospital_shop_checksum = 7;
-    private readonly KeyValuePair<GameItems.IDs, int>[] hospital_shop_stock = {
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_BANDAGES,1),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_MEDIKIT,1),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_SLP,1),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_STA,1),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_SAN,1),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SCENT_SPRAY_STENCH_KILLER,1),  // unclear why here rather than hunting shop
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL,1)   // not in pharmacy; requires infection
+    private readonly KeyValuePair<Item_IDs, int>[] hospital_shop_stock = {
+        new(Item_IDs.MEDICINE_BANDAGES,1),
+        new(Item_IDs.MEDICINE_MEDIKIT,1),
+        new(Item_IDs.MEDICINE_PILLS_SLP,1),
+        new(Item_IDs.MEDICINE_PILLS_STA,1),
+        new(Item_IDs.MEDICINE_PILLS_SAN,1),
+        new(Item_IDs.SCENT_SPRAY_STENCH_KILLER,1),  // unclear why here rather than hunting shop
+        new(Item_IDs.MEDICINE_PILLS_ANTIVIRAL,1)   // not in pharmacy; requires infection
     };
 
     private Item MakeShopPharmacyItem()
@@ -2553,14 +2553,14 @@ restart:
 
     // RS Alpha 9: hunting sports: 20%, non-contact sports 80%
     private const int sportswear_shop_checksum = 100;
-    private readonly KeyValuePair<GameItems.IDs, int>[] sportswear_shop_stock = {
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_RIFLE,3),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_RIFLE,7),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_CROSSBOW,3),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_BOLTS,7),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_BASEBALLBAT,40),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_IRON_GOLFCLUB,20),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_GOLFCLUB,20)
+    private readonly KeyValuePair<Item_IDs, int>[] sportswear_shop_stock = {
+        new(Item_IDs.RANGED_HUNTING_RIFLE,3),
+        new(Item_IDs.AMMO_LIGHT_RIFLE,7),
+        new(Item_IDs.RANGED_HUNTING_CROSSBOW,3),
+        new(Item_IDs.AMMO_BOLTS,7),
+        new(Item_IDs.MELEE_BASEBALLBAT,40),
+        new(Item_IDs.MELEE_IRON_GOLFCLUB,20),
+        new(Item_IDs.MELEE_GOLFCLUB,20)
     };
 
     private Item MakeShopSportsWearItem()
@@ -2570,17 +2570,17 @@ restart:
 
     // original was 1..24 in groups of 3, with some 50-50 splits
     private const int construction_shop_checksum = 48;
-    private readonly KeyValuePair<GameItems.IDs, int>[] construction_shop_stock = {
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_SHOVEL,3),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_SHORT_SHOVEL,3),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_CROWBAR,6),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_HUGE_HAMMER,3),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_SMALL_HAMMER,3),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.BAR_WOODEN_PLANK,6),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.LIGHT_FLASHLIGHT,6),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.LIGHT_BIG_FLASHLIGHT,6),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRAP_SPIKES,6),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRAP_BARBED_WIRE,6)
+    private readonly KeyValuePair<Item_IDs, int>[] construction_shop_stock = {
+        new(Item_IDs.MELEE_SHOVEL,3),
+        new(Item_IDs.MELEE_SHORT_SHOVEL,3),
+        new(Item_IDs.MELEE_CROWBAR,6),
+        new(Item_IDs.MELEE_HUGE_HAMMER,3),
+        new(Item_IDs.MELEE_SMALL_HAMMER,3),
+        new(Item_IDs.BAR_WOODEN_PLANK,6),
+        new(Item_IDs.LIGHT_FLASHLIGHT,6),
+        new(Item_IDs.LIGHT_BIG_FLASHLIGHT,6),
+        new(Item_IDs.TRAP_SPIKES,6),
+        new(Item_IDs.TRAP_BARBED_WIRE,6)
     };
 
     private Item MakeShopConstructionItem()
@@ -2590,16 +2590,16 @@ restart:
 
     // RS Alpha 9: 40% ranged weapons, 60% ammo
     private const int gunshop_checksum = 100;
-    private static readonly KeyValuePair<GameItems.IDs, int>[] gunshop_stock = {
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_PISTOL,5),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_KOLT_REVOLVER,5),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_SHOTGUN,10),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_RIFLE,10),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_CROSSBOW,10),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_SHOTGUN,15),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_PISTOL,15),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_RIFLE,15),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_BOLTS,15)
+    private static readonly KeyValuePair<Item_IDs, int>[] gunshop_stock = {
+        new(Item_IDs.RANGED_PISTOL,5),
+        new(Item_IDs.RANGED_KOLT_REVOLVER,5),
+        new(Item_IDs.RANGED_SHOTGUN,10),
+        new(Item_IDs.RANGED_HUNTING_RIFLE,10),
+        new(Item_IDs.RANGED_HUNTING_CROSSBOW,10),
+        new(Item_IDs.AMMO_SHOTGUN,15),
+        new(Item_IDs.AMMO_LIGHT_PISTOL,15),
+        new(Item_IDs.AMMO_LIGHT_RIFLE,15),
+        new(Item_IDs.AMMO_BOLTS,15)
     };
 
     private Item MakeShopGunshopItem()
@@ -2609,13 +2609,13 @@ restart:
 
     // RS Alpha 9: 50% weapons, 50% other.  Why no stench killer?
     private const int hunting_shop_checksum = 40;
-    private readonly KeyValuePair<GameItems.IDs, int>[] hunting_shop_stock = {
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_RIFLE,3),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_CROSSBOW,3),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_RIFLE,7),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_BOLTS,7),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.ARMOR_HUNTER_VEST,10),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRAP_BEAR_TRAP,10)
+    private readonly KeyValuePair<Item_IDs, int>[] hunting_shop_stock = {
+        new(Item_IDs.RANGED_HUNTING_RIFLE,3),
+        new(Item_IDs.RANGED_HUNTING_CROSSBOW,3),
+        new(Item_IDs.AMMO_LIGHT_RIFLE,7),
+        new(Item_IDs.AMMO_BOLTS,7),
+        new(Item_IDs.ARMOR_HUNTER_VEST,10),
+        new(Item_IDs.TRAP_BEAR_TRAP,10)
     };
 
     private Item MakeHuntingShopItem()
@@ -2647,27 +2647,27 @@ restart:
 
 //  This should be influenced by pre-apocalypse politics.  This is the reference red state, red city set the other politics post-process
     private const int bedroom_checksum = 480;
-    private readonly KeyValuePair<GameItems.IDs, int>[] bedroom_stock = {
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_BANDAGES,40),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_STA,20),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_SLP,20),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_SAN,20),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_BASEBALLBAT,80),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_CELL_PHONE,60),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.LIGHT_FLASHLIGHT,40),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SCENT_SPRAY_STENCH_KILLER,40),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.ARMOR_HUNTER_VEST,20),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.ENT_BOOK,30),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.ENT_MAGAZINE,30),
+    private readonly KeyValuePair<Item_IDs, int>[] bedroom_stock = {
+        new(Item_IDs.MEDICINE_BANDAGES,40),
+        new(Item_IDs.MEDICINE_PILLS_STA,20),
+        new(Item_IDs.MEDICINE_PILLS_SLP,20),
+        new(Item_IDs.MEDICINE_PILLS_SAN,20),
+        new(Item_IDs.MELEE_BASEBALLBAT,80),
+        new(Item_IDs.TRACKER_CELL_PHONE,60),
+        new(Item_IDs.LIGHT_FLASHLIGHT,40),
+        new(Item_IDs.SCENT_SPRAY_STENCH_KILLER,40),
+        new(Item_IDs.ARMOR_HUNTER_VEST,20),
+        new(Item_IDs.ENT_BOOK,30),
+        new(Item_IDs.ENT_MAGAZINE,30),
         // firearms must be civilian-legal for these to be allowed (for this purpose a crossbow is a low-noise firearm, but RS9 doesn't have crossbows as a bedroom item)
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_SHOTGUN,3),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_RIFLE,3),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_SHOTGUN,7),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_RIFLE,7),
+        new(Item_IDs.RANGED_SHOTGUN,3),
+        new(Item_IDs.RANGED_HUNTING_RIFLE,3),
+        new(Item_IDs.AMMO_SHOTGUN,7),
+        new(Item_IDs.AMMO_LIGHT_RIFLE,7),
         // concealed carry must be civilian-legal for these to be allowed
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_PISTOL,10),            // RS9: same weight for these due to function with 50/50 weight
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_KOLT_REVOLVER,10),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_PISTOL,40)
+        new(Item_IDs.RANGED_PISTOL,10),            // RS9: same weight for these due to function with 50/50 weight
+        new(Item_IDs.RANGED_KOLT_REVOLVER,10),
+        new(Item_IDs.AMMO_LIGHT_PISTOL,40)
     };
 
     private Item MakeRandomBedroomItem()
@@ -2682,15 +2682,15 @@ restart:
 
     // RS 9 CHAR office had a high rate of null return when creating items
     private const int CHAR_office_checksum = 450;
-    private readonly KeyValuePair<GameItems.IDs, int>[] CHAR_office_stock = {
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.EXPLOSIVE_GRENADE_PRIMED,10),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_SHOTGUN,27),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_SHOTGUN,63),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_BANDAGES,100),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_MEDIKIT,100),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.FOOD_CANNED_FOOD,100),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_ZTRACKER,25),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_BLACKOPS,25)
+    private readonly KeyValuePair<Item_IDs, int>[] CHAR_office_stock = {
+        new(Item_IDs.EXPLOSIVE_GRENADE_PRIMED,10),
+        new(Item_IDs.RANGED_SHOTGUN,27),
+        new(Item_IDs.AMMO_SHOTGUN,63),
+        new(Item_IDs.MEDICINE_BANDAGES,100),
+        new(Item_IDs.MEDICINE_MEDIKIT,100),
+        new(Item_IDs.FOOD_CANNED_FOOD,100),
+        new(Item_IDs.TRACKER_ZTRACKER,25),
+        new(Item_IDs.TRACKER_BLACKOPS,25)
     };
 
     public Item MakeRandomCHAROfficeItem()
@@ -2701,18 +2701,18 @@ restart:
     }
 
     private const int park_checksum = 32;
-    private readonly KeyValuePair<GameItems.IDs, int>[] park_stock = {
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT1,1),  // RS9: these four have same weight due to a function
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT2,1),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT3,1),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.SPRAY_PAINT4,1),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MELEE_BASEBALLBAT,4),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_SLP,4),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_STA,4),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.MEDICINE_PILLS_SAN,4),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.LIGHT_FLASHLIGHT,4),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_CELL_PHONE,4),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.BAR_WOODEN_PLANK,4)
+    private readonly KeyValuePair<Item_IDs, int>[] park_stock = {
+        new(Item_IDs.SPRAY_PAINT1,1),  // RS9: these four have same weight due to a function
+        new(Item_IDs.SPRAY_PAINT2,1),
+        new(Item_IDs.SPRAY_PAINT3,1),
+        new(Item_IDs.SPRAY_PAINT4,1),
+        new(Item_IDs.MELEE_BASEBALLBAT,4),
+        new(Item_IDs.MEDICINE_PILLS_SLP,4),
+        new(Item_IDs.MEDICINE_PILLS_STA,4),
+        new(Item_IDs.MEDICINE_PILLS_SAN,4),
+        new(Item_IDs.LIGHT_FLASHLIGHT,4),
+        new(Item_IDs.TRACKER_CELL_PHONE,4),
+        new(Item_IDs.BAR_WOODEN_PLANK,4)
     };
 
     public Item MakeRandomParkItem()
@@ -2895,7 +2895,7 @@ restart:
       // Tourism will fail if not all targets are accessible from the exit.  Transposing should be safe here.
       while(!_ForceHouseBasementConnected(basement,basementStairs));
       // set up police investigation after floor layout is stable
-      var basement_items = new HashSet<Gameplay.GameItems.IDs>(construction_shop_stock.Select(item_spec => item_spec.Key));  // XXX \todo could be done early but only needed during world generation
+      HashSet<Gameplay.Item_IDs> basement_items = new(construction_shop_stock.Select(item_spec => item_spec.Key));  // XXX \todo could be done early but only needed during world generation
       basement.Rect.DoForEach(pt => {
           if (!basement.GetTileModelAt(pt).IsWalkable) return;
           Session.Get.Police.Investigate.Record(basement, in pt);
@@ -2947,7 +2947,7 @@ restart:
           o_inv.AddAll(MakeItemGrenade());
           // There will be a primary ranged weapon (with 2 ammo clips)
           // and a secondary ranged weapon (with one ammo clip)
-          KeyValuePair<GameItems.IDs,GameItems.IDs> survivalist_cache_ranged = m_DiceRoller.Choose(survivalist_ranged_candidates);
+          var survivalist_cache_ranged = m_DiceRoller.Choose(survivalist_ranged_candidates);
           o_inv.AddAll(ItemRangedWeapon.make(survivalist_cache_ranged.Key));
           o_inv.AddAll(ItemAmmo.make(survivalist_cache_ranged.Key));
           o_inv.AddAll(ItemAmmo.make(survivalist_cache_ranged.Key));
@@ -3124,15 +3124,15 @@ restart:
     }
 
     private const int CHAR_armory_checksum = 2500;
-    private readonly KeyValuePair<GameItems.IDs, int>[] CHAR_armory_stock = {
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_SHOTGUN,192),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.RANGED_HUNTING_RIFLE,192),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_SHOTGUN,448),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.AMMO_LIGHT_RIFLE,448),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.EXPLOSIVE_GRENADE_PRIMED,320),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_ZTRACKER,200),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.TRACKER_BLACKOPS,200),
-        new KeyValuePair<GameItems.IDs,int>(GameItems.IDs.ARMOR_CHAR_LIGHT_BODYARMOR,500)
+    private readonly KeyValuePair<Item_IDs, int>[] CHAR_armory_stock = {
+        new(Item_IDs.RANGED_SHOTGUN,192),
+        new(Item_IDs.RANGED_HUNTING_RIFLE,192),
+        new(Item_IDs.AMMO_SHOTGUN,448),
+        new(Item_IDs.AMMO_LIGHT_RIFLE,448),
+        new(Item_IDs.EXPLOSIVE_GRENADE_PRIMED,320),
+        new(Item_IDs.TRACKER_ZTRACKER,200),
+        new(Item_IDs.TRACKER_BLACKOPS,200),
+        new(Item_IDs.ARMOR_CHAR_LIGHT_BODYARMOR,500)
     };
 
     private void MakeCHARArmoryRoom(Map map, Rectangle roomRect)
@@ -3362,18 +3362,18 @@ restart:
 
       // if we have a truncheon, we can use it -- get a second one
       foreach(Actor cop in map.Police.Get) {
-        if (!cop.Inventory.Has(GameItems.IDs.MELEE_TRUNCHEON)) continue;
-        map.TakeItemType(GameItems.IDs.MELEE_TRUNCHEON, cop.Inventory);
+        if (!cop.Inventory.Has(Item_IDs.MELEE_TRUNCHEON)) continue;
+        map.TakeItemType(Item_IDs.MELEE_TRUNCHEON, cop.Inventory);
       }
 
       // this is not correct in general; it relies on all game-start inventories having exactly one item and being mapobject
       bool reserve_uniform(Map m) {
         var overview = m.ItemOverview();
-        Span<int> counts = stackalloc int[(int)GameItems.IDs._COUNT];
+        Span<int> counts = stackalloc int[(int)Item_IDs._COUNT];
         Map.InventoryCounts(overview, counts);
 
         // these two will not be taken by the SWAT team
-        var radios = counts[(int)GameItems.IDs.TRACKER_POLICE_RADIO];
+        var radios = counts[(int)Item_IDs.TRACKER_POLICE_RADIO];
 
         static void transmutate(Inventory inv, ItemModel dest) {
           inv.RemoveAllQuantity(inv[0]);
@@ -3382,24 +3382,24 @@ restart:
 
         bool transmutate_from_radio(ItemModel dest) {
           if (2 <= radios) {
-            transmutate(overview[GameItems.IDs.TRACKER_POLICE_RADIO].Last().Value[0], dest);
+            transmutate(overview[Item_IDs.TRACKER_POLICE_RADIO].Last().Value[0], dest);
             return true;
           }
           return false;
         }
 
-        var light = counts[(int)GameItems.IDs.LIGHT_FLASHLIGHT];
-        var big_light = counts[(int)GameItems.IDs.LIGHT_BIG_FLASHLIGHT];
+        var light = counts[(int)Item_IDs.LIGHT_FLASHLIGHT];
+        var big_light = counts[(int)Item_IDs.LIGHT_BIG_FLASHLIGHT];
         var lights = light + big_light;
 
         bool transmutate_from_light(ItemModel dest) {
           if (2 <= lights) {
             if (1 <= light) {
-              transmutate(overview[GameItems.IDs.LIGHT_FLASHLIGHT].Last().Value[0], dest);
+              transmutate(overview[Item_IDs.LIGHT_FLASHLIGHT].Last().Value[0], dest);
               return true;
             }
 //          if (2 <= big_light) {
-              transmutate(overview[GameItems.IDs.LIGHT_BIG_FLASHLIGHT].Last().Value[0], dest);
+              transmutate(overview[Item_IDs.LIGHT_BIG_FLASHLIGHT].Last().Value[0], dest);
               return true;
 //          }
           }
@@ -3407,63 +3407,63 @@ restart:
         }
 
         // we don't care about truncheons, but can transmutate from them
-        var truncheon = counts[(int)GameItems.IDs.MELEE_TRUNCHEON];
+        var truncheon = counts[(int)Item_IDs.MELEE_TRUNCHEON];
 
         bool transmutate_from_truncheon(ItemModel dest) {
           if (3 <= truncheon) {
-            transmutate(overview[GameItems.IDs.MELEE_TRUNCHEON].Last().Value[0], dest);
+            transmutate(overview[Item_IDs.MELEE_TRUNCHEON].Last().Value[0], dest);
             return true;
           }
           return false;
         }
 
-        var jacket = counts[(int)GameItems.IDs.ARMOR_POLICE_JACKET];
-        var riot = counts[(int)GameItems.IDs.ARMOR_POLICE_RIOT];
+        var jacket = counts[(int)Item_IDs.ARMOR_POLICE_JACKET];
+        var riot = counts[(int)Item_IDs.ARMOR_POLICE_RIOT];
         var armors = jacket + riot;
 
         bool transmutate_from_armor(ItemModel dest) {
           if (2 <= armors) {
             if (1 <= jacket) {
-              transmutate(overview[GameItems.IDs.ARMOR_POLICE_JACKET].Last().Value[0], dest);
+              transmutate(overview[Item_IDs.ARMOR_POLICE_JACKET].Last().Value[0], dest);
               return true;
             }
             if (2 <= riot) {
-              transmutate(overview[GameItems.IDs.ARMOR_POLICE_RIOT].Last().Value[0], dest);
+              transmutate(overview[Item_IDs.ARMOR_POLICE_RIOT].Last().Value[0], dest);
               return true;
             }
           }
           return false;
         }
 
-        var pistol = counts[(int)GameItems.IDs.RANGED_PISTOL];
-        var pistol_ammo = counts[(int)GameItems.IDs.AMMO_LIGHT_PISTOL];
+        var pistol = counts[(int)Item_IDs.RANGED_PISTOL];
+        var pistol_ammo = counts[(int)Item_IDs.AMMO_LIGHT_PISTOL];
         var pistol_ok = 1 <= pistol && 1 <= pistol_ammo;
 
         bool transmutate_from_pistol(ItemModel dest) {
           if (!pistol_ok) return false;
           if (2 <= pistol && pistol >= pistol_ammo) {
-            transmutate(overview[GameItems.IDs.RANGED_PISTOL].Last().Value[0], dest);
+            transmutate(overview[Item_IDs.RANGED_PISTOL].Last().Value[0], dest);
             return true;
           }
           if (2 <= pistol_ammo && pistol_ammo > pistol) {
-            transmutate(overview[GameItems.IDs.AMMO_LIGHT_PISTOL].Last().Value[0], dest);
+            transmutate(overview[Item_IDs.AMMO_LIGHT_PISTOL].Last().Value[0], dest);
             return true;
           }
           return false;
         }
 
-        var shotgun = counts[(int)GameItems.IDs.RANGED_SHOTGUN];
-        var shotgun_ammo = counts[(int)GameItems.IDs.AMMO_SHOTGUN];
+        var shotgun = counts[(int)Item_IDs.RANGED_SHOTGUN];
+        var shotgun_ammo = counts[(int)Item_IDs.AMMO_SHOTGUN];
         var shotgun_ok = 1 <= shotgun && 1 <= shotgun_ammo;
 
         bool transmutate_from_shotgun(ItemModel dest) {
           if (!shotgun_ok) return false;
           if (2 <= shotgun && shotgun >= shotgun_ammo) {
-            transmutate(overview[GameItems.IDs.RANGED_SHOTGUN].Last().Value[0], dest);
+            transmutate(overview[Item_IDs.RANGED_SHOTGUN].Last().Value[0], dest);
             return true;
           }
           if (2 <= shotgun_ammo && shotgun_ammo > shotgun) {
-            transmutate(overview[GameItems.IDs.AMMO_SHOTGUN].Last().Value[0], dest);
+            transmutate(overview[Item_IDs.AMMO_SHOTGUN].Last().Value[0], dest);
             return true;
           }
           return false;
@@ -3524,10 +3524,10 @@ restart:
 
       // armor tuneup
       foreach(Actor cop in map.Police.Get) {
-        if (cop.Inventory.Has(GameItems.IDs.ARMOR_POLICE_RIOT)) continue;
-        if (map.SwapItemTypes(GameItems.IDs.ARMOR_POLICE_RIOT, GameItems.IDs.ARMOR_POLICE_JACKET, cop.Inventory)) continue;
-        if (cop.Inventory.Has(GameItems.IDs.ARMOR_POLICE_JACKET)) continue;
-        map.TakeItemType(GameItems.IDs.ARMOR_POLICE_JACKET, cop.Inventory);
+        if (cop.Inventory.Has(Item_IDs.ARMOR_POLICE_RIOT)) continue;
+        if (map.SwapItemTypes(Item_IDs.ARMOR_POLICE_RIOT, Item_IDs.ARMOR_POLICE_JACKET, cop.Inventory)) continue;
+        if (cop.Inventory.Has(Item_IDs.ARMOR_POLICE_JACKET)) continue;
+        map.TakeItemType(Item_IDs.ARMOR_POLICE_JACKET, cop.Inventory);
         while(reserve_uniform(map));
       }
 
@@ -3535,15 +3535,15 @@ restart:
       // arm for bear
       // first, try to get a backup gun and clip
       foreach(Actor cop in map.Police.Get) {
-        if (cop.Inventory.Has(GameItems.IDs.RANGED_PISTOL)) {
-          if (!map.TakeItemType(GameItems.IDs.RANGED_SHOTGUN, cop.Inventory)) continue;
+        if (cop.Inventory.Has(Item_IDs.RANGED_PISTOL)) {
+          if (!map.TakeItemType(Item_IDs.RANGED_SHOTGUN, cop.Inventory)) continue;
           while(reserve_uniform(map));
-          map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory);
+          map.TakeItemType(Item_IDs.AMMO_SHOTGUN, cop.Inventory);
           while(reserve_uniform(map));
-        } else /* if (a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN)) */ {
-          if (!map.TakeItemType(GameItems.IDs.RANGED_PISTOL, cop.Inventory)) continue;
+        } else /* if (a.Inventory.Has(Item_IDs.RANGED_SHOTGUN)) */ {
+          if (!map.TakeItemType(Item_IDs.RANGED_PISTOL, cop.Inventory)) continue;
           while(reserve_uniform(map));
-          map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
+          map.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
           while(reserve_uniform(map));
         }
       }
@@ -3551,22 +3551,22 @@ restart:
       // then try to top off ammo
       foreach(Actor cop in map.Police.Get) {
         if (cop.Inventory.IsFull) continue;
-        if (!cop.Inventory.Has(GameItems.IDs.AMMO_LIGHT_PISTOL)) {
+        if (!cop.Inventory.Has(Item_IDs.AMMO_LIGHT_PISTOL)) {
           // shotgunner, failed to get full backup
-          map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory);
+          map.TakeItemType(Item_IDs.AMMO_SHOTGUN, cop.Inventory);
           while(reserve_uniform(map));
           continue;
-        } else if (!cop.Inventory.Has(GameItems.IDs.AMMO_SHOTGUN)) {
+        } else if (!cop.Inventory.Has(Item_IDs.AMMO_SHOTGUN)) {
           // pistol; failed to get full backup
-          map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
+          map.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
           while(reserve_uniform(map));
           continue;
         } else {
           // full kit and still has a slot open.  Prefer pistol ammo
-          map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
+          map.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
           while(reserve_uniform(map));
           if (cop.Inventory.IsFull) continue;
-          map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory);
+          map.TakeItemType(Item_IDs.AMMO_SHOTGUN, cop.Inventory);
           while(reserve_uniform(map));
           continue;
         }
@@ -3575,10 +3575,10 @@ restart:
       void gather_uniform(Map m) {
         var overview = m.ItemOverview();
 
-        Dictionary<GameItems.IDs, Dictionary<Point, List<Inventory> > > already_here = new();
-        Dictionary<GameItems.IDs, Dictionary<Point, List<Inventory> > > outside = new();
+        Dictionary<Item_IDs, Dictionary<Point, List<Inventory> > > already_here = new();
+        Dictionary<Item_IDs, Dictionary<Point, List<Inventory> > > outside = new();
         foreach(var x in overview) {
-          if (GameItems.IDs.MELEE_TRUNCHEON == x.Key) continue;
+          if (Item_IDs.MELEE_TRUNCHEON == x.Key) continue;
           foreach(var y in x.Value) {
             if (plot_anchor.Contains(y.Key)) {
               if (!already_here.TryGetValue(x.Key, out var cache)) already_here.Add(x.Key, cache = new());
@@ -3591,17 +3591,17 @@ restart:
         }
 
         uint missing_flags = 0;
-        Span<int> counts = stackalloc int[(int)GameItems.IDs._COUNT];
+        Span<int> counts = stackalloc int[(int)Item_IDs._COUNT];
         Map.InventoryCounts(already_here, counts);
 
         // C-style bitflag recording
-        if (0 >= counts[(int)GameItems.IDs.TRACKER_POLICE_RADIO]) missing_flags += 1;
-        if (0 >= counts[(int)GameItems.IDs.LIGHT_FLASHLIGHT] + counts[(int)GameItems.IDs.LIGHT_BIG_FLASHLIGHT]) missing_flags += 2;
-        if (0 >= counts[(int)GameItems.IDs.ARMOR_POLICE_JACKET] + counts[(int)GameItems.IDs.ARMOR_POLICE_RIOT]) missing_flags += 4;
-        if (0 >= counts[(int)GameItems.IDs.RANGED_PISTOL]) missing_flags += 8;
-        if (0 >= counts[(int)GameItems.IDs.AMMO_LIGHT_PISTOL]) missing_flags += 16;
-        if (0 >= counts[(int)GameItems.IDs.RANGED_SHOTGUN]) missing_flags += 32;
-        if (0 >= counts[(int)GameItems.IDs.AMMO_SHOTGUN]) missing_flags += 64;
+        if (0 >= counts[(int)Item_IDs.TRACKER_POLICE_RADIO]) missing_flags += 1;
+        if (0 >= counts[(int)Item_IDs.LIGHT_FLASHLIGHT] + counts[(int)Item_IDs.LIGHT_BIG_FLASHLIGHT]) missing_flags += 2;
+        if (0 >= counts[(int)Item_IDs.ARMOR_POLICE_JACKET] + counts[(int)Item_IDs.ARMOR_POLICE_RIOT]) missing_flags += 4;
+        if (0 >= counts[(int)Item_IDs.RANGED_PISTOL]) missing_flags += 8;
+        if (0 >= counts[(int)Item_IDs.AMMO_LIGHT_PISTOL]) missing_flags += 16;
+        if (0 >= counts[(int)Item_IDs.RANGED_SHOTGUN]) missing_flags += 32;
+        if (0 >= counts[(int)Item_IDs.AMMO_SHOTGUN]) missing_flags += 64;
         if (0 == (missing_flags & (32 | 64))) {
             switch(missing_flags & (8 | 16)) {
             case 8:
@@ -3625,80 +3625,80 @@ restart:
         Map.InventoryCounts(outside, counts);
 
         // if we do not have a firearm anywhere, ignore its ammo (and vice versa)
-        if (0 >= counts[(int)GameItems.IDs.RANGED_SHOTGUN] && 32 == (missing_flags & 32)) missing_flags -= (missing_flags & (32 | 64));
-        else if (0 >= counts[(int)GameItems.IDs.AMMO_SHOTGUN] && 64 == (missing_flags & 64)) missing_flags -= (missing_flags & (32 | 64));
+        if (0 >= counts[(int)Item_IDs.RANGED_SHOTGUN] && 32 == (missing_flags & 32)) missing_flags -= (missing_flags & (32 | 64));
+        else if (0 >= counts[(int)Item_IDs.AMMO_SHOTGUN] && 64 == (missing_flags & 64)) missing_flags -= (missing_flags & (32 | 64));
 
-        if (0 >= counts[(int)GameItems.IDs.RANGED_PISTOL] && 8 == (missing_flags & 32)) missing_flags -= (missing_flags & (8 | 16));
-        else if (0 >= counts[(int)GameItems.IDs.AMMO_LIGHT_PISTOL] && 16 == (missing_flags & 64)) missing_flags -= (missing_flags & (8 | 16));
+        if (0 >= counts[(int)Item_IDs.RANGED_PISTOL] && 8 == (missing_flags & 32)) missing_flags -= (missing_flags & (8 | 16));
+        else if (0 >= counts[(int)Item_IDs.AMMO_LIGHT_PISTOL] && 16 == (missing_flags & 64)) missing_flags -= (missing_flags & (8 | 16));
         if (0 == missing_flags) return;
 
         var containers = m.EmptyContainerInventories(plot_anchor);
 
         // \todo? transpose logic similar to the transmutate logic, above
-        if (0 != (missing_flags & 1) && 0 < counts[(int)GameItems.IDs.TRACKER_POLICE_RADIO]) {
+        if (0 != (missing_flags & 1) && 0 < counts[(int)Item_IDs.TRACKER_POLICE_RADIO]) {
             if (0 < containers.Count) {
                 var last = containers.Count-1;
-                m.TakeItemType(GameItems.IDs.TRACKER_POLICE_RADIO, containers[last]);
+                m.TakeItemType(Item_IDs.TRACKER_POLICE_RADIO, containers[last]);
                 containers.RemoveAt(last);
                 missing_flags -= 1;
                 if (0 == missing_flags) return;
             }
         }
 
-        if (0 != (missing_flags & 2) && 0 < counts[(int)GameItems.IDs.LIGHT_BIG_FLASHLIGHT]) {
+        if (0 != (missing_flags & 2) && 0 < counts[(int)Item_IDs.LIGHT_BIG_FLASHLIGHT]) {
             if (0 < containers.Count) {
                 var last = containers.Count-1;
-                m.TakeItemType(GameItems.IDs.LIGHT_BIG_FLASHLIGHT, containers[last]);
+                m.TakeItemType(Item_IDs.LIGHT_BIG_FLASHLIGHT, containers[last]);
                 containers.RemoveAt(last);
                 missing_flags -= 2;
                 if (0 == missing_flags) return;
             }
         }
 
-        if (0 != (missing_flags & 2) && 0 < counts[(int)GameItems.IDs.LIGHT_FLASHLIGHT]) {
+        if (0 != (missing_flags & 2) && 0 < counts[(int)Item_IDs.LIGHT_FLASHLIGHT]) {
             if (0 < containers.Count) {
                 var last = containers.Count-1;
-                m.TakeItemType(GameItems.IDs.LIGHT_FLASHLIGHT, containers[last]);
+                m.TakeItemType(Item_IDs.LIGHT_FLASHLIGHT, containers[last]);
                 containers.RemoveAt(last);
                 missing_flags -= 2;
                 if (0 == missing_flags) return;
             }
         }
 
-        if (0 != (missing_flags & 4) && 0 < counts[(int)GameItems.IDs.ARMOR_POLICE_RIOT]) {
+        if (0 != (missing_flags & 4) && 0 < counts[(int)Item_IDs.ARMOR_POLICE_RIOT]) {
             if (0 < containers.Count) {
                 var last = containers.Count-1;
-                m.TakeItemType(GameItems.IDs.ARMOR_POLICE_RIOT, containers[last]);
+                m.TakeItemType(Item_IDs.ARMOR_POLICE_RIOT, containers[last]);
                 containers.RemoveAt(last);
                 missing_flags -= 4;
                 if (0 == missing_flags) return;
             }
         }
 
-        if (0 != (missing_flags & 4) && 0 < counts[(int)GameItems.IDs.ARMOR_POLICE_JACKET]) {
+        if (0 != (missing_flags & 4) && 0 < counts[(int)Item_IDs.ARMOR_POLICE_JACKET]) {
             if (0 < containers.Count) {
                 var last = containers.Count-1;
-                m.TakeItemType(GameItems.IDs.ARMOR_POLICE_JACKET, containers[last]);
+                m.TakeItemType(Item_IDs.ARMOR_POLICE_JACKET, containers[last]);
                 containers.RemoveAt(last);
                 missing_flags -= 4;
                 if (0 == missing_flags) return;
             }
         }
 
-        if (0 != (missing_flags & 8) && 0 < counts[(int)GameItems.IDs.RANGED_PISTOL]) {
+        if (0 != (missing_flags & 8) && 0 < counts[(int)Item_IDs.RANGED_PISTOL]) {
             if (0 < containers.Count) {
                 var last = containers.Count-1;
-                m.TakeItemType(GameItems.IDs.RANGED_PISTOL, containers[last]);
+                m.TakeItemType(Item_IDs.RANGED_PISTOL, containers[last]);
                 containers.RemoveAt(last);
                 missing_flags -= 8;
                 if (0 == missing_flags) return;
             }
         }
 
-        if (0 != (missing_flags & 16) && 0 < counts[(int)GameItems.IDs.AMMO_LIGHT_PISTOL]) {
+        if (0 != (missing_flags & 16) && 0 < counts[(int)Item_IDs.AMMO_LIGHT_PISTOL]) {
             if (0 < containers.Count) {
                 var last = containers.Count-1;
-                m.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, containers[last]);
+                m.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, containers[last]);
                 containers.RemoveAt(last);
                 missing_flags -= 16;
                 if (0 == missing_flags) return;
@@ -3706,20 +3706,20 @@ restart:
         }
 
 
-        if (0 != (missing_flags & 32) && 0 < counts[(int)GameItems.IDs.RANGED_SHOTGUN]) {
+        if (0 != (missing_flags & 32) && 0 < counts[(int)Item_IDs.RANGED_SHOTGUN]) {
             if (0 < containers.Count) {
                 var last = containers.Count-1;
-                m.TakeItemType(GameItems.IDs.RANGED_SHOTGUN, containers[last]);
+                m.TakeItemType(Item_IDs.RANGED_SHOTGUN, containers[last]);
                 containers.RemoveAt(last);
                 missing_flags -= 32;
                 if (0 == missing_flags) return;
             }
         }
 
-        if (0 != (missing_flags & 64) && 0 < counts[(int)GameItems.IDs.AMMO_SHOTGUN]) {
+        if (0 != (missing_flags & 64) && 0 < counts[(int)Item_IDs.AMMO_SHOTGUN]) {
             if (0 < containers.Count) {
                 var last = containers.Count-1;
-                m.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, containers[last]);
+                m.TakeItemType(Item_IDs.AMMO_SHOTGUN, containers[last]);
                 containers.RemoveAt(last);
                 missing_flags -= 64;
                 if (0 == missing_flags) return;
@@ -3732,29 +3732,29 @@ restart:
       gather_uniform(map);
 
       // now, to set up the marching order
-      var leaders = new List<Actor>();
-      var followers = new List<Actor>();
+      List<Actor> leaders = new();
+      List<Actor> followers = new();
       var typical = map.Police.Get.ToList();
 
       static Actor DraftLeader(List<Actor> pool) {
         // first: leadership + backup weapons
-        Actor awesome = pool.Find(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        Actor awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (null != awesome) return awesome;
 
         // leadership+pistol
-        awesome = pool.Find(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (null != awesome) return awesome;
 
         // leadership+shotgun
-        awesome = pool.Find(a => a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (null != awesome) return awesome;
 
         // backup weapons
-        awesome = pool.Find(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN));
+        awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && a.Inventory.Has(Item_IDs.RANGED_SHOTGUN));
         if (null != awesome) return awesome;
 
         // pistol
-        awesome = pool.Find(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL));
+        awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL));
         if (null != awesome) return awesome;
 
         // shotgun
@@ -4199,13 +4199,13 @@ restart:
       });
     }
 
-    static private readonly GameItems.IDs[] rare_random_item = new GameItems.IDs[] {
-        GameItems.IDs.EXPLOSIVE_GRENADE_PRIMED,
-        GameItems.IDs.ARMOR_ARMY_BODYARMOR,
-        GameItems.IDs.AMMO_HEAVY_PISTOL,
-        GameItems.IDs.AMMO_HEAVY_RIFLE,
-        GameItems.IDs.MELEE_COMBAT_KNIFE,
-        GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL
+    static private readonly Item_IDs[] rare_random_item = new[] {
+        Item_IDs.EXPLOSIVE_GRENADE_PRIMED,
+        Item_IDs.ARMOR_ARMY_BODYARMOR,
+        Item_IDs.AMMO_HEAVY_PISTOL,
+        Item_IDs.AMMO_HEAVY_RIFLE,
+        Item_IDs.MELEE_COMBAT_KNIFE,
+        Item_IDs.MEDICINE_PILLS_ANTIVIRAL
     };
 
     private void GiveRandomItemToActor(DiceRoller roller, Actor actor, int spawnTime)
@@ -4246,7 +4246,7 @@ restart:
       return actor;
     }
 
-    private static readonly GameItems.IDs[] survivor_pills = new GameItems.IDs[] { GameItems.IDs.MEDICINE_PILLS_SLP, GameItems.IDs.MEDICINE_PILLS_STA, GameItems.IDs.MEDICINE_PILLS_SAN };
+    private static readonly Item_IDs[] survivor_pills = new[]{ Item_IDs.MEDICINE_PILLS_SLP, Item_IDs.MEDICINE_PILLS_STA, Item_IDs.MEDICINE_PILLS_SAN };
 
     public Actor CreateNewSurvivor(int spawnTime)
     {

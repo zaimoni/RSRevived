@@ -126,7 +126,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       }
       {
-      var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => GameItems.IDs.TRACKER_POLICE_RADIO!=it.ModelID);
+      var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => Item_IDs.TRACKER_POLICE_RADIO!=it.ModelID);
       if (0 < (trackers?.Count ?? 0)) {
         foreach(var x in trackers) {
           ret = (m_Actor.Controller as ObjectiveAI)?.DoctrineRechargeToFull(x);
@@ -212,12 +212,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     readonly private Observed<Location[]> FOVevents = new Observed<Location[]>();
     readonly protected List<Objective> Objectives = new List<Objective>();
     readonly private Dictionary<Point,Dictionary<Point, int>> PlannedMoves = new Dictionary<Point, Dictionary<Point, int>>();
-    readonly private sbyte[] ItemPriorities = new sbyte[(int)GameItems.IDs._COUNT]; // XXX probably should have some form of PC override
+    readonly private sbyte[] ItemPriorities = new sbyte[(int)Item_IDs._COUNT]; // XXX probably should have some form of PC override
     readonly private UntypedCache<SparseData> _sparse = new UntypedCache<SparseData>();
     private int _STA_reserve;
     protected int STA_reserve { get { return _STA_reserve; } }
 
-    private Dictionary<GameItems.IDs, KeyValuePair<sbyte,int>>? _rating_overrides; // origin code: 1 self, 2 order (AI or PC)
+    private Dictionary<Item_IDs, KeyValuePair<sbyte,int>>? _rating_overrides; // origin code: 1 self, 2 order (AI or PC)
 
     // cache variables
     [NonSerialized] protected List<Point> _legal_steps = null;
@@ -363,7 +363,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return true;
     }
 
-    private void RecordResupply(HashSet<GameItems.IDs> what)
+    private void RecordResupply(HashSet<Item_IDs> what)
     {
         if (null != _current_goals) SetObjective(new Resupply(m_Actor, what, _current_goals));
     }
@@ -378,7 +378,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       SetObjective(new InferActor(m_Actor, target));
     }
 
-    public void Track(in InvOrigin src, GameItems.IDs take)
+    public void Track(in InvOrigin src, Item_IDs take)
     {
       var goal = Goal<PathToStack>();
       if (null != goal) {
@@ -743,7 +743,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // inventory priority fixup
       if (null != _rating_overrides) {
-        List<GameItems.IDs> doomed = new();
+        List<Item_IDs> doomed = new();
         foreach(var x in _rating_overrides) {
           if (!m_Actor.Inventory.Has(x.Key)) doomed.Add(x.Key);
         }
@@ -1168,7 +1168,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     /// <remark>This executes before the main lambda pathing block, so its use of the lambda pathing cache does not conflict with that.</remark>
-    protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
+    protected ActorAction BehaviorResupply(HashSet<Item_IDs> critical)
     {
       var act = UsePreexistingLambdaPath();
       if (null != act) return act;
@@ -1549,9 +1549,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int burn_time = 0;
       switch(it.ModelID)
       {
-      case GameItems.IDs.LIGHT_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.SunsetToDawnDuration+2*WorldTime.TURNS_PER_HOUR;
+      case Item_IDs.LIGHT_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.SunsetToDawnDuration+2*WorldTime.TURNS_PER_HOUR;
         break;
-      case GameItems.IDs.LIGHT_BIG_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.MidnightToDawnDuration+WorldTime.TURNS_PER_HOUR;
+      case Item_IDs.LIGHT_BIG_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.MidnightToDawnDuration+WorldTime.TURNS_PER_HOUR;
         break;
 #if DEBUG
       default: throw new InvalidOperationException("Unhandled light type " + it.ModelID.ToString());
@@ -5504,7 +5504,7 @@ restart_chokepoints:
         if (null != ai_items) {
           if (null!= ItemMemory && ItemMemory == ai_items) continue; // already updated
           foreach (Percept p in stacks) {
-            ai_items.Set(p.Location, new HashSet<Gameplay.GameItems.IDs>((p.Percepted as Inventory).Items.Select(x => x.InventoryMemoryID)), p.Location.Map.LocalTime.TurnCounter);
+            ai_items.Set(p.Location, new HashSet<Gameplay.Item_IDs>((p.Percepted as Inventory).Items.Select(x => x.InventoryMemoryID)), p.Location.Map.LocalTime.TurnCounter);
           }
           continue; // followers with item memory can decide on their own what to do
         }
@@ -5820,14 +5820,14 @@ restart_chokepoints:
       if (it is ItemGrenadePrimedModel) return true;    // XXX want a general primed explosive model test
 
       // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue; unsure about why gangsters dont)
-      if (GameItems.IDs.EXPLOSIVE_GRENADE == it.ID && !UsesExplosives) return true;
+      if (Item_IDs.EXPLOSIVE_GRENADE == it.ID && !UsesExplosives) return true;
 
       // only civilians use stench killer
-      if (GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.ID && !(m_Actor.Controller is CivilianAI)) return true;
+      if (Item_IDs.SCENT_SPRAY_STENCH_KILLER == it.ID && !(m_Actor.Controller is CivilianAI)) return true;
 
       // police have implicit police trackers
-      if (GameItems.IDs.TRACKER_POLICE_RADIO == it.ID && !m_Actor.WantPoliceRadio) return true;
-      if (GameItems.IDs.TRACKER_CELL_PHONE == it.ID && !m_Actor.WantCellPhone) return true;
+      if (Item_IDs.TRACKER_POLICE_RADIO == it.ID && !m_Actor.WantPoliceRadio) return true;
+      if (Item_IDs.TRACKER_CELL_PHONE == it.ID && !m_Actor.WantCellPhone) return true;
 
       if (it is ItemFoodModel && !m_Actor.Model.Abilities.HasToEat) return true; // Soldiers and CHAR guards.  There might be a serum for this.
       if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {    // Bikers
@@ -5867,9 +5867,9 @@ restart_chokepoints:
 
     private int ItemRatingCode(ItemTracker it)
     {
-      var ok_trackers = new Zaimoni.Data.Stack<GameItems.IDs>(stackalloc GameItems.IDs[2]);
-      if (m_Actor.NeedActiveCellPhone) ok_trackers.push(GameItems.IDs.TRACKER_CELL_PHONE);
-      if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(GameItems.IDs.TRACKER_POLICE_RADIO);
+      var ok_trackers = new Zaimoni.Data.Stack<Item_IDs>(stackalloc Item_IDs[2]);
+      if (m_Actor.NeedActiveCellPhone) ok_trackers.push(Item_IDs.TRACKER_CELL_PHONE);
+      if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(Item_IDs.TRACKER_POLICE_RADIO);
 
       // AI does not yet use z-trackers or blackops trackers correctly; possible only threat-aware AIs use them
       Inventory inv;
@@ -6117,9 +6117,9 @@ restart_chokepoints:
 
       {
       if (it is ItemTrackerModel) {
-        var ok_trackers = new Zaimoni.Data.Stack<GameItems.IDs>(stackalloc GameItems.IDs[2]);
-        if (m_Actor.NeedActiveCellPhone) ok_trackers.push(GameItems.IDs.TRACKER_CELL_PHONE);
-        if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(GameItems.IDs.TRACKER_POLICE_RADIO);
+        var ok_trackers = new Zaimoni.Data.Stack<Item_IDs>(stackalloc Item_IDs[2]);
+        if (m_Actor.NeedActiveCellPhone) ok_trackers.push(Item_IDs.TRACKER_CELL_PHONE);
+        if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(Item_IDs.TRACKER_POLICE_RADIO);
         // AI does not yet use z-trackers or blackops trackers correctly; possible only threat-aware AIs use them
         if (m_Actor.Inventory.Items.Any(obj => !obj.IsUseless && obj.Model == it)) return 0;
         return (ok_trackers.Contains(it.ID) && null != m_Actor.LiveLeader) ? 2 : 1;
@@ -6141,11 +6141,11 @@ restart_chokepoints:
       // XXX note that sleep and stamina have special uses for sufficiently good AI
       if (it is ItemMedicineModel) {
         int needHP = m_Actor.MaxHPs- m_Actor.HitPoints;
-        if (GameItems.IDs.MEDICINE_MEDIKIT == it.ID || GameItems.IDs.MEDICINE_BANDAGES == it.ID) {
+        if (Item_IDs.MEDICINE_MEDIKIT == it.ID || Item_IDs.MEDICINE_BANDAGES == it.ID) {
           if (needHP >= m_Actor.ScaleMedicineEffect(GameItems.MEDIKIT.Healing)) return 3;    // second aid
         }
 
-        if (GameItems.IDs.MEDICINE_BANDAGES == it.ID && needHP >= m_Actor.ScaleMedicineEffect(GameItems.BANDAGE.Healing)) {
+        if (Item_IDs.MEDICINE_BANDAGES == it.ID && needHP >= m_Actor.ScaleMedicineEffect(GameItems.BANDAGE.Healing)) {
           return 2; // first aid
         }
 
@@ -6214,7 +6214,7 @@ restart_chokepoints:
     }
     }
 
-    public bool UnsetRatingOverride(GameItems.IDs x, int severity) {
+    public bool UnsetRatingOverride(Item_IDs x, int severity) {
       if (null == _rating_overrides) return true;
       if (_rating_overrides.TryGetValue(x, out var cache)) {
         if (severity < cache.Value) return false; // self-AI cannot unset an order priority override
@@ -6225,7 +6225,7 @@ restart_chokepoints:
       return true;
     }
 
-    public KeyValuePair<sbyte,int>? SetRatingOverride(GameItems.IDs x, sbyte priority, int severity) {
+    public KeyValuePair<sbyte,int>? SetRatingOverride(Item_IDs x, sbyte priority, int severity) {
       KeyValuePair<sbyte,int> ret = new(0,0); // value 0: no authority
       if ((_rating_overrides ??= new()).TryGetValue(x, out var cache)) {
         if (severity < cache.Value) return null; // self-AI cannot overrule an order priority override
@@ -6236,7 +6236,7 @@ restart_chokepoints:
       return ret;
     }
 
-    private int ItemRatingCode(GameItems.IDs x)
+    private int ItemRatingCode(Item_IDs x)
     {
        var model = GameItems.From(x);
        if (null != _rating_overrides) {
@@ -6251,13 +6251,13 @@ restart_chokepoints:
 
     protected void ReviewItemRatings()
     {
-      int i = (int)GameItems.IDs._COUNT;
+      int i = (int)Item_IDs._COUNT;
       while(0 < i--) {
-        ItemPriorities[i] = (sbyte)ItemRatingCode((GameItems.IDs)i);
+        ItemPriorities[i] = (sbyte)ItemRatingCode((Item_IDs)i);
       }
     }
 
-    public int RatingCode(GameItems.IDs x)
+    public int RatingCode(Item_IDs x)
     {
       return ItemPriorities[(int)x];
     }
@@ -6426,9 +6426,9 @@ restart_chokepoints:
       if (rhs_low_priority) return !lhs_low_priority;
       else if (lhs_low_priority) return false;
 
-      var ok_trackers = new Zaimoni.Data.Stack<GameItems.IDs>(stackalloc GameItems.IDs[2]);
-      if (m_Actor.NeedActiveCellPhone) ok_trackers.push(GameItems.IDs.TRACKER_CELL_PHONE);
-      if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(GameItems.IDs.TRACKER_POLICE_RADIO);
+      var ok_trackers = new Zaimoni.Data.Stack<Item_IDs>(stackalloc Item_IDs[2]);
+      if (m_Actor.NeedActiveCellPhone) ok_trackers.push(Item_IDs.TRACKER_CELL_PHONE);
+      if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(Item_IDs.TRACKER_POLICE_RADIO);
 
       if (rhs is ItemTracker)
         {
@@ -6663,7 +6663,7 @@ restart_chokepoints:
 #endif
 
       // medicine glut ... drop it
-      foreach(GameItems.IDs x in GameItems.medicine) {
+      foreach(var x in GameItems.medicine) {
         if (it.ModelID == x) continue;
         ItemModel model = GameItems.From(x);
         if (2>m_Actor.Count(model)) continue;
@@ -6673,9 +6673,9 @@ restart_chokepoints:
 
       // trackers (mainly because AI can't use properly), but cell phones are trackers
       // XXX this is triggering a coverage failure; we need to be more sophisticated about trackers
-      List<GameItems.IDs> ok_trackers = new();
-      if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
-      if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
+      List<Item_IDs> ok_trackers = new();
+      if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(Item_IDs.TRACKER_CELL_PHONE);
+      if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(Item_IDs.TRACKER_POLICE_RADIO);
       if (it is ItemTracker) {
         if (!ok_trackers.Contains(it.ModelID)) return null;   // tracker normally not worth clearing a slot for
       }
@@ -6787,7 +6787,7 @@ restart_chokepoints:
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
       if (it is ItemMeleeWeapon || it is ItemFood) {
-        foreach(GameItems.IDs x in GameItems.ammo) {
+        foreach(var x in GameItems.ammo) {
           ItemModel model = GameItems.From(x);
           if (2<=m_Actor.Count(model)) {
             ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
@@ -6796,7 +6796,7 @@ restart_chokepoints:
         }
         // if we have two clips of any type, trading the smaller one for a melee weapon or food is ok
         ItemAmmo test = null;
-        foreach(GameItems.IDs x in GameItems.ammo) {
+        foreach(var x in GameItems.ammo) {
           if (inv.GetBestDestackable(GameItems.From(x)) is ItemAmmo ammo) {
              if (null == test || test.Quantity>ammo.Quantity) test = ammo;
           }
@@ -7078,7 +7078,7 @@ restart_chokepoints:
 #endif
 
       // medicine glut ... drop it
-      foreach(GameItems.IDs x in GameItems.medicine) {
+      foreach(var x in GameItems.medicine) {
         if (it.ModelID == x) continue;
         ItemModel model = GameItems.From(x);
         if (2>m_Actor.Count(model)) continue;
@@ -7088,9 +7088,9 @@ restart_chokepoints:
 
       // trackers (mainly because AI can't use properly), but cell phones are trackers
       // XXX this is triggering a coverage failure; we need to be more sophisticated about trackers
-      List<GameItems.IDs> ok_trackers = new List<GameItems.IDs>();
-      if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
-      if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
+      List<Item_IDs> ok_trackers = new();
+      if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(Item_IDs.TRACKER_CELL_PHONE);
+      if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(Item_IDs.TRACKER_POLICE_RADIO);
       if (it is ItemTracker) {
         if (!ok_trackers.Contains(it.ModelID)) return null;   // tracker normally not worth clearing a slot for
       }
@@ -7202,7 +7202,7 @@ restart_chokepoints:
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
       if (it is ItemMeleeWeapon || it is ItemFood) {
-        foreach(GameItems.IDs x in GameItems.ammo) {
+        foreach(var x in GameItems.ammo) {
           ItemModel model = GameItems.From(x);
           if (2<=m_Actor.Count(model)) {
             ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
@@ -7211,7 +7211,7 @@ restart_chokepoints:
         }
         // if we have two clips of any type, trading the smaller one for a melee weapon or food is ok
         ItemAmmo test = null;
-        foreach(GameItems.IDs x in GameItems.ammo) {
+        foreach(var x in GameItems.ammo) {
           if (inv.GetBestDestackable(GameItems.From(x)) is ItemAmmo ammo) {
              if (null == test || test.Quantity>ammo.Quantity) test = ammo;
           }
@@ -7547,7 +7547,7 @@ restart_chokepoints:
         foreach(var rw in rws) {
           if (rw.Ammo < rw.Model.MaxAmmo) {
             // usually want to reload this even if we had to drop ammo as a recovery option
-            var want_ammo = (GameItems.IDs)((int)(rw.AmmoType) + (int)(GameItems.IDs.AMMO_LIGHT_PISTOL));
+            var want_ammo = (Item_IDs)((int)(rw.AmmoType) + (int)(Item_IDs.AMMO_LIGHT_PISTOL));
             int i = Objectives.Count;
             while(0<i) if (Objectives[--i] is Goal_DoNotPickup dnp && dnp.Avoid == want_ammo) Objectives.RemoveAt(i);
           }
@@ -7577,7 +7577,7 @@ restart_chokepoints:
             foreach(var stack in ground_inv) {
              var remote_ammo = stack.inv.GetCompatibleAmmoItem(local_rw);
              if (null == remote_ammo) continue;
-             SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(m_Actor, (GameItems.IDs)(i + (int)GameItems.IDs.AMMO_LIGHT_PISTOL))));
+             SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(m_Actor, (Item_IDs)(i + (int)Item_IDs.AMMO_LIGHT_PISTOL))));
              return UseAmmo(local_ammo, local_rw);
             }
           }
@@ -7656,7 +7656,7 @@ restart_chokepoints:
         // ranged weapons: require ours to have strictly less ammo
         if (null != rw_model) return (mine as ItemRangedWeapon).Ammo >= (theirs as ItemRangedWeapon).Ammo;
         // battery-powered items: require strictly less charge (police radios not included as they are low-grade generators)
-        if (mine is BatteryPowered test && mine.ModelID!=GameItems.IDs.TRACKER_POLICE_RADIO) return test.Batteries >= (theirs as BatteryPowered).Batteries;
+        if (mine is BatteryPowered test && mine.ModelID != Item_IDs.TRACKER_POLICE_RADIO) return test.Batteries >= (theirs as BatteryPowered).Batteries;
         // generally, if stackable we want to trade away the smaller stack (intercepting partial take from ground inventory is a higher order test)
         if (1<mine.Model.StackingLimit) return mine.Quantity >= theirs.Quantity;
         // default is to reject.   Expected to change once AI state is involved
@@ -7664,17 +7664,17 @@ restart_chokepoints:
       }
 
       // do not trade away weapon for own ammo
-      if (null != rw_model && (GameItems.IDs)((int)rw_model.AmmoType+(int)GameItems.IDs.AMMO_LIGHT_PISTOL) == theirs.ModelID) return true;
+      if (null != rw_model && (Item_IDs)((int)rw_model.AmmoType+(int)Item_IDs.AMMO_LIGHT_PISTOL) == theirs.ModelID) return true;
 
       switch(mine.Model.ID)
       {
       // flashlights.  larger radius and longer duration are independently better...do not trade if both are worse
-      case GameItems.IDs.LIGHT_BIG_FLASHLIGHT:
-        if (GameItems.IDs.LIGHT_FLASHLIGHT==theirs.ModelID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
-        if (GameItems.IDs.LIGHT_BIG_FLASHLIGHT==theirs.ModelID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
+      case Item_IDs.LIGHT_BIG_FLASHLIGHT:
+        if (Item_IDs.LIGHT_FLASHLIGHT==theirs.ModelID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
+        if (Item_IDs.LIGHT_BIG_FLASHLIGHT==theirs.ModelID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
         break;
-      case GameItems.IDs.LIGHT_FLASHLIGHT:
-        if (GameItems.IDs.LIGHT_FLASHLIGHT==theirs.ModelID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
+      case Item_IDs.LIGHT_FLASHLIGHT:
+        if (Item_IDs.LIGHT_FLASHLIGHT==theirs.ModelID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
         break;
       }
       return false;
@@ -7685,7 +7685,7 @@ restart_chokepoints:
     {
       // do not trade away weapon for own ammo
       if (    mine.Model is ItemRangedWeaponModel rw_model
-          && (GameItems.IDs)((int)rw_model.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL) == theirs.ModelID) return true;
+          && (Item_IDs)((int)rw_model.AmmoType + (int)Item_IDs.AMMO_LIGHT_PISTOL) == theirs.ModelID) return true;
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok (don't reverse this)
       // InventoryTradeVeto: reject sole melee for 2nd ammo [has no other uses so easier to manipulate]
@@ -7700,11 +7700,11 @@ restart_chokepoints:
       return false;
     }
 
-    private void retrofitWant(GameItems.IDs src, HashSet<GameItems.IDs> dest)
+    private void retrofitWant(Item_IDs src, HashSet<Item_IDs> dest)
     {
         if (GameItems.ranged.Contains(src)) {
             var model = (GameItems.From(src) as ItemRangedWeaponModel)!;
-            var ammo_type = (GameItems.IDs)((int)model.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL);
+            var ammo_type = (Item_IDs)((int)model.AmmoType + (int)Item_IDs.AMMO_LIGHT_PISTOL);
             if (m_Actor.Inventory.Has(ammo_type)) dest.Add(src.UnloadedVersion());
         }
     }
@@ -7713,10 +7713,10 @@ restart_chokepoints:
     // this must prevent CivilianAI from
     // 1) bashing barricades, etc. for food when hungry
     // 2) trying to search for z at low ammo when there is ammo available
-    public HashSet<GameItems.IDs> WhatDoINeedNow()
+    public HashSet<Item_IDs> WhatDoINeedNow()
     {
-      HashSet<GameItems.IDs> ret = new HashSet<GameItems.IDs>();
-      GameItems.IDs i = GameItems.IDs._COUNT;
+      HashSet<Item_IDs> ret = new();
+      var i = Item_IDs._COUNT;
       while(0 < i--) {
         if (3==ItemRatingCode(i)) {
           ret.Add(i);
@@ -7728,11 +7728,11 @@ restart_chokepoints:
 
     // If an item would be IsInterestingItem(it), its ID should be in this set if not handled by WhatDoINeedNow().
     // items flagged here should "be more interesting" than what we have
-    public HashSet<GameItems.IDs> WhatDoIWantNow()
+    public HashSet<Item_IDs> WhatDoIWantNow()
     {
-      HashSet<GameItems.IDs> ret = new HashSet<GameItems.IDs>();
+      HashSet<Item_IDs> ret = new();
 
-      GameItems.IDs i = GameItems.IDs._COUNT;
+      var i = Item_IDs._COUNT;
       while(0 < i--) {
         if (2==ItemRatingCode(i)) {
           ret.Add(i);
@@ -7742,11 +7742,11 @@ restart_chokepoints:
       return ret;
     }
 
-    public KeyValuePair<List<GameItems.IDs>?, List<GameItems.IDs>?> NonCriticalInInventory()
+    public KeyValuePair<List<Item_IDs>?, List<Item_IDs>?> NonCriticalInInventory()
     {
-      var insurance = new List<GameItems.IDs>((int)GameItems.IDs._COUNT);   // bloated, but it'll garbage-collect shortly anyway and this would be expected to prevent in-build reallocations
-      var want = new List<GameItems.IDs>((int)GameItems.IDs._COUNT);
-      GameItems.IDs i = GameItems.IDs._COUNT;
+      List<Item_IDs> insurance = new((int)Item_IDs._COUNT);   // bloated, but it'll garbage-collect shortly anyway and this would be expected to prevent in-build reallocations
+      List<Item_IDs> want = new((int)Item_IDs._COUNT);
+      var i = Item_IDs._COUNT;
       Inventory inv = m_Actor.Inventory;
       ItemModel model;
       while(0 < i--) {
@@ -7761,7 +7761,7 @@ restart_chokepoints:
         if (2 == code) want.Add(i);
         else insurance.Add(i);
       }
-      return new KeyValuePair<List<GameItems.IDs>?, List<GameItems.IDs>?>((0<insurance.Count ? insurance : null), (0 < want.Count ? want : null));
+      return new KeyValuePair<List<Item_IDs>?, List<Item_IDs>?>((0<insurance.Count ? insurance : null), (0 < want.Count ? want : null));
     }
 
     public bool Needs(ItemLight light)
@@ -8011,10 +8011,10 @@ restart_chokepoints:
            // 1) required skills: Firearms 1, Leadership 1
         return 1 <= skills.GetSkillLevel(Skills.IDs.FIREARMS) && 1 <= skills.GetSkillLevel(Skills.IDs.LEADERSHIP)
            // 2) must have equipped: police radio, police armor
-           && null != m_Actor.GetEquippedItem(GameItems.IDs.TRACKER_POLICE_RADIO)
-           && (null != m_Actor.GetEquippedItem(GameItems.IDs.ARMOR_POLICE_JACKET) || null != m_Actor.GetEquippedItem(GameItems.IDs.ARMOR_POLICE_RIOT))    // XXX should just check good police armors list
+           && null != m_Actor.GetEquippedItem(Item_IDs.TRACKER_POLICE_RADIO)
+           && (null != m_Actor.GetEquippedItem(Item_IDs.ARMOR_POLICE_JACKET) || null != m_Actor.GetEquippedItem(Item_IDs.ARMOR_POLICE_RIOT))    // XXX should just check good police armors list
            // 3) must have in inventory: one of pistol or shotgun
-           && (null != m_Actor.GetItem(GameItems.IDs.RANGED_PISTOL) || null != m_Actor.GetItem(GameItems.IDs.RANGED_SHOTGUN));
+           && (null != m_Actor.GetItem(Item_IDs.RANGED_PISTOL) || null != m_Actor.GetItem(Item_IDs.RANGED_SHOTGUN));
     }
 
     /// <summary>
@@ -8037,7 +8037,7 @@ restart_chokepoints:
         // than they were requested, but that would replace LocationSet with another type
       }
       m_Actor.Faction = GameFactions.ThePolice;
-      var it = m_Actor.GetEquippedItem(GameItems.IDs.TRACKER_POLICE_RADIO); // now implicit; possible RogueGame::DiscardItem is on wrong class
+      var it = m_Actor.GetEquippedItem(Item_IDs.TRACKER_POLICE_RADIO); // now implicit; possible RogueGame::DiscardItem is on wrong class
       m_Actor.Inventory.RemoveAllQuantity(it);
       it.Unequip();
       m_Actor.PrefixName("Cop"); // adjust job title

@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Data
 {
   internal class ItemModel : Zaimoni.Data.Factory<Item>
   {
-    public readonly Gameplay.GameItems.IDs ID;
+    public readonly Gameplay.Item_IDs ID;
     public readonly string SingleName;
     public readonly string PluralName;
     public readonly string ImageID;
@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Data
       return 2 <= m_StackingLimit && qty < m_StackingLimit;
     }
 
-    public ItemModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, string flavor = "", DollPart part = DollPart.NONE, bool no_autoequip=false)
+    public ItemModel(Gameplay.Item_IDs _id, string aName, string theNames, string imageID, string flavor = "", DollPart part = DollPart.NONE, bool no_autoequip=false)
     {
       ID = _id;
       SingleName = aName;

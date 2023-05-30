@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Engine.Items
   {
     public readonly ItemGrenadeModel GrenadeModel;
 
-    public ItemGrenadePrimedModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, ItemGrenadeModel grenadeModel)
+    public ItemGrenadePrimedModel(Gameplay.Item_IDs _id, string aName, string theNames, string imageID, ItemGrenadeModel grenadeModel)
       : base(_id, aName, theNames, imageID, grenadeModel.FuseDelay, grenadeModel.BlastAttack, grenadeModel.BlastImage, grenadeModel.FlavorDescription)
     {
         GrenadeModel = grenadeModel

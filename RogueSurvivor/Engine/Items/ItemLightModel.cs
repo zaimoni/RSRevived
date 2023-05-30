@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly short FovBonus;
     public readonly string OutOfBatteriesImageID;
 
-    public ItemLightModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, short fovBonus, int maxBatteries, string outOfBatteriesImageID, string flavor)
+    public ItemLightModel(Gameplay.Item_IDs _id, string aName, string theNames, string imageID, short fovBonus, int maxBatteries, string outOfBatteriesImageID, string flavor)
       : base(_id, aName, theNames, imageID, flavor, DollPart.LEFT_HAND, true)
     {
 #if DEBUG

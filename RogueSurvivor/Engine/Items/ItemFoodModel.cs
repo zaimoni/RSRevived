@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly bool IsPerishable;
     public readonly int BestBeforeDays;
 
-    public ItemFoodModel(Gameplay.GameItems.IDs _id, string aName, string theNames, string imageID, int nutrition, int bestBeforeDays, int stackingLimit, string flavor)
+    public ItemFoodModel(Gameplay.Item_IDs _id, string aName, string theNames, string imageID, int nutrition, int bestBeforeDays, int stackingLimit, string flavor)
       : base(_id, aName, theNames, imageID, flavor)
     {
       Nutrition = nutrition;
@@ -34,13 +34,13 @@ namespace djack.RogueSurvivor.Engine.Items
     // RS 9 does not have a random component to their duration, unlike groceries
     public override Item create()
     {
-      if (ID==Gameplay.GameItems.IDs.FOOD_ARMY_RATION) return new ItemFood(Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * BestBeforeDays, this);
+      if (ID==Gameplay.Item_IDs.FOOD_ARMY_RATION) return new ItemFood(Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * BestBeforeDays, this);
       return new ItemFood(this);
     }
 
     public ItemFood instantiate()
     {
-      if (ID==Gameplay.GameItems.IDs.FOOD_ARMY_RATION) return new ItemFood(Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * BestBeforeDays, this);
+      if (ID==Gameplay.Item_IDs.FOOD_ARMY_RATION) return new ItemFood(Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * BestBeforeDays, this);
       return new ItemFood(this);
     }
 
