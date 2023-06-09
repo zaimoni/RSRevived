@@ -2322,8 +2322,51 @@ retry:
 
     public void PreTurnStart()
     {
+      // Add actor to map is responsible for correct initial positioning
       m_iCheckNextActorIndex = 0;
       foreach (var actor in m_ActorsList) actor.PreTurnStart();
+      // we need a stable sort here, so cannot use the C# library Sort methods
+      void SlideDown(int dest, int src, List<Actor> x) {
+        if (dest < src) {
+          var stage = x[src];
+          do { x[src] = x[src-1]; } while(dest < --src);
+          x[dest] = stage;
+        }
+      }
+
+      int origin = 0;
+      int i = origin;
+      int ub = m_ActorsList.Count;
+      // if cannot move this turn, move to front to prevent slow double-move fast
+      while(++i < ub) {
+        if (0 >= m_ActorsList[i].ActionPoints) {
+          SlideDown(origin, i, m_ActorsList);
+          origin++;
+        }
+      }
+
+      // sort remaining in "relative energy order" to negate the double-move exploit
+      if (ub - 1 > origin) {
+        Span<float> TUorder = stackalloc float[ub - origin];
+        i = origin-1;
+        while(++i < ub) {
+          TUorder[ub -i -1] = (float)(m_ActorsList[i].ActionPoints)/ m_ActorsList[i].Speed;
+        }
+        while(ub - 1 > origin) {
+          i = ub;
+          while(--i > origin) {
+            if (TUorder[i - origin] < TUorder[i - origin - 1]) {
+              var stage = m_ActorsList[i];
+              m_ActorsList[i] = m_ActorsList[i - 1];
+              m_ActorsList[i - 1] = stage;
+              var stagef = TUorder[i - origin];
+              TUorder[i - origin] = TUorder[i - origin - 1];
+              TUorder[i - origin - 1] = stagef;
+            }
+          }
+          origin++;
+        }
+      }
     }
 
     public bool IsTransparent(Point pt)
