@@ -16,6 +16,9 @@ RS Still Alive
 http://roguesurvivor.proboards.com/thread/377/rs-alive
 https://gitlab.com/RogueSurvivor-StillAlive/StillAlive
 
+Crossplatform RS Still Alive
+https://github.com/laleksic/StillAlive/tree/cross_platform
+
 Rogue Survivor Rezombiefied
 http://www.bay12forums.com/smf/index.php?topic=177355.0
 https://github.com/GalacticChimp/RogueSurvivorRezombified
