@@ -126,7 +126,10 @@ namespace djack.RogueSurvivor
     }
 #endregion
 
-#region Form overloads
+    // cross-platform Staying Alive says this requires implementation for each UI build target.
+    private void doEvents() => Application.DoEvents();
+
+    #region Form overloads
     protected override void OnShown(EventArgs e)
     {
       base.OnShown(e);
@@ -157,7 +160,7 @@ namespace djack.RogueSurvivor
     public KeyEventArgs UI_WaitKey()
     {
       while (true) {    // XXX no clean way to do this loop
-        Application.DoEvents();
+        doEvents();
         if (null!= m_InKey) break;
         Thread.Sleep(100);
       }
@@ -171,7 +174,7 @@ namespace djack.RogueSurvivor
       var origin = m_GameCanvas.MouseLocation;
       do {
         Thread.Sleep(1);
-        Application.DoEvents();
+        doEvents();
 
         // inline UI_GetMousePosition()
         var mousePos = m_GameCanvas.MouseLocation;
@@ -232,7 +235,7 @@ namespace djack.RogueSurvivor
     {
       if (cursor == Cursor) return;
       Cursor = cursor;
-      Application.DoEvents();
+      doEvents();
     }
 
     public void WaitEnter()
@@ -308,7 +311,7 @@ namespace djack.RogueSurvivor
     public void UI_Repaint()
     {
       Refresh();
-      Application.DoEvents();
+      doEvents();
     }
 
     // historically UI_Clear(Color.Black)
