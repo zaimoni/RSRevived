@@ -27,6 +27,7 @@ using Skills = djack.RogueSurvivor.Gameplay.Skills;
 using PowerGenerator = djack.RogueSurvivor.Engine.MapObjects.PowerGenerator;
 using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
 using djack.RogueSurvivor.Gameplay;
+using System.Numerics;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -2523,6 +2524,10 @@ namespace djack.RogueSurvivor.Data
     public bool WillActAgainBefore(Actor other)
     {
       return other.m_ActionPoints <= 0 && (!other.CanActNextTurn || IsBefore(other));
+    }
+
+    public bool CannotActNow {
+      get { return 0 >= m_ActionPoints || IsSleeping; }
     }
 
     public int Speed {

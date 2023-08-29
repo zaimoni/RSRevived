@@ -1526,10 +1526,9 @@ retry:
         // use working copy of m_iCheckNextActorIndex to mitigate multi-threading issues
         for (int checkNextActorIndex = m_iCheckNextActorIndex; checkNextActorIndex < countActors; ++checkNextActorIndex) {
           var actor = m_ActorsList[checkNextActorIndex];
-          if (actor.CanActThisTurn && !actor.IsSleeping) {
-            m_iCheckNextActorIndex = checkNextActorIndex;
-            return actor;
-          }
+          if (actor.CannotActNow) continue;
+          m_iCheckNextActorIndex = checkNextActorIndex;
+          return actor;
         }
         m_iCheckNextActorIndex = countActors;
         return null;
@@ -2339,7 +2338,7 @@ retry:
       int ub = m_ActorsList.Count;
       // if cannot move this turn, move to front to prevent slow double-move fast
       while(++i < ub) {
-        if (0 >= m_ActorsList[i].ActionPoints) {
+        if (m_ActorsList[i].CannotActNow) {
           SlideDown(origin, i, m_ActorsList);
           origin++;
         }
