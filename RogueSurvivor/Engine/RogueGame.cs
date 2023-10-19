@@ -139,7 +139,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_SHOVE = new Verb("shove");
     private readonly Verb VERB_SNORE = new Verb("snore");
     private readonly Verb VERB_SPRAY = new Verb("spray");
-    private readonly Verb VERB_START = new Verb("start");
+    static public readonly Verb VERB_START = new Verb("start");
     static public readonly Verb VERB_STOP = new Verb("stop");
     private readonly Verb VERB_STUMBLE = new Verb("stumble");
     private readonly Verb VERB_SWITCH = new Verb("switch", "switches");
@@ -4495,7 +4495,7 @@ namespace djack.RogueSurvivor.Engine
            Player.StopDraggingCorpse();
            return false;
        case 1: // legal to start drag
-           DoStartDragCorpse(Player, c);
+           Player.StartDragging(c);
            return false;
        default: // interpret as illegal to start drag, as that's what all of the surviving legacy reason strings are for
            ErrorPopup(string.Format("Cannot start dragging {0} corpse : {1}.", c.DeadGuy.Name, reason));
@@ -4555,14 +4555,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public void DoStartDragCorpse(Actor a, Corpse c)
-    {
-      a.Drag(c);
-      var witnesses = PlayersInLOS(a.Location);
-      if (null != witnesses) {
-        RedrawPlayScreen(witnesses.Value, MakePanopticMessage(a, string.Format("{0} dragging {1} corpse.", VERB_START.Conjugate(a), c.DeadGuy.Name)));
-      }
-    }
 #nullable restore
 
     public void DoButcherCorpse(Actor a, Corpse c)  // AI doesn't currently do this, but should be able to once it knows how to manage sanity

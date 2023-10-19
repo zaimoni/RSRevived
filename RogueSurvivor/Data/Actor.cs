@@ -682,10 +682,14 @@ namespace djack.RogueSurvivor.Data
     // \todo build out living AI for dragging corpses
     public Corpse? DraggedCorpse { get { return m_DraggedCorpse; } }
 
-    public void Drag(Corpse c)
+    public void StartDragging(Corpse c)
     {
-      c.DraggedBy = this;
+      c.DraggedBy = this; // \todo? call StopDraggingCorpse to get that message (RS Alpha does not do this)
       m_DraggedCorpse = c;
+      var witnesses = RogueGame.PlayersInLOS(Location);
+      if (null != witnesses) {
+        RogueGame.Game.RedrawPlayScreen(witnesses.Value, RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_START.Conjugate(this), c.DeadGuy.Name)));
+      }
     }
 
     public void StopDraggingCorpse()
