@@ -4558,15 +4558,21 @@ namespace djack.RogueSurvivor.Engine
     public void DoStartDragCorpse(Actor a, Corpse c)
     {
       a.Drag(c);
-      if (ForceVisibleToPlayer(a))
-        AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", VERB_START.Conjugate(a), c.DeadGuy.Name)));
+      var witnesses = PlayersInLOS(a.Location);
+      if (null != witnesses) {
+        RedrawPlayScreen(witnesses.Value, MakePanopticMessage(a, string.Format("{0} dragging {1} corpse.", VERB_START.Conjugate(a), c.DeadGuy.Name)));
+      }
     }
 
     public void DoStopDragCorpse(Actor a)   // also aliasing former DoStopDraggingCorpses
     {
       var c = a.StopDraggingCorpse();
-      if (null != c && ForceVisibleToPlayer(a))
-        AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", VERB_STOP.Conjugate(a), c.DeadGuy.Name)));
+      if (null != c) {
+        var witnesses = PlayersInLOS(a.Location);
+        if (null != witnesses) {
+          RedrawPlayScreen(witnesses.Value, MakePanopticMessage(a, string.Format("{0} dragging {1} corpse.", VERB_STOP.Conjugate(a), c.DeadGuy.Name)));
+        }
+      }
     }
 #nullable restore
 
