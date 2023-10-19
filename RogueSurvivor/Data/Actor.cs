@@ -2542,6 +2542,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public float TUorder => (float)(m_ActionPoints) / Speed; // release block: division by zero risk
+
     // n is the number of our actions
     public int HowManyTimesOtherActs(int n,Actor other)
     {   // n=1:
@@ -3978,12 +3980,13 @@ namespace djack.RogueSurvivor.Data
       m_SleepPoints -= rules.Roll(0, m_SleepPoints / 4);
     }
 
-    public void AfterAction()
+    public bool AfterAction()
     {
       m_previousHitPoints = m_HitPoints;
       m_previousFoodPoints = m_FoodPoints;
       m_previousSleepPoints = m_SleepPoints;
       m_previousSanity = m_Sanity;
+      return 0<m_ActionPoints;
     }
 
     public void DropScent()

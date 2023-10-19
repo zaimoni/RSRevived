@@ -1943,7 +1943,7 @@ namespace djack.RogueSurvivor.Engine
 
         HandleAiActor(nextActorToAct);
       }
-      nextActorToAct.AfterAction();
+      if (nextActorToAct.AfterAction()) map.AfterAction();
     }
 
 #nullable enable

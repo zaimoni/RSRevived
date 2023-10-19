@@ -2319,6 +2319,31 @@ retry:
       if (null != discard2) foreach(var x in discard2) m_ScentsByPosition.Remove(x);
     }
 
+    private void _relativeEnergySort(int origin, int ub)
+    {
+      if (ub - 1 > origin) {
+        Span<float> TUorder = stackalloc float[ub - origin];
+        int i = origin-1;
+        while(++i < ub) {
+          TUorder[ub -i -1] = m_ActorsList[i].TUorder;
+        }
+        while(ub - 1 > origin) {
+          i = ub;
+          while(--i > origin) {
+            if (TUorder[i - origin] < TUorder[i - origin - 1]) {
+              var stage = m_ActorsList[i];
+              m_ActorsList[i] = m_ActorsList[i - 1];
+              m_ActorsList[i - 1] = stage;
+              var stagef = TUorder[i - origin];
+              TUorder[i - origin] = TUorder[i - origin - 1];
+              TUorder[i - origin - 1] = stagef;
+            }
+          }
+          origin++;
+        }
+      }
+    }
+
     public void PreTurnStart()
     {
       // Add actor to map is responsible for correct initial positioning
@@ -2345,28 +2370,10 @@ retry:
       }
 
       // sort remaining in "relative energy order" to negate the double-move exploit
-      if (ub - 1 > origin) {
-        Span<float> TUorder = stackalloc float[ub - origin];
-        i = origin-1;
-        while(++i < ub) {
-          TUorder[ub -i -1] = (float)(m_ActorsList[i].ActionPoints)/ m_ActorsList[i].Speed;
-        }
-        while(ub - 1 > origin) {
-          i = ub;
-          while(--i > origin) {
-            if (TUorder[i - origin] < TUorder[i - origin - 1]) {
-              var stage = m_ActorsList[i];
-              m_ActorsList[i] = m_ActorsList[i - 1];
-              m_ActorsList[i - 1] = stage;
-              var stagef = TUorder[i - origin];
-              TUorder[i - origin] = TUorder[i - origin - 1];
-              TUorder[i - origin - 1] = stagef;
-            }
-          }
-          origin++;
-        }
-      }
+      _relativeEnergySort(origin, ub);
     }
+
+    public void AfterAction() => _relativeEnergySort(m_iCheckNextActorIndex, m_ActorsList.Count);
 
     public bool IsTransparent(Point pt)
     {
