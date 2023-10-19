@@ -684,8 +684,7 @@ namespace djack.RogueSurvivor.Data
 
     public void StartDragging(Corpse c)
     {
-      c.DraggedBy = this; // \todo? call StopDraggingCorpse to get that message (RS Alpha does not do this)
-      m_DraggedCorpse = c;
+      m_DraggedCorpse = c; // \todo? call StopDraggingCorpse to get that message (RS Alpha does not do this)
       var witnesses = RogueGame.PlayersInLOS(Location);
       if (null != witnesses) {
         RogueGame.Game.RedrawPlayScreen(witnesses.Value, RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_START.Conjugate(this), c.DeadGuy.Name)));
@@ -696,7 +695,6 @@ namespace djack.RogueSurvivor.Data
     {
       var dead_name = m_DraggedCorpse?.DeadGuy.Name;
       if (null != dead_name) {
-        m_DraggedCorpse!.DraggedBy = null;
         m_DraggedCorpse = null;
         var witnesses = RogueGame.PlayersInLOS(Location);
         if (null != witnesses) {
@@ -3005,9 +3003,9 @@ namespace djack.RogueSurvivor.Data
         if (corpse == m_DraggedCorpse) return new KeyValuePair<int, string>(2, string.Empty); // we may stop dragging this
         return new KeyValuePair<int, string>(0, "already dragging a corpse");
       }
-      if (corpse.IsDragged) return new KeyValuePair<int, string>(0, "corpse is already being dragged");
       if (IsTired) return new KeyValuePair<int, string>(0, "tired");
       if (corpse.Location != Location || !Location.Map.Has(corpse)) return new KeyValuePair<int, string>(0, "not in same location");
+      if (corpse.IsDragged) return new KeyValuePair<int, string>(0, "corpse is already being dragged"); // XXX should not happen when tested here
       return new KeyValuePair<int, string>(1, string.Empty); // we may start dragging this;
     }
 

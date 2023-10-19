@@ -12053,6 +12053,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawCorpsesList(List<Corpse> list, string title, int slots, int gx, int gy)
     {
+      var is_dragging = Player.DraggedCorpse;
       int num2 = list == null ? 0 : list.Count;
       if (num2 > 0) title += " : " + num2;
       m_UI.UI_DrawStringBold(Color.White, title, gx, gy - BOLD_LINE_SPACING, new Color?());
@@ -12061,7 +12062,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawImage(GameImages.ITEM_SLOT, gx1, gy);
         if (index < num2) {
           var c = list[index];
-          if (c.IsDragged) m_UI.UI_DrawImage(GameImages.CORPSE_DRAGGED, gx1, gy);
+          if (is_dragging == c) m_UI.UI_DrawImage(GameImages.CORPSE_DRAGGED, gx1, gy);
           DrawCorpse(c, gx1, gy, Color.White);
         }
         gx1 += TILE_SIZE;

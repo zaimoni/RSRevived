@@ -25,9 +25,18 @@ namespace djack.RogueSurvivor.Data
     public readonly int MaxHitPoints;
     public readonly float Rotation;
     public readonly float Scale; // currently not used properly
-    public Actor? DraggedBy; // backpointer
 
-    public bool IsDragged { get { return !DraggedBy?.IsDead ?? false; } }
+    public Actor? DraggedBy { get {
+      var who = Location.Actor;
+      if (null == who || who.IsDead) return null;
+      return who.DraggedCorpse == this ? who : null;
+    } }
+
+    public bool IsDragged { get {
+      var who = Location.Actor;
+      if (null == who || who.IsDead) return false;
+      return who.DraggedCorpse == this;
+    } }
 
     public Corpse(Actor deadGuy, float rotation, float scale=1f)
     {
@@ -44,7 +53,6 @@ namespace djack.RogueSurvivor.Data
     protected Corpse(SerializationInfo info, StreamingContext context)
     {
       info.read(ref DeadGuy, "DeadGuy");
-      info.read_nullsafe(ref DraggedBy, "DraggedBy");
       Turn = info.GetInt32("Turn");
       MaxHitPoints = info.GetInt32("MaxHitPoints");
       HitPoints = info.GetSingle("HitPoints");
@@ -55,7 +63,6 @@ namespace djack.RogueSurvivor.Data
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
     {
       info.AddValue("DeadGuy", DeadGuy);
-      info.AddValue("DraggedBy", DraggedBy);
       info.AddValue("Turn", Turn);
       info.AddValue("MaxHitPoints", MaxHitPoints);
       info.AddValue("HitPoints", HitPoints);
