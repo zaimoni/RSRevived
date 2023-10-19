@@ -679,6 +679,7 @@ namespace djack.RogueSurvivor.Data
 
     public int Infection { get { return m_Infection; } }
 #nullable enable
+    // \todo build out living AI for dragging corpses
     public Corpse? DraggedCorpse { get { return m_DraggedCorpse; } }
 
     public void Drag(Corpse c)
@@ -687,14 +688,17 @@ namespace djack.RogueSurvivor.Data
       m_DraggedCorpse = c;
     }
 
-    public Corpse? StopDraggingCorpse()
+    public void StopDraggingCorpse()
     {
-      var ret = m_DraggedCorpse;
-      if (null != ret) {
-        ret.DraggedBy = null;
+      var dead_name = m_DraggedCorpse?.DeadGuy.Name;
+      if (null != dead_name) {
+        m_DraggedCorpse!.DraggedBy = null;
         m_DraggedCorpse = null;
+        var witnesses = RogueGame.PlayersInLOS(Location);
+        if (null != witnesses) {
+          RogueGame.Game.RedrawPlayScreen(witnesses.Value, RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_STOP.Conjugate(this), dead_name)));
+        }
       }
-      return ret;
     }
 #nullable restore
 

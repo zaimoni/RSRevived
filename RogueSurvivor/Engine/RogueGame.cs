@@ -140,7 +140,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_SNORE = new Verb("snore");
     private readonly Verb VERB_SPRAY = new Verb("spray");
     private readonly Verb VERB_START = new Verb("start");
-    private readonly Verb VERB_STOP = new Verb("stop");
+    static public readonly Verb VERB_STOP = new Verb("stop");
     private readonly Verb VERB_STUMBLE = new Verb("stumble");
     private readonly Verb VERB_SWITCH = new Verb("switch", "switches");
     private readonly Verb VERB_SWITCH_PLACE_WITH = new Verb("switch place with", "switches place with");
@@ -4492,7 +4492,7 @@ namespace djack.RogueSurvivor.Engine
        switch(Player.CanStartStopDrag(c, out var reason))
        {
        case 2: // legal to stop drag
-           DoStopDragCorpse(Player);
+           Player.StopDraggingCorpse();
            return false;
        case 1: // legal to start drag
            DoStartDragCorpse(Player, c);
@@ -4561,17 +4561,6 @@ namespace djack.RogueSurvivor.Engine
       var witnesses = PlayersInLOS(a.Location);
       if (null != witnesses) {
         RedrawPlayScreen(witnesses.Value, MakePanopticMessage(a, string.Format("{0} dragging {1} corpse.", VERB_START.Conjugate(a), c.DeadGuy.Name)));
-      }
-    }
-
-    public void DoStopDragCorpse(Actor a)   // also aliasing former DoStopDraggingCorpses
-    {
-      var c = a.StopDraggingCorpse();
-      if (null != c) {
-        var witnesses = PlayersInLOS(a.Location);
-        if (null != witnesses) {
-          RedrawPlayScreen(witnesses.Value, MakePanopticMessage(a, string.Format("{0} dragging {1} corpse.", VERB_STOP.Conjugate(a), c.DeadGuy.Name)));
-        }
       }
     }
 #nullable restore
@@ -10406,7 +10395,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints();
       if (TryActorLeaveTile(target)) {
         actor.SpendStaminaPoints(Rules.DEFAULT_ACTOR_WEIGHT);
-        DoStopDragCorpse(target);
+        target.StopDraggingCorpse();
         var t_loc = target.Location;
         var new_t_loc = dest; // so Map.Canonical works
         if (!Map.Canonical(ref new_t_loc)) throw new InvalidOperationException("shoved off map entirely");
@@ -10533,7 +10522,7 @@ namespace djack.RogueSurvivor.Engine
       // the above is not appropriate for collapsing from exhaustion, just intentional sleeping
 
       actor.SpendActionPoints();
-      DoStopDragCorpse(actor);
+      actor.StopDraggingCorpse();
       actor.Activity = Data.Activity.SLEEPING;
       actor.IsSleeping = true;
     }
@@ -10644,7 +10633,7 @@ namespace djack.RogueSurvivor.Engine
 
       var isMurder = new const_<bool>(Rules.IsMurder(killer, deadGuy));  // record this before it's invalidated (in POLICE_NO_QUESTIONS_ASKED build)
 	  deadGuy.Killed(reason);
-      DoStopDragCorpse(deadGuy);
+      deadGuy.StopDraggingCorpse();
       deadGuy.Location.Items?.UntriggerAllTraps();
       if (killer != null && !killer.Model.Abilities.IsUndead && deadGuy_isUndead.cache)
         killer.RegenSanity(killer.ScaleSanRegen(Rules.SANITY_RECOVER_KILL_UNDEAD));
