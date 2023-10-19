@@ -241,7 +241,6 @@
     <Compile Include="Engine\Actions\ActionEatCorpse.cs" />
     <Compile Include="Engine\Actions\ActionMoveStep.cs" />
     <Compile Include="Engine\Actions\ActionCloseDoor.cs" />
-    <Compile Include="Engine\Actions\ActionStartDragCorpse.cs" />
     <Compile Include="Engine\Actions\ActionReviveCorpse.cs" />
     <Compile Include="Engine\Actions\ActionThrowGrenade.cs" />
     <Compile Include="Engine\Actions\ActionBreak.cs" />
@@ -262,7 +261,6 @@
     <Compile Include="Engine\Actions\ActionWait.cs" />
     <Compile Include="Engine\Actions\ActionOpenDoor.cs" />
     <Compile Include="Engine\Actions\ActionTakeItem.cs" />
-    <Compile Include="Engine\Actions\ActionStopDragCorpse.cs" />
     <Compile Include="Engine\Actions\ActionUnequipItem.cs" />
     <Compile Include="Engine\Actions\ActionChat.cs" />
     <Compile Include="Engine\Actions\ActionRangedAttack.cs" />
