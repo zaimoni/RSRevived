@@ -2135,7 +2135,7 @@ namespace djack.RogueSurvivor.Engine
             }
             if (actor.IsExhausted && rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE)) {
 #region 4.3 Exhausted actors might collapse.
-              DoStartSleeping(actor);
+              actor.StartSleeping();
               var witnesses = PlayersInLOS(actor.Location);
               if (null != witnesses) {
                 RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} from exhaustion !!", VERB_COLLAPSE.Conjugate(actor))));
@@ -5338,7 +5338,7 @@ namespace djack.RogueSurvivor.Engine
       var sess = Session.Get;
       AddMessage(new(yes ? "Goodnight, happy nightmares!" : "Good, keep those eyes wide open.", sess.WorldTime.TurnCounter, Color.Yellow));
       if (!yes) return false;
-      DoStartSleeping(player);
+      player.StartSleeping();
       RedrawPlayScreen();
       // check music.
       m_MusicManager.PlayLooping(GameMusics.SLEEP, 1== sess.World.PlayerCount ? MusicPriority.PRIORITY_EVENT : MusicPriority.PRIORITY_BGM);
@@ -10503,20 +10503,6 @@ namespace djack.RogueSurvivor.Engine
       // Trigger stuff.
       OnActorEnterTile(actor);
       OnActorEnterTile(target);
-    }
-
-    public void DoStartSleeping(Actor actor)
-    {
-      // all battery powered items other than the police radio are left hand, currently
-      // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
-      var it = actor.GetEquippedItem(DollPart.LEFT_HAND);
-      if (it is BatteryPowered) it.UnequippedBy(actor);
-      // the above is not appropriate for collapsing from exhaustion, just intentional sleeping
-
-      actor.SpendActionPoints();
-      actor.StopDraggingCorpse();
-      actor.Activity = Data.Activity.SLEEPING;
-      actor.IsSleeping = true;
     }
 
     public void DoWakeUp(Actor actor)

@@ -16,15 +16,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   internal class ActionSleep : ActorAction
   {
     public ActionSleep(Actor actor) : base(actor) {}
-
-    public override bool IsLegal()
-    {
-      return m_Actor.CanSleep(out m_FailReason);
-    }
-
-    public override void Perform()
-    {
-      RogueGame.Game.DoStartSleeping(m_Actor);
-    }
+    public override bool IsLegal() => m_Actor.CanSleep(out m_FailReason);
+    public override void Perform() => m_Actor.StartSleeping();
   }
 }

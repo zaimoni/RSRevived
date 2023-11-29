@@ -3147,6 +3147,21 @@ namespace djack.RogueSurvivor.Data
 
     public bool WantToSleepNow { get { return WouldLikeToSleep && CanSleep(); } }
 
+    public void StartSleeping()
+    {
+      // all battery powered items other than the police radio are left hand, currently
+      // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
+      var it = GetEquippedItem(DollPart.LEFT_HAND);
+      if (it is BatteryPowered) it.UnequippedBy(this);
+      // the above is not appropriate for collapsing from exhaustion, just intentional sleeping
+
+      SpendActionPoints();
+      StopDraggingCorpse();
+      Activity = Data.Activity.SLEEPING;
+      IsSleeping = true;
+    }
+
+
     public void Rest(int s) {
       m_SleepPoints = Math.Min(m_SleepPoints + s, MaxSleep);
     }
