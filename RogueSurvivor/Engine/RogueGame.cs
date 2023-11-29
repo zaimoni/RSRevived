@@ -1299,7 +1299,7 @@ namespace djack.RogueSurvivor.Engine
       {
         if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
         try {
-          return (Skills.IDs)Enum.Parse(typeof(Skills.IDs), x.Substring(3));
+          return (Skills.IDs)Enum.Parse(typeof(Skills.IDs), x.AsSpan(3));
         } catch (ArgumentException) {
           return null;
         }
@@ -9799,7 +9799,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoTakeItem(Actor actor, in Location loc, Item it)
     {
       var invspec = loc == actor.Location ? loc.InventoryAtFeet() : new InvOrigin(loc);
-      var g_inv = null == invspec ? null : invspec.Value.inv;
+      var g_inv = invspec?.inv;
 #if DEBUG
       if (null == g_inv || !g_inv.Contains(it)) throw new InvalidOperationException(it.ToString()+" not where expected");
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
@@ -10828,7 +10828,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    private ActorModel? CheckUndeadEvolution(Actor undead)
+    static private ActorModel? CheckUndeadEvolution(Actor undead)
     {
       if (!s_Options.AllowUndeadsEvolution || !Session.Get.HasEvolution) return null;
 	  // anything not whitelisted to evolve, doesn't
@@ -11545,7 +11545,7 @@ namespace djack.RogueSurvivor.Engine
                   if (Player.Inventory != null && Player.Model.Abilities.HasInventory)
                     DrawInventory(Player.Inventory, "Inventory", true, Map.GROUND_INVENTORY_SLOTS, Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
                   var invspec = Player.Location.InventoryAtFeet();
-                  DrawInventory(null == invspec ? null : invspec.Value.inv, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
+                  DrawInventory(invspec?.inv, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
                   DrawCorpsesList(Player.Location.Corpses, "Corpses on ground", Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, CORPSESPANEL_Y);
                   if (0 < Player.Sheet.SkillTable.CountSkills)
                     DrawActorSkillTable(Player, SKILLTABLE_X, SKILLTABLE_Y);
@@ -12990,7 +12990,7 @@ namespace djack.RogueSurvivor.Engine
         return true;
       }
 
-      PagedPopup("Reviewing...", w_pts.Count(), label, details, false);
+      PagedPopup("Reviewing...", w_pts.Count, label, details, false);
       PanViewportTo(player);
     }
 
@@ -13361,11 +13361,11 @@ namespace djack.RogueSurvivor.Engine
       static void _validateCity()
       {
         if (!Session.CommandLineOptions.TryGetValue("city",out string x)) return;
-        int split = x.IndexOf(",");
+        int split = x.IndexOf(',');
         if (   1 > split || x.Length-2 < split
-            || !short.TryParse(x.Substring(0, split), out short city_size)
+            || !short.TryParse(x.AsSpan(0, split), out short city_size)
             || !GameOptions.CitySize_ok(city_size)
-            || !short.TryParse(x.Substring(split + 1), out short district_size)
+            || !short.TryParse(x.AsSpan(split + 1), out short district_size)
             || !GameOptions.DistrictSize_ok(district_size)) {
           Session.CommandLineOptions.Remove("city");
           return;
@@ -14384,7 +14384,7 @@ retry:
     private void CloseAllGates(Map map,string gate_name)
     {
       string singular_gate = gate_name;
-      if (singular_gate.EndsWith("s")) singular_gate = singular_gate.Substring(0, singular_gate.Length-1);
+      if (singular_gate.EndsWith('s')) singular_gate = singular_gate.Substring(0, singular_gate.Length-1);
       var closing = singular_gate+" closing";
       map.DoForAllMapObjects(obj => {
           if (MapObject.IDs.IRON_GATE_OPEN != obj.ID) return;
