@@ -2265,8 +2265,8 @@ namespace djack.RogueSurvivor.Engine
       a.TrustInLeader += mod;
       if (a.TrustInLeader > Rules.TRUST_MAX) a.TrustInLeader = Rules.TRUST_MAX;
       else if (a.TrustInLeader < Rules.TRUST_MIN) a.TrustInLeader = Rules.TRUST_MIN;
-      if (addMessage && a.Leader.IsPlayer)
-        AddMessage(new(string.Format("({0} trust with {1})", mod, a.TheName), Session.Get.WorldTime.TurnCounter, Color.White));
+      if (addMessage && a.Leader.Controller is PlayerController pc)
+        pc.AddMessage(new(string.Format("({0} trust with {1})", mod, a.TheName), Session.Get.WorldTime.TurnCounter, Color.White));
     }
 
 #nullable enable
