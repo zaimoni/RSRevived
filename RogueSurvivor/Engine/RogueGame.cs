@@ -2056,8 +2056,10 @@ namespace djack.RogueSurvivor.Engine
           }
           if (actorList != null) {
             foreach (Actor actor in actorList) {
-              if (ForceVisibleToPlayer(actor))
-                AddMessage(MakeMessage(actor, string.Format("{0} of infection!", VERB_DIE.Conjugate(actor))));
+              var witnesses = PlayersInLOS(actor.Location);
+              if (null != witnesses) {
+                RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} of infection!", VERB_DIE.Conjugate(actor))));
+              }
               KillActor(null, actor, "infection");
             }
           }
@@ -2075,13 +2077,16 @@ namespace djack.RogueSurvivor.Engine
           if (actor.Model.Abilities.HasToEat) {
             actor.Appetite(1);
             if (actor.IsStarving && (actor.IsPlayer || s_Options.NPCCanStarveToDeath) && rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE)) {
-              (actorList1 ??= new List<Actor>()).Add(actor);
+              (actorList1 ??= new()).Add(actor);
             }
           } else if (actor.Model.Abilities.IsRotting) {
             actor.Appetite(1);
             if (actor.IsRotStarving && rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE) {
-              if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, "is rotting away."));
-              if (actor.RawDamage(1)) (actorList1 ??= new List<Actor>()).Add(actor);
+              var witnesses = PlayersInLOS(actor.Location);
+              if (null != witnesses) {
+                RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, "is rotting away."));
+              }
+              if (actor.RawDamage(1)) (actorList1 ??= new()).Add(actor);
             }
             else if (actor.IsRotHungry && rules.Roll(0, 1000) < Rules.ROT_HUNGRY_SKILL_CHANCE)
               DoLooseRandomSkill(actor);
@@ -2190,7 +2195,12 @@ namespace djack.RogueSurvivor.Engine
           return 0 < it.Batteries && 0 >= --it.Batteries;
         }
         void drain(Actor actor, Item it) {
-          if (it is BatteryPowered batt && is_drained(batt) && ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", it.TheName)));
+          if (it is BatteryPowered batt && is_drained(batt)) {
+            var witnesses = PlayersInLOS(actor.Location);
+            if (null != witnesses) {
+              RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format(": {0} goes off.", it.TheName)));
+            }
+          };
         }
         map.DoForAllActors(a => {
           drain(a, a.GetEquippedItem(DollPart.LEFT_HAND));    // lights and normal trackers
@@ -4559,15 +4569,19 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoButcherCorpse(Actor a, Corpse c)  // AI doesn't currently do this, but should be able to once it knows how to manage sanity
     {
-      bool player = ForceVisibleToPlayer(a);
+      var witnesses = PlayersInLOS(a.Location);
       a.SpendActionPoints();
       // XXX Unlike most sources of sanity loss, this is a living doing this.  Thus, this should affect reputation.
       SeeingCauseInsanity(a, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
       int num = a.DamageVsCorpses;
-      if (player) AddMessage(MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", VERB_BUTCHER.Conjugate(a), c.DeadGuy.Name, num)));
+      if (null != witnesses) {
+        RedrawPlayScreen(witnesses.Value, MakePanopticMessage(a, string.Format("{0} {1} corpse for {2} damage.", VERB_BUTCHER.Conjugate(a), c.DeadGuy.Name, num)));
+      }
       if (!c.TakeDamage(num)) return;
       a.Location.Map.Destroy(c);
-      if (player) AddMessage(new(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
+      if (null != witnesses) {
+        RedrawPlayScreen(witnesses.Value, new(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
+      }
     }
 
     public void DoEatCorpse(Actor a, Corpse c)
