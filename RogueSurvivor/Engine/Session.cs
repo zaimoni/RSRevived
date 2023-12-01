@@ -184,10 +184,11 @@ namespace djack.RogueSurvivor.Engine
             } else throw new InvalidOperationException("World object not loaded");
             // end failed function extraction target
 
+            UniqueMaps = decode.LoadInline<UniqueMaps>();
+
             // mockup to allow testing
             UniqueActors = new UniqueActors();
             UniqueItems = new UniqueItems();
-            UniqueMaps = new UniqueMaps();
 /*
             // load other classes' static variables
             Actor.Load(info, context);
@@ -250,13 +251,14 @@ namespace djack.RogueSurvivor.Engine
 
             var code = encode.Saving(World);
             Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+
+            Zaimoni.Serialization.ISave.InlineSave(encode, UniqueMaps);
 /*
             Actor.Save(info, context);
             PlayerController.Save(info, context);
             RogueGame.Save(info, context);
             info.AddValue("UniqueActors", UniqueActors, typeof(UniqueActors));
             info.AddValue("UniqueItems", UniqueItems, typeof(UniqueItems));
-            info.AddValue("UniqueMaps", UniqueMaps, typeof(UniqueMaps));
             info.AddValue("Police", Police, typeof(RadioFaction));
 */
             // non-serialized fields

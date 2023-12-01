@@ -11,8 +11,8 @@ using Map = djack.RogueSurvivor.Data.Map;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal class UniqueMaps
-  {
+  internal class UniqueMaps : Zaimoni.Serialization.ISerialize
+    {
     public UniqueMap CHARUndergroundFacility { get; set; }
     public UniqueMap PoliceStation_OfficesLevel { get; set; }
     public UniqueMap PoliceStation_JailsLevel { get; set; }
@@ -21,6 +21,150 @@ namespace djack.RogueSurvivor.Engine
     public UniqueMap Hospital_Patients { get; set; }
     public UniqueMap Hospital_Storage { get; set; }
     public UniqueMap Hospital_Power { get; set; }
+
+    public UniqueMaps() { }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected UniqueMaps(Zaimoni.Serialization.DecodeObjects decode)
+    {
+//        byte relay_b = 0;
+//        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref relay_b);
+
+        ulong code;
+        Map stage = decode.Load<Map>(out code);
+        if (null == stage) {
+            if (0 < code) {
+                decode.Schedule(code, (o) => {
+                    if (o is Map w) CHARUndergroundFacility = new(w);
+                    else throw new InvalidOperationException("Map object not loaded");
+                });
+            } else throw new ArgumentNullException(nameof(CHARUndergroundFacility));
+        } else {
+            CHARUndergroundFacility = new(stage);
+        }
+
+        stage = decode.Load<Map>(out code);
+        if (null == stage) {
+            if (0 < code) {
+                decode.Schedule(code, (o) => {
+                    if (o is Map w) PoliceStation_OfficesLevel = new(w);
+                    else throw new InvalidOperationException("Map object not loaded");
+                });
+            } else throw new ArgumentNullException(nameof(PoliceStation_OfficesLevel));
+        } else {
+            PoliceStation_OfficesLevel = new(stage);
+        }
+
+        stage = decode.Load<Map>(out code);
+        if (null == stage) {
+            if (0 < code) {
+                decode.Schedule(code, (o) => {
+                    if (o is Map w) PoliceStation_JailsLevel = new(w);
+                    else throw new InvalidOperationException("Map object not loaded");
+                });
+            } else throw new ArgumentNullException(nameof(PoliceStation_JailsLevel));
+        } else {
+            PoliceStation_JailsLevel = new(stage);
+        }
+
+        stage = decode.Load<Map>(out code);
+        if (null == stage) {
+            if (0 < code) {
+                decode.Schedule(code, (o) => {
+                    if (o is Map w) Hospital_Admissions = new(w);
+                    else throw new InvalidOperationException("Map object not loaded");
+                });
+            } else throw new ArgumentNullException(nameof(Hospital_Admissions));
+        } else {
+            Hospital_Admissions = new(stage);
+        }
+
+        stage = decode.Load<Map>(out code);
+        if (null == stage) {
+            if (0 < code) {
+                decode.Schedule(code, (o) => {
+                    if (o is Map w) Hospital_Offices = new(w);
+                    else throw new InvalidOperationException("Map object not loaded");
+                });
+            } else throw new ArgumentNullException(nameof(Hospital_Offices));
+        } else {
+            Hospital_Offices = new(stage);
+        }
+
+        stage = decode.Load<Map>(out code);
+        if (null == stage) {
+            if (0 < code) {
+                decode.Schedule(code, (o) => {
+                    if (o is Map w) Hospital_Patients = new(w);
+                    else throw new InvalidOperationException("Map object not loaded");
+                });
+            } else throw new ArgumentNullException(nameof(Hospital_Patients));
+        } else {
+            Hospital_Patients = new(stage);
+        }
+
+        stage = decode.Load<Map>(out code);
+        if (null == stage) {
+            if (0 < code) {
+                decode.Schedule(code, (o) => {
+                    if (o is Map w) Hospital_Storage = new(w);
+                    else throw new InvalidOperationException("Map object not loaded");
+                });
+            } else throw new ArgumentNullException(nameof(Hospital_Storage));
+        } else {
+            Hospital_Storage = new(stage);
+        }
+
+        stage = decode.Load<Map>(out code);
+        if (null == stage) {
+            if (0 < code) {
+                decode.Schedule(code, (o) => {
+                    if (o is Map w) Hospital_Power = new(w);
+                    else throw new InvalidOperationException("Map object not loaded");
+                });
+            } else throw new ArgumentNullException(nameof(Hospital_Power));
+        } else {
+            Hospital_Power = new(stage);
+        }
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
+    {
+//      Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)8); // fail-fast if things don't add up?
+
+        var code = encode.Saving(CHARUndergroundFacility.TheMap);
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else throw new ArgumentNullException("CHARUndergroundFacility.TheMap");
+
+        code = encode.Saving(PoliceStation_OfficesLevel.TheMap);
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else throw new ArgumentNullException("PoliceStation_OfficesLevel.TheMap");
+
+        code = encode.Saving(PoliceStation_JailsLevel.TheMap);
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else throw new ArgumentNullException("PoliceStation_JailsLevel.TheMap");
+
+        code = encode.Saving(Hospital_Admissions.TheMap);
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else throw new ArgumentNullException("Hospital_Admissions.TheMap");
+
+        code = encode.Saving(Hospital_Offices.TheMap);
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else throw new ArgumentNullException("Hospital_Offices.TheMap");
+
+        code = encode.Saving(Hospital_Patients.TheMap);
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else throw new ArgumentNullException("Hospital_Patients.TheMap");
+
+        code = encode.Saving(Hospital_Storage.TheMap);
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else throw new ArgumentNullException("Hospital_Storage.TheMap");
+
+        code = encode.Saving(Hospital_Power.TheMap);
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else throw new ArgumentNullException("Hospital_Power.TheMap");
+    }
+#endregion
 
     /// <returns>Key is towards surface; Value is deeper</returns>
     public KeyValuePair<Map,Map>? NavigatePoliceStation(Map x)
