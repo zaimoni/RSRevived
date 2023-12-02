@@ -11,7 +11,7 @@ using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal class ItemMeleeWeaponModel : ItemWeaponModel
+  internal sealed class ItemMeleeWeaponModel : ItemWeaponModel
   {
     public readonly bool IsFragile;
 

@@ -11,14 +11,11 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemMeleeWeapon : ItemWeapon
+  internal sealed class ItemMeleeWeapon : ItemWeapon
   {
     new public ItemMeleeWeaponModel Model { get {return (base.Model as ItemMeleeWeaponModel)!; } }
     public bool IsFragile { get { return Model.IsFragile; } }
 
-    public ItemMeleeWeapon(ItemMeleeWeaponModel model)
-      : base(model)
-    {
-    }
+    public ItemMeleeWeapon(ItemMeleeWeaponModel model) : base(model) { }
   }
 }
