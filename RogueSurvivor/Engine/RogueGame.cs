@@ -9044,17 +9044,23 @@ namespace djack.RogueSurvivor.Engine
       var actorAt = map.GetActorAtExt(pos);
       if (actorAt != null) {
         ExplosionChainReaction(actorAt.Inventory, in location);
+        var witnesses = PlayersInLOS(actorAt.Location);
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
         if (dmg > 0) {
-          if (ForceVisibleToPlayer(actorAt))
-            AddMessage(new(string.Format("{0} is hit for {1} damage!", actorAt.Name, dmg), map.LocalTime.TurnCounter, Color.Crimson));
+          if (null != witnesses) {
+            RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actorAt, string.Format("is hit for {0} damage!", dmg), Color.Crimson));
+          }
           if (actorAt.TakeDamage(dmg) && !actorAt.IsDead) {
             KillActor(null, actorAt, string.Format("explosion {0} damage", dmg));
-            if (ForceVisibleToPlayer(actorAt))
-              AddMessage(new(string.Format("{0} dies in the explosion!", actorAt.Name), map.LocalTime.TurnCounter, Color.Crimson));
+            if (null != witnesses) {
+              RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actorAt, "dies in the explosion!", Color.Crimson));
+            }
           }
-        } else
-          AddMessage(new(string.Format("{0} is hit for no damage.", actorAt.Name), map.LocalTime.TurnCounter, Color.White));
+        } else {
+          if (null != witnesses) {
+            RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actorAt, "is hit for no damage.", Color.White));
+          }
+        }
       }
       var itemsAt = map.GetItemsAtExt(pos);
       if (itemsAt != null) {
@@ -9697,8 +9703,10 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoEmote(Actor actor, string text, bool isDanger = false)
     {
-      if (ForceVisibleToPlayer(actor))
-        AddMessage(new(string.Format("{0} : {1}", actor.Name, text), actor.Location.Map.LocalTime.TurnCounter, isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
+        var witnesses = PlayersInLOS(actor.Location);
+        if (null != witnesses) {
+            RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format(": {0}", text), isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
+        }
     }
 
     public void HandlePlayerTakeItemFromContainer(PlayerController pc, ShelfLike container)
