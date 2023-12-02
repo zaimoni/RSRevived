@@ -12,8 +12,8 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemAmmo : Item,UsableItem
-  {
+  internal sealed class ItemAmmo : Item, UsableItem, Zaimoni.Serialization.ISerialize
+    {
     [NonSerialized] private ItemRangedWeapon? _rw = null; // set by UseBeforeDrop
 
     new public ItemAmmoModel Model { get {return (base.Model as ItemAmmoModel)!; } }
@@ -29,6 +29,11 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
     public ItemAmmo(ItemAmmoModel model) : base(model, model.MaxQuantity) {}
+
+#region implement Zaimoni.Serialization.ISerialize
+        protected ItemAmmo(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
+        void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
+#endregion
 
 #region UsableItem implementation
     public bool CouldUse() { return true; }
