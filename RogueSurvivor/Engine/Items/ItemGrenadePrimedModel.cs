@@ -11,7 +11,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal class ItemGrenadePrimedModel : ItemExplosiveModel
+  internal sealed class ItemGrenadePrimedModel : ItemExplosiveModel
   {
     public readonly ItemGrenadeModel GrenadeModel;
 

@@ -12,7 +12,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemExplosive : Item
+  internal abstract class ItemExplosive : Item
   {
     new public ItemExplosiveModel Model { get {return (base.Model as ItemExplosiveModel)!; } }
     public readonly int PrimedModelID;

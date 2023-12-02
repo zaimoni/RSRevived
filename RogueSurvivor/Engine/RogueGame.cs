@@ -9101,9 +9101,8 @@ namespace djack.RogueSurvivor.Engine
         if (!(obj is ItemExplosive itemExplosive)) continue;
         if (itemExplosive is ItemPrimedExplosive primed) primed.Cook();
         else {
-          if (itemExplosiveList == null) itemExplosiveList = new List<ItemExplosive>();
-          if (itemPrimedExplosiveList == null) itemPrimedExplosiveList = new List<ItemPrimedExplosive>();
-          itemExplosiveList.Add(itemExplosive);
+          if (null == itemPrimedExplosiveList) itemPrimedExplosiveList = new();
+          (itemExplosiveList ?? new()).Add(itemExplosive);
           for (int index = 0; index < obj.Quantity; ++index)
             itemPrimedExplosiveList.Add(new ItemPrimedExplosive(GameItems.Cast<ItemExplosiveModel>(itemExplosive.PrimedModelID), 0));
         }

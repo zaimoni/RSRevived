@@ -12,7 +12,7 @@ using Item_s = djack.RogueSurvivor.Data.Item_s;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemRangedWeapon : ItemWeapon
+  internal sealed class ItemRangedWeapon : ItemWeapon
   {
     new public ItemRangedWeaponModel Model { get {return (base.Model as ItemRangedWeaponModel)!; } }
     public AmmoType AmmoType { get { return Model.AmmoType; } }
