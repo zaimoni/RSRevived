@@ -4120,7 +4120,7 @@ restart:
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_NURSE_UNIFORM);
       GiveRandomSkillsToActor(numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.MEDIC);
-      numberedName.Inventory.AddAll(PostprocessQuantity(GameItems.BANDAGE.instantiate()));
+      numberedName.Inventory.AddAll(PostprocessQuantity(GameItems.BANDAGE.create()));
       return numberedName;
     }
 
@@ -4133,8 +4133,8 @@ restart:
       GiveRandomSkillsToActor(numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.MEDIC,3);
       numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
-      numberedName.Inventory.AddAll(GameItems.MEDIKIT.instantiate());
-      numberedName.Inventory.AddAll(PostprocessQuantity(GameItems.BANDAGE.instantiate()));
+      numberedName.Inventory.AddAll(GameItems.MEDIKIT.create());
+      numberedName.Inventory.AddAll(PostprocessQuantity(GameItems.BANDAGE.create()));
       return numberedName;
     }
 #nullable restore
@@ -4263,7 +4263,7 @@ restart:
       inv.AddAll(rw);
       inv.AddAll(m_DiceRoller.RollChance(50) ? (Item)ItemAmmo.make(rw.ModelID) : MakeItemGrenade());
       }
-      inv.AddAll(GameItems.MEDIKIT.instantiate());
+      inv.AddAll(GameItems.MEDIKIT.create());
       inv.AddAll(PostprocessQuantity(GameItems.From(m_DiceRoller.Choose(survivor_pills)).create()));
       inv.AddAll(GameItems.ARMY_BODYARMOR.create());
       GiveRandomSkillsToActor(numberedName, 3 + new WorldTime(spawnTime).Day);

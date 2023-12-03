@@ -12,8 +12,8 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemMedicine : Item,UsableItem
-  {
+  internal sealed class ItemMedicine : Item,UsableItem, Zaimoni.Serialization.ISerialize
+    {
     new public ItemMedicineModel Model { get {return (base.Model as ItemMedicineModel)!; } }
     public int Healing { get { return Model.Healing; } }
     public int StaminaBoost { get { return Model.StaminaBoost; } }
@@ -22,6 +22,12 @@ namespace djack.RogueSurvivor.Engine.Items
     public int SanityCure { get { return Model.SanityCure; } }
 
     public ItemMedicine(ItemMedicineModel model) : base(model) {}
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected ItemMedicine(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
+#endregion
+
 
 #region UsableItem implementation
     public bool CouldUse() { return true; }

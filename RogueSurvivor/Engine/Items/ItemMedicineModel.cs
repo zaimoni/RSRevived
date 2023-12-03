@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal class ItemMedicineModel : ItemModel
+  internal sealed class ItemMedicineModel : ItemModel
   {
     public readonly int Healing;
     public readonly int StaminaBoost;
@@ -32,7 +32,6 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public override Item create() { return new ItemMedicine(this); }
-    public ItemMedicine instantiate() { return new ItemMedicine(this); }
+    public override ItemMedicine create() { return new ItemMedicine(this); }
   }
 }

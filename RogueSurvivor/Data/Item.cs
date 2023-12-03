@@ -125,6 +125,7 @@ namespace djack.RogueSurvivor.Data
         byte tmp_byte = 0;
         Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref tmp_int);
         ModelID = (Gameplay.Item_IDs)(tmp_int);
+        // we intentionally save/load quantity even if not model-stackable
         Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_Quantity);
         Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref tmp_byte);
         EquippedPart = (DollPart)tmp_byte;
