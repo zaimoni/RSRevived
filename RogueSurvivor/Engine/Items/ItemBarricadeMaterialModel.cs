@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Engine.Items
       StackingLimit = stackingLimit;
     }
 
-    public override Item create() { return new ItemBarricadeMaterial(this); }
+    public override ItemBarricadeMaterial create() { return new ItemBarricadeMaterial(this); }
     public ItemBarricadeMaterial instantiate(int qty=1) { return new ItemBarricadeMaterial(this, qty); }
   }
 }

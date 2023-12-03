@@ -13,8 +13,8 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemBodyArmor : Item
-  {
+  internal sealed class ItemBodyArmor : Item, Zaimoni.Serialization.ISerialize
+    {
     private static readonly Item_IDs[] BAD_POLICE_OUTFITS = new[]{
       Item_IDs.ARMOR_HELLS_SOULS_JACKET,
       Item_IDs.ARMOR_FREE_ANGELS_JACKET
@@ -36,6 +36,12 @@ namespace djack.RogueSurvivor.Engine.Items
     public static int Rate(ItemBodyArmor armor) { return armor.Rating; }
 
     public ItemBodyArmor(ItemBodyArmorModel model) : base(model) {}
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected ItemBodyArmor(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
+#endregion
+
 
     // these five functions are actually functions of the body armor model.
     // Callers should not assume the current overoptimization from C-level converisons will hold indefinitely.

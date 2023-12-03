@@ -4265,7 +4265,7 @@ restart:
       }
       inv.AddAll(GameItems.MEDIKIT.instantiate());
       inv.AddAll(PostprocessQuantity(GameItems.From(m_DiceRoller.Choose(survivor_pills)).create()));
-      inv.AddAll(GameItems.ARMY_BODYARMOR.instantiate());
+      inv.AddAll(GameItems.ARMY_BODYARMOR.create());
       GiveRandomSkillsToActor(numberedName, 3 + new WorldTime(spawnTime).Day);
       numberedName.CreateCivilianDeductFoodSleep();
       return numberedName;
@@ -4307,7 +4307,7 @@ restart:
       numberedName.Inventory.AddAll(GameItems.FLASHLIGHT.create());
 //    numberedName.Inventory.AddAll(MakeItemPoliceRadio()); // class prop, implicit for police
       if (m_DiceRoller.RollChance(50)) {
-        var armor = (m_DiceRoller.RollChance(80) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT).instantiate();
+        var armor = (m_DiceRoller.RollChance(80) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT).create();
         numberedName.Inventory.AddAll(armor);
         numberedName.Equip(armor);
       }
