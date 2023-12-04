@@ -6,19 +6,20 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Xml.Linq;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemFood : Item, UsableItem
+  internal sealed class ItemFood : Item, UsableItem, Zaimoni.Serialization.ISerialize
     {
-    public readonly int Nutrition;
     public readonly WorldTime? BestBefore;
 
     new public ItemFoodModel Model { get {return (base.Model as ItemFoodModel)!; } }
     public bool IsPerishable { get { return Model.IsPerishable; } }
+    public int Nutrition { get { return Model.Nutrition; } }
 
     // if those groceries expire on day 100, they will not spoil until day 200(?!)
     public bool IsStillFreshAt(int turnCounter)
@@ -52,7 +53,6 @@ namespace djack.RogueSurvivor.Engine.Items
 #if DEBUG
       if (model.IsPerishable) throw new InvalidOperationException("wrong constructor");
 #endif
-      Nutrition = model.Nutrition;
     }
 
     public ItemFood(int bestBefore, ItemFoodModel model) : base(model)
@@ -61,9 +61,24 @@ namespace djack.RogueSurvivor.Engine.Items
       if (0 > bestBefore) throw new InvalidOperationException("expired in past");
       if (!model.IsPerishable) throw new InvalidOperationException("wrong constructor");
 #endif
-      Nutrition = model.Nutrition;
       BestBefore = new WorldTime(bestBefore);
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected ItemFood(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
+        if (IsPerishable) {
+            int tmp_int = 0;
+            Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref tmp_int);
+            BestBefore = new(tmp_int);
+        }
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+        base.save(encode);
+        if (IsPerishable) Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, BestBefore.TurnCounter);
+    }
+#endregion
+
 
 #region UsableItem implementation
     public bool CouldUse() { return true; }

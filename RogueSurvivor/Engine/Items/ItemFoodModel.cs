@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal class ItemFoodModel : ItemModel
+  internal sealed class ItemFoodModel : ItemModel
   {
     public readonly int Nutrition;
     public readonly bool IsPerishable;
