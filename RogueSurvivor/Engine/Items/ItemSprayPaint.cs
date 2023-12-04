@@ -19,7 +19,15 @@ namespace djack.RogueSurvivor.Engine.Items
   internal class ItemSprayPaint : Item
   {
     new public ItemSprayPaintModel Model { get {return (base.Model as ItemSprayPaintModel)!; } }
-    public int PaintQuantity { get; set; }
+    private int m_PaintQty;
+
+    public int PaintQuantity {
+      get { return m_PaintQty; }
+      set {
+        if (value < 0) value = 0;
+        m_PaintQty = Math.Min(value, Model.MaxPaintQuantity);
+      }
+    }
 
     public override bool IsUseless { get { return 0 >= PaintQuantity; } }
 
