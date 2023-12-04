@@ -498,7 +498,7 @@ namespace djack.RogueSurvivor.Data
         }
         var rules = Engine.Rules.Get;
         if (rules.RollChance(Engine.Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE)) {
-          Location.Drop((rules.RollChance(50) ? Gameplay.GameItems.IMPROVISED_CLUB : Gameplay.GameItems.IMPROVISED_SPEAR).instantiate());
+          Location.Drop((rules.RollChance(50) ? Gameplay.GameItems.IMPROVISED_CLUB : Gameplay.GameItems.IMPROVISED_SPEAR).create());
         }
       }
       _destroy();

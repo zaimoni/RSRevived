@@ -11,11 +11,16 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemMeleeWeapon : ItemWeapon
-  {
+  internal sealed class ItemMeleeWeapon : ItemWeapon, Zaimoni.Serialization.ISerialize
+    {
     new public ItemMeleeWeaponModel Model { get {return (base.Model as ItemMeleeWeaponModel)!; } }
     public bool IsFragile { get { return Model.IsFragile; } }
 
     public ItemMeleeWeapon(ItemMeleeWeaponModel model) : base(model) { }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected ItemMeleeWeapon(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
+#endregion
   }
 }

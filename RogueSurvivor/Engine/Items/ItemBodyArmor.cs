@@ -42,7 +42,6 @@ namespace djack.RogueSurvivor.Engine.Items
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
 #endregion
 
-
     // these five functions are actually functions of the body armor model.
     // Callers should not assume the current overoptimization from C-level converisons will hold indefinitely.
     // March 28 2018: armors that are !IsNeutral are guaranteed non-neutral to all factions that pay attention

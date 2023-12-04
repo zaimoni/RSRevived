@@ -4303,7 +4303,7 @@ restart:
       numberedName.Equip(rw);
       }
       // do not issue truncheon if martial arts would nerf it
-      if (0 >= numberedName.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Inventory.AddAll(GameItems.TRUNCHEON.instantiate());
+      if (0 >= numberedName.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Inventory.AddAll(GameItems.TRUNCHEON.create());
       numberedName.Inventory.AddAll(GameItems.FLASHLIGHT.create());
 //    numberedName.Inventory.AddAll(MakeItemPoliceRadio()); // class prop, implicit for police
       if (m_DiceRoller.RollChance(50)) {
