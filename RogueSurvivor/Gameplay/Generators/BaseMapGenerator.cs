@@ -450,7 +450,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public ItemRangedWeapon MakeItemRandomPistol()
     {
-      return (m_DiceRoller.RollChance(50) ? GameItems.KOLT_REVOLVER : GameItems.PISTOL).instantiate();
+      return (m_DiceRoller.RollChance(50) ? GameItems.KOLT_REVOLVER : GameItems.PISTOL).create();
     }
 
     public ItemGrenade MakeItemGrenade()

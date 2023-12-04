@@ -14,7 +14,7 @@ namespace djack.RogueSurvivor.Engine.Items
   {
     public readonly int MaxAmmo;
     public readonly AmmoType AmmoType;
-    private ItemRangedWeapon? _rw;
+    public readonly ItemRangedWeapon Example; // don't use this in real inventories; this object needs to be C++ const but C# doesn't have const correctness
 
     // alpha10
     public int RapidFireHit1Value { get { return Attack.Hit2Value; } }
@@ -27,15 +27,9 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       MaxAmmo = maxAmmo;
       AmmoType = ammoType;
+      Example = create();
     }
 
-    public override Item create() { return new ItemRangedWeapon(this); }
-    public ItemRangedWeapon instantiate() { return new ItemRangedWeapon(this); }
-
-    public ItemRangedWeapon Example {   // don't use this in real inventories; this object needs to be C++ const but C# doesn't have const correctness
-      get {
-        return _rw ??= instantiate();
-      }
-    }
+    public override ItemRangedWeapon create() { return new ItemRangedWeapon(this); }
   }
 }

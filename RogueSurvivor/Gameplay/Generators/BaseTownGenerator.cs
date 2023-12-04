@@ -4259,7 +4259,7 @@ restart:
       inv.AddAll(MakeItemCannedFood());
       inv.AddAll(GameItems.ARMY_RATION.instantiate());
       {
-      var rw = (m_DiceRoller.RollChance(50) ? GameItems.ARMY_RIFLE : GameItems.SHOTGUN).instantiate();
+      var rw = (m_DiceRoller.RollChance(50) ? GameItems.ARMY_RIFLE : GameItems.SHOTGUN).create();
       inv.AddAll(rw);
       inv.AddAll(m_DiceRoller.RollChance(50) ? (Item)ItemAmmo.make(rw.ModelID) : MakeItemGrenade());
       }
@@ -4297,7 +4297,7 @@ restart:
       // While auto-equip here would be nice, it is unclear that RogueForm.Game.DoEquipItem is safe to call here.
       // Inline the functional part instead.
       {
-      var rw = (m_DiceRoller.RollChance(50) ? GameItems.PISTOL : GameItems.SHOTGUN).instantiate();
+      var rw = (m_DiceRoller.RollChance(50) ? GameItems.PISTOL : GameItems.SHOTGUN).create();
       numberedName.Inventory.AddAll(rw);
       numberedName.Inventory.AddAll(ItemAmmo.make(rw.ModelID));
       numberedName.Equip(rw);

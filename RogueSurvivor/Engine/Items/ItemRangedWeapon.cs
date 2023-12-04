@@ -12,14 +12,24 @@ using Item_s = djack.RogueSurvivor.Data.Item_s;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemRangedWeapon : ItemWeapon
-  {
+  internal sealed class ItemRangedWeapon : ItemWeapon, Zaimoni.Serialization.ISerialize
+    {
     new public ItemRangedWeaponModel Model { get {return (base.Model as ItemRangedWeaponModel)!; } }
     public AmmoType AmmoType { get { return Model.AmmoType; } }
 
     public int Ammo;
 
     public ItemRangedWeapon(ItemRangedWeaponModel model) : base(model) { Ammo = model.MaxAmmo; }
+#region implement Zaimoni.Serialization.ISerialize
+    protected ItemRangedWeapon(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
+        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref Ammo);
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+        base.save(encode);
+        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, Ammo);
+    }
+#endregion
 
     public override Item_s toStruct() { return new Item_s(ModelID, Ammo); }
     public override void toStruct(ref Item_s dest)
