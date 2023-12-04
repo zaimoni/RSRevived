@@ -22,5 +22,17 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       PrimedModelID = (int) primedModel.ID;
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected ItemExplosive(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
+        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref PrimedModelID);
+    }
+
+    new protected void save(Zaimoni.Serialization.EncodeObjects encode) {
+        base.save(encode);
+        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, PrimedModelID);
+    }
+#endregion
+
   }
 }
