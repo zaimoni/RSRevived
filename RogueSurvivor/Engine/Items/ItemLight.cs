@@ -12,8 +12,8 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemLight : Item, BatteryPowered
-    {
+  internal sealed class ItemLight : Item, BatteryPowered, Zaimoni.Serialization.ISerialize
+  {
     new public ItemLightModel Model { get {return (base.Model as ItemLightModel)!; } }
     private int m_Batteries;
 
@@ -52,6 +52,17 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       Batteries = model.MaxBatteries;
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected ItemLight(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
+        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref m_Batteries);
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+        base.save(encode);
+        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_Batteries);
+    }
+#endregion
 
     public override Item_s toStruct() { return new Item_s(ModelID, m_Batteries); }
     public override void toStruct(ref Item_s dest)
