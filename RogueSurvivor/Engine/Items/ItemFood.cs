@@ -79,7 +79,6 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 #endregion
 
-
 #region UsableItem implementation
     public bool CouldUse() { return true; }
     public bool CouldUse(Actor a) { return a.Model.Abilities.HasToEat; }
