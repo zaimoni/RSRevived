@@ -66,16 +66,12 @@ namespace djack.RogueSurvivor.Engine.Items
 
 #region implement Zaimoni.Serialization.ISerialize
     protected ItemFood(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
-        if (IsPerishable) {
-            int tmp_int = 0;
-            Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref tmp_int);
-            BestBefore = new(tmp_int);
-        }
+        if (IsPerishable) BestBefore = decode.LoadInline<WorldTime>();
     }
 
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
         base.save(encode);
-        if (IsPerishable) Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, BestBefore.TurnCounter);
+        if (IsPerishable) Zaimoni.Serialization.ISave.InlineSave(encode, in BestBefore);
     }
 #endregion
 
