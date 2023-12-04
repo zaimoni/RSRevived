@@ -16,8 +16,8 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemSprayPaint : Item
-  {
+  internal sealed class ItemSprayPaint : Item, Zaimoni.Serialization.ISerialize
+    {
     new public ItemSprayPaintModel Model { get {return (base.Model as ItemSprayPaintModel)!; } }
     private int m_PaintQty;
 
@@ -43,5 +43,16 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       PaintQuantity = model.MaxPaintQuantity;
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected ItemSprayPaint(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
+        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref m_PaintQty);
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+        base.save(encode);
+        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_PaintQty);
+    }
+#endregion
   }
 }

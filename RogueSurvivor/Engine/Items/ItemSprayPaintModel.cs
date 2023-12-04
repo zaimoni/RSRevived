@@ -11,7 +11,7 @@ using System;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal class ItemSprayPaintModel : ItemModel
+  internal sealed class ItemSprayPaintModel : ItemModel
   {
     public readonly int MaxPaintQuantity;
     public readonly string TagImageID;
@@ -26,7 +26,6 @@ namespace djack.RogueSurvivor.Engine.Items
       TagImageID = tagImageID;
     }
 
-    public override Item create() { return new ItemSprayPaint(this); }
-    public ItemSprayPaint instantiate() { return new ItemSprayPaint(this); }
+    public override ItemSprayPaint create() { return new ItemSprayPaint(this); }
   }
 }
