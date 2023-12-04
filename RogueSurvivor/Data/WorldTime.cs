@@ -115,7 +115,7 @@ namespace djack.RogueSurvivor.Data
     protected WorldTime(Zaimoni.Serialization.DecodeObjects decode)
     {
       int tmp_int = 0; // should be same type as TurnCounter i.e. m_TurnCounter
-      Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref tmp_int);
+      Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref tmp_int);
       TurnCounter = tmp_int;
     }
 #endregion
@@ -198,6 +198,6 @@ namespace Zaimoni.Serialization {
 
     public partial interface ISave
     {
-        static void InlineSave(EncodeObjects encode, in djack.RogueSurvivor.Data.WorldTime src) => Formatter.Serialize(encode.dest, src.TurnCounter);
+        static void InlineSave(EncodeObjects encode, in djack.RogueSurvivor.Data.WorldTime src) => Formatter.Serialize7bit(encode.dest, src.TurnCounter);
     }
 }
