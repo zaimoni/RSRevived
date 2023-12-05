@@ -16,13 +16,19 @@ using Zaimoni.Data;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemEntertainment : Item, UsableItem
+  internal sealed class ItemEntertainment : Item, UsableItem, Zaimoni.Serialization.ISerialize
     {
     List<Actor>? m_BoringFor = null; // alpha10 boring items moved out of Actor
 
     new public ItemEntertainmentModel Model { get {return (base.Model as ItemEntertainmentModel)!; } }
 
     public ItemEntertainment(ItemEntertainmentModel model) : base(model) {}
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected ItemEntertainment(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
+#endregion
+
 
     public void AddBoringFor(Actor a)
     {
