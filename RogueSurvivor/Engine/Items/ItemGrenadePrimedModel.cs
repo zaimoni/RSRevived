@@ -25,7 +25,6 @@ namespace djack.RogueSurvivor.Engine.Items
         ;
     }
 
-    public override Item create() { return new ItemGrenade(GrenadeModel,this); }
-    public ItemGrenade instantiate() { return new ItemGrenade(GrenadeModel, this); }
+    public override ItemGrenadePrimed create() { return new ItemGrenadePrimed(this, 0); }
   }
 }

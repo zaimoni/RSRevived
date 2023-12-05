@@ -12,21 +12,33 @@ using System.Threading;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemPrimedExplosive : ItemExplosive // XXX should be abstract
+  internal abstract class ItemPrimedExplosive : ItemExplosive // XXX should be abstract
   {
     private int m_FuseTimeLeft;
 
     public int FuseTimeLeft { get { return m_FuseTimeLeft; } }
 
-    public ItemPrimedExplosive(ItemExplosiveModel model) : base(model, model)
+    protected ItemPrimedExplosive(ItemExplosiveModel model) : base(model, model)
     {
       m_FuseTimeLeft = model.FuseDelay;
     }
 
-    public ItemPrimedExplosive(ItemExplosiveModel model, int delay) : base(model, model)
+    protected ItemPrimedExplosive(ItemExplosiveModel model, int delay) : base(model, model)
     {
       m_FuseTimeLeft = delay; // dud would be "much longer than designed"
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected ItemPrimedExplosive(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
+        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref m_FuseTimeLeft);
+    }
+
+    new protected void save(Zaimoni.Serialization.EncodeObjects encode) {
+        base.save(encode);
+        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_FuseTimeLeft);
+    }
+#endregion
+
 
     public void Cook() { Interlocked.Exchange(ref m_FuseTimeLeft, 0); }    // detonate immediately
 

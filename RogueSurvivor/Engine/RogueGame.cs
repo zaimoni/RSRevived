@@ -9103,8 +9103,10 @@ namespace djack.RogueSurvivor.Engine
         else {
           if (null == itemPrimedExplosiveList) itemPrimedExplosiveList = new();
           (itemExplosiveList ?? new()).Add(itemExplosive);
-          for (int index = 0; index < obj.Quantity; ++index)
-            itemPrimedExplosiveList.Add(new ItemPrimedExplosive(GameItems.Cast<ItemExplosiveModel>(itemExplosive.PrimedModelID), 0));
+          var primed_model = GameItems.Cast<ItemExplosiveModel>(itemExplosive.PrimedModelID);
+          for (int index = 0; index < obj.Quantity; ++index) {
+            itemPrimedExplosiveList.Add((ItemPrimedExplosive)(primed_model.create()));
+          }
         }
       }
       if (null != itemExplosiveList) foreach (var it in itemExplosiveList) inv.RemoveAllQuantity(it);
