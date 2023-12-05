@@ -454,7 +454,7 @@ namespace djack.RogueSurvivor.Engine
         return Rules.StdDistance(a.Location, loc) <= a.AudioRange;
       };
 
-      var actors = ThoseNearby(loc, GameActors.HUMAN_AUDIO, hears);
+      var actors = loc.ThoseNearby(GameActors.HUMAN_AUDIO, hears);
       if (null == actors) return;
       foreach(var a in actors) {
           if (a.Controller is PlayerController pc) {
@@ -494,7 +494,7 @@ namespace djack.RogueSurvivor.Engine
     {
       bool sees(Actor a) { return a.Controller.CanSee(loc); };
 
-      var actors = ThoseNearby(loc, Actor.MAX_VISION, sees);
+      var actors = loc.ThoseNearby(Actor.MAX_VISION, sees);
       if (null == actors) return;
 
       foreach(var a in actors) doFn(a);
@@ -8591,7 +8591,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       // defender may be just-killed
-      var responders = ThoseNearby(defender.Location, Actor.MAX_VISION, sees);
+      var responders = defender.Location.ThoseNearby(Actor.MAX_VISION, sees);
       if (null == responders) return;
 
       AI.Percept_<Actor> target = new(attacker, attacker.Location.Map.LocalTime.TurnCounter, attacker.Location);
@@ -9180,28 +9180,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    // use Func rather than Predicate as that doesn't have problems w/local functions
-    static private List<Actor>? ThoseNearby(Location loc, int radius, Func<Actor,bool> ok) {
-        List<Actor> ret = new();
-        var survey = new Rectangle(loc.Position+(short)radius*Direction.NW, (Point)(2*radius+1));
-        // lambda function access of loc.Position prevents converting to member function
-        survey.DoForEach(pt => {
-          Location test = new Location(loc.Map, pt);
-          if (Map.Canonical(ref test)) {
-              var actor = test.Actor;
-              if (null != actor && !actor.IsDead && ok(actor)) ret.Add(actor);
-          }
-        });
-
-        var exit = loc.Exit;
-        if (null != exit) {
-          var actor = exit.Location.Actor;
-          if (null != actor && !actor.IsDead && ok(actor)) ret.Add(actor);
-        }
-
-        return 0<ret.Count ? ret : null;
-    }
-
     static private KeyValuePair<List<PlayerController>, List<Actor>>? PCsNearby(Location loc, int radius, Func<Actor,bool> ok) {
         List<PlayerController> ret = new();
         List<Actor> ret_viewpoints = new();
@@ -9238,7 +9216,7 @@ namespace djack.RogueSurvivor.Engine
     {
       bool is_awake(Actor a) { return !a.IsSleeping; };
 
-      var chat_competent = ThoseNearby(speaker.Location, Rules.CHAT_RADIUS, is_awake);
+      var chat_competent = speaker.Location.ThoseNearby(Rules.CHAT_RADIUS, is_awake);
       if (null == chat_competent) return false;
       chat_competent.Remove(speaker);
       if (0 >= chat_competent.Count) return false;
@@ -10590,7 +10568,7 @@ namespace djack.RogueSurvivor.Engine
         return Rules.Get.RollChance(a.LoudNoiseWakeupChance(Rules.GridDistance(loc, a.Location)));
       };
 
-      var actors = ThoseNearby(loc, Rules.LOUD_NOISE_RADIUS, hears);
+      var actors = loc.ThoseNearby(Rules.LOUD_NOISE_RADIUS, hears);
       if (null == actors) return;
 
       foreach(var actor in actors) {
@@ -14214,7 +14192,7 @@ retry:
         return a.Controller.CanSee(loc);
       };
 
-      var victims = ThoseNearby(loc, maxLivingFOV, sees);
+      var victims = loc.ThoseNearby(maxLivingFOV, sees);
       if (null == victims) return;
 
       var pc_did_it = whoDoesTheAction.Controller as PlayerController;
@@ -14904,6 +14882,28 @@ retry:
           game.OnActorEnterTile(fo);
         }
       }
+    }
+
+    // use Func rather than Predicate as that doesn't have problems w/local functions
+    static public List<Actor>? ThoseNearby(this Location loc, int radius, Func<Actor,bool> ok) {
+        List<Actor> ret = new();
+        var survey = new Rectangle(loc.Position+(short)radius*Direction.NW, (Point)(2*radius+1));
+        // lambda function access of loc.Position prevents converting to member function
+        survey.DoForEach(pt => {
+          Location test = new Location(loc.Map, pt);
+          if (Map.Canonical(ref test)) {
+              var actor = test.Actor;
+              if (null != actor && !actor.IsDead && ok(actor)) ret.Add(actor);
+          }
+        });
+
+        var exit = loc.Exit;
+        if (null != exit) {
+          var actor = exit.Location.Actor;
+          if (null != actor && !actor.IsDead && ok(actor)) ret.Add(actor);
+        }
+
+        return 0<ret.Count ? ret : null;
     }
   }
 #nullable restore
