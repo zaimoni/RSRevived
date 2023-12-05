@@ -247,6 +247,14 @@ namespace djack.RogueSurvivor.Data
 
     public IReadOnlyList<Waypoint_s>? Waypoints { get { return m_Waypoints; } }
 
+
+    public void Exec_RangedAttack(Actor currentTarget, List<Point> LoF, Engine.Actions.FireMode mode)
+    {
+        var ra = new Engine.Actions.ActionRangedAttack(m_Actor, currentTarget, LoF, mode);
+        ra.Perform();
+        RecordLastAction(ra);
+    }
+
     public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int>? ItemMemory { get { return m_itemMemory; } }
 
     private bool ShowThis(Gameplay.Item_IDs src, in Location loc) {

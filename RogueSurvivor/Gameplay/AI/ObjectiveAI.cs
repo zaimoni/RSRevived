@@ -234,6 +234,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected bool _safe_run_retreat = false;
 #nullable enable
     protected ActionMoveDelta? _last_move = null;   // for detecting period 2 move looping
+    protected sbyte _recoil = 0;
+    public sbyte Recoil { get { return _recoil; } }
 #nullable restore
     [NonSerialized] protected bool _used_advanced_pathing = false;
     [NonSerialized] protected bool _rejected_backtrack = false;
@@ -764,6 +766,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void RecordLastAction(ActorAction act) {
       if (null == act || !act.PerformedBy(m_Actor)) return; // not ours, reject
+      if (act is ActionRangedAttack ra && FireMode.RAPID == ra.FMode) {
+        _recoil = 1;
+      } else {
+        _recoil = 0;
+      }
+
       if (act is ActorDest dest && 1==Rules.InteractionDistance(m_Actor.Location,dest.dest)) {  // a movement-type action
         // the one type that actually knows the origin; the legacy actions don't.
         if (!(act is ActionMoveDelta record)) record = new ActionMoveDelta(m_Actor,dest.dest);

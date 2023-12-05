@@ -30,12 +30,19 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly List<Point> m_LoF = new List<Point>();
     private readonly Actor m_Target;
-    private readonly FireMode m_Mode;
+    public readonly FireMode FMode;
 
     public ActionRangedAttack(Actor actor, Actor target, FireMode mode=default) : base(actor)
     {
       m_Target = target;
-      m_Mode = mode;
+      FMode = mode;
+    }
+
+    public ActionRangedAttack(Actor actor, Actor target, List<Point> lof, FireMode mode) : base(actor)
+    {
+      m_Target = target;
+      m_LoF = lof;
+      FMode = mode;
     }
 
     public Actor target { get { return m_Target; } }
@@ -48,7 +55,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueGame.Game.DoRangedAttack(m_Actor, m_Target, m_LoF, m_Mode);
+      RogueGame.Game.DoRangedAttack(m_Actor, m_Target, m_LoF, FMode);
     }
   }
 

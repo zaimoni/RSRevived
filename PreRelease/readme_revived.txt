@@ -3,7 +3,8 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 
 REVIVED 0.10.0 CHANGES
 ------------------
-* minimum required .NET is now 7.0.
+* minimum required .NET is now 8.0.
+* RAPID fire mode is now more like a snap shot, or fanning, than a burst.  No more wasted shots.
 * The city planners have improved zoning regulations for districts.
 * Z-detectors can clear threat tracking caused by Z.
 * New command Countermand PC, default key ALT-SHIFT-O.  Use this to inspect which self-orders are active, and cancel them.

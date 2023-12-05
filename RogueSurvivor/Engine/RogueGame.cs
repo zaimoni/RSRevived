@@ -5202,8 +5202,7 @@ namespace djack.RogueSurvivor.Engine
             return null;
           case Keys.F:
             if (flag3) {
-              DoRangedAttack(player, currentTarget, LoF, mode);
-              RedrawPlayScreen();
+              (player.Controller as PlayerController).Exec_RangedAttack(currentTarget, LoF, mode);
               return true;
             } else
               ErrorPopup(string.Format("Can't fire at {0} : {1}.", currentTarget.TheName, reason));
@@ -8752,16 +8751,8 @@ namespace djack.RogueSurvivor.Engine
           DoSingleRangedAttack(attacker, defender, LoF, 0);
           break;
         case FireMode.RAPID:
-          attacker.SpendActionPoints();
-          DoSingleRangedAttack(attacker, defender, LoF, 1);
-          ItemRangedWeapon itemRangedWeapon = attacker.GetEquippedWeapon() as ItemRangedWeapon;
-          if (itemRangedWeapon.Ammo <= 0) break;
-          if (defender.IsDead) {
-            --itemRangedWeapon.Ammo;
-            if (ForceVisibleToPlayer(attacker)) AddMessage(MakeMessage(attacker, string.Format("{0} at nothing.", attacker.CurrentRangedAttack.Verb.Conjugate(attacker))));
-            break;
-          }
-          DoSingleRangedAttack(attacker, defender, LoF, 2);
+          attacker.SpendActionPoints(Actor.BASE_ACTION_COST/2);
+          DoSingleRangedAttack(attacker, defender, LoF, ai.Recoil+1);
           break;
         default:
           throw new ArgumentOutOfRangeException("unhandled mode");
