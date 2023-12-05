@@ -8573,31 +8573,6 @@ namespace djack.RogueSurvivor.Engine
 
       target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, msg_player, msg_player, msg_player_test);
     }
-
-    private void InferEnemy(Actor attacker, Actor defender) {
-      // Cf. game factions and default AI definitions
-      if (   defender.IsFaction(GameFactions.IDs.TheUndeads)
-          || defender.IsFaction(GameFactions.IDs.ThePsychopaths))
-        return;
-
-      bool sees(Actor a) {
-        if (!(a.Controller is OrderableAI ordai)) return false; // PlayerController would respond only on autopilot; that would require ObjectiveAI here
-        if (!a.Controller.CanSee(defender.Location)) return false;
-        if (a.Controller.CanSee(attacker.Location)) return false;
-        if (Rules.StdDistance(a.Location, attacker.Location) > a.AudioRange) return false;
-        if (a.IsEnemyOf(defender)) return false;
-        return a.IsEnemyOf(attacker);
-      }
-
-      // defender may be just-killed
-      var responders = defender.Location.ThoseNearby(Actor.MAX_VISION, sees);
-      if (null == responders) return;
-
-      AI.Percept_<Actor> target = new(attacker, attacker.Location.Map.LocalTime.TurnCounter, attacker.Location);
-      foreach(var actor in responders) {
-        (actor.Controller as ObjectiveAI)!.Track(target);
-      }
-    }
 #nullable restore
 
     public void DoMeleeAttack(Actor attacker, Actor defender)
@@ -8736,7 +8711,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (isDefVisible || isAttVisible) ClearOverlays();  // alpha10: if test
       if (!defender.IsDead) (attacker.Controller as ObjectiveAI)?.RecruitHelp(defender);
-      InferEnemy(attacker, defender);
+      defender.InferEnemy(attacker);
     }
 
 #nullable enable
@@ -8758,7 +8733,7 @@ namespace djack.RogueSurvivor.Engine
           throw new ArgumentOutOfRangeException("unhandled mode");
       }
       if (!defender.IsDead) ai?.RecruitHelp(defender);
-      InferEnemy(attacker, defender);
+      defender.InferEnemy(attacker);
     }
 #nullable restore
 
@@ -14895,6 +14870,31 @@ retry:
         }
 
         return 0<ret.Count ? ret : null;
+    }
+
+    static public void InferEnemy(this Actor defender, Actor attacker) {
+      // Cf. game factions and default AI definitions
+      if (   defender.IsFaction(GameFactions.IDs.TheUndeads)
+          || defender.IsFaction(GameFactions.IDs.ThePsychopaths))
+        return;
+
+      bool sees(Actor a) {
+        if (!(a.Controller is OrderableAI ordai)) return false; // PlayerController would respond only on autopilot; that would require ObjectiveAI here
+        if (!a.Controller.CanSee(defender.Location)) return false;
+        if (a.Controller.CanSee(attacker.Location)) return false;
+        if (Rules.StdDistance(a.Location, attacker.Location) > a.AudioRange) return false;
+        if (a.IsEnemyOf(defender)) return false;
+        return a.IsEnemyOf(attacker);
+      }
+
+      // defender may be just-killed
+      var responders = defender.Location.ThoseNearby(Actor.MAX_VISION, sees);
+      if (null == responders) return;
+
+      AI.Percept_<Actor> target = new(attacker, attacker.Location.Map.LocalTime.TurnCounter, attacker.Location);
+      foreach(var actor in responders) {
+        (actor.Controller as ObjectiveAI)!.Track(target);
+      }
     }
   }
 #nullable restore
