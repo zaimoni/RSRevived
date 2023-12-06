@@ -8,6 +8,7 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
@@ -19,7 +20,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   // * convert army rifle to burst-competent, scale army rifle clip accordingly; leave sniper rifle alone
   // * machine pistol: not in gun stores; allow for survivalist caches and SWAT police (leaders?).
   [Serializable]
-  internal enum FireMode
+  public enum FireMode
   {
     AIMED = 0,  // single, aimed shot; keyword default
     RAPID       // single snap shot
@@ -31,11 +32,13 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly List<Point> m_LoF = new List<Point>();
     private readonly Actor m_Target;
     public readonly FireMode FMode;
+    [NonSerialized] ObjectiveAI oai;
 
     public ActionRangedAttack(Actor actor, Actor target, FireMode mode=default) : base(actor)
     {
       m_Target = target;
       FMode = mode;
+      OnDeserialized(default);
     }
 
     public ActionRangedAttack(Actor actor, Actor target, List<Point> lof, FireMode mode) : base(actor)
@@ -43,9 +46,16 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Target = target;
       m_LoF = lof;
       FMode = mode;
+      OnDeserialized(default);
     }
 
     public Actor target { get { return m_Target; } }
+
+    [OnDeserialized] private void OnDeserialized(StreamingContext context)
+    {
+      if (m_Actor.Controller is ObjectiveAI ai) oai = ai;
+      else throw new ArgumentNullException(nameof(oai));
+    }
 
     public override bool IsLegal()
     {
@@ -55,7 +65,22 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueGame.Game.DoRangedAttack(m_Actor, m_Target, m_LoF, FMode);
+      m_Actor.Aggress(m_Target);
+      oai.RecordLoF(m_LoF);
+      switch(FMode) {
+        case FireMode.AIMED:
+          m_Actor.SpendActionPoints();
+          RogueGame.Game.DoSingleRangedAttack(m_Actor, m_Target, m_LoF, 0);
+          break;
+        case FireMode.RAPID:
+          m_Actor.SpendActionPoints(Actor.BASE_ACTION_COST/2);
+          RogueGame.Game.DoSingleRangedAttack(m_Actor, m_Target, m_LoF, oai.Recoil+1);
+          break;
+        default:
+          throw new ArgumentOutOfRangeException("unhandled mode");
+      }
+      if (!m_Target.IsDead) oai.RecruitHelp(m_Target);
+      m_Target.InferEnemy(m_Actor);
     }
   }
 

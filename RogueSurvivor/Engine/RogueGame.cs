@@ -8714,31 +8714,8 @@ namespace djack.RogueSurvivor.Engine
       defender.InferEnemy(attacker);
     }
 
-#nullable enable
-    public void DoRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
-    {
-      attacker.Aggress(defender);
-      var ai = attacker.Controller as ObjectiveAI;
-      ai?.RecordLoF(LoF);
-      switch (mode) {
-        case FireMode.AIMED:
-          attacker.SpendActionPoints();
-          DoSingleRangedAttack(attacker, defender, LoF, 0);
-          break;
-        case FireMode.RAPID:
-          attacker.SpendActionPoints(Actor.BASE_ACTION_COST/2);
-          DoSingleRangedAttack(attacker, defender, LoF, ai.Recoil+1);
-          break;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled mode");
-      }
-      if (!defender.IsDead) ai?.RecruitHelp(defender);
-      defender.InferEnemy(attacker);
-    }
-#nullable restore
-
     /// <param name="shotCounter">0 for normal shot, 1 for 1st rapid fire shot, 2 for 2nd rapid fire shot</param>
-    private void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, int shotCounter)
+    public void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, int shotCounter)
     {
       if (attacker.IsViewpoint) PanViewportTo(attacker);
       else if (defender.IsViewpoint) PanViewportTo(defender);
