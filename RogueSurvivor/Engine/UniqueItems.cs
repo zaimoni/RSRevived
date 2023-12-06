@@ -9,8 +9,22 @@ using System;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal class UniqueItems
+  internal class UniqueItems : Zaimoni.Serialization.ISerialize
   {
-    public UniqueItem TheSubwayWorkerBadge { get; set; }
+    public UniqueItem TheSubwayWorkerBadge = default;
+
+    public UniqueItems() {}
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected UniqueItems(Zaimoni.Serialization.DecodeObjects decode) {
+        Zaimoni.Serialization.ISave.Load(decode, ref TheSubwayWorkerBadge, (it,spawned) => {
+            TheSubwayWorkerBadge = new(it, spawned);
+        });
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+        Zaimoni.Serialization.ISave.Save(encode, in TheSubwayWorkerBadge);
+    }
+#endregion
   }
 }

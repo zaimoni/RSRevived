@@ -185,10 +185,10 @@ namespace djack.RogueSurvivor.Engine
             // end failed function extraction target
 
             UniqueMaps = decode.LoadInline<UniqueMaps>();
+            UniqueItems = decode.LoadInline<UniqueItems>();
 
             // mockup to allow testing
             UniqueActors = new UniqueActors();
-            UniqueItems = new UniqueItems();
 /*
             // load other classes' static variables
             Actor.Load(info, context);
@@ -197,8 +197,6 @@ namespace djack.RogueSurvivor.Engine
             RogueGame.Load(info, context);
             info.read_s(ref s_Player, "s_Player");
             UniqueActors = (UniqueActors)info.GetValue("UniqueActors", typeof(UniqueActors));
-            UniqueItems = (UniqueItems)info.GetValue("UniqueItems", typeof(UniqueItems));
-            UniqueMaps = (UniqueMaps)info.GetValue("UniqueMaps", typeof(UniqueMaps));
             info.read(ref Police, "Police");
 */
 #if DEBUG
@@ -253,12 +251,12 @@ namespace djack.RogueSurvivor.Engine
             Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
 
             Zaimoni.Serialization.ISave.InlineSave(encode, UniqueMaps);
+            Zaimoni.Serialization.ISave.InlineSave(encode, UniqueItems);
 /*
             Actor.Save(info, context);
             PlayerController.Save(info, context);
             RogueGame.Save(info, context);
             info.AddValue("UniqueActors", UniqueActors, typeof(UniqueActors));
-            info.AddValue("UniqueItems", UniqueItems, typeof(UniqueItems));
             info.AddValue("Police", Police, typeof(RadioFaction));
 */
             // non-serialized fields
