@@ -193,10 +193,14 @@ namespace djack.RogueSurvivor.Data
 
 
   [Serializable]
-  internal class Inventory
-  {
-    private readonly List<Item> m_Items = new List<Item>(1);
-    public int MaxCapacity { get; set; }    // Actor requires a public setter
+  internal sealed class Inventory : Zaimoni.Serialization.ISerialize
+    {
+    private readonly List<Item> m_Items = new(1);
+    private int m_maxCapacity;
+    public int MaxCapacity { get { return m_maxCapacity; }
+      set {    // Actor requires a public setter
+        m_maxCapacity = (0 < value) ? value : 1;
+      } }
 
     public IEnumerable<Item> Items { get { return m_Items; } }
     public int CountItems { get { return m_Items.Count; } }
@@ -217,7 +221,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool IsEmpty { get { return m_Items.Count == 0; } }
-    public bool IsFull { get { return m_Items.Count >= MaxCapacity; } }
+    public bool IsFull { get { return m_Items.Count >= m_maxCapacity; } }
 
     public Item? TopItem {
       get {
@@ -251,8 +255,23 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (0 >= maxCapacity) throw new ArgumentOutOfRangeException(nameof(maxCapacity),maxCapacity,"must be positive");
 #endif
-      MaxCapacity = maxCapacity;
+      m_maxCapacity = maxCapacity;
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected Inventory(Zaimoni.Serialization.DecodeObjects decode) {
+        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref m_maxCapacity);
+
+        void onLoaded(Item[] src) { m_Items.AddRange(src); }
+        Zaimoni.Serialization.ISave.LinearLoad<Item>(decode, onLoaded);
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_maxCapacity);
+        encode.SaveTo(m_Items);
+    }
+#endregion
+
 
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     { // backstop.  Any zero-quantity items are to be eliminated.

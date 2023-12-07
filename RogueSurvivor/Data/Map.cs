@@ -24,6 +24,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -332,7 +333,6 @@ namespace djack.RogueSurvivor.Data
 
       Zaimoni.Serialization.ISave.LinearLoad(decode, format_deco);
 
-
       m_ScentsByPosition = new();
 
       void format_scents(KeyValuePair<Point, OdorScent[]>[] src) {
@@ -344,9 +344,21 @@ namespace djack.RogueSurvivor.Data
               src[ub] = default;    // to force early GC
           };
       };
-
-
       Zaimoni.Serialization.ISave.LinearLoadInline(decode, format_scents);
+
+      m_GroundItemsByPosition = new();
+
+      void format_ginv(KeyValuePair<Point, Inventory>[] src) {
+          var ub = src.Length;
+          while (0 < ub) {
+              var x = src[--ub];
+              m_GroundItemsByPosition.Add(x.Key, x.Value);
+              src[ub] = default;    // to force early GC
+          };
+      };
+//    inline doesn't play well with inventory percepts
+//    Zaimoni.Serialization.ISave.LinearLoadInline(decode, (Action<KeyValuePair<Point, Inventory>[]>)format_ginv);
+      Zaimoni.Serialization.ISave.LinearLoad(decode, (Action<KeyValuePair<Point, Inventory>[]>)format_ginv);
 
 /*
       info.read(ref m_ActorsList, "m_ActorsList");
@@ -392,11 +404,12 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.ISave.LinearSaveSigned(encode, m_Exits);
       Zaimoni.Serialization.ISave.LinearSave(encode, m_Decorations);
       Zaimoni.Serialization.ISave.LinearSaveInline(encode, m_ScentsByPosition);
+//    Zaimoni.Serialization.ISave.LinearSaveInline(encode, m_GroundItemsByPosition);
+      Zaimoni.Serialization.ISave.LinearSave(encode, m_GroundItemsByPosition);
 
 /*
       info.AddValue("m_ActorsList", m_ActorsList);  // this fails when Actor is ISerializable(!): length ok, all values null
       info.AddValue("m_MapObjectsByPosition", m_MapObjectsByPosition);
-      info.AddValue("m_GroundItemsByPosition", m_GroundItemsByPosition);
       info.AddValue("m_CorpsesList", m_CorpsesList);
       info.AddValue("m_Timers", m_Timers);
  */
@@ -3289,6 +3302,25 @@ namespace Zaimoni.Serialization
             handler(dest);
         }
 
+        static void LinearLoadInline<T>(DecodeObjects decode, Action<KeyValuePair<Point, T>[]> handler) where T : ISerialize
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new KeyValuePair<Point, T>[count];
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                Point stage_pos = default;
+                Deserialize7bit(decode.src, ref stage_pos);
+                var stage_t = decode.LoadInline<T>();
+                dest[n] = new KeyValuePair<Point, T>(stage_pos, stage_t);
+            }
+            handler(dest);
+        }
+
         static void LinearSaveInline<T>(EncodeObjects encode, IEnumerable<T>? src) where T:ISerialize
         {
             var count = src?.Count() ?? 0;
@@ -3306,6 +3338,18 @@ namespace Zaimoni.Serialization
                 foreach (var x in src) {
                     Serialize7bit(encode.dest, x.Key);
                     LinearSaveInline(encode, x.Value);
+                }
+            }
+        }
+
+        static void LinearSaveInline<T>(EncodeObjects encode, Dictionary<Point, T>? src) where T:ISerialize
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src) {
+                    Serialize7bit(encode.dest, x.Key);
+                    Zaimoni.Serialization.ISave.InlineSave(encode, x.Value);
                 }
             }
         }
