@@ -28,37 +28,35 @@ namespace djack.RogueSurvivor.Data
     public const int MAX_NORMAL_WEIGHT = 10;
 
     private IDs m_ID;
-    private Flags m_Flags;
     private Break m_BreakState;
     public readonly int MaxHitPoints;
     private int m_HitPoints;
     private Fire m_FireState;
     [NonSerialized] private Location m_Location;
 
-    Model.MapObject Model { get { return Data.Model.MapObject.from((int)m_ID); } }
-    public byte Weight { get { return Model.Weight; } }
+    Model.MapObject Model { get => Data.Model.MapObject.from((int)m_ID); }
+    public byte Weight { get => Model.Weight; }
 
-    public string AName { get { return IsPlural ? _ID_Name(m_ID).PrefixIndefinitePluralArticle() : _ID_Name(m_ID).PrefixIndefiniteSingularArticle(); } }
-    public string TheName { get { return _ID_Name(m_ID).PrefixDefiniteSingularArticle(); } }
-    public bool IsPlural { get { return GetFlag(Flags.IS_PLURAL); } }
+    public string AName { get => IsPlural ? _ID_Name(m_ID).PrefixIndefinitePluralArticle() : _ID_Name(m_ID).PrefixIndefiniteSingularArticle(); }
+    public string TheName { get => _ID_Name(m_ID).PrefixDefiniteSingularArticle(); }
+    public bool IsPlural { get => GetFlag(Data.Model.MapObject.Flags.IS_PLURAL); }
 
     public IDs ID {
-      get { return m_ID; }
+      get => m_ID;
       set {
 #if DEBUG
         if (!_IDchangeIsLegal(value)) throw new ArgumentOutOfRangeException(nameof(value), "!_IDchangeIsLegal(value)");
 #endif
         m_ID = value;
-        _InitModel();
       }
     }
 
-    public virtual string ImageID { get { return m_ID.ImageID(); } }
-    public string HiddenImageID { get { return m_ID.ImageID(); } }
+    public virtual string ImageID { get => m_ID.ImageID(); }
+    public string HiddenImageID { get => m_ID.ImageID(); }
 
 #nullable enable
     public Location Location {
-      get { return m_Location; }
+      get => m_Location;
       set {
         InvalidateLOS();
         m_Location = value;
@@ -70,16 +68,16 @@ namespace djack.RogueSurvivor.Data
       get {
         if (Fire.ONFIRE == m_FireState) return false;
         if (m_BreakState == Break.BROKEN || m_FireState == Fire.ASHES) return true;
-        return GetFlag(Flags.IS_MATERIAL_TRANSPARENT);
+        return GetFlag(Data.Model.MapObject.Flags.IS_MATERIAL_TRANSPARENT);
       }
     }
 
-    public bool IsMaterialTransparent { get { return GetFlag(Flags.IS_MATERIAL_TRANSPARENT); } }
-    virtual public bool IsWalkable { get { return GetFlag(Flags.IS_WALKABLE); } }
-    public int JumpLevel { get { return (m_FireState != Fire.ONFIRE) ? Model.jumpLevel : 0; } }
-    public bool IsJumpable { get { return 0 < JumpLevel; } }
-    public bool IsCouch { get { return GetFlag(Flags.IS_COUCH); } }
-    public bool IsBreakable { get { return m_BreakState == Break.BREAKABLE; } }
+    public bool IsMaterialTransparent { get => GetFlag(Data.Model.MapObject.Flags.IS_MATERIAL_TRANSPARENT); }
+    virtual public bool IsWalkable { get => GetFlag(Data.Model.MapObject.Flags.IS_WALKABLE); }
+    public int JumpLevel { get => (m_FireState != Fire.ONFIRE) ? Model.jumpLevel : 0; }
+    public bool IsJumpable { get => 0 < JumpLevel; }
+    public bool IsCouch { get => GetFlag(Data.Model.MapObject.Flags.IS_COUCH); }
+    public bool IsBreakable { get => m_BreakState == Break.BREAKABLE; }
 
     // 2023-04-16: a broken object still retains its shelf-like status
     public Break BreakState {
@@ -117,14 +115,12 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool GivesWood {
-      get {
-        return GetFlag(Flags.GIVES_WOOD) && Break.BROKEN != m_BreakState;
-      }
+      get => GetFlag(Data.Model.MapObject.Flags.GIVES_WOOD) && Break.BROKEN != m_BreakState;
     }
 
-    public bool IsMovable { get { return GetFlag(Flags.IS_MOVABLE); } }
-    public bool BreaksWhenFiredThrough { get { return GetFlag(Flags.BREAKS_WHEN_FIRED_THROUGH); } }
-    public bool StandOnFovBonus { get { return GetFlag(Flags.STANDON_FOV_BONUS); } }
+    public bool IsMovable { get => GetFlag(Data.Model.MapObject.Flags.IS_MOVABLE); }
+    public bool BreaksWhenFiredThrough { get => GetFlag(Data.Model.MapObject.Flags.BREAKS_WHEN_FIRED_THROUGH); }
+    public bool StandOnFovBonus { get => GetFlag(Data.Model.MapObject.Flags.STANDON_FOV_BONUS); }
     public bool IsFlammable { get { return m_FireState == Fire.ONFIRE || m_FireState == Fire.BURNABLE; } }
     public bool IsOnFire { get { return m_FireState == Fire.ONFIRE; } }
     public bool IsBurntToAshes { get { return m_FireState == Fire.ASHES; } }
@@ -167,164 +163,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     // This section of private switch statements arguably could designate properties of a MapObjectModel class.
-    private static bool _ID_GivesWood(IDs x)
-    {
-      switch (x) {
-        case IDs.FENCE: return true;
-        case IDs.GARDEN_FENCE: return true;
-        case IDs.TREE: return true;
-        case IDs.DOOR: return true;
-        case IDs.WINDOW: return true;
-        case IDs.HOSPITAL_DOOR: return true;
-        case IDs.BENCH: return true;
-        case IDs.LARGE_FORTIFICATION: return true;
-        case IDs.SMALL_FORTIFICATION: return true;
-        case IDs.BED: return true;
-        case IDs.HOSPITAL_BED: return true;
-        case IDs.CHAIR: return true;
-        case IDs.HOSPITAL_CHAIR: return true;
-        case IDs.CHAR_CHAIR: return true;
-        case IDs.TABLE: return true;
-        case IDs.CHAR_TABLE: return true;
-        case IDs.NIGHT_TABLE: return true;
-        case IDs.HOSPITAL_NIGHT_TABLE: return true;
-        case IDs.DRAWER: return true;
-        case IDs.WARDROBE: return true;
-        case IDs.HOSPITAL_WARDROBE: return true;
-        case IDs.SHOP_SHELF: return true;
-        case IDs.JUNK: return true;
-        case IDs.BARRELS: return true;
-//      case IDs.: return true;
-        default: return false;
-      }
-    }
-
-    static private bool _ID_StandOnFOVbonus(IDs x)
-    {
-      switch (x) {
-        case IDs.FENCE: return true;
-        case IDs.GARDEN_FENCE: return true;
-        case IDs.WIRE_FENCE: return true;
-        case IDs.CAR1: return true;
-        case IDs.CAR2: return true;
-        case IDs.CAR3: return true;
-        case IDs.CAR4: return true;
-//      case IDs.: return true;
-        default: return false;
-      }
-    }
-
-    static private bool _ID_BreaksWhenFiredThrough(IDs x)
-    {
-      switch (x) {
-        case IDs.WINDOW: return true;
-        case IDs.GLASS_DOOR: return true;
-//      case IDs.: return true;
-        default: return false;
-      }
-    }
-
-    static private bool _ID_IsCouch(IDs x)
-    {
-      switch (x) {
-        case IDs.BENCH: return true;
-        case IDs.IRON_BENCH: return true;
-        case IDs.BED: return true;
-        case IDs.HOSPITAL_BED: return true;
-//      case IDs.: return true;
-        default: return false;
-      }
-    }
-
-    static private bool _ID_IsPlural(IDs x)
-    {
-      switch (x) {
-        case IDs.JUNK: return true;
-        case IDs.BARRELS: return true;
-//      case IDs.: return true;
-        default: return false;
-      }
-    }
-
-    static private bool _ID_MaterialIsTransparent(IDs x)
-    {
-      switch (x) {
-        case IDs.FENCE: return true;
-        case IDs.IRON_FENCE: return true;
-        case IDs.GARDEN_FENCE: return true;
-        case IDs.WIRE_FENCE: return true;
-        case IDs.IRON_GATE_CLOSED: return true;
-        case IDs.IRON_GATE_OPEN: return true;
-        case IDs.WINDOW: return true;
-        case IDs.GLASS_DOOR: return true;
-        case IDs.BENCH: return true;
-        case IDs.IRON_BENCH: return true;
-        case IDs.SMALL_FORTIFICATION: return true;
-        case IDs.BED: return true;
-        case IDs.HOSPITAL_BED: return true;
-        case IDs.CHAIR: return true;
-        case IDs.HOSPITAL_CHAIR: return true;
-        case IDs.CHAR_CHAIR: return true;
-        case IDs.TABLE: return true;
-        case IDs.CHAR_TABLE: return true;
-        case IDs.NIGHT_TABLE: return true;
-        case IDs.HOSPITAL_NIGHT_TABLE: return true;
-        case IDs.DRAWER: return true;
-        case IDs.WARDROBE: return true;
-        case IDs.HOSPITAL_WARDROBE: return true;
-        case IDs.CAR1: return true;
-        case IDs.CAR2: return true;
-        case IDs.CAR3: return true;
-        case IDs.CAR4: return true;
-        case IDs.JUNK: return true;
-        case IDs.BARRELS: return true;
-//      case MapObject.IDs.: return true;
-        default: return false;
-      }
-    }
-
-    static private int _ID_Jumplevel(IDs x)
-    {
-      switch (x) {
-        case IDs.FENCE: return 1;
-        case IDs.GARDEN_FENCE: return 1;
-        case IDs.WIRE_FENCE: return 1;
-        case IDs.BENCH: return 1;
-        case IDs.IRON_BENCH: return 1;
-        case IDs.SMALL_FORTIFICATION: return 1;
-        case IDs.CHAIR: return 1;
-        case IDs.HOSPITAL_CHAIR: return 1;
-        case IDs.CHAR_CHAIR: return 1;
-        case IDs.TABLE: return 1;
-        case IDs.CHAR_TABLE: return 1;
-        case IDs.NIGHT_TABLE: return 1;
-        case IDs.HOSPITAL_NIGHT_TABLE: return 1;
-        case IDs.CAR1: return 1;
-        case IDs.CAR2: return 1;
-        case IDs.CAR3: return 1;
-        case IDs.CAR4: return 1;
-//      case IDs.: return 1;
-        default: return 0;
-      }
-    }
-
-    static private bool _ID_IsWalkable(IDs x)
-    {
-      switch (x) {
-        case IDs.IRON_GATE_OPEN: return true;
-        case IDs.DOOR: return true;
-        case IDs.WINDOW: return true;
-        case IDs.HOSPITAL_DOOR: return true;
-        case IDs.GLASS_DOOR: return true;
-        case IDs.CHAR_DOOR: return true;
-        case IDs.IRON_DOOR: return true;
-        case IDs.BED: return true;
-        case IDs.HOSPITAL_BED: return true;
-//      case MapObject.IDs.: return true;
-        default: return false;
-      }
-    }
-
     static private bool _ID_StartsBroken(IDs x)
     {
       switch (x) {
@@ -355,11 +193,6 @@ namespace djack.RogueSurvivor.Data
       m_ID = hiddenImageID.MapObject_ID();
       if (_ID_StartsBroken(m_ID)) m_BreakState = Break.BROKEN;
 
-      // model properties that may reasonably be expected to be invariant across changes
-      if (0 < Weight) m_Flags |= Flags.IS_MOVABLE;
-
-      _InitModel();
-
       if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
       m_HitPoints = MaxHitPoints = hitPoints;
     }
@@ -378,25 +211,6 @@ namespace djack.RogueSurvivor.Data
       if (null == m_Location.Map && null != m) m_Location = new Location(m, pos);
 #if DEBUG
       else throw new InvalidOperationException("location repair rejected");
-#endif
-    }
-
-    private void _InitModel()
-    {
-      if (_ID_GivesWood(m_ID)) m_Flags |= Flags.GIVES_WOOD;
-      if (_ID_StandOnFOVbonus(m_ID)) m_Flags |= Flags.STANDON_FOV_BONUS;
-      if (_ID_BreaksWhenFiredThrough(m_ID)) m_Flags |= Flags.BREAKS_WHEN_FIRED_THROUGH;
-      if (_ID_IsCouch(m_ID)) m_Flags |= Flags.IS_COUCH;
-      if (_ID_IsPlural(m_ID)) m_Flags |= Flags.IS_PLURAL;
-      if (_ID_MaterialIsTransparent(m_ID)) m_Flags |= Flags.IS_MATERIAL_TRANSPARENT;
-      if (_ID_IsWalkable(m_ID)) m_Flags |= Flags.IS_WALKABLE;
-
-      // following are currently mutually exclusive: IsWalkable, IsJumpable, IsContainer
-      // would be nice if it was possible to move on a container (this would make the starting game items more accessible), but there are UI issues
-      // StandsOnFovBonus requires IsJumpable
-#if DEBUG
-      if (StandOnFovBonus && !IsJumpable) throw new InvalidOperationException("must be able to jump on an object providing FOV bonus for standing on it");
-      if (IsWalkable && IsJumpable) throw new InvalidOperationException("map objects may not be both walkable and jumpable");
 #endif
     }
 
@@ -477,27 +291,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // flag handling
-    private bool GetFlag(Flags f) { return (m_Flags & f) != Flags.NONE; }
-
-#if DEAD_FUNC
-    private void SetFlag(Flags f, bool value)
-    {
-      if (value)
-        m_Flags |= f;
-      else
-        m_Flags &= ~f;
-    }
-
-    private void OneFlag(Flags f)
-    {
-      m_Flags |= f;
-    }
-
-    private void ZeroFlag(Flags f)
-    {
-      m_Flags &= ~f;
-    }
-#endif
+    private bool GetFlag(Model.MapObject.Flags f) => default != (Model.flags & f);
 
     // fire
     public void Ignite() => FireState = Fire.ONFIRE;
@@ -566,22 +360,6 @@ namespace djack.RogueSurvivor.Data
       BURNABLE,
       ONFIRE,
       ASHES,
-    }
-
-    [System.Flags]
-    private enum Flags
-    {
-      NONE = 0,
-      IS_AN = 1,    // XXX dead, retaining for historical reference
-      IS_PLURAL = 2,
-      IS_MATERIAL_TRANSPARENT = 4,
-      IS_WALKABLE = 8,
-      IS_CONTAINER = 16,    // XXX dead, retaining for historical reference
-      IS_COUCH = 32,
-      GIVES_WOOD = 64,
-      IS_MOVABLE = 128,
-      BREAKS_WHEN_FIRED_THROUGH = 256,
-      STANDON_FOV_BONUS = 512,
     }
 
     public enum IDs : byte
