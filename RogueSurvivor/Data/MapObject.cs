@@ -30,12 +30,14 @@ namespace djack.RogueSurvivor.Data
     private IDs m_ID;
     private Flags m_Flags;
     private int m_JumpLevel;
-    public readonly byte Weight; // Weight is positive if and only if the object is movable
     private Break m_BreakState;
     public readonly int MaxHitPoints;
     private int m_HitPoints;
     private Fire m_FireState;
     [NonSerialized] private Location m_Location;
+
+    Model.MapObject Model { get { return Data.Model.MapObject.from((int)m_ID); } }
+    public byte Weight { get { return Model.Weight; } }
 
     public string AName { get { return IsPlural ? _ID_Name(m_ID).PrefixIndefinitePluralArticle() : _ID_Name(m_ID).PrefixIndefiniteSingularArticle(); } }
     public string TheName { get { return _ID_Name(m_ID).PrefixDefiniteSingularArticle(); } }
@@ -166,35 +168,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     // This section of private switch statements arguably could designate properties of a MapObjectModel class.
-    private static byte _ID_Weight(IDs x)
-    {
-      switch(x) {
-        case IDs.SMALL_FORTIFICATION: return 4;
-        case IDs.BED: return 6; // XXX all beds should have same weight
-        case IDs.HOSPITAL_BED: return 6;
-        case IDs.CHAIR: return 1;   // XXX all chairs should have same weight
-        case IDs.HOSPITAL_CHAIR: return 1;
-        case IDs.CHAR_CHAIR: return 1;
-        case IDs.TABLE: return 2;   // XXX all tables should have same weight
-        case IDs.CHAR_TABLE: return 2;
-        case IDs.NIGHT_TABLE: return 1; // XXX all night tables should have same weight
-        case IDs.HOSPITAL_NIGHT_TABLE: return 1;
-        case IDs.DRAWER: return 6;
-        case IDs.FRIDGE: return 10;
-        case IDs.WARDROBE: return 10;   // all wardrobes should have same weight
-        case IDs.HOSPITAL_WARDROBE: return 10;
-        case IDs.CAR1: return CAR_WEIGHT;  // all cars should have same weight
-        case IDs.CAR2: return CAR_WEIGHT;
-        case IDs.CAR3: return CAR_WEIGHT;
-        case IDs.CAR4: return CAR_WEIGHT;
-        case IDs.SHOP_SHELF: return 6;
-        case IDs.JUNK: return 6;
-        case IDs.BARRELS: return 10;
-//      case MapObject.IDs.: return ;
-        default: return 0;  // not moveable
-      }
-    }
-
     private static bool _ID_GivesWood(IDs x)
     {
       switch (x) {
@@ -384,7 +357,6 @@ namespace djack.RogueSurvivor.Data
       if (_ID_StartsBroken(m_ID)) m_BreakState = Break.BROKEN;
 
       // model properties that may reasonably be expected to be invariant across changes
-      Weight = _ID_Weight(m_ID);
       if (0 < Weight) m_Flags |= Flags.IS_MOVABLE;
 
       _InitModel();

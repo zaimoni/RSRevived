@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using static djack.RogueSurvivor.Data.Abilities;
 
 namespace djack.RogueSurvivor.Data.Model
 {
@@ -11,7 +10,8 @@ namespace djack.RogueSurvivor.Data.Model
         public const int CAR_WEIGHT = 100;
         public const int MAX_NORMAL_WEIGHT = 10;
 
-        static MapObject[] models = new MapObject[_COUNT];
+        private static MapObject[] models = new MapObject[_COUNT];
+        static public MapObject from(int n) { return models[n]; }
 
         public readonly IDs ID;
         public readonly byte Weight; // Weight is positive if and only if the object is movable
