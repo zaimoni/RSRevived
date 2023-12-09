@@ -29,7 +29,6 @@ namespace djack.RogueSurvivor.Data
 
     private IDs m_ID;
     private Flags m_Flags;
-    private int m_JumpLevel;
     private Break m_BreakState;
     public readonly int MaxHitPoints;
     private int m_HitPoints;
@@ -77,8 +76,8 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsMaterialTransparent { get { return GetFlag(Flags.IS_MATERIAL_TRANSPARENT); } }
     virtual public bool IsWalkable { get { return GetFlag(Flags.IS_WALKABLE); } }
-    public int JumpLevel { get { return m_JumpLevel; } }
-    public bool IsJumpable { get { return m_JumpLevel > 0; } }
+    public int JumpLevel { get { return (m_FireState != Fire.ONFIRE) ? Model.jumpLevel : 0; } }
+    public bool IsJumpable { get { return 0 < JumpLevel; } }
     public bool IsCouch { get { return GetFlag(Flags.IS_COUCH); } }
     public bool IsBreakable { get { return m_BreakState == Break.BREAKABLE; } }
 
@@ -391,7 +390,6 @@ namespace djack.RogueSurvivor.Data
       if (_ID_IsPlural(m_ID)) m_Flags |= Flags.IS_PLURAL;
       if (_ID_MaterialIsTransparent(m_ID)) m_Flags |= Flags.IS_MATERIAL_TRANSPARENT;
       if (_ID_IsWalkable(m_ID)) m_Flags |= Flags.IS_WALKABLE;
-      m_JumpLevel = _ID_Jumplevel(m_ID);
 
       // following are currently mutually exclusive: IsWalkable, IsJumpable, IsContainer
       // would be nice if it was possible to move on a container (this would make the starting game items more accessible), but there are UI issues
@@ -501,18 +499,9 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
-    // fire (use accessor to get side effect processing)
-    public void Ignite()
-    {
-      FireState = Fire.ONFIRE;
-      --m_JumpLevel;
-    }
-
-    public void Extinguish()
-    {
-      ++m_JumpLevel;
-      FireState = Fire.BURNABLE;
-    }
+    // fire
+    public void Ignite() => FireState = Fire.ONFIRE;
+    public void Extinguish() => FireState = Fire.BURNABLE;
 
     // could do this as non-static member function by hard coding m_ID as the switch
     static private string _ID_Name(IDs x)
