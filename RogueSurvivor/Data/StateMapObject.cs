@@ -15,16 +15,12 @@ namespace djack.RogueSurvivor.Data
   {
     protected int m_State;
 
-    public int State { get { return m_State; } }
+    public int State { get => m_State; }
     abstract protected string StateToID(int x); // XXX intent is to validate before actually updating the state
-    public override string ImageID {
-      get {
-        return StateToID(m_State);
-      }
-    }
+    public override string ImageID { get => StateToID(m_State); }
 
     protected StateMapObject(string hiddenImageID) : base(hiddenImageID) {}
-    protected StateMapObject(string hiddenImageID, int hitPoints, Fire burnable) : base(hiddenImageID, hitPoints, burnable) {}
+    protected StateMapObject(string hiddenImageID, Fire burnable) : base(hiddenImageID, burnable) {}
 
     // 2023-04-16: Conditional attributes don't work on override member functions in C#11 (hard syntax error)
     protected void _update(int newState) => m_State = newState;

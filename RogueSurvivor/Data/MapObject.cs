@@ -29,13 +29,13 @@ namespace djack.RogueSurvivor.Data
 
     private IDs m_ID;
     private Break m_BreakState;
-    public readonly int MaxHitPoints;
     private int m_HitPoints;
     private Fire m_FireState;
     [NonSerialized] private Location m_Location;
 
     Model.MapObject Model { get => Data.Model.MapObject.from((int)m_ID); }
     public byte Weight { get => Model.Weight; }
+    public int MaxHitPoints { get => Model.MaxHitPoints; }
 
     public string AName { get => IsPlural ? _ID_Name(m_ID).PrefixIndefinitePluralArticle() : _ID_Name(m_ID).PrefixIndefiniteSingularArticle(); }
     public string TheName { get => _ID_Name(m_ID).PrefixDefiniteSingularArticle(); }
@@ -182,28 +182,26 @@ namespace djack.RogueSurvivor.Data
       return !IsJumpable && !IsWalkable && (!IsMovable || IsOnFire);
     } }
 
-    protected MapObject(string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
+    protected MapObject(string hiddenImageID, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(hiddenImageID)) throw new ArgumentNullException(nameof(hiddenImageID));
 #endif
-      m_BreakState = (0==hitPoints ? Break.UNBREAKABLE : Break.BREAKABLE); // breakable := nonzero max hp
-      m_FireState = burnable;   // XXX should be able to infer burnable from gives wood; other materials may also be burnable (need fire spread for this to matter)
-
       m_ID = hiddenImageID.MapObject_ID();
-      if (_ID_StartsBroken(m_ID)) m_BreakState = Break.BROKEN;
+      m_BreakState = (0==Model.MaxHitPoints ? Break.UNBREAKABLE : Break.BREAKABLE); // breakable := nonzero max hp
+      m_FireState = burnable;   // XXX should be able to infer burnable from gives wood; other materials may also be burnable (need fire spread for this to matter)
+      m_HitPoints = MaxHitPoints;
 
-      if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
-      m_HitPoints = MaxHitPoints = hitPoints;
+      if (_ID_StartsBroken(m_ID)) m_BreakState = Break.BROKEN;
     }
 
 
-    static public MapObject create(string hiddenImageID, int hitPoints = 0, Fire burnable = Fire.UNINFLAMMABLE)
+    static public MapObject create(string hiddenImageID, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
         if (hiddenImageID.MapObject_ID().HasShelf()) throw new InvalidOperationException("ID.HasShelf()");
 #endif
-        return new MapObject(hiddenImageID, hitPoints, burnable);
+        return new MapObject(hiddenImageID, burnable);
     }
 
     public void RepairLoad(Map m, Point pos)
@@ -412,13 +410,10 @@ namespace djack.RogueSurvivor.Data
   internal class ShelfLike : MapObject, IInventory
   {
     private readonly Inventory m_Inventory;
-    public Inventory Inventory { get { return m_Inventory; } }
-    public Inventory? NonEmptyInventory { get {
-      return m_Inventory.IsEmpty ? null : m_Inventory;
-    } }
+    public Inventory Inventory { get => m_Inventory; }
+    public Inventory? NonEmptyInventory { get => m_Inventory.IsEmpty ? null : m_Inventory; }
 
-    public ShelfLike(string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
-    : base(hiddenImageID, hitPoints, burnable)
+    public ShelfLike(string hiddenImageID, Fire burnable = Fire.UNINFLAMMABLE) : base(hiddenImageID, burnable)
     {
 #if DEBUG
       if (!ID.HasShelf()) throw new InvalidOperationException("!ID.HasShelf()");
@@ -427,12 +422,12 @@ namespace djack.RogueSurvivor.Data
       m_Inventory = new Inventory(Map.GROUND_INVENTORY_SLOTS);
     }
 
+#if DEBUG
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
-#if DEBUG
-      m_Inventory?.RepairZeroQty();
-#endif
+      m_Inventory.RepairZeroQty();
     }
+#endif
 
     public void TransferFrom(Item it, Inventory dest) { m_Inventory.Transfer(it, dest); }
 

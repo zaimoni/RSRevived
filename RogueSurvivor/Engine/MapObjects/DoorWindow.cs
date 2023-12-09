@@ -48,9 +48,9 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     private readonly byte m_type;
     private int m_BarricadePoints;
 
-    public bool IsOpen { get { return State == STATE_OPEN; } }
-    public bool IsClosed { get { return State == STATE_CLOSED; } }
-    public bool IsBroken { get { return State == STATE_BROKEN; } }
+    public bool IsOpen { get => State == STATE_OPEN; }
+    public bool IsClosed { get => State == STATE_CLOSED; }
+    public bool IsBroken { get => State == STATE_BROKEN; }
 
     public override bool IsTransparent
     {
@@ -62,21 +62,18 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     }
 
     public override bool IsWalkable {
-      get {
-        return base.IsWalkable && State != STATE_CLOSED && 0 >= m_BarricadePoints;
-      }
+      get => base.IsWalkable && State != STATE_CLOSED && 0 >= m_BarricadePoints;
     }
 
-    public override bool CoversTraps { get { return false; } }
-    public override bool TriggersTraps { get { return false; } }
-    public override bool BlocksLivingPathfinding { get { return false; } }
+    public override bool CoversTraps { get => false; }
+    public override bool TriggersTraps { get => false; }
+    public override bool BlocksLivingPathfinding { get => false; }
 
-    public bool IsWindow { get { return m_type==(byte)DW_type.WINDOW; } }
-    public int BarricadePoints { get { return m_BarricadePoints; } }
-    public bool IsBarricaded { get { return m_BarricadePoints > 0; } }
+    public bool IsWindow { get => m_type ==(byte)DW_type.WINDOW; }
+    public int BarricadePoints { get => m_BarricadePoints; }
+    public bool IsBarricaded { get => m_BarricadePoints > 0; }
 
-    public DoorWindow(DW_type _type, int hitPoints)
-      : base(images[(int)(_type)][STATE_CLOSED], hitPoints, MapObject.Fire.BURNABLE)
+    public DoorWindow(DW_type _type) : base(images[(int)(_type)][STATE_CLOSED], Fire.BURNABLE)
     {
       m_type = (byte)_type;
       SetState(STATE_CLOSED);

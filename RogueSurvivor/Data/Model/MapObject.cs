@@ -1,7 +1,10 @@
-﻿using System;
+﻿using djack.RogueSurvivor.Engine.MapObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TreeView;
 
 namespace djack.RogueSurvivor.Data.Model
 {
@@ -17,6 +20,7 @@ namespace djack.RogueSurvivor.Data.Model
         public readonly byte Weight; // Weight is positive if and only if the object is movable
         public readonly Flags flags;
         public readonly int jumpLevel;
+        public readonly int MaxHitPoints;
 
         [ModuleInitializer]
         internal static void init() {
@@ -38,6 +42,7 @@ namespace djack.RogueSurvivor.Data.Model
             if (_ID_MaterialIsTransparent(ID)) flags |= Flags.IS_MATERIAL_TRANSPARENT;
             if (_ID_IsWalkable(ID)) flags |= Flags.IS_WALKABLE;
             jumpLevel = _ID_Jumplevel(ID);
+            MaxHitPoints = _ID_MaxHP(ID);
 
 #if DEBUG
             if (default != (flags & Flags.STANDON_FOV_BONUS) && 0>=jumpLevel) throw new InvalidOperationException("must be able to jump on an object providing FOV bonus for standing on it");
@@ -239,6 +244,43 @@ namespace djack.RogueSurvivor.Data.Model
         case IDs.CAR4: return true;
 //      case IDs.: return true;
         default: return false;
+      }
+    }
+
+    static private int _ID_MaxHP(IDs x)
+    {
+      switch (x) {
+        case IDs.FENCE: return 10 * DoorWindow.BASE_HITPOINTS;
+        case IDs.GARDEN_FENCE: return DoorWindow.BASE_HITPOINTS / 2;
+        case IDs.WIRE_FENCE: return DoorWindow.BASE_HITPOINTS;
+        case IDs.TREE: return 10 * DoorWindow.BASE_HITPOINTS;
+        case IDs.IRON_GATE_CLOSED: return 20 * DoorWindow.BASE_HITPOINTS;
+        case IDs.DOOR: return DoorWindow.BASE_HITPOINTS;
+        case IDs.WINDOW: return DoorWindow.BASE_HITPOINTS / 4;
+        case IDs.HOSPITAL_DOOR: return DoorWindow.BASE_HITPOINTS;
+        case IDs.GLASS_DOOR: return DoorWindow.BASE_HITPOINTS / 4;
+        case IDs.CHAR_DOOR: return 4 * DoorWindow.BASE_HITPOINTS;
+        case IDs.IRON_DOOR: return 8 * DoorWindow.BASE_HITPOINTS;
+        case IDs.BENCH: return 2 * DoorWindow.BASE_HITPOINTS;
+        case IDs.SMALL_FORTIFICATION: return Fortification.SMALL_BASE_HITPOINTS;
+        case IDs.LARGE_FORTIFICATION: return Fortification.LARGE_BASE_HITPOINTS;
+        case IDs.BED: return 2 * DoorWindow.BASE_HITPOINTS;
+        case IDs.HOSPITAL_BED: return 2 * DoorWindow.BASE_HITPOINTS;
+        case IDs.CHAIR: return DoorWindow.BASE_HITPOINTS / 3;
+        case IDs.HOSPITAL_CHAIR: return DoorWindow.BASE_HITPOINTS / 3;
+        case IDs.CHAR_CHAIR: return DoorWindow.BASE_HITPOINTS / 3;
+        case IDs.TABLE: return DoorWindow.BASE_HITPOINTS;
+        case IDs.CHAR_TABLE: return DoorWindow.BASE_HITPOINTS;
+        case IDs.NIGHT_TABLE: return DoorWindow.BASE_HITPOINTS / 3;
+        case IDs.HOSPITAL_NIGHT_TABLE: return DoorWindow.BASE_HITPOINTS / 3;
+        case IDs.DRAWER: return DoorWindow.BASE_HITPOINTS;
+        case IDs.FRIDGE: return 6 * DoorWindow.BASE_HITPOINTS;
+        case IDs.WARDROBE: return 6 * DoorWindow.BASE_HITPOINTS;
+        case IDs.HOSPITAL_WARDROBE: return 6 * DoorWindow.BASE_HITPOINTS;
+        case IDs.SHOP_SHELF: return DoorWindow.BASE_HITPOINTS;
+        case IDs.JUNK: return DoorWindow.BASE_HITPOINTS;
+        case IDs.BARRELS: return 2 * DoorWindow.BASE_HITPOINTS;
+        default: return 0;
       }
     }
 

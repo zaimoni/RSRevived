@@ -12,14 +12,11 @@ using System;
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  internal class Fortification : MapObject
+  internal sealed class Fortification : MapObject
   {
     public const int SMALL_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS/2;
     public const int LARGE_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS;
 
-    public Fortification(string imageID, int hitPoints)
-      : base(imageID, hitPoints, Fire.BURNABLE)
-    {
-    }
+    public Fortification(string imageID) : base(imageID, Fire.BURNABLE) {}
   }
 }
