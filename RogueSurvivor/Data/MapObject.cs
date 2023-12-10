@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Data
  * we would like actors to have enough item memory to track seen *internal* inventory (not yet implemented)
  */
   [Serializable]
-  internal class MapObject
+  internal class MapObject : Zaimoni.Serialization.ISerialize
   {
     public const int CAR_WEIGHT = 100;
     public const int MAX_NORMAL_WEIGHT = 10;
@@ -195,6 +195,32 @@ namespace djack.RogueSurvivor.Data
       if (_ID_StartsBroken(m_ID)) m_BreakState = Break.BROKEN;
     }
 
+#region implement Zaimoni.Serialization.ISerialize
+    protected MapObject(Zaimoni.Serialization.DecodeObjects decode) {
+        byte stage_byte = 0;
+        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref stage_byte);
+        m_ID = (IDs)stage_byte;
+        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref stage_byte);
+        m_BreakState = (Break)(stage_byte / max_Fire);
+        m_FireState = (Fire)(stage_byte % max_Fire);
+        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_HitPoints);
+    }
+
+    protected void save(Zaimoni.Serialization.EncodeObjects encode) {
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)m_ID);
+        int crm_code = (int)m_BreakState*max_Fire+(int)m_FireState;
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)crm_code);
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_HitPoints);
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)m_ID);
+        int crm_code = (int)m_BreakState*max_Fire+(int)m_FireState;
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)crm_code);
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_HitPoints);
+    }
+#endregion
+
 
     static public MapObject create(string hiddenImageID, Fire burnable = Fire.UNINFLAMMABLE)
     {
@@ -359,6 +385,7 @@ namespace djack.RogueSurvivor.Data
       ONFIRE,
       ASHES,
     }
+    private const int max_Fire = (int)Fire.ASHES+1;
 
     public enum IDs : byte
     {
@@ -407,8 +434,8 @@ namespace djack.RogueSurvivor.Data
 
 #nullable enable
   [Serializable]
-  internal class ShelfLike : MapObject, IInventory
-  {
+  internal sealed class ShelfLike : MapObject, IInventory, Zaimoni.Serialization.ISerialize
+    {
     private readonly Inventory m_Inventory;
     public Inventory Inventory { get => m_Inventory; }
     public Inventory? NonEmptyInventory { get => m_Inventory.IsEmpty ? null : m_Inventory; }
@@ -421,6 +448,28 @@ namespace djack.RogueSurvivor.Data
 
       m_Inventory = new Inventory(Map.GROUND_INVENTORY_SLOTS);
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected ShelfLike(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
+        m_Inventory = decode.Load<Inventory>(out var code);
+        if (null == m_Inventory) {
+            if (0 < code) {
+                m_Inventory = new(1);
+                decode.Schedule(code, (o) => {
+                    if (o is Inventory w) w.DestructiveTransferAll(m_Inventory);
+                    else throw new InvalidOperationException("Inventory object not loaded");
+                });
+            } else throw new InvalidOperationException("Inventory object not loaded");
+        }
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+        base.save(encode);
+        var code = encode.Saving(m_Inventory); // obligatory, in spite of type prefix/suffix
+        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
+        else throw new ArgumentNullException(nameof(m_Inventory));
+    }
+#endregion
 
 #if DEBUG
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)

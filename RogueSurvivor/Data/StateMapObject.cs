@@ -10,9 +10,10 @@ using System;
 
 namespace djack.RogueSurvivor.Data
 {
+  // both use cases are "not that many states"
   [Serializable]
-  abstract class StateMapObject : MapObject
-  {
+  abstract class StateMapObject : MapObject, Zaimoni.Serialization.ISerialize
+    {
     protected int m_State;
 
     public int State { get => m_State; }
@@ -21,6 +22,23 @@ namespace djack.RogueSurvivor.Data
 
     protected StateMapObject(string hiddenImageID) : base(hiddenImageID) {}
     protected StateMapObject(string hiddenImageID, Fire burnable) : base(hiddenImageID, burnable) {}
+#region implement Zaimoni.Serialization.ISerialize
+    protected StateMapObject(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
+        sbyte stage_sbyte = 0;
+        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref stage_sbyte);
+        m_State = stage_sbyte;
+    }
+
+    new protected void save(Zaimoni.Serialization.EncodeObjects encode) {
+        base.save(encode);
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (sbyte)m_State);
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+        base.save(encode);
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (sbyte)m_State);
+    }
+#endregion
 
     // 2023-04-16: Conditional attributes don't work on override member functions in C#11 (hard syntax error)
     protected void _update(int newState) => m_State = newState;

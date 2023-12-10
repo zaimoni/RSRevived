@@ -12,8 +12,8 @@ using System;
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  internal class PowerGenerator : StateMapObject
-  {
+  internal sealed class PowerGenerator : StateMapObject, Zaimoni.Serialization.ISerialize
+    {
     private const int STATE_OFF = 0;
     private const int STATE_ON = 1;
 
@@ -32,13 +32,15 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     static private readonly string[] m_imageIDs = new string[2] { Gameplay.GameImages.OBJ_POWERGEN_OFF, Gameplay.GameImages.OBJ_POWERGEN_ON };
 
-    public bool IsOn { get { return State == STATE_ON; } }
+    public bool IsOn { get => State == STATE_ON; }
 
     // While there is only one kind of power generator currently, the graphics
     // should be isolated from the constructor "just in case".
-    public PowerGenerator() : base(m_imageIDs[0])
-    {
-    }
+    public PowerGenerator() : base(m_imageIDs[0]) {}
+#region implement Zaimoni.Serialization.ISerialize
+    protected PowerGenerator(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
+#endregion
 
     override protected string StateToID(int x) => m_imageIDs[x];
 

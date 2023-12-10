@@ -389,6 +389,15 @@ namespace djack.RogueSurvivor.Data
       return IsEmpty;
     }
 
+    // for loading from file
+    public void DestructiveTransferAll(Inventory dest)
+    {
+      dest.m_Items.Clear();
+      dest.m_maxCapacity = m_maxCapacity;
+      dest.m_Items.AddRange(m_Items);
+      m_Items.Clear();
+    }
+
     static private int AddToStack(Item from, int addThis, Item to)
     {
       int num = 0;

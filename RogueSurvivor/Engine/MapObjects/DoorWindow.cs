@@ -13,8 +13,8 @@ using System.Threading;
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  internal class DoorWindow : StateMapObject
-  {
+  internal sealed class DoorWindow : StateMapObject, Zaimoni.Serialization.ISerialize
+    {
     public const int BASE_HITPOINTS = 40;   // XXX spacetime scaling candidate
     public const int STATE_CLOSED = 0;
     public const int STATE_OPEN = 1;
@@ -78,6 +78,19 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       m_type = (byte)_type;
       SetState(STATE_CLOSED);
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected DoorWindow(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
+        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_type);
+        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_BarricadePoints);
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+        base.save(encode);
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_type);
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_BarricadePoints);
+    }
+#endregion
 
     public void Barricade(int delta)
     {

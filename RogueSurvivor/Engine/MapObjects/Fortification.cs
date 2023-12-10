@@ -12,11 +12,17 @@ using System;
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  internal sealed class Fortification : MapObject
-  {
+  internal sealed class Fortification : MapObject, Zaimoni.Serialization.ISerialize
+    {
     public const int SMALL_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS/2;
     public const int LARGE_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS;
 
     public Fortification(string imageID) : base(imageID, Fire.BURNABLE) {}
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected Fortification(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
+#endregion
+
   }
 }
