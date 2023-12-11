@@ -2334,7 +2334,7 @@ retry:
 
     private void _relativeEnergySort(int origin, int ub)
     {
-      if (ub - 1 > origin) {
+      if (ub - 1 > origin && 0 < m_ActorsList[origin].ActionPoints) {
         Span<float> TUorder = stackalloc float[ub - origin];
         int i = origin-1;
         while(++i < ub) {
