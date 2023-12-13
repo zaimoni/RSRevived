@@ -41,6 +41,7 @@ using GDI_Rectangle = System.Drawing.Rectangle;
 using GDI_Size = System.Drawing.Size;
 using System.Numerics;
 using System.Runtime;
+using djack.RogueSurvivor.Engine._Action;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -6021,6 +6022,55 @@ namespace djack.RogueSurvivor.Engine
           Session.Get.Scoring.UseReincarnation(); // intentionally unconditional
           return true;
         }));
+      }
+
+      if (follower.IsPlayer || !follower.Controller.InCombat) {
+        bool could_lead(Actor ally) {
+          var oai = ally.Controller as ObjectiveAI;
+          if (null == oai) return false;
+//          InfoPopup(ally.Name+" : "+ ally.CountFollowers.ToString());
+          if (ally.CountFollowers >= ally.MaxFollowers) return false;
+//          InfoPopup((!ally.IsPlayer && ally.Controller.InCombat).ToString());
+          if (!ally.IsPlayer && ally.Controller.InCombat) return false;
+//          InfoPopup((!ally.IsPlayer && ally.Controller.InCombat).ToString());
+          if (!oai.InCommunicationWith(player)) return false;
+//          InfoPopup((!oai.InCommunicationWith(player)).ToString());
+          if (!pc.InCommunicationWith(ally)) return false;
+//          InfoPopup((!pc.InCommunicationWith(ally)).ToString());
+          if (!oai.InCommunicationWith(follower)) return false;
+//          InfoPopup((!oai.InCommunicationWith(follower)).ToString());
+//        if (!pc.InCommunicationWith(follower)) return false; // precondition of the master function call
+          return true;
+        }
+
+        void msg(Actor authority, Actor whom, Actor new_leader) {
+          var authority_whom_code = pc.CommunicationMethodCode(whom);
+          var authority_new_leader_code = pc.CommunicationMethodCode(new_leader);
+          if (2 == authority_whom_code || 2 == authority_new_leader_code) {
+            UI.Message msg = new(string.Format("(police radio, {0}) {1}, follow {2}.", authority.Name, whom.Name, new_leader.Name), Session.Get.WorldTime.TurnCounter, Color.White);
+            Action<PlayerController> pc_add_msg = pc => pc.AddMessage(msg);
+            authority.MessageAllInDistrictByRadio(NOP, FALSE, pc_add_msg, pc_add_msg, TRUE);
+          }
+        }
+
+        var allies = player.Allies;
+        var donate_to = player.FilterAllies(allies, could_lead);
+        if (null != donate_to) {
+          orders.Add(new("Follow ...", () => {
+            string label(int index) { return donate_to[index].Name; }
+            bool details(int index) {
+                var act = new TransferFollower(player, follower, donate_to[index], msg);
+                if (act.IsPerformable()) {
+                    act.Perform();
+                    return true;
+                }
+                InfoPopup(act.FailReason);
+                return false;
+            }
+
+            return PagedPopup("Current self-orders", donate_to.Count, label, details);
+          }));
+        }
       }
 
       string label(int index) { return orders[index].Key; }
