@@ -2683,7 +2683,7 @@ restart:
     // RS 9 CHAR office had a high rate of null return when creating items
     private const int CHAR_office_checksum = 450;
     private readonly KeyValuePair<Item_IDs, int>[] CHAR_office_stock = {
-        new(Item_IDs.EXPLOSIVE_GRENADE_PRIMED,10),
+        new(Item_IDs.EXPLOSIVE_GRENADE,10),
         new(Item_IDs.RANGED_SHOTGUN,27),
         new(Item_IDs.AMMO_SHOTGUN,63),
         new(Item_IDs.MEDICINE_BANDAGES,100),
@@ -3129,7 +3129,7 @@ restart:
         new(Item_IDs.RANGED_HUNTING_RIFLE,192),
         new(Item_IDs.AMMO_SHOTGUN,448),
         new(Item_IDs.AMMO_LIGHT_RIFLE,448),
-        new(Item_IDs.EXPLOSIVE_GRENADE_PRIMED,320),
+        new(Item_IDs.EXPLOSIVE_GRENADE,320),
         new(Item_IDs.TRACKER_ZTRACKER,200),
         new(Item_IDs.TRACKER_BLACKOPS,200),
         new(Item_IDs.ARMOR_CHAR_LIGHT_BODYARMOR,500)
@@ -4200,7 +4200,7 @@ restart:
     }
 
     static private readonly Item_IDs[] rare_random_item = new[] {
-        Item_IDs.EXPLOSIVE_GRENADE_PRIMED,
+        Item_IDs.EXPLOSIVE_GRENADE,
         Item_IDs.ARMOR_ARMY_BODYARMOR,
         Item_IDs.AMMO_HEAVY_PISTOL,
         Item_IDs.AMMO_HEAVY_RIFLE,
