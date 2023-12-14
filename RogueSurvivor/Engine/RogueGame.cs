@@ -2032,7 +2032,7 @@ namespace djack.RogueSurvivor.Engine
             if (actor.Infection >= Rules.INFECTION_LEVEL_1_WEAK && !actor.Model.Abilities.IsUndead) {
               int infectionPercent = actor.InfectionPercent;
               if (rules.Roll(0, 1000) < Rules.InfectionEffectTriggerChance1000(infectionPercent)) {
-                var witnesses = PlayersInLOS(actor.Location);
+                var witnesses = actor.PlayersInLOS();
                 if (actor.IsSleeping) DoWakeUp(actor);
                 bool flag4 = false;
                 if (infectionPercent >= Rules.INFECTION_LEVEL_5_DEATH) flag4 = true;
@@ -2057,7 +2057,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (actorList != null) {
             foreach (Actor actor in actorList) {
-              var witnesses = PlayersInLOS(actor.Location);
+              var witnesses = actor.PlayersInLOS();
               if (null != witnesses) {
                 RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} of infection!", VERB_DIE.Conjugate(actor))));
               }
@@ -2083,7 +2083,7 @@ namespace djack.RogueSurvivor.Engine
           } else if (actor.Model.Abilities.IsRotting) {
             actor.Appetite(1);
             if (actor.IsRotStarving && rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE) {
-              var witnesses = PlayersInLOS(actor.Location);
+              var witnesses = actor.PlayersInLOS();
               if (null != witnesses) {
                 RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, "is rotting away."));
               }
@@ -2102,7 +2102,7 @@ namespace djack.RogueSurvivor.Engine
                 actor.Drowse(Rules.SANITY_NIGHTMARE_SLP_LOSS);
                 actor.SpendSanity(Rules.SANITY_NIGHTMARE_SAN_LOSS);
                 actor.SpendStaminaPoints(Rules.SANITY_NIGHTMARE_STA_LOSS);
-                var witnesses = PlayersInLOS(actor.Location);
+                var witnesses = actor.PlayersInLOS();
                 if (null != witnesses) {
                   RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} from a horrible nightmare!", VERB_WAKE_UP.Conjugate(actor))));
                 }
@@ -2132,7 +2132,7 @@ namespace djack.RogueSurvivor.Engine
                 RedrawPlayScreen(new UI.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
                 Thread.Sleep(10);
               } else if (rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE)) {
-                var witnesses = PlayersInLOS(actor.Location);
+                var witnesses = actor.PlayersInLOS();
                 if (null != witnesses) {
                   RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0}.", VERB_SNORE.Conjugate(actor))));
                 }
@@ -2142,7 +2142,7 @@ namespace djack.RogueSurvivor.Engine
             if (actor.IsExhausted && rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE)) {
 #region 4.3 Exhausted actors might collapse.
               actor.StartSleeping();
-              var witnesses = PlayersInLOS(actor.Location);
+              var witnesses = actor.PlayersInLOS();
               if (null != witnesses) {
                 RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} from exhaustion !!", VERB_COLLAPSE.Conjugate(actor))));
               }
@@ -2174,7 +2174,7 @@ namespace djack.RogueSurvivor.Engine
 #region Kill (zombify) starved actors.
         if (actorList1 != null) {
           foreach (Actor actor in actorList1) {
-            var witnesses = PlayersInLOS(actor.Location);
+            var witnesses = actor.PlayersInLOS();
             if (null != witnesses) {
               RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} !!", VERB_DIE_FROM_STARVATION.Conjugate(actor))));
             }
@@ -2197,7 +2197,7 @@ namespace djack.RogueSurvivor.Engine
         }
         void drain(Actor actor, Item it) {
           if (it is BatteryPowered batt && is_drained(batt)) {
-            var witnesses = PlayersInLOS(actor.Location);
+            var witnesses = actor.PlayersInLOS();
             if (null != witnesses) {
               RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format(": {0} goes off.", it.TheName)));
             }
@@ -4570,7 +4570,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoButcherCorpse(Actor a, Corpse c)  // AI doesn't currently do this, but should be able to once it knows how to manage sanity
     {
-      var witnesses = PlayersInLOS(a.Location);
+      var witnesses = a.PlayersInLOS();
       a.SpendActionPoints();
       // XXX Unlike most sources of sanity loss, this is a living doing this.  Thus, this should affect reputation.
       SeeingCauseInsanity(a, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
@@ -8243,7 +8243,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool DoTriggerTrap(ItemTrap trap, Actor victim)
     {
-      var witnesses = PlayersInLOS(victim.Location);
+      var witnesses = victim.PlayersInLOS();
       trap.IsTriggered = true;
       ItemTrapModel trapModel = trap.Model;
       int dmg = trapModel.Damage * trap.Quantity;
@@ -8398,6 +8398,16 @@ namespace djack.RogueSurvivor.Engine
       actor.AddFollower(other);
       int trustIn = other.GetTrustIn(actor);
       other.TrustInLeader = trustIn;
+#if PROTOTYPE
+      var witnesses = PlayersInLOS(actor.Location);
+      var o_witnesses = PlayersInLOS(other.Location);
+      if (null != witnesses && 0 < witnesses.Value.Key.Count) {
+        if (null != o_witnesses && 0 < o_witnesses.Value.Key.Count) {
+        } else {
+        }
+      } else if (null != o_witnesses && 0 < o_witnesses.Value.Key.Count) {
+      }
+#endif
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(other)) {
         if (Player == actor) ClearMessages();
         AddMessage(MakeMessage(actor, VERB_PERSUADE.Conjugate(actor), other, " to join."));
@@ -9037,7 +9047,7 @@ namespace djack.RogueSurvivor.Engine
       var actorAt = map.GetActorAtExt(pos);
       if (actorAt != null) {
         ExplosionChainReaction(actorAt.Inventory, in location);
-        var witnesses = PlayersInLOS(actorAt.Location);
+        var witnesses = actorAt.PlayersInLOS();
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
         if (dmg > 0) {
           if (null != witnesses) {
@@ -9344,7 +9354,7 @@ namespace djack.RogueSurvivor.Engine
 //    RedrawPlayScreen(); // redraw handled by AddMessage calls below
 
       // no need to spam other PCs with above messages
-      var witnesses = PlayersInLOS(speaker.Location)!.Value;
+      var witnesses = speaker.PlayersInLOS()!.Value;
 
       if (!acceptDeal) {
         speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))), witnesses);
@@ -9369,7 +9379,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
       target.RejectCrossLink(speaker.Inventory!);
-      var witnesses = PlayersInLOS(speaker.Location)!.Value;
+      var witnesses = speaker.PlayersInLOS()!.Value;
 
       var trade = PickItemToTrade(target, pc, itSpeaker);
       if (null == trade) return;
@@ -9675,7 +9685,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoEmote(Actor actor, string text, bool isDanger = false)
     {
-        var witnesses = PlayersInLOS(actor.Location);
+        var witnesses = actor.PlayersInLOS();
         if (null != witnesses) {
             RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format(": {0}", text), isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
         }
@@ -9940,7 +9950,7 @@ namespace djack.RogueSurvivor.Engine
         if (!clone.IsActivated) throw new ArgumentOutOfRangeException(nameof(it)," trap being dropped intentionally must be activated");
 #endif
       }
-      var witnesses = PlayersInLOS(actor.Location);
+      var witnesses = actor.PlayersInLOS();
       if (it.IsUseless) {
         DiscardItem(actor, it);
         if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), it));
@@ -9978,7 +9988,7 @@ namespace djack.RogueSurvivor.Engine
         if (!clone.IsActivated) throw new ArgumentOutOfRangeException(nameof(it)," trap being dropped intentionally must be activated");
 #endif
       }
-      var witnesses = PlayersInLOS(actor.Location);
+      var witnesses = actor.PlayersInLOS();
       if (it.IsUseless) {
         DiscardItem(actor, it);
         if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), it));
@@ -10060,7 +10070,7 @@ namespace djack.RogueSurvivor.Engine
       src.fireChange();
       dest.fireChange();
 
-      var witnesses = PlayersInLOS(actor.Location);
+      var witnesses = actor.PlayersInLOS();
       if (null!=witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_UNLOAD.Conjugate(actor), src.it));
       return true;
     }
@@ -10152,7 +10162,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints();
       (it as BatteryPowered).Recharge();
-      var witnesses = PlayersInLOS(actor.Location);
+      var witnesses = actor.PlayersInLOS();
       if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_RECHARGE.Conjugate(actor), it, " batteries."));
     }
 
@@ -10614,7 +10624,7 @@ namespace djack.RogueSurvivor.Engine
       if (null != clan) foreach(var a in clan) {
         if (a.HasBondWith(deadGuy)) {
           a.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
-          var witnesses = PlayersInLOS(a.Location);
+          var witnesses = a.PlayersInLOS();
           if (null != witnesses) a.Controller.AddMessageForceRead(MakePanopticMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)), witnesses.Value);
         }
       }
@@ -10694,7 +10704,7 @@ namespace djack.RogueSurvivor.Engine
               }
               killer.RecomputeStartingStats();
             }
-            var witnesses = PlayersInLOS(killer.Location);
+            var witnesses = killer.PlayersInLOS();
             if (null != witnesses) {
               AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(killer.Location), SIZE_OF_ACTOR)));
               ImportantMessage(witnesses.Value, MakePanopticMessage(killer, string.Format("{0} a {1} horror!", VERB_TRANSFORM_INTO.Conjugate(killer), actorModel.Name)), DELAY_LONG);
@@ -12997,7 +13007,7 @@ namespace djack.RogueSurvivor.Engine
 
     private KeyValuePair<List<PlayerController>, List<Actor>>? _ForceVisibleToPlayer(Actor actor)
     {
-      var viewing = PlayersInLOS(actor.Location);
+      var viewing = actor.PlayersInLOS();
       if (null == viewing) return null;
       if (actor.IsViewpoint) {
         if (actor == Player) return viewing;
@@ -13021,7 +13031,7 @@ namespace djack.RogueSurvivor.Engine
 
     private KeyValuePair<List<PlayerController>, List<Actor>>? _ForceVisibleToPlayer(Actor actor, Actor want)
     {
-      var viewing = PlayersInLOS(actor.Location);
+      var viewing = actor.PlayersInLOS();
       if (null == viewing) return null;
       if (actor.IsViewpoint) {
         if (actor == Player) return viewing;
@@ -14194,7 +14204,7 @@ retry:
       bool need_to_message_performer = true;
       foreach(var actor in victims) {
         actor.SpendSanity(sanCost);
-        var PC_witnesses = PlayersInLOS(actor.Location);
+        var PC_witnesses = actor.PlayersInLOS();
         if (null == PC_witnesses) continue;
         bool have_messaged = false;
         if (null != pc_did_it && PC_witnesses.Value.Key.Remove(pc_did_it)) {
@@ -14922,6 +14932,20 @@ retry:
       foreach(var actor in responders) {
         (actor.Controller as ObjectiveAI)!.Track(target);
       }
+    }
+
+    static public KeyValuePair<List<PlayerController>, List<Actor>>? PlayersInLOS(this ILocation view) => RogueGame.PlayersInLOS(view.Location);
+
+    static public string? VisibleIdentity(this KeyValuePair<List<PlayerController>, List<Actor>> witnesses, Actor observer, Actor whom) {
+        foreach(var pc in witnesses.Key) if (pc.ControlledActor == observer) return whom.TheName;
+        foreach(var a in witnesses.Value) if (a == observer) return whom.TheName;
+        return null;
+    }
+
+    static public string? VisibleIdentity(this KeyValuePair<List<PlayerController>, List<Actor>> witnesses, Actor observer, MapObject what) {
+        foreach(var pc in witnesses.Key) if (pc.ControlledActor == observer) return what.TheName;
+        foreach(var a in witnesses.Value) if (a == observer) return what.TheName;
+        return null;
     }
   }
 #nullable restore

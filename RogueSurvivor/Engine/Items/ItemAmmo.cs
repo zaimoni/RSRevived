@@ -60,7 +60,7 @@ namespace djack.RogueSurvivor.Engine.Items
       rw.Ammo += num;
       if (0 >= (Quantity -= num)) inv.RemoveAllQuantity(this);
       else inv.IncrementalDefrag(this);
-      var witnesses = RogueGame.PlayersInLOS(actor.Location);
+      var witnesses = actor.PlayersInLOS();
       if (null != witnesses) RogueGame.Game.RedrawPlayScreen(witnesses.Value, RogueGame.MakePanopticMessage(actor, RogueGame.VERB_RELOAD.Conjugate(actor), rw));
       _rw = null;
     }

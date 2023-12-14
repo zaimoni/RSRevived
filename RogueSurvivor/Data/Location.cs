@@ -317,6 +317,16 @@ namespace djack.RogueSurvivor.Data
       return Map.Name+"@"+Position.X.ToString()+","+Position.Y.ToString();
     }
   }
+
+  internal interface ILocation {
+        public Location Location { get; set; }
+  }
+
+#if PROTOTYPE
+  internal interface ILocation_readonly {
+        public Location Location { get; }
+  }
+#endif
 }
 
 namespace Zaimoni.Serialization {

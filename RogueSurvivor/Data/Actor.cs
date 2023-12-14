@@ -64,7 +64,7 @@ namespace djack.RogueSurvivor.Data
     };
 
   [Serializable]
-  internal class Actor : IEquatable<Actor>, IDeserializationCallback
+  internal class Actor : IEquatable<Actor>, IDeserializationCallback, ILocation
     {
     public const int BASE_ACTION_COST = 100;
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
@@ -685,7 +685,7 @@ namespace djack.RogueSurvivor.Data
     public void StartDragging(Corpse c)
     {
       m_DraggedCorpse = c; // \todo? call StopDraggingCorpse to get that message (RS Alpha does not do this)
-      var witnesses = RogueGame.PlayersInLOS(Location);
+      var witnesses = this.PlayersInLOS();
       if (null != witnesses) {
         RogueGame.Game.RedrawPlayScreen(witnesses.Value, RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_START.Conjugate(this), c.DeadGuy.Name)));
       }
@@ -696,7 +696,7 @@ namespace djack.RogueSurvivor.Data
       var dead_name = m_DraggedCorpse?.DeadGuy.Name;
       if (null != dead_name) {
         m_DraggedCorpse = null;
-        var witnesses = RogueGame.PlayersInLOS(Location);
+        var witnesses = this.PlayersInLOS();
         if (null != witnesses) {
           RogueGame.Game.RedrawPlayScreen(witnesses.Value, RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_STOP.Conjugate(this), dead_name)));
         }
@@ -3200,7 +3200,7 @@ namespace djack.RogueSurvivor.Data
       var game = RogueGame.Game;
       if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor equippedItem && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
         Remove(equippedItem);
-        var witnesses = RogueGame.PlayersInLOS(Location);
+        var witnesses = this.PlayersInLOS();
         if (null != witnesses) {
           game.ImportantMessage(witnesses.Value, RogueGame.MakePanopticMessage(this, string.Format(": {0} breaks and is now useless!", equippedItem.TheName)), IsPlayer ? Engine.RogueGame.DELAY_NORMAL : Engine.RogueGame.DELAY_SHORT);
         }

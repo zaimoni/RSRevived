@@ -15,7 +15,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal class Corpse : ISerializable
+  internal class Corpse : ILocation, ISerializable
   {
     public const int ZOMBIFY_DELAY = 6*WorldTime.TURNS_PER_HOUR;
 
