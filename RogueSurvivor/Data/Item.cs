@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Serializable]
-  internal class Item : Zaimoni.Serialization.ISerialize
+  internal class Item : INoun, Zaimoni.Serialization.ISerialize
     {
     public readonly Gameplay.Item_IDs ModelID;
     private int m_Quantity;
@@ -73,6 +73,7 @@ namespace djack.RogueSurvivor.Data
         return model.SingleName.PrefixDefiniteSingularArticle();
       }
     }
+    public string UnknownPronoun { get => "it"; }
 
     public string AName {
       get {

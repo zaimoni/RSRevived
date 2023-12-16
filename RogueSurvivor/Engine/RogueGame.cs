@@ -490,6 +490,77 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    public void AddMessageIfVisible<S,O>(S subject, string verb, O direct_object, string end_sentence, Color msg_color) where S:ILocation,INoun where O:ILocation,INoun
+    {
+      var s_witnesses = subject.PlayersInLOS();
+      var o_witnesses = direct_object.PlayersInLOS();
+      if (null == o_witnesses && null == o_witnesses) return;
+      var both_witnesses = s_witnesses?.Intersect(o_witnesses);
+      s_witnesses?.SetDifference(both_witnesses);
+      o_witnesses?.SetDifference(both_witnesses);
+      bool msg_pc = false;
+      bool have_rendered = false;
+      // based on RogueGame::MakeMessage
+      var t0 = Session.Get.WorldTime.TurnCounter;
+      var stage_msg = new string[4];
+      stage_msg[1] = verb;
+      stage_msg[3] = end_sentence;
+      if (null != both_witnesses && 0 < both_witnesses.Value.Key.Count) {
+        stage_msg[0] = subject.TheName;
+        stage_msg[2] = direct_object.TheName;
+        UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
+        RedrawPlayScreen(both_witnesses.Value, stage);
+        msg_pc = true;
+        have_rendered = true;
+      }
+      if (null != s_witnesses && 0 < s_witnesses.Value.Key.Count) {
+        stage_msg[0] = subject.TheName;
+        stage_msg[2] = direct_object.UnknownPronoun;
+        UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
+        if (!have_rendered) {
+          RedrawPlayScreen(s_witnesses.Value, stage);
+          have_rendered = true;
+        } else {
+          foreach (var pc in s_witnesses.Value.Key) pc.AddMessage(stage);
+        }
+        msg_pc = true;
+      }
+      if (null != o_witnesses && 0 < o_witnesses.Value.Key.Count) {
+        stage_msg[0] = subject.UnknownPronoun.Capitalize();
+        stage_msg[2] = direct_object.TheName;
+        UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
+        if (!have_rendered) {
+          RedrawPlayScreen(o_witnesses.Value, stage);
+          have_rendered = true;
+        } else {
+          foreach (var pc in o_witnesses.Value.Key) pc.AddMessage(stage);
+        }
+        msg_pc = true;
+      }
+      if (msg_pc) return;
+      if (null != both_witnesses) {
+        stage_msg[0] = subject.TheName;
+        stage_msg[2] = direct_object.TheName;
+        UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
+        RedrawPlayScreen(both_witnesses.Value, stage);
+        return;
+      }
+      if (null != s_witnesses) {
+        stage_msg[0] = subject.TheName;
+        stage_msg[2] = direct_object.UnknownPronoun;
+        UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
+        RedrawPlayScreen(s_witnesses.Value, stage);
+        return;
+      }
+      if (null != o_witnesses) {
+        stage_msg[0] = subject.UnknownPronoun.Capitalize();
+        stage_msg[2] = direct_object.TheName;
+        UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
+        RedrawPlayScreen(o_witnesses.Value, stage);
+        return;
+      }
+    }
+
     // more sophisticated variants would handle player-varying messages
     static public void PropagateSight(Location loc, Action<Actor> doFn)
     {
@@ -8399,20 +8470,14 @@ namespace djack.RogueSurvivor.Engine
       int trustIn = other.GetTrustIn(actor);
       other.TrustInLeader = trustIn;
 #if PROTOTYPE
-      var witnesses = PlayersInLOS(actor.Location);
-      var o_witnesses = PlayersInLOS(other.Location);
-      if (null != witnesses && 0 < witnesses.Value.Key.Count) {
-        if (null != o_witnesses && 0 < o_witnesses.Value.Key.Count) {
-        } else {
-        }
-      } else if (null != o_witnesses && 0 < o_witnesses.Value.Key.Count) {
-      }
-#endif
+      AddMessageIfVisible(actor, VERB_PERSUADE.Conjugate(actor), other, " to join.", (actor.IsPlayer || other.IsPlayer) ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
+#else
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(other)) {
         if (Player == actor) ClearMessages();
         AddMessage(MakeMessage(actor, VERB_PERSUADE.Conjugate(actor), other, " to join."));
         if (0 != trustIn) DoSay(other, actor, "Ah yes I remember you.", Sayflags.IS_FREE_ACTION);
       }
+#endif
     }
 
     public void DoCancelLead(Actor actor, Actor follower)
@@ -9183,6 +9248,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
+    // the two lists are disjoint by construction.
     static private KeyValuePair<List<PlayerController>, List<Actor>>? PCsNearby(Location loc, int radius, Func<Actor,bool> ok) {
         List<PlayerController> ret = new();
         List<Actor> ret_viewpoints = new();
@@ -14779,12 +14845,22 @@ retry:
         if (null == rhs) return;
         if (0 < lhs.Key.Count) {
             foreach(var actor in rhs.Value.Key) lhs.Key.Remove(actor);
-            foreach(var actor in rhs.Value.Value) if (actor.Controller is PlayerController pc) lhs.Key.Remove(pc);
         }
         if (0 < lhs.Value.Count) {
-            foreach(var actor in rhs.Value.Key) lhs.Value.Remove(actor.ControlledActor);
             foreach(var actor in rhs.Value.Value) lhs.Value.Remove(actor);
         }
+    }
+
+    static public KeyValuePair<List<PlayerController>, List<Actor>>? Intersect(this KeyValuePair<List<PlayerController>, List<Actor>> lhs, KeyValuePair<List<PlayerController>, List<Actor>>? rhs) {
+        if (null == rhs) return null;
+        KeyValuePair<List<PlayerController>, List<Actor>> ret = new(new(), new());
+        if (0 < lhs.Key.Count) {
+            foreach(var actor in rhs.Value.Key) if (lhs.Key.Contains(actor)) ret.Key.Add(actor);
+        }
+        if (0 < lhs.Value.Count) {
+            foreach(var actor in rhs.Value.Value) if (lhs.Value.Contains(actor)) ret.Value.Add(actor);
+        }
+        return (0 < ret.Key.Count || 0 < ret.Value.Count) ? ret : null;
     }
 
     static public bool ForceVisible(this KeyValuePair<List<PlayerController>, List<Actor>> viewing) {

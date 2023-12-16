@@ -43,6 +43,11 @@ namespace Zaimoni.Data
         }
     }
 
+    public interface INoun {
+        string TheName { get; }
+        string UnknownPronoun { get; }
+    }
+
     public static class LangExt
     {
         public enum Gender

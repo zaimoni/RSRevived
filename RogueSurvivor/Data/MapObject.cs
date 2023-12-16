@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Data
  * we would like actors to have enough item memory to track seen *internal* inventory (not yet implemented)
  */
   [Serializable]
-  internal class MapObject : ILocation, Zaimoni.Serialization.ISerialize
+  internal class MapObject : ILocation, INoun, Zaimoni.Serialization.ISerialize
   {
     public const int CAR_WEIGHT = 100;
     public const int MAX_NORMAL_WEIGHT = 10;
@@ -39,6 +39,7 @@ namespace djack.RogueSurvivor.Data
 
     public string AName { get => IsPlural ? _ID_Name(m_ID).PrefixIndefinitePluralArticle() : _ID_Name(m_ID).PrefixIndefiniteSingularArticle(); }
     public string TheName { get => _ID_Name(m_ID).PrefixDefiniteSingularArticle(); }
+    public string UnknownPronoun { get => "it"; }
     public bool IsPlural { get => GetFlag(Data.Model.MapObject.Flags.IS_PLURAL); }
 
     public IDs ID {
