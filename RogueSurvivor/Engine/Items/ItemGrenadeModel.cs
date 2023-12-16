@@ -20,5 +20,7 @@ namespace djack.RogueSurvivor.Engine.Items
       MaxThrowDistance = maxThrowDistance;
       StackingLimit = stackingLimit;
     }
+
+    public override ItemGrenade create() { return new ItemGrenade(this, djack.RogueSurvivor.Gameplay.GameItems.GRENADE_PRIMED); }
   }
 }

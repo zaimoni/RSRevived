@@ -490,10 +490,8 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void AddMessageIfVisible<S,O>(S subject, string verb, O direct_object, string end_sentence, Color msg_color) where S:ILocation,INoun where O:ILocation,INoun
+    private void AddMessageIfVisible<S,O>(S subject, KeyValuePair<List<PlayerController>, List<Actor>>? s_witnesses, string verb, O direct_object, KeyValuePair<List<PlayerController>, List<Actor>>? o_witnesses, string end_sentence, Color msg_color) where S:ILocation,INoun where O:ILocation,INoun
     {
-      var s_witnesses = subject.PlayersInLOS();
-      var o_witnesses = direct_object.PlayersInLOS();
       if (null == o_witnesses && null == o_witnesses) return;
       var both_witnesses = s_witnesses?.Intersect(o_witnesses);
       s_witnesses?.SetDifference(both_witnesses);
@@ -561,6 +559,11 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    public void AddMessageIfVisible<S,O>(S subject, string verb, O direct_object, string end_sentence, Color msg_color) where S:ILocation,INoun where O:ILocation,INoun
+    {
+      AddMessageIfVisible(subject, subject.PlayersInLOS(), verb, direct_object, direct_object.PlayersInLOS(), end_sentence, msg_color);
+    }
+
     // more sophisticated variants would handle player-varying messages
     static public void PropagateSight(Location loc, Action<Actor> doFn)
     {
@@ -576,6 +579,14 @@ namespace djack.RogueSurvivor.Engine
     {
       return new(text, Session.Get.WorldTime.TurnCounter, Color.Red);
     }
+
+    private static UI.Message MakePanopticMessage(Actor actor, string verb, INoun direct_object, string ends_with, Color color)
+    {
+      var msg = new string[] { actor.TheName, verb, direct_object.TheName , ends_with };
+      return new(string.Join(" ",msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : color);
+    }
+    public static UI.Message MakePanopticMessage(Actor actor, string verb, INoun direct_object, string ends_with) => MakePanopticMessage(actor, verb, direct_object, ends_with, OTHER_ACTION_COLOR);
+
 
     private static UI.Message MakePanopticMessage(Actor actor, string doWhat, Color color)
     {
@@ -8719,6 +8730,7 @@ namespace djack.RogueSurvivor.Engine
       int dmg = (hitRoll > defRoll ? rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit : 0);
 
       OnLoudNoise(attacker.Location, "Nearby fighting");
+      var a_witness = attacker.PlayersInLOS();
       bool isDefVisible = ForceVisibleToPlayer(defender);
       bool isAttVisible = isDefVisible ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
       if (tracing && !IsSimulating) {
@@ -8788,7 +8800,7 @@ namespace djack.RogueSurvivor.Engine
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead) {
             attacker.RegenHitPoints(attacker.BiteHpRegen(dmg));
             attacker.RottingEat(dmg);
-            if (isAttVisible) AddMessage(MakeMessage(attacker, VERB_FEAST_ON.Conjugate(attacker), defender, " flesh !"));
+            if (null != a_witness) AddMessage(a_witness.Value, MakePanopticMessage(attacker, VERB_FEAST_ON.Conjugate(attacker), defender, " flesh !"));
             defender.Infect(attacker.InfectionForDamage(dmg));
           }
           if (fatal) {
@@ -8830,8 +8842,8 @@ namespace djack.RogueSurvivor.Engine
       {
         attacker.OnUnequipItem(itemMeleeWeapon);
         attacker.Inventory.Consume(itemMeleeWeapon);
-        if (isAttVisible) {
-          ImportantMessage(MakeMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+        if (null != a_witness) {
+          ImportantMessage(a_witness.Value, MakePanopticMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       if (isDefVisible || isAttVisible) ClearOverlays();  // alpha10: if test
@@ -8850,11 +8862,10 @@ namespace djack.RogueSurvivor.Engine
       attacker.SpendStaminaPoints(r_attack.StaminaPenalty);
       var rules = Rules.Get;
 
-      var witnesses_attacker = _ForceVisibleToPlayer(attacker, defender);
-
       if (   r_attack.Kind == AttackKind.FIREARM
           && (rules.RollChance(Session.Get.World.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN))) {
-        if (null != witnesses_attacker) RedrawPlayScreen(witnesses_attacker.Value, MakePanopticMessage(attacker, " : weapon jam!"));
+        var a_witnesses = _ForceVisibleToPlayer(attacker, defender);
+        if (null != a_witnesses) RedrawPlayScreen(a_witnesses.Value, MakePanopticMessage(attacker, " : weapon jam!"));
         return;
       }
 
