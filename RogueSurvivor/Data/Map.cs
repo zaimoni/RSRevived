@@ -2342,7 +2342,7 @@ retry:
         while(ub - 1 > origin) {
           i = ub;
           while(--i > origin) {
-            if (TUorder[i - origin] < TUorder[i - origin - 1]) {
+            if (TUorder[i - origin - 1] < TUorder[i - origin]) {
               var stage = m_ActorsList[i];
               m_ActorsList[i] = m_ActorsList[i - 1];
               m_ActorsList[i - 1] = stage;
