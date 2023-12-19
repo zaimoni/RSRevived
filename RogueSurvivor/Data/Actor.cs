@@ -663,14 +663,21 @@ namespace djack.RogueSurvivor.Data
         return false;
     }
 
+    public string? AIwillNotMurder { get {
+            if (Model.Abilities.IsLawEnforcer) return "police do not murder";
+            var leader = LiveLeader;
+            if (null != leader && leader.Model.Abilities.IsLawEnforcer) return "deputies do not murder";
+            if (Faction.ID.ExtortionIsAggression()) return "authorities do not murder";
+            return null;
+        }
+    }
+
     public void HasMurdered(Actor victim)
     {
 #if DEBUG
         if (!IsPlayer) { // oversimplify things.  Would not be true if the apocalypse ended.
-          if (Model.Abilities.IsLawEnforcer) throw new InvalidOperationException("police do not murder");
-          var leader = LiveLeader;
-          if (null != leader && leader.Model.Abilities.IsLawEnforcer) throw new InvalidOperationException("deputies do not murder");
-          if (Faction.ID.ExtortionIsAggression()) throw new InvalidOperationException("authorities do not murder");
+          var err = AIwillNotMurder;
+          if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
         }
 #endif
         if (s_MurdersCounter.ContainsKey(this)) s_MurdersCounter[this]++; // bypasses hungry civilian adjustment
