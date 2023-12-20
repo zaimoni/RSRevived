@@ -12,7 +12,7 @@ using System.Collections.Generic;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal class SkillTable
+  public class SkillTable
   {
     private Dictionary<Gameplay.Skills.IDs, sbyte>? m_Table;
 
@@ -24,9 +24,10 @@ namespace djack.RogueSurvivor.Data
     {
     }
 
-    public SkillTable(SkillTable src)
-    {
-      if (0<src.CountSkills) m_Table = new Dictionary<Gameplay.Skills.IDs, sbyte>(src.m_Table);
+    private SkillTable(Dictionary<Gameplay.Skills.IDs, sbyte>? src) => m_Table = src;
+
+    static public SkillTable Clone(SkillTable src) {
+        return new(null != src.m_Table ? new(src.m_Table) : null);
     }
 
     /// <returns>sum of skill levels</returns>
@@ -50,8 +51,7 @@ namespace djack.RogueSurvivor.Data
 
     public void AddOrIncreaseSkill(Gameplay.Skills.IDs id)
     {
-      if (null == m_Table) m_Table = new Dictionary<Gameplay.Skills.IDs, sbyte>(3);
-      if (!m_Table.ContainsKey(id)) m_Table[id] = 1;
+      if (!(m_Table ??= new()).ContainsKey(id)) m_Table[id] = 1;
       else ++m_Table[id];
     }
 

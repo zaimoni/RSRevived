@@ -7428,9 +7428,10 @@ namespace djack.RogueSurvivor.Engine
       lines.Add(" ");
       lines.Add(a_model.FlavorDescription);
       lines.Add(" ");
-      var skills = actor.Sheet.SkillTable;
-      if (0 < skills.CountSkills) {
-        foreach (var sk in skills.Skills) lines.Add(string.Format("{0}-{1}", sk.Value, Skills.Name(sk.Key)));
+      var sk_table = actor.Sheet.SkillTable;
+      var skills = sk_table.Skills;
+      if (null != skills) {
+        foreach (var sk in skills) lines.Add(string.Format("{0}-{1}", sk.Value, Skills.Name(sk.Key)));
         lines.Add(" ");
       }
 
@@ -7449,7 +7450,7 @@ namespace djack.RogueSurvivor.Engine
                                 "- Has excellent sense of smell.");
 
         // grab?
-        if (0 < skills.GetSkillLevel(Skills.IDs.Z_GRAB)) lines.Add("- Z-Grab : this undead can grab its victims.");
+        if (0 < sk_table.GetSkillLevel(Skills.IDs.Z_GRAB)) lines.Add("- Z-Grab : this undead can grab its victims.");
 
         if (a_model.Abilities.IsUndeadMaster) lines.Add("- Other undeads follow this undead tracks.");
         else if (smell > 0) lines.Add("- This undead will follow zombie masters tracks.");

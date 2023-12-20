@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class ActorSheet
   {
-    public readonly SkillTable SkillTable = new SkillTable();   // \todo? if this is split out, can convert to readonly struct and use model's copy only
+    public readonly SkillTable SkillTable;
     public readonly int BaseHitPoints;
     public readonly int BaseStaminaPoints;
     public readonly int BaseFoodPoints;
@@ -30,6 +30,7 @@ namespace djack.RogueSurvivor.Data
 
     public ActorSheet(Gameplay.GameActors.ActorData src, int baseFoodPoints, int baseSleepPoints, int baseSanity, Verb unarmedAttack, int inventoryCapacity)
     {
+      SkillTable = new SkillTable();
       BaseHitPoints = src.HP;
       BaseStaminaPoints = src.STA;
       BaseFoodPoints = baseFoodPoints;
@@ -56,7 +57,7 @@ namespace djack.RogueSurvivor.Data
       BaseAudioRange = copyFrom.BaseAudioRange;
       BaseSmellRating = copyFrom.BaseSmellRating;
       BaseInventoryCapacity = copyFrom.BaseInventoryCapacity;
-      if (0 < copyFrom.SkillTable.CountSkills) SkillTable = new SkillTable(copyFrom.SkillTable);
+      SkillTable = SkillTable.Clone(copyFrom.SkillTable);
     }
   }
 }
