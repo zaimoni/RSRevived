@@ -1374,7 +1374,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Skills.IDs? HandleNewCharacterSkill(DiceRoller roller)
     {
-      Skills.IDs[] idsArray = Enumerable.Range(0, (int)Skills.IDs_aux._LIVING_COUNT).Select(id => (Skills.IDs)id).ToArray();
+      Skills.IDs[] idsArray = Enumerable.Range(0, Skills._LIVING_COUNT).Select(id => (Skills.IDs)id).ToArray();
       string[] entries = (new string[] { "*Random*" }).Concat(idsArray.Select(id => Skills.Name(id))).ToArray();
       string[] values = (new string[] { "(picks a skill at random for you)" }).Concat(idsArray.Select(id => string.Format("{0} max - {1}", Skills.MaxSkillLevel(id), DescribeSkillShort(id)))).ToArray();
 

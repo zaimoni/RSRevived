@@ -18,7 +18,7 @@ using Random = Microsoft.Random;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal class DiceRoller : ISerialize
+  public class DiceRoller : ISerialize
     {
     private readonly Random m_Rng;
 

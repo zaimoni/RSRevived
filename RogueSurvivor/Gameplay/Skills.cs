@@ -14,40 +14,30 @@ using Actor = djack.RogueSurvivor.Data.Actor;
 
 namespace djack.RogueSurvivor.Gameplay
 {
-  internal static class Skills
+  public static class Skills
   {
-    private readonly static string[] s_Names = new string[(int) IDs._COUNT];
-    public readonly static IDs[] UNDEAD_SKILLS = new IDs[(int)IDs._COUNT - (int)IDs_aux._FIRST_UNDEAD]  // \todo adjust this naming when breaking savefile format?
-    {
-      IDs.Z_AGILE,
-      IDs.Z_EATER,
-      IDs.Z_GRAB,
-      IDs.Z_INFECTOR,
-      IDs.Z_LIGHT_EATER,
-      IDs.Z_LIGHT_FEET,
-      IDs.Z_STRONG,
-      IDs.Z_TOUGH,
-      IDs.Z_TRACKER
-    };
+    private readonly static string[] s_Names = new string[_COUNT];
 
-    public static string Name(Skills.IDs id)
+    public static string Name(IDs id) => s_Names[(int) id];
+
+    public static int MaxSkillLevel(IDs id)
     {
-      return s_Names[(int) id];
+      return id == IDs.HAULER ? 3 : 5;
     }
 
-    public static int MaxSkillLevel(Skills.IDs id)
+    // we may need to exclude some living skills from this eventually
+    // examples:
+    // * Deputy (skill acquired in-game by fulfilling pre-requisites)
+    // * Obese ("skill" conveys inability to run, etc.; it is lost by starving (cancels starving to death by losing a level)
+    // * Hoplophobia (impairs firearms; "skill" is lost by trying to learn firearms skill)
+    public static IDs RollLiving(DiceRoller roller)
     {
-      return id == Skills.IDs.HAULER ? 3 : 5;
-    }
-
-    public static Skills.IDs RollLiving(DiceRoller roller)
-    {
-      return (Skills.IDs) roller.Roll(0, (int)Skills.IDs_aux._LIVING_COUNT);
+      return (IDs)roller.Roll(0, _LIVING_COUNT);
     }
 
     public static IDs RollUndead(DiceRoller roller)
     {
-      return roller.Choose(UNDEAD_SKILLS);
+      return (IDs)roller.Roll(_FIRST_UNDEAD, _COUNT);
     }
 
     private static void Notify(IRogueUI ui, string what, string stage) => ui.DrawHeadNote("Loading " + what + " data : " + stage);
@@ -82,7 +72,7 @@ namespace djack.RogueSurvivor.Gameplay
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      Skills.LoadDataFromCSV<Skills.SkillData>(ui, path, "skills", SkillData.COUNT_FIELDS, new Func<CSVLine, SkillData>(Skills.SkillData.FromCSVLine), new Skills.IDs[(int)Skills.IDs._COUNT]
+      Skills.LoadDataFromCSV<Skills.SkillData>(ui, path, "skills", SkillData.COUNT_FIELDS, new Func<CSVLine, SkillData>(Skills.SkillData.FromCSVLine), new IDs[_COUNT]
       {
         Skills.IDs.AGILE,
         Skills.IDs.AWAKE,
@@ -114,7 +104,7 @@ namespace djack.RogueSurvivor.Gameplay
         Skills.IDs.Z_TOUGH,
         Skills.IDs.Z_TRACKER
       }, out SkillData[] data);
-      for (int index = 0; index < (int)Skills.IDs._COUNT; ++index)
+      for (int index = 0; index < _COUNT; ++index)
         s_Names[index] = data[index].NAME;
       SkillData skillData1 = data[0];
       Actor.SKILL_AGILE_ATK_BONUS = (int) skillData1.VALUE1;
@@ -226,10 +216,9 @@ namespace djack.RogueSurvivor.Gameplay
       _COUNT = 29,
     }
 
-    public enum IDs_aux {
-      _LIVING_COUNT = IDs.Z_AGILE,
-      _FIRST_UNDEAD = IDs.Z_AGILE,
-    }
+    public const int _COUNT = (int)IDs.Z_TRACKER+1;
+    public const int _LIVING_COUNT = (int)IDs.Z_AGILE;
+    public const int _FIRST_UNDEAD = (int)IDs.Z_AGILE;
 
     public static IDs? Zombify(this IDs skill)
     {

@@ -4328,7 +4328,7 @@ restart:
         int num = new WorldTime(spawnTime).Day / 2;
         if (num > 0) {
           for (int index = 0; index < num; ++index) {
-            Skills.IDs? nullable = ((Skills.IDs)m_DiceRoller.Roll(0, (int)Skills.IDs._COUNT)).Zombify();
+            Skills.IDs? nullable = ((Skills.IDs)m_DiceRoller.Roll(0, Skills._COUNT)).Zombify();
             if (nullable.HasValue) actor.SkillUpgrade(nullable.Value);
           }
           actor.RecomputeStartingStats();
