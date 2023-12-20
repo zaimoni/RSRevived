@@ -8,53 +8,45 @@ using System;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal class Abilities
+  public class Abilities
   {
     private readonly Flags m_Flags;
 
-    public bool IsUndead { get { return Flags.NONE!=(m_Flags & Flags.UNDEAD); } }
-    public bool IsUndeadMaster { get { return Flags.NONE != (m_Flags & Flags.UNDEAD_MASTER); } }
-    public bool CanZombifyKilled  { get { return Flags.NONE != (m_Flags & Flags.CAN_ZOMBIFY_KILLED); } }
-    public bool CanTire { get { return Flags.NONE != (m_Flags & Flags.CAN_TIRE); } }
-    public bool HasToEat { get { return Flags.NONE != (m_Flags & Flags.HAS_TO_EAT); } }
-    public bool HasToSleep { get { return Flags.NONE != (m_Flags & Flags.HAS_TO_SLEEP); } }
-    public bool HasSanity { get { return Flags.NONE != (m_Flags & Flags.HAS_SANITY); } }
-    public bool CanRun { get { return Flags.NONE != (m_Flags & Flags.CAN_RUN); } }
-    public bool CanTalk { get { return Flags.NONE != (m_Flags & Flags.CAN_TALK); } }
-    public bool CanUseMapObjects { get { return Flags.NONE != (m_Flags & Flags.CAN_USE_MAP_OBJECTS); } }
-    public bool CanBashDoors { get { return Flags.NONE != (m_Flags & Flags.CAN_BASH_DOORS); } }
-    public bool CanBreakObjects { get { return Flags.NONE != (m_Flags & Flags.CAN_BREAK_OBJECTS); } }
-    public bool CanJump { get { return Flags.NONE != (m_Flags & Flags.CAN_JUMP); } }
-    public bool IsSmall { get { return Flags.NONE != (m_Flags & Flags.IS_SMALL); } }
-    public bool HasInventory { get { return Flags.NONE != (m_Flags & Flags.HAS_INVENTORY); } }
-    public bool CanUseItems { get { return Flags.NONE != (m_Flags & Flags.CAN_USE_ITEMS); } }
-    public bool CanTrade { get { return Flags.NONE != (m_Flags & Flags.CAN_TRADE); } }
-    public bool CanBarricade { get { return Flags.NONE != (m_Flags & Flags.CAN_BARRICADE); } }
-    public bool CanPush { get { return Flags.NONE != (m_Flags & Flags.CAN_PUSH); } }
-    public bool CanJumpStumble { get { return Flags.NONE != (m_Flags & Flags.CAN_JUMP_STUMBLE); } }
-    public bool IsLawEnforcer { get { return Flags.NONE != (m_Flags & Flags.IS_LAW_ENFORCER); } }
-    public bool IsIntelligent { get { return Flags.NONE != (m_Flags & Flags.IS_INTELLIGENT); } }
-    public bool IsRotting { get { return Flags.NONE != (m_Flags & Flags.IS_ROTTING); } }
-    public bool CanDisarm { get { return false; } } // mock up alpha10
-    public bool AI_CanUseAIExits { get { return Flags.NONE != (m_Flags & Flags.AI_CAN_USE_AI_EXITS); } }
-    public bool AI_NotInterestedInRangedWeapons { get { return Flags.NONE != (m_Flags & Flags.AI_NOT_INTERESTED_IN_RANGED_WEAPONS); } }
-
-#if OBSOLETE
-    ///// <summary>
-    ///// AI flag : tell some AIs to use the assault barricades behavior.
-    ///// </summary>
-    public bool ZombieAI_AssaultBreakables { get { return Flags.NONE != (m_Flags & Flags.ZOMBIEAI_ASSAULT_BREAKABLES); } }  // XXX dead flag
-#endif
-
-    public bool ZombieAI_Explore { get { return Flags.NONE != (m_Flags & Flags.ZOMBIEAI_EXPLORE); } }
+    public bool IsUndead { get => default != (m_Flags & Flags.UNDEAD); }
+    public bool IsUndeadMaster { get => default != (m_Flags & Flags.UNDEAD_MASTER); }
+    public bool CanZombifyKilled  { get => default != (m_Flags & Flags.CAN_ZOMBIFY_KILLED); }
+    public bool CanTire { get => default != (m_Flags & Flags.CAN_TIRE); }
+    public bool HasToEat { get => default != (m_Flags & Flags.HAS_TO_EAT); }
+    public bool HasToSleep { get => default != (m_Flags & Flags.HAS_TO_SLEEP); }
+    public bool HasSanity { get => default != (m_Flags & Flags.HAS_SANITY); }
+    public bool CanRun { get => default != (m_Flags & Flags.CAN_RUN); }
+    public bool CanTalk { get => default != (m_Flags & Flags.CAN_TALK); }
+    public bool CanUseMapObjects { get => default != (m_Flags & Flags.CAN_USE_MAP_OBJECTS); }
+    public bool CanBashDoors { get => default != (m_Flags & Flags.CAN_BASH_DOORS); }
+    public bool CanBreakObjects { get => default != (m_Flags & Flags.CAN_BREAK_OBJECTS); }
+    public bool CanJump { get => default != (m_Flags & Flags.CAN_JUMP); }
+    public bool IsSmall { get => default != (m_Flags & Flags.IS_SMALL); }
+    public bool HasInventory { get => default != (m_Flags & Flags.HAS_INVENTORY); }
+    public bool CanUseItems { get => default != (m_Flags & Flags.CAN_USE_ITEMS); }
+    public bool CanTrade { get => default != (m_Flags & Flags.CAN_TRADE); }
+    public bool CanBarricade { get => default != (m_Flags & Flags.CAN_BARRICADE); }
+    public bool CanPush { get => default != (m_Flags & Flags.CAN_PUSH); }
+    public bool CanJumpStumble { get => default != (m_Flags & Flags.CAN_JUMP_STUMBLE); }
+    public bool IsLawEnforcer { get => default != (m_Flags & Flags.IS_LAW_ENFORCER); }
+    public bool IsIntelligent { get => default != (m_Flags & Flags.IS_INTELLIGENT); }
+    public bool IsRotting { get => default != (m_Flags & Flags.IS_ROTTING); }
+    public bool CanDisarm { get => false; } // mock up alpha10
+    public bool AI_CanUseAIExits { get => default != (m_Flags & Flags.AI_CAN_USE_AI_EXITS); }
+    public bool AI_NotInterestedInRangedWeapons { get => default != (m_Flags & Flags.AI_NOT_INTERESTED_IN_RANGED_WEAPONS); }
+    public bool ZombieAI_Explore { get => default != (m_Flags & Flags.ZOMBIEAI_EXPLORE); }
 
     public Abilities(Flags in_flags)
     {
 #if DEBUG
-      if ((Flags.NONE == (in_flags & Flags.HAS_INVENTORY)) && (Flags.NONE != (in_flags & Flags.CAN_TRADE))) throw new InvalidOperationException("must have inventory to trade");
-      if ((Flags.NONE == (in_flags & Flags.UNDEAD)) && (Flags.NONE != (in_flags & Flags.UNDEAD_MASTER))) throw new InvalidOperationException("undead master is undead");
-      if ((Flags.NONE == (in_flags & Flags.CAN_JUMP)) && (Flags.NONE != (in_flags & Flags.CAN_JUMP_STUMBLE))) throw new InvalidOperationException("can only clumsily jump if can jump");
-      if ((Flags.NONE == (in_flags & Flags.CAN_USE_MAP_OBJECTS)) && (Flags.NONE != (in_flags & Flags.CAN_BARRICADE))) throw new InvalidOperationException("hard to barricade without using map objects");
+      if ((default == (in_flags & Flags.HAS_INVENTORY)) && (default != (in_flags & Flags.CAN_TRADE))) throw new InvalidOperationException("must have inventory to trade");
+      if ((default == (in_flags & Flags.UNDEAD)) && (default != (in_flags & Flags.UNDEAD_MASTER))) throw new InvalidOperationException("undead master is undead");
+      if ((default == (in_flags & Flags.CAN_JUMP)) && (default != (in_flags & Flags.CAN_JUMP_STUMBLE))) throw new InvalidOperationException("can only clumsily jump if can jump");
+      if ((default == (in_flags & Flags.CAN_USE_MAP_OBJECTS)) && (default != (in_flags & Flags.CAN_BARRICADE))) throw new InvalidOperationException("hard to barricade without using map objects");
 #endif
       m_Flags = in_flags;
     }
@@ -62,7 +54,6 @@ namespace djack.RogueSurvivor.Data
     [System.Flags]
     public enum Flags
     {
-      NONE = 0,
       UNDEAD = 1,
       UNDEAD_MASTER = 1 << 1,
       CAN_ZOMBIFY_KILLED = 1 << 2,
