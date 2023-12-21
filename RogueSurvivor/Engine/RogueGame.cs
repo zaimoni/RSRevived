@@ -494,8 +494,8 @@ namespace djack.RogueSurvivor.Engine
     {
       if (null == o_witnesses && null == o_witnesses) return;
       var both_witnesses = s_witnesses?.Intersect(o_witnesses);
-      s_witnesses?.SetDifference(both_witnesses);
-      o_witnesses?.SetDifference(both_witnesses);
+      s_witnesses = s_witnesses?.SetDifference(both_witnesses);
+      o_witnesses = o_witnesses?.SetDifference(both_witnesses);
       bool msg_pc = false;
       bool have_rendered = false;
       // based on RogueGame::MakeMessage
@@ -9892,8 +9892,7 @@ namespace djack.RogueSurvivor.Engine
       (new InventorySource<Item>(invspec.Value, it)).TransferFrom(actor.Inventory);
 
       var witnesses = _ForceVisibleToPlayer(actor);
-      var see_take = PlayersInLOS(loc);
-      see_take?.SetDifference(witnesses);
+      var see_take = PlayersInLOS(loc)?.SetDifference(witnesses);
 
       if (null != witnesses) {
         RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_TAKE.Conjugate(actor), it));
@@ -14852,14 +14851,16 @@ retry:
       return verb.Conjugate((RogueGame.IsPlayer(actor) && 1 == Session.Get.World.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
     }
 
-    static public void SetDifference(this KeyValuePair<List<PlayerController>, List<Actor>> lhs, KeyValuePair<List<PlayerController>, List<Actor>>? rhs) {
-        if (null == rhs) return;
-        if (0 < lhs.Key.Count) {
-            foreach(var actor in rhs.Value.Key) lhs.Key.Remove(actor);
+    static public KeyValuePair<List<PlayerController>, List<Actor>>? SetDifference(this KeyValuePair<List<PlayerController>, List<Actor>> lhs, KeyValuePair<List<PlayerController>, List<Actor>>? rhs) {
+        if (null == rhs) return null;
+        KeyValuePair<List<PlayerController>, List<Actor>> ret = new(new(lhs.Key),new(lhs.Value));
+        if (0 < ret.Key.Count) {
+            foreach(var actor in rhs.Value.Key) ret.Key.Remove(actor);
         }
-        if (0 < lhs.Value.Count) {
-            foreach(var actor in rhs.Value.Value) lhs.Value.Remove(actor);
+        if (0 < ret.Value.Count) {
+            foreach(var actor in rhs.Value.Value) ret.Value.Remove(actor);
         }
+        return (0 < ret.Key.Count || 0 < ret.Value.Count) ? ret : null;
     }
 
     static public KeyValuePair<List<PlayerController>, List<Actor>>? Intersect(this KeyValuePair<List<PlayerController>, List<Actor>> lhs, KeyValuePair<List<PlayerController>, List<Actor>>? rhs) {
