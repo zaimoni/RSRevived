@@ -1354,7 +1354,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Actor en = p.Percepted;
           var act = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == _immediate_threat || (1 == _immediate_threat.Count && _immediate_threat.Contains(en)));
           if (null != act) {
-            if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) m_Actor.GetEquippedWeapon()?.UnequippedBy(m_Actor);
+            if (0 < m_Actor.MySkills.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) m_Actor.GetEquippedWeapon()?.UnequippedBy(m_Actor);
             return act;
           }
         }
@@ -5623,7 +5623,7 @@ restart_chokepoints:
             if (!m_Actor.Model.Abilities.HasToEat) return true;
             if (m_Actor.IsHungry) return false;
             // only should trade away food that doesn't drop below threshold
-            if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food))
+            if (!m_Actor.HasEnoughFoodFor(m_Actor.Model.BaseFoodPoints / 2, food))
               return food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
             return true;
             }
@@ -5970,7 +5970,7 @@ restart_chokepoints:
       // if the preemptive eat behavior would trigger, that is 3.
       // XXX \todo account for travel tiem
       if (food.IsPerishable && (m_Actor.CurrentNutritionOf(food) <= (m_Actor.MaxFood - m_Actor.FoodPoints))) return 3;
-      if (m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food)) return 1;
+      if (m_Actor.HasEnoughFoodFor(m_Actor.Model.BaseFoodPoints / 2, food)) return 1;
       return 2;
     }
 
@@ -6188,7 +6188,7 @@ restart_chokepoints:
 //      if (!m_Actor.Model.Abilities.HasToEat) return false;    // redundant; for documentation
         if (m_Actor.IsHungry) return 3;
         // we don't do the pre-emptive eat test here due to lack of information re expiration date
-        if (m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) return 1;
+        if (m_Actor.HasEnoughFoodFor(m_Actor.Model.BaseFoodPoints / 2)) return 1;
         return 2;
       }
       }
@@ -6721,7 +6721,7 @@ restart_chokepoints:
             if (null != drop) return _BehaviorDropOrExchange(drop, it, in stack, use_ok);
             // crossbows are hard to use if unskilled
             foreach (var rw in no_ammo_rws) {
-              if (rw.Model.IsBow && 0 >= m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS)) {
+              if (rw.Model.IsBow && 0 >= m_Actor.MySkills.GetSkillLevel(Skills.IDs.BOWS)) {
                 if (null == drop || !drop.Model.IsBow || drop.Ammo > rw.Ammo) drop = rw;
                 continue;
               }
@@ -7136,7 +7136,7 @@ restart_chokepoints:
             if (null != drop) return _BehaviorDropOrExchange(drop, it, position, use_ok);
             // crossbows are hard to use if unskilled
             foreach (var rw in no_ammo_rws) {
-              if (rw.Model.IsBow && 0 >= m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS)) {
+              if (rw.Model.IsBow && 0 >= m_Actor.MySkills.GetSkillLevel(Skills.IDs.BOWS)) {
                 if (null == drop || !drop.Model.IsBow || drop.Ammo > rw.Ammo) drop = rw;
                 continue;
               }
@@ -7365,7 +7365,7 @@ restart_chokepoints:
 //      if (!m_Actor.Model.Abilities.HasToEat) return false;    // redundant; for documentation
         if (m_Actor.IsHungry) return true;
         if (food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter)) return false;
-        if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food)) return true;
+        if (!m_Actor.HasEnoughFoodFor(m_Actor.Model.BaseFoodPoints / 2, food)) return true;
         // only interesting if pre-emptive eating would kick in
         return food.IsPerishable && m_Actor.CurrentNutritionOf(food)<= m_Actor.MaxFood - m_Actor.FoodPoints;
       }
@@ -8015,7 +8015,7 @@ restart_chokepoints:
     /// <returns>true if can impersonate a cop enough to become one</returns>
     public bool CanBecomeCop() {
         if (DisqualifiedForBecomingCop()) return false;
-        var skills = m_Actor.Sheet.SkillTable;
+        var skills = m_Actor.MySkills;
            // 1) required skills: Firearms 1, Leadership 1
         return 1 <= skills.GetSkillLevel(Skills.IDs.FIREARMS) && 1 <= skills.GetSkillLevel(Skills.IDs.LEADERSHIP)
            // 2) must have equipped: police radio, police armor

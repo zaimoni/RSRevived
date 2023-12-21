@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Diagnostics.Eventing.Reader;
 using System.Runtime.Serialization;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
@@ -12,20 +13,49 @@ using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
 namespace djack.RogueSurvivor.Data
 {
+// problems with prior ActorSheet class, and System.Runtime.Serialization.BinaryFormatter
+// trigger was Attack and Defence structs
+
+// Actor
+// 2019-10-19: class ok with automatic deserialization, but (readonly) struct with readonly fields is not even
+// though it automatically serializes. This is an explicit reversion of
+// https://github.com/dotnet/coreclr/pull/21193  (approved merge date 2018-11-26) so even if this is fixed
+// in a later version of C#, we can't count on the fix remaining.
+// Failure point is before the ISerializable-based constructor is called, so that doesn't work as a bypass.
+// this appears related to https://github.com/dotnet/corefx/issues/33655 i.e. anything trying to save/load a dictionary dies.
+
+// ActorSheet
+// Oct 19 2019: automatic serialization code makes structs flagged readonly within a class (whether normal or readonly)
+// save fine, but hard-crash on loading before an ISerializable constructor can be called.
+
   internal class ActorModel // looks like a good case for readonly struct, but would need reference return
   {
-    static private ulong[] _createdCounts = new ulong[(int)Gameplay.GameActors.IDs._COUNT];
+    static private readonly ulong[] _createdCounts = new ulong[(int)Gameplay.GameActors.IDs._COUNT];
+    static private readonly Verb BITE = new Verb("bite");
+    static private readonly Verb CLAW = new Verb("claw");
+    static private readonly Verb PUNCH = new Verb("punch", "punches");
 
     public readonly Gameplay.GameActors.IDs ID;
     public readonly string? ImageID;
     public readonly DollBody DollBody;
     public readonly string Name;
     public readonly string PluralName;
-    public readonly ActorSheet StartingSheet;
     public readonly Abilities Abilities;
     public readonly Type DefaultController;
     public readonly int ScoreValue;
     public readonly string FlavorDescription;
+    // migrated from ActorSheet
+    public readonly int BaseHitPoints;
+    public readonly int BaseStaminaPoints;
+    public readonly int BaseFoodPoints;
+    public readonly int BaseSleepPoints;
+    public readonly int BaseSanity;
+    public readonly Attack UnarmedAttack;
+    public readonly Defence BaseDefence;
+    public readonly int BaseViewRange;
+    public readonly int BaseAudioRange;
+    public readonly float BaseSmellRating;
+    public readonly int BaseInventoryCapacity;
 
     // backward-compatible aliasing
     private ulong CreatedCount {
@@ -36,7 +66,10 @@ namespace djack.RogueSurvivor.Data
 #region Session save/load assistants
     static public void Load(SerializationInfo info, StreamingContext context)
     {
-      _createdCounts = (ulong[]) info.GetValue("GameActors_createdCounts", typeof(ulong[]));
+      var stage = (ulong[]) info.GetValue("GameActors_createdCounts", typeof(ulong[]));
+      if ((int)Gameplay.GameActors.IDs._COUNT != stage.Length) throw new InvalidOperationException("need upgrade path for Actor::Load");
+      // \todo auto-repair if the incoming count is incorrect
+      Array.Copy(stage, _createdCounts, (int)Gameplay.GameActors.IDs._COUNT);
     }
 
     static public void Save(SerializationInfo info, StreamingContext context)
@@ -48,25 +81,23 @@ namespace djack.RogueSurvivor.Data
     // don't need to binary-encode against the possibility of negative values
     static public void Load(Zaimoni.Serialization.DecodeObjects decode)
     {
-        decode.LoadFrom7bit(ref _createdCounts);
-        if ((int)Gameplay.GameActors.IDs._COUNT != _createdCounts.Length) throw new InvalidOperationException("need upgrade path for Actor::Load");
+        var stage = new ulong[(int)Gameplay.GameActors.IDs._COUNT];
+        decode.LoadFrom7bit(ref stage);
+        if ((int)Gameplay.GameActors.IDs._COUNT != stage.Length) throw new InvalidOperationException("need upgrade path for Actor::Load");
         // \todo auto-repair if the incoming count is incorrect
+        Array.Copy(stage, _createdCounts, (int)Gameplay.GameActors.IDs._COUNT);
     }
 
     static public void Save(Zaimoni.Serialization.EncodeObjects encode) => encode.SaveTo7bit(_createdCounts);
 #endregion
 
-    public ActorModel(Gameplay.GameActors.IDs id, string? imageID, string name, string pluralName, int scoreValue, string flavor, DollBody body, Abilities abilities, ActorSheet startingSheet, Type defaultController)
+    public ActorModel(Gameplay.GameActors.IDs id, string? imageID, string name, string pluralName, int scoreValue, string flavor, DollBody body, Abilities abilities, Gameplay.GameActors.ActorData src, Type defaultController)
     {
 #if DEBUG
       // using logical XOR to restate IFF, logical AND to restate logical implication
       if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
       if (string.IsNullOrEmpty(flavor)) throw new ArgumentNullException(nameof(flavor));
       if (!defaultController.IsSubclassOf(typeof(ActorController))) throw new InvalidOperationException("!defaultController.IsSubclassOf(typeof(ActorController))");
-      if (abilities.HasInventory ^ (0 < startingSheet.BaseInventoryCapacity)) throw new InvalidOperationException("abilities.HasInventory ^ (0 < startingSheet.BaseInventoryCapacity)");
-      if ((abilities.HasToEat || abilities.IsRotting) ^ (0 < startingSheet.BaseFoodPoints)) throw new InvalidOperationException("(abilities.HasToEat || abilities.IsRotting) ^ (0 < startingSheet.BaseFoodPoints)");
-      if (abilities.HasToSleep ^ (0 < startingSheet.BaseSleepPoints)) throw new InvalidOperationException("abilities.HasToSleep ^ (0 < startingSheet.BaseSleepPoints)");
-      if (abilities.HasSanity ^ (0 < startingSheet.BaseSanity)) throw new InvalidOperationException("abilities.HasSanity ^ (0 < startingSheet.BaseSanity)");
       // OrderableAI should implement all of STD_LIVING, STD_HUMAN, and STD_SANE flags
       // InsaneHumanAI currently implements all of STD_LIVING and STD_HUMAN flags, but not STD_SANE flags
       if (abilities.CanTrade && !defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new InvalidOperationException("abilities.CanTrade && !defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
@@ -80,11 +111,41 @@ namespace djack.RogueSurvivor.Data
       DollBody = body;
       Name = name;
       PluralName = pluralName;
-      StartingSheet = startingSheet;
       Abilities = abilities;
       DefaultController = defaultController;
       ScoreValue = scoreValue;
       FlavorDescription = flavor;
+      // migrated from ActorSheet
+      BaseHitPoints = src.HP;
+      BaseStaminaPoints = src.STA;
+      // legacy: both human and dogs are set to this value
+      if (abilities.HasToEat) BaseFoodPoints = 2 * Actor.FOOD_HUNGRY_LEVEL;
+      else if (abilities.IsRotting) BaseFoodPoints = 2 * Actor.ROT_HUNGRY_LEVEL;
+      else BaseFoodPoints = 0;
+      // legacy: both human and dogs are set to this value
+      if (abilities.HasToSleep) BaseSleepPoints = 2 * Actor.SLEEP_SLEEPY_LEVEL;
+      else BaseSleepPoints = 0;
+
+      if (abilities.HasSanity) BaseSanity = 4 * WorldTime.TURNS_PER_DAY;
+      else BaseSanity = 0;
+
+      Verb ua() {
+        if (typeof(Gameplay.AI.SkeletonAI) == defaultController) return CLAW;
+        if (abilities.IsUndead) return BITE;
+        if (typeof(Gameplay.AI.FeralDogAI) == defaultController) return BITE;
+        return PUNCH;
+      }
+
+      UnarmedAttack = new(AttackKind.PHYSICAL, ua(), src.ATK, src.DMG);
+      BaseDefence = new(src.DEF, src.PRO_HIT, src.PRO_SHOT);
+      BaseViewRange = src.FOV;
+      BaseAudioRange = src.AUDIO;
+      BaseSmellRating = (float) src.SMELL / 100f;
+
+      if (abilities.HasInventory) {
+        if (typeof(Gameplay.AI.FeralDogAI) == defaultController) BaseInventoryCapacity = 1;
+        else BaseInventoryCapacity = 7; // humans
+      } else BaseInventoryCapacity = 0;
     }
 
     private Actor Create(Faction faction, int spawnTime, string properName="")

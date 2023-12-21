@@ -1249,8 +1249,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool? HandleNewCharacterGender(DiceRoller roller)
     {
-      ActorSheet maleStats = GameActors.MaleCivilian.StartingSheet; // do not have to be RAM-efficient here, this is one-off UI
-      ActorSheet femaleStats = GameActors.FemaleCivilian.StartingSheet;
+      var male = GameActors.MaleCivilian;
+      var female = GameActors.FemaleCivilian;
       string[] entries = new string[3] {
         "*Random*",
         "Male",
@@ -1258,8 +1258,8 @@ namespace djack.RogueSurvivor.Engine
       };
       string[] values = new string[3] {
         "(picks a gender at random for you)",
-        string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}",  maleStats.BaseHitPoints,  maleStats.BaseDefence.Value,  maleStats.UnarmedAttack.DamageValue),
-        string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}",  femaleStats.BaseHitPoints,  femaleStats.BaseDefence.Value,  femaleStats.UnarmedAttack.DamageValue)
+        string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}",  male.BaseHitPoints,  male.BaseDefence.Value,  male.UnarmedAttack.DamageValue),
+        string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}",  female.BaseHitPoints,  female.BaseDefence.Value,  female.UnarmedAttack.DamageValue)
       };
 
       static bool? command_line()
@@ -1309,7 +1309,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private string DescribeUndeadModelStatLine(ActorModel m)
     {
-      return string.Format("HP:{0:D3}  Spd:{1:F2}  Atk:{2:D2}  Def:{3:D2}  Dmg:{4:D2}  FoV:{5:D1}  Sml:{6:F2}", m.StartingSheet.BaseHitPoints, (float)((double)m.DollBody.Speed / 100.0), m.StartingSheet.UnarmedAttack.HitValue, m.StartingSheet.BaseDefence.Value, m.StartingSheet.UnarmedAttack.DamageValue, m.StartingSheet.BaseViewRange, m.StartingSheet.BaseSmellRating);
+      return string.Format("HP:{0:D3}  Spd:{1:F2}  Atk:{2:D2}  Def:{3:D2}  Dmg:{4:D2}  FoV:{5:D1}  Sml:{6:F2}", m.BaseHitPoints, (float)((double)m.DollBody.Speed / 100.0), m.UnarmedAttack.HitValue, m.BaseDefence.Value, m.UnarmedAttack.DamageValue, m.BaseViewRange, m.BaseSmellRating);
     }
 
     private GameActors.IDs? HandleNewCharacterUndeadType(DiceRoller roller)
@@ -2472,7 +2472,7 @@ namespace djack.RogueSurvivor.Engine
       ret.Add(leader);
       if (0 == s_RefugeePool!.Count) return ret;
 
-      var n_followers = leader.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
+      var n_followers = leader.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP);
       if (0 >= n_followers) return ret; // cannot lead.
 
       var recruits = GetRefugeeFollowers(leader);
@@ -2484,7 +2484,7 @@ namespace djack.RogueSurvivor.Engine
       do {
         var n = dr.Roll(0, recruits.Count);
         var recruit = recruits[n];
-        var recruit_followers = recruit.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
+        var recruit_followers = recruit.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP);
         // may want plot armor for uniques
         if (n_followers < recruit_followers && RefugeeCanTakeLeadOf(recruit, leader)) {
           want += (recruit_followers - n_followers);
@@ -5163,7 +5163,7 @@ namespace djack.RogueSurvivor.Engine
       const string BUILD_LARGE_FORT_MODE_TEXT = "BUILD LARGE FORTIFICATION MODE - directions to build, ESC cancels";
       const string BUILD_SMALL_FORT_MODE_TEXT = "BUILD SMALL FORTIFICATION MODE - directions to build, ESC cancels";
 
-      if (player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) {
+      if (0 == player.MySkills.GetSkillLevel(Skills.IDs.CARPENTRY)) {
         ErrorPopup("need carpentry skill.");
         return false;
       }
@@ -6046,7 +6046,7 @@ namespace djack.RogueSurvivor.Engine
           return HandlePlayerOrderFollowerToPatrol(player, fo_ordai, fovFor);
         }));
 
-        if (   0 < follower.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY)
+        if (   0 < follower.MySkills.GetSkillLevel(Skills.IDs.CARPENTRY)
             && follower.Inventory.Has<ItemBarricadeMaterial>()) {
           var have = follower.CountItems<ItemBarricadeMaterial>();
 
@@ -7428,7 +7428,7 @@ namespace djack.RogueSurvivor.Engine
       lines.Add(" ");
       lines.Add(a_model.FlavorDescription);
       lines.Add(" ");
-      var sk_table = actor.Sheet.SkillTable;
+      var sk_table = actor.MySkills;
       var skills = sk_table.Skills;
       if (null != skills) {
         foreach (var sk in skills) lines.Add(string.Format("{0}-{1}", sk.Value, Skills.Name(sk.Key)));
@@ -7440,7 +7440,7 @@ namespace djack.RogueSurvivor.Engine
       // unusual abilities for undeads
       if (a_model.Abilities.IsUndead) {
         // fov
-        lines.Add(string.Format("- FOV : {0}.", a_model.StartingSheet.BaseViewRange));
+        lines.Add(string.Format("- FOV : {0}.", a_model.BaseViewRange));
 
         // smell rating
         int smell = (int)(100 * actor.Smell);  // applies z-tracker skill
@@ -7666,7 +7666,7 @@ namespace djack.RogueSurvivor.Engine
 		 return num != 0 ? (num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely") : "impossible";
 	  }
 
-      var skills = Player.Sheet.SkillTable;
+      var skills = Player.MySkills;
       int skillLevel = skills.GetSkillLevel(Skills.IDs.NECROLOGY);
       var lines = new List<string>(10){
         c.ToString().Capitalize()+".",
@@ -10771,7 +10771,7 @@ namespace djack.RogueSurvivor.Engine
           var actorModel = CheckUndeadEvolution(killer);
           if (actorModel != null) {
             // don't need value-copy here due to how the model assignment works
-            var skills = killer.Sheet.SkillTable.Skills;
+            var skills = killer.MySkills.Skills;
             killer.Model = actorModel;
             killer.APreset(); // to avoid triggering a debug-mode crash
             if (killer.IsPlayer) killer.PrepareForPlayerControl();
@@ -11065,7 +11065,7 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(compileDistrictFunFact);
       textFile.Append("");
       textFile.Append("> SKILLS");
-      var p_skills = Player.Sheet.SkillTable.Skills;
+      var p_skills = Player.MySkills.Skills;
       if (null == p_skills) {
         textFile.Append(string.Format("{0} was a jack of all trades. Or an incompetent.", str1));
       } else {
@@ -11107,7 +11107,7 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(stringBuilder.ToString());
         foreach (Actor actor in followers) {
           textFile.Append(string.Format("{0} skills : ", actor.Name));
-          var a_skills = actor.Sheet.SkillTable.Skills;
+          var a_skills = actor.MySkills.Skills;
           if (null != a_skills) foreach (var sk in a_skills) textFile.Append(string.Format("{0}-{1}.", sk.Value, Skills.Name(sk.Key)));
         }
       }
@@ -11182,7 +11182,7 @@ namespace djack.RogueSurvivor.Engine
       }
       while (index < textFile.FormatedLines.Count);
       var stringBuilder1 = new StringBuilder();
-      var skills = Player.Sheet.SkillTable.Skills;
+      var skills = Player.MySkills.Skills;
       if (null != skills) foreach (var sk in skills) stringBuilder1.AppendFormat("{0}-{1} ", sk.Value, Skills.Name(sk.Key));
       if (!m_HiScoreTable.Register(new HiScore(g_scoring, p_scoring, stringBuilder1.ToString()))) return;
       SaveHiScoreTable();
@@ -11244,7 +11244,7 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
 
-      var skills = upgradeActor.Sheet.SkillTable;
+      var skills = upgradeActor.MySkills;
       OverlayPopupTitle? popup = null;
 
       void display() {
@@ -11482,7 +11482,7 @@ namespace djack.RogueSurvivor.Engine
       var dr = Rules.Get.DiceRoller;
       do {  // could unroll this loop, etc -- but this is profile-cold so ok to minimize IL size
         var id = isUndead ? Skills.RollUndead(dr) : Skills.RollLiving(dr);
-        if (actor.Sheet.SkillTable.GetSkillLevel(id) < Skills.MaxSkillLevel(id)) return id;
+        if (actor.MySkills.GetSkillLevel(id) < Skills.MaxSkillLevel(id)) return id;
       } while (++num < maxTries);
       return null;
     }
@@ -11490,7 +11490,7 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     private void DoLooseRandomSkill(Actor actor)
     {
-      var lost = actor.Sheet.SkillTable.LoseRandomSkill();
+      var lost = actor.MySkills.LoseRandomSkill();
       if (null != lost) {
         var witnesses = _ForceVisibleToPlayer(actor);
         if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("regressed in {0}!", Skills.Name(lost.Value))), witnesses.Value);
@@ -11531,7 +11531,7 @@ namespace djack.RogueSurvivor.Engine
         deadVictim.Location.Place(actor);
 	    Session.Get.Police.TrackThroughExitSpawn(actor);
       }
-      var skillTable = deadVictim.Sheet.SkillTable;
+      var skillTable = deadVictim.MySkills;
       var skill_count = skillTable.CountSkills;
       if (0 < skill_count) {
         var roller = Rules.Get.DiceRoller;
@@ -11614,7 +11614,7 @@ namespace djack.RogueSurvivor.Engine
                   var invspec = Player.Location.InventoryAtFeet();
                   DrawInventory(invspec?.inv, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
                   DrawCorpsesList(Player.Location.Corpses, "Corpses on ground", Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, CORPSESPANEL_Y);
-                  if (0 < Player.Sheet.SkillTable.CountSkills)
+                  if (0 < Player.MySkills.CountSkills)
                     DrawActorSkillTable(Player, SKILLTABLE_X, SKILLTABLE_Y);
                 }
                 lock (m_Overlays) {
@@ -11756,7 +11756,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       bool isUndead = Player.Model.Abilities.IsUndead;
-      bool canScentTrack = Player.Model.StartingSheet.BaseSmellRating > 0;
+      bool canScentTrack = 0 < Player.Model.BaseSmellRating;
       bool p_is_awake = !Player.IsSleeping;
       for (var x = num1; x < num2; ++x) {
         point.X = x;
@@ -12030,7 +12030,7 @@ namespace djack.RogueSurvivor.Engine
 
           if (actor.IsSleeping && (actor.IsOnCouch || 0 < actor.HealChanceBonus)) m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx2, gy2, tint);
           if (actor.CountFollowers > 0) m_UI.UI_DrawImage(GameImages.ICON_LEADER, gx2, gy2, tint);
-          if (0 < actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB)) m_UI.UI_DrawImage(GameImages.ICON_ZGRAB, gx2, gy2, tint); // alpha10: z-grab skill warning icon
+          if (0 < actor.MySkills.GetSkillLevel(Skills.IDs.Z_GRAB)) m_UI.UI_DrawImage(GameImages.ICON_ZGRAB, gx2, gy2, tint); // alpha10: z-grab skill warning icon
           if (!s_Options.IsCombatAssistantOn || actor == Player || !actor.IsEnemyOf(Player)) break;
           m_UI.UI_DrawImage(ThreatIcon(actor), gx2, gy2, tint);
           break;
@@ -12439,7 +12439,7 @@ namespace djack.RogueSurvivor.Engine
       Defence defence = actor.Defence;
       return (actor.Model.Abilities.IsUndead
             ? string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", defence.Value, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Smell, actor.KillsCount)
-            : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Sheet.BaseViewRange, actor.CountFollowers, actor.MaxFollowers));
+            : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Model.BaseViewRange, actor.CountFollowers, actor.MaxFollowers));
     }
 
     static private string _gameStatus(Actor a) {
@@ -12627,7 +12627,7 @@ namespace djack.RogueSurvivor.Engine
     public void DrawActorSkillTable(Actor actor, int gx, int gy)
     {
       m_UI.UI_DrawStringBold(Color.White, "Skills", gx, gy - BOLD_LINE_SPACING, new Color?());
-      var skills = actor.Sheet.SkillTable.Skills;
+      var skills = actor.MySkills.Skills;
       if (skills == null) return;
       int num = 0;
       int gx1 = gx;

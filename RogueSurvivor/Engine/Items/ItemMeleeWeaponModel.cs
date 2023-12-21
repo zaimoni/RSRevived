@@ -36,8 +36,8 @@ namespace djack.RogueSurvivor.Engine.Items
       ToolBuildBonus = build;
     }
 
-    public Attack BaseMeleeAttack(in ActorSheet Sheet) {
-      return new Attack(Attack.Kind, Attack.Verb, Attack.HitValue + Sheet.UnarmedAttack.HitValue, Attack.DamageValue + Sheet.UnarmedAttack.DamageValue, Attack.StaminaPenalty);
+    public Attack BaseMeleeAttack(in ActorModel model) {
+      return new Attack(Attack.Kind, Attack.Verb, Attack.HitValue + model.UnarmedAttack.HitValue, Attack.DamageValue + model.UnarmedAttack.DamageValue, Attack.StaminaPenalty);
     }
 
     public bool IsMartialArts {

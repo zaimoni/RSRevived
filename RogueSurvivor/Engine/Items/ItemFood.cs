@@ -104,7 +104,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool UseBeforeDrop(Actor a) {
       // other behaviors handle pre-emptive eating of perishables
       if (IsPerishable) return false;
-      if (!a.Inventory!.Contains(this) && a.HasEnoughFoodFor(a.Sheet.BaseFoodPoints / 2, this)) return false;
+      if (!a.Inventory!.Contains(this) && a.HasEnoughFoodFor(a.Model.BaseFoodPoints / 2, this)) return false;
       int need = a.MaxFood - a.FoodPoints;
       int num4 = a.CurrentNutritionOf(this);
       return num4 <= need;
@@ -112,7 +112,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool FreeSlotByUse(Actor a) {
       // other behaviors handle pre-emptive eating of perishables
       if (IsPerishable) return false;
-      if (!a.Inventory!.Contains(this) && a.HasEnoughFoodFor(a.Sheet.BaseFoodPoints / 2, this)) return false;
+      if (!a.Inventory!.Contains(this) && a.HasEnoughFoodFor(a.Model.BaseFoodPoints / 2, this)) return false;
       int need = a.MaxFood - a.FoodPoints;
       int num4 = a.CurrentNutritionOf(this);
       return Quantity <= need/num4;

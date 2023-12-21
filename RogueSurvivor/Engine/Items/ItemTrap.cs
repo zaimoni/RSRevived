@@ -191,7 +191,7 @@ namespace djack.RogueSurvivor.Engine.Items
       var abilities = a.Model.Abilities;
       if (abilities.IsUndead) avoidBonus -= TRAP_UNDEAD_ACTOR_TRIGGER_PENALTY;
       if (abilities.IsSmall) avoidBonus += TRAP_SMALL_ACTOR_AVOID_BONUS;
-      var skills = a.Sheet.SkillTable;
+      var skills = a.MySkills;
       avoidBonus += skills.GetSkillLevel(Gameplay.Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS;
       avoidBonus += skills.GetSkillLevel(Gameplay.Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS;
 
@@ -213,7 +213,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool CheckStepOnBreaks() { return Rules.Get.RollChance(Model.BreakChance); }
 
     public int EscapeChanceFor(Actor a) {
-      var skills = a.Sheet.SkillTable;
+      var skills = a.MySkills;
       return (skills.GetSkillLevel(Gameplay.Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + skills.GetSkillLevel(Gameplay.Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - Model.BlockChance * Quantity);
     }
 

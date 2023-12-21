@@ -138,12 +138,7 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     private string m_Name;
     private ActorController m_Controller;   // use accessor rather than direct update; direct update causes null dereference crash in vision sensor
-    private ActorSheet m_Sheet;         // 2019-10-19: class ok with automatic deserialization, but (readonly) struct with readonly fields is not even
-                                        // though it automatically serializes. This is an explicit reversion of
-                                        // https://github.com/dotnet/coreclr/pull/21193  (approved merge date 2018-11-26) so even if this is fixed
-                                        // in a later version of C#, we can't count on the fix remaining.
-                                        // Failure point is before the ISerializable-based constructor is called, so that doesn't work as a bypass.
-                                        // this appears related to https://github.com/dotnet/corefx/issues/33655 i.e. anything trying to save/load a dictionary dies.
+    private SkillTable m_Skills;
     public readonly int SpawnTime;
     private Inventory? m_Inventory;
     private Doll m_Doll;
@@ -354,7 +349,7 @@ namespace djack.RogueSurvivor.Data
     public int PreviousSleepPoints { get { return m_previousSleepPoints; } }
     public int Sanity { get { return m_Sanity; } }
     public int PreviousSanity { get { return m_previousSanity; } }
-    public ref ActorSheet Sheet { get { return ref m_Sheet; } }
+    public SkillTable MySkills { get => m_Skills; }
 
     public int ActionPoints { get { return m_ActionPoints; } }
     public void APreset() { m_ActionPoints = 0; }
@@ -374,7 +369,8 @@ namespace djack.RogueSurvivor.Data
       set { m_TargetActor = value; }
     }
 
-    public int AudioRange { get { return m_Sheet.BaseAudioRange; } } // might be useful for e.g. deafness from being too close to an explosion
+    // might be useful for e.g. deafness from being too close to an explosion
+    public int AudioRange { get => Model.BaseAudioRange; }
 
     public ref Attack CurrentMeleeAttack { get { return ref m_CurrentMeleeAttack; } }
     public ref Attack CurrentRangedAttack { get { return ref m_CurrentRangedAttack; } }
@@ -420,7 +416,7 @@ namespace djack.RogueSurvivor.Data
 
     public int MaxFollowers {
       get {
-        return SKILL_LEADERSHIP_FOLLOWER_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
+        return SKILL_LEADERSHIP_FOLLOWER_BONUS * MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP);
       }
     }
 
@@ -613,7 +609,7 @@ namespace djack.RogueSurvivor.Data
     {
       const int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 75;   // these two are logically independent
       const int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 75;
-      int baseChance = SKILL_UNSUSPICIOUS_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.UNSUSPICIOUS);
+      int baseChance = SKILL_UNSUSPICIOUS_BONUS * MySkills.GetSkillLevel(Skills.IDs.UNSUSPICIOUS);
 
       // retain general-purpose code within the cases
       if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor armor && !armor.IsNeutral) {
@@ -773,17 +769,17 @@ namespace djack.RogueSurvivor.Data
       ActorModel model = Model;
       _has_to_eat = model.Abilities.HasToEat;
       m_Doll = new Doll(model);
-      m_Sheet = new ActorSheet(model.StartingSheet);
+      m_Skills = new();
       m_ActionPoints = m_Doll.Body.Speed;
-      m_HitPoints = m_previousHitPoints = m_Sheet.BaseHitPoints;
-      m_StaminaPoints = m_previousStamina = m_Sheet.BaseStaminaPoints;
-      m_FoodPoints = m_previousFoodPoints = m_Sheet.BaseFoodPoints;
-      m_SleepPoints = m_previousSleepPoints = m_Sheet.BaseSleepPoints;
-      m_Sanity = m_previousSanity = m_Sheet.BaseSanity;
-      m_Inventory = (model.Abilities.HasInventory ? new Inventory(Sheet.BaseInventoryCapacity)
+      m_HitPoints = m_previousHitPoints = model.BaseHitPoints;
+      m_StaminaPoints = m_previousStamina = model.BaseStaminaPoints;
+      m_FoodPoints = m_previousFoodPoints = model.BaseFoodPoints;
+      m_SleepPoints = m_previousSleepPoints = model.BaseSleepPoints;
+      m_Sanity = m_previousSanity = model.BaseSanity;
+      m_Inventory = (model.Abilities.HasInventory ? new Inventory(model.BaseInventoryCapacity)
                                                   : null); // any previous inventory will be irrevocably destroyed
-      m_CurrentMeleeAttack = Sheet.UnarmedAttack;
-      m_CurrentDefence = Sheet.BaseDefence;
+      m_CurrentMeleeAttack = model.UnarmedAttack;
+      m_CurrentDefence = Model.BaseDefence;
       m_CurrentRangedAttack = Attack.BLANK;
     }
 
@@ -815,9 +811,9 @@ namespace djack.RogueSurvivor.Data
       var rw = w as ItemRangedWeapon;
       m_CurrentRangedAttack = (null != rw) ? rw.Model.Attack : Attack.BLANK;
       var melee = w as ItemMeleeWeapon;
-      m_CurrentMeleeAttack = (null != melee) ? melee.Model.BaseMeleeAttack(in Sheet) : Sheet.UnarmedAttack;
+      m_CurrentMeleeAttack = (null != melee) ? melee.Model.BaseMeleeAttack(Model) : Model.UnarmedAttack;
 
-      m_CurrentDefence = Sheet.BaseDefence;
+      m_CurrentDefence = Model.BaseDefence;
       if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor armor) m_CurrentDefence += armor.Model.ToDefence();
     }
 
@@ -836,23 +832,18 @@ namespace djack.RogueSurvivor.Data
 
       Controller.RepairLoad();
     }
-#nullable restore
 
-	public void PrefixName(string prefix)
-	{
-	  m_Name = prefix+" "+m_Name;
-	}
+	public void PrefixName(string prefix) => m_Name = prefix+" "+m_Name;
 
-#nullable enable
     public int DamageBonusVsUndeads {
       get {
-        return SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
+        return SKILL_NECROLOGY_UNDEAD_BONUS * MySkills.GetSkillLevel(Skills.IDs.NECROLOGY);
       }
     }
 
     public int MaxThrowRange(int baseRange)
     {
-      return baseRange + SKILL_STRONG_THROW_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG);
+      return baseRange + SKILL_STRONG_THROW_BONUS * MySkills.GetSkillLevel(Skills.IDs.STRONG);
     }
 
     private string ReasonCouldntThrowTo(ItemGrenadeModel model, Point pos, List<Point>? LoF)
@@ -1033,7 +1024,7 @@ namespace djack.RogueSurvivor.Data
         if (IsRunning) return 0;
         if (GetEquippedWeapon() is ItemMeleeWeapon melee && melee.Model.IsMartialArts) {
           if (Gameplay.Item_IDs.UNIQUE_FATHER_TIME_SCYTHE != melee.ModelID) return 0; // Cf Tai Chi for why the scythe can be weaponized
-          return Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+          return MySkills.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
         }
         return 0;
       }
@@ -1069,7 +1060,7 @@ namespace djack.RogueSurvivor.Data
     public Defence Defence {
       get {
         if (IsSleeping) return Defence.BLANK;
-        var skills = Sheet.SkillTable;
+        var skills = MySkills;
         int num1 = Rules.SKILL_AGILE_DEF_BONUS * skills.GetSkillLevel(Skills.IDs.AGILE) + Rules.SKILL_ZAGILE_DEF_BONUS * skills.GetSkillLevel(Skills.IDs.Z_AGILE);
         float num2 = (float) (m_CurrentDefence.Value + num1);
         if (IsExhausted) num2 /= 2f;
@@ -1080,8 +1071,8 @@ namespace djack.RogueSurvivor.Data
 
     public Attack MeleeWeaponAttack(ItemMeleeWeaponModel model, Actor? target = null)
     {
-      Attack baseAttack = model.BaseMeleeAttack(in Sheet);
-      var skills = Sheet.SkillTable;
+      Attack baseAttack = model.BaseMeleeAttack(Model);
+      var skills = MySkills;
       int hitBonus = SKILL_AGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.Z_AGILE);
       int damageBonus = SKILL_STRONG_DMG_BONUS * skills.GetSkillLevel(Skills.IDs.STRONG) + SKILL_ZSTRONG_DMG_BONUS * skills.GetSkillLevel(Skills.IDs.Z_STRONG);
       if (model.IsMartialArts) {
@@ -1100,8 +1091,8 @@ namespace djack.RogueSurvivor.Data
 
     public Attack MeleeWeaponAttack(ItemMeleeWeaponModel model, MapObject objToBreak)
     {
-      Attack baseAttack = model.BaseMeleeAttack(in Sheet);
-      var skills = Sheet.SkillTable;
+      Attack baseAttack = model.BaseMeleeAttack(Model);
+      var skills = MySkills;
       int hitBonus = SKILL_AGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.Z_AGILE);
       int damageBonus = SKILL_STRONG_DMG_BONUS * skills.GetSkillLevel(Skills.IDs.STRONG) + SKILL_ZSTRONG_DMG_BONUS * skills.GetSkillLevel(Skills.IDs.Z_STRONG);
       if (model.IsMartialArts) {
@@ -1123,7 +1114,7 @@ namespace djack.RogueSurvivor.Data
 
     public Attack UnarmedMeleeAttack(Actor? target=null)
     {
-      var skills = Sheet.SkillTable;
+      var skills = MySkills;
       int num3 = SKILL_AGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * skills.GetSkillLevel(Skills.IDs.Z_AGILE);
       int num4 = SKILL_STRONG_DMG_BONUS * skills.GetSkillLevel(Skills.IDs.STRONG) + SKILL_ZSTRONG_DMG_BONUS * skills.GetSkillLevel(Skills.IDs.Z_STRONG);
       {
@@ -1134,7 +1125,7 @@ namespace djack.RogueSurvivor.Data
       }
       }
       if (target?.Model.Abilities.IsUndead ?? false) num4 += DamageBonusVsUndeads;
-      Attack baseAttack = Sheet.UnarmedAttack;
+      Attack baseAttack = Model.UnarmedAttack;
       float num5 = (float)baseAttack.HitValue + (float) num3;
       if (IsExhausted) num5 /= 2f;
       else if (IsSleepy) num5 *= 0.75f;
@@ -1212,7 +1203,7 @@ namespace djack.RogueSurvivor.Data
       switch (baseAttack.Kind) {
         case AttackKind.FIREARM:
           {
-          int skill = Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
+          int skill = MySkills.GetSkillLevel(Skills.IDs.FIREARMS);
           if (0 != skill) {
             hitMod = SKILL_FIREARMS_ATK_BONUS * skill;
             dmgBonus = SKILL_FIREARMS_DMG_BONUS * skill;
@@ -1221,7 +1212,7 @@ namespace djack.RogueSurvivor.Data
           break;
         case AttackKind.BOW:
           {
-          int skill = Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
+          int skill = MySkills.GetSkillLevel(Skills.IDs.BOWS);
           if (0 != skill) {
             hitMod = SKILL_BOWS_ATK_BONUS * skill;
             dmgBonus = SKILL_BOWS_DMG_BONUS * skill;
@@ -1545,10 +1536,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public void SetTrustIn(Actor other, int trust)
-    {
-      (m_TrustDict ??= new Dictionary<Actor, int>())[other] = trust;
-    }
+    public void SetTrustIn(Actor other, int trust) => (m_TrustDict ??= new())[other] = trust;
 
     public int GetTrustIn(Actor other)
     {
@@ -1559,7 +1547,7 @@ namespace djack.RogueSurvivor.Data
 
     public int TrustIncrease {
       get {
-        return 1 + SKILL_CHARISMATIC_TRUST_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.CHARISMATIC);
+        return 1 + SKILL_CHARISMATIC_TRUST_BONUS * MySkills.GetSkillLevel(Skills.IDs.CHARISMATIC);
       }
     }
 
@@ -2153,15 +2141,12 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 
-    public bool CanBreak(MapObject mapObj)
-    {
-      return string.IsNullOrEmpty(ReasonCantBreak(mapObj));
-    }
+    public bool CanBreak(MapObject mapObj) => string.IsNullOrEmpty(ReasonCantBreak(mapObj));
 
     public bool AbleToPush {
       get {
         if (Model.Abilities.CanPush) return true;
-        var skills = Sheet.SkillTable;
+        var skills = MySkills;
         return 0 < skills.GetSkillLevel(Skills.IDs.STRONG) || 0 < skills.GetSkillLevel(Skills.IDs.Z_STRONG);
       }
     }
@@ -2333,14 +2318,11 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 
-    public bool CanClose(DoorWindow door)
-    {
-      return string.IsNullOrEmpty(ReasonCantClose(door));
-    }
+    public bool CanClose(DoorWindow door) => string.IsNullOrEmpty(ReasonCantClose(door));
 
     public int ScaleBarricadingPoints(int baseBarricadingPoints)
     {
-      int barBonus = (int)(/* (double) */ SKILL_CARPENTRY_BARRICADING_BONUS * /* (int) */ (baseBarricadingPoints * Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY)));    // carpentry skill
+      int barBonus = (int)(/* (double) */ SKILL_CARPENTRY_BARRICADING_BONUS * /* (int) */ (baseBarricadingPoints * MySkills.GetSkillLevel(Skills.IDs.CARPENTRY)));    // carpentry skill
 
       // alpha10: tool build bonus
       if (GetEquippedWeapon() is ItemMeleeWeapon melee) {
@@ -2422,19 +2404,16 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(reason);
     }
 
-    public bool CanOpen(DoorWindow door)
-    {
-	  return string.IsNullOrEmpty(ReasonCantOpen(door));
-    }
+    public bool CanOpen(DoorWindow door) => string.IsNullOrEmpty(ReasonCantOpen(door));
 
     public int BarricadingMaterialNeedForFortification(bool isLarge)
     {
-      return Math.Max(1, (isLarge ? 4 : 2) - (Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) >= 3 ? SKILL_CARPENTRY_LEVEL3_BUILD_BONUS : 0));
+      return Math.Max(1, (isLarge ? 4 : 2) - (MySkills.GetSkillLevel(Skills.IDs.CARPENTRY) >= 3 ? SKILL_CARPENTRY_LEVEL3_BUILD_BONUS : 0));
     }
 
     private string ReasonCantBuildFortification(Point pos, bool isLarge)
     {
-      if (0 >= Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY)) return "no skill in carpentry";
+      if (0 >= MySkills.GetSkillLevel(Skills.IDs.CARPENTRY)) return "no skill in carpentry";
 
       Map map = Location.Map;
       if (!map.GetTileModelAtExt(pos)?.IsWalkable ?? true) return  "cannot build on walls";
@@ -2596,40 +2575,38 @@ namespace djack.RogueSurvivor.Data
     }
 
     // infection
-    public int InfectionHPs { get { return MaxHPs + MaxSTA; } }
+    public int InfectionHPs { get => MaxHPs + MaxSTA; }
 
     public void Infect(int i) {
       if (Session.Get.HasInfection) m_Infection = Math.Min(InfectionHPs, m_Infection + i);    // intentional no-op if mode doesn't have infection
     }
 
-    public void Cure(int i) { m_Infection = Math.Max(0, m_Infection - i); }
-    public int InfectionPercent { get { return 100 * m_Infection / InfectionHPs; } }
+    public void Cure(int i) => m_Infection = Math.Max(0, m_Infection - i);
+    public int InfectionPercent { get => 100 * m_Infection / InfectionHPs; }
 
     public int InfectionForDamage(int dmg)
     {
-      return dmg + (int) (SKILL_ZINFECTOR_BONUS * /* (int) */ (Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_INFECTOR) * dmg));
+      return dmg + (int) (SKILL_ZINFECTOR_BONUS * /* (int) */ (MySkills.GetSkillLevel(Skills.IDs.Z_INFECTOR) * dmg));
     }
 
     // health
     public int MaxHPs {
       get {
-        var skills = Sheet.SkillTable;
+        var skills = MySkills;
         int num = SKILL_TOUGH_HP_BONUS * skills.GetSkillLevel(Skills.IDs.TOUGH) + SKILL_ZTOUGH_HP_BONUS * skills.GetSkillLevel(Skills.IDs.Z_TOUGH);
-        return Sheet.BaseHitPoints + num;
+        return Model.BaseHitPoints + num;
       }
     }
 
-    public void RegenHitPoints(int hpRegen) { m_HitPoints = Math.Min(MaxHPs, m_HitPoints + hpRegen); }
+    public void RegenHitPoints(int hpRegen) => m_HitPoints = Math.Min(MaxHPs, m_HitPoints + hpRegen);
 
     public int HealChanceBonus {
-      get {
-        return SKILL_HARDY_HEAL_CHANCE_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HARDY);
-      }
+      get => SKILL_HARDY_HEAL_CHANCE_BONUS * MySkills.GetSkillLevel(Skills.IDs.HARDY);
     }
 
     public int BiteHpRegen(int dmg) // only for undead, however
     {
-      return dmg + (int)(/* (double) */ SKILL_ZEATER_REGEN_BONUS * /* (int) */(Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_EATER) * dmg));
+      return dmg + (int)(/* (double) */ SKILL_ZEATER_REGEN_BONUS * /* (int) */(MySkills.GetSkillLevel(Skills.IDs.Z_EATER) * dmg));
     }
 
     // stamina
@@ -2662,15 +2639,11 @@ namespace djack.RogueSurvivor.Data
     }
 
     public int MaxSTA {
-      get {
-        return Sheet.BaseStaminaPoints + SKILL_HIGH_STAMINA_STA_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HIGH_STAMINA);
-      }
+      get => Model.BaseStaminaPoints + SKILL_HIGH_STAMINA_STA_BONUS * MySkills.GetSkillLevel(Skills.IDs.HIGH_STAMINA);
     }
 
     public bool IsTired {
-      get {
-        return Model.Abilities.CanTire && m_StaminaPoints < STAMINA_MIN_FOR_ACTIVITY;
-      }
+      get => Model.Abilities.CanTire && m_StaminaPoints < STAMINA_MIN_FOR_ACTIVITY;
     }
 
     // 2023-04-22: For now, assume conditions for crouching are those for running.
@@ -2731,7 +2704,7 @@ namespace djack.RogueSurvivor.Data
     public bool CanJump {
       get {
        if (Model.Abilities.CanJump) return true;
-       var skills = Sheet.SkillTable;
+       var skills = MySkills;
        return 0 < skills.GetSkillLevel(Skills.IDs.AGILE)
            || 0 < skills.GetSkillLevel(Skills.IDs.Z_AGILE);
       }
@@ -2882,12 +2855,12 @@ namespace djack.RogueSurvivor.Data
     }
 
     // sanity
-    public bool IsInsane { get { return Model.Abilities.HasSanity && 0 >= m_Sanity; } }
-    public int MaxSanity { get { return Sheet.BaseSanity; } }
+    public bool IsInsane { get => Model.Abilities.HasSanity && 0 >= m_Sanity; }
+    public int MaxSanity { get => Model.BaseSanity; }
 
     public int ScaleSanRegen(int baseValue)
     {
-      return baseValue + (int)(/* (double) */ SKILL_STRONG_PSYCHE_ENT_BONUS * /* (int) */ (baseValue * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
+      return baseValue + (int)(/* (double) */ SKILL_STRONG_PSYCHE_ENT_BONUS * /* (int) */ (baseValue * MySkills.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
     }
 
     public void SpendSanity(int sanCost)   // \todo unclear whether ok to rely on guard clause
@@ -2903,13 +2876,13 @@ namespace djack.RogueSurvivor.Data
     public int DisturbedLevel {
       get {
         const int SANITY_UNSTABLE_LEVEL = 2 * WorldTime.TURNS_PER_DAY;
-        return (int) (SANITY_UNSTABLE_LEVEL * (1.0 - SKILL_STRONG_PSYCHE_LEVEL_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
+        return (int) (SANITY_UNSTABLE_LEVEL * (1.0 - SKILL_STRONG_PSYCHE_LEVEL_BONUS * MySkills.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
       }
     }
 
 #nullable restore
 
-    public bool IsDisturbed { get { return Model.Abilities.HasSanity && Sanity <= DisturbedLevel; } }
+    public bool IsDisturbed { get => Model.Abilities.HasSanity && Sanity <= DisturbedLevel; }
 
     public int HoursUntilUnstable {
       get {
@@ -2940,29 +2913,24 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsAlmostRotHungry  { get { return Model.Abilities.IsRotting && HoursUntilRotHungry <= 3; } }
+    public bool IsAlmostRotHungry  { get => Model.Abilities.IsRotting && HoursUntilRotHungry <= 3; }
 
     public int MaxFood {
       get {
-        int num = (int) (Sheet.BaseFoodPoints * Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER) * SKILL_LIGHT_EATER_MAXFOOD_BONUS);
-        return Sheet.BaseFoodPoints + num;
+        int num = (int) (Model.BaseFoodPoints * MySkills.GetSkillLevel(Skills.IDs.LIGHT_EATER) * SKILL_LIGHT_EATER_MAXFOOD_BONUS);
+        return Model.BaseFoodPoints + num;
       }
     }
 
     public int MaxRot {
       get {
-        int num = (int) (Sheet.BaseFoodPoints * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER) * SKILL_ZLIGHT_EATER_MAXFOOD_BONUS);
-        return Sheet.BaseFoodPoints + num;
+        int num = (int) (Model.BaseFoodPoints * MySkills.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER) * SKILL_ZLIGHT_EATER_MAXFOOD_BONUS);
+        return Model.BaseFoodPoints + num;
       }
     }
 
-    public void Appetite(int f) {
-      m_FoodPoints = Math.Max(0, m_FoodPoints - f);
-    }
-
-    public void LivingEat(int f) {
-      m_FoodPoints = Math.Min(m_FoodPoints + f, MaxFood);
-    }
+    public void Appetite(int f) => m_FoodPoints = Math.Max(0, m_FoodPoints - f);
+    public void LivingEat(int f) => m_FoodPoints = Math.Min(m_FoodPoints + f, MaxFood);
 
     public void RottingEat(int f) { // intentionally not including healing-on-eating-flesh effect here
       m_FoodPoints = Math.Min(m_FoodPoints + BiteNutritionValue(f), MaxRot);
@@ -3026,12 +2994,12 @@ namespace djack.RogueSurvivor.Data
 
     public int ScaleMedicineEffect(int baseEffect)
     {
-      return baseEffect + (int)Math.Ceiling(/* (double) */ SKILL_MEDIC_BONUS * /* (int) */ (Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * baseEffect));
+      return baseEffect + (int)Math.Ceiling(/* (double) */ SKILL_MEDIC_BONUS * /* (int) */ (MySkills.GetSkillLevel(Skills.IDs.MEDIC) * baseEffect));
     }
 
     private string ReasonCantRevive(Corpse corpse)
     {
-      if (0 == Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC)) return "lack medic skill";
+      if (0 == MySkills.GetSkillLevel(Skills.IDs.MEDIC)) return "lack medic skill";
       if (corpse.Location != Location) return "not there";
       if (corpse.RotLevel > 0) return "corpse not fresh";
       if (!m_Inventory.Has(Gameplay.Item_IDs.MEDICINE_MEDIKIT)) return "no medikit";
@@ -3052,11 +3020,11 @@ namespace djack.RogueSurvivor.Data
     public int ReviveChance(Corpse corpse)
     {
       if (!CanRevive(corpse)) return 0;
-      return corpse.FreshnessPercent / 4 + Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * SKILL_MEDIC_REVIVE_BONUS;
+      return corpse.FreshnessPercent / 4 + MySkills.GetSkillLevel(Skills.IDs.MEDIC) * SKILL_MEDIC_REVIVE_BONUS;
     }
 
     public int DamageVsCorpses {
-      get { return m_CurrentMeleeAttack.DamageValue / 2 + SKILL_NECROLOGY_CORPSE_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY); }
+      get => m_CurrentMeleeAttack.DamageValue / 2 + SKILL_NECROLOGY_CORPSE_BONUS * MySkills.GetSkillLevel(Skills.IDs.NECROLOGY);
     }
 
     // sleep
@@ -3087,7 +3055,7 @@ namespace djack.RogueSurvivor.Data
       const int SLEEP_COUCH_SLEEPING_REGEN = 6;
       const int SLEEP_NOCOUCH_SLEEPING_REGEN = 4;
       int num1 = isOnCouch ? SLEEP_COUCH_SLEEPING_REGEN : SLEEP_NOCOUCH_SLEEPING_REGEN;
-      int num2 = (int) (/* (double) */ SKILL_AWAKE_SLEEP_REGEN_BONUS * /* (int) */(num1*Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE)));
+      int num2 = (int) (/* (double) */ SKILL_AWAKE_SLEEP_REGEN_BONUS * /* (int) */(num1* MySkills.GetSkillLevel(Skills.IDs.AWAKE)));
       return num1 + num2;
     }
 
@@ -3129,8 +3097,8 @@ namespace djack.RogueSurvivor.Data
 
     public int MaxSleep {
       get {
-        int num = (int) (/* (double) */ SKILL_AWAKE_SLEEP_BONUS * /* (int) */ (Sheet.BaseSleepPoints * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE)));
-        return Sheet.BaseSleepPoints + num;
+        int num = (int) (/* (double) */ SKILL_AWAKE_SLEEP_BONUS * /* (int) */ (Model.BaseSleepPoints * MySkills.GetSkillLevel(Skills.IDs.AWAKE)));
+        return Model.BaseSleepPoints + num;
       }
     }
 
@@ -3170,19 +3138,14 @@ namespace djack.RogueSurvivor.Data
     }
 
 
-    public void Rest(int s) {
-      m_SleepPoints = Math.Min(m_SleepPoints + s, MaxSleep);
-    }
-
-    public void Drowse(int s) {
-      m_SleepPoints = Math.Max(0, m_SleepPoints - s);
-    }
+    public void Rest(int s) => m_SleepPoints = Math.Min(m_SleepPoints + s, MaxSleep);
+    public void Drowse(int s) => m_SleepPoints = Math.Max(0, m_SleepPoints - s);
 
     public int LoudNoiseWakeupChance(int noiseDistance)
     {
       const int LOUD_NOISE_BASE_WAKEUP_CHANCE = 10;
       const int LOUD_NOISE_DISTANCE_BONUS = 10;
-      return LOUD_NOISE_BASE_WAKEUP_CHANCE + SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_SLEEPER) + Math.Max(0, (Rules.LOUD_NOISE_RADIUS - noiseDistance) * LOUD_NOISE_DISTANCE_BONUS);
+      return LOUD_NOISE_BASE_WAKEUP_CHANCE + SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS * MySkills.GetSkillLevel(Skills.IDs.LIGHT_SLEEPER) + Math.Max(0, (Rules.LOUD_NOISE_RADIUS - noiseDistance) * LOUD_NOISE_DISTANCE_BONUS);
     }
 
     public void Vomit()
@@ -3221,10 +3184,10 @@ namespace djack.RogueSurvivor.Data
     {
 #if IRRATIONAL_CAUTION
         if (!IsDead) throw new InvalidOperationException("can only revive the dead");
-        if (0 >= medic.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC)) throw new InvalidOperationException("unqualified medic");
+        if (0 >= medic.MySkills.GetSkillLevel(Skills.IDs.MEDIC)) throw new InvalidOperationException("unqualified medic");
 #endif
         IsDead = false;
-        m_HitPoints = 5 + medic.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC);
+        m_HitPoints = 5 + medic.MySkills.GetSkillLevel(Skills.IDs.MEDIC);
         m_Doll.RemoveDecoration(GameImages.BLOODIED);
         Activity = Activity.IDLE;
         m_TargetActor = null;
@@ -3238,7 +3201,7 @@ namespace djack.RogueSurvivor.Data
     // use this to prevent accidental overwriting of MaxCapacity by bugs.
     public int MaxInv {
       get {
-        return Sheet.BaseInventoryCapacity + SKILL_HAULER_INV_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HAULER);
+        return Model.BaseInventoryCapacity + SKILL_HAULER_INV_BONUS * MySkills.GetSkillLevel(Skills.IDs.HAULER);
       }
     }
 
@@ -3332,14 +3295,14 @@ namespace djack.RogueSurvivor.Data
 
     public int ItemNutritionValue(int baseValue)
     {
-      return baseValue + (int)(/* (double) */ SKILL_LIGHT_EATER_FOOD_BONUS * /* (int) */ (baseValue * Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER)));
+      return baseValue + (int)(/* (double) */ SKILL_LIGHT_EATER_FOOD_BONUS * /* (int) */ (baseValue * MySkills.GetSkillLevel(Skills.IDs.LIGHT_EATER)));
     }
 
     public int BiteNutritionValue(int baseValue)
     {
       const float CORPSE_EATING_NUTRITION_FACTOR = 10f;
 
-      var skills = Sheet.SkillTable;
+      var skills = MySkills;
       return (int) (CORPSE_EATING_NUTRITION_FACTOR + SKILL_ZLIGHT_EATER_FOOD_BONUS * skills.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER) + SKILL_LIGHT_EATER_FOOD_BONUS * skills.GetSkillLevel(Skills.IDs.LIGHT_EATER)) * baseValue;
     }
 
@@ -3350,7 +3313,7 @@ namespace djack.RogueSurvivor.Data
 
     public int CharismaticTradeChance {
       get {
-        return SKILL_CHARISMATIC_TRADE_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.CHARISMATIC);
+        return SKILL_CHARISMATIC_TRADE_BONUS * MySkills.GetSkillLevel(Skills.IDs.CHARISMATIC);
       }
     }
 
@@ -3678,14 +3641,11 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 
-    public bool CanDrop(Item it)
-    {
-      return string.IsNullOrEmpty(ReasonCantDrop(it));
-    }
+    public bool CanDrop(Item it) => string.IsNullOrEmpty(ReasonCantDrop(it));
 
     public void SkillUpgrade(Skills.IDs id)
     {
-      Sheet.SkillTable.AddOrIncreaseSkill(id);
+      MySkills.AddOrIncreaseSkill(id);
       switch(id)
       {
       case Skills.IDs.HAULER: if (null != m_Inventory) m_Inventory.MaxCapacity = MaxInv;
@@ -3722,19 +3682,12 @@ namespace djack.RogueSurvivor.Data
     private void Clear(Flags f) { m_Flags &= ~f; }
     private void Set(Flags f) { m_Flags |= f; }
 
-    // vision
-    private int DarknessFOV {   // if this ends up on hot path consider inlining
-      get {
-        return Model.Abilities.IsUndead ? Sheet.BaseViewRange : MINIMAL_FOV;
-      }
-    }
+#region vision
+    // if this ends up on hot path, consider inlining
+    private int DarknessFOV { get => Model.Abilities.IsUndead ? Model.BaseViewRange : MINIMAL_FOV; }
 
     // alpha10
-    public bool CanSeeSky {
-      get {
-        return !IsDead && !IsSleeping && Location.Map.Lighting == Lighting.OUTSIDE;
-      }
-    }
+    public bool CanSeeSky { get => !IsDead && !IsSleeping && Location.Map.Lighting == Lighting.OUTSIDE; }
 
     private static int LivingNightFovPenalty(WorldTime time)
     {
@@ -3748,10 +3701,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int NightFovPenalty(WorldTime time)
-    {
-      return (Model.Abilities.IsUndead ? 0 : LivingNightFovPenalty(time));
-    }
+    public int NightFovPenalty(WorldTime time) => Model.Abilities.IsUndead ? 0 : LivingNightFovPenalty(time);
 
     private static int LivingWeatherFovPenalty(Weather weather)
     {
@@ -3762,10 +3712,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int WeatherFovPenalty(Weather weather)
-    {
-      return (Model.Abilities.IsUndead ? 0 : LivingWeatherFovPenalty(weather));
-    }
+    public int WeatherFovPenalty(Weather weather) => Model.Abilities.IsUndead ? 0 : LivingWeatherFovPenalty(weather);
 
     /* XXX we have a lighting paradox (worse in Staying Alive where on-fire cars are light sources, but can be triggered here as well)
      * In a subway, base FOV range is 8 in a lit section, but 2 in an unlit section -- even when at the border between a lit and unlit
@@ -3778,7 +3725,7 @@ namespace djack.RogueSurvivor.Data
     public short FOVrangeNoFlashlight(WorldTime time, Weather weather)
     {
       if (IsSleeping) return 0;
-      int FOV = Sheet.BaseViewRange;
+      int FOV = Model.BaseViewRange;
       switch (Location.Map.Lighting) {
         case Lighting.DARKNESS:
           FOV = DarknessFOV;
@@ -3799,7 +3746,7 @@ namespace djack.RogueSurvivor.Data
         return 0;
       }
     }
-    private static bool UsingLight(Actor a) { return 0 < a.LightBonus; }
+    private static bool UsingLight(Actor a) => 0 < a.LightBonus;
 
     public short FOVrange(WorldTime time, Weather weather)
     {
@@ -3834,16 +3781,14 @@ namespace djack.RogueSurvivor.Data
       }
       return Math.Max(MINIMAL_FOV, FOV);
     }
+#endregion
 
-    public int ZGrabChance(Actor victim)
-    {
-      return Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB) * SKILL_ZGRAB_CHANCE;
-    }
+    public int ZGrabChance(Actor victim) => MySkills.GetSkillLevel(Skills.IDs.Z_GRAB) * SKILL_ZGRAB_CHANCE;
 
     // smell
     public double Smell {
       get {
-        return (1.0 + SKILL_ZTRACKER_SMELL_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TRACKER)) * Sheet.BaseSmellRating;
+        return (1.0 + SKILL_ZTRACKER_SMELL_BONUS * MySkills.GetSkillLevel(Skills.IDs.Z_TRACKER)) * Model.BaseSmellRating;
       }
     }
 
@@ -3868,7 +3813,7 @@ namespace djack.RogueSurvivor.Data
 #endif
       var model = it.Model;
       if (model is ItemMeleeWeaponModel melee) {
-        m_CurrentMeleeAttack = melee.BaseMeleeAttack(in Sheet);
+        m_CurrentMeleeAttack = melee.BaseMeleeAttack(Model);
         return;
       }
       if (model is ItemRangedWeaponModel rw) {
@@ -3890,7 +3835,7 @@ namespace djack.RogueSurvivor.Data
     {
       var model = it.Model;
       if (model is ItemMeleeWeaponModel) {
-        m_CurrentMeleeAttack = Sheet.UnarmedAttack;
+        m_CurrentMeleeAttack = Model.UnarmedAttack;
         return;
       }
       if (model is ItemRangedWeaponModel) {
@@ -3985,10 +3930,9 @@ namespace djack.RogueSurvivor.Data
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
     public void StartingSkill(Skills.IDs skillID,int n=1)
     {
-      var skills = m_Sheet.SkillTable;
       while(0< n--) {
-        if (skills.GetSkillLevel(skillID) >= Skills.MaxSkillLevel(skillID)) return;
-        skills.AddOrIncreaseSkill(skillID);
+        if (m_Skills.GetSkillLevel(skillID) >= Skills.MaxSkillLevel(skillID)) return;
+        m_Skills.AddOrIncreaseSkill(skillID);
         RecomputeStartingStats();
       }
     }

@@ -2684,7 +2684,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorBuildLargeFortification(int startLineChance)
     {
-      if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
+      if (0 == m_Actor.MySkills.GetSkillLevel(Skills.IDs.CARPENTRY)) return null;
       if (m_Actor.CountItems<ItemBarricadeMaterial>() < m_Actor.BarricadingMaterialNeedForFortification(true)) return null;
       Map map = m_Actor.Location.Map;
       var choiceEval = Choose(Direction.COMPASS, dir =>
@@ -2731,7 +2731,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorBuildSmallFortification()
     {
-      if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
+      if (0 == m_Actor.MySkills.GetSkillLevel(Skills.IDs.CARPENTRY)) return null;
       if (m_Actor.CountItems<ItemBarricadeMaterial>() < m_Actor.BarricadingMaterialNeedForFortification(false)) return null;
       Map map = m_Actor.Location.Map;
       var choiceEval = Choose(Direction.COMPASS, dir =>
@@ -3226,7 +3226,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorGoReviveCorpse(List<Percept>? percepts)
     {
 	  if (!Session.Get.HasCorpses) return null;
-      if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) == 0) return null;
+      if (0 == m_Actor.MySkills.GetSkillLevel(Skills.IDs.MEDIC)) return null;
       if (!m_Actor.HasItemOfModel(GameItems.MEDIKIT)) return null;
       var corpsePercepts = percepts?.FilterT<List<Corpse>>()?.Filter(p =>
       {

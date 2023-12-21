@@ -3355,7 +3355,7 @@ restart:
       // While here, sort the turn order -- nearest to stairs up should go first
 
       // sort leadership 2 up front to increase plausibility of their getting backup guns
-      var impressive_cops = map.Police.Get.Where(a=> 2<=a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP)).ToList();
+      var impressive_cops = map.Police.Get.Where(a=> 2<=a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP)).ToList();
       if (0<impressive_cops.Count) {
         foreach(Actor cop in impressive_cops) map.MoveActorToFirstPosition(cop);
       }
@@ -3738,15 +3738,15 @@ restart:
 
       static Actor DraftLeader(List<Actor> pool) {
         // first: leadership + backup weapons
-        Actor awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        Actor awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (null != awesome) return awesome;
 
         // leadership+pistol
-        awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && 2 <= a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (null != awesome) return awesome;
 
         // leadership+shotgun
-        awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (null != awesome) return awesome;
 
         // backup weapons
@@ -3775,7 +3775,7 @@ restart:
       Draft(followers,typical);
 
       // identify type of deployment
-      if (2 <= leaders[0].Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP)) {
+      if (2 <= leaders[0].MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP)) {
         // 3-2.
         map.MoveActorToFirstPosition(followers[0]);
         map.MoveActorToFirstPosition(leaders[1]);
@@ -4303,7 +4303,7 @@ restart:
       numberedName.Equip(rw);
       }
       // do not issue truncheon if martial arts would nerf it
-      if (0 >= numberedName.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Inventory.AddAll(GameItems.TRUNCHEON.create());
+      if (0 >= numberedName.MySkills.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Inventory.AddAll(GameItems.TRUNCHEON.create());
       numberedName.Inventory.AddAll(GameItems.FLASHLIGHT.create());
 //    numberedName.Inventory.AddAll(MakeItemPoliceRadio()); // class prop, implicit for police
       if (m_DiceRoller.RollChance(50)) {
