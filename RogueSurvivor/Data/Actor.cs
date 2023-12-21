@@ -726,6 +726,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool IsViewpoint { get { return IsPlayer || IsDebuggingTarget; } } // i.e., is camera viewpoint
+    public bool IsNPCviewpoint { get { return IsDebuggingTarget; } }
 
     [NonSerialized] private string[]? _force_PC_names = null; // only used below
     public void CommandLinePlayer() // would prefer private
@@ -3989,7 +3990,6 @@ namespace djack.RogueSurvivor.Data
          Walk();
          if (Controller is PlayerController pc) {
            pc.AddMessage(RogueGame.MakeMessage(this, string.Format("{0} too tired to continue running!", Engine.RogueGame.VERB_BE.Conjugate(this))));
-           if (RogueGame.IsPlayer(this)) RogueGame.Game.RedrawPlayScreen();
          }
        }
     }

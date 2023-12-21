@@ -99,8 +99,22 @@ namespace djack.RogueSurvivor.Data
 
 #region UI messages
     // forwarder system for to RogueGame::AddMessage
-    public void AddMessage(Message msg) => Messages.Add(msg);
-    public void AddMessages(IEnumerable<Message> msgs) => Messages.Add(msgs);
+    public bool AddMessage(Message msg) {
+        Messages.Add(msg);
+        if (RogueGame.IsPlayer(m_Actor)) {
+          RogueGame.Game.RedrawPlayScreen();
+          return true;
+        }
+        return false;
+    }
+    public bool AddMessages(IEnumerable<Message> msgs) {
+        Messages.Add(msgs);
+        if (RogueGame.IsPlayer(m_Actor)) {
+          RogueGame.Game.RedrawPlayScreen();
+          return true;
+        }
+        return false;
+    }
 
     public void AddMessageForceRead(Message msg) {
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {

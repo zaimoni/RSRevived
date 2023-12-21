@@ -37,25 +37,15 @@ namespace djack.RogueSurvivor.Data
     // forwarder system for to RogueGame::AddMessage
     public void AddMessage(UI.Message msg, KeyValuePair<List<PlayerController>, List<Actor>> witnesses) {
       if (0 < witnesses.Key.Count) {
-        foreach(var witness in witnesses.Key) {
-          witness.AddMessage(msg);
-          if (RogueGame.IsPlayer(witness.ControlledActor)) RogueGame.Game.RedrawPlayScreen();
-        }
-      }
-      if (0 < witnesses.Value.Count) {
-        foreach(var witness in witnesses.Value) {
-            if (RogueGame.IsPlayer(witness)) {
-                RogueGame.Game.RedrawPlayScreen(msg);
-                return;
-            }
-        }
+        foreach(var witness in witnesses.Key) witness.AddMessage(msg);
       }
     }
 
     public virtual void AddMessageForceRead(UI.Message msg, KeyValuePair<List<PlayerController>, List<Actor>> witnesses) {
       if (0 < witnesses.Key.Count) {
-        foreach(var witness in witnesses.Key) witness.AddMessage(msg);
-        RogueGame.Game.PanViewportTo(witnesses.Key);
+        bool rendered = false;
+        foreach(var witness in witnesses.Key) if (witness.AddMessage(msg)) rendered = true;
+        if (!rendered) RogueGame.Game.PanViewportTo(witnesses.Key);
         return;
       }
       if (0 < witnesses.Value.Count) {
@@ -67,8 +57,9 @@ namespace djack.RogueSurvivor.Data
 
     public virtual void AddMessageForceReadClear(UI.Message msg, KeyValuePair<List<PlayerController>, List<Actor>> witnesses) {
       if (0 < witnesses.Key.Count) {
-        foreach(var witness in witnesses.Key) witness.AddMessage(msg);
-        RogueGame.Game.PanViewportTo(witnesses.Key);
+        bool rendered = false;
+        foreach(var witness in witnesses.Key) if (witness.AddMessage(msg)) rendered = true;
+        if (!rendered) RogueGame.Game.PanViewportTo(witnesses.Key);
         return;
       }
       if (0 < witnesses.Value.Count) {

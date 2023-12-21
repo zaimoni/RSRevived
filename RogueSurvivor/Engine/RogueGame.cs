@@ -432,6 +432,13 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(msg);
     }
 
+    public bool AddMessage(List<PlayerController> witnesses, UI.Message msg)
+    {
+        bool rendered = false;
+        foreach(var pc in witnesses) if (pc.AddMessage(msg)) rendered = true;
+        return rendered;
+    }
+
 
     public void ImportantMessage(UI.Message msg, int delay=0)
     {
@@ -507,7 +514,7 @@ namespace djack.RogueSurvivor.Engine
         stage_msg[0] = subject.TheName;
         stage_msg[2] = direct_object.TheName;
         UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
-        RedrawPlayScreen(both_witnesses.Value, stage);
+        RedrawPlayScreen(both_witnesses.Value.Key, stage);
         msg_pc = true;
         have_rendered = true;
       }
@@ -516,10 +523,10 @@ namespace djack.RogueSurvivor.Engine
         stage_msg[2] = direct_object.UnknownPronoun;
         UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
         if (!have_rendered) {
-          RedrawPlayScreen(s_witnesses.Value, stage);
+          RedrawPlayScreen(s_witnesses.Value.Key, stage);
           have_rendered = true;
         } else {
-          foreach (var pc in s_witnesses.Value.Key) pc.AddMessage(stage);
+          AddMessage(s_witnesses.Value.Key, stage);
         }
         msg_pc = true;
       }
@@ -528,10 +535,10 @@ namespace djack.RogueSurvivor.Engine
         stage_msg[2] = direct_object.TheName;
         UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
         if (!have_rendered) {
-          RedrawPlayScreen(o_witnesses.Value, stage);
+          RedrawPlayScreen(o_witnesses.Value.Key, stage);
           have_rendered = true;
         } else {
-          foreach (var pc in o_witnesses.Value.Key) pc.AddMessage(stage);
+          AddMessage(o_witnesses.Value.Key, stage);
         }
         msg_pc = true;
       }
@@ -540,21 +547,21 @@ namespace djack.RogueSurvivor.Engine
         stage_msg[0] = subject.TheName;
         stage_msg[2] = direct_object.TheName;
         UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
-        RedrawPlayScreen(both_witnesses.Value, stage);
+        RedrawPlayScreen(both_witnesses.Value.Value, stage);
         return;
       }
       if (null != s_witnesses) {
         stage_msg[0] = subject.TheName;
         stage_msg[2] = direct_object.UnknownPronoun;
         UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
-        RedrawPlayScreen(s_witnesses.Value, stage);
+        RedrawPlayScreen(s_witnesses.Value.Value, stage);
         return;
       }
       if (null != o_witnesses) {
         stage_msg[0] = subject.UnknownPronoun.Capitalize();
         stage_msg[2] = direct_object.TheName;
         UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
-        RedrawPlayScreen(o_witnesses.Value, stage);
+        RedrawPlayScreen(o_witnesses.Value.Value, stage);
         return;
       }
     }
@@ -8713,9 +8720,6 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoMeleeAttack(Actor attacker, Actor defender)
     {
-      if (attacker.IsViewpoint) PanViewportTo(attacker);
-      else if (defender.IsViewpoint) PanViewportTo(defender);
-
       const bool tracing = false; // debugging hook
 
       attacker.Aggress(defender);
@@ -8730,14 +8734,17 @@ namespace djack.RogueSurvivor.Engine
       int dmg = (hitRoll > defRoll ? rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit : 0);
 
       OnLoudNoise(attacker.Location, "Nearby fighting");
-      var a_witness = attacker.PlayersInLOS();
-      bool isDefVisible = ForceVisibleToPlayer(defender);
-      bool isAttVisible = isDefVisible ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
-      if (tracing && !IsSimulating) {
-        isDefVisible = true;
-        isAttVisible = true;
-      };
 
+        var a_witness = attacker.PlayersInLOS();
+        var d_witness = defender.PlayersInLOS();
+        var ad_witness = a_witness?.Intersect(d_witness);
+        a_witness = a_witness?.SetDifference(ad_witness);
+        d_witness = d_witness?.SetDifference(ad_witness);
+        KeyValuePair<bool,bool> sees = ForceVisibleToPlayer(attacker, defender, ad_witness, a_witness, d_witness);
+
+      // backward compatibility
+      bool isDefVisible = sees.Value;
+      bool isAttVisible = sees.Key;
       bool isPlayer = attacker.IsPlayer || defender.IsPlayer;   // (player1 OR player2) IMPLIES isPlayer?
       bool display_defender = isDefVisible || m_MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
 
@@ -8854,9 +8861,6 @@ namespace djack.RogueSurvivor.Engine
     /// <param name="shotCounter">0 for normal shot, 1 for 1st rapid fire shot, 2 for 2nd rapid fire shot</param>
     public void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, int shotCounter)
     {
-      if (attacker.IsViewpoint) PanViewportTo(attacker);
-      else if (defender.IsViewpoint) PanViewportTo(defender);
-
       // stamina penalty is simply copied through from the base ranged attack (calculated below)
       ref var r_attack = ref attacker.CurrentRangedAttack;
       attacker.SpendStaminaPoints(r_attack.StaminaPenalty);
@@ -8882,8 +8886,16 @@ namespace djack.RogueSurvivor.Engine
         int hitRoll = rules.RollSkill(hitValue);
         int defRoll = rules.RollSkill(defence.Value);
 
-        bool see_defender = ForceVisibleToPlayer(defender.Location);
-        bool see_attacker = see_defender ? IsVisibleToPlayer(attacker.Location) : ForceVisibleToPlayer(attacker.Location);
+        var a_witness = attacker.PlayersInLOS();
+        var d_witness = defender.PlayersInLOS();
+        var ad_witness = a_witness?.Intersect(d_witness);
+        a_witness = a_witness?.SetDifference(ad_witness);
+        d_witness = d_witness?.SetDifference(ad_witness);
+        KeyValuePair<bool,bool> sees = ForceVisibleToPlayer(attacker, defender, ad_witness, a_witness, d_witness);
+
+        // backward compatibility
+        bool see_defender = sees.Value;
+        bool see_attacker = sees.Key;
         bool player_involved = attacker.IsPlayer || defender.IsPlayer;
         bool display_defender = see_defender || m_MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
 
@@ -11650,6 +11662,23 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen(msg);
     }
 
+    public void RedrawPlayScreen(List<PlayerController> PCs, UI.Message msg)
+    {
+        bool rendered = false;
+        foreach(var pc in PCs) if (pc.AddMessage(msg)) rendered = true;
+        if (!rendered) PanViewportTo(PCs);
+    }
+
+    public void RedrawPlayScreen(List<Actor> NPCs, UI.Message msg)
+    {
+        foreach(var a in NPCs) if (Player == a) {
+            RedrawPlayScreen(msg);
+            return;
+        }
+        AddMessage(msg);
+        PanViewportTo(NPCs);
+    }
+
 #nullable enable
     private static string LocationText()
     {
@@ -12808,7 +12837,9 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    public void PanViewportTo(Actor player) => PanViewportTo(setPlayer(player).Location);
+    public void PanViewportTo(Actor player) {
+      if (Player != player) PanViewportTo(setPlayer(player).Location);
+    }
 
     public void PanViewportTo(List<Actor> witnesses) {
       if (0 >= witnesses.Count) return;
@@ -13176,6 +13207,42 @@ namespace djack.RogueSurvivor.Engine
       if (null != src.loc) return ForceVisibleToPlayer(src.loc.Value);
       // a_owner will be non-null
       return ForceVisibleToPlayer(src.a_owner);
+    }
+
+    private KeyValuePair<bool,bool> ForceVisibleToPlayer(Actor a, Actor d, KeyValuePair<List<PlayerController>, List<Actor>>? ad_witness, KeyValuePair<List<PlayerController>, List<Actor>>?  a_witness, KeyValuePair<List<PlayerController>, List<Actor>>?  d_witness)
+    {
+        if (a.IsPlayer) {
+            PanViewportTo(a);
+            return new(true,true);
+        } else if (d.IsPlayer) {
+            PanViewportTo(d);
+            return new(IsVisibleToPlayer(a.Location), true);
+        } else if (null != ad_witness && 0 < ad_witness.Value.Key.Count) {
+            PanViewportTo(ad_witness.Value.Key[0].ControlledActor);
+            return new(true,true);
+        } else if (null != a_witness && 0 < a_witness.Value.Key.Count) {
+            PanViewportTo(a_witness.Value.Key[0].ControlledActor);
+            return new(true,false);
+        } else if (null != d_witness && 0 < d_witness.Value.Key.Count) {
+            PanViewportTo(d_witness.Value.Key[0].ControlledActor);
+            return new(false,true);
+        } else if (a.IsNPCviewpoint) {
+            PanViewportTo(a);
+            return new(true,true);
+        } else if (d.IsNPCviewpoint) {
+            PanViewportTo(d);
+            return new(IsVisibleToPlayer(a.Location), true);
+        } else if (null != ad_witness && 0 < ad_witness.Value.Value.Count) {
+            PanViewportTo(ad_witness.Value.Value[0]);
+            return new(true,true);
+        } else if (null != a_witness && 0 < a_witness.Value.Value.Count) {
+            PanViewportTo(a_witness.Value.Value[0]);
+            return new(true,false);
+        } else if (null != d_witness && 0 < d_witness.Value.Value.Count) {
+            PanViewportTo(d_witness.Value.Value[0]);
+            return new(false,true);
+        }
+        return default;
     }
 
     private bool IsPlayerSleeping()
