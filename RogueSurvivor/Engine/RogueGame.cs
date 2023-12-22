@@ -3657,7 +3657,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new(confirm ? "You can't bear the horror anymore..."
                              : "You retain your will to live.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       if (!confirm) return false;
-      player.Controller = player.Model.InstanciateController(player);
+      player.RevertToAI();
       Session.Get.Scoring.Deincarnate();
       player.DoForAllFollowers(fo => {
           if (fo.Controller is PlayerController fo_pc) {

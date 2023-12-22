@@ -138,6 +138,7 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     private string m_Name;
     private ActorController m_Controller;   // use accessor rather than direct update; direct update causes null dereference crash in vision sensor
+    private ActorController? m_Subconscious = null; // alternate
     private SkillTable m_Skills;
     public readonly int SpawnTime;
     private Inventory? m_Inventory;
@@ -265,28 +266,48 @@ namespace djack.RogueSurvivor.Data
 
     public ActorController Controller
     {
-      get { return m_Controller; }
+      get {
+        if (WantPConTop) {
+          if (m_Controller is not PlayerController) {
+            if (m_Subconscious is not PlayerController) m_Subconscious = new PlayerController(this);
+            return m_Subconscious;
+          }
+        }
+        return m_Controller;
+      }
       set {
         int playerDelta = 0;
         if (null != m_Controller) {
-          if (IsPlayer) playerDelta -= 1;
+          if (m_Controller is PlayerController) playerDelta -= 1;
+
           m_Controller.LeaveControl();
         }
         m_Controller = value;
         if (null != m_Controller) {
           m_Controller.TakeControl();
-          if (IsPlayer) playerDelta += 1;
+          if (m_Controller is PlayerController) playerDelta += 1;
+          if (null != m_Subconscious && m_Controller.GetType() == m_Subconscious.GetType()) m_Subconscious = null;
         }
         if (0 != playerDelta) m_Location.Map?.Players.Recalc();
       }
     }
 
+    public ActorController? AsAI {
+      get {
+        if (m_Controller is PlayerController) {
+          return m_Subconscious ??= Model.InstanciateController(this);
+        }
+        return m_Controller;
+      }
+    }
+
+
 #nullable enable
-    public bool IsPlayer { get { return m_Controller is PlayerController; } }
+    public bool IsPlayer { get => Controller is PlayerController; }
 
     public GameGangs.IDs GangID { get { return m_Controller.GangID; } }
 
-    public bool IsInAGang { get { return GameGangs.IDs.NONE != m_Controller.GangID; } }
+    public bool IsInAGang { get => GameGangs.IDs.NONE != GangID; }
     public ref readonly Doll Doll { get { return ref m_Doll; } }
 
     public bool IsDead {
@@ -708,6 +729,17 @@ namespace djack.RogueSurvivor.Data
     }
 #nullable restore
 
+#if TRACER
+    private bool WantPConTop {
+      get {
+        return false;
+      }
+    }
+#else
+    private const bool WantPConTop = false;
+#endif
+
+    // has to be accessor, due to usage outside of Actor
     public bool IsDebuggingTarget {
       get {
 #if TRACER
@@ -832,6 +864,23 @@ namespace djack.RogueSurvivor.Data
       if (null == m_Controller) Controller = Model.InstanciateController(this);
 
       Controller.RepairLoad();
+    }
+
+
+    public void RevertToAI() {
+      if (m_Controller is PlayerController pc) {
+        var subc = Interlocked.Exchange(ref m_Subconscious, null);
+        if (null != subc) {
+          if (!(subc is PlayerController)) {
+            Controller = subc;
+            return;
+          }
+        }
+        Controller = Model.InstanciateController(this);
+        return;
+      }
+      if (m_Subconscious is PlayerController) m_Subconscious = null;
+      if (null == m_Controller) Controller = Model.InstanciateController(this);
     }
 
 	public void PrefixName(string prefix) => m_Name = prefix+" "+m_Name;
