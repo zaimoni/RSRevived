@@ -5579,7 +5579,7 @@ restart_chokepoints:
       if (0 >= examineStacks.Count) return null;
 
       bool imStarvingOrCourageous = m_Actor.IsStarving;
-      if ((this is OrderableAI ai) && ActorCourage.COURAGEOUS == ai.Directives.Courage) imStarvingOrCourageous = true;
+      if ((this is OrderableAI ai) && ActorCourage.COURAGEOUS == (ai.Directives_nocreate?.Courage ?? ActorDirective.Courage_default)) imStarvingOrCourageous = true;
       var ret = new Dictionary<Location,Inventory>(examineStacks.Count);
       foreach(var x in examineStacks) {
         if (IsOccupiedByOther(x.Key)) continue; // blocked

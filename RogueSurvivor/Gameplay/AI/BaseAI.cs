@@ -354,7 +354,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (num >= currentDistance) ? float.NaN : num;
       };
 
-      ActorCourage courage = (this as OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
+      ActorCourage courage = (this as OrderableAI)?.Directives_nocreate?.Courage ?? ActorDirective.Courage_default;
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       if (imStarvingOrCourageous) close_in = close_in.Postprocess((ptA,ptB,dist) => {
           var loc = new Location(m_Actor.Location.Map, ptA);
@@ -1067,7 +1067,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 */
       if (this is OrderableAI ordai) {
         if (a is ActionChat chat) {
-          return ordai.Directives.CanTrade || chat.Target == m_Actor.Leader;
+          return (ordai.Directives_nocreate?.CanTrade ?? ActorDirective.CanTrade_default ) || chat.Target == m_Actor.Leader;
         }
       }
       return false;

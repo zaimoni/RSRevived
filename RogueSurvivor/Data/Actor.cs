@@ -27,7 +27,6 @@ using Skills = djack.RogueSurvivor.Gameplay.Skills;
 using PowerGenerator = djack.RogueSurvivor.Engine.MapObjects.PowerGenerator;
 using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
 using djack.RogueSurvivor.Gameplay;
-using System.Numerics;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -1544,10 +1543,7 @@ namespace djack.RogueSurvivor.Data
     private void _NoLongerFollower()
     {
       Interlocked.Exchange(ref m_Leader, null);
-      if (Controller is Gameplay.AI.OrderableAI ordai) {
-        ordai.Directives.Reset();
-        ordai.SetOrder(null);
-      }
+      (Controller as Gameplay.AI.OrderableAI)?.LeaderWasSetNull_handler();
     }
 
     public void RemoveFollower(Actor other)

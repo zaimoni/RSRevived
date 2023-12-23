@@ -198,7 +198,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == _enemies ? "null == _enemies" : _enemies.Count.ToString() + " enemies");
 
-      if (!Directives.CanThrowGrenades && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) grenade.UnequippedBy(m_Actor);
+      if (!(Directives_nocreate?.CanThrowGrenades ?? ActorDirective.CanThrowGrenades_default) && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) grenade.UnequippedBy(m_Actor);
 
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
@@ -220,7 +220,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("managing melee risk: "+tmpAction.ToString());
       if (null != tmpAction) return tmpAction;
 
-      if (null != _enemies && Directives.CanThrowGrenades) {
+      if (null != _enemies && (Directives_nocreate?.CanThrowGrenades ?? ActorDirective.CanThrowGrenades_default)) {
         tmpAction = BehaviorThrowGrenade();
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "toss grenade");
@@ -249,7 +249,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
-        tmpAction = BehaviorFightOrFlee(game, Directives.Courage, m_Emotes, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
+        tmpAction = BehaviorFightOrFlee(game, (Directives_nocreate?.Courage ?? ActorDirective.Courage_default), m_Emotes, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
 #endif
@@ -261,7 +261,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = NonCombatReflexMoves();
       if (null != tmpAction) return tmpAction;
 
-      if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && m_Actor.WantToSleepNow) {
+      if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && (Directives_nocreate?.CanSleep ?? ActorDirective.CanSleep_default) && m_Actor.WantToSleepNow) {
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorNavigateToSleep");
 #endif

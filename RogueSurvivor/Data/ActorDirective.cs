@@ -10,30 +10,18 @@ namespace djack.RogueSurvivor.Data
 {
   // This is set *only* by the player; a total replacement with the objectives system is anticipated.
   [Serializable]
-  internal class ActorDirective
+  public class ActorDirective
   {
-    public bool CanFireWeapons { get; set; }
+    public const bool CanFireWeapons_default = true;
+    public const bool CanThrowGrenades_default = true;
+    public const bool CanSleep_default = true;
+    public const bool CanTrade_default = true;
+    public const ActorCourage Courage_default = ActorCourage.CAUTIOUS;
 
-    public bool CanThrowGrenades { get; set; }
-
-    public bool CanSleep { get; set; }
-
-    public bool CanTrade { get; set; }
-
-    public ActorCourage Courage { get; set; }
-
-    public ActorDirective()
-    {
-            Reset();
-    }
-
-    public void Reset()
-    {
-            CanFireWeapons = true;
-            CanThrowGrenades = true;
-            CanSleep = true;
-            CanTrade = true;
-            Courage = ActorCourage.CAUTIOUS;
-    }
+    public bool CanFireWeapons = CanFireWeapons_default;
+    public bool CanThrowGrenades = CanThrowGrenades_default;
+    public bool CanSleep = CanSleep_default;    // may want this indefinitely (useful to disable when appointing guards)
+    public bool CanTrade = CanTrade_default;
+    public ActorCourage Courage = Courage_default;
   }
 }

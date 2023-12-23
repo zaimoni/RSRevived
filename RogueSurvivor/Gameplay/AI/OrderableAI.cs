@@ -791,12 +791,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int LAW_ENFORCE_CHANCE = 30;
     private const int IN_LEADER_LOF_SAFETY_PENALTY = 1;  // alpha10 int
 
+#nullable enable
     // taboos really belong here
-    private List<Actor> m_TabooTrades;
+    private List<Actor>? m_TabooTrades;
 
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
-    private ActorDirective m_Directive;
-#nullable enable
+    private ActorDirective? m_Directive;
     private ActorOrder? m_Order;
 #nullable restore
     protected Percept_<Actor> m_LastEnemySaw;
@@ -825,15 +825,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    public ActorDirective Directives { get { return m_Directive ??= new ActorDirective(); } }
-    protected List<Actor> TabooTrades { get { return m_TabooTrades; } }
 #nullable enable
+    public ActorDirective Directives { get => m_Directive ??= new(); }
+    public ActorDirective? Directives_nocreate { get => m_Directive; }
+    protected List<Actor>? TabooTrades { get => m_TabooTrades; }
     public ActorOrder? Order { get { return m_Order; } }
     public void SetOrder(ActorOrder? newOrder)
     {
       m_Order = newOrder;
       m_ReachedPatrolPoint = false;
       m_ReportStage = 0;
+    }
+
+    public void LeaderWasSetNull_handler() {
+        m_Directive = null;
+        SetOrder(null);
     }
 
     protected override void ResetAICache()
@@ -861,7 +867,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override int FastestTrapKill(in Location loc)
     {
-      if (m_Actor.IsStarving || ActorCourage.COURAGEOUS == Directives.Courage) return int.MaxValue;
+      if (m_Actor.IsStarving || ActorCourage.COURAGEOUS == (Directives_nocreate?.Courage ?? ActorDirective.Courage_default)) return int.MaxValue;
       int trapsMaxDamage = loc.Map.TrapsUnavoidableMaxDamageAtFor(loc.Position,m_Actor);
       if (0 >= trapsMaxDamage) return int.MaxValue;
       return ((m_Actor.HitPoints-1)/ trapsMaxDamage)+1;
@@ -1074,7 +1080,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<ItemRangedWeapon> GetAvailableRangedWeapons()
     {
-      IEnumerable<ItemRangedWeapon> tmp_rw = ((!Directives.CanFireWeapons || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)));
+      IEnumerable<ItemRangedWeapon> tmp_rw = ((!(Directives_nocreate?.CanFireWeapons ?? ActorDirective.CanFireWeapons_default) || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)));
       return (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
     }
 
@@ -3057,7 +3063,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction BehaviorExplore(ExplorationData exploration)
     {
-      ActorCourage courage = Directives.Courage;
+      ActorCourage courage = Directives_nocreate?.Courage ?? ActorDirective.Courage_default;
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position - PrevLocation.Position);
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       var choiceEval = Choose(Direction.COMPASS, dir => {
@@ -3960,7 +3966,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
         tmpAction = BehaviorRequestCriticalFromGroup();
         if (null != tmpAction) return tmpAction;
-        if (Directives.CanTrade) {
+        if (Directives_nocreate?.CanTrade ?? ActorDirective.CanTrade_default) {
           tmpAction = BehaviorFindTrade();
           if (null != tmpAction) return tmpAction;
         }
@@ -4122,16 +4128,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // taboos
     public void MarkActorAsRecentTrade(Actor other)
     {
-      if (m_TabooTrades == null) m_TabooTrades = new List<Actor>(1);
+      if (null == m_TabooTrades) m_TabooTrades = new(1);
       else if (m_TabooTrades.Contains(other)) return;
       m_TabooTrades.Add(other);
     }
 
-    public bool IsActorTabooTrade(Actor other)
-    {
-      if (m_TabooTrades == null) return false;
-      return m_TabooTrades.Contains(other);
-    }
+    public bool IsActorTabooTrade(Actor other) => m_TabooTrades?.Contains(other) ?? false;
 
     protected void ExpireTaboos()
     {

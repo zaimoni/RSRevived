@@ -5957,7 +5957,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool flag1 = true;
       do {
-        ActorDirective directives = ordai.Directives;
+        ActorDirective directives = ordai.Directives_nocreate ?? new(); // UI, so not as big a deal to thrash GC
         ClearMessages();
         AddMessage(new(string.Format("{0} directives...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         AddMessage(new(string.Format("1. {0} weapons.", directives.CanFireWeapons ? "Fire" : "Don't fire"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -5969,6 +5969,7 @@ namespace djack.RogueSurvivor.Engine
         int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
         if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
         else {
+          directives = ordai.Directives;    // force live copy
           switch (choiceNumber) {
             case 1:
               directives.CanFireWeapons = !directives.CanFireWeapons;
@@ -9580,7 +9581,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", VERB_OFFER.Conjugate(target), trade.Value.Value.AName, trade.Value.Key.AName)));
 
       var leader = target.LiveLeader;
-      bool acceptDeal = null == leader || target_c.Directives.CanTrade;
+      bool acceptDeal = null == leader || (target_c.Directives_nocreate?.CanTrade ?? ActorDirective.CanTrade_default);
 
       if (!acceptDeal) {
         if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));

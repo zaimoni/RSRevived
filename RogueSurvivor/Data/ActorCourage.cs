@@ -9,7 +9,7 @@ using System;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal enum ActorCourage
+  public enum ActorCourage
   {
     COWARD,
     CAUTIOUS,
