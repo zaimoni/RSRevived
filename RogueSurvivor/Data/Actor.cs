@@ -147,7 +147,6 @@ namespace djack.RogueSurvivor.Data
     private List<Actor>? m_Followers; // leadership fields are AI-specific (ObjectiveAI and dogs).
     private int m_TrustInLeader;
     private Dictionary<Actor,int>? m_TrustDict;
-    private int m_KillsCount;
     private List<Actor>? m_AggressorOf;
     private List<Actor>? m_SelfDefenceFrom;
     private int m_Infection;
@@ -584,7 +583,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // aggression statistics, etc.
-    public int KillsCount { get { return m_KillsCount; } }
+    public int KillsCount { get { return ActorScoring.KillsCount; } }
 
 #if DEAD_FUNC
     public IEnumerable<Actor> AggressorOf { get { return m_AggressorOf; } }
@@ -3959,11 +3958,7 @@ namespace djack.RogueSurvivor.Data
     public void Moved() { Moving?.Invoke(this, null); }
 
     // death-related administrative functions
-    public void RecordKill(Actor victim)
-    {
-      ++m_KillsCount;
-      ActorScoring.AddKill(victim, Session.Get.WorldTime.TurnCounter);
-    }
+    public void RecordKill(Actor victim) => ActorScoring.AddKill(victim, Session.Get.WorldTime.TurnCounter);
 
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
     public void StartingSkill(Skills.IDs skillID,int n=1)

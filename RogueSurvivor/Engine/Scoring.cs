@@ -126,6 +126,8 @@ namespace djack.RogueSurvivor.Engine
       } else m_KillCounts[id]++;
     }
 
+    public int KillsCount { get => m_KillCounts.Values.Sum(); }
+
     public int KillPoints { get {
       const int SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD = 360;
       int ret = 0;

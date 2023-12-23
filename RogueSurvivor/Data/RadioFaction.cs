@@ -1,4 +1,5 @@
-﻿using djack.RogueSurvivor.Gameplay.AI;
+﻿using djack.RogueSurvivor.Engine;
+using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -146,6 +147,15 @@ namespace djack.RogueSurvivor.Data
         }
     }
 
+#if PROTOTYPE
+    public record class SVOevent(ActorTag s, sbyte v, ActorTag d_o, int t0) {
+        public readonly ActorTag subject = s;
+        public readonly sbyte v_code = v;
+        public readonly ActorTag direct_object = d_o;
+        public readonly int Turn = t0;
+    }
+#endif
+
     [Serializable]
     class RadioFaction
     {
@@ -185,5 +195,29 @@ namespace djack.RogueSurvivor.Data
         {
             if (IsEnemy(a)) Threats.RecordTaint(a, a.Location);
         }
+
+#if PROTOTYPE
+        SVOevent? EncodeKill(Actor killer, Actor victim, int t0) {
+            if (Rules.IsMurder(killer, victim)) {
+                if (IsMine(victim)) { // faction kill
+                    return new(new(killer), 1, new(victim), t0);
+                } else { // murder
+                    return new(new(killer), 3, new(victim), t0);
+                };
+            }
+            return null;
+        }
+
+        SVOevent? EncodeAggression(Actor killer, Actor victim, int t0) {
+            if (Rules.IsMurder(killer, victim)) {
+                if (IsMine(victim)) { // faction aggression
+                    return new(new(killer), 2, new(victim), t0);
+                } else { // assault
+                    return new(new(killer), 4, new(victim), t0);
+                };
+            }
+            return null;
+        }
+#endif
     }
 }
