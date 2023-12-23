@@ -19,30 +19,16 @@ using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with trans
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal readonly struct Location : IEquatable<Location>, Zaimoni.Serialization.ISerialize
+  internal readonly struct Location(Map map, Point pos) : IEquatable<Location>, Zaimoni.Serialization.ISerialize
     {
-    public readonly Map Map;
-    public readonly Point Position;
-
-    public Location(Map map, Point position)
-    {
-      Map = map
+    public readonly Map Map = map
 #if DEBUG
         ?? throw new ArgumentNullException(nameof(map))
 #endif
-      ;
-      Position = position;
-    }
+        ;
+    public readonly Point Position = pos;
 
-    public Location(Map map, int x, int y)
-    {
-      Map = map
-#if DEBUG
-        ?? throw new ArgumentNullException(nameof(map))
-#endif
-      ;
-      Position = new((short)x, (short)y);
-    }
+    public Location(Map map, int x, int y) : this(map, new((short)x, (short)y)) {}
 
 #region implement Zaimoni.Serialization.ISerialize
 #if FAIL
@@ -76,40 +62,35 @@ namespace djack.RogueSurvivor.Data
     // projection functions for Linq
     [NonSerialized] public static Func<Location, Point> pos = loc => loc.Position;
 
-    public static Location operator +(Location lhs, Direction rhs)
-    {
-      return new Location(lhs.Map, lhs.Position+rhs);
-    }
+    public static Location operator +(Location lhs, Direction rhs) => new(lhs.Map, lhs.Position+rhs);
 
     // thin wrappers
 #nullable enable
-    public MapObject? MapObject { get { return Map.GetMapObjectAt(Position); } }
+    public MapObject? MapObject { get => Map.GetMapObjectAt(Position); }
+    public bool HasMapObject { get => Map.HasMapObjectAt(Position); }
+    public Actor? Actor { get => Map.GetActorAt(Position); }
+    public bool StrictHasActorAt { get => Map.StrictHasActorAt(Position); }
 #nullable restore
-    public bool HasMapObject { get { return Map.HasMapObjectAt(Position); } }
+    public void Place(Actor actor) => Map.PlaceAt(actor, in Position);
+    public void Place(MapObject obj) => Map.PlaceAt(obj, Position);
+    public void Drop(Item it) => Map.DropItemAt(it, in Position);
+    public bool IsWalkableFor(Actor actor) => Map.IsWalkableFor(Position, actor);
+    public bool IsWalkableFor(Actor actor, out string reason) => Map.IsWalkableFor(Position, actor, out reason);
 #nullable enable
-    public Actor? Actor { get { return Map.GetActorAt(Position); } }
-    public bool StrictHasActorAt { get { return Map.StrictHasActorAt(Position); } }
+    public Inventory? Items { get => Map.GetItemsAt(Position); }
+    public Exit? Exit { get => Map.GetExitAt(Position); }
+    public List<Corpse>? Corpses { get => Map.GetCorpsesAt(Position); }
+    public Tile Tile { get => Map.GetTileAt(Position); }
+    public TileModel TileModel { get => Map.GetTileModelAt(Position); }
 #nullable restore
-    public void Place(Actor actor) { Map.PlaceAt(actor, in Position); }
-    public void Place(MapObject obj) { Map.PlaceAt(obj, Position); }
-    public void Drop(Item it) { Map.DropItemAt(it, in Position); }
-    public bool IsWalkableFor(Actor actor) { return Map.IsWalkableFor(Position, actor); }
-    public bool IsWalkableFor(Actor actor, out string reason) { return Map.IsWalkableFor(Position, actor, out reason); }
-#nullable enable
-    public Inventory? Items { get { return Map.GetItemsAt(Position); } }
-    public Exit? Exit { get { return Map.GetExitAt(Position); } }
-    public List<Corpse>? Corpses { get { return Map.GetCorpsesAt(Position); } }
-    public Tile Tile { get { return Map.GetTileAt(Position); } }
-    public TileModel TileModel { get { return Map.GetTileModelAt(Position); } }
-#nullable restore
-    public int IsBlockedForPathing { get { return Map.IsBlockedForPathing(Position); } }
-    public void AddDecoration(string imageID) { Map.AddDecorationAt(imageID, Position); }
+    public int IsBlockedForPathing { get => Map.IsBlockedForPathing(Position); }
+    public void AddDecoration(string imageID) => Map.AddDecorationAt(imageID, Position);
 
-    static public bool IsInBounds(in Location loc) { return loc.Map.IsInBounds(loc.Position); }
+    static public bool IsInBounds(in Location loc) => loc.Map.IsInBounds(loc.Position);
 #nullable enable
-    static public bool RequiresJump(in Location loc) { return loc.MapObject?.IsJumpable ?? false; }
-    static public bool NoJump(Location loc) { return !loc.MapObject?.IsJumpable ?? true; }
-    static public bool NoJump<T>(KeyValuePair<Location,T> loc_x) { return !loc_x.Key.MapObject?.IsJumpable ?? true; }
+    static public bool RequiresJump(in Location loc) => loc.MapObject?.IsJumpable ?? false;
+    static public bool NoJump(Location loc) => !loc.MapObject?.IsJumpable ?? true;
+    static public bool NoJump<T>(KeyValuePair<Location,T> loc_x) => !loc_x.Key.MapObject?.IsJumpable ?? true;
 #nullable restore
 
     // Map version is not cross-district

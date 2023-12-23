@@ -152,13 +152,16 @@ namespace djack.RogueSurvivor.Data
         public readonly Ary2Dictionary<Location, Gameplay.Item_IDs, int> ItemMemory = new();
         public readonly ThreatTracking Threats = new();
         public readonly LocationSet Investigate = new();
-#if PROTOTYPE
-        private readonly List<KeyValuePair<Actor, Actor>> m_Aggressors = new List<KeyValuePair<Actor, Actor>>(); // \todo? migrate from RogueGame::KillActor?
-#endif
         static private ImplicitRadio? s_implicitRadio = null;
 
         public readonly GameFactions.IDs FactionID;
         public readonly Gameplay.Item_IDs RadioID;
+
+        // rethinking police/crime system.  We want to track
+        // murder: police, natguard care about this.
+        // hangry assault: police, natguard care about this.
+        // assault of own: no restriction
+        // killing of own: no restriction
 
         public RadioFaction(GameFactions.IDs faction, Gameplay.Item_IDs radio)
         {
@@ -175,17 +178,6 @@ namespace djack.RogueSurvivor.Data
         public ExplicitRadio explicitRadio(Item radio)  { return new ExplicitRadio(this, radio); }
 #endif
 
-#if OBSOLETE
-        public void Clear() {
-            ItemMemory.Clear();
-            Threats.Clear();
-            Investigate.Clear();
-#if PROTOTYPE
-            m_Aggressors.Clear();
-#endif
-        }
-#endif
-
         public bool IsMine(Actor a) { return a.IsFaction(FactionID); }
         public bool IsEnemy(Actor a) { return a.Faction.IsEnemyOf(GameFactions.From(FactionID)) || Threats.IsThreat(a); }
 
@@ -193,35 +185,5 @@ namespace djack.RogueSurvivor.Data
         {
             if (IsEnemy(a)) Threats.RecordTaint(a, a.Location);
         }
-
-#if PROTOTYPE
-        void AggressedBy(Actor myfac, Actor other) {
-#if DEBUG
-            if (!IsMine(myfac)) throw new InvalidOperationException("invariant violation");
-#else
-            if (!IsMine(myfac)) return;
-#endif
-            if (myfac.Faction.IsEnemyOf(other.Faction)) return;
-            foreach(var x in m_Aggressors) if (x.Key == myfac && x.Value==other) return;
-            m_Aggressors.Add(new KeyValuePair<Actor, Actor>(myfac, other));
-        }
-
-        void Killed(Actor a) {
-            if (a.Faction.IsEnemyOf(Models.Factions[(int)FactionID])) return;
-            var could_forget = new List<Actor>();
-            var ub = m_Aggressors.Count;
-            while (0 < --ub) {
-                if (m_Aggressors[ub].Value == a) {
-                    m_Aggressors.RemoveAt(ub);
-                    continue;
-                }
-                if (m_Aggressors[ub].Key == a) {
-                    could_forget.Add(m_Aggressors[ub].Value);
-                    m_Aggressors.RemoveAt(ub);
-                    continue;
-                }
-            }
-        }
-#endif
     }
 }

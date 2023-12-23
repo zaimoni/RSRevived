@@ -46,21 +46,9 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Serializable]
-    public readonly record struct ActorTag
+    public readonly record struct ActorTag(string Name, int SpawnTime)
     {
-        public readonly string Name;
-        public readonly int SpawnTime;
-
-        public ActorTag(string name, int spawn)
-        {
-            Name = name;
-            SpawnTime = spawn;
-        }
-
-        internal ActorTag(Actor src) {
-            Name = src.UnmodifiedName;
-            SpawnTime = src.SpawnTime;
-        }
+        internal ActorTag(Actor src) : this(src.UnmodifiedName, src.SpawnTime) {}
     };
 
   [Serializable]
