@@ -269,6 +269,8 @@ namespace djack.RogueSurvivor.Data
         RecordLastAction(ra);
     }
 
+    public void ResetRecoil() => _recoil = 0;
+
     public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int>? ItemMemory { get { return m_itemMemory; } }
 
     private bool ShowThis(Gameplay.Item_IDs src, in Location loc) {

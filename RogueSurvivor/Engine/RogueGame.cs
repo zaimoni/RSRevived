@@ -3441,7 +3441,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryPlayerInsanity() && !HandlePlayerEatCorpse(player, point);
                 break;
               case PlayerCommand.FIRE_MODE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerFireMode(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerFireMode(pc);
                 break;
               case PlayerCommand.GIVE_ITEM:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerGiveItem(player, point);
@@ -3598,13 +3598,16 @@ namespace djack.RogueSurvivor.Engine
                 break;
               default: throw new ArgumentException("command unhandled");
             }  // end indentation failure
+            if (0<pc.Recoil && PlayerCommand.FIRE_MODE != command) pc.ResetRecoil();
         } else if (!HandleMouseLook(point)) {
           if (HandleMouseInventory(point, mouseButtons, out bool hasDoneAction)) {
             if (!hasDoneAction) continue;
+            pc.ResetRecoil();
             flag1 = false;
           }
           if (HandleMouseOverCorpses(point, mouseButtons, out hasDoneAction)) {
             if (!hasDoneAction) continue;
+            pc.ResetRecoil();
             flag1 = false;
           }
           ClearOverlays();
@@ -5202,9 +5205,11 @@ namespace djack.RogueSurvivor.Engine
     }
 #nullable restore
 
-    private bool HandlePlayerFireMode(Actor player)
+    private bool HandlePlayerFireMode(PlayerController pc)
     {
       const string FIRE_MODE_TEXT = "FIRE MODE - F to fire, T next target, M toggle mode, ESC cancels";
+
+      var player = pc.ControlledActor;  // backward compability
 
       if (player.GetEquippedWeapon() is ItemGrenade || player.GetEquippedWeapon() is ItemGrenadePrimed)
         return HandlePlayerThrowGrenade(player);
@@ -5230,7 +5235,7 @@ namespace djack.RogueSurvivor.Engine
 
       string desc(FireMode mode, Actor currentTarget) {
         switch(mode) {
-          case FireMode.RAPID: return string.Format("RAPID fire average hit chances {0}% {1}%", player.ComputeChancesRangedHit(currentTarget, 1), player.ComputeChancesRangedHit(currentTarget, 2));
+          case FireMode.RAPID: return string.Format("RAPID fire average hit chances {0}% ({1}% {2}%)", player.ComputeChancesRangedHit(currentTarget, pc.Recoil+1), player.ComputeChancesRangedHit(currentTarget, 1), player.ComputeChancesRangedHit(currentTarget, 2));
           default: return string.Format("Normal fire average hit chance {0}%", player.ComputeChancesRangedHit(currentTarget, 0));
         }
       }
@@ -12897,7 +12902,7 @@ namespace djack.RogueSurvivor.Engine
         if (available_followers[index].CanEnter(viewpoint)) {
           oai.WalkTo(in viewpoint);
           ClearOverlays();
-          PanViewportTo(Player);
+          PanViewportTo(Player.Location);
           return true;
         }
         return false;
@@ -12916,13 +12921,13 @@ namespace djack.RogueSurvivor.Engine
           switch(key.KeyCode) {
           case Keys.Escape: // cancel
             ClearOverlays();
-            PanViewportTo(Player);
+            PanViewportTo(Player.Location);
             return null;
           case Keys.R:  // run to ...
             if (Player.CanEnter(viewpoint)) {
               pc.RunTo(in viewpoint);
               ClearOverlays();
-              PanViewportTo(Player);
+              PanViewportTo(Player.Location);
               return null;
             }
             break;  // XXX \todo be somewhat more informative
@@ -12930,7 +12935,7 @@ namespace djack.RogueSurvivor.Engine
             if (Player.CanEnter(viewpoint)) {
               pc.WalkTo(in viewpoint);
               ClearOverlays();
-              PanViewportTo(Player);
+              PanViewportTo(Player.Location);
               return null;
             }
             break;  // XXX \todo be somewhat more informative
@@ -12953,13 +12958,13 @@ namespace djack.RogueSurvivor.Engine
               pc.WalkTo(in viewpoint, (int)key.KeyCode - (int)Keys.D0);
               pc.AddWaypoint(viewpoint, "manual: T"+viewpoint.Map.LocalTime.TurnCounter.ToString());
               ClearOverlays();
-              PanViewportTo(Player);
+              PanViewportTo(Player.Location);
               return null;
             }
             break;  // XXX \todo be somewhat more informative
           case Keys.Return: // set waypoint
             ClearOverlays();
-            PanViewportTo(Player);
+            PanViewportTo(Player.Location);
             return viewpoint;
           default: break;
           }
