@@ -14,6 +14,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public T Use { get; }
   }
 
+  [Serializable]
   internal class ActionUseItem : ActorAction, Use<Item>
     {
     private readonly Item m_Item;
