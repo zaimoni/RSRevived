@@ -3179,6 +3179,18 @@ namespace djack.RogueSurvivor.Engine
     // Don't want this in PlayerController; the required public accessors are unacceptable.
     static private List<KeyValuePair<PlayerController, KeyValuePair<int, PlayerCommand> > >? s_CountedCommands = null;
 
+    // These don't alter game state
+    static private readonly PlayerCommand[] s_ReadonlyCommands = new PlayerCommand[]{
+      PlayerCommand.NONE,
+      PlayerCommand.HELP_MODE,
+      PlayerCommand.ADVISOR,
+      PlayerCommand.OPTIONS_MODE,
+      PlayerCommand.KEYBINDING_MODE,
+      PlayerCommand.HINTS_SCREEN_MODE,
+      PlayerCommand.SCREENSHOT,
+      PlayerCommand.SAVE_GAME
+    };
+
     private void HandlePlayerActor(PlayerController pc)
     {
 #if DEBUG
@@ -3598,7 +3610,7 @@ namespace djack.RogueSurvivor.Engine
                 break;
               default: throw new ArgumentException("command unhandled");
             }  // end indentation failure
-            if (0<pc.Recoil && PlayerCommand.FIRE_MODE != command) pc.ResetRecoil();
+            if (0<pc.Recoil && PlayerCommand.FIRE_MODE != command && !s_ReadonlyCommands.Contains(command)) pc.ResetRecoil();
         } else if (!HandleMouseLook(point)) {
           if (HandleMouseInventory(point, mouseButtons, out bool hasDoneAction)) {
             if (!hasDoneAction) continue;
