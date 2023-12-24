@@ -3917,7 +3917,7 @@ namespace djack.RogueSurvivor.Data
 
       var handler = Says; // work around non-atomic test, etc.
       if (null != handler) {
-        SayArgs tmp = new SayArgs(target,target.IsPlayer || (flags & RogueGame.Sayflags.IS_IMPORTANT) != RogueGame.Sayflags.NONE);
+        SayArgs tmp = new SayArgs(target, target.IsPlayer || (flags & RogueGame.Sayflags.IS_IMPORTANT) != RogueGame.Sayflags.NONE);
         tmp.messages.Add(RogueGame.MakeMessage(this, string.Format("to {0} : ", target.TheName), sayColor));
         tmp.messages.Add(RogueGame.MakeMessage(this, string.Format("\"{0}\"", text), sayColor));
         handler(this,tmp);

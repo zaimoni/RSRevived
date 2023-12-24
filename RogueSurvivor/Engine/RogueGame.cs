@@ -676,7 +676,7 @@ namespace djack.RogueSurvivor.Engine
       if (IsSimulating) return;   // visual no-op
 #endif
       pc.Messages.AddNoLog(new("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      PanViewportTo(pc.ControlledActor);
+      PanViewportTo(pc.ControlledActor.Location);
       m_UI.WaitEnter();
       Messages.RemoveLastMessage();
       RedrawPlayScreen();

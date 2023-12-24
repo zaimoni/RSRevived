@@ -1861,6 +1861,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var rules = Rules.Get;
       if (!rules.RollChance(chance)) return null;
       Actor actorAt1 = rules.DiceRoller.Choose(friends);
+      if (actorAt1.IsPlayer) RogueGame.Game.PanViewportTo(actorAt1);
       string text = DescribePercept(percept, actorAt1);
       return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }
@@ -1872,6 +1873,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var rules = Rules.Get;
       if (!rules.RollChance(chance)) return null;
       Actor actorAt1 = rules.DiceRoller.Choose(friends);
+      if (actorAt1.IsPlayer) RogueGame.Game.PanViewportTo(actorAt1);
       string text = DescribePercept(percept, actorAt1);
       return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }

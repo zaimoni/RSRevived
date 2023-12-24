@@ -726,18 +726,11 @@ namespace djack.RogueSurvivor.Data
         e.shown = true;
       }
 
-      var game = RogueGame.Game;
-      if (e._important) Messages.Clear();
-      Messages.Add(e.messages);
       if (!e._important) {
-          game.PanViewportTo(m_Actor);
-          return;
+         AddMessages(e.messages);
+      } else {
+         AddMessagesForceRead(e.messages);
       }
-
-      game.AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new System.Drawing.Rectangle(RogueGame.MapToScreen(speaker.Location), RogueGame.SIZE_OF_ACTOR)));
-      game.AddMessagePressEnter(this);
-      game.ClearOverlays();
-      game.RedrawPlayScreen();
     }
   }
 }
