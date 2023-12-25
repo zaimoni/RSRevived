@@ -175,14 +175,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       const bool tracing = false;
 
       // New objectives system
-      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(Objectives.Count.ToString() + " objectives");
+      if (tracing) {
+        if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(Objectives.Count.ToString() + " objectives");
+      }
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
         foreach(Objective o in new List<Objective>(Objectives)) {
-          if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(o.ToString()+(o.IsExpired ? " : expired" : ""));
+          if (tracing) {
+            if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(o.ToString()+(o.IsExpired ? " : expired" : ""));
+          }
           if (o.IsExpired) Objectives.Remove(o);
           else if (o.UrgentAction(out goal_action)) {
-            if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == goal_action ? "expiring by null"  : "proceeding : "+ goal_action.ToString());
+            if (tracing) {
+              if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == goal_action ? "expiring by null"  : "proceeding : "+ goal_action.ToString());
+            }
             if (null==goal_action) Objectives.Remove(o);
 #if DEBUG
             else if (!goal_action.IsPerformable()) throw new InvalidOperationException("result of UrgentAction should be legal");
@@ -190,13 +196,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
             else if (!goal_action.IsPerformable()) Objectives.Remove(o);
 #endif
             else {
-              if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("returning to task: " + o.ToString());
+              if (tracing) {
+                if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("returning to task: " + o.ToString());
+              }
               return goal_action;
             }
-          } else if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("deferred goal");                }
+          } else if (tracing) {
+            if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("deferred goal");
+          }
+        }
       }
 
-      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == _enemies ? "null == _enemies" : _enemies.Count.ToString() + " enemies");
+      if (tracing) {
+        if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == _enemies ? "null == _enemies" : _enemies.Count.ToString() + " enemies");
+      }
 
       if (!(Directives_nocreate?.CanThrowGrenades ?? ActorDirective.CanThrowGrenades_default) && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) grenade.UnequippedBy(m_Actor);
 
@@ -217,8 +230,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
-      if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("managing melee risk: "+tmpAction.ToString());
-      if (null != tmpAction) return tmpAction;
+      if (null != tmpAction) {
+        if (tracing) {
+          if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("managing melee risk: "+tmpAction.ToString());
+        }
+        return tmpAction;
+      }
 
       if (null != _enemies && (Directives_nocreate?.CanThrowGrenades ?? ActorDirective.CanThrowGrenades_default)) {
         tmpAction = BehaviorThrowGrenade();
@@ -230,11 +247,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // \todo doesn't handle properly interactions w/inventory management when enemies out of melee range; e.g. if have shotgun ammo, should take empty shotgun if not in immediate danger
       tmpAction = BehaviorEquipWeapon(available_ranged_weapons);
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading");
-#endif
-      if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("equip weapon: "+tmpAction.ToString());
-      if (null != tmpAction) return tmpAction;
+      if (null != tmpAction) {
+        if (tracing) {
+          if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("equip weapon: "+tmpAction.ToString());
+        }
+        return tmpAction;
+      }
 
 	  var friends = FilterNonEnemies(current);
       if (null != _enemies) {
@@ -250,16 +268,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
         tmpAction = BehaviorFightOrFlee(game, (Directives_nocreate?.Courage ?? ActorDirective.Courage_default), m_Emotes, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
-#endif
-        if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("fight-or-flee: "+tmpAction.ToString());
-        if (null != tmpAction) return tmpAction;
+        if (null != tmpAction) {
+            if (tracing) {
+                if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("fight-or-flee: "+tmpAction.ToString());
+            }
+            return tmpAction;
+        }
       }
       // at this point, even if enemies are in sight we have no useful direct combat action
 
       tmpAction = NonCombatReflexMoves();
-      if (null != tmpAction) return tmpAction;
+      if (null != tmpAction) {
+        if (tracing) {
+          if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("non-combat reflex: "+tmpAction.ToString());
+        }
+        return tmpAction;
+      } else if (tracing) {
+        if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("non-combat reflex: null");
+      }
 
       if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && (Directives_nocreate?.CanSleep ?? ActorDirective.CanSleep_default) && m_Actor.WantToSleepNow) {
 #if TRACE_SELECTACTION
@@ -744,7 +770,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
                         if (0 >= dest_view) dests = update_path.Unstage(loc => leaving.dest.Map != loc.Map);
                         else dests = update_path.Unstage(loc => dest_view != District.UsesCrossDistrictView(loc.Map));
                         if (0 < dests.Count) {
-                            if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("LoS on cross-district dests: "+dests.to_s());
+                            if (tracing) {
+                                if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("LoS on cross-district dests: "+dests.to_s());
+                            }
                             var goal = new Goals.AcquireLineOfSight(m_Actor, dests);
                             SetObjective(goal);
                             AddFOVevent(goal);
@@ -757,7 +785,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (2 != dest_view) {
                     var dests = update_path.Unstage(loc => dest_view != District.UsesCrossDistrictView(loc.Map));
                     if (0 < dests.Count) {
-                        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("LoS on dests: "+dests.to_s());
+                        if (tracing) {
+                            if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("LoS on dests: "+dests.to_s());
+                        }
                         var goal = new Goals.AcquireLineOfSight(m_Actor, dests);
                         SetObjective(goal);
                         AddFOVevent(goal);
@@ -770,7 +800,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
               var considering = GetPreviousGoals(m_Actor.Location);
               var unseen = considering?.Where(loc => !CanSee(loc)).ToHashSet();
               if (null != unseen && 0 < unseen.Count) {
-                if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("LoS on unseen: "+unseen.to_s());
+                if (tracing) {
+                  if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("LoS on unseen: "+unseen.to_s());
+                }
                 var goal = new Goals.AcquireLineOfSight(m_Actor, unseen);
                 SetObjective(goal);
                 AddFOVevent(goal);

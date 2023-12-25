@@ -4080,8 +4080,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 /// </summary>
 /// <returns>null, or a performable action</returns>
     protected ActorAction? NonCombatReflexMoves() {
+      const bool tracing = false;
+
       ActorAction? act = BehaviorUseMedecine(2, 1, 2, 4, 2);
-      if (null != act) return act;
+      if (null != act) {
+        if (tracing) {
+          if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("use medicine: "+act.ToString());
+        }
+        return act;
+      } else if (tracing) {
+          if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("use medicine: null");
+      }
       act = BehaviorRestIfTired();
       if (null != act) return act;
       act = BehaviorEatProactively();
@@ -4100,8 +4109,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         SetObjective(new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
         return act;
       }
-      act = RechargeWithAdjacentGenerator();
-      if (null!= act) return act;
 
       // while groggy ai may not be up to ranged inventory management, items in reach should still be managed
       // XXX this should lose to same-map threat hunting at close ETA
@@ -4121,7 +4128,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // XXX this should lose to same-map threat hunting at close ETA
       act = BehaviorRangedInventory();
-      if (null != act) return act;
+      if (null != act) {
+        if (tracing) {
+          if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("ranged inventory: "+act.ToString());
+        }
+        return act;
+      } else if (tracing) {
+          if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("ranged inventory: null");
+      }
+
+      // this can path.
+      act = RechargeWithAdjacentGenerator();
+      if (null != act) {
+        if (tracing) {
+          if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("recharge: "+act.ToString());
+        }
+        return act;
+      } else if (tracing) {
+          if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("recharge: null");
+      }
 
       return null;
     }
