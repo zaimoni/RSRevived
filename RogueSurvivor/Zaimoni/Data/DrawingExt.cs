@@ -247,7 +247,6 @@ namespace Zaimoni.Data
       }
     }
 
-#if PROTOTYPE
     // convention: pixels are unit length/width squares whose centers are on the integer coordinates
     // x0,y0 pair is the top left corner
     public static void Ellipse(this Bitmap img, Color tint, int x0, int y0, int width, int height)
@@ -284,6 +283,20 @@ namespace Zaimoni.Data
       img.Ellipse(tint, x0, y0, radius, radius);
     }
 
+    public static void ApplyAlpha(this Bitmap img, Func<int, int, byte> src) {
+        int x = img.Width;
+        while(0 <= --x) {
+            int y = img.Height;
+            while(0 <= --y) {
+                var color = img.GetPixel(x, y);
+                byte alpha = src(x,y);
+                var test = (color.A * alpha + byte.MaxValue/2) / byte.MaxValue;
+                img.SetPixel(x, y, Color.FromArgb(test, color));
+            }
+        }
+    }
+
+#if PROTOTYPE
     public static Bitmap SkewCopy(this Bitmap img, int w, int h, Func<Point,Point> transform)
     {
 #if DEBUG
@@ -303,7 +316,7 @@ namespace Zaimoni.Data
     }
 #endif
 
-    public static Bitmap Splice(this Bitmap src, Bitmap splice, Func<Point,bool> use_src)
+        public static Bitmap Splice(this Bitmap src, Bitmap splice, Func<Point,bool> use_src)
     {
 #if DEBUG
       if (null == use_src) throw new ArgumentNullException(nameof(use_src));

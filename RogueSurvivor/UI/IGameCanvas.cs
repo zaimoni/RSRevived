@@ -8,6 +8,7 @@ using System;
 
 using Color = System.Drawing.Color;
 using Font = System.Drawing.Font;
+using Graphics = System.Drawing.Graphics;
 using Image = System.Drawing.Image;
 using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;

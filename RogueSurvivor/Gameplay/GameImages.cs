@@ -11,7 +11,9 @@ using djack.RogueSurvivor.UI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Design;
 using Zaimoni.Data;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 // when converting to System.Windows.Media, would need two classes:
 // * BitmapImage loads from a file
@@ -856,7 +858,10 @@ namespace djack.RogueSurvivor.Gameplay
       Load(TRACK_FOLLOWER_POSITION);
       Load(TRACK_UNDEAD_POSITION);
       Load(TRACK_BLACKOPS_POSITION);
+#if CGI_ICONS
+#else
       Load(TRACK_POLICE_POSITION);
+#endif
       Load(WEATHER_RAIN1);
       Load(WEATHER_RAIN2);
       Load(WEATHER_HEAVY_RAIN1);
@@ -901,6 +906,8 @@ crouching: #0000FF
  */
 
       Recolor(ICON_RUNNING, s_Images[ICON_CANT_RUN], new Point(2, 29), Color.FromArgb(0x4C, 0xFF, 0));
+
+      TrackerIcon(TRACK_POLICE_POSITION, Color.White, Color.FromArgb(5, 48, 245), "P");
       // we need more synthetic rail tiles : scaled rotation, or if that is too difficult skew 45 degrees left, skew 45 degrees right
 #endif
       Recolor(ICON_CROUCHING, s_Images[ICON_CANT_RUN], new Point(2, 29), Color.FromArgb(0, 0, 0xFF));
@@ -993,6 +1000,42 @@ crouching: #0000FF
       img.VLine(border,-1,1,-2);
       img.HLine(shadow,1,1,-2);
       img.VLine(shadow,1,2,-2);
+      s_Images.Add(id, img);
+    }
+
+    private static void TrackerIcon(string id, Color fg, Color border, string tag) {
+      if (LoadMod(id)) return;
+      Bitmap img = ext_Drawing.MonochromeRectangle(Color.FromArgb(0, Color.White), RogueGame.TILE_SIZE, RogueGame.TILE_SIZE);
+      const int origin = RogueGame.TILE_SIZE / 8;
+      const int diameter = RogueGame.TILE_SIZE - (2 * origin);
+      img.Ellipse(Color.Gray, origin, origin, diameter, diameter);
+
+      const float radius = (diameter - 1) / 2.0f;
+      const float center = radius + origin;
+
+      byte raw_alpha(int x, int y) {
+        var x_delta = (float)x - center;
+        var y_delta = (float)y - center;
+        var scale = Math.Sqrt(x_delta * x_delta + y_delta * y_delta);
+        if (radius <= scale) return 0;
+        var scale2 = ((radius - scale)/(radius))*255.0 + 0.5;
+        return (byte)scale2;
+      }
+
+      img.ApplyAlpha(raw_alpha);
+
+      const int origin_border = RogueGame.TILE_SIZE / 4;
+      const int diameter_border = RogueGame.TILE_SIZE - (2 * origin_border);
+      const int origin_disc = RogueGame.TILE_SIZE / 4+2;
+      const int diameter_disc = RogueGame.TILE_SIZE - (2 * origin_disc);
+
+      img.Ellipse(border, origin_border, origin_border, diameter_border, diameter_border);
+      img.Ellipse(fg, origin_disc, origin_disc, diameter_disc, diameter_disc);
+
+      using(var g = Graphics.FromImage(img)) {
+        g.DrawString(tag, IRogueUI.UI.NormalFont, GDIPlusGameCanvas.GetColorBrush(border), (RogueGame.TILE_SIZE - IRogueUI.LINE_SPACING) / 2, (RogueGame.TILE_SIZE - IRogueUI.LINE_SPACING)/2);
+      }
+
       s_Images.Add(id, img);
     }
 

@@ -35,9 +35,13 @@ namespace djack.RogueSurvivor
     private readonly List<string> m_Mods = new List<string>();
     private static RogueForm? s_ooao = null;
 
-    public static RogueForm Get { get { return s_ooao; } }
+#nullable enable
+    public static RogueForm Get { get { return s_ooao!; } }
 
-    public IEnumerable<string> Mods { get { return new List<string>(m_Mods); } }  // value-copy for const correctness.
+    public IEnumerable<string> Mods { get => new List<string>(m_Mods); }  // value-copy for const correctness.
+    public Font NormalFont { get => m_NormalFont; }
+    public Font BoldFont { get => m_BoldFont; }
+#nullable restore
 
 #region Init
     public RogueForm()

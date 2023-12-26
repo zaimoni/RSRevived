@@ -10,7 +10,6 @@ using System.Collections.Generic;
 // type leakage from System.Drawing, System.Windows.Forms
 using Color = System.Drawing.Color;
 using Font = System.Drawing.Font;
-using Point = System.Drawing.Point;
 using Rectangle = System.Drawing.Rectangle;
 using Cursor = System.Windows.Forms.Cursor;
 using KeyEventArgs = System.Windows.Forms.KeyEventArgs;
@@ -46,6 +45,8 @@ namespace djack.RogueSurvivor.UI
 #nullable restore
 
     IEnumerable<string> Mods { get; }
+    Font NormalFont { get; }
+    Font BoldFont { get; }
 
 #region Input
 #nullable enable
