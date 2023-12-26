@@ -8669,19 +8669,8 @@ namespace djack.RogueSurvivor.Engine
 #endif
       if (!wasAlreadyEnemy)
         DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", aggressor.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
-      int turnCounter = Session.Get.WorldTime.TurnCounter;
-      var player_msgs = new List<UI.Message> {
-        new("You get a message from your police radio.", turnCounter),
-        new(string.Format("{0} is armed and dangerous. Shoot on sight!", aggressor.TheName), turnCounter),
-        new(string.Format("Current location : {0}", aggressor.Location), turnCounter)
-      };
 
-      MakeEnemyOfTargetFactionInDistrict(aggressor, cop, pc => pc.AddMessagesForceRead(player_msgs),
-      a => {
-        if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
-        if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
-        return true;
-      });
+      MakeEnemyOfTargetFactionInDistrict(aggressor, cop);
       // XXX this should be a more evident message to PC police
       if (aggressor.IsFaction(GameFactions.IDs.TheCHARCorporation) && 1 > Session.Get.ScriptStage_PoliceCHARrelations) {
         // Operation Dead Hand orders do not exclude police
@@ -8702,22 +8691,12 @@ namespace djack.RogueSurvivor.Engine
 #endif
       if (!wasAlreadyEnemy)
         DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", aggressor.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
-      int turnCounter = Session.Get.WorldTime.TurnCounter;
-      var player_msgs = new List<UI.Message> {
-        new("You get a message from your army radio.", turnCounter),
-        new(string.Format("{0} is armed and dangerous. Shoot on sight!", aggressor.TheName), turnCounter),
-        new(string.Format("Current location : {0}", aggressor.Location), turnCounter)
-      };
-      MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, pc => pc.AddMessagesForceRead(player_msgs),
-      a => {
-        if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
-        if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
-        return true;
-      });
+
+      MakeEnemyOfTargetFactionInDistrict(aggressor, soldier);
     }
 
 #nullable enable
-    private static void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<PlayerController> msg_player, Func<Actor, bool> msg_player_test)
+    private static void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target)
     {
       // XXX this should actually be based on radio range
       // the range should include the entire district: radio must reach (district size-1,district size -1) from (0,0)
@@ -8732,7 +8711,27 @@ namespace djack.RogueSurvivor.Engine
         return a.Faction == faction;
       }
 
-      target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, msg_player, msg_player, msg_player_test);
+      List<UI.Message>? player_msgs = null;
+      List<UI.Message> radio_messages() {
+        int t0 = Session.Get.WorldTime.TurnCounter;
+        return new List<UI.Message> {
+            new("You get a message from your radio.", t0),
+            new(string.Format("{0} is armed and dangerous. Shoot on sight!", aggressor.TheName), t0),
+            new(string.Format("Current location : {0}", aggressor.Location), t0)
+        };
+      }
+
+      void radio_displays(PlayerController pc) {
+        pc.AddMessagesForceRead(player_msgs ??= radio_messages());
+      }
+
+      bool radio_should_record(Actor a) {
+        if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
+        if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
+        return true;
+      }
+
+      target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, radio_displays, radio_displays, radio_should_record);
     }
 #nullable restore
 
