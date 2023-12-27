@@ -429,6 +429,11 @@ namespace djack.RogueSurvivor.Gameplay
     public const string TRACK_UNDEAD_POSITION = "track_undead_position";
     public const string TRACK_BLACKOPS_POSITION = "track_blackops_position";
     public const string TRACK_POLICE_POSITION = "track_police_position";
+    public const string TRACK_POLICE_CIVILIAN_POSITION = "track_police_civilian_position";
+    public const string TRACK_POLICE_DEPUTY_POSITION = "track_police_deputy_position";
+    public const string TRACK_POLICE_MURDERER_POSITION = "track_police_murderer_position";
+    public const string TRACK_POLICE_EN_CIVILIAN_POSITION = "track_police_en_civilian_position";
+    public const string TRACK_POLICE_EN_MURDERER_POSITION = "track_police_en_murderer_position";
     public const string WEATHER_RAIN1 = "weather_rain1";
     public const string WEATHER_RAIN2 = "weather_rain2";
     public const string WEATHER_HEAVY_RAIN1 = "weather_heavy_rain1";
@@ -911,6 +916,13 @@ crouching: #0000FF
       // we need more synthetic rail tiles : scaled rotation, or if that is too difficult skew 45 degrees left, skew 45 degrees right
 #endif
       Recolor(ICON_CROUCHING, s_Images[ICON_CANT_RUN], new Point(2, 29), Color.FromArgb(0, 0, 0xFF));
+
+      // enhanced police tracker identification.  Only police and deputies see the murderer status
+      TrackerIcon(TRACK_POLICE_CIVILIAN_POSITION, Color.White, Color.FromArgb(5, 48, 245), "C");
+      TrackerIcon(TRACK_POLICE_DEPUTY_POSITION, Color.White, Color.FromArgb(5, 48, 245), "D");
+      TrackerIcon(TRACK_POLICE_MURDERER_POSITION, Color.White, Color.FromArgb(5, 48, 245), "M");
+      TrackerIcon(TRACK_POLICE_EN_CIVILIAN_POSITION, Color.Magenta, Color.FromArgb(5, 48, 245), "C"); // these two need blackops background color
+      TrackerIcon(TRACK_POLICE_EN_MURDERER_POSITION, Color.Magenta, Color.FromArgb(5, 48, 245), "M");
 
       // 5 synthetic rail tiles to be constructed from TILE_RAIL_SWNE
       VReflect(TILE_RAIL_SENW,TILE_RAIL_SWNE);

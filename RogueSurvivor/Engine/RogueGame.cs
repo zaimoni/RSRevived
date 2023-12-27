@@ -12416,6 +12416,28 @@ namespace djack.RogueSurvivor.Engine
           return actor;
         }
 
+        KeyValuePair<string,string>? police_icon(Actor a) {
+            if (!a.HasActivePoliceRadio) return null;
+            if (a.IsFaction(GameFactions.IDs.ThePolice)) return new(GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_POSITION);
+            var leader = a.LiveLeader;
+            if (leader?.IsFaction(GameFactions.IDs.ThePolice) ?? false) return new(GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_DEPUTY_POSITION);
+            bool is_murderer = Player.IsFaction(GameFactions.IDs.ThePolice) && 0 < a.MurdersCounter;
+            if (Player.IsEnemyOf(a)) {
+                if (is_murderer) {
+                     return new(GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_POLICE_EN_MURDERER_POSITION);
+                } else {
+                     return new(GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_POLICE_EN_CIVILIAN_POSITION);
+                }
+            } else {
+                if (is_murderer) {
+                     return new(GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_MURDERER_POSITION);
+                } else {
+                     return new(GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_CIVILIAN_POSITION);
+                }
+            }
+            return null;
+        }
+
         Action<Actor> draw = null;
         if (find_us[(int)ItemTrackerModel.TrackingOffset.UNDEADS]) {
             draw = actor => {
