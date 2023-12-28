@@ -4736,7 +4736,7 @@ namespace djack.RogueSurvivor.Engine
           map.Remove(corpse);
           map.PlaceAt(revive, rules.DiceRoller.Choose(pointList));
           if (player) AddMessage(MakeMessage(actor, VERB_REVIVE.Conjugate(actor), revive));
-          if (!actor.IsEnemyOf(revive)) DoSay(revive, actor, "Thank you, you saved my life!", default);
+          if (!actor.IsEnemyOf(revive)) revive.Say(actor, "Thank you, you saved my life!", default);
       } else {
           if (player) AddMessage(MakeMessage(actor, string.Format("{0} to revive", VERB_FAIL.Conjugate(actor)), revive));
       }
@@ -6026,7 +6026,7 @@ namespace djack.RogueSurvivor.Engine
       var player = pc.ControlledActor;  // backward compatibility
       if (!follower.IsTrustingLeader) {
         if (IsVisibleToPlayer(follower))
-          DoSay(follower, player, "Sorry, I don't trust you enough yet.", Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
+          follower.Say(player, "Sorry, I don't trust you enough yet.", Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
         else if (AreLinkedByPhone(follower, player)) {
           ClearMessages();
           AddMessage(MakeMessage(follower, "Sorry, I don't trust you enough yet."));
@@ -8511,7 +8511,7 @@ namespace djack.RogueSurvivor.Engine
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(other)) {
         if (Player == actor) ClearMessages();
         AddMessage(MakeMessage(actor, VERB_PERSUADE.Conjugate(actor), other, " to join."));
-        if (0 != trustIn) DoSay(other, actor, "Ah yes I remember you.", Sayflags.IS_FREE_ACTION);
+        if (0 != trustIn) other.Say(actor, "Ah yes I remember you.", Sayflags.IS_FREE_ACTION);
       }
 #endif
     }
@@ -8607,7 +8607,7 @@ namespace djack.RogueSurvivor.Engine
       if (target.IsSleeping) return;
       if (!wasAlreadyEnemy) {
         string msg = (target.Controller as ObjectiveAI)?.AggressedBy(aggressor);
-        if (!string.IsNullOrEmpty(msg)) DoSay(target, aggressor, msg, Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+        if (!string.IsNullOrEmpty(msg)) target.Say(aggressor, msg, Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       }
       Faction faction = target.Faction;
       if (GameFactions.ThePolice == faction) {
@@ -8668,7 +8668,7 @@ namespace djack.RogueSurvivor.Engine
       if (GameFactions.ThePolice.IsEnemyOf(aggressor.Faction)) return;
 #endif
       if (!wasAlreadyEnemy)
-        DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", aggressor.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+        cop.Say(aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", aggressor.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
 
       MakeEnemyOfTargetFactionInDistrict(aggressor, cop);
       // XXX this should be a more evident message to PC police
@@ -8690,7 +8690,7 @@ namespace djack.RogueSurvivor.Engine
       if (GameFactions.TheArmy.IsEnemyOf(aggressor.Faction)) return;
 #endif
       if (!wasAlreadyEnemy)
-        DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", aggressor.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+        soldier.Say(aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", aggressor.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
 
       MakeEnemyOfTargetFactionInDistrict(aggressor, soldier);
     }
@@ -9264,8 +9264,8 @@ namespace djack.RogueSurvivor.Engine
       bool target_heard_clearly = Rules.CHAT_RADIUS >= Rules.InteractionDistance(Player.Location,target.Location);
       flags |= Sayflags.IS_FREE_ACTION;
 
-      if (see_speaker && speaker_heard_clearly) DoSay(speaker, target, speaker_text, flags);
-      if (see_target && target_heard_clearly) DoSay(target, speaker, target_text, flags);
+      if (see_speaker && speaker_heard_clearly) speaker.Say(target, speaker_text, flags);
+      if (see_target && target_heard_clearly) target.Say(speaker, target_text, flags);
       if (!speaker_heard_clearly && !target_heard_clearly) {
         if (see_speaker) AddMessage(MakeMessage(speaker, VERB_CHAT_WITH.Conjugate(speaker), target));
         else if (see_target) AddMessage(MakeMessage(target, VERB_CHAT_WITH.Conjugate(target), speaker));
@@ -9344,7 +9344,7 @@ namespace djack.RogueSurvivor.Engine
       bool target_heard_clearly = Rules.CHAT_RADIUS >= Rules.InteractionDistance(Player.Location,target.Location);
       flags |= Sayflags.IS_FREE_ACTION;
 
-      if (see_speaker && speaker_heard_clearly) DoSay(speaker, target, speaker_text, flags);
+      if (see_speaker && speaker_heard_clearly) speaker.Say(target, speaker_text, flags);
       if (!speaker_heard_clearly && !target_heard_clearly) {
         if (see_speaker) AddMessage(MakeMessage(speaker, VERB_CHAT_WITH.Conjugate(speaker), target));
       }
@@ -9469,7 +9469,7 @@ namespace djack.RogueSurvivor.Engine
 
       speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))), witnesses);
 
-      if (target.Leader == speaker && flag3) DoSay(target, speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
+      if (target.Leader == speaker && flag3) target.Say(speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
       speaker.Remove(itSpeaker);
       target.Remove(trade);
       speaker.Inventory.AddAll(trade);
@@ -9606,7 +9606,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
 
-      if (leader == speaker && flag3) DoSay(target, speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
+      if (leader == speaker && flag3) target.Say(speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
       Item donate = trade.Value.Key;
       speaker.Remove(donate);
       Item take = trade.Value.Value;
@@ -9760,14 +9760,7 @@ namespace djack.RogueSurvivor.Engine
       PagedPopup("Trading for ...", objList.Count, label, details);
       return ret;
     }
-#nullable restore
 
-    static public void DoSay(Actor speaker, Actor target, string text, Sayflags flags)
-    {
-      speaker.Say(target,text,flags);
-    }
-
-#nullable enable
     public void DoShout(Actor speaker, string? text)
     {
       speaker.SpendActionPoints();
@@ -10013,10 +10006,10 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints();
       if (target.Leader == actor) {
         bool flag = (target.Controller as ObjectiveAI).IsInterestingItem(gift);
-        DoSay(target, actor, flag ? "Thank you, I really needed that!" : "Thanks I guess...", Sayflags.IS_FREE_ACTION);
+        target.Say(actor, flag ? "Thank you, I really needed that!" : "Thanks I guess...", Sayflags.IS_FREE_ACTION);
         ModifyActorTrustInLeader(target, flag ? Rules.TRUST_GOOD_GIFT_INCREASE : Rules.TRUST_MISC_GIFT_INCREASE, true);
       } else if (actor.Leader == target) {
-        DoSay(target, actor, "Well, here it is...", Sayflags.IS_FREE_ACTION);
+        target.Say(actor, "Well, here it is...", Sayflags.IS_FREE_ACTION);
         ModifyActorTrustInLeader(actor, Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
       }
 
@@ -10651,8 +10644,8 @@ namespace djack.RogueSurvivor.Engine
       if (null == ordai) return;
       var slave = ordai.ControlledActor;
       master.SpendActionPoints();
-      if (master != slave.Leader) DoSay(slave, master, "Who are you to give me orders?", Sayflags.IS_FREE_ACTION);
-      else if (!slave.IsTrustingLeader) DoSay(slave, master, "Sorry, I don't trust you enough yet.", Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
+      if (master != slave.Leader) slave.Say(master, "Who are you to give me orders?", Sayflags.IS_FREE_ACTION);
+      else if (!slave.IsTrustingLeader) slave.Say(master, "Sorry, I don't trust you enough yet.", Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
       else {
         ordai.SetOrder(order);
         if (ForceVisibleToPlayer(master) || ForceVisibleToPlayer(slave))
@@ -10819,7 +10812,7 @@ namespace djack.RogueSurvivor.Engine
         }
         killer.DoForAllFollowers(fo => {
             if ((fo.TargetActor == deadGuy || fo.IsEnemyOf(deadGuy)) && Rules.IsAdjacent(fo.Location, deadGuy.Location)) {
-              DoSay(fo, killer, "That was close! Thanks for the help!!", Sayflags.IS_FREE_ACTION);
+              fo.Say(killer, "That was close! Thanks for the help!!", Sayflags.IS_FREE_ACTION);
               ModifyActorTrustInLeader(fo, Rules.TRUST_LEADER_KILL_ENEMY, true);
             }
         });
@@ -10832,7 +10825,7 @@ namespace djack.RogueSurvivor.Engine
           PropagateSight(killer.Location, a => {
             if (a.Leader != killer && killer.Leader != a) {
               if (a.Model.Abilities.IsLawEnforcer) {
-                DoSay(a, killer, string.Format("MURDER! {0} HAS KILLED {1}!", killer.TheName, deadGuy.TheName), Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
+                a.Say(killer, string.Format("MURDER! {0} HAS KILLED {1}!", killer.TheName, deadGuy.TheName), Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
                 RadioNotifyAggression(a, killer, "(police radio, {0}) Executing {1} for murder.");
                 DoMakeAggression(a, killer);
               }
@@ -10844,7 +10837,7 @@ namespace djack.RogueSurvivor.Engine
             if (killer.IsPlayer)
               AddMessage(new("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
             else
-              DoSay(killer, deadGuy, "Good riddance, murderer!", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+              killer.Say(deadGuy, "Good riddance, murderer!", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
           }
 
           // Police report all (non-murder) kills via police radio.  National Guard likely to do same.

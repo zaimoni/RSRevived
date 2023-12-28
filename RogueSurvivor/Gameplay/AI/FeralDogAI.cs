@@ -63,7 +63,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != leader) {
         var targetActor = leader.TargetActor;
         if (targetActor != null && targetActor.Location.Map == m_Actor.Location.Map) {
-          RogueGame.DoSay(m_Actor, targetActor, "GRRRRRR WAF WAF", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+          m_Actor.Say(targetActor, "GRRRRRR WAF WAF", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
           tmpAction = BehaviorStupidBumpToward(targetActor.Location, true, false);
           if (null != tmpAction) {
             RunToIfCloseTo(targetActor.Location, RUN_TO_TARGET_DISTANCE);

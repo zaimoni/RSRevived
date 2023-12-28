@@ -3933,7 +3933,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (Rules.IsAdjacent(m_Actor.Location, near.Key)) {
           MarkActorAsRecentTrade(near.Value);
           (near.Value.Controller as OrderableAI)?.MarkActorAsRecentTrade(m_Actor);   // try to reduce trading spam: one trade per pair, not two
-          RogueGame.DoSay(m_Actor, near.Value, string.Format("Hey {0}, let's make a deal!", near.Value.Name), Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
+          m_Actor.Say(near.Value, string.Format("Hey {0}, let's make a deal!", near.Value.Name), Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
           return new ActionTrade(m_Actor, near.Value);
         }
         if (IsFocused) return null; // just in case
@@ -3944,7 +3944,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (o_oai.IsFocused) return null;
         // alpha10 announce it to make it clear to the player whats happening but dont spend AP (free action)
         // might spam for a few turns, but its better than not understanding whats going on.
-        RogueGame.DoSay(m_Actor, near.Value, string.Format("Hey {0}, let's make a deal!", near.Value.Name), Sayflags.IS_FREE_ACTION);
+        m_Actor.Say(near.Value, string.Format("Hey {0}, let's make a deal!", near.Value.Name), Sayflags.IS_FREE_ACTION);
         m_Actor.TargetedActivity(Activity.FOLLOWING, near.Value);
 
         // install trading objectives -- hints to target where to go

@@ -87,7 +87,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 var actor = Rules.Get.DiceRoller.Choose(adjacent);
                 (oai as OrderableAI)?.MarkActorAsRecentTrade(actor);
                 (actor.Controller as OrderableAI)?.MarkActorAsRecentTrade(m_Actor);   // try to reduce trading spam: one trade per pair, not two
-                RogueGame.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", actor), Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
+                m_Actor.Say(actor, string.Format("Hey {0}, let's make a deal!", actor), Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
                 ret = new ActionTrade(m_Actor, actor);
                 return true;
             }

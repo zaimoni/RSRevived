@@ -31,9 +31,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       return true;
     }
 
-    public override void Perform()
-    {
-      RogueGame.DoSay(m_Actor, m_Target, m_Text, m_Flags);
-    }
+    public override void Perform() => m_Actor.Say(m_Target, m_Text, m_Flags);
   }
 }
