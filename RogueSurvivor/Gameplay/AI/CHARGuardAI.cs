@@ -209,7 +209,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // XXX should have some reaction from witnesses that weren't aggressed
           m_Actor.TargetedActivity(Activity.FIGHTING, target);
           // players are special: they get to react to being aggressed
-          return new ActionSay(m_Actor, target, "Hey YOU!", (target.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER | RogueGame.Sayflags.IS_FREE_ACTION));
+          return new ActionSay(m_Actor, target, "Hey YOU!", (target.IsPlayer ? Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER : Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER | Sayflags.IS_FREE_ACTION));
         }
       }
       if (null != _enemies) {

@@ -4736,7 +4736,7 @@ namespace djack.RogueSurvivor.Engine
           map.Remove(corpse);
           map.PlaceAt(revive, rules.DiceRoller.Choose(pointList));
           if (player) AddMessage(MakeMessage(actor, VERB_REVIVE.Conjugate(actor), revive));
-          if (!actor.IsEnemyOf(revive)) DoSay(revive, actor, "Thank you, you saved my life!", Sayflags.NONE);
+          if (!actor.IsEnemyOf(revive)) DoSay(revive, actor, "Thank you, you saved my life!", default);
       } else {
           if (player) AddMessage(MakeMessage(actor, string.Format("{0} to revive", VERB_FAIL.Conjugate(actor)), revive));
       }
@@ -6026,7 +6026,7 @@ namespace djack.RogueSurvivor.Engine
       var player = pc.ControlledActor;  // backward compatibility
       if (!follower.IsTrustingLeader) {
         if (IsVisibleToPlayer(follower))
-          DoSay(follower, player, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
+          DoSay(follower, player, "Sorry, I don't trust you enough yet.", Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
         else if (AreLinkedByPhone(follower, player)) {
           ClearMessages();
           AddMessage(MakeMessage(follower, "Sorry, I don't trust you enough yet."));
@@ -8607,7 +8607,7 @@ namespace djack.RogueSurvivor.Engine
       if (target.IsSleeping) return;
       if (!wasAlreadyEnemy) {
         string msg = (target.Controller as ObjectiveAI)?.AggressedBy(aggressor);
-        if (!string.IsNullOrEmpty(msg)) DoSay(target, aggressor, msg, RogueGame.Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+        if (!string.IsNullOrEmpty(msg)) DoSay(target, aggressor, msg, Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       }
       Faction faction = target.Faction;
       if (GameFactions.ThePolice == faction) {
@@ -9246,7 +9246,7 @@ namespace djack.RogueSurvivor.Engine
 
 #nullable enable
     // intended to be a side-effecting free action.  We intentionally do not support null op here
-    public bool DoBackgroundChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
+    public bool DoBackgroundChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Action<Actor> op, Sayflags flags = default)
     {
       var chat_competent = targets.FindAll(actor => Rules.CHAT_RADIUS >= Rules.InteractionDistance(speaker.Location, actor.Location));
       if (0 >= chat_competent.Count) return false;
@@ -9321,7 +9321,7 @@ namespace djack.RogueSurvivor.Engine
       return PCsNearby(view, Actor.MAX_VISION, sees);
     }
 
-    public bool DoBackgroundSpeech(Actor speaker, string speaker_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
+    public bool DoBackgroundSpeech(Actor speaker, string speaker_text, Action<Actor> op, Sayflags flags = default)
     {
       bool is_awake(Actor a) { return !a.IsSleeping; };
 
@@ -9361,7 +9361,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool DoBackgroundPoliceRadioChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Action<Actor> op, Sayflags flags = Sayflags.NONE)
+    public bool DoBackgroundPoliceRadioChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Action<Actor> op, Sayflags flags = default)
     {
       var radio_competent = targets.FindAll(ally => ally.HasActivePoliceRadio);
       if (0 >= radio_competent.Count) return false;
@@ -14924,15 +14924,6 @@ retry:
       NOT_SIMULATING = 0,
       HIDETAIL_TURN = 1,
       LODETAIL_TURN = 2,
-    }
-
-    [System.Flags]
-    public enum Sayflags
-    {
-      NONE = 0,
-      IS_IMPORTANT = 1,
-      IS_FREE_ACTION = 2,
-      IS_DANGER = 4
     }
 
     [System.Flags]

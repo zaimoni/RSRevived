@@ -321,7 +321,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "starving, attacking for food");
 #endif
             if (Rules.Get.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
-              RogueGame.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION | RogueGame.Sayflags.IS_DANGER);
+              RogueGame.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
             if (!m_Actor.TargetActor.IsSleeping) {
               if (m_Actor.TargetActor.Faction.ID.ExtortionIsAggression()) {
                 game.DoMakeAggression(m_Actor,m_Actor.TargetActor);
@@ -332,7 +332,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             RogueGame.PropagateSight(m_Actor.Location, a => {
               if (a.Leader != m_Actor && m_Actor.Leader != a) {
                 if (a.Faction.ID.ExtortionIsAggression()) {
-                  RogueGame.DoSay(a, m_Actor, string.Format("ATTEMPTED MURDER! {0} HAS AGGRESSED {1}!", m_Actor.TheName, m_Actor.TargetActor.TheName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
+                  RogueGame.DoSay(a, m_Actor, string.Format("ATTEMPTED MURDER! {0} HAS AGGRESSED {1}!", m_Actor.TheName, m_Actor.TargetActor.TheName), Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
                   if (0 == m_Actor.MurdersOnRecord(a) || 0==m_Actor.MurdersCounter) m_Actor.HasMurdered(m_Actor.TargetActor); // XXX not really, but keeps things from going weird for civilian followers of police
                   game.RadioNotifyAggression(a, m_Actor, "(police radio, {0}) Executing {1} for attempted murder."); // XXX \todo correct name for radio
                   game.DoMakeAggression(a, m_Actor);

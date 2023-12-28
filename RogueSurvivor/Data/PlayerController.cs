@@ -185,7 +185,7 @@ namespace djack.RogueSurvivor.Data
     private void _handleReport(string raw_text, int code, Actor who)
     {
       if (1 == code) {
-        who.Say(ControlledActor, raw_text, RogueGame.Sayflags.IS_FREE_ACTION);
+        who.Say(ControlledActor, raw_text, Sayflags.IS_FREE_ACTION);
       }
       if (2 == code) {
         Message msg = new("(police radio, "+ who.Name +") "+raw_text, Session.Get.WorldTime.TurnCounter, RogueGame.SAYOREMOTE_NORMAL_COLOR);

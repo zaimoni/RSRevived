@@ -216,7 +216,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             Item obj = target.Inventory?.GetFirstMatching<Item>(it => IsInterestingItem(it));
             game.DoMakeAggression(m_Actor, target);
             m_Actor.TargetedActivity(Activity.CHASING, target);
-            return new ActionSay(m_Actor, target, string.Format("Hey! That's some nice {0} you have here!", obj.Model.SingleName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER); // takes turn for game balance
+            return new ActionSay(m_Actor, target, string.Format("Hey! That's some nice {0} you have here!", obj.Model.SingleName), Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER); // takes turn for game balance
           }
         }
       }

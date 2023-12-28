@@ -1007,22 +1007,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
         case 0:
           ++m_ReportStage;
           text = DescribePercept(m_LastRaidHeard, m_Actor.Leader);
-          return new ActionSay(m_Actor, m_Actor.Leader, (string.IsNullOrEmpty(text) ? "No raids heard." : text), RogueGame.Sayflags.NONE);
+          return new ActionSay(m_Actor, m_Actor.Leader, (string.IsNullOrEmpty(text) ? "No raids heard." : text), default);
         case 1:
           ++m_ReportStage;
           text = DescribePercept(m_LastEnemySaw, m_Actor.Leader);
-          return new ActionSay(m_Actor, m_Actor.Leader, (string.IsNullOrEmpty(text) ? "No enemies sighted." : text), RogueGame.Sayflags.NONE);
+          return new ActionSay(m_Actor, m_Actor.Leader, (string.IsNullOrEmpty(text) ? "No enemies sighted." : text), default);
         case 2:
           ++m_ReportStage;
           text = DescribePercept(m_LastItemsSaw, m_Actor.Leader);
-          return new ActionSay(m_Actor, m_Actor.Leader, (string.IsNullOrEmpty(text) ? "No items sighted." : text), RogueGame.Sayflags.NONE);
+          return new ActionSay(m_Actor, m_Actor.Leader, (string.IsNullOrEmpty(text) ? "No items sighted." : text), default);
         case 3:
           ++m_ReportStage;
           text = DescribePercept(m_LastSoldierSaw, m_Actor.Leader);
-          return new ActionSay(m_Actor, m_Actor.Leader, (string.IsNullOrEmpty(text) ? "No soldiers sighted." : text), RogueGame.Sayflags.NONE);
+          return new ActionSay(m_Actor, m_Actor.Leader, (string.IsNullOrEmpty(text) ? "No soldiers sighted." : text), default);
         default:
           SetOrder(null);
-          return new ActionSay(m_Actor, m_Actor.Leader, "That's it.", RogueGame.Sayflags.NONE);
+          return new ActionSay(m_Actor, m_Actor.Leader, "That's it.", default);
       }
     }
 
@@ -1054,7 +1054,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       SetOrder(null);
       string text = string.Format("I'm in {0} at {1},{2}.", m_Actor.Location.Map.Name, m_Actor.Location.Position.X, m_Actor.Location.Position.Y);
-      return new ActionSay(m_Actor, m_Actor.Leader, text, RogueGame.Sayflags.NONE);
+      return new ActionSay(m_Actor, m_Actor.Leader, text, default);
     }
 
     public bool IsRationalTradeItem(Item offeredItem)    // Cf. ActorControllerAI::IsInterestingTradeItem
@@ -1863,7 +1863,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Actor actorAt1 = rules.DiceRoller.Choose(friends);
       if (actorAt1.IsPlayer) RogueGame.Game.PanViewportTo(actorAt1);
       string text = DescribePercept(percept, actorAt1);
-      return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
+      return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, default);
     }
 
     protected ActionSay? BehaviorTellFriendAboutPercept(Percept_<Actor> percept, int chance)
@@ -1875,7 +1875,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Actor actorAt1 = rules.DiceRoller.Choose(friends);
       if (actorAt1.IsPlayer) RogueGame.Game.PanViewportTo(actorAt1);
       string text = DescribePercept(percept, actorAt1);
-      return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
+      return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, default);
     }
 
     private ActorAction BehaviorSecurePerimeter()
@@ -2685,7 +2685,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         game.DoMakeAggression(m_Actor, suspect);
         m_Actor.TargetActor = suspect;
         // players are special: they get to react to this first
-        return new ActionSay(m_Actor, suspect, string.Format("HEY! YOU ARE WANTED FOR {0}!", "murder".QtyDesc(suspect.MurdersOnRecord(m_Actor)).ToUpper()), (suspect.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER | RogueGame.Sayflags.IS_FREE_ACTION));
+        return new ActionSay(m_Actor, suspect, string.Format("HEY! YOU ARE WANTED FOR {0}!", "murder".QtyDesc(suspect.MurdersOnRecord(m_Actor)).ToUpper()), (suspect.IsPlayer ? Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER : Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER | Sayflags.IS_FREE_ACTION));
       }
       return null;
     }
@@ -3933,7 +3933,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (Rules.IsAdjacent(m_Actor.Location, near.Key)) {
           MarkActorAsRecentTrade(near.Value);
           (near.Value.Controller as OrderableAI)?.MarkActorAsRecentTrade(m_Actor);   // try to reduce trading spam: one trade per pair, not two
-          RogueGame.DoSay(m_Actor, near.Value, string.Format("Hey {0}, let's make a deal!", near.Value.Name), RogueGame.Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
+          RogueGame.DoSay(m_Actor, near.Value, string.Format("Hey {0}, let's make a deal!", near.Value.Name), Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
           return new ActionTrade(m_Actor, near.Value);
         }
         if (IsFocused) return null; // just in case
@@ -3944,7 +3944,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (o_oai.IsFocused) return null;
         // alpha10 announce it to make it clear to the player whats happening but dont spend AP (free action)
         // might spam for a few turns, but its better than not understanding whats going on.
-        RogueGame.DoSay(m_Actor, near.Value, string.Format("Hey {0}, let's make a deal!", near.Value.Name), RogueGame.Sayflags.IS_FREE_ACTION);
+        RogueGame.DoSay(m_Actor, near.Value, string.Format("Hey {0}, let's make a deal!", near.Value.Name), Sayflags.IS_FREE_ACTION);
         m_Actor.TargetedActivity(Activity.FOLLOWING, near.Value);
 
         // install trading objectives -- hints to target where to go

@@ -13,9 +13,9 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Actor m_Target;
     private readonly string m_Text;
-    private readonly RogueGame.Sayflags m_Flags;
+    private readonly Sayflags m_Flags;
 
-    public ActionSay(Actor actor, Actor target, string text, RogueGame.Sayflags flags) : base(actor)
+    public ActionSay(Actor actor, Actor target, string text, Sayflags flags) : base(actor)
     {
       m_Target = target
 #if DEBUG

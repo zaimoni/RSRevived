@@ -44,6 +44,14 @@ namespace djack.RogueSurvivor.Data
         FLEEING_FROM_EXPLOSIVE,
     }
 
+    [System.Flags]
+    internal enum Sayflags
+    {
+        IS_IMPORTANT = 1,
+        IS_FREE_ACTION = 2,
+        IS_DANGER = 4
+    }
+
     [Serializable]
     public readonly record struct ActorTag(string Name, int SpawnTime)
     {
@@ -3909,15 +3917,15 @@ namespace djack.RogueSurvivor.Data
     public static event EventHandler<SayArgs>? Says;
 
     // experimental...testing an event approach to this
-    public void Say(Actor target, string text, RogueGame.Sayflags flags)
+    public void Say(Actor target, string text, Sayflags flags)
     {
-      Color sayColor = ((flags & RogueGame.Sayflags.IS_DANGER) != 0) ? RogueGame.SAYOREMOTE_DANGER_COLOR : RogueGame.SAYOREMOTE_NORMAL_COLOR;
+      Color sayColor = ((flags & Sayflags.IS_DANGER) != 0) ? RogueGame.SAYOREMOTE_DANGER_COLOR : RogueGame.SAYOREMOTE_NORMAL_COLOR;
 
-      if ((flags & RogueGame.Sayflags.IS_FREE_ACTION) == RogueGame.Sayflags.NONE) SpendActionPoints();
+      if ((flags & Sayflags.IS_FREE_ACTION) == 0) SpendActionPoints();
 
       var handler = Says; // work around non-atomic test, etc.
       if (null != handler) {
-        SayArgs tmp = new SayArgs(target, target.IsPlayer || (flags & RogueGame.Sayflags.IS_IMPORTANT) != RogueGame.Sayflags.NONE);
+        SayArgs tmp = new SayArgs(target, target.IsPlayer || (flags & Sayflags.IS_IMPORTANT) != 0);
         tmp.messages.Add(RogueGame.MakeMessage(this, string.Format("to {0} : ", target.TheName), sayColor));
         tmp.messages.Add(RogueGame.MakeMessage(this, string.Format("\"{0}\"", text), sayColor));
         handler(this,tmp);
