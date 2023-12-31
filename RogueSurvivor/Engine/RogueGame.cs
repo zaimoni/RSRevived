@@ -12444,8 +12444,8 @@ namespace djack.RogueSurvivor.Engine
         }
         if (find_us[(int)ItemTrackerModel.TrackingOffset.POLICE_FACTION]) {
             draw = draw.Compose(actor => {
-                if (actor.IsFaction(GameFactions.IDs.ThePolice)) DrawDetected(actor, GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_POSITION, view);
-  //            if (actor.IsFaction(GameFactions.IDs.ThePolice)) DrawDetected(actor, Color.Blue, GameImages.TRACK_POLICE_POSITION, view);
+                var icons = police_icon(actor);
+                if (null != icons) DrawDetected(actor, icons.Value.Key, icons.Value.Value, view);
             });
         }
         if (null != draw) view.DoForEach(draw, non_self);
