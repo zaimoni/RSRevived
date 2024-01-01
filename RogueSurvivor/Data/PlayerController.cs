@@ -376,10 +376,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public void InstallAfterAction(EventUnconditional e)
-    {
-      (s_AfterAction ??= new List<EventUnconditional>()).Add(e);
-    }
+    public void InstallAfterAction(EventUnconditional e) => (s_AfterAction ??= new()).Add(e);
 
     public bool KnowsWhere(Actor a)
     {
@@ -392,37 +389,17 @@ namespace djack.RogueSurvivor.Data
         var ret = m_LOSSensor.Sense();
         if (null == enemies_in_FOV) AdviseFriendsOfSafety();  // XXX works even when fleeing from explosives
 
-        // function extraction target
-        Span<bool> find_us = stackalloc bool[(int)Engine.Items.ItemTrackerModel.TrackingOffset.STRICT_UB];
-        m_Actor.Tracks(ref find_us);
-        var threat = m_Actor.Threats;
-
-        if (find_us[(int)Engine.Items.ItemTrackerModel.TrackingOffset.UNDEADS]) {
-            var scan = new ZoneLoc(m_Actor.Location.Map, new Rectangle(m_Actor.Location.Position - (Point)Rules.ZTRACKINGRADIUS, (Point)(2 * Rules.ZTRACKINGRADIUS + 1)));
-            if (null != threat) {
-                var could_find = threat.ThreatAt(scan, a => a.Model.Abilities.IsUndead);
-                var reject = new List<Actor>();
-                foreach (var x in could_find.Keys) {
-                    if (scan.ContainsExt(x.Location)) {
-                        threat.Sighted(x, x.Location);
-                        reject.Add(x);
-                    }
-                }
-                foreach (var actor in reject) could_find.Remove(actor);
-                if (0 < could_find.Count) threat.Cleared(could_find);
-            }
-        }
-        // end function extraction target
+        if (m_Actor.Model.Abilities.CanUseItems) UpdateThreatFromTrackers();
 
         return ret;
     }
 
-    public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
-    public override Location[] FOVloc { get { return m_LOSSensor.FOVloc; } }
+    public override HashSet<Point> FOV { get => m_LOSSensor.FOV; }
+    public override Location[] FOVloc { get => m_LOSSensor.FOVloc; }
 
-    public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_LOSSensor.friends; } }
-    public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_LOSSensor.enemies; } }
-    public override Dictionary<Location, Inventory>? items_in_FOV { get { return m_LOSSensor.items; } }
+    public override Dictionary<Location, Actor>? friends_in_FOV { get => m_LOSSensor.friends; }
+    public override Dictionary<Location, Actor>? enemies_in_FOV { get => m_LOSSensor.enemies; }
+    public override Dictionary<Location, Inventory>? items_in_FOV { get => m_LOSSensor.items; }
 #nullable restore
 
     // if the underlying controller has a non-default behavior we do want that here

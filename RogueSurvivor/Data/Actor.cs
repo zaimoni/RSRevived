@@ -1329,7 +1329,7 @@ namespace djack.RogueSurvivor.Data
         track = GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker;
         if (null != track && !track.IsUseless) track.Model.Tracks(ref find_us);
         // Tracking leaders makes sense, but not in single PC mode
-        if (0 >= CountFollowers) find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER] = false;
+        if (0 >= CountFollowers && null != LiveLeader) find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER] = false;
     }
 
     public bool HasActiveCellPhone {

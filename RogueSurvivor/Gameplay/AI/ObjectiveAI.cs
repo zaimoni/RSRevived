@@ -7994,6 +7994,32 @@ restart_chokepoints:
 
         return 0 < image.Count ? image : null;
     }
+
+    protected void UpdateThreatFromTrackers() {
+#if DEBUG
+        if (!m_Actor.Model.Abilities.CanUseItems) throw new InvalidOperationException("!m_Actor.Model.Abilities.CanUseItems"); // PlayerController can do this legitimately
+#endif
+        var threat = m_Actor.Threats;
+        if (null == threat) return;
+
+        Span<bool> find_us = stackalloc bool[(int)Engine.Items.ItemTrackerModel.TrackingOffset.STRICT_UB];
+        m_Actor.Tracks(ref find_us);
+
+        if (find_us[(int)Engine.Items.ItemTrackerModel.TrackingOffset.UNDEADS]) {
+            var scan = new ZoneLoc(m_Actor.Location.Map, new Rectangle(m_Actor.Location.Position - (Point)Rules.ZTRACKINGRADIUS, (Point)(2 * Rules.ZTRACKINGRADIUS + 1)));
+            var could_find = threat.ThreatAt(scan, a => a.Model.Abilities.IsUndead);
+            List<Actor> reject = new();
+            foreach (var x in could_find.Keys) {
+                if (scan.ContainsExt(x.Location)) {
+                    threat.Sighted(x, x.Location);
+                    reject.Add(x);
+                }
+            }
+            foreach (var actor in reject) could_find.Remove(actor);
+            if (0 < could_find.Count) threat.Cleared(could_find);
+        }
+    }
+
 #nullable restore
 
     /// <summary>
