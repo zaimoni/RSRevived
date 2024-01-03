@@ -14,26 +14,21 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal readonly struct Doll
   {
-    public readonly DollBody Body;
     private readonly List<string>?[]? m_Decorations;  // XXX only valid if the Model imageID is null
 
     public Doll(ActorModel model)
     {
-      Body = model.DollBody;
       m_Decorations = (string.IsNullOrEmpty(model.ImageID) ? new List<string>[(int) DollPart._COUNT] : null);
     }
 
-    public List<string>? GetDecorations(DollPart part)
-    {
-      return m_Decorations?[(int) part];
-    }
+    public List<string>? GetDecorations(DollPart part) => m_Decorations?[(int) part];
 
     public void AddDecoration(DollPart part, string imageID)
     {
 #if DEBUG
       if (null == m_Decorations) throw new ArgumentNullException(nameof(m_Decorations));
 #endif
-      (GetDecorations(part) ?? (m_Decorations[(int) part] = new List<string>(1))).Add(imageID);
+      (GetDecorations(part) ?? (m_Decorations[(int) part] = new(1))).Add(imageID);
     }
 
     public void RemoveDecoration(string imageID)

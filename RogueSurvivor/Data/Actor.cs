@@ -797,7 +797,7 @@ namespace djack.RogueSurvivor.Data
       _has_to_eat = model.Abilities.HasToEat;
       m_Doll = new Doll(model);
       m_Skills = new();
-      m_ActionPoints = m_Doll.Body.Speed;
+      m_ActionPoints = model.DollBody.Speed;
       m_HitPoints = m_previousHitPoints = model.BaseHitPoints;
       m_StaminaPoints = m_previousStamina = model.BaseStaminaPoints;
       m_FoodPoints = m_previousFoodPoints = model.BaseFoodPoints;
@@ -2566,7 +2566,7 @@ namespace djack.RogueSurvivor.Data
 
     public int Speed {
       get {
-        float num = Doll.Body.Speed;    // an exhausted, sleepy living dragging a corpse in heavy armor, below 36 here, will have a speed of zero
+        float num = Model.DollBody.Speed;    // an exhausted, sleepy living dragging a corpse in heavy armor, below 36 here, will have a speed of zero
         if (IsTired) { num *= 2f; num /= 3f; }
         if (IsExhausted) num /= 2f;
         else if (IsSleepy) { num *= 2f; num /= 3f; }

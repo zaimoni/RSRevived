@@ -1872,7 +1872,7 @@ namespace djack.RogueSurvivor.Engine
           }
 #if DEBUG
           // following is a check for a problem in RS Alpha where the AI gets many turns before the player gets one.
-          if (next.ActionPoints > next.Doll.Body.Speed) throw new InvalidOperationException(next.Name+" is hyperactive: energy limit, "+ next.Doll.Body.Speed.ToString() + " actual "+ next.ActionPoints.ToString());
+          if (next.ActionPoints > next.Model.DollBody.Speed) throw new InvalidOperationException(next.Name+" is hyperactive: energy limit, "+ next.Model.DollBody.Speed.ToString() + " actual "+ next.ActionPoints.ToString());
 #endif
 #if IRRATIONAL_CAUTION
           if (last != next) AP_checkpoint = next.ActionPoints;
