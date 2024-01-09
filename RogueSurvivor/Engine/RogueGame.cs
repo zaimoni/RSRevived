@@ -7378,8 +7378,28 @@ namespace djack.RogueSurvivor.Engine
       }
       int murders = actor.MurdersOnRecord(Player);
       if (Player.Model.Abilities.IsLawEnforcer && 0 < murders) {
-        lines.Add("WANTED FOR MURDER!");
-        lines.Add(string.Format("{0}!", "murder".QtyDesc(murders)));
+        if (0 < murders) {
+          lines.Add("WANTED FOR MURDER!");
+          lines.Add(string.Format("{0}!", "murder".QtyDesc(murders)));
+        }
+        if (!actor.IgnoredByPolice(Player)) {
+          var blotter = Session.Get.Police.WantedFor(actor);
+          if (null!=blotter) {
+            lines.Add("WANTED:");
+            foreach(var x in blotter) {
+                switch(x.v_code) {
+                case 1: lines.Add("death of officer: "+x.direct_object.Name);
+                    break;
+                case 2: lines.Add("assault of officer: "+x.direct_object.Name);
+                    break;
+                case 3: lines.Add("murder: "+x.direct_object.Name);
+                    break;
+                case 4: lines.Add("assault: "+x.direct_object.Name);
+                    break;
+                }
+            }
+          }
+        }
       } else if (null != leader && leader.IsPlayer && actor.IsTrustingLeader) {
         lines.Add(0 < (murders = actor.MurdersCounter)
                      ? string.Format("* Confess {0}! *", "murder".QtyDesc(murders))
@@ -10711,12 +10731,22 @@ namespace djack.RogueSurvivor.Engine
       var deadGuy_isUndead = new const_<bool>(deadGuy.Model.Abilities.IsUndead);
       deadGuy.Location.Map.Recalc(deadGuy); // \todo? could fold into Killed call, below
 
+      var police_relevant = Session.Get.Police.EncodeKill(killer, deadGuy, Session.Get.WorldTime.TurnCounter);
+      var police_targeted = Session.Get.Police.IsTargeted(deadGuy);
+
       var isMurder = new const_<bool>(Rules.IsMurder(killer, deadGuy));  // record this before it's invalidated (in POLICE_NO_QUESTIONS_ASKED build)
 	  deadGuy.Killed(reason);
       deadGuy.StopDraggingCorpse();
       deadGuy.Location.Items?.UntriggerAllTraps();
       if (killer != null && !killer.Model.Abilities.IsUndead && deadGuy_isUndead.cache)
         killer.RegenSanity(killer.ScaleSanRegen(Rules.SANITY_RECOVER_KILL_UNDEAD));
+
+      if (deadGuy.HasActivePoliceRadio) {
+        UI.Message? msg = null;
+        Action<PlayerController> pc_add_msg = pc => pc.AddMessage(msg ??= new("(police radio ai) " + deadGuy.Name + " killed: " + reason, Session.Get.WorldTime.TurnCounter, SAYOREMOTE_DANGER_COLOR));
+        deadGuy.MessageAllInDistrictByRadio(NOP, FALSE, pc_add_msg, pc_add_msg, TRUE);
+      }
+
 
       var clan = deadGuy.ChainOfCommand;    // both leader and immediate followers
       if (null != clan) foreach(var a in clan) {
@@ -10866,6 +10896,8 @@ namespace djack.RogueSurvivor.Engine
       }
 
       deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.
+      Session.Get.Police.OnKilled(deadGuy);
+      Session.Get.Police.Record(police_relevant);
 
       if (deadGuy.IsPlayer && (!killer?.IsPlayer ?? false)) {
         // this may need to be multi-thread aware

@@ -147,14 +147,12 @@ namespace djack.RogueSurvivor.Data
         }
     }
 
-#if PROTOTYPE
     public record class SVOevent(ActorTag s, sbyte v, ActorTag d_o, int t0) {
         public readonly ActorTag subject = s;
         public readonly sbyte v_code = v;
         public readonly ActorTag direct_object = d_o;
         public readonly int Turn = t0;
     }
-#endif
 
     [Serializable]
     class RadioFaction
@@ -162,7 +160,7 @@ namespace djack.RogueSurvivor.Data
         public readonly Ary2Dictionary<Location, Gameplay.Item_IDs, int> ItemMemory = new();
         public readonly ThreatTracking Threats = new();
         public readonly LocationSet Investigate = new();
-        static private ImplicitRadio? s_implicitRadio = null;
+        [NonSerialized] private ImplicitRadio? m_implicitRadio = null; // probably will be non-static on second radio faction buildout
 
         public readonly GameFactions.IDs FactionID;
         public readonly Gameplay.Item_IDs RadioID;
@@ -173,42 +171,37 @@ namespace djack.RogueSurvivor.Data
         // assault of own: no restriction
         // killing of own: no restriction
 
+        private List<SVOevent> m_EventLog = new();
+
         public RadioFaction(GameFactions.IDs faction, Gameplay.Item_IDs radio)
         {
             FactionID = faction;
             RadioID = radio;
         }
 
-        public ImplicitRadio implicitRadio { get {
-            if (null != s_implicitRadio) return s_implicitRadio;
-            return s_implicitRadio = new ImplicitRadio(this);
-        } }
+        public ImplicitRadio implicitRadio { get => m_implicitRadio ??= new ImplicitRadio(this); }
 
 #if PROTOTYPE
         public ExplicitRadio explicitRadio(Item radio)  { return new ExplicitRadio(this, radio); }
 #endif
 
-        public bool IsMine(Actor a) { return a.IsFaction(FactionID); }
-        public bool IsEnemy(Actor a) { return a.Faction.IsEnemyOf(GameFactions.From(FactionID)) || Threats.IsThreat(a); }
+        public bool IsMine(Actor a) => a.IsFaction(FactionID);
+        public bool IsEnemy(Actor a) => a.Faction.IsEnemyOf(GameFactions.From(FactionID)) || Threats.IsThreat(a);
 
         public void TrackThroughExitSpawn(Actor a)
         {
             if (IsEnemy(a)) Threats.RecordTaint(a, a.Location);
         }
 
-#if PROTOTYPE
-        SVOevent? EncodeKill(Actor killer, Actor victim, int t0) {
-            if (Rules.IsMurder(killer, victim)) {
-                if (IsMine(victim)) { // faction kill
-                    return new(new(killer), 1, new(victim), t0);
-                } else { // murder
-                    return new(new(killer), 3, new(victim), t0);
-                };
-            }
+#if DEBUG
+        public SVOevent? EncodeKill(Actor? killer, Actor victim, int t0) {
+            if (null == killer) return null;
+            if (IsMine(victim)) return new(new(killer), 1, new(victim), t0); // faction kill
+            if (Rules.IsMurder(killer, victim)) return new(new(killer), 3, new(victim), t0);
             return null;
         }
 
-        SVOevent? EncodeAggression(Actor killer, Actor victim, int t0) {
+        public SVOevent? EncodeAggression(Actor killer, Actor victim, int t0) {
             if (Rules.IsMurder(killer, victim)) {
                 if (IsMine(victim)) { // faction aggression
                     return new(new(killer), 2, new(victim), t0);
@@ -218,6 +211,31 @@ namespace djack.RogueSurvivor.Data
             }
             return null;
         }
+
+        public void Record(SVOevent? e) {
+            if (null != e) m_EventLog.Add(e);
+        }
+
+        public bool IsTargeted(ActorTag perp)
+        {
+            foreach (var x in m_EventLog) if (x.subject == perp) return true;
+            return false;
+        }
+        public bool IsTargeted(Actor perp) => IsTargeted(new ActorTag(perp));
+
+        public List<SVOevent>? WantedFor(ActorTag perp) {
+            List<SVOevent>? ret = null;
+            foreach (var x in m_EventLog) if (x.subject == perp) (ret ??= new()).Add(x);
+            return ret;
+        }
+        public List<SVOevent>? WantedFor(Actor perp) => WantedFor(new ActorTag(perp));
+
+        public void OnKilled(ActorTag perp)
+        {
+            var ub = m_EventLog.Count;
+            while(0 <= --ub) if (m_EventLog[ub].subject == perp) m_EventLog.RemoveAt(ub);
+        }
+        public void OnKilled(Actor perp) => OnKilled(new ActorTag(perp));
 #endif
     }
 }

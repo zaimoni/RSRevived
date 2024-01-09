@@ -11,6 +11,7 @@ using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Data
 {
+  // while we *could* lift this into the Actor class, isolating screen UI from game data is technically reasonable.
   [Serializable]
   internal readonly struct Doll
   {

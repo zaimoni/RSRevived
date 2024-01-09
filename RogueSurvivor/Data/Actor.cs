@@ -658,11 +658,16 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool IgnoredByPolice(Actor observer) {
+      if (100 <= UnsuspicousForChance(observer)) return true;
+      if (0 >= MurdererSpottedByChance(observer)) return true;
+      return false;
+    }
+
     public int MurdersOnRecord(Actor observer) {
       int circumstantial = MurdersInProgress;
       if (!observer.Faction.IsEnemyOf(Faction) && observer.Model.Abilities.IsLawEnforcer && IsEnemyOf(observer)) circumstantial += 1;
-      if (100 <= UnsuspicousForChance(observer)) return circumstantial;
-      if (100 <= MurdererSpottedByChance(observer)) return circumstantial;
+      if (IgnoredByPolice(observer)) return circumstantial;
       s_MurdersCounter.TryGetValue(this, out var murders);
       return murders+ circumstantial;
     }
