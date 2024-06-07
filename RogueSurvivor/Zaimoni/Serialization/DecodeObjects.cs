@@ -169,7 +169,21 @@ namespace Zaimoni.Serialization
         }
 
 
-#region example boilerplate based on LinearizedElement<T>
+        public int DeserializeInt()
+        {
+            int stage = default;
+            Formatter.Deserialize(src, ref stage);
+            return stage;
+        }
+
+        public string DeserializeString()
+        {
+            string stage = string.Empty;
+            Formatter.Deserialize(src, ref stage);
+            return stage;
+        }
+
+        #region example boilerplate based on LinearizedElement<T>
         private void LoadFrom(ref string dest) => Formatter.Deserialize(src, ref dest);
 #endregion
 

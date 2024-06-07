@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal sealed class ItemEntertainment : Item, UsableItem, Zaimoni.Serialization.ISerialize
     {
-    List<Actor>? m_BoringFor = null; // alpha10 boring items moved out of Actor
+    List<ActorTag>? m_BoringFor = null; // alpha10 boring items moved out of Actor
 
     new public ItemEntertainmentModel Model { get {return (base.Model as ItemEntertainmentModel)!; } }
 
@@ -30,13 +30,16 @@ namespace djack.RogueSurvivor.Engine.Items
 #endregion
 
 
-    public void AddBoringFor(Actor a)
+    public void AddBoringFor(in ActorTag a)
     {
-      if (null == m_BoringFor) m_BoringFor = new List<Actor>{ a };
+      if (null == m_BoringFor) m_BoringFor = new List<ActorTag> { a };
       else if (!m_BoringFor.Contains(a)) m_BoringFor.Add(a);
     }
 
-    public bool IsBoringFor(Actor a) { return m_BoringFor?.Contains(a) ?? false; }
+    public void AddBoringFor(Actor a) => AddBoringFor(new ActorTag(a));
+
+    public bool IsBoringFor(ActorTag a) { return m_BoringFor?.Contains(a) ?? false; }
+    public bool IsBoringFor(Actor a) => IsBoringFor(new ActorTag(a));
 
 #region UsableItem implementation
     public bool CouldUse() { return true; }
@@ -60,6 +63,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool FreeSlotByUse(Actor a) { return false; } // not quite correct
 #endregion
 
+#if PROTOTYPE
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
       // clean up dead actors refs
@@ -69,5 +73,6 @@ namespace djack.RogueSurvivor.Engine.Items
         if (m_BoringFor.Count == 0) m_BoringFor = null;
       }
     }
+#endif
   }
 }
