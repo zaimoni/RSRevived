@@ -25,8 +25,13 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemEntertainment(ItemEntertainmentModel model) : base(model) {}
 
 #region implement Zaimoni.Serialization.ISerialize
-    protected ItemEntertainment(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
+    protected ItemEntertainment(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
+      Zaimoni.Serialization.ISave.LinearLoad(decode, x => m_BoringFor = new(x));
+    }
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+      base.save(encode);
+      Zaimoni.Serialization.ISave.LinearSave(encode, m_BoringFor);
+    }
 #endregion
 
 

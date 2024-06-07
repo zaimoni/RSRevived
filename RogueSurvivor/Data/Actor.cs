@@ -27,6 +27,7 @@ using Skills = djack.RogueSurvivor.Gameplay.Skills;
 using PowerGenerator = djack.RogueSurvivor.Engine.MapObjects.PowerGenerator;
 using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
 using djack.RogueSurvivor.Gameplay;
+using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -58,7 +59,7 @@ namespace djack.RogueSurvivor.Data
         internal ActorTag(Actor src) : this(src.UnmodifiedName, src.SpawnTime) {}
 
  #region implement Zaimoni.Serialization.ISerialize
-        /* protected */ ActorTag(Zaimoni.Serialization.DecodeObjects decode) : this(decode.DeserializeString(), decode.DeserializeInt())
+        /* protected */ public ActorTag(Zaimoni.Serialization.DecodeObjects decode) : this(decode.DeserializeString(), decode.DeserializeInt())
         {
         }
 
@@ -4125,3 +4126,26 @@ namespace djack.RogueSurvivor.Data
     }
   }
 }
+
+namespace Zaimoni.Serialization
+{
+
+    public partial interface ISave
+    {
+        static void LinearLoad(DecodeObjects decode, Action<ActorTag[]> handler)
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new ActorTag[count];
+
+            int n = 0;
+            while (0 < count) {
+                dest[n] = new ActorTag(decode);
+                n++;
+            }
+            handler(dest);
+        }
+    }
+}
+
