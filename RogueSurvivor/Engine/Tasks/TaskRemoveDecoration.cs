@@ -15,8 +15,8 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Engine.Tasks
 {
   [Serializable]
-  internal class TaskRemoveDecoration : TimedTask
-  {
+  internal class TaskRemoveDecoration : TimedTask, Zaimoni.Serialization.ISerialize
+    {
     private readonly List<Point> m_pt;  // or HashSet<Point>
     private readonly string m_imageID;
 
@@ -28,6 +28,18 @@ namespace djack.RogueSurvivor.Engine.Tasks
       m_pt = new List<Point> { pt };
       m_imageID = imageID;
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected TaskRemoveDecoration(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
+        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_imageID);
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+        base.save(encode);
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_imageID);
+    }
+#endregion
+
 
     public override void Trigger(Map m) {
       foreach(var pt in m_pt) m.RemoveDecorationAt(m_imageID, in pt);

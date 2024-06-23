@@ -9,7 +9,7 @@ using System;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal abstract class TimedTask
+  internal abstract class TimedTask : Zaimoni.Serialization.ISerialize
   {
     public int TurnsLeft { get; protected set; }
 
@@ -19,6 +19,22 @@ namespace djack.RogueSurvivor.Data
     {
       TurnsLeft = turnsLeft;
     }
+
+#region implement Zaimoni.Serialization.ISerialize
+    protected TimedTask(Zaimoni.Serialization.DecodeObjects decode) {
+        int stage_int = 0;
+        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref stage_int);
+        TurnsLeft = stage_int;
+    }
+
+    protected void save(Zaimoni.Serialization.EncodeObjects encode) {
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, TurnsLeft);
+    }
+
+    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
+        Zaimoni.Serialization.Formatter.Serialize(encode.dest, TurnsLeft);
+    }
+#endregion
 
     public void Tick(Map m)
     {
