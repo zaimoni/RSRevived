@@ -238,8 +238,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       var districtList = new List<KeyValuePair<District, int>>();
       Session.Get.World.DoForAllDistricts(d=>{
         if (DistrictKind.BUSINESS != d.Kind) return;
-        foreach(var zone in d.EntryMap.Zones) {
-          if (!zone.Attribute.HasKey("CHAR Office")) continue;
+
+        if (null != d.EntryMap.GetZoneByPartialName("CHAR Office@")) {
           districtList.Add(new KeyValuePair<District,int>(d, Rules.GridDistance(d.WorldPosition, PoliceStationWorldPos)));
           return;
         }
@@ -1632,7 +1632,6 @@ restart:
 
       (new ItemEntertainment(GameItems.CHAR_GUARD_MANUAL))?.DropAt(map, m_DiceRoller.Choose(table_pos));
       Zone zone = MakeUniqueZone("CHAR Office", b.BuildingRect);
-      zone.Attribute.Set<bool>("CHAR Office", true);
       map.AddZone(zone);
       MakeWalkwayZones(map, b);
 

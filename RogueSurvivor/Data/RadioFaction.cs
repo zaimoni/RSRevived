@@ -147,6 +147,7 @@ namespace djack.RogueSurvivor.Data
         }
     }
 
+    [Serializable]
     public record class SVOevent(ActorTag s, sbyte v, ActorTag d_o, int t0) {
         public readonly ActorTag subject = s;
         public readonly sbyte v_code = v;

@@ -13787,10 +13787,7 @@ namespace djack.RogueSurvivor.Engine
     private UniqueMap CreateUniqueMap_CHARUndegroundFacility(World world)
     {
       District district = BaseTownGenerator.GetCHARbaseDistrict();
-      List<Zone> zoneList = new();
-      foreach (var zone in district.EntryMap.Zones) {
-        if (zone.Attribute.HasKey("CHAR Office")) zoneList.Add(zone);
-      }
+      var zoneList = district.EntryMap.GetZonesByPartialName("CHAR Office@");
       Zone officeZone = Rules.Get.DiceRoller.Choose(zoneList);
       Map mapCharUnderground = m_TownGenerator.GenerateUniqueMap_CHARUnderground(district.EntryMap, officeZone);
       district.AddUniqueMap(mapCharUnderground);
@@ -14645,7 +14642,7 @@ retry:
 
     public static bool IsInCHAROffice(Location location)
     {
-      return location.Map.GetZonesAt(location.Position)?.Any(zone => zone.Attribute.HasKey("CHAR Office")) ?? false;
+      return location.Map.HasZonePartiallyNamedAt(location.Position, "CHAR Office@");
     }
 
     static public bool IsInCHARProperty(Location location)

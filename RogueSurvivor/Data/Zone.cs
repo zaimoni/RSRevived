@@ -19,10 +19,9 @@ using Size = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Data
 {
 #nullable enable
-  [Serializable]
-  public struct AVtable : Zaimoni.Serialization.ISerialize // attribute-value table
+  public struct AVtable // : Zaimoni.Serialization.ISerialize // attribute-value table
   {
-    private Dictionary<string, object>? m_Attributes;
+    private Dictionary<string, object>? m_Attributes;   // doesn't play nice with changing save/load implementations
 
     public bool HasKey(string key) { return m_Attributes?.ContainsKey(key) ?? false; }
 
@@ -58,6 +57,7 @@ namespace djack.RogueSurvivor.Data
     }
 
 #region implement Zaimoni.Serialization.ISerialize
+#if PROTOTYPE
     public AVtable(Zaimoni.Serialization.DecodeObjects decode)
     {
         m_Attributes = new();
@@ -72,6 +72,7 @@ namespace djack.RogueSurvivor.Data
     {
         Zaimoni.Serialization.ISave.LinearSave(encode, m_Attributes);
     }
+#endif
 #endregion
   }
 #nullable restore
@@ -83,7 +84,6 @@ namespace djack.RogueSurvivor.Data
     private readonly string m_Name = "unnamed zone";
     private Rectangle m_Bounds; // assumed to be fully in bounds of the underlying map
     // while zone attributes have great potential, RS Alpha 9 underwhelms in its use of them.
-    public AVtable Attribute;
     [NonSerialized] public AVtable VolatileAttribute;
 
     public string Name { get { return m_Name; } }
@@ -103,14 +103,12 @@ namespace djack.RogueSurvivor.Data
     {
         Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_Name);
         Zaimoni.Serialization.ISave.Deserialize7bit(decode.src, ref m_Bounds);
-        Attribute = new(decode);
     }
 
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
     {
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_Name);
         Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, in m_Bounds);
-        (Attribute as Zaimoni.Serialization.ISerialize).save(encode);
     }
 #endregion
   }
