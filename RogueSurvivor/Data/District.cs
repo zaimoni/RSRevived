@@ -374,6 +374,14 @@ namespace djack.RogueSurvivor.Data
         return null;
     }
 
+    public Corpse? CorpseFrom(in ActorTag src) {
+        foreach(Map m in m_Maps) {
+            var c = m.CorpseFrom(in src);
+            if (null != c) return c;
+        }
+        return null;
+    }
+
     public void DoForAllActors(Action<Actor> op) { foreach(Map m in m_Maps) m.DoForAllActors(op); }
     public void DoForAllGroundInventories(Action<Location,Inventory> op) { foreach (Map m in m_Maps) m.DoForAllGroundInventories(op); }
 

@@ -229,9 +229,14 @@ namespace djack.RogueSurvivor.Data
             var actor = d.From(in src);
             if (null != actor) return actor;
         }
+        return null;
+    }
 
-        // If necessary, this is where we would check for "off-stage" actors, that could return.
-
+    public Corpse? CorpseFrom(in ActorTag src) {
+        foreach(District d in m_DistrictsGrid) {
+            var c = d.CorpseFrom(in src);
+            if (null != c) return c;
+        }
         return null;
     }
 

@@ -1473,6 +1473,13 @@ retry:
         return null;
     }
 
+    public Corpse? CorpseFrom(in ActorTag src) {
+        foreach(var c in m_CorpsesList) {
+            if (c.DeadGuy.SpawnTime == src.SpawnTime && c.DeadGuy.UnmodifiedName == src.Name) return c;
+        }
+        return null;
+    }
+
     public void Recalc(Actor actor)
     {
       if (actor.IsPlayer) Players.Recalc();
