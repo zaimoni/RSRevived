@@ -6,6 +6,7 @@
 
 // #define BOOTSTRAP_Z_SERIALIZATION
 // #define INTEGRATE_Z_SERIALIZATION
+// #define BOOTSTRAP_JSON_SERIALIZATION
 
 using djack.RogueSurvivor.Data;
 using System;
@@ -13,132 +14,135 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Runtime.Serialization;
+#if BOOTSTRAP_JSON_SERIALIZATION
+using System.Text.Json;
+#endif
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {
-  [Serializable]
-  internal class Session : ISerializable,IDeserializationCallback
+    [Serializable]
+    internal sealed class Session : ISerializable, IDeserializationCallback
 #if BOOTSTRAP_Z_SERIALIZATION
         , Zaimoni.Serialization.ISerialize
 #endif
     {
-    public static int COMMAND_LINE_SEED;
-    public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
-    private static Session s_TheSession;
-    private static bool s_IsLoading = false;
-    [NonSerialized] private static Map.ActorCode s_Player;
+        public static int COMMAND_LINE_SEED;
+        public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
+        private static Session s_TheSession;
+        private static bool s_IsLoading = false;
+        [NonSerialized] private static Map.ActorCode s_Player;
 
-    [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
-    private Scoring m_Scoring = new();
-    private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
-    public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.Item_IDs.TRACKER_POLICE_RADIO);
+        [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
+        private Scoring m_Scoring = new();
+        private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
+        public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.Item_IDs.TRACKER_POLICE_RADIO);
 
-    private static int s_seed = 0;  // We're a compiler-enforced singleton so this only looks weird
-    static public int Seed { get { return s_seed; } }
+        private static int s_seed = 0;  // We're a compiler-enforced singleton so this only looks weird
+        static public int Seed { get { return s_seed; } }
 
-    public World World { get; private set; }
-    public readonly UniqueActors UniqueActors = new();
-    public readonly UniqueItems UniqueItems = new();
-    public readonly UniqueMaps UniqueMaps = new();
+        public World World { get; private set; }
+        public readonly UniqueActors UniqueActors = new();
+        public readonly UniqueItems UniqueItems = new();
+        public readonly UniqueMaps UniqueMaps = new();
 
-    public GameMode GameMode;
-    public int LastTurnPlayerActed = 0;
-    public bool PlayerKnows_CHARUndergroundFacilityLocation = false;
-    public int ScriptStage_PoliceStationPrisoner = 0;
-    public int ScriptStage_PoliceCHARrelations = 0;
-    public int ScriptStage_HospitalPowerup = 0;
+        public GameMode GameMode;
+        public int LastTurnPlayerActed = 0;
+        public bool PlayerKnows_CHARUndergroundFacilityLocation = false;
+        public int ScriptStage_PoliceStationPrisoner = 0;
+        public int ScriptStage_PoliceCHARrelations = 0;
+        public int ScriptStage_HospitalPowerup = 0;
 
-    public static Session Get { get {
+        public static Session Get { get {
 #if DEBUG
-      if (s_IsLoading) throw new InvalidOperationException("unsafe game loading");
+                if (s_IsLoading) throw new InvalidOperationException("unsafe game loading");
 #endif
-      return s_TheSession ??= new Session();
-    } }
+                return s_TheSession ??= new Session();
+            } }
 
-    // This has been historically problematic.  With the no-skew scheduler, it's simplest to say the world time is just the time
-    // of the last district to simulate in a turn -- the bottom-right one.  Note that the entry map is "last" so it will execute last.
+        // This has been historically problematic.  With the no-skew scheduler, it's simplest to say the world time is just the time
+        // of the last district to simulate in a turn -- the bottom-right one.  Note that the entry map is "last" so it will execute last.
 
-    // Groceries are highly demanding and will crash world generation without unusual measures here.
-    public WorldTime WorldTime { get { return new WorldTime(World.Last?.EntryMap?.LocalTime ?? new WorldTime(0)); } }
+        // Groceries are highly demanding and will crash world generation without unusual measures here.
+        public WorldTime WorldTime { get { return new WorldTime(World.Last?.EntryMap?.LocalTime ?? new WorldTime(0)); } }
 
-    public Scoring Scoring { get { return m_Scoring; } }
-    public Scoring_fatality Scoring_fatality { get { return m_Scoring_fatality; } }
+        public Scoring Scoring { get { return m_Scoring; } }
+        public Scoring_fatality Scoring_fatality { get { return m_Scoring_fatality; } }
 
-    private Session(GameMode mode = GameMode.GM_STANDARD)
-    {
-      m_CommandLineOptions = (0 >= (CommandLineOptions?.Count ?? 0) ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new Dictionary<string, string>(Session.CommandLineOptions)));
-      s_seed = (0 == COMMAND_LINE_SEED ? (int) DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
-      GameMode = mode;
+        private Session(GameMode mode = GameMode.GM_STANDARD)
+        {
+            m_CommandLineOptions = (0 >= (CommandLineOptions?.Count ?? 0) ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new Dictionary<string, string>(Session.CommandLineOptions)));
+            s_seed = (0 == COMMAND_LINE_SEED ? (int)DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
+            GameMode = mode;
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: "+s_seed.ToString()); // this crashes if it tries to log during deserialization
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: " + s_seed.ToString()); // this crashes if it tries to log during deserialization
 #endif
-      RogueGame.Reset();
-      World = new World();
-    }
+            RogueGame.Reset();
+            World = new World();
+        }
 
-#region Implement ISerializable
-    // general idea is Plain Old Data before objects.
-    protected Session(SerializationInfo info, StreamingContext context)
-    {
-      info.read(ref m_Scoring, "Scoring");
-      GameMode = (GameMode) info.GetSByte("GameMode");
-      ScriptStage_PoliceStationPrisoner = (int) info.GetSByte("ScriptStage_PoliceStationPrisoner");
-      ScriptStage_PoliceCHARrelations = (int) info.GetSByte("ScriptStage_PoliceCHARrelations");
-      ScriptStage_HospitalPowerup = (int) info.GetSByte("ScriptStage_HospitalPowerup");
-      s_seed = info.GetInt32("Seed");
-      LastTurnPlayerActed = info.GetInt32("LastTurnPlayerActed");
-      PlayerKnows_CHARUndergroundFacilityLocation = info.GetBoolean("PlayerKnows_CHARUndergroundFacilityLocation");
-      info.read_nullsafe(ref m_CommandLineOptions, "CommandLineOptions");
-      // load other classes' static variables
-      ActorModel.Load(info,context);
-      Actor.Load(info,context);
-      Rules.Get.Load(info,context);
-      PlayerController.Load(info,context);
-      // end load other classes' static variables
-      World = (World) info.GetValue("World",typeof(World));
-      RogueGame.Load(info, context);
-      info.read_s(ref s_Player, "s_Player");
-      UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
-      UniqueItems = (UniqueItems) info.GetValue("UniqueItems",typeof(UniqueItems));
-      UniqueMaps = (UniqueMaps) info.GetValue("UniqueMaps",typeof(UniqueMaps));
-      info.read(ref Police, "Police");
+        #region Implement ISerializable
+        // general idea is Plain Old Data before objects.
+        protected Session(SerializationInfo info, StreamingContext context)
+        {
+            info.read(ref m_Scoring, "Scoring");
+            GameMode = (GameMode)info.GetSByte("GameMode");
+            ScriptStage_PoliceStationPrisoner = (int)info.GetSByte("ScriptStage_PoliceStationPrisoner");
+            ScriptStage_PoliceCHARrelations = (int)info.GetSByte("ScriptStage_PoliceCHARrelations");
+            ScriptStage_HospitalPowerup = (int)info.GetSByte("ScriptStage_HospitalPowerup");
+            s_seed = info.GetInt32("Seed");
+            LastTurnPlayerActed = info.GetInt32("LastTurnPlayerActed");
+            PlayerKnows_CHARUndergroundFacilityLocation = info.GetBoolean("PlayerKnows_CHARUndergroundFacilityLocation");
+            info.read_nullsafe(ref m_CommandLineOptions, "CommandLineOptions");
+            // load other classes' static variables
+            ActorModel.Load(info, context);
+            Actor.Load(info, context);
+            Rules.Get.Load(info, context);
+            PlayerController.Load(info, context);
+            // end load other classes' static variables
+            World = (World)info.GetValue("World", typeof(World));
+            RogueGame.Load(info, context);
+            info.read_s(ref s_Player, "s_Player");
+            UniqueActors = (UniqueActors)info.GetValue("UniqueActors", typeof(UniqueActors));
+            UniqueItems = (UniqueItems)info.GetValue("UniqueItems", typeof(UniqueItems));
+            UniqueMaps = (UniqueMaps)info.GetValue("UniqueMaps", typeof(UniqueMaps));
+            info.read(ref Police, "Police");
 #if DEBUG
-      if (Police.FactionID != GameFactions.IDs.ThePolice) throw new InvalidOperationException("police faction id is not police");
+            if (Police.FactionID != GameFactions.IDs.ThePolice) throw new InvalidOperationException("police faction id is not police");
 #endif
-    }
+        }
 
-    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-      info.AddValue("Scoring",m_Scoring,typeof(Scoring));
+        void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Scoring", m_Scoring, typeof(Scoring));
 
-      info.AddValue("GameMode",(SByte)GameMode);
-      info.AddValue("ScriptStage_PoliceStationPrisoner",(SByte)ScriptStage_PoliceStationPrisoner);
-      info.AddValue("ScriptStage_PoliceCHARrelations", (SByte)ScriptStage_PoliceCHARrelations);
-      info.AddValue("ScriptStage_HospitalPowerup", (SByte)ScriptStage_HospitalPowerup);
-      info.AddValue("Seed",s_seed);
-      info.AddValue("LastTurnPlayerActed",LastTurnPlayerActed);
-      info.AddValue("PlayerKnows_CHARUndergroundFacilityLocation",PlayerKnows_CHARUndergroundFacilityLocation);
-      info.AddValue("CommandLineOptions", m_CommandLineOptions,typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
-      ActorModel.Save(info,context);
-      Actor.Save(info, context);
-      Rules.Get.Save(info,context);
-      PlayerController.Save(info,context);
-      info.AddValue("World",World,typeof(World));
-      RogueGame.Save(info, context);
-      info.AddValue("UniqueActors",UniqueActors,typeof(UniqueActors));
-      info.AddValue("UniqueItems",UniqueItems,typeof(UniqueItems));
-      info.AddValue("UniqueMaps",UniqueMaps,typeof(UniqueMaps));
-      info.AddValue("Police", Police, typeof(RadioFaction));
+            info.AddValue("GameMode", (SByte)GameMode);
+            info.AddValue("ScriptStage_PoliceStationPrisoner", (SByte)ScriptStage_PoliceStationPrisoner);
+            info.AddValue("ScriptStage_PoliceCHARrelations", (SByte)ScriptStage_PoliceCHARrelations);
+            info.AddValue("ScriptStage_HospitalPowerup", (SByte)ScriptStage_HospitalPowerup);
+            info.AddValue("Seed", s_seed);
+            info.AddValue("LastTurnPlayerActed", LastTurnPlayerActed);
+            info.AddValue("PlayerKnows_CHARUndergroundFacilityLocation", PlayerKnows_CHARUndergroundFacilityLocation);
+            info.AddValue("CommandLineOptions", m_CommandLineOptions, typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
+            ActorModel.Save(info, context);
+            Actor.Save(info, context);
+            Rules.Get.Save(info, context);
+            PlayerController.Save(info, context);
+            info.AddValue("World", World, typeof(World));
+            RogueGame.Save(info, context);
+            info.AddValue("UniqueActors", UniqueActors, typeof(UniqueActors));
+            info.AddValue("UniqueItems", UniqueItems, typeof(UniqueItems));
+            info.AddValue("UniqueMaps", UniqueMaps, typeof(UniqueMaps));
+            info.AddValue("Police", Police, typeof(RadioFaction));
 
-      // non-serialized fields
-      m_Scoring_fatality = null;
-    }
+            // non-serialized fields
+            m_Scoring_fatality = null;
+        }
 
-    void IDeserializationCallback.OnDeserialization(object sender)
-    {
-      RogueGame.AfterLoad(s_Player);
-    }
+        void IDeserializationCallback.OnDeserialization(object sender)
+        {
+            RogueGame.AfterLoad(s_Player);
+        }
 
 #if BOOTSTRAP_Z_SERIALIZATION
     protected Session(Zaimoni.Serialization.DecodeObjects decode)
@@ -263,68 +267,83 @@ namespace djack.RogueSurvivor.Engine
             m_Scoring_fatality = null;
     }
 #endif
-#endregion
+        #endregion
 
-    public static void Reset(GameMode mode) => s_TheSession = new Session(mode);
+        public static void Reset(GameMode mode) => s_TheSession = new Session(mode);
 
-    public bool CMDoptionExists(string x) {
-      if (null == m_CommandLineOptions) return false;
-      return m_CommandLineOptions.ContainsKey(x);
-    }
+        public bool CMDoptionExists(string x) {
+            if (null == m_CommandLineOptions) return false;
+            return m_CommandLineOptions.ContainsKey(x);
+        }
 
-    public void ForcePoliceKnown(Location loc) {   // for world creation
-      var allItems = Map.AllItemsAt(loc);
-      if (null == allItems) {
-        Police.ItemMemory.Set(loc, null, 0);
-      } else {
-        HashSet<Gameplay.Item_IDs> seen_items = new();
-        foreach(var inv in allItems) seen_items.UnionWith(inv.inv.Items.Select(x => x.InventoryMemoryID));
-        Police.ItemMemory.Set(loc, seen_items, 0);
-      }
-    }
+        public void ForcePoliceKnown(Location loc) {   // for world creation
+            var allItems = Map.AllItemsAt(loc);
+            if (null == allItems) {
+                Police.ItemMemory.Set(loc, null, 0);
+            } else {
+                HashSet<Gameplay.Item_IDs> seen_items = new();
+                foreach (var inv in allItems) seen_items.UnionWith(inv.inv.Items.Select(x => x.InventoryMemoryID));
+                Police.ItemMemory.Set(loc, seen_items, 0);
+            }
+        }
 
 #nullable enable
-    // thin-wrappers; not suppressing these is technical debt.
-    public void SetLastRaidTime(RaidType raid, Map map) => World.SetLastRaidTime(raid, map);
+        // thin-wrappers; not suppressing these is technical debt.
+        public void SetLastRaidTime(RaidType raid, Map map) => World.SetLastRaidTime(raid, map);
 #nullable restore
 
-    public void LatestKill(Actor killer, Actor victim, string death_loc)
-    {
-      m_Scoring_fatality = new Scoring_fatality(killer,victim,death_loc);
-    }
+        public void LatestKill(Actor killer, Actor victim, string death_loc)
+        {
+            m_Scoring_fatality = new Scoring_fatality(killer, victim, death_loc);
+        }
 
-    public static void Save(Session session, string filepath, SaveFormat format)
-    {
+        public static void Save(Session session, string filepath, SaveFormat format)
+        {
 #if DEBUG
-      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+            if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
 #if DEBUG
-      var errors = new List<string>();
-      session.World._RejectInventoryDamage(errors);
-      if (0 < errors.Count) throw new InvalidOperationException("inventory damage pre-save: " + string.Join("\n", errors));
+            var errors = new List<string>();
+            session.World._RejectInventoryDamage(errors);
+            if (0 < errors.Count) throw new InvalidOperationException("inventory damage pre-save: " + string.Join("\n", errors));
 #endif
-      switch (format) {
-        case SaveFormat.FORMAT_BIN:
-          SaveBin(session, filepath);
-          break;
+            switch (format) {
+                case SaveFormat.FORMAT_BIN:
+                    SaveBin(session, filepath);
+                    break;
+            }
+        }
+
+        private void RepairLoad()
+        {
+            World.RepairLoad();
+        }
+
+        public static bool Load(string filepath, SaveFormat format)
+        {
+#if DEBUG
+            if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
+            switch (format) {
+                case SaveFormat.FORMAT_BIN: return LoadBin(filepath);
+                default: return false;
+            }
+        }
+
+#if BOOTSTRAP_JSON_SERIALIZATION
+    private static JsonSerializerOptions? s_j_opts = null;
+    private static JsonSerializerOptions JSON_opts {
+      get {
+        if (null == s_j_opts) {
+          s_j_opts = new();
+          s_j_opts.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+          s_j_opts.WriteIndented = true;
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Vector2D_short());
+        }
+        return s_j_opts;
       }
     }
-
-    private void RepairLoad()
-    {
-      World.RepairLoad();
-    }
-
-    public static bool Load(string filepath, SaveFormat format)
-    {
-#if DEBUG
-      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
-      switch (format) {
-        case SaveFormat.FORMAT_BIN: return LoadBin(filepath);
-        default: return false;
-      }
-    }
 
     private static void SaveBin(Session session, string filepath)
     {
@@ -342,7 +361,24 @@ namespace djack.RogueSurvivor.Engine
       session.SaveLoadOk(compare);
 #endif
 #endif
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
+#if BOOTSTRAP_JSON_SERIALIZATION
+#if false
+      Zaimoni.Data.Vector2D<short> test = default;
+      {
+      using var stream = (filepath+"json").CreateStream(true);
+      System.Text.Json.JsonSerializer.Serialize(stream, test, typeof(Zaimoni.Data.Vector2D<short>), JSON_opts);
+	  stream.Flush();
+      }
+      using var stream2 = (filepath+"json").CreateStream(false);
+      var test2 = System.Text.Json.JsonSerializer.Deserialize<Zaimoni.Data.Vector2D<short>>(stream2, JSON_opts);
+      if (test!=test2) throw new InvalidOperationException("failed to round trip");
+#else
+      using var stream = (filepath+"json").CreateStream(true);
+      System.Text.Json.JsonSerializer.Serialize(stream, session, typeof(Session), JSON_opts);
+	  stream.Flush();
+#endif
+#endif
+            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
     }
 
     private static bool LoadBin(string filepath)

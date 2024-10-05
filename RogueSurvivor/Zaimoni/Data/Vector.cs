@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using System.Text.Json;
 
 /*
  * We do not use C# generics here because they compile-error due to being defective relative to C++ templates.  We would need to
@@ -549,6 +550,33 @@ namespace Zaimoni.Data
                 return true;
             }
             return false;
+        }
+    }
+}
+
+namespace Zaimoni.JsonConvert {
+    public class Vector2D_short : System.Text.Json.Serialization.JsonConverter<Zaimoni.Data.Vector2D<short>>
+    {
+        public override Zaimoni.Data.Vector2D<short> Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            if (System.Text.Json.JsonTokenType.StartArray != reader.TokenType) throw new JsonException();
+            reader.Read();
+            if (System.Text.Json.JsonTokenType.Number != reader.TokenType) throw new JsonException();
+            var x = reader.GetInt16();
+            reader.Read();
+            if (System.Text.Json.JsonTokenType.Number != reader.TokenType) throw new JsonException();
+            var y = reader.GetInt16();
+            reader.Read();
+            if (System.Text.Json.JsonTokenType.EndArray != reader.TokenType) throw new JsonException();
+
+            return new Zaimoni.Data.Vector2D<short>(x, y);
+        }
+
+        public override void Write(Utf8JsonWriter writer, Zaimoni.Data.Vector2D<short> src, JsonSerializerOptions options) {
+            writer.WriteStartArray();
+            writer.WriteNumberValue(src.X);
+            writer.WriteNumberValue(src.Y);
+            writer.WriteEndArray();
         }
     }
 }
