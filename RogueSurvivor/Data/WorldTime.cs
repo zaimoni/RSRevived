@@ -194,6 +194,22 @@ namespace djack.RogueSurvivor.Data
     }
 }
 
+namespace Zaimoni.JsonConvert {
+    public class WorldTime : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Data.WorldTime>
+    {
+        public override djack.RogueSurvivor.Data.WorldTime Read(ref System.Text.Json.Utf8JsonReader reader, Type src, System.Text.Json.JsonSerializerOptions options)
+        {
+            if (System.Text.Json.JsonTokenType.Number != reader.TokenType) throw new System.Text.Json.JsonException();
+            return new djack.RogueSurvivor.Data.WorldTime(reader.GetInt32());
+        }
+
+        public override void Write(System.Text.Json.Utf8JsonWriter writer, djack.RogueSurvivor.Data.WorldTime src, System.Text.Json.JsonSerializerOptions options) {
+            writer.WriteNumberValue(src.TurnCounter);
+        }
+    }
+}
+
+
 namespace Zaimoni.Serialization {
 
     public partial interface ISave

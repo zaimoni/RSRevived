@@ -338,6 +338,7 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts = new();
           s_j_opts.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
           s_j_opts.WriteIndented = true;
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.WorldTime());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Vector2D_short());
         }
         return s_j_opts;
@@ -352,7 +353,10 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
+#if BOOTSTRAP_JSON_SERIALIZATION
+#else
 	  filepath.BinarySerialize(session);
+#endif
 #if BOOTSTRAP_Z_SERIALIZATION
 	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
 #if INTEGRATE_Z_SERIALIZATION
