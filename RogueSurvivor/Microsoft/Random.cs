@@ -117,6 +117,7 @@ namespace Microsoft
 
         public static Random fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
             if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
+
             reader.Read();
 
             int stage_inext = default;
@@ -183,6 +184,7 @@ namespace Microsoft
                     stage_SeedArray = JsonSerializer.Deserialize<int[]>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
                     break;
             }
+            reader.Read();
 
             return new Random(stage_inext, stage_inextp, stage_SeedArray);
         }
