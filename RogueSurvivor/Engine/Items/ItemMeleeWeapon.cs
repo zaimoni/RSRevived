@@ -11,7 +11,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemMeleeWeapon : ItemWeapon, Zaimoni.Serialization.ISerialize
+  public sealed class ItemMeleeWeapon : ItemWeapon, Zaimoni.Serialization.ISerialize
     {
     new public ItemMeleeWeaponModel Model { get {return (base.Model as ItemMeleeWeaponModel)!; } }
     public bool IsFragile { get { return Model.IsFragile; } }

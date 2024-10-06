@@ -10,7 +10,7 @@ using Color = System.Drawing.Color;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal class TileModel
+  public sealed class TileModel
   {
     public static readonly TileModel UNDEF = new TileModel(GameTiles.IDs.UNDEF, "", Color.Pink, false, true);
 

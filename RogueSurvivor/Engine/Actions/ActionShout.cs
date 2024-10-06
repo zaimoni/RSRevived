@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionShout : ActorAction
+  public sealed class ActionShout : ActorAction
   {
     private readonly string? m_Text;
 

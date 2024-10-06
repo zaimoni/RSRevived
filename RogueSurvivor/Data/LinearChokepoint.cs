@@ -9,7 +9,7 @@ namespace djack.RogueSurvivor.Data
     // this allows allied/friendly ais to read plans and de-conflict pathing by using acceptable pushes or pulls
 
     [Serializable]
-    class LinearChokepoint  // must be a class due to wanting to reuse object instances in data structures
+    public sealed class LinearChokepoint  // must be a class due to wanting to reuse object instances in data structures
     {
         public readonly Location[] Entrance;    // adjacent to Chokepoint[0]
         public readonly Location[] Chokepoint;

@@ -75,8 +75,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction()
     {
-      var game = RogueGame.Game;
-
       ClearMovePlan();
       BehaviorEquipBestBodyArmor();
 
@@ -90,7 +88,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // OrderableAI specific: respond to orders
       if (null != Order) {
-        var actorAction = ExecuteOrder(game, Order, _all);
+        var actorAction = ExecuteOrder(Order, _all);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
@@ -188,7 +186,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (null != tmpAction) return tmpAction;
           }
         }
-        tmpAction = BehaviorFightOrFlee(game, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
+        tmpAction = BehaviorFightOrFlee(ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
 #endif
@@ -266,7 +264,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorDontLeaveFollowersBehind(4, out Actor target);
         if (null != tmpAction) {
           if (rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
-            game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));
+            RogueGame.Game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }

@@ -6,7 +6,7 @@ using djack.RogueSurvivor.Engine.Items;
 namespace djack.RogueSurvivor.Engine.Actions
 {
     // alpha10
-    class ActionSprayOdorSuppressor : ActorAction,TargetActor,Use<ItemSprayScent>
+    public sealed class ActionSprayOdorSuppressor : ActorAction,TargetActor,Use<ItemSprayScent>
     {
         #region Fields
         readonly ItemSprayScent m_Spray;

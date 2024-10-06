@@ -13,7 +13,7 @@ using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {
-  internal class TextFile
+  public sealed class TextFile
   {
     private readonly List<string> m_RawLines = new List<string>();
     private readonly List<string> m_FormatedLines = new List<string>();

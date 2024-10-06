@@ -21,7 +21,7 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal class World : Zaimoni.Serialization.ISerialize
+  public sealed class World : Zaimoni.Serialization.ISerialize
   {
     // alpha10
     // weather stays from 1h to 3 days and then change

@@ -76,7 +76,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction()
     {
-      var game = RogueGame.Game;
       ClearMovePlan();
       BehaviorEquipBestBodyArmor();
 
@@ -89,7 +88,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // OrderableAI specific: respond to orders
       if (null != Order) {
-        var actorAction = ExecuteOrder(game, Order, _all);
+        var actorAction = ExecuteOrder(Order, _all);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
@@ -175,7 +174,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
 
       if (null != _enemies) {
-        tmpAction = BehaviorFightOrFlee(game, ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
+        tmpAction = BehaviorFightOrFlee(ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons: " + tmpAction);
 #endif

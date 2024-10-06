@@ -11,7 +11,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
     [Serializable]
-    internal abstract class Objective
+    public abstract class Objective
     {
       protected int turn;   // turn count of WorldTime .. will need a more complex representation at some point.
       protected readonly Actor m_Actor;   // owning actor is likely important
@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //    public virtual List<Objective>? Subobjectives() { return null; }  // theoretically reasonable, but didn't actually get used
     }
 
-    internal interface Pathable
+    public interface Pathable
     {
         ActorAction? Pathing();
     }
@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class PathToTarget {
+    public sealed class PathToTarget {
         enum What {
             INVENTORY = 0,  // invalidated if required item is absent; this is a base from which offsets are calculated (downwards)
             VIEW,   // invalidated if neither tourism nor threat has this

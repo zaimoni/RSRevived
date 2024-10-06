@@ -11,7 +11,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal sealed class ItemLightModel : ItemModel
+  public sealed class ItemLightModel : ItemModel
   {
     public readonly int MaxBatteries;
     public readonly short FovBonus;

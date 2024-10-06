@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Data
     };
 
     [Serializable]
-    internal struct Waypoint_s
+    public struct Waypoint_s
     {
         public Location dest;
         public string label;

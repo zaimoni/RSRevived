@@ -13,7 +13,7 @@ using System.Xml.Linq;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemFood : Item, UsableItem, Zaimoni.Serialization.ISerialize
+  public sealed class ItemFood : Item, UsableItem, Zaimoni.Serialization.ISerialize
     {
     public readonly WorldTime? BestBefore;
 

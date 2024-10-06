@@ -10,7 +10,7 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 namespace djack.RogueSurvivor.Data
 {
     [Serializable]
-    class ThreatTracking
+    public sealed class ThreatTracking
     {
         // The first iteration of this cost 39MB of savefile size for a full probability analysis.
 
@@ -562,7 +562,7 @@ namespace djack.RogueSurvivor.Data
     // stripped down version of above, just managing locations of interest across maps
     // due to locking, prefer to not reuse this above.
     [Serializable]
-    class LocationSet
+    public sealed class LocationSet
     {
       private readonly Dictionary<Map, HashSet<Point>> _locs = new Dictionary<Map, HashSet<Point>>();
 
@@ -715,7 +715,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Serializable]
-    class LocationFunction<T>
+    public sealed class LocationFunction<T>
     {
         private readonly Dictionary<Map, Dictionary<Point, T>> _locs = new Dictionary<Map, Dictionary<Point, T>>();
         [NonSerialized] private List<delete_from>? _handlers = null;

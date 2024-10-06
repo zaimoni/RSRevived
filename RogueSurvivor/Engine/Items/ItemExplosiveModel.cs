@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal abstract class ItemExplosiveModel : ItemModel
+  public abstract class ItemExplosiveModel : ItemModel
   {
     public readonly int FuseDelay;
     private readonly BlastAttack m_Attack;

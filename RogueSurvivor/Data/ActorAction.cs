@@ -12,7 +12,7 @@ using System.Collections.Generic;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal abstract class ActorAction
+  public abstract class ActorAction
   {
     protected readonly Actor m_Actor;
     protected string? m_FailReason;
@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Data
   }
 
     [Serializable]
-    internal abstract class WorldUpdate : Zaimoni.Data.Operator<Actor, ActorAction>
+    public abstract class WorldUpdate : Zaimoni.Data.Operator<Actor, ActorAction>
     {
         protected WorldUpdate() {}
 

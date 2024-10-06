@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   }
 
   [Serializable]
-  internal class ActionRangedAttack : ActorAction, CombatAction
+  public sealed class ActionRangedAttack : ActorAction, CombatAction
   {
     private readonly List<Point> m_LoF = new List<Point>();
     private readonly Actor m_Target;

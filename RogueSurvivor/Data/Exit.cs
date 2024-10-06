@@ -11,7 +11,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal class Exit : Zaimoni.Serialization.ISerialize
+  public sealed class Exit : Zaimoni.Serialization.ISerialize
     {
     private Location m_Location;	// XXX this cannot be public readonly Location: load fails in the runtime library Nov 5 2016.  Retry after compiler upgrade.
 

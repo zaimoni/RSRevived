@@ -8,7 +8,7 @@ using Zaimoni.Data;
 namespace djack.RogueSurvivor.Engine.Actions
 {
   // relevant interfaces
-  internal interface ActorDest
+  public interface ActorDest
   {
     Location dest { get; }  // of m_Actor
   }
@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   }
 
   [Serializable]
-  internal class ActionMoveDelta : ActorAction,ActorDest,ActorOrigin,Resolvable
+  public sealed class ActionMoveDelta : ActorAction,ActorDest,ActorOrigin,Resolvable
   {
     private readonly Location m_NewLocation;
     private readonly Location m_Origin;
@@ -220,7 +220,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   }
 
   [Serializable]
-  internal class UpdateMoveDelta : WorldUpdate, ActorDest, ActorOrigin, CanComplete<Actor>
+  public sealed class UpdateMoveDelta : WorldUpdate, ActorDest, ActorOrigin, CanComplete<Actor>
   {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;

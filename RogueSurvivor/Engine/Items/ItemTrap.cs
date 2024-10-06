@@ -13,7 +13,7 @@ using Zaimoni.Data;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemTrap : Item, UsableItem, Zaimoni.Serialization.ISerialize
+  public sealed class ItemTrap : Item, UsableItem, Zaimoni.Serialization.ISerialize
     {
 #nullable enable
     new public ItemTrapModel Model { get { return (base.Model as ItemTrapModel)!; } }

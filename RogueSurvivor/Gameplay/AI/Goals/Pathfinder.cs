@@ -5,7 +5,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
-    internal class Pathfinder
+    public sealed class Pathfinder
     {
         private readonly LocationFunction<int>[] m_GoalTypes;
 

@@ -8,19 +8,19 @@ using System;
 
 namespace djack.RogueSurvivor.Gameplay
 {
-  internal static class GameGangs
+  public static class GameGangs
   {
 	private const int MAX_GANGS = (int)IDs.GANGSTA_FLOODS+1;
 
-    public static readonly GameGangs.IDs[] GANGSTAS = new GameGangs.IDs[2]
+    public static readonly IDs[] GANGSTAS = new IDs[2]
     {
-      GameGangs.IDs.GANGSTA_CRAPS,
-      GameGangs.IDs.GANGSTA_FLOODS
+      IDs.GANGSTA_CRAPS,
+      IDs.GANGSTA_FLOODS
     };
-    public static readonly GameGangs.IDs[] BIKERS = new GameGangs.IDs[2]
+    public static readonly GameGangs.IDs[] BIKERS = new IDs[2]
     {
-      GameGangs.IDs.BIKER_HELLS_SOULS,
-      GameGangs.IDs.BIKER_FREE_ANGELS
+      IDs.BIKER_HELLS_SOULS,
+      IDs.BIKER_FREE_ANGELS
     };
     private static readonly string[] NAMES = new string[MAX_GANGS] {
       "(no gang)",

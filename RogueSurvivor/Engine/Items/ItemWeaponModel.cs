@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal abstract class ItemWeaponModel : ItemModel
+  public abstract class ItemWeaponModel : ItemModel
   {
     private readonly Attack m_Attack;
 

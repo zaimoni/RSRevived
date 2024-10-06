@@ -12,7 +12,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  internal sealed class Fortification : MapObject, Zaimoni.Serialization.ISerialize
+  public sealed class Fortification : MapObject, Zaimoni.Serialization.ISerialize
     {
     public const int SMALL_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS/2;
     public const int LARGE_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS;

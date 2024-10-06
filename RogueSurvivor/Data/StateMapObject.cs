@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Data
 {
   // both use cases are "not that many states"
   [Serializable]
-  abstract class StateMapObject : MapObject, Zaimoni.Serialization.ISerialize
+  public abstract class StateMapObject : MapObject, Zaimoni.Serialization.ISerialize
     {
     protected int m_State;
 

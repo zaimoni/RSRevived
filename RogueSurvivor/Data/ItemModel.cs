@@ -10,7 +10,7 @@ using System;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal class ItemModel : Zaimoni.Data.Factory<Item>
+  public class ItemModel : Zaimoni.Data.Factory<Item>
   {
     public readonly Gameplay.Item_IDs ID;
     public readonly string SingleName;

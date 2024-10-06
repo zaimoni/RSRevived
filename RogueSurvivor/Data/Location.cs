@@ -19,7 +19,7 @@ using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with trans
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal readonly struct Location(Map map, Point pos) : IEquatable<Location>, Zaimoni.Serialization.ISerialize
+  public readonly struct Location(Map map, Point pos) : IEquatable<Location>, Zaimoni.Serialization.ISerialize
     {
     public readonly Map Map = map
 #if DEBUG

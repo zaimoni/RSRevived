@@ -22,13 +22,10 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
 using djack.RogueSurvivor.Engine._Action;
-using static djack.RogueSurvivor.Gameplay.GameActors;
-using System.Drawing;
-using System.Numerics;
 
 namespace djack.RogueSurvivor.Engine
 {
-  internal class Rules
+  public sealed class Rules
   {
     public const int INFECTION_LEVEL_1_WEAK = 10;
     public const int INFECTION_LEVEL_2_TIRED = 30;
@@ -873,7 +870,6 @@ retry:
   }
 }
 
-#if PROTOTYPE
 namespace Zaimoni.JsonConvert
 {
     public class Rules : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.Rules>
@@ -889,4 +885,3 @@ namespace Zaimoni.JsonConvert
         }
     }
 }
-#endif

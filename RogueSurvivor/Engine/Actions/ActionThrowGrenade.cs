@@ -13,7 +13,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionThrowGrenade : ActorAction,CombatAction
+  public sealed class ActionThrowGrenade : ActorAction,CombatAction
   {
     private readonly Point m_ThrowPos;
 

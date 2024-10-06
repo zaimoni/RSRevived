@@ -24,7 +24,7 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal abstract class BaseAI : ActorController
+  public abstract class BaseAI : ActorController
     {
     protected const int FLEE_THROUGH_EXIT_CHANCE = 90;  // alpha10 increased from 50%
     protected const int EMOTE_FLEE_CHANCE = 30;
@@ -464,14 +464,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #nullable restore
 
-    protected ActorAction BehaviorBuildTrap(RogueGame game)
+    protected ActorAction BehaviorBuildTrap()
     {
       var itemTrap = m_Actor.Inventory.GetFirst<ItemTrap>();
       if (itemTrap == null) return null;
       if (!IsGoodTrapSpot(m_Actor.Location.Map, m_Actor.Location.Position, out string reason)) return null;
       if (!itemTrap.IsActivated && !itemTrap.Model.ActivatesWhenDropped)
         return new ActionUseItem(m_Actor, itemTrap);
-      game.DoEmote(m_Actor, string.Format("{0} {1}!", reason, itemTrap.AName), true);
+      RogueGame.Game.DoEmote(m_Actor, string.Format("{0} {1}!", reason, itemTrap.AName), true);
       return new ActionDropItem(m_Actor, itemTrap);
     }
 
@@ -712,9 +712,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // Feral dogs use BehaviorFightOrFlee; simplified version of what OrderableAI uses
-    protected ActorAction? BehaviorFightOrFlee(RogueGame game, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
+    protected ActorAction? BehaviorFightOrFlee(string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
       const ActorCourage courage = ActorCourage.CAUTIOUS;
+      var game = RogueGame.Game;
       var target = FilterNearest(_enemies);
       bool doRun = false;	// only matters when fleeing
       Actor enemy = target.Percepted;
@@ -1162,7 +1163,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool CanReachSimple(in Location dest, RouteFinder.SpecialActions allowedActions)
     {
        (m_RouteFinder ??= new RouteFinder(this)).AllowedActions = allowedActions;
-       return m_RouteFinder.CanReachSimple(RogueGame.Game, in dest, Rules.GridDistance(m_Actor.Location, in dest), Rules.GridDistanceFn);
+       return m_RouteFinder.CanReachSimple(in dest, Rules.GridDistance(m_Actor.Location, in dest), Rules.GridDistanceFn);
     }
 
     protected void FilterOutUnreachablePercepts<_T_>(ref List<_T_> percepts, RouteFinder.SpecialActions allowedActions) where _T_:WhereWhen

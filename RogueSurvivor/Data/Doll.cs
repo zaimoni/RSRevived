@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Data
 {
   // while we *could* lift this into the Actor class, isolating screen UI from game data is technically reasonable.
   [Serializable]
-  internal readonly struct Doll
+  public readonly struct Doll
   {
     private readonly List<string>?[]? m_Decorations;  // XXX only valid if the Model imageID is null
 

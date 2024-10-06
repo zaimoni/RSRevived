@@ -25,7 +25,7 @@ using ActionSequence = djack.RogueSurvivor.Engine.Actions.ActionSequence;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal interface EventUnconditional // maybe more general
+  public interface EventUnconditional // maybe more general
   {
     bool Expire(Actor viewpoint);
   }
@@ -75,7 +75,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  internal class PlayerController : ObjectiveAI
+  public sealed class PlayerController : ObjectiveAI
     {
     private readonly Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
     private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int> m_itemMemory;

@@ -9,7 +9,7 @@ using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionSay : ActorAction
+  public sealed class ActionSay : ActorAction
   {
     private readonly Actor m_Target;
     private readonly string m_Text;

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Zaimoni.Data
 {
-    class NonSerializedCache<src,T,U> where src:class where U : class, IEnumerable<T>
+    public sealed class NonSerializedCache<src,T,U> where src:class where U : class, IEnumerable<T>
     {
         private readonly src m_src;
         private U? m_cache;

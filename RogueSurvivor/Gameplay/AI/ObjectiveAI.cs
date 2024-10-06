@@ -168,7 +168,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   }
 
   [Serializable]
-  internal abstract class ObjectiveAI : BaseAI
+  public abstract class ObjectiveAI : BaseAI
   {
     protected ObjectiveAI(Actor src) : base(src) {
       // implicit police radio, and trained to use it properly

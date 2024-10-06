@@ -13,7 +13,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemBodyArmor : Item, Zaimoni.Serialization.ISerialize
+  public sealed class ItemBodyArmor : Item, Zaimoni.Serialization.ISerialize
     {
     private static readonly Item_IDs[] BAD_POLICE_OUTFITS = new[]{
       Item_IDs.ARMOR_HELLS_SOULS_JACKET,

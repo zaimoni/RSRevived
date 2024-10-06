@@ -128,7 +128,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "under orders");
 #endif
-        var actorAction = ExecuteOrder(game, Order, current);
+        var actorAction = ExecuteOrder(Order, current);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
 #if TRACE_SELECTACTION
@@ -267,7 +267,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
-        tmpAction = BehaviorFightOrFlee(game, (Directives_nocreate?.Courage ?? ActorDirective.Courage_default), m_Emotes, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
+        tmpAction = BehaviorFightOrFlee((Directives_nocreate?.Courage ?? ActorDirective.Courage_default), m_Emotes, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
         if (null != tmpAction) {
             if (tracing) {
                 if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("fight-or-flee: "+tmpAction.ToString());
@@ -410,7 +410,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var rules = Rules.Get;
       if (rules.RollChance(BUILD_TRAP_CHANCE)) {
-        tmpAction = BehaviorBuildTrap(game);
+        tmpAction = BehaviorBuildTrap();
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build trap");
 #endif

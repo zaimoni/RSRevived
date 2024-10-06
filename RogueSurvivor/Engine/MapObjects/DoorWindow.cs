@@ -13,7 +13,7 @@ using System.Threading;
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  internal sealed class DoorWindow : StateMapObject, Zaimoni.Serialization.ISerialize
+  public sealed class DoorWindow : StateMapObject, Zaimoni.Serialization.ISerialize
     {
     public const int BASE_HITPOINTS = 40;   // XXX spacetime scaling candidate
     public const int STATE_CLOSED = 0;

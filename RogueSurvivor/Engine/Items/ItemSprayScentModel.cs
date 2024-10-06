@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal sealed class ItemSprayScentModel : ItemModel
+  public sealed class ItemSprayScentModel : ItemModel
   {
     public readonly int MaxSprayQuantity;
     public readonly Odor Odor;

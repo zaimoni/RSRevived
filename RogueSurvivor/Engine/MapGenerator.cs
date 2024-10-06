@@ -14,7 +14,7 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 
 namespace djack.RogueSurvivor.Engine
 {
-  internal abstract class MapGenerator
+  public abstract class MapGenerator
   {
     protected MapGenerator() {}
 

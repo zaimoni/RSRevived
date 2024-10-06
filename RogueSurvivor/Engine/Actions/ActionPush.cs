@@ -9,12 +9,12 @@ using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal interface ObjectDest
+  public interface ObjectDest
   {
     Location obj_dest { get; }
   }
 
-  internal class ActionPush : ActorAction, ActorDest,ObjectDest
+  public sealed class ActionPush : ActorAction, ActorDest,ObjectDest
   {
     private readonly MapObject m_Object;
     private readonly Location m_To;

@@ -11,7 +11,7 @@ using djack.RogueSurvivor.Engine.MapObjects;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionSwitchPowerGenerator : ActorAction
+  public sealed class ActionSwitchPowerGenerator : ActorAction
   {
     private readonly PowerGenerator m_PowGen;
 

@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Data
  * we would like actors to have enough item memory to track seen *internal* inventory (not yet implemented)
  */
   [Serializable]
-  internal class MapObject : ILocation, INoun, Zaimoni.Serialization.ISerialize
+  public class MapObject : ILocation, INoun, Zaimoni.Serialization.ISerialize
   {
     public const int CAR_WEIGHT = 100;
     public const int MAX_NORMAL_WEIGHT = 10;
@@ -435,7 +435,7 @@ namespace djack.RogueSurvivor.Data
 
 #nullable enable
   [Serializable]
-  internal sealed class ShelfLike : MapObject, IInventory, Zaimoni.Serialization.ISerialize
+  public sealed class ShelfLike : MapObject, IInventory, Zaimoni.Serialization.ISerialize
     {
     private readonly Inventory m_Inventory;
     public Inventory Inventory { get => m_Inventory; }

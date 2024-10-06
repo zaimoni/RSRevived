@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Data
   // for fronts, etc. (also want to adjust sunrise/sunset times by longitude/latitude)
 
   [Serializable]
-  internal enum Weather
+  public enum Weather
   {
     CLEAR = 0,
     CLOUDY = 1,

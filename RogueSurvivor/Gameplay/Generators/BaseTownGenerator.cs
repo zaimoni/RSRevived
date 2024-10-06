@@ -21,7 +21,7 @@ using Size = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
-    internal class BaseTownGenerator : BaseMapGenerator
+    public class BaseTownGenerator : BaseMapGenerator
   {
     public static readonly Parameters DEFAULT_PARAMS = new Parameters {
       MapWidth = RogueGame.MAP_MAX_WIDTH,

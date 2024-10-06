@@ -11,7 +11,7 @@ namespace Zaimoni.Data
     /// <typeparam name="Key2">The key for which something has to be observed; e.g. GameItems.IDs</typeparam>
     /// <typeparam name="Range">the value, e.g. turn</typeparam>
     [Serializable]
-    class Ary2Dictionary<Key1, Key2, Range> where Range:IComparable
+    public class Ary2Dictionary<Key1, Key2, Range> where Range:IComparable
     {
         readonly private Dictionary<Key1, Range> _no_entries = new Dictionary<Key1, Range>();
         readonly private Dictionary<Key1, KeyValuePair<Range, HashSet<Key2>>> _first_second_dict = new Dictionary<Key1, KeyValuePair<Range, HashSet<Key2>>>();

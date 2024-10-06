@@ -19,7 +19,7 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal abstract class ActorController
+  public abstract class ActorController
   {
     protected readonly Actor m_Actor;
 

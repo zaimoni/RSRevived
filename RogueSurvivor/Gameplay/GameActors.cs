@@ -15,7 +15,7 @@ using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Gameplay
 {
-  internal static class GameActors
+  public static class GameActors
   {
     private static readonly ActorModel[] m_Models = new ActorModel[(int) IDs._COUNT];
     private const int HUMAN_STA = 2*WorldTime.TURNS_PER_HOUR;

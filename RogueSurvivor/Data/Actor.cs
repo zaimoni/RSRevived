@@ -32,7 +32,7 @@ using djack.RogueSurvivor.Data;
 namespace djack.RogueSurvivor.Data
 {
     [Serializable]
-    internal enum Activity    // .NET Core 3.0: conflicts with System.Diagnostics.Activity
+    public enum Activity    // .NET Core 3.0: conflicts with System.Diagnostics.Activity
     {
         IDLE,
         CHASING,
@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     [System.Flags]
-    internal enum Sayflags
+    public enum Sayflags
     {
         IS_IMPORTANT = 1,
         IS_FREE_ACTION = 2,
@@ -72,7 +72,7 @@ namespace djack.RogueSurvivor.Data
     };
 
   [Serializable]
-  internal class Actor : IEquatable<Actor>, IDeserializationCallback, ILocation, Zaimoni.Data.INoun
+  public sealed class Actor : IEquatable<Actor>, IDeserializationCallback, ILocation, Zaimoni.Data.INoun
     {
     public const int BASE_ACTION_COST = 100;
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;

@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Data
     /// actor.Model.Abilities.CanUseItems is assumed
     /// for actual use, item is assumed to be in inv
     /// </summary>
-    internal interface UsableItem
+    public interface UsableItem
     {
         bool CouldUse(); // i.e., Legal, item-only
         bool CouldUse(Actor actor); // i.e. Legal, actor-dependent
@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Serializable]
-    internal struct Item_s    // for item memmory
+    public struct Item_s    // for item memmory
     {
         public Gameplay.Item_IDs ModelID;
         public int QtyLike; // meaning depends on ModelID
@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Serializable]
-  internal class Item : INoun, Zaimoni.Serialization.ISerialize
+  public class Item : INoun, Zaimoni.Serialization.ISerialize
     {
     public readonly Gameplay.Item_IDs ModelID;
     private int m_Quantity;

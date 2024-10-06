@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  internal class Map : ISerializable, IMap, Zaimoni.Serialization.ISerialize
+  public sealed class Map : ISerializable, IMap, Zaimoni.Serialization.ISerialize
     {
     public const int GROUND_INVENTORY_SLOTS = 10;
     public readonly int Seed;

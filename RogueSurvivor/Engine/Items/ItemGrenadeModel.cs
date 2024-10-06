@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal sealed class ItemGrenadeModel : ItemExplosiveModel
+  public sealed class ItemGrenadeModel : ItemExplosiveModel
   {
     public readonly int MaxThrowDistance;
 

@@ -9,7 +9,7 @@ using System;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal enum RaidType
+  public enum RaidType
   {
     BIKERS = 0,
     GANGSTA = 1,

@@ -91,7 +91,7 @@ namespace djack.RogueSurvivor.Engine
   }
 
   [Serializable]
-  internal class ActorScoring
+  public sealed class ActorScoring
   {
     private readonly Actor m_Actor;
     private readonly bool[] Achievements_completed = new bool[(int) Achievement.IDs._COUNT];

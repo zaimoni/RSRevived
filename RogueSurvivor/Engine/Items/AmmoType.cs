@@ -9,7 +9,7 @@ using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal enum AmmoType
+  public enum AmmoType
   {
     LIGHT_PISTOL = 0,
     HEAVY_PISTOL = 1,

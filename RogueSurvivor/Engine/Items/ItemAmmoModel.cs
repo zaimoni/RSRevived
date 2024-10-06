@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal sealed class ItemAmmoModel : ItemModel
+  public sealed class ItemAmmoModel : ItemModel
   {
     public readonly AmmoType AmmoType;
 

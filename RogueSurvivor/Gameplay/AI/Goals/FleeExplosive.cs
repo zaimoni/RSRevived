@@ -10,7 +10,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     [Serializable]
-    internal class FleeExplosive: Objective
+    public sealed class FleeExplosive: Objective
     {
         private readonly ZoneLoc m_Fear;
         private ItemPrimedExplosive m_Explosive;

@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Data
 // Oct 19 2019: automatic serialization code makes structs flagged readonly within a class (whether normal or readonly)
 // save fine, but hard-crash on loading before an ISerializable constructor can be called.
 
-  internal class ActorModel // looks like a good case for readonly struct, but would need reference return
+  public sealed class ActorModel // looks like a good case for readonly struct, but would need reference return
   {
     static private readonly ulong[] _createdCounts = new ulong[(int)Gameplay.GameActors.IDs._COUNT];
     static private readonly Verb BITE = new Verb("bite");

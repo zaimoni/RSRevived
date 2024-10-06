@@ -22,7 +22,7 @@ using ItemTrap = djack.RogueSurvivor.Engine.Items.ItemTrap;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal readonly record struct InvOrigin {
+  public readonly record struct InvOrigin {
         public readonly Inventory inv;
         public readonly Actor? a_owner = null;
         public readonly ShelfLike? obj_owner = null;
@@ -103,7 +103,7 @@ namespace djack.RogueSurvivor.Data
     }
 
   [Serializable]
-  internal readonly record struct InventorySource<T> where T:Item
+  public readonly record struct InventorySource<T> where T:Item
   {
      public readonly Inventory inv;
      public readonly T? it = null;
@@ -193,7 +193,7 @@ namespace djack.RogueSurvivor.Data
 
 
   [Serializable]
-  internal sealed class Inventory : Zaimoni.Serialization.ISerialize
+  public sealed class Inventory : Zaimoni.Serialization.ISerialize
     {
     private readonly List<Item> m_Items = new(1);
     private int m_maxCapacity;

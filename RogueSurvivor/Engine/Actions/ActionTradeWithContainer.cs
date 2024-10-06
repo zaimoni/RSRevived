@@ -6,16 +6,16 @@ using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-    internal interface ActorGive {
+    public interface ActorGive {
         public Item Give { get; }
     }
 
-    internal interface ActorTake
+    public interface ActorTake
     {
         public Item Take { get; }
     }
 
-    internal interface TargetActor
+    public interface TargetActor
     {
         public Actor Whom { get; }
     }
@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
 
     [Serializable]
-    internal abstract class ActionTradeWith : ActorAction,ActorGive,ActorTake
+    public abstract class ActionTradeWith : ActorAction,ActorGive,ActorTake
     {
         protected readonly Item m_TakeItem;
         protected readonly Item m_GiveItem;
@@ -177,7 +177,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
 
     [Serializable]
-    internal class ActionTradeWithActor : ActionTradeWith,TargetActor
+    public sealed class ActionTradeWithActor : ActionTradeWith,TargetActor
     {
         private readonly Actor m_Whom;
         public Actor Whom { get { return m_Whom;  } }

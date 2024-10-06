@@ -9,7 +9,7 @@ using System;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal enum ActorTasks
+  public enum ActorTasks
   {
     BARRICADE_ONE,
     BARRICADE_MAX,
@@ -25,7 +25,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  internal class ActorOrder
+  public sealed class ActorOrder
   {
     public readonly ActorTasks Task;
     public readonly Location Location;

@@ -5,10 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-#if PROTOTYPE
-using System.Collections.Generic;
-#endif
-using System.Linq;
 using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D<short>;
@@ -21,7 +17,7 @@ using PointF = Zaimoni.Data.Vector2D<float>;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal sealed class Direction
+  public sealed class Direction
   {
     public static readonly Direction NEUTRAL = new Direction(-1, "neutral", new Point(0, 0));
     public static readonly Direction N = new Direction(0, "N", new Point(0, -1));

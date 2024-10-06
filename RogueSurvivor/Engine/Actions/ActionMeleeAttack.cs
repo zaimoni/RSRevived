@@ -12,13 +12,13 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal interface CombatAction
+  public interface CombatAction
   {
     Actor target { get; }  // of m_Actor
   }
 
    [Serializable]
-  internal class ActionMeleeAttack : ActorAction, CombatAction
+  public sealed class ActionMeleeAttack : ActorAction, CombatAction
     {
     private readonly Actor m_Target;
 

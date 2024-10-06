@@ -14,7 +14,7 @@ using Zaimoni.Data;
 namespace djack.RogueSurvivor.Engine.AI
 {
   [Serializable]
-  internal class WhereWhen : Fn_to_s, ILocation
+  public class WhereWhen : Fn_to_s, ILocation
     {
     // MemorizedSensor needs public setters for these
     public int Turn { get; set; }
@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Engine.AI
   }
 
   [Serializable]
-  internal class Percept_<_T_> : WhereWhen
+  public sealed class Percept_<_T_> : WhereWhen
   {
     readonly private _T_ m_Percepted;
 
@@ -73,7 +73,7 @@ namespace djack.RogueSurvivor.Engine.AI
   }
 
     [Serializable]
-    internal struct Percept_s<_T_> {
+    public struct Percept_s<_T_> {
         public int Turn;
         public Location Location;
         readonly public _T_ Percepted;

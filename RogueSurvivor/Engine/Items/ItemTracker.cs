@@ -12,7 +12,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemTracker : Item, BatteryPowered, Zaimoni.Serialization.ISerialize
+  public sealed class ItemTracker : Item, BatteryPowered, Zaimoni.Serialization.ISerialize
     {
     new public ItemTrackerModel Model { get {return (base.Model as ItemTrackerModel)!; } }
     private int m_Batteries;

@@ -15,7 +15,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal enum DistrictKind
+  public enum DistrictKind
   {
     GENERAL = 0,
     RESIDENTIAL,
@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  internal class District : Zaimoni.Serialization.ISerialize
+  public sealed class District : Zaimoni.Serialization.ISerialize
   {
 #nullable enable
     private readonly List<Map> m_Maps = new List<Map>(3);

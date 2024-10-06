@@ -8,7 +8,7 @@ using System;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal class Tile
+  public sealed class Tile
   {
     public readonly byte ID;
     private Flags m_Flags;

@@ -18,7 +18,7 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
-  internal abstract class BaseMapGenerator : MapGenerator
+  public abstract class BaseMapGenerator : MapGenerator
   {
     private static readonly string[] MALE_SKINS = new string[5]
     {

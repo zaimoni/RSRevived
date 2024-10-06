@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal sealed class Faction
+  public sealed class Faction
   {
     private readonly List<Faction> m_Enemies = new List<Faction>(1);
 

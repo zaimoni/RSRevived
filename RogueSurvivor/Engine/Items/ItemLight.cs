@@ -12,7 +12,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemLight : Item, BatteryPowered, Zaimoni.Serialization.ISerialize
+  public sealed class ItemLight : Item, BatteryPowered, Zaimoni.Serialization.ISerialize
   {
     new public ItemLightModel Model { get {return (base.Model as ItemLightModel)!; } }
     private int m_Batteries;

@@ -14,7 +14,7 @@ using System.Collections.Generic;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal class ExplorationData
+  public sealed class ExplorationData
   {
     private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
     private const int EXPLORATION_ZONES = 3;    // unsure whether this space-time scales or not; WorldTime.TURNS_PER_HOUR/10 if it scales

@@ -12,7 +12,7 @@ using System.Threading;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal abstract class ItemPrimedExplosive : ItemExplosive // XXX should be abstract
+  public abstract class ItemPrimedExplosive : ItemExplosive // XXX should be abstract
   {
     private int m_FuseTimeLeft;
 

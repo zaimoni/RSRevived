@@ -12,7 +12,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  internal sealed class PowerGenerator : StateMapObject, Zaimoni.Serialization.ISerialize
+  public sealed class PowerGenerator : StateMapObject, Zaimoni.Serialization.ISerialize
     {
     private const int STATE_OFF = 0;
     private const int STATE_ON = 1;

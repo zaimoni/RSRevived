@@ -10,7 +10,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     // need this level of indirection so that all actors know about the plan's progress
     [Serializable]
-    class SharedPlan
+    public sealed class SharedPlan
     {
         private WorldUpdate m_Plan;
         private Condition<Actor> m_Target;

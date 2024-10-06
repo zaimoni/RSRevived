@@ -9,7 +9,7 @@ using System.Drawing;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal static class GameTiles
+  public static class GameTiles
   {
     private static readonly Color DRK_GRAY1 = Color.DimGray;
     private static readonly Color DRK_GRAY2 = Color.DarkGray;

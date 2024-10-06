@@ -6,7 +6,7 @@
 
 namespace djack.RogueSurvivor.Engine
 {
-  internal class Achievement
+  public sealed class Achievement
   {
     public readonly IDs ID;
     public readonly string Name;

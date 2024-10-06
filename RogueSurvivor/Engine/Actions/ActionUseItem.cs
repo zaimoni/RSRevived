@@ -9,13 +9,13 @@ using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal interface Use<out T> where T:Item
+  public interface Use<out T> where T:Item
   {
     public T Use { get; }
   }
 
   [Serializable]
-  internal class ActionUseItem : ActorAction, Use<Item>
+  public sealed class ActionUseItem : ActorAction, Use<Item>
     {
     private readonly Item m_Item;
 

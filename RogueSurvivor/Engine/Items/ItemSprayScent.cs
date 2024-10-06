@@ -12,7 +12,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemSprayScent : Item, Zaimoni.Serialization.ISerialize
+  public sealed class ItemSprayScent : Item, Zaimoni.Serialization.ISerialize
     {
     new public ItemSprayScentModel Model { get {return (base.Model as ItemSprayScentModel)!; } }
     private int m_SprayQty;

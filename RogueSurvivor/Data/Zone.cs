@@ -115,7 +115,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]    // just in case
-  internal record ZoneLoc : IMap
+  public sealed record ZoneLoc : IMap
   {
     public readonly Map m;
     public readonly Rectangle Rect; // doesn't have to be normalized

@@ -10,7 +10,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionMoveStep : ActorAction, ActorDest
+  public sealed class ActionMoveStep : ActorAction, ActorDest
     {
     private readonly Location m_NewLocation;
 

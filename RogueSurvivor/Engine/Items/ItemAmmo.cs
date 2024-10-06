@@ -12,7 +12,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemAmmo : Item, UsableItem, Zaimoni.Serialization.ISerialize
+  public sealed class ItemAmmo : Item, UsableItem, Zaimoni.Serialization.ISerialize
     {
     [NonSerialized] private ItemRangedWeapon? _rw = null; // set by UseBeforeDrop
 

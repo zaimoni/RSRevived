@@ -785,7 +785,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
   [Serializable]
-  internal abstract class OrderableAI : ObjectiveAI
+  public abstract class OrderableAI : ObjectiveAI
     {
     private const int EMOTE_GRAB_ITEM_CHANCE = 30;
     private const int LAW_ENFORCE_CHANCE = 30;
@@ -873,8 +873,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((m_Actor.HitPoints-1)/ trapsMaxDamage)+1;
     }
 
-    protected ActorAction? ExecuteOrder(RogueGame game, ActorOrder order, List<Percept> percepts)
+    protected ActorAction? ExecuteOrder(ActorOrder order, List<Percept> percepts)
     {
+      var game = RogueGame.Game;
+
       if (!m_Actor.HasLeader) return null;
       switch (order.Task) {
         case ActorTasks.BARRICADE_ONE:
@@ -2304,7 +2306,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // sunk from BaseAI
-    protected ActorAction? BehaviorFightOrFlee(RogueGame game, ActorCourage courage, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
+    protected ActorAction? BehaviorFightOrFlee(ActorCourage courage, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
       if (_blast_field?.Contains(m_Actor.Location.Position) ?? false) {
         // oops.  Panic.  Wasn't able to flee explosives and will likely die, either immediately or by sudden vulnerability.
@@ -2505,7 +2507,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         if (Rules.Get.RollChance(EMOTE_CHARGE_CHANCE))
-          game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name), true);
+          RogueGame.Game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name), true);
         return tmpAction;
       }
       return null;
