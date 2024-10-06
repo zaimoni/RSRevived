@@ -579,6 +579,72 @@ namespace Zaimoni.JsonConvert {
             writer.WriteEndArray();
         }
     }
+
+    public class Box2D_short : System.Text.Json.Serialization.JsonConverter<Zaimoni.Data.Box2D<short>>
+    {
+        static private int field_code(ref Utf8JsonReader reader) {
+            if (reader.ValueTextEquals("Location")) return 1;
+            else if (reader.ValueTextEquals("Size")) return 2;
+            else throw new JsonException();
+        }
+
+        public override Zaimoni.Data.Box2D<short> Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            if (System.Text.Json.JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
+            reader.Read();
+
+            Zaimoni.Data.Vector2D<short> x = default;
+            Zaimoni.Data.Vector2D<short> y = default;
+
+            if (System.Text.Json.JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
+
+            int stage = field_code(ref reader);
+
+            reader.Read();
+
+            switch (stage)
+            {
+            case 1:
+                x = System.Text.Json.JsonSerializer.Deserialize<Zaimoni.Data.Vector2D<short>>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
+                break;
+            default:
+                y = System.Text.Json.JsonSerializer.Deserialize<Zaimoni.Data.Vector2D<short>>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
+                break;
+            }
+
+            reader.Read();
+            if (System.Text.Json.JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
+
+            stage = field_code(ref reader);
+
+            reader.Read();
+
+            switch (stage)
+            {
+            case 1:
+                x = System.Text.Json.JsonSerializer.Deserialize<Zaimoni.Data.Vector2D<short>>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
+                break;
+            default:
+                y = System.Text.Json.JsonSerializer.Deserialize<Zaimoni.Data.Vector2D<short>>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
+                break;
+            }
+
+            reader.Read();
+            if (System.Text.Json.JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
+
+            return new Zaimoni.Data.Box2D<short>(x, y);
+        }
+
+        public override void Write(Utf8JsonWriter writer, Zaimoni.Data.Box2D<short> src, JsonSerializerOptions options) {
+            writer.WriteStartObject();
+            // Location, Size
+            writer.WritePropertyName("Location");
+            System.Text.Json.JsonSerializer.Serialize(writer, src.Location, djack.RogueSurvivor.Engine.Session.JSON_opts);
+            writer.WritePropertyName("Size");
+            System.Text.Json.JsonSerializer.Serialize(writer, src.Size, djack.RogueSurvivor.Engine.Session.JSON_opts);
+            writer.WriteEndObject();
+        }
+    }
 }
 
 // dogfood our own savefile infrastructure

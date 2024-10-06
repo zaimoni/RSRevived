@@ -89,6 +89,7 @@ namespace djack.RogueSurvivor.Data
     public string Name { get { return m_Name; } }
     public Rectangle Bounds { get { return m_Bounds; } }
 
+    [System.Text.Json.Serialization.JsonConstructor]
     public Zone(string name, Rectangle bounds)
     {
 #if DEBUG
