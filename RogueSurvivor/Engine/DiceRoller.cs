@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Zaimoni.Serialization;
 
 using Point = Zaimoni.Data.Vector2D<short>;
@@ -24,8 +25,37 @@ namespace djack.RogueSurvivor.Engine
 
     public DiceRoller(int seed) => m_Rng = new Random(seed);
     public DiceRoller() : this((int) DateTime.UtcNow.Ticks) {}
+    private DiceRoller(Random src) { m_Rng = src; }
+
     public DiceRoller(DecodeObjects decode) => m_Rng = decode.LoadInline<Random>();
     public void save(EncodeObjects encode) => ISave.InlineSave(encode, m_Rng);
+
+    static private int field_code(ref Utf8JsonReader reader) {
+      if (reader.ValueTextEquals("m_Rng")) return 1;
+      else throw new JsonException();
+    }
+
+    public static DiceRoller fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
+      if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
+      reader.Read();
+
+      if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
+
+      int stage = field_code(ref reader);
+
+      reader.Read();
+
+      var stage_rng = JsonSerializer.Deserialize<Microsoft.Random>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts) ?? throw new JsonException();
+
+      return new DiceRoller(stage_rng);
+    }
+
+    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options) {
+      writer.WriteStartObject();
+      writer.WritePropertyName("m_Rng");
+      JsonSerializer.Serialize(writer, m_Rng, djack.RogueSurvivor.Engine.Session.JSON_opts);
+      writer.WriteEndObject();
+    }
 
     public int Roll(int min, int max)
     {
@@ -115,4 +145,20 @@ namespace djack.RogueSurvivor.Engine
       return new Point(Roll(r.Left, r.Right), Roll(r.Top, r.Bottom));
     }
   }
+}
+
+namespace Zaimoni.JsonConvert
+{
+    public class DiceRoller : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.DiceRoller>
+    {
+        public override djack.RogueSurvivor.Engine.DiceRoller Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            return djack.RogueSurvivor.Engine.DiceRoller.fromJson(ref reader, options);
+        }
+
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Engine.DiceRoller src, JsonSerializerOptions options)
+        {
+            src.toJson(writer, options);
+        }
+    }
 }

@@ -33,6 +33,7 @@
 **
 ===========================================================*/
 using System;
+using System.Text.Json;
 using Zaimoni.Serialization;
 
 namespace Microsoft
@@ -54,7 +55,13 @@ namespace Microsoft
         // Constructors
         public Random() : this(Environment.TickCount) { }
 
-        public Random(int Seed)
+        private Random(int ext, int extp, int[] state) {
+            inext = ext;
+            inextp = extp;
+            SeedArray = state;
+        }
+
+    public Random(int Seed)
         {
             int ii;
             int mj, mk;
@@ -98,6 +105,96 @@ namespace Microsoft
             Formatter.Serialize(encode.dest, inext);
             Formatter.Serialize(encode.dest, inextp);
             encode.SaveTo7bit(SeedArray);
+        }
+
+        static private int field_code(ref Utf8JsonReader reader)
+        {
+            if (reader.ValueTextEquals("inext")) return 1;
+            else if (reader.ValueTextEquals("inextp")) return 2;
+            else if (reader.ValueTextEquals("SeedArray")) return 3;
+            else throw new JsonException();
+        }
+
+        public static Random fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
+            if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
+            reader.Read();
+
+            int stage_inext = default;
+            int stage_inextp = default;
+            int[] stage_SeedArray = default;
+
+            if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
+
+            int stage = field_code(ref reader);
+
+            reader.Read();
+
+            switch (stage)
+            {
+                case 1:
+                    stage_inext = reader.GetInt32();
+                    break;
+                case 2:
+                    stage_inextp = reader.GetInt32();
+                    break;
+                default:
+                    stage_SeedArray = JsonSerializer.Deserialize<int[]>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
+                    break;
+            }
+
+            reader.Read();
+
+            if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
+
+            stage = field_code(ref reader);
+
+            reader.Read();
+
+            switch (stage)
+            {
+                case 1:
+                    stage_inext = reader.GetInt32();
+                    break;
+                case 2:
+                    stage_inextp = reader.GetInt32();
+                    break;
+                default:
+                    stage_SeedArray = JsonSerializer.Deserialize<int[]>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
+                    break;
+            }
+
+            reader.Read();
+
+            if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
+
+            stage = field_code(ref reader);
+
+            reader.Read();
+
+            switch (stage)
+            {
+                case 1:
+                    stage_inext = reader.GetInt32();
+                    break;
+                case 2:
+                    stage_inextp = reader.GetInt32();
+                    break;
+                default:
+                    stage_SeedArray = JsonSerializer.Deserialize<int[]>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
+                    break;
+            }
+
+            return new Random(stage_inext, stage_inextp, stage_SeedArray);
+        }
+
+        public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            writer.WriteNumber("inext", inext);
+            writer.WriteNumber("inextp", inextp);
+            writer.WritePropertyName("SeedArray");
+            JsonSerializer.Serialize(writer, SeedArray, djack.RogueSurvivor.Engine.Session.JSON_opts);
+            writer.WriteEndObject();
         }
 
         //
@@ -228,6 +325,22 @@ namespace Microsoft
             {
                 buffer[i] = (byte)(InternalSample() % (byte.MaxValue + 1));
             }
+        }
+    }
+}
+
+namespace Zaimoni.JsonConvert
+{
+    public class Random : System.Text.Json.Serialization.JsonConverter<Microsoft.Random>
+    {
+        public override Microsoft.Random Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            return Microsoft.Random.fromJson(ref reader, options);
+        }
+
+        public override void Write(Utf8JsonWriter writer, Microsoft.Random src, JsonSerializerOptions options)
+        {
+            src.toJson(writer, options);
         }
     }
 }
