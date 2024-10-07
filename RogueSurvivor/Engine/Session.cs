@@ -337,6 +337,7 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.WriteIndented = true;
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.DiceRoller());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Random());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Rules());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.WorldTime());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Vector2D_short());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Box2D_short());
@@ -366,16 +367,13 @@ namespace djack.RogueSurvivor.Engine
 #endif
 #if BOOTSTRAP_JSON_SERIALIZATION
 #if false
-      Zaimoni.Data.Vector2D<short> test = default;
       {
       using var stream = (filepath+"json").CreateStream(true);
-      System.Text.Json.JsonSerializer.Serialize(stream, test, typeof(Zaimoni.Data.Vector2D<short>), JSON_opts);
       System.Text.Json.JsonSerializer.Serialize(stream, Rules.Get, typeof(Rules), JSON_opts);
 	  stream.Flush();
       }
       using var stream2 = (filepath+"json").CreateStream(false);
       var test2 = System.Text.Json.JsonSerializer.Deserialize<Rules>(stream2, JSON_opts);
-      if (test != test2) throw new InvalidOperationException("failed to round trip");
 #else
       using var stream = (filepath+"json").CreateStream(true);
       System.Text.Json.JsonSerializer.Serialize(stream, session, typeof(Session), JSON_opts);

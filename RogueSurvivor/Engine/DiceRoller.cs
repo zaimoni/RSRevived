@@ -46,6 +46,7 @@ namespace djack.RogueSurvivor.Engine
       reader.Read();
 
       var stage_rng = JsonSerializer.Deserialize<Microsoft.Random>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts) ?? throw new JsonException();
+      reader.Read();
 
       return new DiceRoller(stage_rng);
     }

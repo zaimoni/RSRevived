@@ -140,6 +140,7 @@ namespace djack.RogueSurvivor.Engine
       reader.Read();
 
       var stage_rng = JsonSerializer.Deserialize<DiceRoller>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts) ?? throw new JsonException();
+      reader.Read();
 
       return new Rules(stage_rng);
     }
