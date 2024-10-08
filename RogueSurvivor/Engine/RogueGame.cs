@@ -5339,12 +5339,26 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
 
+      // 2024-10-07: simplify UI by not presenting invalid options
+      var actorList = non_enemies.Values.ToList();
+      int index = 0;
+      while(0 <= --index) {
+        Actor target = actorList[index];
+        if (   target.Leader == player  // no followers as enemies
+            || player.Leader == target) { // no leaders as enemies
+            actorList.RemoveAt(index);
+        }
+      }
+      if (0 >= actorList.Count) {
+        ErrorPopup("No visible non-enemy actors to mark.");
+        return;
+      }
+
       ClearOverlays();
       AddOverlay(new OverlayPopup(MARK_ENEMIES_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
+      index = 0;
       OverlayImage? nominate;
-      var actorList = non_enemies.Values.ToList();
-      int index = 0;
       do {
         Actor target = actorList[index];
         nominate = new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET);
@@ -5354,21 +5368,12 @@ namespace djack.RogueSurvivor.Engine
         if (key.KeyCode == Keys.Escape) break;
         else if (key.KeyCode == Keys.T) index = (index + 1) % actorList.Count;
         else if (key.KeyCode == Keys.E) {
-          if (target.Leader == player) {
-            ErrorPopup("Can't make a follower your enemy.");
-            continue;
-          } else if (player.Leader == target) {
-            ErrorPopup("Can't make your leader your enemy.");
-            continue;
-          } else if (player.IsEnemyOf(target)) {
-            ErrorPopup("Already enemies.");
-            continue;
-          }
           AddMessage(new(string.Format("{0} is now a personal enemy.", target.TheName), Session.Get.WorldTime.TurnCounter, Color.Orange));
           DoMakeAggression(player, target);
+          actorList.RemoveAt(index);
         }
         RemoveOverlay(nominate);
-      } while(true);
+      } while(0 < actorList.Count);
       ClearOverlays();
     }
 
