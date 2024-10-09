@@ -189,12 +189,19 @@ namespace djack.RogueSurvivor.Data
         public bool IsMine(Actor a) => a.IsFaction(FactionID);
         public bool IsEnemy(Actor a) => a.Faction.IsEnemyOf(GameFactions.From(FactionID)) || Threats.IsThreat(a);
 
+        [NonSerialized] private Func<Actor, bool>? _isMine = null;
+        public Func<Actor, bool> isMine() {
+            if (null == _isMine) {
+                _isMine = a => a.IsFaction(FactionID);
+            }
+            return _isMine;
+        }
+
         public void TrackThroughExitSpawn(Actor a)
         {
             if (IsEnemy(a)) Threats.RecordTaint(a, a.Location);
         }
 
-#if DEBUG
         public SVOevent? EncodeKill(Actor? killer, Actor victim, int t0) {
             if (null == killer) return null;
             if (IsMine(victim)) return new(new(killer), 1, new(victim), t0); // faction kill
@@ -237,6 +244,5 @@ namespace djack.RogueSurvivor.Data
             while(0 <= --ub) if (m_EventLog[ub].subject == perp) m_EventLog.RemoveAt(ub);
         }
         public void OnKilled(Actor perp) => OnKilled(new ActorTag(perp));
-#endif
     }
 }

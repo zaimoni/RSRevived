@@ -8624,10 +8624,41 @@ namespace djack.RogueSurvivor.Engine
       bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
 
       // not really, but we don't have a good enough crime-tracking system
+      if (aggressor.Faction.ID.ExtortionIsAggression()) {
 #if DEBUG
-      if (aggressor.Faction.ID.ExtortionIsAggression() && Rules.IsMurder(aggressor,target)) throw new InvalidOperationException("authorities do not murder");
+        if (Rules.IsMurder(aggressor,target)) throw new InvalidOperationException("authorities do not murder");
 #endif
-      aggressor.RecordAggression(target);
+        if (!target.IsAggressorOf(aggressor)) aggressor.RecordAggression(target);
+      } else {
+        aggressor.RecordAggression(target);
+      }
+
+      var police = Session.Get.Police;
+      var police_relevant = police.EncodeAggression(aggressor, target, Session.Get.WorldTime.TurnCounter);
+      if (null != police_relevant) {
+        Actor? seen_by_police = (police.IsMine(target) && !target.IsSleeping) ? target : null;
+        if (null == seen_by_police && police.IsMine(aggressor)) seen_by_police = aggressor; // aggressor will be awake
+        if (null == seen_by_police) {
+          var test = WitnessesInLOS(aggressor.Location);
+          if (null != test) test = test.Value.grep(police.isMine());
+          if (null != test) seen_by_police = test.Value.WitnessedBy(Actor.isAwake);
+        }
+        if (null == seen_by_police) {
+          var test = WitnessesInLOS(target.Location);
+          if (null != test) test = test.Value.grep(police.isMine());
+          if (null != test) seen_by_police = test.Value.WitnessedBy(Actor.isAwake);
+        }
+        if (null != seen_by_police) {
+          if (!aggressor.Model.Abilities.IsLawEnforcer || Rules.IsMurder(aggressor, seen_by_police)) {
+            bool was_viewpoint_enemy = target == seen_by_police ? wasAlreadyEnemy : aggressor.IsAggressorOf(seen_by_police) || target.IsAggressorOf(seen_by_police);
+            police.Record(police_relevant);
+            UI.Message? msg = null;
+            Action<PlayerController> pc_add_msg = pc => pc.AddMessage(msg ??= new("(police radio ai) " + aggressor.Name + " assaulting " + target.Name, Session.Get.WorldTime.TurnCounter, SAYOREMOTE_DANGER_COLOR));
+            seen_by_police.MessageAllInDistrictByRadio(NOP, FALSE, pc_add_msg, pc_add_msg, TRUE);
+            OnMakeEnemyOfCop(aggressor, seen_by_police, was_viewpoint_enemy);
+          }
+        }
+      }
 
       // XXX \todo check for allies who witness this
       if (target.IsSleeping) return;
@@ -8636,10 +8667,10 @@ namespace djack.RogueSurvivor.Engine
         if (!string.IsNullOrEmpty(msg)) target.Say(aggressor, msg, Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       }
       Faction faction = target.Faction;
-      if (GameFactions.ThePolice == faction) {
+/*    if (GameFactions.ThePolice == faction) {
         if (aggressor.Model.Abilities.IsLawEnforcer && !Rules.IsMurder(aggressor, target)) return;
         OnMakeEnemyOfCop(aggressor, target, wasAlreadyEnemy);
-      } else if (GameFactions.TheArmy == faction) {
+      } else  */ if (GameFactions.TheArmy == faction) {
         OnMakeEnemyOfSoldier(aggressor, target, wasAlreadyEnemy);
       }
       var leader = target.LiveLeader;
@@ -9315,6 +9346,41 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // the two lists are disjoint by construction.
+    static private KeyValuePair<List<PlayerController>, List<Actor>>? Witnesses(Location loc, int radius, Func<Actor,bool> ok) {
+        List<PlayerController> ret = new();
+        List<Actor> ret_viewpoints = new();
+
+        void classify(Actor? actor) {
+            if (null != actor && !actor.IsDead && ok(actor)) {
+                if (actor.Controller is PlayerController pc) ret.Add(pc);
+                else ret_viewpoints.Add(actor);
+            }
+        };
+
+        var survey = new Rectangle(loc.Position+(short)radius*Direction.NW, (Point)(2*radius+1));
+        // lambda function access of loc.Position prevents converting to member function
+        survey.DoForEach(pt => {
+          Location test = new Location(loc.Map, pt);
+          if (Map.Canonical(ref test)) classify(test.Actor);
+        });
+
+        var exit = loc.Exit;
+        if (null != exit) classify(exit.Location.Actor);
+
+        return (0<ret.Count || 0<ret_viewpoints.Count) ? new(ret, ret_viewpoints) : null;
+    }
+
+    static public KeyValuePair<List<PlayerController>, List<Actor>>? WitnessesInLOS(Location view) {
+      if (!Map.Canonical(ref view)) return null;
+
+      bool sees(Actor a) { return a.Controller.CanSee(view); };
+
+      return Witnesses(view, Actor.MAX_VISION, sees);
+    }
+
+
+    // the two lists are disjoint by construction.
+    // This excludes NPCS, who do not get UI messages
     static private KeyValuePair<List<PlayerController>, List<Actor>>? PCsNearby(Location loc, int radius, Func<Actor,bool> ok) {
         List<PlayerController> ret = new();
         List<Actor> ret_viewpoints = new();
@@ -15160,6 +15226,23 @@ retry:
         foreach(var a in witnesses.Value) if (a == observer) return what.TheName;
         return null;
     }
+
+    static public Actor? WitnessedBy(this KeyValuePair<List<PlayerController>, List<Actor>> witnesses, Func<Actor, bool> ok) {
+        foreach(var pc in witnesses.Key) if (ok(pc.ControlledActor)) return pc.ControlledActor;
+        foreach(var a in witnesses.Value) if (ok(a)) return a;
+        return null;
+    }
+
+    static public KeyValuePair<List<PlayerController>, List<Actor>>? grep(this KeyValuePair<List<PlayerController>, List<Actor>> witnesses, Func<Actor, bool> ok) {
+        List<PlayerController> ret = new();
+        List<Actor> ret_viewpoints = new();
+
+        foreach(var pc in witnesses.Key) if (ok(pc.ControlledActor)) ret.Add(pc);
+        foreach(var a in witnesses.Value) if (ok(a)) ret_viewpoints.Add(a);
+
+        return (0<ret.Count || 0<ret_viewpoints.Count) ? new(ret, ret_viewpoints) : null;
+    }
+
   }
 #nullable restore
 }

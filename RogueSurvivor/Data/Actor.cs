@@ -327,6 +327,7 @@ namespace djack.RogueSurvivor.Data
       get { return GetFlag(Flags.IS_SLEEPING); }
       set { SetFlag(Flags.IS_SLEEPING, value); }
     }
+    static public bool isAwake(Actor a) { return !a.IsSleeping; }
 
     public bool IsRunning {
       get { return GetFlag(Flags.IS_RUNNING); }
