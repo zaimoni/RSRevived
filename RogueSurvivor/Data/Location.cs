@@ -299,12 +299,12 @@ namespace djack.RogueSurvivor.Data
     }
   }
 
-  internal interface ILocation {
+  public interface ILocation {
         public Location Location { get; set; }
   }
 
 #if PROTOTYPE
-  internal interface ILocation_readonly {
+  public interface ILocation_readonly {
         public Location Location { get; }
   }
 #endif

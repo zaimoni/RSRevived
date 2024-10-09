@@ -247,7 +247,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {
         var want_leader = friends?.Filter(a => m_Actor.CanTakeLeadOf(a.Percepted));
-        FilterOutUnreachablePercepts(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
+        FilterOutUnreachable(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
         var target = FilterNearest(want_leader);
         if (target != null) {
           tmpAction = BehaviorLeadActor(target);

@@ -419,13 +419,13 @@ namespace Zaimoni.Data
       foreach(var x in reject) src.Remove(x);
     }
 
-    public static void OnlyIf<_T_>(this List<_T_> percepts, Func<_T_,bool> test)
+    public static void OnlyIf<_T_>(this IList<_T_> percepts, Func<_T_,bool> test)
     {
       int i = percepts.Count;
       while(0 <= --i) if (!test(percepts[i])) percepts.RemoveAt(i);
     }
 
-    public static void OnlyIfNot<_T_>(this List<_T_> percepts, Func<_T_,bool> test)
+    public static void OnlyIfNot<_T_>(this IList<_T_> percepts, Func<_T_,bool> test)
     {
       int i = percepts.Count;
       while(0 <= --i) if (test(percepts[i])) percepts.RemoveAt(i);

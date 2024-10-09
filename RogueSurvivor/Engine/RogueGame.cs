@@ -5371,6 +5371,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(new(string.Format("{0} is now a personal enemy.", target.TheName), Session.Get.WorldTime.TurnCounter, Color.Orange));
           DoMakeAggression(player, target);
           actorList.RemoveAt(index);
+          if (actorList.Count <= index) index = actorList.Count - 1;
         }
         RemoveOverlay(nominate);
       } while(0 < actorList.Count);

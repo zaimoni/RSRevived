@@ -455,7 +455,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var want_leader = friends?.Filter(a => m_Actor.CanTakeLeadOf(a.Percepted));
         // do not allow police to lead murderers
         if (m_Actor.Model.Abilities.IsLawEnforcer) want_leader = want_leader?.Filter(a => 0 >= a.MurdersCounter);
-        FilterOutUnreachablePercepts(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
+        FilterOutUnreachable(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
         var target = FilterNearest(want_leader);
         if (target != null) {
 #if TRACE_SELECTACTION

@@ -1166,7 +1166,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
        return m_RouteFinder.CanReachSimple(in dest, Rules.GridDistance(m_Actor.Location, in dest), Rules.GridDistanceFn);
     }
 
-    protected void FilterOutUnreachablePercepts<_T_>(ref List<_T_> percepts, RouteFinder.SpecialActions allowedActions) where _T_:WhereWhen
+    protected void FilterOutUnreachable<_T_>(ref List<_T_> percepts, RouteFinder.SpecialActions allowedActions) where _T_:ILocation
     {
       percepts?.OnlyIf(p => CanReachSimple(p.Location, allowedActions));
     }

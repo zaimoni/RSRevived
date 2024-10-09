@@ -209,7 +209,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null!= mayStealFrom) {
           // alpha10 make sure to consider only reachable victims
           // gangs can break & push stuff
-          FilterOutUnreachablePercepts(ref mayStealFrom, RouteFinder.SpecialActions.ADJ_TO_DEST_IS_GOAL | RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.BREAK | RouteFinder.SpecialActions.PUSH);
+          FilterOutUnreachable(ref mayStealFrom, RouteFinder.SpecialActions.ADJ_TO_DEST_IS_GOAL | RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.BREAK | RouteFinder.SpecialActions.PUSH);
           if (0 < mayStealFrom.Count) {
             Percept victimize = FilterNearest(mayStealFrom);
             Actor target = victimize.Percepted as Actor;
@@ -233,7 +233,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {
         var want_leader = friends?.Filter(a => m_Actor.CanTakeLeadOf(a.Percepted));
-        FilterOutUnreachablePercepts(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
+        FilterOutUnreachable(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
         var target = FilterNearest(want_leader);
         if (target != null) {
           tmpAction = BehaviorLeadActor(target);
