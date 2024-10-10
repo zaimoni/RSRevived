@@ -687,7 +687,12 @@ namespace djack.RogueSurvivor.Engine
       if (null == killer) return false;
       if (victim.Model.Abilities.IsUndead) return false;
       bool k_first_class = killer.IsFirstClassCitizen();
-      if (k_first_class && 0 < victim.MurdersOnRecord(killer)) return false;
+      // 2024-10-09 zaimoni: for now, pretend army has access to police records
+      if (k_first_class) {
+        if (Session.Get.Police.IsTargeted(victim)) return false;
+        // legacy
+        if (0 < victim.MurdersOnRecord(killer)) return false;
+      }
 #if POLICE_NO_QUESTIONS_ASKED
       if (killer.Model.Abilities.IsLawEnforcer && killer.Threats.IsThreat(victim)) return false;
 #endif
@@ -697,6 +702,7 @@ namespace djack.RogueSurvivor.Engine
       var killer_leader = killer.LiveLeader;
       if (!k_first_class) {
         if (null != killer_leader && killer_leader.IsFirstClassCitizen()) {
+          if (Session.Get.Police.IsTargeted(victim)) return false;
           if (victim.MurdersOnRecord(killer_leader) > 0) return false;
           if (killer_leader.IsEnemyOf(victim)) return false;
           if (victim.IsSelfDefenceFrom(killer_leader)) return false;  // XXX redundant?

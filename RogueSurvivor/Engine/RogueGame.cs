@@ -5372,6 +5372,10 @@ namespace djack.RogueSurvivor.Engine
           DoMakeAggression(player, target);
           actorList.RemoveAt(index);
           if (actorList.Count <= index) index = actorList.Count - 1;
+          while(0 <= index && player.IsEnemyOf(actorList[index])) {
+            actorList.RemoveAt(index);
+            if (actorList.Count <= index) index = actorList.Count - 1;
+          }
         }
         RemoveOverlay(nominate);
       } while(0 < actorList.Count);
