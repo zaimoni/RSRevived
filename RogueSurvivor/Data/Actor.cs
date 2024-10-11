@@ -619,7 +619,7 @@ namespace djack.RogueSurvivor.Data
       const int MURDERER_SPOTTING_BASE_CHANCE = 5;
       const int MURDER_SPOTTING_MURDERCOUNTER_BONUS = 5;
       const int MURDERER_SPOTTING_DISTANCE_PENALTY = 1;
-      return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * Rules.InteractionDistance(spotter.Location, Location);
+      return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * Session.Get.Police.CountCapitalCrimes(this) - MURDERER_SPOTTING_DISTANCE_PENALTY * Rules.InteractionDistance(spotter.Location, Location);
     }
 
     public int MurdersInProgress {
@@ -665,13 +665,6 @@ namespace djack.RogueSurvivor.Data
     public bool IsUnsuspiciousFor(Actor observer) { return Rules.Get.RollChance(UnsuspicousForChance(observer)); }
 #nullable restore
 
-    public int MurdersCounter {
-      get {
-        s_MurdersCounter.TryGetValue(this, out var murders);
-        return murders + MurdersInProgress;
-      }
-    }
-
     public bool IgnoredByPolice(Actor observer) {
       if (100 <= UnsuspicousForChance(observer)) return true;
       if (0 >= MurdererSpottedByChance(observer)) return true;
@@ -682,8 +675,8 @@ namespace djack.RogueSurvivor.Data
       int circumstantial = MurdersInProgress;
       if (!observer.Faction.IsEnemyOf(Faction) && observer.Model.Abilities.IsLawEnforcer && IsEnemyOf(observer)) circumstantial += 1;
       if (IgnoredByPolice(observer)) return circumstantial;
-      s_MurdersCounter.TryGetValue(this, out var murders);
-      return murders+ circumstantial;
+      int murders = Session.Get.Police.CountCapitalCrimes(this); // not really, this aggregates murders and assaults
+      return murders + circumstantial;
     }
 
     public bool IsFirstClassCitizen()

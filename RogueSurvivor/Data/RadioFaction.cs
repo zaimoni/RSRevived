@@ -238,6 +238,40 @@ namespace djack.RogueSurvivor.Data
         }
         public List<SVOevent>? WantedFor(Actor perp) => WantedFor(new ActorTag(perp));
 
+        public int CountCapitalCrimes(ActorTag perp) {
+            int ret = 0;
+            foreach (var x in m_EventLog) if (x.subject == perp) ++ret;
+            return ret;
+        }
+        public int CountCapitalCrimes(Actor perp) => CountCapitalCrimes(new ActorTag(perp));
+
+        public int CountMurders(ActorTag perp)
+        {
+            int ret = 0;
+            foreach (var x in m_EventLog) if (x.subject == perp && (1 == x.v_code || 3 == x.v_code)) ++ret;
+            return ret;
+        }
+        public int CountMurders(Actor perp) => CountMurders(new ActorTag(perp));
+
+        public int CountAssaults(ActorTag perp)
+        {
+            int ret = 0;
+            foreach (var x in m_EventLog) if (x.subject == perp && (2 == x.v_code || 4 == x.v_code)) ++ret;
+            return ret;
+        }
+        public int CountAssaults(Actor perp) => CountAssaults(new ActorTag(perp));
+
+        public List<ActorTag>? Wanted() {
+            List<ActorTag> ret = new();
+            // want time-reversed order
+            int i = m_EventLog.Count;
+            while (0 <= --i) {
+                var whom = m_EventLog[i].subject;
+                if (!ret.Contains(whom)) ret.Add(whom);
+            }
+            return (0<ret.Count) ? ret : null;
+        }
+
         public void OnKilled(ActorTag perp)
         {
             var ub = m_EventLog.Count;

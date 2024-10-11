@@ -207,7 +207,7 @@ namespace djack.RogueSurvivor.Data
                             else if (a.IsAlmostSleepy) actor_stats.Add("<span style='background-color:black; color:green'>Z</span>");
                         }
                         if (a.IsSleeping) actor_stats.Add("<span style='background-color:black; color:cyan'>Z</span>");
-                        if (0 < a.MurdersCounter) actor_stats.Add("<span style='background-color:black; color:red'>M</span>");
+                        if (Engine.Session.Get.Police.IsTargeted(a)) actor_stats.Add("<span style='background-color:black; color:red'>M</span>");
                         if (0 < a.CountFollowers) actor_stats.Add("<span style='background-color:black; color:cyan'>L</span>");
                         if (null != a.LiveLeader) actor_stats.Add("<span style='background-color:black; color:cyan'>F:" + a.LiveLeader.Name + "</span>");
 

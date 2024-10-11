@@ -4338,17 +4338,20 @@ namespace djack.RogueSurvivor.Engine
     private void HandleFactionInfo()
     {
       List<string> options = new(){ "Status", "Enemies by aggression" };
-      string header = "Reviewing...";
+      string header = string.Empty;
+      if (Player.IsFaction(GameFactions.IDs.ThePolice)) options.Add("WANTED");
 
       if (null == Player.Aggressing && null == Player.Aggressors) {
         options.RemoveAt(1);
         header = "No personal enemies";
       }
 
+      if (string.IsNullOrEmpty(header)) header = "Reviewing...";
+
       string label(int index) { return options[index]; }
       bool details(int index) {
         var display = new List<string>();
-        switch(index)
+        switch(index + ((0<index && header == "No personal enemies") ? 1 : 0))
         {
         case 0:
             if (Player.IsFaction(GameFactions.IDs.ThePolice)) {
@@ -4418,6 +4421,21 @@ namespace djack.RogueSurvivor.Engine
             if (0 >= display.Count) {
               InfoPopup("No personal enemies");
               return false;
+            }
+            }
+            break;
+        case 2:
+            {
+            var wanted = Session.Get.Police.Wanted();
+            if (0 >= wanted.Count) {
+              InfoPopup("No death-penalty criminals");
+              return false;
+            }
+            void name_him(ActorTag a) { display.Add(a.Name); }
+            wanted.DoForEach_(name_him, () => display.Add("Death-penalty criminals:"));
+            if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT < display.Count) {
+              display.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT, (display.Count-SHOW_SPECIAL_DIALOGUE_LINE_LIMIT)+1);
+              display.Add("...");
             }
             }
             break;
@@ -7411,9 +7429,12 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       } else if (null != leader && leader.IsPlayer && actor.IsTrustingLeader) {
-        lines.Add(0 < (murders = actor.MurdersCounter)
+        lines.Add(0 < (murders = Session.Get.Police.CountMurders(actor))
                      ? string.Format("* Confess {0}! *", "murder".QtyDesc(murders))
                      : "Has committed no murders.");
+        lines.Add(0 < (murders = Session.Get.Police.CountAssaults(actor))
+                     ? string.Format("* Confess {0}! *", "assault".QtyDesc(murders))
+                     : "Has committed no assaults.");
       }
       if (actor.IsAggressorOf(Player)) lines.Add("Aggressed you.");
       if (Player.IsSelfDefenceFrom(actor)) lines.Add(string.Format("You can kill {0} in self-defence.", actor.HimOrHer));
@@ -10938,16 +10959,21 @@ namespace djack.RogueSurvivor.Engine
             }
           });
         }
-        if (killer.Model.Abilities.IsLawEnforcer) {
-          if (!killer.Faction.IsEnemyOf(deadGuy.Faction) && 0 < deadGuy.MurdersCounter) {
+        if (killer.Model.Abilities.IsLawEnforcer && !killer.Faction.IsEnemyOf(deadGuy.Faction)) {
+          if (0 < Session.Get.Police.CountMurders(deadGuy)) {
             if (killer.IsPlayer)
               AddMessage(new("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
             else
               killer.Say(deadGuy, "Good riddance, murderer!", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+          } else if (0 < Session.Get.Police.CountAssaults(deadGuy)) {
+            if (killer.IsPlayer)
+              AddMessage(new("You feel like you did your duty with killing a violent criminal.", Session.Get.WorldTime.TurnCounter, Color.White));
+            else
+              killer.Say(deadGuy, "Good riddance!", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
           }
 
           // Police report all (non-murder) kills via police radio.  National Guard likely to do same.
-          if (!killer.IsPlayer && !isMurder.cache) {
+          if (!isMurder.cache) {
             // optimized version of this feasible...but if we want AI to respond directly then much of that optimization goes away
             // also need to consider background thread to main thread issues
             // possible verbs: killed, terminated, erased, downed, wasted.
@@ -11185,8 +11211,8 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append(" ");
       textFile.Append("> KILLS");
       p_scoring.DescribeKills(textFile, str1);
-      if (!Player.Model.Abilities.IsUndead && 0 < (test = Player.MurdersCounter))
-        textFile.Append(string.Format("{0} committed {1}!", str1, "murder".QtyDesc(test)));
+      if (0 < (test = Session.Get.Police.CountMurders(Player))) textFile.Append(string.Format("{0} committed {1}!", str1, "murder".QtyDesc(test)));
+      if (0 < (test = Session.Get.Police.CountAssaults(Player))) textFile.Append(string.Format("{0} committed {1}!", str1, "assault".QtyDesc(test)));
       textFile.Append(" ");
       textFile.Append("> FUN FACTS!");
       textFile.Append(string.Format("While {0} has died, others are still having fun!", name));
@@ -11597,7 +11623,7 @@ namespace djack.RogueSurvivor.Engine
           case Skills.IDs.STRONG: return 2;
           case Skills.IDs.STRONG_PSYCHE: return !actor.Model.Abilities.HasSanity ? 0 : 3;
           case Skills.IDs.TOUGH: return 3;
-          case Skills.IDs.UNSUSPICIOUS: return actor.MurdersCounter <= 0 || actor.Model.Abilities.IsLawEnforcer ? 0 : 1;
+          case Skills.IDs.UNSUSPICIOUS: return !Session.Get.Police.IsTargeted(actor) || actor.Model.Abilities.IsLawEnforcer ? 0 : 1;
           default: return USELESS_UTIL;
         }
       }
@@ -11735,8 +11761,8 @@ namespace djack.RogueSurvivor.Engine
                 m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", Player.ActorScoring.TotalPoints, (int)(100.0 * (double)s_Options.DifficultyRating((GameFactions.IDs)Player.Faction.ID)), Session.DescShortGameMode(Session.Get.GameMode)), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
                 m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", 1 + Session.Get.Scoring.ReincarnationNumber, 1 + s_Options.MaxReincarnations), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-BOLD_LINE_SPACING);
                 if (null != m_Player) {
-                  if (Player.MurdersCounter > 0)
-                    m_UI.UI_DrawString(Color.White, string.Format("Murders {0}", Player.MurdersCounter), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-BOLD_LINE_SPACING);
+                  var capital_crimes = Session.Get.Police.CountCapitalCrimes(Player);
+                  if (0 < capital_crimes) m_UI.UI_DrawString(Color.White, string.Format("Capital crimes {0}", capital_crimes), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-BOLD_LINE_SPACING);
                   DrawActorStatus(Player, RIGHTPANEL_TEXT_X, RIGHTPANEL_TEXT_Y);
                   if (Player.Inventory != null && Player.Model.Abilities.HasInventory)
                     DrawInventory(Player.Inventory, "Inventory", true, Map.GROUND_INVENTORY_SLOTS, Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
@@ -12522,7 +12548,7 @@ namespace djack.RogueSurvivor.Engine
             if (a.IsFaction(GameFactions.IDs.ThePolice)) return new(GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_POSITION);
             var leader = a.LiveLeader;
             if (leader?.IsFaction(GameFactions.IDs.ThePolice) ?? false) return new(GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_DEPUTY_POSITION);
-            bool is_murderer = Player.IsFaction(GameFactions.IDs.ThePolice) && 0 < a.MurdersCounter;
+            bool is_murderer = Player.IsFaction(GameFactions.IDs.ThePolice) && Session.Get.Police.IsTargeted(a);
             if (Player.IsEnemyOf(a)) {
                 if (is_murderer) {
                      return new(GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_POLICE_EN_MURDERER_POSITION);
@@ -14793,12 +14819,12 @@ retry:
         else stringList.Add("    Undeads don't care for brains apparently.");
       }
       if (actorList1.Count > 0) {
-        actorList1.SortDecreasing(x => x.MurdersCounter);
+        actorList1.SortDecreasing(x => Session.Get.Police.CountMurders(x));
         stringList.Add("- Most Murderous Murderer Murdering");
-        if (actorList1[0].MurdersCounter > 0) {
-          stringList.Add(string.Format("    1st {0}.", FunFactActorResume(actorList1[0], actorList1[0].MurdersCounter.ToString())));
-          if (actorList1.Count > 1 && actorList1[1].MurdersCounter > 0)
-            stringList.Add(string.Format("    2nd {0}.", FunFactActorResume(actorList1[1], actorList1[1].MurdersCounter.ToString())));
+        if (0 < Session.Get.Police.CountMurders(actorList1[0])) {
+          stringList.Add(string.Format("    1st {0}.", FunFactActorResume(actorList1[0], Session.Get.Police.CountMurders(actorList1[0]).ToString())));
+          if (1 < actorList1.Count && 0 < Session.Get.Police.CountMurders(actorList1[1]))
+            stringList.Add(string.Format("    2nd {0}.", FunFactActorResume(actorList1[1], Session.Get.Police.CountMurders(actorList1[1]).ToString())));
         }
         else stringList.Add("    No murders committed!");
       }

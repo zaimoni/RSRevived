@@ -8030,8 +8030,8 @@ restart_chokepoints:
       // 0) must be civilian or survivor
       var faction = m_Actor.Faction;
       if (GameFactions.TheCivilians != faction && GameFactions.TheSurvivors != faction) return true;
-      // 4) must have committed no murders \todo once we have revamped the representation of crime, review this
-      if (0 < m_Actor.MurdersCounter) return true;
+      // 4) must have committed no capital crimes
+      if (Session.Get.Police.IsTargeted(m_Actor)) return true;
       return false;
     }
 

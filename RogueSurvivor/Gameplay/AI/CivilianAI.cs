@@ -333,7 +333,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (a.Leader != m_Actor && m_Actor.Leader != a) {
                 if (a.Faction.ID.ExtortionIsAggression()) {
                   a.Say(m_Actor, string.Format("ATTEMPTED MURDER! {0} HAS AGGRESSED {1}!", m_Actor.TheName, m_Actor.TargetActor.TheName), Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
-                  if (0 == m_Actor.MurdersOnRecord(a) || 0==m_Actor.MurdersCounter) m_Actor.HasMurdered(m_Actor.TargetActor); // XXX not really, but keeps things from going weird for civilian followers of police
                   game.RadioNotifyAggression(a, m_Actor, "(police radio, {0}) Executing {1} for attempted murder."); // XXX \todo correct name for radio
                   game.DoMakeAggression(a, m_Actor);
                 }
@@ -453,8 +452,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {
         var want_leader = friends?.Filter(a => m_Actor.CanTakeLeadOf(a.Percepted));
-        // do not allow police to lead murderers
-        if (m_Actor.Model.Abilities.IsLawEnforcer) want_leader = want_leader?.Filter(a => 0 >= a.MurdersCounter);
+        // do not allow police to lead capital criminals
+        if (m_Actor.Model.Abilities.IsLawEnforcer) want_leader = want_leader?.Filter(a => !Session.Get.Police.IsTargeted(a));
         FilterOutUnreachable(ref want_leader, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP);
         var target = FilterNearest(want_leader);
         if (target != null) {
