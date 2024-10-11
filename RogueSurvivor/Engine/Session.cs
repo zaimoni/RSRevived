@@ -94,7 +94,6 @@ namespace djack.RogueSurvivor.Engine
             info.read_nullsafe(ref m_CommandLineOptions, "CommandLineOptions");
             // load other classes' static variables
             ActorModel.Load(info, context);
-            Actor.Load(info, context);
             Rules.Get.Load(info, context);
             PlayerController.Load(info, context);
             // end load other classes' static variables
@@ -123,7 +122,6 @@ namespace djack.RogueSurvivor.Engine
             info.AddValue("PlayerKnows_CHARUndergroundFacilityLocation", PlayerKnows_CHARUndergroundFacilityLocation);
             info.AddValue("CommandLineOptions", m_CommandLineOptions, typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
             ActorModel.Save(info, context);
-            Actor.Save(info, context);
             Rules.Get.Save(info, context);
             PlayerController.Save(info, context);
             info.AddValue("World", World, typeof(World));

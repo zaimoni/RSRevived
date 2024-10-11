@@ -174,7 +174,6 @@ namespace djack.RogueSurvivor.Data
     public int OdorSuppressorCounter;   // sparse field
     public readonly Engine.ActorScoring ActorScoring;
 
-    private static Dictionary<Actor,int> s_MurdersCounter = new Dictionary<Actor,int>();
     [NonSerialized] private Actor? m_Leader;              // Backpointer
     [NonSerialized] private Attack m_CurrentMeleeAttack;    // dataflow candidate
     [NonSerialized] private Attack m_CurrentRangedAttack;    // dataflow candidate
@@ -703,8 +702,6 @@ namespace djack.RogueSurvivor.Data
           if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
         }
 #endif
-        if (s_MurdersCounter.ContainsKey(this)) s_MurdersCounter[this]++; // bypasses hungry civilian adjustment
-        else s_MurdersCounter.Add(this,1);
         ActorScoring.AddEvent(Engine.Session.Get.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", victim.TheName, victim.Model.Name));
     }
 
@@ -821,19 +818,6 @@ namespace djack.RogueSurvivor.Data
       m_CurrentDefence = Model.BaseDefence;
       m_CurrentRangedAttack = Attack.BLANK;
     }
-
-#region Session save/load assistants
-    static public void Load(SerializationInfo info, StreamingContext context)
-    {
-      info.read(ref s_MurdersCounter, "s_MurdersCounter");
-    }
-
-    static public void Save(SerializationInfo info, StreamingContext context)
-    {
-      s_MurdersCounter.OnlyIf(PossiblyAlive);   // backstop
-      info.AddValue("s_MurdersCounter", s_MurdersCounter);
-    }
-#endregion
 
     // don't worry about CPU cost as long as this is profile-cold
     static private bool PossiblyAlive(Actor a)
