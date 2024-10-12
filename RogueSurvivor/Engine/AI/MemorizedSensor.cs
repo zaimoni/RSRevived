@@ -37,33 +37,16 @@ namespace djack.RogueSurvivor.Engine.AI
     // (this is data-live for corpses through their controller)
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
-      var ub = m_Percepts.Count;
-      while(0 <= --ub) {
-        var p = m_Percepts[ub];
-        if (p.GetAge(Session.Get.WorldTime.TurnCounter)>m_Persistance) {
-          m_Percepts.RemoveAt(ub);
-          continue;
-        }
-        if (p.Percepted is Inventory inv) {
-          if (inv.IsEmpty) {
-            m_Percepts.RemoveAt(ub);
-            continue;
-          }
-#if PROTOTYPE
-          if (null != p.Location.Items) {
-            if (p.Location.Items!=inv) throw new InvalidOperationException("tracing");
-          }
-#endif
-        }
-      }
+      Forget();
     }
 
     public void Clear() { m_Percepts.Clear(); }
 #nullable restore
 
-    public void Forget()
+    private void Forget()
     {
       var actor = Viewpoint;
+      if (null != actor) return;
       // memorized sensor is only used for vision
       HashSet<Point> FOV = LOS.ComputeFOVFor(actor);
       var tmp = new List<Percept>(m_Percepts.Count);

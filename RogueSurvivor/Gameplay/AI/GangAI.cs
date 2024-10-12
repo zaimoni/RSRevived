@@ -54,11 +54,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override bool UsesExplosives { get { return false; } }
 
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
-    {
-      m_MemLOSSensor.Forget();
-    }
-
 #nullable enable
     public override List<Percept> UpdateSensors()
     {

@@ -48,11 +48,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Exploration = new ExplorationData();
     }
 
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
-    {
-      m_MemLOSSensor.Forget();
-    }
-
 #nullable enable
     public override List<Percept> UpdateSensors()
     {

@@ -34,11 +34,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES, src), LOS_MEMORY);
     }
 
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
-    {
-      m_MemLOSSensor.Forget();
-    }
-
     public override List<Percept> UpdateSensors()
     {
       m_LivingSmellSensor.Sense(m_Actor);
