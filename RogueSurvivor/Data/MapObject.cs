@@ -472,13 +472,6 @@ namespace djack.RogueSurvivor.Data
     }
 #endregion
 
-#if DEBUG
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
-    {
-      m_Inventory.RepairZeroQty();
-    }
-#endif
-
     public void TransferFrom(Item it, Inventory dest) { m_Inventory.Transfer(it, dest); }
 
     public string ReasonCantPutItemIn(Actor actor)

@@ -59,13 +59,6 @@ namespace djack.RogueSurvivor.Engine.AI
       m_Percepted = percepted;
     }
 
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
-    {
-#if DEBUG
-      if (m_Percepted is Inventory inv) inv.RepairZeroQty();
-#endif
-    }
-
     public override string ToString()
     {
       return Percepted.ToString()+" @ "+base.ToString();

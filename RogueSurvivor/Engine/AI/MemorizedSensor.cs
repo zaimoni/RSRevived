@@ -49,9 +49,6 @@ namespace djack.RogueSurvivor.Engine.AI
             m_Percepts.RemoveAt(ub);
             continue;
           }
-#if DEBUG
-          inv.RepairZeroQty();
-#endif
 #if PROTOTYPE
           if (null != p.Location.Items) {
             if (p.Location.Items!=inv) throw new InvalidOperationException("tracing");

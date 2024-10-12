@@ -3118,9 +3118,6 @@ retry:
       m_Zones.TrimExcess();
       m_CorpsesList.TrimExcess();
       m_Timers.TrimExcess();
-#if DEBUG
-      foreach(var x in m_GroundItemsByPosition) x.Value.RepairZeroQty();
-#endif
     }
 
     public override int GetHashCode() { return _hash; }

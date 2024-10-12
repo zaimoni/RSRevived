@@ -54,9 +54,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         _enemies = null;
         _items = null;
       }
-#if DEBUG
-      if (null != _items) foreach(var x in _items) x.Value.RepairZeroQty();
-#endif
     }
 
     private void _seeActors(List<Percept> perceptList, Location[] normalized_FOV)

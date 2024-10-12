@@ -416,13 +416,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         newStack(in loc);
       }
 
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
-    {
-#if DEBUG
-      foreach(var x in _stacks) x.Percepted.RepairZeroQty();
-#endif
-    }
-
       [OnDeserialized] void OnDeserialized(StreamingContext context) {
         ordai = m_Actor.Controller as OrderableAI;
       }
