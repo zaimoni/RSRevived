@@ -44,12 +44,7 @@ namespace djack.RogueSurvivor.Data
     public Map EntryMap {
       get { return m_EntryMap!; }
       private set {
-        if (null != m_EntryMap)
-#if DEBUG
-          throw new InvalidOperationException("entry map already generated");
-#else
-          RemoveMap(m_EntryMap);
-#endif
+        if (null != m_EntryMap) throw new InvalidOperationException("entry map already generated");
         m_EntryMap = value;
 //      if (value == null) return;
         m_Name = value.Name;    // historical identity of district name and map name
@@ -76,12 +71,7 @@ namespace djack.RogueSurvivor.Data
     public Map? SewersMap {
       get { return m_SewersMap; }
       private set {
-        if (null != m_SewersMap)
-#if DEBUG
-          throw new InvalidOperationException("sewers map already generated");
-#else
-          RemoveMap(m_SewersMap);
-#endif
+        if (null != m_SewersMap) throw new InvalidOperationException("sewers map already generated");
         m_SewersMap = value;
 //      if (value == null) return;
         AddMap(value);
@@ -96,12 +86,7 @@ namespace djack.RogueSurvivor.Data
     public Map? SubwayMap {
       get { return m_SubwayMap; }
       set { // used from BaseTownGenerator::GenerateSubwayMap
-        if (null != m_SubwayMap)
-#if DEBUG
-          throw new InvalidOperationException("subway map already generated");
-#else
-          RemoveMap(m_SubwayMap);
-#endif
+        if (null != m_SubwayMap) throw new InvalidOperationException("subway map already generated");
         m_SubwayMap = value;
 //      if (value == null) return;
         AddMap(value);
@@ -236,7 +221,9 @@ namespace djack.RogueSurvivor.Data
 
     // XXX \todo do we really need a public thin wrapper for a protected function (mapgen so cold path)
     public void AddUniqueMap(Map map) => AddMap(map);
+#if OBSOLETE
     protected void RemoveMap(Map map) => m_Maps.Remove(map);
+#endif
 
     [Serializable]
     public struct MapCode {
