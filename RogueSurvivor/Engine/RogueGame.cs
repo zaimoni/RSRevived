@@ -13711,7 +13711,7 @@ namespace djack.RogueSurvivor.Engine
           Logger.WriteLine(Logger.Stage.RUN_MAIN, "entry map ok");
 #endif
           // other (hypothetical) map generation types are not guaranteed to have sewers or subways so leave those where they are
-          if (world.CHAR_CityLimits.Contains(dest)) GenerateDistrictSewersMap(district);
+          if (world.CHAR_CityLimits.Contains(dest)) district.GenerateSewersMap(m_TownGenerator);
 #if DEBUG
           Logger.WriteLine(Logger.Stage.RUN_MAIN, "sewers map ok");
 #endif
@@ -13894,11 +13894,6 @@ namespace djack.RogueSurvivor.Engine
       Map mapCharUnderground = m_TownGenerator.GenerateUniqueMap_CHARUnderground(district.EntryMap, officeZone);
       district.AddUniqueMap(mapCharUnderground);
       return new UniqueMap(mapCharUnderground);
-    }
-
-    private void GenerateDistrictSewersMap(District district)
-    {
-      m_TownGenerator.GenerateSewersMap(district.EntryMap.Seed << 1 ^ district.EntryMap.Seed, district);
     }
 
     private void GeneratePlayerOnMap(Map map)

@@ -44,7 +44,12 @@ namespace djack.RogueSurvivor.Data
     public Map EntryMap {
       get { return m_EntryMap!; }
       private set {
-        if (m_EntryMap != null) RemoveMap(m_EntryMap);
+        if (null != m_EntryMap)
+#if DEBUG
+          throw new InvalidOperationException("entry map already generated");
+#else
+          RemoveMap(m_EntryMap);
+#endif
         m_EntryMap = value;
 //      if (value == null) return;
         m_Name = value.Name;    // historical identity of district name and map name
@@ -70,10 +75,16 @@ namespace djack.RogueSurvivor.Data
 
     public Map? SewersMap {
       get { return m_SewersMap; }
-      set { // used from BaseTownGenerator::GenerateSewersMap
-        if (m_SewersMap != null) RemoveMap(m_SewersMap);
+      private set {
+        if (null != m_SewersMap)
+#if DEBUG
+          throw new InvalidOperationException("sewers map already generated");
+#else
+          RemoveMap(m_SewersMap);
+#endif
         m_SewersMap = value;
-        if (null != value) AddMap(value);
+//      if (value == null) return;
+        AddMap(value);
       }
     }
 
@@ -85,9 +96,15 @@ namespace djack.RogueSurvivor.Data
     public Map? SubwayMap {
       get { return m_SubwayMap; }
       set { // used from BaseTownGenerator::GenerateSubwayMap
-        if (m_SubwayMap != null) RemoveMap(m_SubwayMap);
+        if (null != m_SubwayMap)
+#if DEBUG
+          throw new InvalidOperationException("subway map already generated");
+#else
+          RemoveMap(m_SubwayMap);
+#endif
         m_SubwayMap = value;
-        if (null != value) AddMap(value);
+//      if (value == null) return;
+        AddMap(value);
       }
     }
 
@@ -458,6 +475,9 @@ namespace djack.RogueSurvivor.Data
     // low-level support
     public void GenerateEntryMap(World world, int districtSize, Gameplay.Generators.BaseTownGenerator m_TownGenerator)
     {
+#if DEBUG
+      if (null != m_EntryMap) throw new InvalidOperationException("entry map already generated");
+#endif
       int x = WorldPosition.X;
       int y = WorldPosition.Y;
 
@@ -489,6 +509,17 @@ namespace djack.RogueSurvivor.Data
       // done.
       EntryMap = map;
     }
+
+    public void GenerateSewersMap(Gameplay.Generators.BaseTownGenerator m_TownGenerator)
+    {
+#if DEBUG
+      if (null == m_EntryMap) throw new InvalidOperationException("entry map not generated yet");
+      if (null != m_SewersMap) throw new InvalidOperationException("sewers map already generated");
+#endif
+      Map map = m_TownGenerator.GenerateSewersMap(EntryMap.Seed << 1 ^ EntryMap.Seed, this);
+      SewersMap = map;
+    }
+
 
     public override int GetHashCode()
     {

@@ -831,7 +831,6 @@ restart:
       // 10. Music.
       sewers.BgMusic = GameMusics.SEWERS;
 
-      district.SewersMap = sewers;
 #if DEBUG
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: complete");
 #endif
