@@ -46,22 +46,17 @@ namespace djack.RogueSurvivor.Engine.AI
     private void Forget()
     {
       var actor = Viewpoint;
-      if (null != actor) return;
+      if (null == actor) return;
       // memorized sensor is only used for vision
-      HashSet<Point> FOV = LOS.ComputeFOVFor(actor);
+      var FOVloc = actor.Controller.FOVloc;
       var tmp = new List<Percept>(m_Percepts.Count);
       foreach(var p in m_Percepts) {
         if (p.GetAge(actor.Location.Map.LocalTime.TurnCounter)>m_Persistance) continue;
         if (p.Percepted is Actor a) {
           if (a.IsDead) continue;
-          if (a.Location.Map != actor.Location.Map) continue;   // XXX valid for RS Alpha 6, invalid for RS Revived; want to verify other changes first
+//        if (a.Location.Map != actor.Location.Map) continue;   // XXX valid for RS Alpha 6, invalid for RS Revived; want to verify other changes first
         } else {    // actors need a different test than the following
-          if (p.Location.Map==actor.Location.Map) {
-            if (FOV.Contains(p.Location.Position)) continue;
-          } else {
-            Location? test = actor.Location.Map.Denormalize(p.Location);
-            if (null != test && FOV.Contains(test.Value.Position)) continue;
-          }
+          if (0 <= Array.IndexOf(FOVloc, p.Location)) continue;
         }
         if (p.Percepted is Inventory inv && inv.IsEmpty) continue;
         if (p.Percepted is List<Corpse> corpses && 0>=corpses.Count) continue;
@@ -77,9 +72,9 @@ namespace djack.RogueSurvivor.Engine.AI
     public List<Percept> Sense()
     {
       Forget();
-
       var tmp = m_Sensor.Sense();   // time is m_Actor.Location.Map.LocalTime.TurnCounter
       int ub = tmp.Count;
+      if (0 >= tmp.Count) return m_Percepts;
       while(0 <= --ub) {
         var percept = tmp[ub];
         foreach (Percept mPercept in m_Percepts) {
@@ -91,11 +86,11 @@ namespace djack.RogueSurvivor.Engine.AI
           }
         }
       }
+      if (0 >= tmp.Count) return m_Percepts;
 
       // huge automatic multipler isn't a good idea here
       int newSize = m_Percepts.Count + tmp.Count;
       if (newSize > m_Percepts.Capacity) m_Percepts.Capacity = newSize;
-
       m_Percepts.AddRange(tmp);
       return m_Percepts;
     }
