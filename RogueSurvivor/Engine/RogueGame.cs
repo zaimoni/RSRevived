@@ -5359,7 +5359,7 @@ namespace djack.RogueSurvivor.Engine
 
       // 2024-10-07: simplify UI by not presenting invalid options
       var actorList = non_enemies.Values.ToList();
-      int index = 0;
+      int index = actorList.Count;
       while(0 <= --index) {
         Actor target = actorList[index];
         if (   target.Leader == player  // no followers as enemies
