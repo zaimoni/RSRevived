@@ -47,6 +47,7 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       var actor = Viewpoint;
       if (null == actor) return;
+      if (null == actor.Location.Map) return; // Duckman superheroically crashes this, otherwise
       // memorized sensor is only used for vision
       var FOVloc = actor.Controller.FOVloc;
       var tmp = new List<Percept>(m_Percepts.Count);
