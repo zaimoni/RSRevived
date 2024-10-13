@@ -1205,7 +1205,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 #if DEBUG
       if (null==tainted || 0 >=tainted.Count) throw new ArgumentNullException(nameof(tainted));
-      if (tainted.Contains(m_Actor.Location)) throw new InvalidOperationException("tainted.Contains(m_Actor.Location.Position)");
+      if (tainted.Contains(m_Actor.Location)) throw new InvalidOperationException("tainted.Contains(m_Actor.Location)");
 #endif
       int min_dist = int.MaxValue;
       int max_dist = int.MinValue;
@@ -1254,6 +1254,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var pt = p + en.Location.Position;
           var test = new Location(en.Location.Map,pt);
           if (!Map.Canonical(ref test)) continue;
+          if (test == m_Actor.Location) continue;
           if (ret.Contains(test)) continue;
           if (danger.Contains(test)) continue;
           if (!test.Map.IsWalkableFor(test.Position,m_Actor)) continue;
@@ -1265,20 +1266,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
               while(1 < n--) {
                 var transit = new Location(test.Map,LoF[n]);
                 if (!Map.Canonical(ref transit)) throw new InvalidProgramException("line of fire contains impossible locations");
+                if (transit == m_Actor.Location) continue;
                 if (!danger.Contains(transit)) ret.Add(transit);
               }
             }
-#if DEBUG
-          if (ret.Contains(m_Actor.Location)) {
-            if (!RogueGame.IsSimulating) {
-              RogueGame.Game.PanViewportTo(m_Actor);
-              RogueGame.Game.InfoPopup("doom");
-            }
-            throw new InvalidProgramException("tracing");
-          }
-#else
-          ret.Remove(m_Actor.Location);    // if we could fire from here we wouldn't have called this; prevents invariant crash later
-#endif
           }
           // if "safe" attack possible init danger in different/earlier loop
         }
