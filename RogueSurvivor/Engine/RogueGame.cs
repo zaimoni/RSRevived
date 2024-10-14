@@ -5376,16 +5376,15 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayPopup(MARK_ENEMIES_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
       index = 0;
-      OverlayImage? nominate;
-      do {
-        Actor target = actorList[index];
-        nominate = new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET);
-        AddOverlay(nominate);
-        RedrawPlayScreen();
-        KeyEventArgs key = m_UI.UI_WaitKey();
-        if (key.KeyCode == Keys.Escape) break;
-        else if (key.KeyCode == Keys.T) index = (index + 1) % actorList.Count;
-        else if (key.KeyCode == Keys.E) {
+
+      bool? handler(KeyEventArgs key) {
+        switch (key.KeyCode) {
+        case Keys.T:
+          index = (index + 1) % actorList.Count;
+          return null;
+        case Keys.E:
+          {
+          Actor target = actorList[index];
           AddMessage(new(string.Format("{0} is now a personal enemy.", target.TheName), Session.Get.WorldTime.TurnCounter, Color.Orange));
           DoMakeAggression(player, target);
           actorList.RemoveAt(index);
@@ -5394,7 +5393,19 @@ namespace djack.RogueSurvivor.Engine
             actorList.RemoveAt(index);
             if (actorList.Count <= index) index = actorList.Count - 1;
           }
+          return true;;
+          }
+        default: return null;
         }
+      }
+
+      OverlayImage? nominate;
+      do {
+        Actor target = actorList[index];
+        nominate = new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET);
+        AddOverlay(nominate);
+        RedrawPlayScreen();
+        if (!m_UI.Modal(handler)) break;
         RemoveOverlay(nominate);
       } while(0 < actorList.Count);
       ClearOverlays();
