@@ -110,7 +110,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     The only realistic mitigation is to pro-rate the capacity request.
  */
     // April 22, 2016: testing indicates this does not need micro-optimization
-    protected List<Percept_<_T_>>? FilterSameMap<_T_>(List<Percept_<_T_>> percepts) where _T_:class
+    protected List<Percept_<_T_>>? FilterSameMap<_T_>(IEnumerable<Percept_<_T_>> percepts) where _T_:class
     {
       Map map = m_Actor.Location.Map;
       Func< Percept_ < _T_ >,bool> same_map = p => null != map.Denormalize(p.Location);
@@ -129,21 +129,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percepts?.FilterCast<Actor>(target => target!=m_Actor && !m_Actor.IsEnemyOf(target));
     }
 
-    protected List<Percept_<_T_>>? FilterCurrent<_T_>(List<Percept_<_T_>>? percepts) where _T_:class
-    {
+    protected List<_T_>? FilterCurrent<_T_>(IEnumerable<_T_>? percepts) where _T_: WhereWhen
+        {
       return percepts?.FilterCurrent(m_Actor.Location.Map.LocalTime.TurnCounter);
     }
 
-    protected List<Percept_<_T_>>? FilterOld<_T_>(List<Percept_<_T_>> percepts) where _T_:class
+    protected List<_T_>? FilterOld<_T_>(IEnumerable<_T_> percepts) where _T_: WhereWhen
     {
-      return percepts.FilterOld(m_Actor.Location.Map.LocalTime.TurnCounter);
+      return percepts?.FilterOld(m_Actor.Location.Map.LocalTime.TurnCounter);
     }
 
     // GangAI's mugging target selection triggered a race condition
     // that allowed a non-null non-empty percepts
     // to be seen as returning null from FilterNearest anyway, from
     // the outside (Contracts saw a non-null return)
-    protected Percept_<_T_>? FilterNearest<_T_>(List<Percept_<_T_>>? percepts) where _T_:class
+    protected _T_? FilterNearest<_T_>(IEnumerable<_T_>? percepts) where _T_: class,ILocation
     {
       return percepts?.Minimize(p=>Rules.InteractionStdDistance(m_Actor.Location, p.Location));
     }
@@ -169,7 +169,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // firearms use grid i.e. L-infinity distance
-    protected List<Percept_<_T_>>? SortByGridDistance<_T_>(List<Percept_<_T_>>? percepts) where _T_:class
+    protected List<_T_>? SortByGridDistance<_T_>(List<_T_>? percepts) where _T_:ILocation
     {
       Location from = m_Actor.Location;
       return percepts?.SortIncreasing(p => Rules.InteractionDistance(p.Location, from));
