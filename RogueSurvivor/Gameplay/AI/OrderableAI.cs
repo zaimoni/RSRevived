@@ -1939,9 +1939,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 #nullable enable
-    protected ActorAction? BehaviorLeadActor(Percept_<Actor> target)
+    protected ActorAction? BehaviorLeadActor(Actor target1)
     {
-      Actor target1 = target.Percepted;
       if (!m_Actor.CanTakeLeadOf(target1)) return null;
       if (Rules.IsAdjacent(m_Actor.Location, target1.Location)) return new ActionTakeLead(m_Actor, target1);
       if (!m_Actor.WillActAgainBefore(target1)) {
@@ -1955,6 +1954,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return BehaviorIntelligentBumpToward(target1.Location, false, false);
     }
+
+    protected ActorAction? BehaviorLeadActor(Percept_<Actor> target) => BehaviorLeadActor(target.Percepted);
 #nullable restore
 
     protected ActionUseItem? BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)

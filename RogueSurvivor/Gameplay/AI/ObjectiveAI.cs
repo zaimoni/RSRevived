@@ -21,6 +21,8 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
+using Microsoft.VisualBasic.Logging;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -5457,6 +5459,33 @@ restart_chokepoints:
           test_ai.Terminate(enemy);
         }
       }
+    }
+
+    protected List<Actor>? RecruitableLOS() {
+      var in_LOS = m_Actor.Controller.friends_in_FOV;
+      if (null == in_LOS) return null;
+      List<Actor> want_leader = new();
+      var am_police = m_Actor.Model.Abilities.IsLawEnforcer ? Session.Get.Police : null;
+      foreach (var x in in_LOS) {
+        if (!m_Actor.CanTakeLeadOf(x.Value)) continue;
+        if (null != am_police && am_police.IsTargeted(x.Value)) continue; // do not allow police to lead capital criminals
+        want_leader.Add(x.Value);
+      }
+      FilterOutUnreachable(ref want_leader, Tools.RouteFinder.SpecialActions.DOORS | Tools.RouteFinder.SpecialActions.JUMP);
+      return 0< want_leader.Count ? want_leader : null;
+    }
+
+    protected List<Actor>? RecruitableRadio() {
+      if (!m_Actor.HasActivePoliceRadio) return null;
+      List<Actor> want_leader = new();
+      var am_police = m_Actor.Model.Abilities.IsLawEnforcer ? Session.Get.Police : null;
+      var test = Session.Get.World.EveryoneInPoliceRadioRange(m_Actor.Location /*, Predicate<Actor> ? test = null */);
+      foreach (var x in m_Actor.Controller.friends_in_FOV) {
+        if (!m_Actor.CanTakeLeadOf(x.Value)) continue;
+        if (null != am_police && am_police.IsTargeted(x.Value)) continue; // do not allow police to lead capital criminals
+        want_leader.Add(x.Value);
+      }
+      return 0< want_leader.Count ? want_leader : null;
     }
 
     protected void AdviseFriendsOfSafety()
