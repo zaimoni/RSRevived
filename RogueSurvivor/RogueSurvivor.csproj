@@ -72,6 +72,7 @@
     <Compile Include="Engine\Actions\ActionSequence.cs" />
     <Compile Include="Engine\Actions\ActionMoveDelta.cs" />
     <Compile Include="Engine\Actions\PlayerTakeFrom.cs" />
+    <Compile Include="Engine\Action\BehavioristABC.cs" />
     <Compile Include="Engine\Action\Chain.cs" />
     <Compile Include="Engine\Action\Choice.cs" />
     <Compile Include="Engine\Action\TransferFollower.cs" />

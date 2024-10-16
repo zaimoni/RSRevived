@@ -1941,9 +1941,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable enable
     protected ActorAction? BehaviorLeadActor(Actor target1)
     {
-      if (!m_Actor.CanTakeLeadOf(target1)) return null;
+      if (!m_Actor.CanTakeLeadOf(target1))
+#if DEBUG
+         throw new InvalidOperationException(m_Actor.Name + " cannot take lead of " + target1.Name);
+#else
+         return null;
+#endif
       if (Rules.IsAdjacent(m_Actor.Location, target1.Location)) return new ActionTakeLead(m_Actor, target1);
-      if (!m_Actor.WillActAgainBefore(target1)) {
+      var ret = BehaviorIntelligentBumpToward(target1.Location, false, false);
+      if (null != ret && !m_Actor.WillActAgainBefore(target1)) {
         // ai only can lead ai (would need extra handling for dogs since they're not ObjectiveAI anyway)
         // need an after-action "hint" to the target on where/who to go to
         if (!(target1.Controller is OrderableAI targ_ai)) return null;
@@ -1952,10 +1958,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1,target1)-(m_Actor.IsBefore(target1) ? 1 : 0);
         targ_ai.SetObjective(new Goal_HintPathToActor(t0, target1, m_Actor));
       }
-      return BehaviorIntelligentBumpToward(target1.Location, false, false);
+      return ret;
     }
-
-    protected ActorAction? BehaviorLeadActor(Percept_<Actor> target) => BehaviorLeadActor(target.Percepted);
 #nullable restore
 
     protected ActionUseItem? BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)

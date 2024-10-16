@@ -23,6 +23,8 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using Microsoft.VisualBasic.Logging;
 using static System.Net.Mime.MediaTypeNames;
+using djack.RogueSurvivor.Engine._Action;
+using static djack.RogueSurvivor.Engine._Action.BehavioristABC;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -5475,17 +5477,78 @@ restart_chokepoints:
       return 0< want_leader.Count ? want_leader : null;
     }
 
+    protected List<Actor>? CanRecruitMeLOS() {
+      var in_LOS = m_Actor.Controller.friends_in_FOV;
+      if (null == in_LOS) return null;
+      List<Actor> want_leader = new();
+      bool no_police = Session.Get.Police.IsTargeted(m_Actor);
+      foreach (var x in in_LOS) {
+        if (!m_Actor.CanTakeLeadOf(x.Value)) continue;
+        if (no_police && x.Value.Model.Abilities.IsLawEnforcer) continue; // do not allow police to lead capital criminals
+        want_leader.Add(x.Value);
+      }
+      FilterOutUnreachable(ref want_leader, Tools.RouteFinder.SpecialActions.DOORS | Tools.RouteFinder.SpecialActions.JUMP);
+      return 0< want_leader.Count ? want_leader : null;
+    }
+
     protected List<Actor>? RecruitableRadio() {
       if (!m_Actor.HasActivePoliceRadio) return null;
       List<Actor> want_leader = new();
       var am_police = m_Actor.Model.Abilities.IsLawEnforcer ? Session.Get.Police : null;
       var test = Session.Get.World.EveryoneInPoliceRadioRange(m_Actor.Location /*, Predicate<Actor> ? test = null */);
-      foreach (var x in m_Actor.Controller.friends_in_FOV) {
-        if (!m_Actor.CanTakeLeadOf(x.Value)) continue;
-        if (null != am_police && am_police.IsTargeted(x.Value)) continue; // do not allow police to lead capital criminals
-        want_leader.Add(x.Value);
+      if (null == test) return null;
+      foreach (var a in test) {
+        if (!m_Actor.CanTakeLeadOf(a)) continue;
+        if (null != am_police && am_police.IsTargeted(a)) continue; // do not allow police to lead capital criminals
+        want_leader.Add(a);
       }
       return 0< want_leader.Count ? want_leader : null;
+    }
+
+    protected List<Actor>? CanRecruitMeRadio() {
+      if (!m_Actor.HasActivePoliceRadio) return null;
+      List<Actor> want_leader = new();
+      bool no_police = Session.Get.Police.IsTargeted(m_Actor);
+      var test = Session.Get.World.EveryoneInPoliceRadioRange(m_Actor.Location /*, Predicate<Actor> ? test = null */);
+      if (null == test) return null;
+      foreach (var a in test) {
+        if (!a.CanTakeLeadOf(m_Actor)) continue;
+        if (no_police && a.Model.Abilities.IsLawEnforcer) continue; // do not allow police to lead capital criminals
+        want_leader.Add(a);
+      }
+      return 0< want_leader.Count ? want_leader : null;
+    }
+
+    protected ActorAction? RecruitLOS() {
+      if (!string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) return null;
+      var candidates = RecruitableLOS();
+      if (null == candidates) return null;
+      var target = FilterNearest(candidates); // AI vs. PC control target
+      if (null == target) return null;
+
+      if (Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionTakeLead(m_Actor, target);
+      var ret = BehaviorIntelligentBumpToward(target.Location, false, false);
+      if (null != ret && !m_Actor.WillActAgainBefore(target)) {
+        // ai only can lead ai (would need extra handling for dogs since they're not ObjectiveAI anyway)
+        // need an after-action "hint" to the target on where/who to go to
+        if (!(target.Controller is OrderableAI targ_ai)) return null;
+        if (targ_ai.IsFocused) return null;
+        targ_ai.SetObjective(new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new djack.RogueSurvivor.Engine._Action.BehavioristABC(m_Actor, ReflexCode.RecruitedLOS)));
+      }
+      return ret;
+    }
+
+    public ActorAction? RecruitedLOS() {
+      if (!string.IsNullOrEmpty(m_Actor.ReasonCannotBeLed())) return null;
+      var candidates = CanRecruitMeLOS();
+      if (null == candidates) return null;
+      var target = FilterNearest(candidates); // AI vs. PC control target
+      if (null == target) return null;
+
+//    if (Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionTakeLead(m_Actor, target);
+      if (Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionWait(m_Actor);
+      var ret = BehaviorIntelligentBumpToward(target.Location, false, false);
+      return ret;
     }
 
     protected void AdviseFriendsOfSafety()
