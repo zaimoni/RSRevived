@@ -5533,7 +5533,8 @@ restart_chokepoints:
         // need an after-action "hint" to the target on where/who to go to
         if (!(target.Controller is OrderableAI targ_ai)) return null;
         if (targ_ai.IsFocused) return null;
-        targ_ai.SetObjective(new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new djack.RogueSurvivor.Engine._Action.BehavioristABC(m_Actor, ReflexCode.RecruitedLOS)));
+        targ_ai.SetObjective(new Goal_NonCombatComplete(target.Location.Map.LocalTime.TurnCounter, target, new BehavioristABC(target, ReflexCode.RecruitedLOS)));
+        m_Actor.TargetActor = target;
       }
       return ret;
     }
@@ -5548,6 +5549,7 @@ restart_chokepoints:
 //    if (Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionTakeLead(m_Actor, target);
       if (Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionWait(m_Actor);
       var ret = BehaviorIntelligentBumpToward(target.Location, false, false);
+      if (null != ret) m_Actor.TargetActor = target;
       return ret;
     }
 

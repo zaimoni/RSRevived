@@ -450,25 +450,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           m_Actor.TargetedActivity(Activity.FOLLOWING, leader);
           return tmpAction;
         }
-      } else if (string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) {
-        var want_leader = RecruitableLOS();
-        var target = FilterNearest(want_leader);
-        if (target != null) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorLeadActor");
-#endif
-          tmpAction = BehaviorLeadActor(target);
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorLeadActor: " + (tmpAction?.ToString() ?? "null"));
-#endif
-          if (null != tmpAction) {
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking lead");
-#endif
-            m_Actor.TargetActor = target;
-            return tmpAction;
-          }
-        }
+      } else {
+        tmpAction = RecruitLOS();
+        if (null != tmpAction) return tmpAction;
       }
       // XXX if we are a leader, we should try to rearrange items for our followers (no one starving while another has a lot of food)
       // XXX if we are a follower, we should try to avoid being hurt by the leader's rearranging our items
