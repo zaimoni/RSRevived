@@ -5519,11 +5519,13 @@ restart_chokepoints:
       return 0< want_leader.Count ? want_leader : null;
     }
 
+    protected virtual Actor? RecruitLOSchoose(List<Actor> candidates) => FilterNearest(candidates);
+
     protected ActorAction? RecruitLOS() {
       if (!string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) return null;
       var candidates = RecruitableLOS();
       if (null == candidates) return null;
-      var target = FilterNearest(candidates); // AI vs. PC control target
+      var target = RecruitLOSchoose(candidates);
       if (null == target) return null;
 
       if (Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionTakeLead(m_Actor, target);
