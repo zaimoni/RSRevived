@@ -4337,61 +4337,49 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleFactionInfo()
     {
-      List<string> options = new(){ "Status", "Enemies by aggression" };
+      List<KeyValuePair<string, Action<List<string>>>> opts = new();
       string header = string.Empty;
-      if (Player.IsFaction(GameFactions.IDs.ThePolice)) options.Add("WANTED");
 
-      if (null == Player.Aggressing && null == Player.Aggressors) {
-        options.RemoveAt(1);
-        header = "No personal enemies";
-      }
-
-      if (string.IsNullOrEmpty(header)) header = "Reviewing...";
-
-      string label(int index) { return options[index]; }
-      bool details(int index) {
-        var display = new List<string>();
-        switch(index + ((0<index && header == "No personal enemies") ? 1 : 0))
-        {
-        case 0:
-            if (Player.IsFaction(GameFactions.IDs.ThePolice)) {
-              // full knowledge: police storyline
-              if (0 <= Session.Get.ScriptStage_PoliceCHARrelations) {
-                // XXX should have NPC start-of-game district chief
-                display.Add("Aurora warning was called at noon, based on NASA forecast.  Confidence of breakers tripping on the magnetosphere generators");
-                display.Add(" between 21:00 and 3:00 is two in five.");
-                display.Add("The last contact the district chief had from CHAR was 19:12; some sort of 'containment failure', curfew requested.");
-                display.Add("The Metro Transit Authority confirmed that the subway has been shut down and the trains put in storage at 20:17.");
-                display.Add("Wasn't expecting all electric vehicles to be wrecked, when the breakers tripped on the magnetosphere generators at midnight sharp.");
-              }
-              if (1 <= Session.Get.ScriptStage_PoliceCHARrelations) {
-                // XXX should record first-aggressed cop
-                // Each CHAR office is to have one copy of the CHAR Operation Dead Hand document (the CHAR Guard Manual)
-                // XXX if the CHAR default orders document has been read then this text should be revised
-                display.Add("Something's very wrong; CHAR guards are attacking us cops.");
-                if (1 == Session.Get.ScriptStage_PoliceCHARrelations && 2 > Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, may not be.  We need a civilian to make " + Session.Get.UniqueActors.PoliceStationPrisoner.TheActor.HimOrHer + " squawk.");
-                // XXX ok for police to invade CHAR Offices at this point.
-                // XXX police will be able to aggress CHAR without risking murder at this point
-              }
-              if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, was a framed experimental subject; " + Session.Get.UniqueActors.PoliceStationPrisoner.TheActor.HeOrShe + " was contaminated by a ZM transformer agent.");
-              if (2 <= Session.Get.ScriptStage_PoliceCHARrelations) {
-                // XXX should record sighting officer
-                // VAPORWARE the cell phone(?) used for last contact should be down here (plausibly not an artifact, however)
-                display.Add("We've found a CHAR research base they didn't tell us about.");
-                if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("It's reasonable that whoever signed off on that ZM transformer agent was in this base.");
-              }
+      void police_status(List<string> display) {
+         // full knowledge: police storyline
+         if (0 <= Session.Get.ScriptStage_PoliceCHARrelations) {
+                    // XXX should have NPC start-of-game district chief
+                    display.Add("Aurora warning was called at noon, based on NASA forecast.  Confidence of breakers tripping on the magnetosphere generators");
+                    display.Add(" between 21:00 and 3:00 is two in five.");
+                    display.Add("The last contact the district chief had from CHAR was 19:12; some sort of 'containment failure', curfew requested.");
+                    display.Add("The Metro Transit Authority confirmed that the subway has been shut down and the trains put in storage at 20:17.");
+                    display.Add("Wasn't expecting all electric vehicles to be wrecked, when the breakers tripped on the magnetosphere generators at midnight sharp.");
+         }
+         if (1 <= Session.Get.ScriptStage_PoliceCHARrelations) {
+                    // XXX should record first-aggressed cop
+                    // Each CHAR office is to have one copy of the CHAR Operation Dead Hand document (the CHAR Guard Manual)
+                    // XXX if the CHAR default orders document has been read then this text should be revised
+                    display.Add("Something's very wrong; CHAR guards are attacking us cops.");
+                    if (1 == Session.Get.ScriptStage_PoliceCHARrelations && 2 > Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, may not be.  We need a civilian to make " + Session.Get.UniqueActors.PoliceStationPrisoner.TheActor.HimOrHer + " squawk.");
+                    // XXX ok for police to invade CHAR Offices at this point.
+                    // XXX police will be able to aggress CHAR without risking murder at this point
+         }
+         if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, was a framed experimental subject; " + Session.Get.UniqueActors.PoliceStationPrisoner.TheActor.HeOrShe + " was contaminated by a ZM transformer agent.");
+         if (2 <= Session.Get.ScriptStage_PoliceCHARrelations) {
+                    // XXX should record sighting officer
+                    // VAPORWARE the cell phone(?) used for last contact should be down here (plausibly not an artifact, however)
+                    display.Add("We've found a CHAR research base they didn't tell us about.");
+                    if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("It's reasonable that whoever signed off on that ZM transformer agent was in this base.");
+         }
 #if PROTOTYPE
-              if (3 <= Session.Get.ScriptStage_PoliceCHARrelations) {
+         if (3 <= Session.Get.ScriptStage_PoliceCHARrelations) {
                 // XXX new map required: the lab where the ill-advised experimentation was done.
                 // XXX be sure to include lab rat cages.  Unique hazards may be here.
                 // XXX e.g. this area may be *contaminated* with a non-zero infection rate merely by existing here, in the infection modes
-              }
-              if (1 == Session.Get.ScriptStage_HospitalPowerup || 2 == Session.Get.ScriptStage_HospitalPowerup) {
+         }
+         if (1 == Session.Get.ScriptStage_HospitalPowerup || 2 == Session.Get.ScriptStage_HospitalPowerup) {
                 display.Add("The hospital needs its emergency power turned on.  We'll need to terminate the psychopathic murderer first.");
-              }
+         }
 #endif
-            }
+      }
+
 #if PROTOTYPE
+      static void hospital_status(List<string> display) {
             if (....) {
               if (0 == Session.Get.ScriptStage_HospitalPowerup) {
                 display.Add("We've sent a nurse down to turn on the emergency generators.");
@@ -4406,45 +4394,65 @@ namespace djack.RogueSurvivor.Engine
                 display.Add("Power has been restored.");
               }
             }
+        display.Add("Placeholder");
+      }
 #endif
-            display.Add("Placeholder");
-            break;
-        case 1:
-            {
-            void name_him(Actor a) { display.Add(a.Name); }
-            Player.Aggressing.DoForEach_(name_him, () => display.Add("Aggressed:"));
-            Player.Aggressors.DoForEach_(name_him, () => display.Add("Defending from:"));
-            if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT < display.Count) {
-              display.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT, (display.Count-SHOW_SPECIAL_DIALOGUE_LINE_LIMIT)+1);
-              display.Add("...");
-            }
-            if (0 >= display.Count) {
-              InfoPopup("No personal enemies");
-              return false;
-            }
-            }
-            break;
-        case 2:
-            {
-            var wanted = Session.Get.Police.Wanted();
-            if (0 >= wanted.Count) {
-              InfoPopup("No death-penalty criminals");
-              return false;
-            }
+
+      static void placeholder_status(List<string> display)  => display.Add("Placeholder");
+
+      if (Player.IsFaction(GameFactions.IDs.ThePolice)) {
+        opts.Add(new("Status", police_status));
+#if PROTOTYPE
+      } else if (....) {
+        opts.Add(new("Status", hospital_status));
+#endif
+      } else {
+        opts.Add(new("Status", placeholder_status));
+      }
+
+      void enemies_by_aggression(List<string> display) {
+        void name_him(Actor a) { display.Add(a.Name); }
+        Player.Aggressing.DoForEach_(name_him, () => display.Add("Aggressed:"));
+        Player.Aggressors.DoForEach_(name_him, () => display.Add("Defending from:"));
+        if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT < display.Count) {
+          display.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT, (display.Count-SHOW_SPECIAL_DIALOGUE_LINE_LIMIT)+1);
+          display.Add("...");
+        }
+      }
+
+      if (null == Player.Aggressing && null == Player.Aggressors) {
+        header = "No personal enemies";
+      } else {
+        opts.Add(new("Enemies by aggression", enemies_by_aggression));
+      }
+
+      if (Player.IsFaction(GameFactions.IDs.ThePolice)) {
+        var wanted = Session.Get.Police.Wanted();
+        if (null != wanted) {
+          void police_wanted(List<string> display) {
             void name_him(ActorTag a) { display.Add(a.Name); }
             wanted.DoForEach_(name_him, () => display.Add("Death-penalty criminals:"));
             if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT < display.Count) {
               display.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT, (display.Count-SHOW_SPECIAL_DIALOGUE_LINE_LIMIT)+1);
               display.Add("...");
             }
-            }
-            break;
+          }
+
+          opts.Add(new("WANTED", police_wanted));
         }
+      }
+
+      if (string.IsNullOrEmpty(header)) header = "Reviewing...";
+
+      string label(int index) { return opts[index].Key; }
+      bool details(int index) {
+        List<string> display = new();
+        opts[index].Value(display);
         ShowSpecialDialogue(Player,display.ToArray());
         return false;
       }
 
-      PagedPopup(header, options.Count, label, details);
+      PagedPopup(header, opts.Count, label, details);
     }
 
     private void HandleDaimonMap()
