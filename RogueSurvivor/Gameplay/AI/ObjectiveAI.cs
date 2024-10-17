@@ -5521,7 +5521,7 @@ restart_chokepoints:
 
     protected virtual Actor? RecruitLOSchoose(List<Actor> candidates) => FilterNearest(candidates);
 
-    protected ActorAction? RecruitLOS() {
+    public ActorAction? RecruitLOS() {
       if (!string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) return null;
       var candidates = RecruitableLOS();
       if (null == candidates) return null;

@@ -5577,6 +5577,12 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerTakeLead(Actor player)
     {
+      var test = (player.Controller as ObjectiveAI)?.RecruitLOS();
+      if (null != test) {
+        test.Perform();
+        return true;
+      }
+
       const string TAKE_LEAD_MODE_TEXT = "TAKE LEAD MODE - directions to recruit a follower, ESC cancels";
 
       ClearOverlays();
