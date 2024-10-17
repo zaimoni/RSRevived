@@ -25,10 +25,10 @@ namespace djack.RogueSurvivor.Engine
         , Zaimoni.Serialization.ISerialize
 #endif
     {
-        public static int COMMAND_LINE_SEED;
+        [NonSerialized] public static int COMMAND_LINE_SEED = 0;
         public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
         private static Session s_TheSession;
-        private static bool s_IsLoading = false;
+        [NonSerialized] private static bool s_IsLoading = false;
         [NonSerialized] private static Map.ActorCode s_Player;
 
         [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
@@ -263,7 +263,80 @@ namespace djack.RogueSurvivor.Engine
             m_Scoring_fatality = null;
     }
 #endif
-        #endregion
+#endregion
+
+    // As the session object is a singleton, we are responsible for save/load of static Session fields.
+    static private int field_code(ref Utf8JsonReader reader) {
+        if (reader.ValueTextEquals("Seed")) return 1;
+        else if (reader.ValueTextEquals("LastTurnPlayerActed")) return 2;
+        else throw new JsonException();
+    }
+
+    private Session(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
+      int origin_depth = reader.CurrentDepth;
+      reader.Read();
+
+      void read(ref Utf8JsonReader reader) {
+          int code = field_code(ref reader);
+          reader.Read();
+
+          switch (code) {
+          case 1:
+              s_seed = reader.GetInt32();
+              break;
+          case 2:
+              LastTurnPlayerActed = reader.GetInt32();
+              break;
+          }
+      }
+
+      read(ref reader);
+
+      reader.Read();
+      if (System.Text.Json.JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
+
+      read(ref reader);
+
+      reader.Read();
+      if (System.Text.Json.JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
+
+    }
+
+/*
+        [NonSerialized] public static int COMMAND_LINE_SEED = 0;
+        public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
+        private static Session s_TheSession;
+        [NonSerialized] private static bool s_IsLoading = false;
+        [NonSerialized] private static Map.ActorCode s_Player;
+
+        [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
+        private Scoring m_Scoring = new();
+        private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
+        public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.Item_IDs.TRACKER_POLICE_RADIO);
+
+        public World World { get; private set; }
+        public readonly UniqueActors UniqueActors = new();
+        public readonly UniqueItems UniqueItems = new();
+        public readonly UniqueMaps UniqueMaps = new();
+
+        public GameMode GameMode;
+        public bool PlayerKnows_CHARUndergroundFacilityLocation = false;
+        public int ScriptStage_PoliceStationPrisoner = 0;
+        public int ScriptStage_PoliceCHARrelations = 0;
+        public int ScriptStage_HospitalPowerup = 0;
+ */
+
+    public static Session fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new Session(ref reader, options);
+
+    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options) {
+      writer.WriteStartObject();
+      writer.WriteNumber("COMMAND_LINE_SEED", COMMAND_LINE_SEED);
+      writer.WriteNumber("LastTurnPlayerActed", LastTurnPlayerActed);
+      writer.WriteEndObject();
+    }
+
 
         public static void Reset(GameMode mode) => s_TheSession = new Session(mode);
 
@@ -494,3 +567,21 @@ namespace djack.RogueSurvivor.Engine
     }
   }
 }
+
+#if PROTOTYPE
+namespace Zaimoni.JsonConvertIncomplete
+{
+    public class Session : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.Session>
+    {
+        public override djack.RogueSurvivor.Engine.Session Read(ref System.Text.Json.Utf8JsonReader reader, Type src, System.Text.Json.JsonSerializerOptions options)
+        {
+            return djack.RogueSurvivor.Engine.Session.fromJson(ref reader, options);
+        }
+
+        public override void Write(System.Text.Json.Utf8JsonWriter writer, djack.RogueSurvivor.Engine.Session src, System.Text.Json.JsonSerializerOptions options)
+        {
+            src.toJson(writer, options);
+        }
+    }
+}
+#endif

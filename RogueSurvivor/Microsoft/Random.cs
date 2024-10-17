@@ -117,7 +117,6 @@ namespace Microsoft
 
         public static Random fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
             if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
-
             reader.Read();
 
             int stage_inext = default;
@@ -126,12 +125,12 @@ namespace Microsoft
 
             if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
 
-            int stage = field_code(ref reader);
+            void read(ref Utf8JsonReader reader) {
+                int code = field_code(ref reader);
+                reader.Read();
 
-            reader.Read();
-
-            switch (stage)
-            {
+                switch (code)
+                {
                 case 1:
                     stage_inext = reader.GetInt32();
                     break;
@@ -141,49 +140,21 @@ namespace Microsoft
                 default:
                     stage_SeedArray = JsonSerializer.Deserialize<int[]>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
                     break;
+                }
             }
 
-            reader.Read();
+            read(ref reader);
 
+            reader.Read();
             if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
 
-            stage = field_code(ref reader);
+            read(ref reader);
 
             reader.Read();
-
-            switch (stage)
-            {
-                case 1:
-                    stage_inext = reader.GetInt32();
-                    break;
-                case 2:
-                    stage_inextp = reader.GetInt32();
-                    break;
-                default:
-                    stage_SeedArray = JsonSerializer.Deserialize<int[]>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
-                    break;
-            }
-
-            reader.Read();
-
             if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
 
-            stage = field_code(ref reader);
+            read(ref reader);
 
-            reader.Read();
-
-            switch (stage)
-            {
-                case 1:
-                    stage_inext = reader.GetInt32();
-                    break;
-                case 2:
-                    stage_inextp = reader.GetInt32();
-                    break;
-                default:
-                    stage_SeedArray = JsonSerializer.Deserialize<int[]>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
-                    break;
-            }
             reader.Read();
 
             return new Random(stage_inext, stage_inextp, stage_SeedArray);

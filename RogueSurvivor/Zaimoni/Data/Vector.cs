@@ -598,36 +598,26 @@ namespace Zaimoni.JsonConvert {
 
             if (System.Text.Json.JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
 
-            int stage = field_code(ref reader);
+            void read(ref Utf8JsonReader reader) {
+                int code = field_code(ref reader);
+                reader.Read();
 
-            reader.Read();
-
-            switch (stage)
-            {
-            case 1:
-                x = System.Text.Json.JsonSerializer.Deserialize<Zaimoni.Data.Vector2D<short>>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
-                break;
-            default:
-                y = System.Text.Json.JsonSerializer.Deserialize<Zaimoni.Data.Vector2D<short>>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
-                break;
+                switch (code) {
+                    case 1:
+                        x = System.Text.Json.JsonSerializer.Deserialize<Zaimoni.Data.Vector2D<short>>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
+                        break;
+                    default:
+                        y = System.Text.Json.JsonSerializer.Deserialize<Zaimoni.Data.Vector2D<short>>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
+                        break;
+                }
             }
+
+            read(ref reader);
 
             reader.Read();
             if (System.Text.Json.JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
 
-            stage = field_code(ref reader);
-
-            reader.Read();
-
-            switch (stage)
-            {
-            case 1:
-                x = System.Text.Json.JsonSerializer.Deserialize<Zaimoni.Data.Vector2D<short>>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
-                break;
-            default:
-                y = System.Text.Json.JsonSerializer.Deserialize<Zaimoni.Data.Vector2D<short>>(ref reader, djack.RogueSurvivor.Engine.Session.JSON_opts);
-                break;
-            }
+            read(ref reader);
 
             reader.Read();
             if (System.Text.Json.JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
