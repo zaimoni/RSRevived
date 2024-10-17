@@ -26,10 +26,10 @@ namespace djack.RogueSurvivor.Engine
 #endif
     {
         [NonSerialized] public static int COMMAND_LINE_SEED = 0;
-        public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
+        [NonSerialized] public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
         private static Session s_TheSession;
         [NonSerialized] private static bool s_IsLoading = false;
-        [NonSerialized] private static Map.ActorCode s_Player;
+        private static Map.ActorCode s_Player;
 
         [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
         private Scoring m_Scoring = new();
@@ -269,7 +269,15 @@ namespace djack.RogueSurvivor.Engine
     static private int field_code(ref Utf8JsonReader reader) {
         if (reader.ValueTextEquals("Seed")) return 1;
         else if (reader.ValueTextEquals("LastTurnPlayerActed")) return 2;
-        else throw new JsonException();
+        else if (reader.ValueTextEquals("ScriptStage_PoliceStationPrisoner")) return 3;
+        else if (reader.ValueTextEquals("ScriptStage_PoliceCHARrelations")) return 4;
+        else if (reader.ValueTextEquals("ScriptStage_HospitalPowerup")) return 5;
+        else if (reader.ValueTextEquals("PlayerKnows_CHARUndergroundFacilityLocation")) return 6;
+        else if (reader.ValueTextEquals("GameMode")) return 7;
+        else if (reader.ValueTextEquals("CommandLineOptions")) return 8;
+
+        RogueGame.Game.ErrorPopup(reader.GetString());
+        throw new JsonException();
     }
 
     private Session(ref Utf8JsonReader reader, JsonSerializerOptions options)
@@ -277,6 +285,8 @@ namespace djack.RogueSurvivor.Engine
       if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
       int origin_depth = reader.CurrentDepth;
       reader.Read();
+
+      Dictionary<string, string> relay_commandline = null;
 
       void read(ref Utf8JsonReader reader) {
           int code = field_code(ref reader);
@@ -289,54 +299,91 @@ namespace djack.RogueSurvivor.Engine
           case 2:
               LastTurnPlayerActed = reader.GetInt32();
               break;
+          case 3:
+              ScriptStage_PoliceStationPrisoner = reader.GetInt32();
+              break;
+          case 4:
+              ScriptStage_PoliceCHARrelations = reader.GetInt32();
+              break;
+          case 5:
+              ScriptStage_HospitalPowerup = reader.GetInt32();
+              break;
+          case 6:
+              PlayerKnows_CHARUndergroundFacilityLocation = reader.GetBoolean();
+              break;
+          case 7:
+              {
+              string stage = reader.GetString();
+              if (Enum.TryParse<GameMode>(stage, out GameMode)) return;
+              RogueGame.Game.ErrorPopup("unrecognized GameMode " + stage);
+              }
+              throw new JsonException();
+          case 8:
+              relay_commandline = JsonSerializer.Deserialize<Dictionary<string, string>>(ref reader, Session.JSON_opts) ?? throw new JsonException();
+              break;
           }
       }
 
-      read(ref reader);
+      while (reader.CurrentDepth != origin_depth || JsonTokenType.EndObject != reader.TokenType) {
+          if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
 
-      reader.Read();
-      if (System.Text.Json.JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
+          read(ref reader);
 
-      read(ref reader);
+          reader.Read();
+      }
 
-      reader.Read();
-      if (System.Text.Json.JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
+      if (null != relay_commandline) m_CommandLineOptions = new(relay_commandline);
 
+      if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
     }
 
 /*
-        [NonSerialized] public static int COMMAND_LINE_SEED = 0;
-        public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
-        private static Session s_TheSession;
-        [NonSerialized] private static bool s_IsLoading = false;
-        [NonSerialized] private static Map.ActorCode s_Player;
+        private static Map.ActorCode s_Player;
 
-        [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
         private Scoring m_Scoring = new();
-        private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
         public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.Item_IDs.TRACKER_POLICE_RADIO);
 
         public World World { get; private set; }
         public readonly UniqueActors UniqueActors = new();
         public readonly UniqueItems UniqueItems = new();
         public readonly UniqueMaps UniqueMaps = new();
+ */
 
-        public GameMode GameMode;
-        public bool PlayerKnows_CHARUndergroundFacilityLocation = false;
-        public int ScriptStage_PoliceStationPrisoner = 0;
-        public int ScriptStage_PoliceCHARrelations = 0;
-        public int ScriptStage_HospitalPowerup = 0;
+/*
+            ActorModel.Save(info, context);
+            Rules.Get.Save(info, context);
+            PlayerController.Save(info, context);
+            info.AddValue("World", World, typeof(World));
+            RogueGame.Save(info, context);
+ */
+
+/*
+            ActorModel.Load(info, context);
+            Rules.Get.Load(info, context);
+            PlayerController.Load(info, context);
+            // end load other classes' static variables
+            World = (World)info.GetValue("World", typeof(World));
+            RogueGame.Load(info, context);
+            info.read_s(ref s_Player, "s_Player");
  */
 
     public static Session fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new Session(ref reader, options);
 
     public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options) {
       writer.WriteStartObject();
-      writer.WriteNumber("COMMAND_LINE_SEED", COMMAND_LINE_SEED);
+      writer.WriteNumber("Seed", s_seed);
       writer.WriteNumber("LastTurnPlayerActed", LastTurnPlayerActed);
+      writer.WriteNumber("ScriptStage_PoliceStationPrisoner", ScriptStage_PoliceStationPrisoner);
+      writer.WriteNumber("ScriptStage_PoliceCHARrelations", ScriptStage_PoliceCHARrelations);
+      writer.WriteNumber("ScriptStage_HospitalPowerup", ScriptStage_HospitalPowerup);
+      writer.WriteBoolean("PlayerKnows_CHARUndergroundFacilityLocation", PlayerKnows_CHARUndergroundFacilityLocation);
+      writer.WriteString("GameMode", GameMode.ToString());
+      if (null != m_CommandLineOptions) {
+        writer.WritePropertyName("CommandLineOptions");
+        JsonSerializer.Serialize(writer, m_CommandLineOptions, Session.JSON_opts);
+      }
       writer.WriteEndObject();
     }
-
 
         public static void Reset(GameMode mode) => s_TheSession = new Session(mode);
 
@@ -412,6 +459,8 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.WorldTime());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Vector2D_short());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Box2D_short());
+
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Session());
         }
         return s_j_opts;
       }
@@ -437,14 +486,16 @@ namespace djack.RogueSurvivor.Engine
 #endif
 #endif
 #if BOOTSTRAP_JSON_SERIALIZATION
-#if false
+#if true
       {
       using var stream = (filepath+"json").CreateStream(true);
-      System.Text.Json.JsonSerializer.Serialize(stream, Rules.Get, typeof(Rules), JSON_opts);
+      System.Text.Json.JsonSerializer.Serialize(stream, session, typeof(Session), JSON_opts);
 	  stream.Flush();
       }
+      RogueGame.Game.ErrorPopup("JSON save ok");
       using var stream2 = (filepath+"json").CreateStream(false);
-      var test2 = System.Text.Json.JsonSerializer.Deserialize<Rules>(stream2, JSON_opts);
+      var test2 = System.Text.Json.JsonSerializer.Deserialize<Session>(stream2, JSON_opts);
+      RogueGame.Game.ErrorPopup("JSON load ok");
 #else
       using var stream = (filepath+"json").CreateStream(true);
       System.Text.Json.JsonSerializer.Serialize(stream, session, typeof(Session), JSON_opts);
