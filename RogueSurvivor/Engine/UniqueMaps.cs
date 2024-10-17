@@ -11,7 +11,7 @@ using Map = djack.RogueSurvivor.Data.Map;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal class UniqueMaps : Zaimoni.Serialization.ISerialize
+  public class UniqueMaps : Zaimoni.Serialization.ISerialize
     {
     public UniqueMap CHARUndergroundFacility { get; set; }
     public UniqueMap PoliceStation_OfficesLevel { get; set; }

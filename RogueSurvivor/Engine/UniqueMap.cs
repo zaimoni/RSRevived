@@ -12,7 +12,7 @@ using System;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal readonly struct UniqueMap
+  public readonly struct UniqueMap
   {
 	public readonly Map TheMap;
 	public UniqueMap(Map src) { TheMap = src; }

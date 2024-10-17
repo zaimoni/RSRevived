@@ -20,7 +20,7 @@ using Zaimoni.Data;
 namespace djack.RogueSurvivor.Engine
 {
     [Serializable]
-    internal sealed class Session : ISerializable, IDeserializationCallback
+    public sealed class Session : ISerializable, IDeserializationCallback
 #if BOOTSTRAP_Z_SERIALIZATION
         , Zaimoni.Serialization.ISerialize
 #endif
@@ -568,7 +568,6 @@ namespace djack.RogueSurvivor.Engine
   }
 }
 
-#if PROTOTYPE
 namespace Zaimoni.JsonConvertIncomplete
 {
     public class Session : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.Session>
@@ -584,4 +583,3 @@ namespace Zaimoni.JsonConvertIncomplete
         }
     }
 }
-#endif

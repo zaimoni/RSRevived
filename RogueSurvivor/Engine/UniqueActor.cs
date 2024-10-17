@@ -10,7 +10,7 @@ using System;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal class UniqueActor
+  public class UniqueActor
   {
     private bool m_Spawned;
     public readonly Actor TheActor;

@@ -9,7 +9,7 @@ using System;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal enum GameMode
+  public enum GameMode
   {
     GM_STANDARD,
     GM_CORPSES_INFECTION,

@@ -9,7 +9,7 @@ using System;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal class UniqueItems : Zaimoni.Serialization.ISerialize
+  public class UniqueItems : Zaimoni.Serialization.ISerialize
   {
     public UniqueItem TheSubwayWorkerBadge = default;
 

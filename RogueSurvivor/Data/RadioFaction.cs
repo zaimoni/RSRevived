@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Data
 
     // support classes
     [Serializable]
-    class ImplicitRadio : Observer<Location[]>
+    public class ImplicitRadio : Observer<Location[]>
     {
         public readonly ThreatTracking Threats;
         public readonly LocationSet Investigate;
@@ -156,7 +156,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Serializable]
-    class RadioFaction
+    public class RadioFaction
     {
         public readonly Ary2Dictionary<Location, Gameplay.Item_IDs, int> ItemMemory = new();
         public readonly ThreatTracking Threats = new();

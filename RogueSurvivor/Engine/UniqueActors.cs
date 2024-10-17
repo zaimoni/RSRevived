@@ -22,7 +22,7 @@ using Zone = djack.RogueSurvivor.Data.Zone;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal class UniqueActors
+  public class UniqueActors
   {
     public UniqueActor BigBear { get; private set; }
     public UniqueActor Duckman { get; private set; }

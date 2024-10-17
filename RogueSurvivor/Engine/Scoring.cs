@@ -16,7 +16,7 @@ using Zaimoni.Serialization;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-    internal sealed class Scoring : ISerialize
+    public sealed class Scoring : ISerialize
     {
     private static readonly Achievement[] Achievements = new Achievement[(int)Achievement.IDs._COUNT] {
         new Achievement(Achievement.IDs.REACHED_DAY_07, "Reached Day 7", "Did not reach XXX", new string[1] {
@@ -241,7 +241,7 @@ namespace djack.RogueSurvivor.Engine
     }
   }
 
-  internal class Scoring_fatality
+  public sealed class Scoring_fatality
   {
     private readonly List<Actor>? m_FollowersWhenDied = null;
     public readonly Actor Killer;
