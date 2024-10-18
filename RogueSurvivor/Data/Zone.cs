@@ -364,7 +364,7 @@ namespace djack.RogueSurvivor.Data
             int i = (int)reference.XCOM_STRICT_UB;
             while(0 <= --i) {
                 var where = m.DistrictPos + Direction.COMPASS[i];
-                maps[i] = Engine.Session.Get.World.At(where)?.CrossDistrictViewing(code);
+                maps[i] = World.Get.At(where)?.CrossDistrictViewing(code);
             }
 
             Span<short> width_cuts = stackalloc short[4];

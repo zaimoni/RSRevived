@@ -522,16 +522,16 @@ namespace djack.RogueSurvivor.Data
           district_delta.Y = tmp.X;
           new_district.Y += tmp.X;
           if (0>new_district.Y) return null;
-          if (Engine.Session.Get.World.Size<=new_district.Y) return null;
+          if (World.Get.Size<=new_district.Y) return null;
         } else if (0==tmp.Y) {
           district_delta.X = tmp.X;
           new_district.X += tmp.X;
           if (0>new_district.X) return null;
-          if (Engine.Session.Get.World.Size<=new_district.X) return null;
+          if (World.Get.Size<=new_district.X) return null;
         }
       }
       // following fails if district size strictly less than the half-view radius
-      Map dest = Engine.Session.Get.World[new_district.X,new_district.Y].CrossDistrictViewing(map_code);
+      Map dest = World.Get[new_district.X,new_district.Y].CrossDistrictViewing(map_code);
       if (null==dest) return null;
       if (1==district_delta.X) pt.X -= Width;
       else if (-1==district_delta.X) pt.X += dest.Width;
@@ -1023,13 +1023,13 @@ retry:
           int sgn_x_delta = (0<=x_delta ? (0 == x_delta ? 0 : 1) : -1);
           int sgn_y_delta = (0<=y_delta ? (0 == y_delta ? 0 : 1) : -1);
           if (abs_x_delta<abs_y_delta) {
-            dest = Engine.Session.Get.World[DistrictPos.X, DistrictPos.Y + sgn_y_delta].EntryMap;
+            dest = World.Get[DistrictPos.X, DistrictPos.Y + sgn_y_delta].EntryMap;
             goto retry;
           } else if (abs_x_delta > abs_y_delta) {
-            dest = Engine.Session.Get.World[DistrictPos.X + sgn_x_delta, DistrictPos.Y].EntryMap;
+            dest = World.Get[DistrictPos.X + sgn_x_delta, DistrictPos.Y].EntryMap;
             goto retry;
           } else if (2 <= abs_x_delta) {
-            dest = Engine.Session.Get.World[DistrictPos.X + sgn_x_delta, DistrictPos.Y + sgn_y_delta].EntryMap;
+            dest = World.Get[DistrictPos.X + sgn_x_delta, DistrictPos.Y + sgn_y_delta].EntryMap;
             goto retry;
           } else return exit_maps;  // no particular insight, not worth a debug crash
         }

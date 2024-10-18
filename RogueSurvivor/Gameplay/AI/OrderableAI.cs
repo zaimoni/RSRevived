@@ -1065,7 +1065,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == dests || 2>dests.Count) return;
 
       var targets = new Dictionary<Point,int>();
-      int max_range = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+      int max_range = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather);
       foreach(Point pt in dests) {
         targets[pt] = enemies.Count(p => LOS.CanTraceHypotheticalFireLine(new Location(m_Actor.Location.Map,pt), p.Location, max_range, m_Actor));
       }
@@ -1245,8 +1245,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       var range = m_Actor.CurrentRangedAttack.Range;
-      if (range > m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather)) {
-        range = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+      if (range > m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather)) {
+        range = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather);
       }
       var optimal_FOV = LOS.OptimalFOV(range);
       foreach(var en in enemies) {
@@ -1825,7 +1825,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (inventory.IsEmpty) return null;
         Item it = Rules.Get.DiceRoller.Choose(inventory.Items);
         if (!IsItemWorthTellingAbout(it)) return null;
-        int num = audience.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+        int num = audience.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather);
         if ((double) Rules.StdDistance(percept.Location, audience.Location) <= (double) (2 + num)) return null;
         return string.Format("I saw {0} {1} {2}.", it.AName, str1, str2);
       } else if (percept.Percepted is string str3) return string.Format("I heard {0} {1} {2}!", str3, str1, str2);

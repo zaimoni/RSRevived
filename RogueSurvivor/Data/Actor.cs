@@ -824,7 +824,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (!a.IsDead) return true;
       if (!Session.Get.HasCorpses) return false;
-      return !Session.Get.World.Any(m => m.HasCorpseOf(a));
+      return !World.Get.Any(m => m.HasCorpseOf(a));
     }
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
@@ -1485,7 +1485,7 @@ namespace djack.RogueSurvivor.Data
       var radio_location = Rules.PoliceRadioLocation(origin.Value);
       var radio_range = radio_location.RadioDistricts;
       // \todo ultimately, we'd like to prescreen whether the current player is one of the radio targets and pre-empt viewport panning if so
-      Session.Get.World.DoForAllMaps(map => {
+      World.Get.DoForAllMaps(map => {
         foreach (Actor actor in map.Actors.ToList()) {   // subject to multi-threading race
           if (this == actor) continue;
           // XXX defer implementing dual radios
@@ -1752,7 +1752,7 @@ namespace djack.RogueSurvivor.Data
       get {
         var ret = new HashSet<Actor>();
         // 1) police have all other police as allies.
-        if (IsFaction(GameFactions.IDs.ThePolice)) ret = (Engine.Session.Get.World.PoliceInRadioRange(Location) ?? ret);
+        if (IsFaction(GameFactions.IDs.ThePolice)) ret = (World.Get.PoliceInRadioRange(Location) ?? ret);
         // 2) leader/follower cliques are allies.
         m_Followers?.AppendTo(ret);
         var leader = LiveLeader;
@@ -3808,7 +3808,7 @@ namespace djack.RogueSurvivor.Data
           FOV = MINIMAL_FOV;
           break;
         case Lighting.OUTSIDE:
-          FOV -= LivingNightFovPenalty(time) + LivingWeatherFovPenalty(Engine.Session.Get.World.Weather);
+          FOV -= LivingNightFovPenalty(time) + LivingWeatherFovPenalty(World.Get.Weather);
           break;
       }
       FOV += FOV_BONUS_STANDING_ON_OBJECT;  // but there are no relevant objects except on the entry map

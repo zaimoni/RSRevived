@@ -7,6 +7,7 @@
 using System;
 using System.Diagnostics.Eventing.Reader;
 using System.Runtime.Serialization;
+using System.Text.Json;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
 #nullable enable
@@ -89,6 +90,20 @@ namespace djack.RogueSurvivor.Data
     }
 
     static public void Save(Zaimoni.Serialization.EncodeObjects encode) => encode.SaveTo7bit(_createdCounts);
+
+    static public void Load(ref Utf8JsonReader reader)
+    {
+      var stage = JsonSerializer.Deserialize<ulong[]>(ref reader, Engine.Session.JSON_opts) ?? throw new JsonException();
+      if ((int)Gameplay.GameActors.IDs._COUNT != stage.Length) throw new InvalidOperationException("need upgrade path for Actor::Load");
+      // \todo auto-repair if the incoming count is incorrect
+      Array.Copy(stage, _createdCounts, (int)Gameplay.GameActors.IDs._COUNT);
+    }
+
+    static public void Save(Utf8JsonWriter writer)
+    {
+      JsonSerializer.Serialize(writer, _createdCounts, Engine.Session.JSON_opts);
+    }
+
 #endregion
 
     public ActorModel(Gameplay.GameActors.IDs id, string? imageID, string name, string pluralName, int scoreValue, string flavor, DollBody body, Abilities abilities, Gameplay.GameActors.ActorData src, Type defaultController)

@@ -117,6 +117,11 @@ namespace djack.RogueSurvivor.Engine
 
     public void Load(Zaimoni.Serialization.DecodeObjects decode) => m_DiceRoller = decode.LoadInline<DiceRoller>();
     public void Save(Zaimoni.Serialization.EncodeObjects encode) => Zaimoni.Serialization.ISave.InlineSave(encode, m_DiceRoller);
+
+    static public void Load(ref Utf8JsonReader reader)
+    {
+      s_Rules = JsonSerializer.Deserialize<Rules>(ref reader, Session.JSON_opts) ?? throw new JsonException();
+    }
 #endregion
 
     public DiceRoller DiceRoller { get { return m_DiceRoller; } }
@@ -330,7 +335,7 @@ namespace djack.RogueSurvivor.Engine
           var z = new ZoneLoc(a_map, domain);
           var mk = new MapKripke(z, actor);
           var los = new Dictionary<Location, HashSet<Point>>();
-          var fov_range = actor.FOVrange(a_map.LocalTime, Session.Get.World.Weather);
+          var fov_range = actor.FOVrange(a_map.LocalTime, World.Get.Weather);
           int max_los = 0;
           foreach (var x in candidates) {
             mk.Place(obj, x.Key);

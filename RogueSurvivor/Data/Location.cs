@@ -215,7 +215,7 @@ namespace djack.RogueSurvivor.Data
       if (District.IsSewersMap(Map)) decay += 2;
       // outside? = weather affected.
       else if (!Map.IsInsideAt(Position)) {   // alpha10 weather affect only outside tiles
-        switch (Engine.Session.Get.World.Weather) {
+        switch (World.Get.Weather) {
         case Weather.CLEAR:
         case Weather.CLOUDY:
           // default decay.
@@ -258,7 +258,7 @@ namespace djack.RogueSurvivor.Data
           bottomright.Y -= district_size;
           ++ret.Height;
         }
-        Engine.Session.Get.World.TrimToBounds(ref ret);
+        World.Get.TrimToBounds(ref ret);
         return ret;
       }
     }

@@ -812,7 +812,7 @@ namespace djack.RogueSurvivor.Engine
     {
       HandleMainMenu();
       if (!m_IsGameRunning) return;
-      var world = Session.Get.World;
+      var world = World.Get;
       _bootstrap_computable(world);
       while (m_IsGameRunning && 0 < world.PlayerCount) {
         var d = world.CurrentPlayerDistrict();
@@ -1572,7 +1572,7 @@ namespace djack.RogueSurvivor.Engine
       ClearMessages();
       RedrawPlayScreen(new UI.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", Player.Name), 0, Color.White));
       play_timer.Start();
-      Session.Get.World.ScheduleForAdvancePlay();   // simulation starts at district A1
+      World.Get.ScheduleForAdvancePlay();   // simulation starts at district A1
       StopSimThread(false);  // alpha10 stop-start
       StartSimThread();
     }
@@ -1834,7 +1834,7 @@ namespace djack.RogueSurvivor.Engine
        }
 
        // check all other districts
-       foreach(District tmp2 in Session.Get.World.PlayerDistricts) {
+       foreach(District tmp2 in World.Get.PlayerDistricts) {
          tmp = tmp2.FindPlayer(null);
          if (null != tmp) {
            setPlayer(tmp);
@@ -1847,7 +1847,7 @@ namespace djack.RogueSurvivor.Engine
     private void AdvancePlay(District district, SimFlags sim)
     {
       var sess = Session.Get;
-      var world = sess.World;
+      var world = World.Get;
       DayPhase phase1 = sess.WorldTime.Phase;
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District: "+district.Name);
@@ -2008,7 +2008,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       else if (nextActorToAct.Controller is PlayerController pc) {
         HandlePlayerActor(pc);
-        if (!m_IsGameRunning || m_HasLoadedGame || 0>=Session.Get.World.PlayerCount) return;
+        if (!m_IsGameRunning || m_HasLoadedGame || 0>= World.Get.PlayerCount) return;
         if (!nextActorToAct.IsDead) CheckSpecialPlayerEventsAfterAction(nextActorToAct);
       } else {
 #if PROTOTYPE
@@ -2216,7 +2216,7 @@ namespace djack.RogueSurvivor.Engine
                 DoWakeUp(actor);
               else if (actor.IsPlayer) {
                 // check music.
-                m_MusicManager.PlayLooping(GameMusics.SLEEP, 1 == Session.Get.World.PlayerCount ? MusicPriority.PRIORITY_EVENT : MusicPriority.PRIORITY_BGM);
+                m_MusicManager.PlayLooping(GameMusics.SLEEP, 1 == World.Get.PlayerCount ? MusicPriority.PRIORITY_EVENT : MusicPriority.PRIORITY_BGM);
                 // message.
                 RedrawPlayScreen(new UI.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
                 Thread.Sleep(10);
@@ -2322,7 +2322,7 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 #region 7. Check fires.
         // \todo implement per-map weather, then use it here
-        if (Session.Get.World.Weather.IsRain() && rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE)) {
+        if (World.Get.Weather.IsRain() && rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE)) {
           map.DoForAllMapObjects(obj => {
               if (obj.IsOnFire && rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE)) {
                   obj.Extinguish();
@@ -2756,7 +2756,7 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     static private bool HasRaidHappenedSince(RaidType raid, Map map, int sinceNTurns)
     {
-      return Session.Get.World.HasRaidHappenedSince(raid, map, sinceNTurns);
+      return World.Get.HasRaidHappenedSince(raid, map, sinceNTurns);
     }
 
     private List<KeyValuePair<Map, KeyValuePair<ZoneLoc, HashSet<Point>>>> LandEventEntrance(Point world_pos)
@@ -3680,7 +3680,7 @@ namespace djack.RogueSurvivor.Engine
               if (fo.IsPlayer) player.RemoveFollower(fo);  // NPCs cannot lead PCs; cf Actor::PrepareForPlayerControl
           }
       });
-      return 0>=Session.Get.World.PlayerCount;
+      return 0>= World.Get.PlayerCount;
     }
 
     private void HandleScreenshot()
@@ -3878,13 +3878,13 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.White, "> DISTRICTS LAYOUT", gx, gy, new Color?());
       gy += BOLD_LINE_SPACING;
       int num2 = gy + BOLD_LINE_SPACING;
-      for (int index = 0; index < Session.Get.World.Size; ++index) {
+      for (int index = 0; index < World.Get.Size; ++index) {
         Color color = index == Player.Location.Map.DistrictPos.Y ? Color.LightGreen : Color.White;
         m_UI.UI_DrawStringBold(color, index.ToString(), 20, num2 + index * 3 * BOLD_LINE_SPACING + BOLD_LINE_SPACING, new Color?());
         m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * BOLD_LINE_SPACING, new Color?());
         m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * BOLD_LINE_SPACING + 2* BOLD_LINE_SPACING, new Color?());
       }
-      for (int index = 0; index < Session.Get.World.Size; ++index)
+      for (int index = 0; index < World.Get.Size; ++index)
         m_UI.UI_DrawStringBold(index == Player.Location.Map.DistrictPos.X ? Color.LightGreen : Color.White, string.Format("..{0}..", (char)(65 + index)), 32 + index * 48, gy, new Color?());
 
       static ColorString DistrictToColorCode(DistrictKind d)
@@ -3908,9 +3908,9 @@ namespace djack.RogueSurvivor.Engine
       int num3 = gy + BOLD_LINE_SPACING;
       const int num4 = 32;
       int num5 = num3;
-      for (int index1 = 0; index1 < Session.Get.World.Size; ++index1) {
-        for (int index2 = 0; index2 < Session.Get.World.Size; ++index2) {
-          District district = Session.Get.World[index2, index1];
+      for (int index1 = 0; index1 < World.Get.Size; ++index1) {
+        for (int index2 = 0; index2 < World.Get.Size; ++index2) {
+          District district = World.Get[index2, index1];
           char ch = district == CurrentMap.District ? '*' : (Player.ActorScoring.HasVisited(district.EntryMap) ? '-' : '?');
           var cs = DistrictToColorCode(district.Kind);
           string text = "".PadLeft(5,ch);
@@ -3920,10 +3920,10 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-        int num6 = Session.Get.World.Size / 2;
-        for (int index = 1; index < Session.Get.World.Size; ++index)
+        int num6 = World.Get.Size / 2;
+        for (int index = 1; index < World.Get.Size; ++index)
           m_UI.UI_DrawStringBold(Color.White, "=", num4 + index * 48 - 8, num5 + num6 * 3 * BOLD_LINE_SPACING + BOLD_LINE_SPACING, new Color?());
-        int gy3 = num3 + (Session.Get.World.Size * 3 + 1) * BOLD_LINE_SPACING;
+        int gy3 = num3 + (World.Get.Size * 3 + 1) * BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.White, "Legend", gx, gy3, new Color?());
         gy3 += BOLD_LINE_SPACING;
         m_UI.UI_DrawString(Color.White, "  *   - current     ?   - unvisited", gx, gy3, new Color?());
@@ -3937,9 +3937,9 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, "> NOTABLE LOCATIONS", gx, gy3, new Color?());
         int gy9 = gy3 + BOLD_LINE_SPACING;
         int num7 = gy9;
-        for (int y = 0; y < Session.Get.World.Size; ++y) {
-          for (int x = 0; x < Session.Get.World.Size; ++x) {
-            Map entryMap = Session.Get.World[x, y].EntryMap;
+        for (int y = 0; y < World.Get.Size; ++y) {
+          for (int x = 0; x < World.Get.Size; ++x) {
+            Map entryMap = World.Get[x, y].EntryMap;
             Zone zoneByPartialName1;
             if ((zoneByPartialName1 = entryMap.GetZoneByPartialName("Subway Station")) != null) {
               m_UI.UI_DrawStringBold(Color.Blue, string.Format("at {0} : {1}.", World.CoordToString(x, y), zoneByPartialName1.Name), gx, gy9, new Color?());
@@ -4461,7 +4461,7 @@ namespace djack.RogueSurvivor.Engine
       if (!sess.CMDoptionExists("socrates-daimon")) return;
       var turn = sess.WorldTime.TurnCounter;
       AddMessage(new("You pray for wisdom.", turn, Color.Green));
-      sess.World.DaimonMap();
+      World.Get.DaimonMap();
       AddMessage(new("Your prayers are unclearly answered.", turn, Color.Yellow));
     }
 
@@ -5538,13 +5538,12 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       bool yes = YesNoPopup("Really sleep there");
-      var sess = Session.Get;
-      AddMessage(new(yes ? "Goodnight, happy nightmares!" : "Good, keep those eyes wide open.", sess.WorldTime.TurnCounter, Color.Yellow));
+      AddMessage(new(yes ? "Goodnight, happy nightmares!" : "Good, keep those eyes wide open.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       if (!yes) return false;
       player.StartSleeping();
       RedrawPlayScreen();
       // check music.
-      m_MusicManager.PlayLooping(GameMusics.SLEEP, 1== sess.World.PlayerCount ? MusicPriority.PRIORITY_EVENT : MusicPriority.PRIORITY_BGM);
+      m_MusicManager.PlayLooping(GameMusics.SLEEP, 1== World.Get.PlayerCount ? MusicPriority.PRIORITY_EVENT : MusicPriority.PRIORITY_BGM);
       return true;
     }
 
@@ -6570,7 +6569,7 @@ namespace djack.RogueSurvivor.Engine
     {
 #if DEBUG
       if (aiActor.IsSleeping) throw new ArgumentOutOfRangeException(nameof(aiActor),"cannot act while sleeping");
-      if (aiActor.IsDebuggingTarget) Session.Get.World.DaimonMap(); // so we have a completely correct map when things go wrong
+      if (aiActor.IsDebuggingTarget) World.Get.DaimonMap(); // so we have a completely correct map when things go wrong
       if (aiActor!=aiActor.Location.Map.NextActorToAct) throw new InvalidProgramException("trying to process the wrong actor");
 
       int AP_checkpoint = aiActor.ActionPoints;
@@ -6596,7 +6595,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       if (actorAction is ActorTake || actorAction is ActorGive || actorAction is Use<Item>) {
         var errors = new List<string>();
-        Session.Get.World._RejectInventoryDamage(errors, aiActor);
+        World.Get._RejectInventoryDamage(errors, aiActor);
         if (0 < errors.Count) throw new InvalidOperationException(aiActor.Name + " action " + actorAction + " triggered:\n" + string.Join("\n", errors));
       }
       if (actorAction is ActorDest && null != aiActor.Threats) aiActor.Controller.UpdateSensors(); // to trigger fast threat/tourism update
@@ -6664,7 +6663,7 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.NIGHT:
           return map.LocalTime.TurnCounter >= WorldTime.TURNS_PER_HOUR;
         case AdvisorHint.RAIN:
-          if (Session.Get.World.Weather.IsRain())
+          if (World.Get.Weather.IsRain())
             return map.LocalTime.TurnCounter >= 2*WorldTime.TURNS_PER_HOUR;
           return false;
         case AdvisorHint.ACTOR_MELEE: return Player.IsAdjacentToEnemy;
@@ -8791,12 +8790,12 @@ namespace djack.RogueSurvivor.Engine
           pt => in_underground_base_room(pt));
 #endregion
 #region 2) examine all CHAR offices
-     Session.Get.World.DoForAllDistricts(District.DamnCHAROfficesToPoliceInvestigation);
+     World.Get.DoForAllDistricts(District.DamnCHAROfficesToPoliceInvestigation);
 #endregion
 #region 3) signal police to look for CHAR base entrance
      if (LookingForCHARBase.IsSecret) {
         // \todo radio message, ultra-long range (repeater network); trigger could be confession, police trespass, or police takedown of murderer
-        Session.Get.World.DoForAllActors(a => {
+        World.Get.DoForAllActors(a => {
             if (a.IsFaction(GameFactions.IDs.ThePolice)) (a.Controller as ObjectiveAI)?.AddFOVevent(new LookingForCHARBase(a));
         });
      }
@@ -9027,7 +9026,7 @@ namespace djack.RogueSurvivor.Engine
       var rules = Rules.Get;
 
       if (   r_attack.Kind == AttackKind.FIREARM
-          && (rules.RollChance(Session.Get.World.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN))) {
+          && (rules.RollChance(World.Get.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN))) {
         var a_witnesses = _ForceVisibleToPlayer(attacker, defender);
         if (null != a_witnesses) RedrawPlayScreen(a_witnesses.Value, MakePanopticMessage(attacker, " : weapon jam!"));
         return;
@@ -10925,7 +10924,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (deadGuy == m_Player_bak) {
         setPlayer(m_Player_bak);
-        if (0 >= Session.Get.World.PlayerCount) PlayerDied(killer, reason);
+        if (0 >= World.Get.PlayerCount) PlayerDied(killer, reason);
       }
       deadGuy.RemoveAllFollowers();
       var leader = deadGuy.Leader;
@@ -11441,15 +11440,8 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void OnNewNight()
-    {
-      Session.Get.World.DoForAllActors(a => HandleNewNight(a));
-    }
-
-    private void OnNewDay()
-    {
-      Session.Get.World.DoForAllActors(a => StayingAliveAchievements(a));   // XXX reasonable name HandleNewDay
-    }
+    private void OnNewNight() => World.Get.DoForAllActors(a => HandleNewNight(a));
+    private void OnNewDay() => World.Get.DoForAllActors(a => StayingAliveAchievements(a));
 
     private void HandlePlayerDecideUpgrade(Actor upgradeActor)
     {
@@ -11715,9 +11707,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void ChangeWeather()
     {
-      var s = Session.Get;
-      var world = s.World;
-      var turn = s.WorldTime.TurnCounter;
+      var world = World.Get;
+      var turn = Session.Get.WorldTime.TurnCounter;
       string msg = world.WeatherChanges();
       // XXX \todo should be "first PC who sees sky gets message
       if (Player.CanSeeSky) // alpha10
@@ -11780,7 +11771,7 @@ namespace djack.RogueSurvivor.Engine
       {
         case Lighting.DARKNESS: return new ColorString(Color.Blue,"Darkness");
         case Lighting.OUTSIDE: {
-          var weather = Session.Get.World.Weather;
+          var weather = World.Get.Weather;
           return new ColorString(WeatherColor(weather),DescribeWeather(weather));
         }
         case Lighting.LIT: return new ColorString(Color.Yellow,"Lit");
@@ -11926,7 +11917,7 @@ namespace djack.RogueSurvivor.Engine
     public void DrawMap(Map map)    // XXX not at all clear why this and the functions it controls are public
     {
       Color tint = Color.White; // disabled changing brightness bad for the eyes TintForDayPhase(m_Session.WorldTime.Phase);
-      var imageID = Session.Get.World.Weather switch {
+      var imageID = World.Get.Weather switch {
           Weather.RAIN => Session.Get.WorldTime.TurnCounter % 2 == 0 ? GameImages.WEATHER_RAIN1 : GameImages.WEATHER_RAIN2,
           Weather.HEAVY_RAIN => Session.Get.WorldTime.TurnCounter % 2 == 0 ? GameImages.WEATHER_HEAVY_RAIN1 : GameImages.WEATHER_HEAVY_RAIN2,
           _ => null
@@ -12693,8 +12684,8 @@ namespace djack.RogueSurvivor.Engine
     {
       Defence defence = actor.Defence;
       return (actor.Model.Abilities.IsUndead
-            ? string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", defence.Value, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Smell, actor.KillsCount)
-            : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Model.BaseViewRange, actor.CountFollowers, actor.MaxFollowers));
+            ? string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", defence.Value, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, World.Get.Weather), actor.Smell, actor.KillsCount)
+            : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, World.Get.Weather), actor.Model.BaseViewRange, actor.CountFollowers, actor.MaxFollowers));
     }
 
     static private string _gameStatus(Actor a) {
@@ -13538,12 +13529,12 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
 #endif
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN)) return false;
-      Session.Get.World.DoForAllMaps(m=>m.RegenerateZoneExits());
-      Session.Get.World.DoForAllMaps(m=>m.RepairZoneWalk());
+      World.Get.DoForAllMaps(m=>m.RegenerateZoneExits());
+      World.Get.DoForAllMaps(m=>m.RepairZoneWalk());
       Direction_ext.Now();
 
       // we crash on FOVloc otherwise
-      Session.Get.World.DoForAllMaps(m => { foreach (var player in m.Players.Get) { player.Controller.UpdateSensors(); } },  m => 0<m.PlayerCount);
+      World.Get.DoForAllMaps(m => { foreach (var player in m.Players.Get) { player.Controller.UpdateSensors(); } },  m => 0<m.PlayerCount);
       InfoPopup(new string[] {
           "LOADING DONE.",
           "Welcome back to " + SetupConfig.GAME_NAME + "!"
@@ -13753,7 +13744,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Reset(m_CharGen.GameMode);
       Rules.Reset();
       Direction_ext.Now();
-      World world = Session.Get.World;
+      World world = World.Get;
       var zoning = world.PreliminaryZoning;
       BaseTownGenerator.WorldGenInit(zoning);
       for (short index1 = 0; index1 < world.Size; ++index1) {
@@ -13910,10 +13901,10 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 #if PRERELEASE_MOTHBALL
-      Session.Get.World.DoForAllMaps(m=>m.RegenerateChokepoints());
+      World.Get.DoForAllMaps(m=>m.RegenerateChokepoints());
 #endif
-      Session.Get.World.DoForAllMaps(m=>m.RegenerateMapGeometry());
-      Session.Get.World.DaimonMap();    // start of game cheat map...useful for figuring out who should be PC on the command line
+      World.Get.DoForAllMaps(m=>m.RegenerateMapGeometry());
+      World.Get.DaimonMap();    // start of game cheat map...useful for figuring out who should be PC on the command line
       if (!isVerbose) return;
       m_UI.DrawHeadNote("Generating game world... done!");
     }
@@ -14053,10 +14044,10 @@ namespace djack.RogueSurvivor.Engine
 
     private bool SimulateNearbyDistricts(District d)
     {
-      var d1 = Session.Get.World.CurrentSimulationDistrict();
+      var d1 = World.Get.CurrentSimulationDistrict();
       if (null == d1) return false;
       AdvancePlay(d1, ComputeSimFlagsForTurn(d.EntryMap.LocalTime.TurnCounter));    // void SimulateDistrict(d1) if becomes complicated again
-      Session.Get.World.ScheduleAdjacentForAdvancePlay(d1);
+      World.Get.ScheduleAdjacentForAdvancePlay(d1);
       return true;
     }
 
@@ -15120,12 +15111,12 @@ retry:
     // Using an extension function for the Verb class is intentional (same API as for raw strings)
     static public string Conjugate(this string verb, Actor actor)
     {
-      return verb.Conjugate((RogueGame.IsPlayer(actor) && 1 == Session.Get.World.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
+      return verb.Conjugate((RogueGame.IsPlayer(actor) && 1 == World.Get.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
     }
 
     static public string Conjugate(this Verb verb, Actor actor)
     {
-      return verb.Conjugate((RogueGame.IsPlayer(actor) && 1 == Session.Get.World.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
+      return verb.Conjugate((RogueGame.IsPlayer(actor) && 1 == World.Get.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
     }
 
     static public KeyValuePair<List<PlayerController>, List<Actor>>? SetDifference(this KeyValuePair<List<PlayerController>, List<Actor>> lhs, KeyValuePair<List<PlayerController>, List<Actor>>? rhs) {

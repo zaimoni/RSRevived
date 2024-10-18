@@ -276,6 +276,8 @@ namespace djack.RogueSurvivor.Engine
         else if (reader.ValueTextEquals("GameMode")) return 7;
         else if (reader.ValueTextEquals("CommandLineOptions")) return 8;
         else if (reader.ValueTextEquals("Scoring")) return 9;
+        else if (reader.ValueTextEquals("Rules")) return 10;
+        else if (reader.ValueTextEquals("CreatedCounts")) return 11;
 
         RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -320,10 +322,16 @@ namespace djack.RogueSurvivor.Engine
               }
               throw new JsonException();
           case 8:
-              relay_commandline = JsonSerializer.Deserialize<Dictionary<string, string>>(ref reader, JSON_opts) ?? throw new JsonException();
+              relay_commandline = JsonSerializer.Deserialize<Dictionary<string, string>>(ref reader, options) ?? throw new JsonException();
               break;
           case 9:
-              m_Scoring = JsonSerializer.Deserialize<Scoring>(ref reader, JSON_opts) ?? throw new JsonException();
+              m_Scoring = JsonSerializer.Deserialize<Scoring>(ref reader, options) ?? throw new JsonException();
+              break;
+          case 10:
+              Rules.Load(ref reader);
+              break;
+          case 11:
+              ActorModel.Load(ref reader);
               break;
           }
       }
@@ -353,16 +361,12 @@ namespace djack.RogueSurvivor.Engine
  */
 
 /*
-            ActorModel.Save(info, context);
-            Rules.Get.Save(info, context);
             PlayerController.Save(info, context);
             info.AddValue("World", World, typeof(World));
             RogueGame.Save(info, context);
  */
 
 /*
-            ActorModel.Load(info, context);
-            Rules.Get.Load(info, context);
             PlayerController.Load(info, context);
             // end load other classes' static variables
             World = (World)info.GetValue("World", typeof(World));
@@ -383,10 +387,14 @@ namespace djack.RogueSurvivor.Engine
       writer.WriteString("GameMode", GameMode.ToString());
       if (null != m_CommandLineOptions) {
         writer.WritePropertyName("CommandLineOptions");
-        JsonSerializer.Serialize(writer, m_CommandLineOptions, JSON_opts);
+        JsonSerializer.Serialize(writer, m_CommandLineOptions, options);
       }
       writer.WritePropertyName("Scoring");
-      JsonSerializer.Serialize(writer, m_Scoring, JSON_opts);
+      JsonSerializer.Serialize(writer, m_Scoring, options);
+      writer.WritePropertyName("Rules");
+      JsonSerializer.Serialize(writer, Rules.Get, options);
+      writer.WritePropertyName("CreatedCounts");
+      ActorModel.Save(writer);
       writer.WriteEndObject();
     }
 

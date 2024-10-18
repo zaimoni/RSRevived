@@ -7881,7 +7881,7 @@ restart_chokepoints:
           ThreatTracking threats = m_Actor.Threats;
           LocationSet sights_to_see = m_Actor.InterestingLocs;
           if (null != threats || null != sights_to_see) {
-            var no_light_range = m_Actor.FOVrangeNoFlashlight(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+            var no_light_range = m_Actor.FOVrangeNoFlashlight(m_Actor.Location.Map.LocalTime, World.Get.Weather);
             HashSet<Point> no_light_FOV = LOS.ComputeFOVFor(m_Actor.Location, no_light_range);
             HashSet<Point> danger_point_FOV = LOS.ComputeFOVFor(m_Actor.Location, no_light_range + light.FovBonus + 1);
             danger_point_FOV.ExceptWith(no_light_FOV);
@@ -7906,7 +7906,7 @@ restart_chokepoints:
 
       // resume legacy implementation
       if (Lighting.DARKNESS == m_Actor.Location.Map.Lighting) return true;
-      if (Session.Get.World.Weather != Weather.HEAVY_RAIN) return !m_Actor.IsInside;
+      if (World.Get.Weather != Weather.HEAVY_RAIN) return !m_Actor.IsInside;
       return true;
     }
 

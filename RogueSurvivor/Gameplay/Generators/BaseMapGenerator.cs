@@ -477,7 +477,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     // * VAPORWARE: a working national guard base to be needed for one or both of patrols and supply drops
     public District RandomDistrictInCity() {
       var rules = Rules.Get;
-      World world = Session.Get.World;
+      World world = World.Get;
       return world[world.CHAR_CityLimits.convert(rules.Roll(0, world.CHAR_CityLimits.Width* world.CHAR_CityLimits.Height))];
     }
 
