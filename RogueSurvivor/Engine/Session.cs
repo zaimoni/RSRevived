@@ -275,6 +275,7 @@ namespace djack.RogueSurvivor.Engine
         else if (reader.ValueTextEquals("PlayerKnows_CHARUndergroundFacilityLocation")) return 6;
         else if (reader.ValueTextEquals("GameMode")) return 7;
         else if (reader.ValueTextEquals("CommandLineOptions")) return 8;
+        else if (reader.ValueTextEquals("Scoring")) return 9;
 
         RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -314,12 +315,15 @@ namespace djack.RogueSurvivor.Engine
           case 7:
               {
               string stage = reader.GetString();
-              if (Enum.TryParse<GameMode>(stage, out GameMode)) return;
+              if (Enum.TryParse(stage, out GameMode)) return;
               RogueGame.Game.ErrorPopup("unrecognized GameMode " + stage);
               }
               throw new JsonException();
           case 8:
-              relay_commandline = JsonSerializer.Deserialize<Dictionary<string, string>>(ref reader, Session.JSON_opts) ?? throw new JsonException();
+              relay_commandline = JsonSerializer.Deserialize<Dictionary<string, string>>(ref reader, JSON_opts) ?? throw new JsonException();
+              break;
+          case 9:
+              m_Scoring = JsonSerializer.Deserialize<Scoring>(ref reader, JSON_opts) ?? throw new JsonException();
               break;
           }
       }
@@ -340,7 +344,6 @@ namespace djack.RogueSurvivor.Engine
 /*
         private static Map.ActorCode s_Player;
 
-        private Scoring m_Scoring = new();
         public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.Item_IDs.TRACKER_POLICE_RADIO);
 
         public World World { get; private set; }
@@ -380,8 +383,10 @@ namespace djack.RogueSurvivor.Engine
       writer.WriteString("GameMode", GameMode.ToString());
       if (null != m_CommandLineOptions) {
         writer.WritePropertyName("CommandLineOptions");
-        JsonSerializer.Serialize(writer, m_CommandLineOptions, Session.JSON_opts);
+        JsonSerializer.Serialize(writer, m_CommandLineOptions, JSON_opts);
       }
+      writer.WritePropertyName("Scoring");
+      JsonSerializer.Serialize(writer, m_Scoring, JSON_opts);
       writer.WriteEndObject();
     }
 
@@ -456,6 +461,7 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.DiceRoller());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Random());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Rules());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Scoring());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.WorldTime());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Vector2D_short());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Box2D_short());

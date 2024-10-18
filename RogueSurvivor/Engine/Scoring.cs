@@ -7,8 +7,9 @@
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using Zaimoni.Serialization;
 
 #nullable enable
@@ -82,6 +83,54 @@ namespace djack.RogueSurvivor.Engine
         if (RealLifePlayingTime != test.RealLifePlayingTime) err += "RealLifePlayingTime != test.RealLifePlayingTime: " + RealLifePlayingTime.ToString() + " "+ test.RealLifePlayingTime.ToString() + "\n";
 
         if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
+    }
+
+    static private int field_code(ref Utf8JsonReader reader) {
+        if (reader.ValueTextEquals("ReincarnationNumber")) return 1;
+        else if (reader.ValueTextEquals("RealLifePlayingTime")) return 2;
+
+        RogueGame.Game.ErrorPopup(reader.GetString());
+        throw new JsonException();
+    }
+
+    private Scoring(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
+      int origin_depth = reader.CurrentDepth;
+      reader.Read();
+
+      void read(ref Utf8JsonReader reader) {
+          int code = field_code(ref reader);
+          reader.Read();
+
+          switch (code) {
+          case 1:
+              m_ReincarnationNumber = reader.GetInt32();
+              break;
+          case 2:
+              RealLifePlayingTime = new TimeSpan(reader.GetInt64());
+              break;
+          }
+      }
+
+      while (reader.CurrentDepth != origin_depth || JsonTokenType.EndObject != reader.TokenType) {
+          if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
+
+          read(ref reader);
+
+          reader.Read();
+      }
+
+      if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
+    }
+
+    public static Scoring fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new Scoring(ref reader, options);
+
+    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options) {
+      writer.WriteStartObject();
+      writer.WriteNumber("ReincarnationNumber", m_ReincarnationNumber);
+      writer.WriteNumber("RealLifePlayingTime", RealLifePlayingTime.Ticks);
+      writer.WriteEndObject();
     }
 
     public int StartNewLife() => ++m_ReincarnationNumber;
@@ -263,4 +312,20 @@ namespace djack.RogueSurvivor.Engine
       m_ZombifiedPlayer = z;
     }
   }
+}
+
+namespace Zaimoni.JsonConvert
+{
+    public class Scoring : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.Scoring>
+    {
+        public override djack.RogueSurvivor.Engine.Scoring Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            return djack.RogueSurvivor.Engine.Scoring.fromJson(ref reader, options);
+        }
+
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Engine.Scoring src, JsonSerializerOptions options)
+        {
+            src.toJson(writer, options);
+        }
+    }
 }
