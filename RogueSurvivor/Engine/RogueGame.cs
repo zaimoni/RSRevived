@@ -2852,7 +2852,7 @@ namespace djack.RogueSurvivor.Engine
           landing_zones[n].Key.AddTimer(escape);
       }
 
-      Session.Get.SetLastRaidTime(RaidType.BIKERS, map);
+      World.Get.SetLastRaidTime(RaidType.BIKERS, map);
       NotifyOrderablesAI(RaidType.BIKERS, leader.Location);
     }
 
@@ -2913,7 +2913,7 @@ namespace djack.RogueSurvivor.Engine
           landing_zones[n].Key.AddTimer(escape);
       }
 
-      Session.Get.SetLastRaidTime(RaidType.GANGSTA, map);
+      World.Get.SetLastRaidTime(RaidType.GANGSTA, map);
       NotifyOrderablesAI(RaidType.GANGSTA, leader.Location);
     }
 
@@ -2928,7 +2928,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_BlackOpsRaid(Map map)
     {
-      Session.Get.SetLastRaidTime(RaidType.BLACKOPS, map);
+      World.Get.SetLastRaidTime(RaidType.BLACKOPS, map);
       var actor = SpawnNewBlackOpsLeader(map);
       if (actor == null) return;
       for (int index = 0; index < BLACKOPS_RAID_SIZE-1; ++index) {
@@ -2987,7 +2987,7 @@ namespace djack.RogueSurvivor.Engine
           }
       }
 
-      Session.Get.SetLastRaidTime(RaidType.SURVIVORS, map);
+      World.Get.SetLastRaidTime(RaidType.SURVIVORS, map);
       NotifyOrderablesAI(RaidType.SURVIVORS, party[2].Location);
     }
 

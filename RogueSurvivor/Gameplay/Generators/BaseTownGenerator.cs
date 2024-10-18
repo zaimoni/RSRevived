@@ -187,16 +187,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       SubwayElectrifyPlans.Clear();
       ForceSubwayStation.Clear();
 
-      var world = Session.Get.World;
+      var world = World.Get;
       var world_bounds = world.Extent;
       world_bounds.DoForEach(pt => {
         if (0<world.SubwayLayout(pt)) {
           var working = new List<Point>();
-          if (CanHaveSubwayStationBlocks(Session.Get.World.SubwayLayout(pt))) working.Add(pt);
+          if (CanHaveSubwayStationBlocks(world.SubwayLayout(pt))) working.Add(pt);
           foreach(var dir in Direction.COMPASS_4) {
             Point pt2 = pt+dir;
             if (!world_bounds.Contains(pt2)) continue;
-            if (0 < world.SubwayLayout(pt2) && CanHaveSubwayStationBlocks(Session.Get.World.SubwayLayout(pt2))) working.Add(pt2);
+            if (0 < world.SubwayLayout(pt2) && CanHaveSubwayStationBlocks(world.SubwayLayout(pt2))) working.Add(pt2);
           }
 #if DEBUG
           if (0>=working.Count) throw new InvalidOperationException("isolated node in subway network");
@@ -236,7 +236,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static public District GetCHARbaseDistrict()
     {
       var districtList = new List<KeyValuePair<District, int>>();
-      Session.Get.World.DoForAllDistricts(d=>{
+      World.Get.DoForAllDistricts(d=>{
         if (DistrictKind.BUSINESS != d.Kind) return;
 
         if (null != d.EntryMap.GetZoneByPartialName("CHAR Office@")) {
@@ -334,7 +334,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #endif
 
       var world_pos = map.DistrictPos;
-      var highway_layout = Session.Get.World.HighwayLayout(world_pos);
+      var highway_layout = World.Get.HighwayLayout(world_pos);
       if (0 < highway_layout) {
          // \todo? enforce that hospital and police station both do not co-exist with highway (currently by construction)
          if (DistrictKind.INTERSTATE != map.District.Kind) throw new InvalidOperationException("interstate highway layout without highway");
@@ -386,7 +386,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         void lay_EW_road(Point pt) { map.SetTileModelAt(pt, GameTiles.ROAD_ASPHALT_EW); }
          // draw the highway(?)
          // adjust map block generation; blocks must not intersect highway
-         var city_limits = Session.Get.World.CHAR_CityLimits;
+         var city_limits = World.Get.CHAR_CityLimits;
          var tl_highway = city_limits.Location + Direction.NW;
          var br_highway = city_limits.Location + city_limits.Size;
 
@@ -445,7 +445,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       } else {
          if (DistrictKind.INTERSTATE == map.District.Kind) throw new InvalidOperationException("interstate highway without layout");
       }
-      var ret = MakeBlocks(map, Session.Get.World.CHAR_CityLimits.Contains(world_pos), map.Rect);
+      var ret = MakeBlocks(map, World.Get.CHAR_CityLimits.Contains(world_pos), map.Rect);
       if (0 < highway_layout) {
         var ub = ret.Count;
         while(0 <= --ub) {
@@ -468,9 +468,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       const uint S_E = (uint)Compass.XCOMlike.E * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.S;
       const uint S_W = (uint)Compass.XCOMlike.S * (uint)Compass.reference.XCOM_EXT_STRICT_UB + (uint)Compass.XCOMlike.W;
 
-      var city_limits = Session.Get.World.CHAR_CityLimits;
+      var city_limits = World.Get.CHAR_CityLimits;
       if (city_limits.Contains(d.WorldPosition)) return null;
-      var highway_layout = Session.Get.World.HighwayLayout(d.WorldPosition);
+      var highway_layout = World.Get.HighwayLayout(d.WorldPosition);
       if (0 >= highway_layout) return null;
       var geometry = new Compass.LineGraph(highway_layout);
 
@@ -539,7 +539,7 @@ restart:
       foreach (var x in blockList1) m_SurfaceBlocks.Add(new Block(x)); // want value-copy here
 
       // give subway fairly high priority
-      var subway_layout = Session.Get.World.SubwayLayout(world_pos);
+      var subway_layout = World.Get.SubwayLayout(world_pos);
       if (0 < subway_layout) {
         if (ForceSubwayStation.Contains(world_pos)) {
           var test = GetSubwayStationBlocks(map, subway_layout);
@@ -640,7 +640,7 @@ restart:
       sewers.AddZone(MakeUniqueZone("sewers", sewers.Rect));
 
       // Building codes require that all passages be 2 wide, even those on the edge of the city.
-      var edge_code = Session.Get.World.CHAR_CityLimits.EdgeCode(district.WorldPosition);
+      var edge_code = World.Get.CHAR_CityLimits.EdgeCode(district.WorldPosition);
       var dev_rect = sewers.Rect;
       if (0 != (edge_code & 1)) {
         dev_rect.Y += 1;
@@ -840,7 +840,7 @@ restart:
     static private Point HighwayRail(District d) {
       // original version was reading the incoming dimensions off of the incoming entryMap
       // but this was simply the district size
-      var deviate_at = Session.Get.World.CHAR_CityLimits.Location+ Session.Get.World.CHAR_CityLimits.Size /* + Direction.NW+ Direction.SE */;
+      var deviate_at = World.Get.CHAR_CityLimits.Location+ World.Get.CHAR_CityLimits.Size /* + Direction.NW+ Direction.SE */;
       int half_dim = RogueGame.Options.DistrictSize/2;
       Point mid_map = (Point)half_dim;
       // need diagonals at An and n0 flush
@@ -860,7 +860,7 @@ restart:
     static private Point SubwayRail(District d) {
       // original version was reading the incoming dimensions off of the incoming entryMap
       // but this was simply the district size
-      var deviate_at = Session.Get.World.CHAR_CityLimits.Location+ Session.Get.World.CHAR_CityLimits.Size + Direction.NW;
+      var deviate_at = World.Get.CHAR_CityLimits.Location+ World.Get.CHAR_CityLimits.Size + Direction.NW;
       int half_dim = RogueGame.Options.DistrictSize/2;
       Point mid_map = (Point)half_dim;
       // need diagonals at An and n0 flush
@@ -969,7 +969,7 @@ restart:
     {
       block = null;
       District district = entryMap.District;
-      uint layout = Session.Get.World.SubwayLayout(district.WorldPosition);
+      uint layout = World.Get.SubwayLayout(district.WorldPosition);
 #if DEBUG
       if (0 >= layout) throw new InvalidOperationException("0 >= layout");
 #endif
@@ -2310,7 +2310,7 @@ restart:
       if (isSurface) {
         Actor newPoliceman = CreateNewPoliceman(0);
         if (Session.Get.CMDoptionExists("subway-cop")) {
-          var home_district_xy = Session.Get.World.Size;
+          var home_district_xy = World.Get.Size;
           home_district_xy /= 2;
           if (map.DistrictPos == new Point(home_district_xy, home_district_xy)) newPoliceman.Controller = new PlayerController(newPoliceman);
         }

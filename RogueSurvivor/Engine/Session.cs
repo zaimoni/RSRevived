@@ -53,16 +53,16 @@ namespace djack.RogueSurvivor.Engine
 
         public static Session Get { get {
 #if DEBUG
-                if (s_IsLoading) throw new InvalidOperationException("unsafe game loading");
+          if (s_IsLoading) throw new InvalidOperationException("unsafe game loading");
 #endif
-                return s_TheSession ??= new Session();
-            } }
+          return s_TheSession ??= new Session();
+        } }
 
         // This has been historically problematic.  With the no-skew scheduler, it's simplest to say the world time is just the time
         // of the last district to simulate in a turn -- the bottom-right one.  Note that the entry map is "last" so it will execute last.
 
         // Groceries are highly demanding and will crash world generation without unusual measures here.
-        public WorldTime WorldTime { get { return new WorldTime(World.Last?.EntryMap?.LocalTime ?? new WorldTime(0)); } }
+        public WorldTime WorldTime { get { return new WorldTime(World.Get.Last?.EntryMap?.LocalTime ?? new WorldTime(0)); } }
 
         public Scoring Scoring { get { return m_Scoring; } }
         public Scoring_fatality Scoring_fatality { get { return m_Scoring_fatality; } }
@@ -416,11 +416,6 @@ namespace djack.RogueSurvivor.Engine
             }
         }
 
-#nullable enable
-        // thin-wrappers; not suppressing these is technical debt.
-        public void SetLastRaidTime(RaidType raid, Map map) => World.SetLastRaidTime(raid, map);
-#nullable restore
-
         public void LatestKill(Actor killer, Actor victim, string death_loc)
         {
             m_Scoring_fatality = new Scoring_fatality(killer, victim, death_loc);
@@ -433,7 +428,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
 #if DEBUG
             var errors = new List<string>();
-            session.World._RejectInventoryDamage(errors);
+            World.Get._RejectInventoryDamage(errors);
             if (0 < errors.Count) throw new InvalidOperationException("inventory damage pre-save: " + string.Join("\n", errors));
 #endif
             switch (format) {
@@ -445,7 +440,7 @@ namespace djack.RogueSurvivor.Engine
 
         private void RepairLoad()
         {
-            World.RepairLoad();
+            World.Get.RepairLoad();
         }
 
         public static bool Load(string filepath, SaveFormat format)
@@ -543,7 +538,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
 #if DEBUG
       var errors = new List<string>();
-      s_TheSession.World._RejectInventoryDamage(errors);
+      World.Get._RejectInventoryDamage(errors);
       if (0 < errors.Count) throw new InvalidOperationException("inventory damage on load: " + string.Join("\n", errors));
 #endif
 #if PRERELEASE_MOTHBALL

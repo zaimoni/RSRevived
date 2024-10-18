@@ -2234,7 +2234,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
+      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather) + 1;
       Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
 
       if (null != threats) {
@@ -2672,7 +2672,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
+      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather) + 1;
       Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
 
       if (null != threats) {
@@ -2741,7 +2741,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
+      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather) + 1;
       Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
 
       if (null != threats) {
@@ -2814,7 +2814,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
+      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather) + 1;
       Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
 
       if (null != threats) {
@@ -2923,7 +2923,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 2;
+      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather) + 2;
       Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
 
 	  if (null != threats) {
@@ -4323,7 +4323,7 @@ retry:
       if (null == navigate) return null;
       if (!navigate.Domain.Contains(m_Actor.Location)) return null;
       Dictionary<Location,int> costs = null;
-      var path = navigate.MinStepPathTo(m_Actor.Location,m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
+      var path = navigate.MinStepPathTo(m_Actor.Location,m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather));
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "path: "+path.to_s());
 #endif
@@ -4581,7 +4581,7 @@ retry:
 #if DIAGNOSE_SELF_PATHING
       if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
 #endif
-      PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
+      PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather));
 #if DIAGNOSE_SELF_PATHING
       if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
 #endif
@@ -4649,7 +4649,7 @@ restart:
 #if DIAGNOSE_SELF_PATHING
       if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
 #endif
-      PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather));
+      PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather));
 #if DIAGNOSE_SELF_PATHING
       if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
 #endif
@@ -4788,7 +4788,7 @@ restart:
       }
 
       { // Adaptation of prior "almost in view" heuristic for threat hunting
-      int fov = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+      int fov = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather);
       double edge_of_maxrange = fov+1.5;
 
       var near_tainted = new HashSet<Location>();
@@ -5495,7 +5495,7 @@ restart_chokepoints:
       if (!m_Actor.HasActivePoliceRadio) return null;
       List<Actor> want_leader = new();
       var am_police = m_Actor.Model.Abilities.IsLawEnforcer ? Session.Get.Police : null;
-      var test = Session.Get.World.EveryoneInPoliceRadioRange(m_Actor.Location /*, Predicate<Actor> ? test = null */);
+      var test = World.Get.EveryoneInPoliceRadioRange(m_Actor.Location /*, Predicate<Actor> ? test = null */);
       if (null == test) return null;
       foreach (var a in test) {
         if (!m_Actor.CanTakeLeadOf(a)) continue;
@@ -5509,7 +5509,7 @@ restart_chokepoints:
       if (!m_Actor.HasActivePoliceRadio) return null;
       List<Actor> want_leader = new();
       bool no_police = Session.Get.Police.IsTargeted(m_Actor);
-      var test = Session.Get.World.EveryoneInPoliceRadioRange(m_Actor.Location /*, Predicate<Actor> ? test = null */);
+      var test = World.Get.EveryoneInPoliceRadioRange(m_Actor.Location /*, Predicate<Actor> ? test = null */);
       if (null == test) return null;
       foreach (var a in test) {
         if (!a.CanTakeLeadOf(m_Actor)) continue;
