@@ -86,7 +86,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var backup = actorAction;
 #endif
         var alt = ai.RewriteAction(actorAction);
-        if (null!=alt && alt.IsPerformable()) actorAction = alt;
+        if (null != alt && alt.IsPerformable()) {
+#if DEBUG
+          if (!is_rewritable && (alt is ActionMoveStep || alt is ActionMoveDelta)) throw new InvalidOperationException("tracing");
+#endif
+          actorAction = alt;
+        }
 #if DEBUG
         if (!is_rewritable && (actorAction is ActionMoveStep || actorAction is ActionMoveDelta)) throw new InvalidOperationException("tracing");
 #endif

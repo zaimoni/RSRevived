@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Engine._Action
     // tentatively assuming not Resolvable because the resolving function may return null
     // competes with class ActionSequence
     [Serializable]
-    internal class BehavioristABC : ActorAction
+    internal class BehavioristABC : ActorAction, Actions.Resolvable
     {
         private readonly ReflexCode _reflexCode;
         [NonSerialized] private bool _resolved = false;
@@ -28,6 +28,11 @@ namespace djack.RogueSurvivor.Engine._Action
             return null != _action;
         }
         public override void Perform() { _action?.Perform(); }
+
+        public ActorAction ConcreteAction { get {
+          resolve();
+          return _action;
+        } }
 
         private void resolve() {
             if (!_resolved) {
