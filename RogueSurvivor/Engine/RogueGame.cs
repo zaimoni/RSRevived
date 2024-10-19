@@ -2756,7 +2756,7 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     static private bool HasRaidHappenedSince(RaidType raid, Map map, int sinceNTurns)
     {
-      return World.Get.HasRaidHappenedSince(raid, map, sinceNTurns);
+      return map.HasRaidHappenedSince(raid, sinceNTurns);
     }
 
     private List<KeyValuePair<Map, KeyValuePair<ZoneLoc, HashSet<Point>>>> LandEventEntrance(Point world_pos)
@@ -2852,7 +2852,7 @@ namespace djack.RogueSurvivor.Engine
           landing_zones[n].Key.AddTimer(escape);
       }
 
-      World.Get.SetLastRaidTime(RaidType.BIKERS, map);
+      map.District.SetLastRaidTime(RaidType.BIKERS, map.LocalTime.TurnCounter);
       NotifyOrderablesAI(RaidType.BIKERS, leader.Location);
     }
 
@@ -2913,7 +2913,7 @@ namespace djack.RogueSurvivor.Engine
           landing_zones[n].Key.AddTimer(escape);
       }
 
-      World.Get.SetLastRaidTime(RaidType.GANGSTA, map);
+      map.District.SetLastRaidTime(RaidType.GANGSTA, map.LocalTime.TurnCounter);
       NotifyOrderablesAI(RaidType.GANGSTA, leader.Location);
     }
 
@@ -2928,7 +2928,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_BlackOpsRaid(Map map)
     {
-      World.Get.SetLastRaidTime(RaidType.BLACKOPS, map);
+      map.District.SetLastRaidTime(RaidType.BLACKOPS, map.LocalTime.TurnCounter);
       var actor = SpawnNewBlackOpsLeader(map);
       if (actor == null) return;
       for (int index = 0; index < BLACKOPS_RAID_SIZE-1; ++index) {
@@ -2987,7 +2987,7 @@ namespace djack.RogueSurvivor.Engine
           }
       }
 
-      World.Get.SetLastRaidTime(RaidType.SURVIVORS, map);
+      map.District.SetLastRaidTime(RaidType.SURVIVORS, map.LocalTime.TurnCounter);
       NotifyOrderablesAI(RaidType.SURVIVORS, party[2].Location);
     }
 

@@ -33,6 +33,7 @@ namespace djack.RogueSurvivor.Data
     public readonly Point WorldPosition;
     public readonly DistrictKind Kind;
     private string m_Name;
+    private int[] m_Event_Raids = new int[(int)Engine.RaidType._COUNT]; // ultimately readonly
     private Map? m_EntryMap;
     private Map? m_SewersMap;
     private Map? m_SubwayMap;
@@ -40,6 +41,9 @@ namespace djack.RogueSurvivor.Data
     public string Name { get { return m_Name; } }
 
     public IEnumerable<Map> Maps { get { return m_Maps; } }
+
+    public int LastRaidTime(Engine.RaidType raid) => m_Event_Raids[(int) raid];
+    public void SetLastRaidTime(Engine.RaidType raid, int t0) => m_Event_Raids[(int) raid] = t0;
 
     public Map EntryMap {
       get { return m_EntryMap!; }
@@ -109,6 +113,7 @@ namespace djack.RogueSurvivor.Data
       Kind = kind;
     }
 
+    // \todo will need m_Event_Raids
     protected District(Zaimoni.Serialization.DecodeObjects decode)
     {
         byte relay_b = 0;

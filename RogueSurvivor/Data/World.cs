@@ -37,7 +37,6 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized] private Rectangle m_CHAR_City;
     public Rectangle CHAR_CityLimits { get { return m_CHAR_City; } }
 
-    private int[,,] m_Event_Raids; // \todo ultimately readonly
     private readonly District[,] m_DistrictsGrid;
     private readonly short m_Size;
     [NonSerialized] private Rectangle m_Extent;
@@ -267,7 +266,6 @@ namespace djack.RogueSurvivor.Data
       Weather = (Weather)(rules.Roll(0, (int)Weather._COUNT));
       NextWeatherCheckTurn = rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);  // alpha10
       m_Ready = new Queue<District>(Size*Size);
-      m_Event_Raids = new int[(int) Engine.RaidType._COUNT, Size, Size]; // use zero-initialization convention
 
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(size, size));
     }
@@ -299,7 +297,6 @@ namespace djack.RogueSurvivor.Data
         Weather = (Weather)(relay_b);
         Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref relay_i);
         NextWeatherCheckTurn = relay_i;
-        decode.LoadFrom7bit(ref m_Event_Raids);
         decode.LoadFrom(ref m_DistrictsGrid);
         m_Ready = new();
 
@@ -344,7 +341,6 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_Size);
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)Weather);
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, NextWeatherCheckTurn);
-        encode.SaveTo7bit(m_Event_Raids);
         encode.SaveTo(m_DistrictsGrid);
 
         var code = encode.Saving(m_PlayerDistrict);
@@ -475,22 +471,6 @@ namespace djack.RogueSurvivor.Data
     public int fromWorldPos(Point pt) { return pt.X + m_Size*pt.Y; }
     public int fromWorldPos(int x, int y) { return x + m_Size*y; }
 #endif
-
-#nullable enable
-#region raid timings
-    private int LastRaidTime(Engine.RaidType raid, Point w_pos) => m_Event_Raids[(int) raid, w_pos.X, w_pos.Y];
-    private void SetLastRaidTime(Engine.RaidType raid, Point w_pos, int t0) => m_Event_Raids[(int) raid, w_pos.X, w_pos.Y] = t0;
-
-    public void SetLastRaidTime(Engine.RaidType raid, Map map) => SetLastRaidTime(raid, map.DistrictPos, map.LocalTime.TurnCounter);
-
-    public bool HasRaidHappenedSince(Engine.RaidType raid, Map map, int sinceNTurns)
-    {
-      var t0 = LastRaidTime(raid, map.DistrictPos);
-      return 0 < t0 // has raid happened
-          && map.LocalTime.TurnCounter - t0 < sinceNTurns; // at least n turns ago
-    }
-#endregion
-#nullable restore
 
     public HashSet<Actor>? PoliceInRadioRange(Location loc, Predicate<Actor>? test =null)
     {

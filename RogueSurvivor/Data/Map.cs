@@ -1071,6 +1071,13 @@ retry:
       return exit_maps;
     }
 
+    public bool HasRaidHappenedSince(Engine.RaidType raid, int sinceNTurns)
+    {
+      var t0 = District.LastRaidTime(raid);
+      return 0 < t0 // has raid happened
+          && LocalTime.TurnCounter - t0 < sinceNTurns; // at least n turns ago
+    }
+
 #nullable enable
 #region zones: map generation support
     public void AddZone(Zone zone) { m_Zones.Add(zone); }
