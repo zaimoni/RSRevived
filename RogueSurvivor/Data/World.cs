@@ -356,6 +356,7 @@ namespace djack.RogueSurvivor.Data
         if (reader.ValueTextEquals("Size")) return 1;
         else if (reader.ValueTextEquals("Weather")) return 2;
         else if (reader.ValueTextEquals("NextWeatherCheckTurn")) return 3;
+        else if (reader.ValueTextEquals("Districts")) return 4;
 
         Engine.RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -368,6 +369,7 @@ namespace djack.RogueSurvivor.Data
       reader.Read();
 
       short relay_size = default;
+      District[] relay_districts = null;
 
       void read(ref Utf8JsonReader reader) {
           int code = field_code(ref reader);
@@ -390,6 +392,9 @@ namespace djack.RogueSurvivor.Data
           case 3:
               NextWeatherCheckTurn = reader.GetInt32();
               break;
+          case 4:
+              relay_districts = JsonSerializer.Deserialize<District[]>(ref reader, options) ?? throw new JsonException();
+              break;
           }
       }
 
@@ -404,6 +409,11 @@ namespace djack.RogueSurvivor.Data
       if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
 
       m_Size = relay_size;
+      if (relay_districts.Length != m_Size * m_Size) throw new InvalidOperationException("tracing");
+      m_DistrictsGrid = new District[m_Size,m_Size];
+      foreach(var d in relay_districts) m_DistrictsGrid[d.WorldPosition.X, d.WorldPosition.Y] = d;
+      relay_districts = null; // allow early garbage collection
+
       // from OnDeserialized
       m_Extent = new Rectangle(Point.Empty, new Point(m_Size, m_Size));
       var c_size = (short)(m_Size - 2);
@@ -412,13 +422,11 @@ namespace djack.RogueSurvivor.Data
     }
 
 /*
-    private int[,,] m_Event_Raids; // \todo ultimately readonly
     private readonly District[,] m_DistrictsGrid;
 
     private District? m_PlayerDistrict = null;
     private District? m_SimDistrict = null;
     private readonly Queue<District> m_Ready;   // \todo this is expected to have a small maximum that can be hard-coded; measure it
-    public int NextWeatherCheckTurn { get; private set; } // alpha10
  */
 
     public static World fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new World(ref reader, options);
@@ -428,6 +436,10 @@ namespace djack.RogueSurvivor.Data
       writer.WriteNumber("Size", m_Size);
       writer.WriteString("Weather", Weather.ToString());
       writer.WriteNumber("NextWeatherCheckTurn", NextWeatherCheckTurn);
+      List<District> stage = new();
+      foreach(var d in m_DistrictsGrid) stage.Add(d);
+      writer.WritePropertyName("Districts");
+      JsonSerializer.Serialize(writer, stage.ToArray(), options);
       writer.WriteEndObject();
     }
 
