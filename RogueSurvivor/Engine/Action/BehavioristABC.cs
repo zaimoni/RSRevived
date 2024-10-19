@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 namespace djack.RogueSurvivor.Engine._Action
 {
     // monolith code...not ideal, but trying to manage save/load issues
-    // tentatively assuming not Resolvable because the resolving function may return null
     // competes with class ActionSequence
     [Serializable]
     internal class BehavioristABC : ActorAction, Actions.Resolvable

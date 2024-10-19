@@ -252,7 +252,7 @@ namespace djack.RogueSurvivor.Data
         return true;
     }
 
-    public World()
+    private World()
     {
       var size = Engine.RogueGame.Options.CitySize;
 #if DEBUG
@@ -269,7 +269,6 @@ namespace djack.RogueSurvivor.Data
       m_Event_Raids = new int[(int) Engine.RaidType._COUNT, Size, Size]; // use zero-initialization convention
 
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(size, size));
-      s_Recent = this;
     }
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
@@ -278,6 +277,11 @@ namespace djack.RogueSurvivor.Data
       var c_size = (short)(m_Size - 2);
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(c_size, c_size));
       s_Recent = this;
+    }
+
+    static public void Load(SerializationInfo info, StreamingContext context)
+    {
+      info.read_nullsafe(ref s_Recent, "World");
     }
 
     public void RepairLoad()
@@ -350,6 +354,10 @@ namespace djack.RogueSurvivor.Data
         else Zaimoni.Serialization.Formatter.SerializeNull(encode.dest);
         Zaimoni.Serialization.ISave.LinearSave(encode, m_Ready);
     }
+
+        static public void Reset() {
+            s_Recent = new World();
+        }
 
 #if PROTOTYPE
     public Point toWorldPos(int n) { return new Point(n % m_Size, n / m_Size); }

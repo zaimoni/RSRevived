@@ -39,7 +39,6 @@ namespace djack.RogueSurvivor.Engine
         private static int s_seed = 0;  // We're a compiler-enforced singleton so this only looks weird
         static public int Seed { get { return s_seed; } }
 
-        public World World { get; private set; }
         public readonly UniqueActors UniqueActors = new();
         public readonly UniqueItems UniqueItems = new();
         public readonly UniqueMaps UniqueMaps = new();
@@ -76,7 +75,7 @@ namespace djack.RogueSurvivor.Engine
             Logger.WriteLine(Logger.Stage.RUN_MAIN, "Seed: " + s_seed.ToString()); // this crashes if it tries to log during deserialization
 #endif
             RogueGame.Reset();
-            World = new World();
+            World.Reset();
         }
 
         #region Implement ISerializable
@@ -97,7 +96,7 @@ namespace djack.RogueSurvivor.Engine
             Rules.Get.Load(info, context);
             PlayerController.Load(info, context);
             // end load other classes' static variables
-            World = (World)info.GetValue("World", typeof(World));
+            World.Load(info, context);
             RogueGame.Load(info, context);
             info.read_s(ref s_Player, "s_Player");
             UniqueActors = (UniqueActors)info.GetValue("UniqueActors", typeof(UniqueActors));
@@ -124,7 +123,7 @@ namespace djack.RogueSurvivor.Engine
             ActorModel.Save(info, context);
             Rules.Get.Save(info, context);
             PlayerController.Save(info, context);
-            info.AddValue("World", World, typeof(World));
+            info.AddValue("World", World.Get, typeof(World));
             RogueGame.Save(info, context);
             info.AddValue("UniqueActors", UniqueActors, typeof(UniqueActors));
             info.AddValue("UniqueItems", UniqueItems, typeof(UniqueItems));
@@ -362,7 +361,7 @@ namespace djack.RogueSurvivor.Engine
 
 /*
             PlayerController.Save(info, context);
-            info.AddValue("World", World, typeof(World));
+            info.AddValue("World", World.Get, typeof(World));
             RogueGame.Save(info, context);
  */
 
