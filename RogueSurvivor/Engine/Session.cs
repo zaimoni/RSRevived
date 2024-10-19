@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define BOOTSTRAP_Z_SERIALIZATION
-// #define INTEGRATE_Z_SERIALIZATION
 // #define BOOTSTRAP_JSON_SERIALIZATION
 
 using djack.RogueSurvivor.Data;
@@ -166,23 +165,7 @@ namespace djack.RogueSurvivor.Engine
             m_Scoring = decode.LoadInline<Scoring>();
             ActorModel.Load(decode); // this static data doesn't involve objects
             Rules.Get.Load(decode);
-
-            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
-            var code = Zaimoni.Serialization.Formatter.DeserializeObjCode(decode.src);
-            if (0 < code) {
-                var obj = decode.Seen(code);
-                if (null != obj) {
-                    if (obj is World w) World = w;
-                    else throw new InvalidOperationException("World object not loaded");
-                } else {
-                    decode.Schedule(code, (o) => {
-                        if (o is World w) World = w;
-                        else throw new InvalidOperationException("World object not loaded");
-                    });
-                }
-            } else throw new InvalidOperationException("World object not loaded");
-            // end failed function extraction target
-
+            World.Load(decode);
             UniqueMaps = decode.LoadInline<UniqueMaps>();
             UniqueItems = decode.LoadInline<UniqueItems>();
 
@@ -206,7 +189,6 @@ namespace djack.RogueSurvivor.Engine
 
     void SaveLoadOk(Session test) {
         m_Scoring.SaveLoadOk(test.m_Scoring);
-        World.SaveLoadOk(test.World);
 
         var err = string.Empty;
         if (GameMode != test.GameMode) err += "GameMode != test.GameMode: "+ GameMode.ToString() + " "+ test.GameMode.ToString() + "\n";
@@ -246,7 +228,7 @@ namespace djack.RogueSurvivor.Engine
             ActorModel.Save(encode); // this static data doesn't involve objects
             Rules.Get.Save(encode);
 
-            var code = encode.Saving(World);
+            var code = encode.Saving(World.Get);
             Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
 
             Zaimoni.Serialization.ISave.InlineSave(encode, UniqueMaps);
@@ -487,19 +469,6 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
 #if BOOTSTRAP_JSON_SERIALIZATION
-#else
-	  filepath.BinarySerialize(session);
-#endif
-#if BOOTSTRAP_Z_SERIALIZATION
-	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
-#if INTEGRATE_Z_SERIALIZATION
-      // immediate integation test
-      var compare = Zaimoni.Serialization.Virtual.BinaryLoad<Session>(filepath + "test");
-      session.SaveLoadOk(compare);
-#endif
-#endif
-#if BOOTSTRAP_JSON_SERIALIZATION
-#if true
       {
       using var stream = (filepath+"json").CreateStream(true);
       System.Text.Json.JsonSerializer.Serialize(stream, session, typeof(Session), JSON_opts);
@@ -509,13 +478,17 @@ namespace djack.RogueSurvivor.Engine
       using var stream2 = (filepath+"json").CreateStream(false);
       var test2 = System.Text.Json.JsonSerializer.Deserialize<Session>(stream2, JSON_opts);
       RogueGame.Game.ErrorPopup("JSON load ok");
+#elif BOOTSTRAP_Z_SERIALIZATION
+	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
+      RogueGame.Game.ErrorPopup("in-house save ok");
+      // immediate integation test
+      var compare = Zaimoni.Serialization.Virtual.BinaryLoad<Session>(filepath + "test");
+      session.SaveLoadOk(compare);
+      RogueGame.Game.ErrorPopup("in-house load ok");
 #else
-      using var stream = (filepath+"json").CreateStream(true);
-      System.Text.Json.JsonSerializer.Serialize(stream, session, typeof(Session), JSON_opts);
-      stream.Flush();
+	  filepath.BinarySerialize(session);
 #endif
-#endif
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
     }
 
     private static bool LoadBin(string filepath)

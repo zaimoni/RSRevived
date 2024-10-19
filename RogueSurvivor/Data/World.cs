@@ -331,7 +331,7 @@ namespace djack.RogueSurvivor.Data
         s_Recent = this;
     }
 
-    public void SaveLoadOk(World test) {
+    private void SaveLoadOk(World test) {
         var err = string.Empty;
 
         if (m_Size != test.m_Size) err += "World size mismatch: "+m_Size.ToString()+ "" + test.m_Size.ToString();
@@ -438,6 +438,33 @@ namespace djack.RogueSurvivor.Data
     static public void Load(ref Utf8JsonReader reader)
     {
       var stage = JsonSerializer.Deserialize<World>(ref reader, Engine.Session.JSON_opts) ?? throw new JsonException();
+//    s_Recent = stage; // when taking live
+    }
+
+    static public void Load(Zaimoni.Serialization.DecodeObjects decode)
+    {
+       // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+       var code = Zaimoni.Serialization.Formatter.DeserializeObjCode(decode.src);
+       if (0 < code) {
+           var obj = decode.Seen(code);
+           if (null != obj) {
+                    if (obj is World w) {
+                        // s_Recent = w; // when taking live
+                        s_Recent.SaveLoadOk(w); // when building out
+                    }
+                    else throw new InvalidOperationException("World object not loaded");
+           } else {
+                    decode.Schedule(code, (o) => {
+                        if (o is World w) {
+                            // s_Recent = w; // when taking live
+                            s_Recent.SaveLoadOk(w); // when building out
+                        }
+                        else throw new InvalidOperationException("World object not loaded");
+                    });
+           }
+        } else throw new InvalidOperationException("World object not loaded");
+        // end failed function extraction target
+
 //    s_Recent = stage; // when taking live
     }
 

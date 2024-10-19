@@ -21,10 +21,15 @@ namespace djack.RogueSurvivor.Engine._Action
         public BehavioristABC(Actor whom, ReflexCode code) : base(whom) {
             _reflexCode = code;
         }
-        public override bool IsLegal() { return true; }
+        public override bool IsLegal() {
+            if (!_resolved) return true;
+            if (null == _action) return false;
+            return _action.IsLegal();
+        }
         public override bool IsPerformable() {
             resolve();
-            return null != _action;
+            if (null == _action) return false;
+            return _action.IsPerformable();
         }
         public override void Perform() { _action?.Perform(); }
 
