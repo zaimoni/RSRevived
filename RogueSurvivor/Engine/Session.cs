@@ -277,6 +277,7 @@ namespace djack.RogueSurvivor.Engine
         else if (reader.ValueTextEquals("Scoring")) return 9;
         else if (reader.ValueTextEquals("Rules")) return 10;
         else if (reader.ValueTextEquals("CreatedCounts")) return 11;
+        else if (reader.ValueTextEquals("World")) return 12;
 
         RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -332,6 +333,9 @@ namespace djack.RogueSurvivor.Engine
           case 11:
               ActorModel.Load(ref reader);
               break;
+          case 12:
+              World.Load(ref reader);
+              break;
           }
       }
 
@@ -353,7 +357,6 @@ namespace djack.RogueSurvivor.Engine
 
         public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.Item_IDs.TRACKER_POLICE_RADIO);
 
-        public World World { get; private set; }
         public readonly UniqueActors UniqueActors = new();
         public readonly UniqueItems UniqueItems = new();
         public readonly UniqueMaps UniqueMaps = new();
@@ -368,7 +371,6 @@ namespace djack.RogueSurvivor.Engine
 /*
             PlayerController.Load(info, context);
             // end load other classes' static variables
-            World = (World)info.GetValue("World", typeof(World));
             RogueGame.Load(info, context);
             info.read_s(ref s_Player, "s_Player");
  */
@@ -394,6 +396,8 @@ namespace djack.RogueSurvivor.Engine
       JsonSerializer.Serialize(writer, Rules.Get, options);
       writer.WritePropertyName("CreatedCounts");
       ActorModel.Save(writer);
+      writer.WritePropertyName("World");
+      JsonSerializer.Serialize(writer, World.Get, options);
       writer.WriteEndObject();
     }
 
@@ -469,6 +473,7 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Box2D_short());
 
           s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Session());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.World());
         }
         return s_j_opts;
       }
@@ -631,12 +636,12 @@ namespace Zaimoni.JsonConvertIncomplete
 {
     public class Session : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.Session>
     {
-        public override djack.RogueSurvivor.Engine.Session Read(ref System.Text.Json.Utf8JsonReader reader, Type src, System.Text.Json.JsonSerializerOptions options)
+        public override djack.RogueSurvivor.Engine.Session Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
         {
             return djack.RogueSurvivor.Engine.Session.fromJson(ref reader, options);
         }
 
-        public override void Write(System.Text.Json.Utf8JsonWriter writer, djack.RogueSurvivor.Engine.Session src, System.Text.Json.JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Engine.Session src, JsonSerializerOptions options)
         {
             src.toJson(writer, options);
         }

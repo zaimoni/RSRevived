@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.Json;
 using System.Threading;
 using Zaimoni.Data;
 
@@ -355,9 +356,92 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.ISave.LinearSave(encode, m_Ready);
     }
 
-        static public void Reset() {
-            s_Recent = new World();
-        }
+    static private int field_code(ref Utf8JsonReader reader) {
+        if (reader.ValueTextEquals("Size")) return 1;
+        else if (reader.ValueTextEquals("Weather")) return 2;
+        else if (reader.ValueTextEquals("NextWeatherCheckTurn")) return 3;
+
+        Engine.RogueGame.Game.ErrorPopup(reader.GetString());
+        throw new JsonException();
+    }
+
+    private World(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
+      int origin_depth = reader.CurrentDepth;
+      reader.Read();
+
+      short relay_size = default;
+
+      void read(ref Utf8JsonReader reader) {
+          int code = field_code(ref reader);
+          reader.Read();
+
+          switch (code) {
+          case 1:
+              relay_size = reader.GetInt16();
+              break;
+          case 2:
+              {
+              string stage = reader.GetString();
+              if (Enum.TryParse(stage, out Weather w)) {
+                Weather = w;
+                return;
+              }
+              Engine.RogueGame.Game.ErrorPopup("unrecognized Weather " + stage);
+              }
+              throw new JsonException();
+          case 3:
+              NextWeatherCheckTurn = reader.GetInt32();
+              break;
+          }
+      }
+
+      while (reader.CurrentDepth != origin_depth || JsonTokenType.EndObject != reader.TokenType) {
+          if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
+
+          read(ref reader);
+
+          reader.Read();
+      }
+
+      if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
+
+      m_Size = relay_size;
+      // from OnDeserialized
+      m_Extent = new Rectangle(Point.Empty, new Point(m_Size, m_Size));
+      var c_size = (short)(m_Size - 2);
+      m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(c_size, c_size));
+//    s_Recent = this; // not until ready to take live
+    }
+
+/*
+    private int[,,] m_Event_Raids; // \todo ultimately readonly
+    private readonly District[,] m_DistrictsGrid;
+
+    private District? m_PlayerDistrict = null;
+    private District? m_SimDistrict = null;
+    private readonly Queue<District> m_Ready;   // \todo this is expected to have a small maximum that can be hard-coded; measure it
+    public int NextWeatherCheckTurn { get; private set; } // alpha10
+ */
+
+    public static World fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new World(ref reader, options);
+
+    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options) {
+      writer.WriteStartObject();
+      writer.WriteNumber("Size", m_Size);
+      writer.WriteString("Weather", Weather.ToString());
+      writer.WriteNumber("NextWeatherCheckTurn", NextWeatherCheckTurn);
+      writer.WriteEndObject();
+    }
+
+    static public void Load(ref Utf8JsonReader reader)
+    {
+      var stage = JsonSerializer.Deserialize<World>(ref reader, Engine.Session.JSON_opts) ?? throw new JsonException();
+//    s_Recent = stage; // when taking live
+    }
+
+    static public void Reset() => s_Recent = new World();
 
 #if PROTOTYPE
     public Point toWorldPos(int n) { return new Point(n % m_Size, n / m_Size); }
@@ -937,4 +1021,20 @@ RestartActorActorCrossLinkCheck:
       return string.Format("{0}{1}", (object) (char) (65 + x), (object) y);
     }
   }
+}
+
+namespace Zaimoni.JsonConvertIncomplete
+{
+    public class World : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Data.World>
+    {
+        public override djack.RogueSurvivor.Data.World Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            return djack.RogueSurvivor.Data.World.fromJson(ref reader, options);
+        }
+
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.World src, JsonSerializerOptions options)
+        {
+            src.toJson(writer, options);
+        }
+    }
 }
