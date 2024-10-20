@@ -206,6 +206,8 @@ namespace djack.RogueSurvivor.Data
     static private int field_code(ref Utf8JsonReader reader) {
         if (reader.ValueTextEquals("Name")) return 1;
         else if (reader.ValueTextEquals("WorldPos")) return 2;
+        else if (reader.ValueTextEquals("Kind")) return 3;
+        else if (reader.ValueTextEquals("EventRaids")) return 4;
         // \todo factor this out
         else if (reader.ValueTextEquals("$id")) return -1;
 
@@ -220,6 +222,7 @@ namespace djack.RogueSurvivor.Data
 
       string? relay_id = null;
       Point relay_WorldPos = default;
+      DistrictKind relay_kind = default;
 
       void read(ref Utf8JsonReader reader) {
           int code = field_code(ref reader);
@@ -235,6 +238,20 @@ namespace djack.RogueSurvivor.Data
           case 2:
               relay_WorldPos = JsonSerializer.Deserialize<Point>(ref reader, options);
               break;
+          case 3:
+              {
+              string stage = reader.GetString();
+              if (Enum.TryParse(stage, out relay_kind)) return;
+              Engine.RogueGame.Game.ErrorPopup("unrecognized district kind " + stage);
+              }
+              throw new JsonException();
+          case 4:
+              {
+              var stage = JsonSerializer.Deserialize<int[]>(ref reader, Engine.Session.JSON_opts) ?? throw new JsonException();
+              if ((int)Engine.RaidType._COUNT != stage.Length) throw new InvalidOperationException("need upgrade path for Actor::Load");
+              Array.Copy(stage, m_Event_Raids, (int)Engine.RaidType._COUNT);
+              }
+              break;
           }
       }
 
@@ -249,22 +266,17 @@ namespace djack.RogueSurvivor.Data
       if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
 
       WorldPosition = relay_WorldPos;
+      Kind = relay_kind;
 
-      if (null != relay_id) {
-        var resolve = options.ReferenceHandler!.CreateResolver();
-        resolve.AddReference(relay_id, this);
-      }
+      relay_id?.RecordRef(this);
     }
 
         /*
             private readonly List<Map> m_Maps = new List<Map>(3);
-            public readonly Point WorldPosition;
-            public readonly DistrictKind Kind;
             private int[] m_Event_Raids = new int[(int)Engine.RaidType._COUNT]; // ultimately readonly
             private Map? m_EntryMap;
             private Map? m_SewersMap;
             private Map? m_SubwayMap;
-
          */
 
     public static District fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
@@ -277,6 +289,9 @@ namespace djack.RogueSurvivor.Data
       writer.WriteString("Name", m_Name);
       writer.WritePropertyName("WorldPos");
       JsonSerializer.Serialize(writer, WorldPosition, options);
+      writer.WriteString("Kind", Kind.ToString());
+      writer.WritePropertyName("EventRaids");
+      JsonSerializer.Serialize(writer, m_Event_Raids, options);
       writer.WriteEndObject();
     }
 

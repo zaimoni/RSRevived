@@ -41,5 +41,10 @@ namespace Zaimoni.JSON
             }
             return null;
         }
+
+        public static void RecordRef<T>(this string relay_id, T src) where T : class {
+            var resolve = PreserveReferenceHandler.Resolver;
+            resolve.AddReference(relay_id, src);
+        }
     }
 }
