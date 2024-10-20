@@ -444,19 +444,19 @@ namespace djack.RogueSurvivor.Engine
       get {
         if (null == s_j_opts) {
           s_j_opts = new();
-          s_j_opts.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+          s_j_opts.ReferenceHandler = new Zaimoni.JSON.PreserveReferenceHandler();
           s_j_opts.WriteIndented = true;
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.DiceRoller());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Random());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Rules());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Scoring());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.World());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.WorldTime());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Vector2D_short());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Box2D_short());
 
           s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.District());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Session());
-          s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.World());
         }
         return s_j_opts;
       }
@@ -476,9 +476,11 @@ namespace djack.RogueSurvivor.Engine
 	  stream.Flush();
       }
       RogueGame.Game.ErrorPopup("JSON save ok");
+      Zaimoni.JSON.PreserveReferenceHandler.Reset();
       using var stream2 = (filepath+"json").CreateStream(false);
       var test2 = System.Text.Json.JsonSerializer.Deserialize<Session>(stream2, JSON_opts);
       RogueGame.Game.ErrorPopup("JSON load ok");
+      Zaimoni.JSON.PreserveReferenceHandler.Reset();
 #elif BOOTSTRAP_Z_SERIALIZATION
 	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
       RogueGame.Game.ErrorPopup("in-house save ok");

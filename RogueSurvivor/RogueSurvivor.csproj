@@ -99,6 +99,7 @@
     <Compile Include="Gameplay\AI\Tools\MinStepPath.cs" />
     <Compile Include="Gameplay\AI\Tools\RouteFinder.cs" />
     <Compile Include="Logger_mock.cs" />
+    <Compile Include="Microsoft\PreserveReference.cs" />
     <Compile Include="RogueForm.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="SetupConfig.cs" />
@@ -294,6 +295,7 @@
     <Compile Include="Zaimoni\Collections\Dictionary.cs" />
     <Compile Include="Zaimoni\Data\Ary2Dictionary.cs" />
     <Compile Include="Zaimoni\Data\Cache.cs" />
+    <Compile Include="Zaimoni\Data\JSON.cs" />
     <Compile Include="Zaimoni\Data\KVpair.cs" />
     <Compile Include="Zaimoni\Data\Compass.cs" />
     <Compile Include="Zaimoni\Data\DrawingExt.cs" />

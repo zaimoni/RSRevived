@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Data
 
     private District? m_PlayerDistrict = null;
     private District? m_SimDistrict = null;
-    private readonly Queue<District> m_Ready;   // \todo this is expected to have a small maximum that can be hard-coded; measure it
+    private readonly Queue<District> m_Ready = new();   // \todo this is expected to have a small maximum that can be hard-coded; measure it
     public Weather Weather { get; private set; }
     public int NextWeatherCheckTurn { get; private set; } // alpha10
 
@@ -265,7 +265,6 @@ namespace djack.RogueSurvivor.Data
       var rules = Engine.Rules.Get;
       Weather = (Weather)(rules.Roll(0, (int)Weather._COUNT));
       NextWeatherCheckTurn = rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);  // alpha10
-      m_Ready = new Queue<District>(Size*Size);
 
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(size, size));
     }
@@ -298,7 +297,6 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref relay_i);
         NextWeatherCheckTurn = relay_i;
         decode.LoadFrom(ref m_DistrictsGrid);
-        m_Ready = new();
 
         ulong code;
         m_PlayerDistrict = decode.Load<District>(out code);
@@ -357,6 +355,9 @@ namespace djack.RogueSurvivor.Data
         else if (reader.ValueTextEquals("Weather")) return 2;
         else if (reader.ValueTextEquals("NextWeatherCheckTurn")) return 3;
         else if (reader.ValueTextEquals("Districts")) return 4;
+        else if (reader.ValueTextEquals("PlayerDistrict")) return 5;
+        else if (reader.ValueTextEquals("SimDistrict")) return 6;
+        else if (reader.ValueTextEquals("Ready")) return 7;
 
         Engine.RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -395,6 +396,18 @@ namespace djack.RogueSurvivor.Data
           case 4:
               relay_districts = JsonSerializer.Deserialize<District[]>(ref reader, options) ?? throw new JsonException();
               break;
+          case 5:
+              m_PlayerDistrict = JsonSerializer.Deserialize<District>(ref reader, options) ?? throw new JsonException();
+              break;
+          case 6:
+              m_SimDistrict = JsonSerializer.Deserialize<District>(ref reader, options) ?? throw new JsonException();
+              break;
+          case 7:
+              {
+              var stage = JsonSerializer.Deserialize<District[]>(ref reader, options) ?? throw new JsonException();
+              foreach(var d in stage) m_Ready.Enqueue(d);
+              }
+              break;
           }
       }
 
@@ -421,14 +434,6 @@ namespace djack.RogueSurvivor.Data
 //    s_Recent = this; // not until ready to take live
     }
 
-/*
-    private readonly District[,] m_DistrictsGrid;
-
-    private District? m_PlayerDistrict = null;
-    private District? m_SimDistrict = null;
-    private readonly Queue<District> m_Ready;   // \todo this is expected to have a small maximum that can be hard-coded; measure it
- */
-
     public static World fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new World(ref reader, options);
 
     public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options) {
@@ -436,10 +441,21 @@ namespace djack.RogueSurvivor.Data
       writer.WriteNumber("Size", m_Size);
       writer.WriteString("Weather", Weather.ToString());
       writer.WriteNumber("NextWeatherCheckTurn", NextWeatherCheckTurn);
-      List<District> stage = new();
+      List<District>? stage = new();
       foreach(var d in m_DistrictsGrid) stage.Add(d);
       writer.WritePropertyName("Districts");
       JsonSerializer.Serialize(writer, stage.ToArray(), options);
+      stage = null; // allow garbage collection
+      if (null != m_PlayerDistrict) {
+        writer.WritePropertyName("PlayerDistrict");
+        JsonSerializer.Serialize(writer, m_PlayerDistrict, options);
+      }
+      if (null != m_SimDistrict) {
+        writer.WritePropertyName("SimDistrict");
+        JsonSerializer.Serialize(writer, m_SimDistrict, options);
+      }
+      writer.WritePropertyName("Ready");
+      JsonSerializer.Serialize(writer, m_Ready.ToArray(), options);
       writer.WriteEndObject();
     }
 
@@ -1042,7 +1058,7 @@ RestartActorActorCrossLinkCheck:
   }
 }
 
-namespace Zaimoni.JsonConvertIncomplete
+namespace Zaimoni.JsonConvert
 {
     public class World : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Data.World>
     {

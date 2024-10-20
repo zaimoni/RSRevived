@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.Json;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
@@ -205,6 +206,8 @@ namespace djack.RogueSurvivor.Data
     static private int field_code(ref Utf8JsonReader reader) {
         if (reader.ValueTextEquals("Name")) return 1;
         else if (reader.ValueTextEquals("WorldPos")) return 2;
+        // \todo factor this out
+        else if (reader.ValueTextEquals("$id")) return -1;
 
         Engine.RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -215,6 +218,7 @@ namespace djack.RogueSurvivor.Data
       int origin_depth = reader.CurrentDepth;
       reader.Read();
 
+      string? relay_id = null;
       Point relay_WorldPos = default;
 
       void read(ref Utf8JsonReader reader) {
@@ -222,6 +226,9 @@ namespace djack.RogueSurvivor.Data
           reader.Read();
 
           switch (code) {
+          case -1:
+              relay_id = reader.GetString();
+              break;
           case 1:
               m_Name = reader.GetString();
               break;
@@ -242,30 +249,36 @@ namespace djack.RogueSurvivor.Data
       if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
 
       WorldPosition = relay_WorldPos;
+
+      if (null != relay_id) {
+        var resolve = options.ReferenceHandler!.CreateResolver();
+        resolve.AddReference(relay_id, this);
+      }
     }
 
-/*
-    private readonly List<Map> m_Maps = new List<Map>(3);
-    public readonly Point WorldPosition;
-    public readonly DistrictKind Kind;
-    private int[] m_Event_Raids = new int[(int)Engine.RaidType._COUNT]; // ultimately readonly
-    private Map? m_EntryMap;
-    private Map? m_SewersMap;
-    private Map? m_SubwayMap;
+        /*
+            private readonly List<Map> m_Maps = new List<Map>(3);
+            public readonly Point WorldPosition;
+            public readonly DistrictKind Kind;
+            private int[] m_Event_Raids = new int[(int)Engine.RaidType._COUNT]; // ultimately readonly
+            private Map? m_EntryMap;
+            private Map? m_SewersMap;
+            private Map? m_SubwayMap;
 
- */
+         */
 
-    public static District fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new District(ref reader, options);
+    public static District fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
+        return reader.TryReadRef<District>() ?? new District(ref reader, options);
+    }
 
-    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options) {
+    public void toJson(string id, Utf8JsonWriter writer, JsonSerializerOptions options) {
       writer.WriteStartObject();
+      writer.WriteString("$id", id);
       writer.WriteString("Name", m_Name);
       writer.WritePropertyName("WorldPos");
       JsonSerializer.Serialize(writer, WorldPosition, options);
       writer.WriteEndObject();
     }
-
-
 
     // map manipulation
     protected void AddMap(Map map)
@@ -598,7 +611,8 @@ namespace Zaimoni.JsonConvertIncomplete
 
         public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.District src, JsonSerializerOptions options)
         {
-            src.toJson(writer, options);
+            var id = src.TrySaveAsRef(writer);
+            if (null != id) src.toJson(id, writer, options);
         }
     }
 }
