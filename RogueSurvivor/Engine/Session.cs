@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define BOOTSTRAP_Z_SERIALIZATION
-#define BOOTSTRAP_JSON_SERIALIZATION
+// #define BOOTSTRAP_JSON_SERIALIZATION
 
 using djack.RogueSurvivor.Data;
 using System;
@@ -260,6 +260,7 @@ namespace djack.RogueSurvivor.Engine
         else if (reader.ValueTextEquals("Rules")) return 10;
         else if (reader.ValueTextEquals("CreatedCounts")) return 11;
         else if (reader.ValueTextEquals("World")) return 12;
+        else if (reader.ValueTextEquals("UniqueMaps")) return 13;
 
         RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -272,6 +273,7 @@ namespace djack.RogueSurvivor.Engine
       reader.Read();
 
       Dictionary<string, string> relay_commandline = null;
+      UniqueMaps? relay_uniqueMaps = null;
 
       void read(ref Utf8JsonReader reader) {
           int code = field_code(ref reader);
@@ -318,6 +320,9 @@ namespace djack.RogueSurvivor.Engine
           case 12:
               World.Load(ref reader);
               break;
+          case 13:
+              relay_uniqueMaps = JsonSerializer.Deserialize<UniqueMaps>(ref reader, options) ?? throw new JsonException();
+              break;
           }
       }
 
@@ -330,6 +335,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       if (null != relay_commandline) m_CommandLineOptions = new(relay_commandline);
+      if (null != relay_uniqueMaps) UniqueMaps = relay_uniqueMaps;
 
       if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
     }
@@ -341,7 +347,6 @@ namespace djack.RogueSurvivor.Engine
 
         public readonly UniqueActors UniqueActors = new();
         public readonly UniqueItems UniqueItems = new();
-        public readonly UniqueMaps UniqueMaps = new();
  */
 
 /*
@@ -380,6 +385,8 @@ namespace djack.RogueSurvivor.Engine
       ActorModel.Save(writer);
       writer.WritePropertyName("World");
       JsonSerializer.Serialize(writer, World.Get, options);
+      writer.WritePropertyName("UniqueMaps");
+      JsonSerializer.Serialize(writer, UniqueMaps, options);
       writer.WriteEndObject();
     }
 
@@ -451,6 +458,7 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Random());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Rules());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Scoring());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.UniqueMaps());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.World());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.WorldTime());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Vector2D_short());

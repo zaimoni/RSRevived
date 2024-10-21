@@ -6,6 +6,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using Zaimoni.JSON;
 using Map = djack.RogueSurvivor.Data.Map;
 
 namespace djack.RogueSurvivor.Engine
@@ -166,6 +168,101 @@ namespace djack.RogueSurvivor.Engine
     }
 #endregion
 
+        static private int field_code(ref Utf8JsonReader reader)
+        {
+            if (reader.ValueTextEquals("CHARUndergroundFacility")) return 1;
+            else if (reader.ValueTextEquals("PoliceStation_OfficesLevel")) return 2;
+            else if (reader.ValueTextEquals("PoliceStation_JailsLevel")) return 3;
+            else if (reader.ValueTextEquals("Hospital_Admissions")) return 4;
+            else if (reader.ValueTextEquals("Hospital_Offices")) return 5;
+            else if (reader.ValueTextEquals("Hospital_Patients")) return 6;
+            else if (reader.ValueTextEquals("Hospital_Storage")) return 7;
+            else if (reader.ValueTextEquals("Hospital_Power")) return 8;
+
+            Engine.RogueGame.Game.ErrorPopup(reader.GetString());
+            throw new JsonException();
+        }
+
+        private UniqueMaps(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        {
+            if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
+            int origin_depth = reader.CurrentDepth;
+            reader.Read();
+
+            void read(ref Utf8JsonReader reader)
+            {
+                int code = field_code(ref reader);
+                reader.Read();
+
+                switch (code)
+                {
+                    case 1:
+                        CHARUndergroundFacility = new(JsonSerializer.Deserialize<Map>(ref reader, options) ?? throw new JsonException());
+                        break;
+                    case 2:
+                        PoliceStation_OfficesLevel = new(JsonSerializer.Deserialize<Map>(ref reader, options) ?? throw new JsonException());
+                        break;
+                    case 3:
+                        PoliceStation_JailsLevel = new(JsonSerializer.Deserialize<Map>(ref reader, options) ?? throw new JsonException());
+                        break;
+                    case 4:
+                        Hospital_Admissions = new(JsonSerializer.Deserialize<Map>(ref reader, options) ?? throw new JsonException());
+                        break;
+                    case 5:
+                        Hospital_Offices = new(JsonSerializer.Deserialize<Map>(ref reader, options) ?? throw new JsonException());
+                        break;
+                    case 6:
+                        Hospital_Patients = new(JsonSerializer.Deserialize<Map>(ref reader, options) ?? throw new JsonException());
+                        break;
+                    case 7:
+                        Hospital_Storage = new(JsonSerializer.Deserialize<Map>(ref reader, options) ?? throw new JsonException());
+                        break;
+                    case 8:
+                        Hospital_Power = new(JsonSerializer.Deserialize<Map>(ref reader, options) ?? throw new JsonException());
+                        break;
+                }
+            }
+
+            while (reader.CurrentDepth != origin_depth || JsonTokenType.EndObject != reader.TokenType)
+            {
+                if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
+
+                read(ref reader);
+
+                reader.Read();
+            }
+
+            if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
+        }
+
+    public static UniqueMaps fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      return new UniqueMaps(ref reader, options);
+    }
+
+    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+       writer.WriteStartObject();
+       writer.WritePropertyName("CHARUndergroundFacility");
+       JsonSerializer.Serialize(writer, CHARUndergroundFacility.TheMap, options);
+       writer.WritePropertyName("PoliceStation_OfficesLevel");
+       JsonSerializer.Serialize(writer, PoliceStation_OfficesLevel.TheMap, options);
+       writer.WritePropertyName("PoliceStation_JailsLevel");
+       JsonSerializer.Serialize(writer, PoliceStation_JailsLevel.TheMap, options);
+       writer.WritePropertyName("Hospital_Admissions");
+       JsonSerializer.Serialize(writer, Hospital_Admissions.TheMap, options);
+       writer.WritePropertyName("Hospital_Offices");
+       JsonSerializer.Serialize(writer, Hospital_Offices.TheMap, options);
+       writer.WritePropertyName("Hospital_Patients");
+       JsonSerializer.Serialize(writer, Hospital_Patients.TheMap, options);
+       writer.WritePropertyName("Hospital_Storage");
+       JsonSerializer.Serialize(writer, Hospital_Storage.TheMap, options);
+       writer.WritePropertyName("Hospital_Power");
+       JsonSerializer.Serialize(writer, Hospital_Power.TheMap, options);
+       writer.WriteEndObject();
+    }
+
+
     /// <returns>Key is towards surface; Value is deeper</returns>
     public KeyValuePair<Map,Map>? NavigatePoliceStation(Map x)
     {
@@ -242,4 +339,20 @@ namespace djack.RogueSurvivor.Engine
       return new Data.ZoneLoc(m, zones[0]);
     }
   }
+}
+
+namespace Zaimoni.JsonConvert
+{
+    public class UniqueMaps : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.UniqueMaps>
+    {
+        public override djack.RogueSurvivor.Engine.UniqueMaps Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            return djack.RogueSurvivor.Engine.UniqueMaps.fromJson(ref reader, options);
+        }
+
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Engine.UniqueMaps src, JsonSerializerOptions options)
+        {
+            src.toJson(writer, options);
+        }
+    }
 }
