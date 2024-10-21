@@ -8786,7 +8786,7 @@ namespace djack.RogueSurvivor.Engine
             UI.Message? msg = null;
             Action<PlayerController> pc_add_msg = pc => pc.AddMessage(msg ??= new("(police radio ai) " + aggressor.Name + " assaulting " + target.Name, Session.Get.WorldTime.TurnCounter, SAYOREMOTE_DANGER_COLOR));
             seen_by_police.MessageAllInDistrictByRadio(NOP, FALSE, pc_add_msg, pc_add_msg, TRUE);
-            OnMakeEnemyOfCop(aggressor, seen_by_police, was_viewpoint_enemy);
+            if (!GameFactions.ThePolice.IsEnemyOf(aggressor.Faction)) OnMakeEnemyOfCop(aggressor, seen_by_police, was_viewpoint_enemy);
           }
         }
       }
