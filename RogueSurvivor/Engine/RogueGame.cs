@@ -8667,6 +8667,10 @@ namespace djack.RogueSurvivor.Engine
         if (0 != trustIn) other.Say(actor, "Ah yes I remember you.", Sayflags.IS_FREE_ACTION);
       }
 #endif
+      if (actor.IsPlayer && !other.IsPlayer && YesNoPopup("Make "+other+" a PC")) {
+          other.Controller = new PlayerController(other);
+          Session.Get.Scoring.UseReincarnation(); // intentionally unconditional
+      }
     }
 
     public void DoCancelLead(Actor actor, Actor follower)
