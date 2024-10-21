@@ -143,6 +143,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ret = Intent;
         return true;
       }
+
+      public override string ToString() => "Goal_NonCombatComplete: " + (null == Intent ? "null" : Intent.ToString());
     }
 
     [Serializable]

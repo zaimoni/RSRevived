@@ -5466,6 +5466,7 @@ restart_chokepoints:
     protected List<Actor>? RecruitableLOS() {
       var in_LOS = m_Actor.Controller.friends_in_FOV;
       if (null == in_LOS) return null;
+      if (!string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) return null;
       List<Actor> want_leader = new();
       var am_police = m_Actor.Model.Abilities.IsLawEnforcer ? Session.Get.Police : null;
       foreach (var x in in_LOS) {
@@ -5522,6 +5523,7 @@ restart_chokepoints:
 
     public List<Actor>? RecruitableRadio() {
       if (!m_Actor.HasActivePoliceRadio) return null;
+      if (!string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) return null;
       List<Actor> want_leader = new();
       var am_police = m_Actor.Model.Abilities.IsLawEnforcer ? Session.Get.Police : null;
       var test = World.Get.EveryoneInPoliceRadioRange(m_Actor.Location /*, Predicate<Actor> ? test = null */);
@@ -5555,13 +5557,13 @@ restart_chokepoints:
     protected virtual Actor? RecruitLOSchoose(List<Actor> candidates) => FilterNearest(candidates);
 
     public ActorAction? RecruitLOS() {
-      if (!string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) return null;
       var candidates = RecruitableLOS();
       if (null == candidates) return null;
       var target = RecruitLOSchoose(candidates);
       if (null == target) return null;
 
       if (Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionTakeLead(m_Actor, target);
+      if (m_Actor.HasActivePoliceRadio && target.HasActivePoliceRadio) return new ActionTakeLead(m_Actor, target);
       var ret = BehaviorIntelligentBumpToward(target.Location, false, false);
       if (null != ret && !m_Actor.WillActAgainBefore(target)) {
         // ai only can lead ai (would need extra handling for dogs since they're not ObjectiveAI anyway)
@@ -5569,7 +5571,7 @@ restart_chokepoints:
         if (!(target.Controller is OrderableAI targ_ai)) return null;
         if (targ_ai.IsFocused) return null;
         targ_ai.SetObjective(new Goal_NonCombatComplete(target.Location.Map.LocalTime.TurnCounter, target, new BehavioristABC(target, ReflexCode.RecruitedLOS)));
-        m_Actor.TargetActor = target;
+        target.TargetActor = m_Actor;
       }
       return ret;
     }
