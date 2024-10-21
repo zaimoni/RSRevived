@@ -22,12 +22,14 @@ namespace djack.RogueSurvivor.Engine._Action
             _reflexCode = code;
         }
         public override bool IsLegal() {
+            resolve();
             if (!_resolved) return true;
             if (null == _action) return false;
             return _action.IsLegal();
         }
         public override bool IsPerformable() {
             resolve();
+            if (!_resolved) return true;
             if (null == _action) return false;
             return _action.IsPerformable();
         }
@@ -39,7 +41,7 @@ namespace djack.RogueSurvivor.Engine._Action
         } }
 
         private void resolve() {
-            if (!_resolved) {
+            if (!_resolved && m_Actor.Location.Map.IsMyTurn(m_Actor)) {
                 _resolved = true;
                 switch (_reflexCode) {
                 case ReflexCode.RecruitedLOS:

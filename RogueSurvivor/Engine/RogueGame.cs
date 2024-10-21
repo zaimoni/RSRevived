@@ -5387,6 +5387,44 @@ namespace djack.RogueSurvivor.Engine
       return ret;
     }
 
+    public Actor? RecruitRadioChoose(List<Actor> actorList) {
+      const string RECRUIT_MODE = "RECRUIT FOLLOWERS MODE - R to recruit, T next actor, ESC cancels";
+
+      var player_backup = Player;
+      ClearOverlays();
+      AddOverlay(new OverlayPopup(RECRUIT_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+
+      int index = 0;
+      Actor? ret = null;
+
+      bool? handler(KeyEventArgs key) {
+        switch (key.KeyCode) {
+        case Keys.T:
+          index = (index + 1) % actorList.Count;
+          return true;
+        case Keys.R:
+          {
+          ret = actorList[index];
+          return true;
+          }
+        default: return null;
+        }
+      }
+
+      OverlayImage? nominate;
+      do {
+        Actor target = actorList[index];
+        nominate = new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET);
+        AddOverlay(nominate);
+        PanViewportTo(target);
+        if (!m_UI.Modal(handler)) break;
+        RemoveOverlay(nominate);
+      } while(null == ret);
+      ClearOverlays();
+      PanViewportTo(player_backup);
+      return ret;
+    }
+
     private void HandlePlayerMarkEnemies(Actor player)
     {
       const string MARK_ENEMIES_MODE = "MARK ENEMIES MODE - E to make enemy, T next actor, ESC cancels";
@@ -5589,7 +5627,11 @@ namespace djack.RogueSurvivor.Engine
         test.Perform();
         return true;
       }
-
+      test = (player.Controller as ObjectiveAI)?.RecruitRadio();
+      if (null != test) {
+        test.Perform();
+        return true;
+      }
       const string TAKE_LEAD_MODE_TEXT = "TAKE LEAD MODE - directions to recruit a follower, ESC cancels";
 
       ClearOverlays();

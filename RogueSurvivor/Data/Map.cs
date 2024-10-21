@@ -1657,6 +1657,11 @@ retry:
       }
     }
 
+    public bool IsMyTurn(Actor a) {
+        if (0 > m_iCheckNextActorIndex || m_ActorsList.Count <= m_iCheckNextActorIndex) return false;
+        return ReferenceEquals(m_ActorsList[m_iCheckNextActorIndex], a);
+    }
+
     public int TurnOrderFor(Actor a) { return m_ActorsList.IndexOf(a); }
 
     [Serializable]

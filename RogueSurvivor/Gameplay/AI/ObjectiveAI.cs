@@ -5483,13 +5483,42 @@ restart_chokepoints:
       List<Actor> want_leader = new();
       bool no_police = Session.Get.Police.IsTargeted(m_Actor);
       foreach (var x in in_LOS) {
-        if (!m_Actor.CanTakeLeadOf(x.Value)) continue;
+        if (!x.Value.CanTakeLeadOf(m_Actor)) continue;
         if (no_police && x.Value.Model.Abilities.IsLawEnforcer) continue; // do not allow police to lead capital criminals
         want_leader.Add(x.Value);
       }
       FilterOutUnreachable(ref want_leader, Tools.RouteFinder.SpecialActions.DOORS | Tools.RouteFinder.SpecialActions.JUMP);
       return 0< want_leader.Count ? want_leader : null;
     }
+
+    protected List<Actor>? LegallyRecruitableLOS() {
+      var in_LOS = m_Actor.Controller.friends_in_FOV;
+      if (null == in_LOS) return null;
+      List<Actor> want_leader = new();
+      var am_police = m_Actor.Model.Abilities.IsLawEnforcer ? Session.Get.Police : null;
+      foreach (var x in in_LOS) {
+        if (!m_Actor.LegalToTakeLeadOf(x.Value)) continue;
+        if (null != am_police && am_police.IsTargeted(x.Value)) continue; // do not allow police to lead capital criminals
+        want_leader.Add(x.Value);
+      }
+      FilterOutUnreachable(ref want_leader, Tools.RouteFinder.SpecialActions.DOORS | Tools.RouteFinder.SpecialActions.JUMP);
+      return 0< want_leader.Count ? want_leader : null;
+    }
+
+    protected List<Actor>? CanLegallyRecruitMeLOS() {
+      var in_LOS = m_Actor.Controller.friends_in_FOV;
+      if (null == in_LOS) return null;
+      List<Actor> want_leader = new();
+      bool no_police = Session.Get.Police.IsTargeted(m_Actor);
+      foreach (var x in in_LOS) {
+        if (!x.Value.LegalToTakeLeadOf(m_Actor)) continue;
+        if (no_police && x.Value.Model.Abilities.IsLawEnforcer) continue; // do not allow police to lead capital criminals
+        want_leader.Add(x.Value);
+      }
+      FilterOutUnreachable(ref want_leader, Tools.RouteFinder.SpecialActions.DOORS | Tools.RouteFinder.SpecialActions.JUMP);
+      return 0< want_leader.Count ? want_leader : null;
+    }
+
 
     protected List<Actor>? RecruitableRadio() {
       if (!m_Actor.HasActivePoliceRadio) return null;
@@ -5500,6 +5529,10 @@ restart_chokepoints:
       foreach (var a in test) {
         if (!m_Actor.CanTakeLeadOf(a)) continue;
         if (null != am_police && am_police.IsTargeted(a)) continue; // do not allow police to lead capital criminals
+        var compete = (a.Controller as ObjectiveAI)?.LegallyRecruitableLOS();
+        if (null != compete) continue;
+        compete = (a.Controller as ObjectiveAI)?.CanLegallyRecruitMeLOS();
+        if (null != compete) continue;
         want_leader.Add(a);
       }
       return 0< want_leader.Count ? want_leader : null;
@@ -5553,6 +5586,23 @@ restart_chokepoints:
       var ret = BehaviorIntelligentBumpToward(target.Location, false, false);
       if (null != ret) m_Actor.TargetActor = target;
       return ret;
+    }
+
+    protected virtual Actor? RecruitRadioChoose(List<Actor> candidates) => FilterNearest(candidates);
+
+    public ActorAction? RecruitRadio() {
+      if (!string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) return null;
+      var candidates = RecruitableRadio();
+      if (null == candidates) return null;
+      if (!RogueGame.IsSimulating) RogueGame.Game.ErrorPopup("RecruitRadio: "+m_Actor+" "+candidates.to_s());
+//    var target = RecruitRadioChoose(candidates);
+      var backup_player = RogueGame.Player;
+      if (!RogueGame.IsSimulating) RogueGame.Game.PanViewportTo(m_Actor);
+      var target = (RogueGame.IsSimulating ? RecruitRadioChoose(candidates) : RogueGame.Game.RecruitRadioChoose(SortByGridDistance(candidates)));
+      if (!RogueGame.IsSimulating) RogueGame.Game.PanViewportTo(backup_player);
+      if (null == target) return null;
+
+      return new ActionTakeLead(m_Actor, target);
     }
 
     protected void AdviseFriendsOfSafety()

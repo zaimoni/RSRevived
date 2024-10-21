@@ -519,6 +519,47 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantTakeLeadOf(target));
     }
 
+    private string ReasonIllegalToBeLed()
+    {
+      if (Model.Abilities.IsUndead) return "undead";
+      if (IsSleeping) return "sleeping";
+      if (HasLeader) return "already has a leader";
+      if (CountFollowers > 0) return "is a leader";  // XXX organized force would have a chain of command
+      return "";
+    }
+
+    private string ReasonIllegalToLead()
+    {
+      int num = MaxFollowers;
+      if (num == 0) return "can't lead";
+      if (CountFollowers >= num) return "too many followers";
+      // this should need refinement (range 1 might be ok)
+      return "";
+    }
+
+    private string ReasonIllegalToLead(Actor target)
+    {
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
+      var ret = target.ReasonIllegalToBeLed();
+      if (!string.IsNullOrEmpty(ret)) return ret;
+      ret = ReasonIllegalToLead();
+      if (!string.IsNullOrEmpty(ret)) return ret;
+      return ReasonCannotLead(target);
+    }
+
+    public bool LegalToTakeLeadOf(Actor target, out string reason)
+    {
+      reason = ReasonIllegalToLead(target);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool LegalToTakeLeadOf(Actor target)
+    {
+      return string.IsNullOrEmpty(ReasonIllegalToLead(target));
+    }
+
 #nullable enable
     private string ReasonCantCancelLead(Actor target)
     {

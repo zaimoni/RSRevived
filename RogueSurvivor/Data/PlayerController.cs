@@ -436,6 +436,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     protected override Actor? RecruitLOSchoose(List<Actor> candidates) => RogueGame.Game.RecruitLOSchoose(SortByGridDistance(candidates));
+    protected override Actor? RecruitRadioChoose(List<Actor> candidates) => RogueGame.Game.RecruitRadioChoose(SortByGridDistance(candidates));
 
 #nullable restore
 
