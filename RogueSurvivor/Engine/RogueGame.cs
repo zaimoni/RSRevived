@@ -12739,6 +12739,8 @@ namespace djack.RogueSurvivor.Engine
       }
       if (a.Controller.InCombat) return "IN COMBAT";
       if (null != ai) {
+        var recruit = ai.RecruitableRadio();
+        if (null != recruit) return "RADIO RECRUIT";
         var code = ai.InterruptLongActivity();
         if (ObjectiveAI.ReactionCode.NONE != code) {
           if (ObjectiveAI.ReactionCode.NONE != (code & ObjectiveAI.ReactionCode.ENEMY)) return "THREAT NEAR";

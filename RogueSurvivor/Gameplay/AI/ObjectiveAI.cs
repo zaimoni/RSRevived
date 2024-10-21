@@ -5520,7 +5520,7 @@ restart_chokepoints:
     }
 
 
-    protected List<Actor>? RecruitableRadio() {
+    public List<Actor>? RecruitableRadio() {
       if (!m_Actor.HasActivePoliceRadio) return null;
       List<Actor> want_leader = new();
       var am_police = m_Actor.Model.Abilities.IsLawEnforcer ? Session.Get.Police : null;
@@ -5594,12 +5594,14 @@ restart_chokepoints:
       if (!string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) return null;
       var candidates = RecruitableRadio();
       if (null == candidates) return null;
-      if (!RogueGame.IsSimulating) RogueGame.Game.ErrorPopup("RecruitRadio: "+m_Actor+" "+candidates.to_s());
-//    var target = RecruitRadioChoose(candidates);
+#if DEBUG
       var backup_player = RogueGame.Player;
       if (!RogueGame.IsSimulating) RogueGame.Game.PanViewportTo(m_Actor);
       var target = (RogueGame.IsSimulating ? RecruitRadioChoose(candidates) : RogueGame.Game.RecruitRadioChoose(SortByGridDistance(candidates)));
       if (!RogueGame.IsSimulating) RogueGame.Game.PanViewportTo(backup_player);
+#else
+      var target = RecruitRadioChoose(candidates);
+#endif
       if (null == target) return null;
 
       return new ActionTakeLead(m_Actor, target);
