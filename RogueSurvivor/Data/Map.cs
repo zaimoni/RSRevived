@@ -24,6 +24,8 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -413,7 +415,100 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_Timers", m_Timers);
  */
     }
-#endregion
+        #endregion
+
+        static private int field_code(ref Utf8JsonReader reader)
+        {
+            if (reader.ValueTextEquals("Name")) return 1;
+            // \todo factor this out
+            else if (reader.ValueTextEquals("$id")) return -1;
+
+            Engine.RogueGame.Game.ErrorPopup(reader.GetString());
+            throw new JsonException();
+        }
+
+        private Map(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        {
+            if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
+            int origin_depth = reader.CurrentDepth;
+            reader.Read();
+
+            string? relay_id = null;
+            string? relay_name = null;
+
+            void read(ref Utf8JsonReader reader)
+            {
+                int code = field_code(ref reader);
+                reader.Read();
+
+                switch (code)
+                {
+                    case -1:
+                        relay_id = reader.GetString();
+                        break;
+                    case 1:
+                        relay_name = reader.GetString();
+                        break;
+                }
+            }
+
+            while (reader.CurrentDepth != origin_depth || JsonTokenType.EndObject != reader.TokenType)
+            {
+                if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
+
+                read(ref reader);
+
+                reader.Read();
+            }
+
+            if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
+
+            if (null != relay_name) Name = relay_name;
+
+            relay_id?.RecordRef(this);
+        }
+
+        public static Map fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
+        return reader.TryReadRef<Map>() ?? new Map(ref reader, options);
+    }
+
+/*
+    public readonly int Seed;
+    public readonly Point DistrictPos; // should be District.WorldPosition by construction
+#nullable enable
+    [NonSerialized] private District? m_District; // keep reference cycle out of savefile
+    public District District { get { return m_District!; } }
+#nullable restore
+    public readonly string Name;
+    private string m_BgMusic;  // alpha10
+#nullable enable
+    private Lighting m_Lighting;
+	public readonly WorldTime LocalTime;
+    public readonly Size Extent;
+	public short Width { get {return Extent.X;} }
+	public short Height { get {return Extent.Y;} }
+	[NonSerialized] public readonly Rectangle Rect;
+    public Point Origin { get { return Rect.Location; } }
+    private readonly byte[,] m_TileIDs;
+    private readonly byte[] m_IsInside;
+    private readonly Dictionary<Point,HashSet<string>> m_Decorations = new();
+    private readonly Dictionary<Point, Exit> m_Exits = new();   // keys may have negative coordinates
+    private readonly List<Zone> m_Zones = new(5);
+    private readonly List<Actor> m_ActorsList = new(5);
+    private int m_iCheckNextActorIndex;
+    private readonly Dictionary<Point, MapObject> m_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
+    private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
+    private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
+    private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
+    private readonly List<TimedTask> m_Timers = new List<TimedTask>(5); // The end-of-turn timers.
+ */
+
+    public void toJson(string id, Utf8JsonWriter writer, JsonSerializerOptions options) {
+      writer.WriteStartObject();
+      writer.WriteString("$id", id);
+      writer.WriteString("Name", Name);
+      writer.WriteEndObject();
+    }
 
     public string MapName { get { return Name; } }
 
@@ -3363,6 +3458,23 @@ namespace Zaimoni.Serialization
                     Zaimoni.Serialization.ISave.InlineSave(encode, x.Value);
                 }
             }
+        }
+    }
+}
+
+namespace Zaimoni.JsonConvertIncomplete
+{
+    public class Map : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Data.Map>
+    {
+        public override djack.RogueSurvivor.Data.Map Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            return djack.RogueSurvivor.Data.Map.fromJson(ref reader, options);
+        }
+
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.Map src, JsonSerializerOptions options)
+        {
+            var id = src.TrySaveAsRef(writer);
+            if (null != id) src.toJson(id, writer, options);
         }
     }
 }

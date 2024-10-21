@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define BOOTSTRAP_Z_SERIALIZATION
-// #define BOOTSTRAP_JSON_SERIALIZATION
+#define BOOTSTRAP_JSON_SERIALIZATION
 
 using djack.RogueSurvivor.Data;
 using System;
@@ -447,6 +447,7 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.ReferenceHandler = new Zaimoni.JSON.PreserveReferenceHandler();
           s_j_opts.WriteIndented = true;
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.DiceRoller());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.District());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Random());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Rules());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Scoring());
@@ -455,7 +456,7 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Vector2D_short());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Box2D_short());
 
-          s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.District());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Map());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Session());
         }
         return s_j_opts;

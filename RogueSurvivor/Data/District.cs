@@ -208,6 +208,10 @@ namespace djack.RogueSurvivor.Data
         else if (reader.ValueTextEquals("WorldPos")) return 2;
         else if (reader.ValueTextEquals("Kind")) return 3;
         else if (reader.ValueTextEquals("EventRaids")) return 4;
+        else if (reader.ValueTextEquals("Maps")) return 5;
+        else if (reader.ValueTextEquals("EntryMap")) return 6;
+        else if (reader.ValueTextEquals("SewersMap")) return 7;
+        else if (reader.ValueTextEquals("SubwayMap")) return 8;
         // \todo factor this out
         else if (reader.ValueTextEquals("$id")) return -1;
 
@@ -247,10 +251,25 @@ namespace djack.RogueSurvivor.Data
               throw new JsonException();
           case 4:
               {
-              var stage = JsonSerializer.Deserialize<int[]>(ref reader, Engine.Session.JSON_opts) ?? throw new JsonException();
+              var stage = JsonSerializer.Deserialize<int[]>(ref reader, options) ?? throw new JsonException();
               if ((int)Engine.RaidType._COUNT != stage.Length) throw new InvalidOperationException("need upgrade path for Actor::Load");
               Array.Copy(stage, m_Event_Raids, (int)Engine.RaidType._COUNT);
               }
+              break;
+          case 5:
+              {
+              var stage = JsonSerializer.Deserialize<Map[]>(ref reader, options) ?? throw new JsonException();
+              m_Maps.AddRange(stage);
+              }
+              break;
+          case 6:
+              m_EntryMap = JsonSerializer.Deserialize<Map>(ref reader, options) ?? throw new JsonException();
+              break;
+          case 7:
+              m_SewersMap = JsonSerializer.Deserialize<Map>(ref reader, options) ?? throw new JsonException();
+              break;
+          case 8:
+              m_SubwayMap = JsonSerializer.Deserialize<Map>(ref reader, options) ?? throw new JsonException();
               break;
           }
       }
@@ -271,14 +290,6 @@ namespace djack.RogueSurvivor.Data
       relay_id?.RecordRef(this);
     }
 
-        /*
-            private readonly List<Map> m_Maps = new List<Map>(3);
-            private int[] m_Event_Raids = new int[(int)Engine.RaidType._COUNT]; // ultimately readonly
-            private Map? m_EntryMap;
-            private Map? m_SewersMap;
-            private Map? m_SubwayMap;
-         */
-
     public static District fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
         return reader.TryReadRef<District>() ?? new District(ref reader, options);
     }
@@ -292,6 +303,18 @@ namespace djack.RogueSurvivor.Data
       writer.WriteString("Kind", Kind.ToString());
       writer.WritePropertyName("EventRaids");
       JsonSerializer.Serialize(writer, m_Event_Raids, options);
+      writer.WritePropertyName("Maps");
+      JsonSerializer.Serialize(writer, m_Maps.ToArray(), options);
+      writer.WritePropertyName("EntryMap");
+      JsonSerializer.Serialize(writer, m_EntryMap, options);
+      if (null != m_SewersMap) {
+        writer.WritePropertyName("SewersMap");
+        JsonSerializer.Serialize(writer, m_SewersMap, options);
+      }
+      if (null != m_SubwayMap) {
+        writer.WritePropertyName("SubwayMap");
+        JsonSerializer.Serialize(writer, m_SubwayMap, options);
+      }
       writer.WriteEndObject();
     }
 
@@ -614,8 +637,7 @@ namespace djack.RogueSurvivor.Data
   }
 }
 
-
-namespace Zaimoni.JsonConvertIncomplete
+namespace Zaimoni.JsonConvert
 {
     public class District : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Data.District>
     {
