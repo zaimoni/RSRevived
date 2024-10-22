@@ -528,7 +528,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (DistrictKind.INTERSTATE == d.Kind) m_Params = district_config[(int)DistrictKind.GREEN]; // kludge to enable testing
       else m_Params = district_config[(int)d.Kind];
       m_DiceRoller = new DiceRoller(seed);
-      Map map = new Map(seed, name, d, m_Params.MapWidth, m_Params.MapHeight);
+      Map map = new Map(seed, name, d, m_Params.MapWidth, m_Params.MapHeight, GameMusics.SURFACE);
       Point world_pos = map.DistrictPos;
 
       TileFill(map, GameTiles.FLOOR_GRASS);
@@ -615,7 +615,6 @@ restart:
       AddWreckedCarsOutside(map);
       DecorateOutsideWallsWithPosters(map, m_Params.PostersChance);
       DecorateOutsideWallsWithTags(map, m_Params.TagsChance);
-      map.BgMusic = GameMusics.SURFACE; // alpha10: music
       return map;
     }
 
@@ -636,7 +635,7 @@ restart:
 #endif
       m_DiceRoller = new DiceRoller(seed);
 restart:
-      Map sewers = new Map(seed, string.Format("Sewers@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height, Lighting.DARKNESS);
+      Map sewers = new Map(seed, string.Format("Sewers@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height, GameMusics.SEWERS, Lighting.DARKNESS);
       sewers.AddZone(MakeUniqueZone("sewers", sewers.Rect));
 
       // Building codes require that all passages be 2 wide, even those on the edge of the city.
@@ -827,10 +826,6 @@ restart:
         graffiti_tile.AddDecoration(GameImages.DECO_ROGUEDJACK_TAG);
       }
 
-      // alpha10
-      // 10. Music.
-      sewers.BgMusic = GameMusics.SEWERS;
-
 #if DEBUG
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: complete");
 #endif
@@ -975,7 +970,7 @@ restart:
 #endif
       var geometry = new Compass.LineGraph(layout);
       m_DiceRoller = new DiceRoller(seed);
-      Map subway = new Map(seed, string.Format("Subway@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, entryMap.Width, entryMap.Height, Lighting.DARKNESS);
+      Map subway = new Map(seed, string.Format("Subway@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, entryMap.Width, entryMap.Height, GameMusics.SUBWAY, Lighting.DARKNESS);
       TileFill(subway, GameTiles.WALL_BRICK, true);
 
       district.SubwayMap = subway;
@@ -1185,10 +1180,6 @@ restart:
       }
 #endregion
 
-      // alpha10
-      // 6. Music.
-      subway.BgMusic = GameMusics.SUBWAY;
-
       // not practical to do this piecewise
       subway.Rect.DoForEach(pt => {
           if (subway.GetTileModelAt(pt).IsWalkable) Session.Get.ForcePoliceKnown(new Location(subway, pt));
@@ -1367,7 +1358,7 @@ restart:
         var d = map.District;
         string name = "basement-" + shop_name_image.Key + string.Format("{0}{1}@{2}-{3}", d.WorldPosition.X, d.WorldPosition.Y, b.BuildingRect.Left + b.BuildingRect.Width / 2, b.BuildingRect.Top + b.BuildingRect.Height / 2);
         Rectangle rectangle = b.BuildingRect;
-        Map shopBasement = new Map(seed, name, map.District, rectangle.Width, rectangle.Height, Lighting.DARKNESS);
+        Map shopBasement = new Map(seed, name, map.District, rectangle.Width, rectangle.Height, GameMusics.SEWERS, Lighting.DARKNESS);
         TileFill(shopBasement, GameTiles.FLOOR_CONCRETE, true);
         TileRectangle(shopBasement, GameTiles.WALL_BRICK, shopBasement.Rect);
         shopBasement.AddZone(MakeUniqueZone("basement", shopBasement.Rect));
@@ -1385,9 +1376,6 @@ restart:
           if (!Session.Get.HasZombiesInBasements || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
           shopBasement.PlaceAt(CreateNewBasementRatZombie(0), in pt);
         }));
-
-        // alpha10 music
-        shopBasement.BgMusic = GameMusics.SEWERS;
 
         Point basementCorner = new Point((short)(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2), (short)(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2));
         rectangle = b.InsideRect;
@@ -2870,7 +2858,7 @@ restart:
     {
       Rectangle buildingRect = houseBlock.BuildingRect;
       var d = map.District;
-      Map basement = new Map(map.Seed << 1 + buildingRect.Left * map.Height + buildingRect.Top, string.Format("basement{0}{1}@{2}-{3}", d.WorldPosition.X, d.WorldPosition.Y, buildingRect.Left + buildingRect.Width / 2, buildingRect.Top + buildingRect.Height / 2), d, buildingRect.Width, buildingRect.Height, Lighting.DARKNESS);
+      Map basement = new Map(map.Seed << 1 + buildingRect.Left * map.Height + buildingRect.Top, string.Format("basement{0}{1}@{2}-{3}", d.WorldPosition.X, d.WorldPosition.Y, buildingRect.Left + buildingRect.Width / 2, buildingRect.Top + buildingRect.Height / 2), d, buildingRect.Width, buildingRect.Height, GameMusics.SEWERS, Lighting.DARKNESS);
       basement.AddZone(MakeUniqueZone("basement", basement.Rect));
       TileFill(basement, GameTiles.FLOOR_CONCRETE, true);
       TileRectangle(basement, GameTiles.WALL_BRICK, basement.Rect);
@@ -2955,10 +2943,6 @@ restart:
           return shelf;
         }));
 
-      // alpha10
-      // music.
-      basement.BgMusic = GameMusics.SEWERS;
-
       return basement;
     }
 
@@ -2997,7 +2981,7 @@ restart:
 
       const int BASE_WIDTH = 100;   // these do not space-time scale
       const int BASE_HEIGHT = 100;
-      Map underground = new Map(surfaceMap.Seed << 3 ^ surfaceMap.Seed, string.Format("CHAR Underground Facility @{0}-{1}", surfaceExit.X, surfaceExit.Y), surfaceMap.District, BASE_WIDTH, BASE_HEIGHT, Lighting.DARKNESS, true);
+      Map underground = new Map(surfaceMap.Seed << 3 ^ surfaceMap.Seed, string.Format("CHAR Underground Facility @{0}-{1}", surfaceExit.X, surfaceExit.Y), surfaceMap.District, BASE_WIDTH, BASE_HEIGHT, GameMusics.CHAR_UNDERGROUND_FACILITY, Lighting.DARKNESS, true);
       TileFill(underground, GameTiles.FLOOR_OFFICE, true);
       TileRectangle(underground, GameTiles.WALL_CHAR_OFFICE, underground.Rect);
 
@@ -3114,10 +3098,6 @@ restart:
       Gameplay.AI.CHARGuardAI.DeclareSquad(squad);
       }
 
-      // alpha10
-      // 8. Music
-      underground.BgMusic = GameMusics.CHAR_UNDERGROUND_FACILITY;
-
       return underground;
     }
 
@@ -3227,7 +3207,6 @@ restart:
       GeneratePoliceStation(map, policeBlock, out Point stairsToLevel1);
       Map officesLevel = GeneratePoliceStation_OfficesLevel(map);
       Map jailsLevel = GeneratePoliceStation_JailsLevel(officesLevel);
-      officesLevel.BgMusic = jailsLevel.BgMusic = GameMusics.SURFACE;   // alpha10 music
       AddExit(map, stairsToLevel1, officesLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN);
       AddExit(officesLevel, new Point(1, 1), map, stairsToLevel1, GameImages.DECO_STAIRS_UP);
       var offices_jails_origin = officesLevel.Rect.Anchor(Compass.XCOMlike.SW) + Direction.NE;
@@ -3268,7 +3247,7 @@ restart:
     {
       const int OFFICES_WIDTH = 20; // these do not space-time scale
       const int OFFICES_HEIGHT = 20;
-      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Offices", surfaceMap.District, OFFICES_WIDTH, OFFICES_HEIGHT, Lighting.LIT);
+      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Offices", surfaceMap.District, OFFICES_WIDTH, OFFICES_HEIGHT, GameMusics.SURFACE, Lighting.LIT);
 
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_POLICE_STATION, map.Rect);
@@ -3815,7 +3794,7 @@ restart:
     private Map GeneratePoliceStation_JailsLevel(Map surfaceMap)
     {
       const int JAILS_WIDTH = 22;
-      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Jails", surfaceMap.District, JAILS_WIDTH, 6, Lighting.LIT);
+      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Jails", surfaceMap.District, JAILS_WIDTH, 6, GameMusics.SURFACE, Lighting.LIT);
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_POLICE_STATION, map.Rect);
       List<Rectangle> rectangleList = new List<Rectangle>();
@@ -3860,9 +3839,6 @@ restart:
       Map patients = GenerateHospital_Patients(map.Seed << 3 ^ map.Seed, d);
       Map storage = GenerateHospital_Storage(map.Seed << 4 ^ map.Seed, d);
       Map power = GenerateHospital_Power(map.Seed << 5 ^ map.Seed, d);
-
-      // alpha10 music
-      admissions.BgMusic = offices.BgMusic = patients.BgMusic = storage.BgMusic = power.BgMusic = GameMusics.HOSPITAL;
 
       Point entryStairs = hospitalBlock.InsideRect.Anchor(Compass.XCOMlike.N);
       Point admissionsUpStairs = admissions.Rect.Anchor(Compass.XCOMlike.N)+Direction.S;
@@ -3927,7 +3903,7 @@ restart:
     {
       const int HALLWAY_LENGTH_IN_OFFICES = 8;
 
-      Map map = new Map(seed, "Hospital - Admissions", d, 3 + 2 * HOSPITAL_TYPICAL_WIDTH_HEIGHT, 1+ HALLWAY_LENGTH_IN_OFFICES * (HOSPITAL_TYPICAL_WIDTH_HEIGHT-1), Lighting.DARKNESS);    // central corridor is 3 wide
+      Map map = new Map(seed, "Hospital - Admissions", d, 3 + 2 * HOSPITAL_TYPICAL_WIDTH_HEIGHT, 1+ HALLWAY_LENGTH_IN_OFFICES * (HOSPITAL_TYPICAL_WIDTH_HEIGHT-1), GameMusics.HOSPITAL, Lighting.DARKNESS);    // central corridor is 3 wide
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, map.Rect);
       Rectangle rect = new Rectangle(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1, 0, 5, map.Height);
@@ -3966,7 +3942,7 @@ restart:
     {
       const int HALLWAY_LENGTH_IN_OFFICES = 8;
 
-      Map map = new Map(seed, "Hospital - Offices", d, 3+2* HOSPITAL_TYPICAL_WIDTH_HEIGHT, 1+ HALLWAY_LENGTH_IN_OFFICES*(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1), Lighting.DARKNESS);  // central corridor is 3 wide
+      Map map = new Map(seed, "Hospital - Offices", d, 3+2* HOSPITAL_TYPICAL_WIDTH_HEIGHT, 1+ HALLWAY_LENGTH_IN_OFFICES*(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1), GameMusics.HOSPITAL, Lighting.DARKNESS);  // central corridor is 3 wide
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, map.Rect);
       Rectangle rect = new Rectangle(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1, 0, 5, map.Height);    // left/right borders are the offices
@@ -4001,7 +3977,7 @@ restart:
     {
       const int HALLWAY_LENGTH_IN_OFFICES = 12;
 
-      Map map = new Map(seed, "Hospital - Patients", d, 3 + 2 * HOSPITAL_TYPICAL_WIDTH_HEIGHT, 1+ HALLWAY_LENGTH_IN_OFFICES*(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1), Lighting.DARKNESS);  // central corridor is 3 wide
+      Map map = new Map(seed, "Hospital - Patients", d, 3 + 2 * HOSPITAL_TYPICAL_WIDTH_HEIGHT, 1+ HALLWAY_LENGTH_IN_OFFICES*(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1), GameMusics.HOSPITAL, Lighting.DARKNESS);  // central corridor is 3 wide
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, map.Rect);
       Rectangle rect = new Rectangle(HOSPITAL_TYPICAL_WIDTH_HEIGHT-1, 0, 5, map.Height);
@@ -4043,7 +4019,7 @@ restart:
       const int STORAGE_CORRIDORS = 2;
 
       // top corridor, with walls, to the generators is constant height 4
-      Map map = new Map(seed, "Hospital - Storage", d, 3+ STORAGE_ROOMS_PER_CORRIDOR*(HOSPITAL_TYPICAL_WIDTH_HEIGHT - 1), 4+STORAGE_CORRIDORS*(2+ STORAGE_ROOM_DEPTH), Lighting.DARKNESS);
+      Map map = new Map(seed, "Hospital - Storage", d, 3+ STORAGE_ROOMS_PER_CORRIDOR*(HOSPITAL_TYPICAL_WIDTH_HEIGHT - 1), 4+STORAGE_CORRIDORS*(2+ STORAGE_ROOM_DEPTH), GameMusics.HOSPITAL, Lighting.DARKNESS);
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_HOSPITAL, map.Rect);
       var rect1 = ext_Vector.FromLTRB_short(0, 0, map.Width, 4);
@@ -4080,7 +4056,7 @@ restart:
     {
       const int POWER_WIDTH = 10;
       const int POWER_HEIGHT = 10;
-      Map map = new Map(seed, "Hospital - Power", d, POWER_WIDTH, POWER_HEIGHT, Lighting.DARKNESS);
+      Map map = new Map(seed, "Hospital - Power", d, POWER_WIDTH, POWER_HEIGHT, GameMusics.HOSPITAL, Lighting.DARKNESS);
       TileFill(map, GameTiles.FLOOR_CONCRETE, true);
       TileRectangle(map, GameTiles.WALL_BRICK, map.Rect);
       var rect = ext_Vector.FromLTRB_short(1, 1, 3, POWER_HEIGHT);
