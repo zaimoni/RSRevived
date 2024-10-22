@@ -21,13 +21,11 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 
 using Color = System.Drawing.Color;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
-// using LOS = djack.RogueSurvivor.Engine.LOS;
-using ActionUseExit = djack.RogueSurvivor.Engine.Actions.ActionUseExit;
-using Skills = djack.RogueSurvivor.Gameplay.Skills;
 using PowerGenerator = djack.RogueSurvivor.Engine.MapObjects.PowerGenerator;
 using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
 using djack.RogueSurvivor.Gameplay;
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine.Actions;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -2017,18 +2015,18 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    public Dictionary<Location, Engine.Actions.ActionMoveDelta>? MovesTo(in Location dest) {
-      var ret = new Dictionary<Location, Engine.Actions.ActionMoveDelta>();
+    public Dictionary<Location, ActionMoveDelta>? MovesTo(in Location dest) {
+      var ret = new Dictionary<Location, ActionMoveDelta>();
       if (CanEnter(dest)) {
         foreach(var pt in dest.Position.Adjacent()) {
           Location src = new Location(dest.Map, pt);
           if (!CanEnter(ref src)) continue;
-          ret[src] = new Engine.Actions.ActionMoveDelta(this, dest, src);
+          ret[src] = new ActionMoveDelta(this, dest, src);
         }
         var e = Model.Abilities.AI_CanUseAIExits ? dest.Exit : null;
         if (null != e && e.ToMap.DistrictPos == dest.Map.DistrictPos && CanEnter(e.Location)) {
           // we are assuming this is a two-way exit.  \todo fix when introducing rooftops, e.g. helipads
-          ret[e.Location] = new Engine.Actions.ActionMoveDelta(this, dest, e.Location);
+          ret[e.Location] = new ActionMoveDelta(this, dest, e.Location);
         }
       }
       // tentatively not handling generators, etc. here
@@ -2036,18 +2034,18 @@ namespace djack.RogueSurvivor.Data
     }
 
 #if PROTOTYPE
-    public Dictionary<Location, Engine.Actions.ActionMoveDelta>? MovesFrom(in Location src) {
-      var ret = new Dictionary<Location, Engine.Actions.ActionMoveDelta>();
+    public Dictionary<Location, ActionMoveDelta>? MovesFrom(in Location src) {
+      var ret = new Dictionary<Location, ActionMoveDelta>();
       if (CanEnter(src)) {
         foreach(var pt in src.Position.Adjacent()) {
           Location dest = new Location(src.Map, pt);
           if (!CanEnter(ref dest)) continue;
-          ret[dest] = new Engine.Actions.ActionMoveDelta(this, dest, src);
+          ret[dest] = new ActionMoveDelta(this, dest, src);
         }
         var e = Model.Abilities.AI_CanUseAIExits ? src.Exit : null;
         if (null != e && e.ToMap.DistrictPos == src.Map.DistrictPos && CanEnter(e.Location)) {
           // this would work with a one-way exit.  \todo review when introducing rooftops, e.g. helipads
-          ret[e.Location] = new Engine.Actions.ActionMoveDelta(this, e.Location, src);
+          ret[e.Location] = new ActionMoveDelta(this, e.Location, src);
         }
       }
       // tentatively not handling generators, etc. here
@@ -2122,12 +2120,12 @@ namespace djack.RogueSurvivor.Data
           continue;
         }
         if (Location==dest) {
-          ret.Add(dest, new Engine.Actions.ActionMoveStep(this, dest.Position));
+          ret.Add(dest, new ActionMoveStep(this, dest.Position));
           continue;
         }
         // 2020-03-19 This is multi-threading sensitive -- the Sokoban preventer may have to reach across threads
         // generators fail CanEnter but can be pathable so that would have to be accounted for
-        if (null != (relay = Rules.IsPathableFor(this, in dest) ?? (CanEnter(dest) ? new Engine.Actions.ActionMoveDelta(this, in dest, in loc) : null))) ret.Add(dest, relay);
+        if (null != (relay = Rules.IsPathableFor(this, in dest) ?? (CanEnter(dest) ? new ActionMoveDelta(this, in dest, in loc) : null))) ret.Add(dest, relay);
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) { // the pathable check also handles death-trapping, but exits don't check for that
@@ -2138,6 +2136,12 @@ namespace djack.RogueSurvivor.Data
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
           if (tmp.IsPerformable()) ret.Add(exit.Location, tmp);
+          else {
+            var obj = exit.Location.MapObject;
+            if (null != obj && CanBreak(obj)) {
+              ret.Add(exit.Location, new ActionBreak(this, obj));
+            }
+          }
         } else {
           ret.Add(exit.Location, new ActionUseExit(this, in loc));
           // simulate Exit::ReasonIsBlocked
@@ -2170,11 +2174,11 @@ namespace djack.RogueSurvivor.Data
         Location dest = new Location(m,pt);
         if (!Map.Canonical(ref dest)) continue;
         if (Location==dest) {
-          ret[pt] = new Engine.Actions.ActionMoveStep(this, in pt);
+          ret[pt] = new ActionMoveStep(this, in pt);
           continue;
         }
         ActorAction tmp = Rules.IsPathableFor(this, in dest);
-        if (null == tmp && CanEnter(dest)) tmp = new Engine.Actions.ActionMoveDelta(this, in dest, new Location(m,p));
+        if (null == tmp && CanEnter(dest)) tmp = new ActionMoveDelta(this, in dest, new Location(m,p));
         if (null != tmp) ret[pt] = tmp;
       }
       return ret;
