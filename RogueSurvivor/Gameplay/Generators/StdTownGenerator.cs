@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Map map = base.Generate(seed, name, d);
       bool outside_test(Point pt) { return !map.IsInsideAt(pt); }
       // XXX with default 15% policeman probability and default 25 max civilians, 0 police in district is ~1.7% chance and happens noticeably often in testing
-      bool inside_test(Point pt) { return map.IsInsideAt(pt) && !map.HasZonePartiallyNamedAt(pt, "NoCivSpawn"); }
+      bool inside_test(Point pt) { return map.IsInsideAt(pt) && !map.HasZoneNamedAt(pt, "NoCivSpawn"); }
       bool has_subway = null!=map.GetZoneByPartialName("Subway Station");
       bool has_CHAR_office = null!=map.GetZoneByPartialName("CHAR Office");
       var unclaimed_sheds = map.GetZonesByPartialName("Shed");
@@ -123,20 +123,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           // The CHAR Guard Manuals only approve of this for lesser disasters than a z apocalypse.
           // Fortunately, airliners that crash have 1/3rd fewer passengers than those that don't!
           // There may also be some "prison barge" rumors circulating (cf. the 2018 Hawaii volcanic eruption, and graffiti at game start)
-          if (has_CHAR_office && m_DiceRoller.RollChance(33)) ok= ok.And(pt => !map.HasZonePartiallyNamedAt(pt, "CHAR Office"));
+          if (has_CHAR_office && m_DiceRoller.RollChance(33)) ok= ok.And(pt => !map.HasZonePrefixNamedAt(pt, "CHAR Office@"));
           // subways are now early-spawn.  Since they're a legal area for the PC to spawn we have to allow them, but 
           // they're not really emergency shelters (the trains are in storage).
           if (has_subway) {
             if (m_DiceRoller.RollChance(50)) { // \todo tune this empirical constant.  Ideally would respond to charisma skill, but that's not player-visible
               ok = ok.And(pt => {
-                if (!map.HasZonePartiallyNamedAt(pt, "Subway Station")) return true;
+                if (!map.HasZonePrefixNamedAt(pt, "Subway Station@")) return true;
                 if (map.GetMapObjectAt(pt)?.IsCouch ?? false) {
                   zzz.Add(pt);  // side-effecting, so prefers to be last
                   return true;
                 } else return false;
               });
             } else {    // not convincing: bounced
-              ok = ok.And(pt => !map.HasZonePartiallyNamedAt(pt, "Subway Station"));
+              ok = ok.And(pt => !map.HasZonePrefixNamedAt(pt, "Subway Station@"));
             }
           }
 

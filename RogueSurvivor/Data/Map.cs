@@ -1231,12 +1231,19 @@ retry:
 #nullable enable
 #region zones: map generation support
     public void AddZone(Zone zone) { m_Zones.Add(zone); }
+#if OBSOLETE
     public void RemoveZone(Zone zone) { m_Zones.Remove(zone); }
+#endif
 
+    // We define a system zone, as a zone whose name starts with $ .
+
+    // used in mapgen, so has to work on system zones
     public void RemoveAllZonesAt(Point pt)
     {
-      var zonesAt = GetZonesAt(pt);
-      if (null != zonesAt) foreach (var zone in zonesAt) RemoveZone(zone);
+      int ub = m_Zones.Count;
+      while(0 <= --ub) {
+        if (m_Zones[ub].Bounds.Contains(pt)) m_Zones.RemoveAt(ub);
+      }
     }
 #endregion
 
@@ -1244,8 +1251,13 @@ retry:
     /// <returns>null, or a non-empty list of zones</returns>
     public List<Zone>? GetZonesAt(Point pt)
     {
-      var zoneList = m_Zones.FindAll(z => z.Bounds.Contains(pt));
-      return (0<zoneList.Count) ? zoneList : null;
+      List<Zone> ret = new();
+      foreach(var z in m_Zones) {
+        if (!z.Bounds.Contains(pt)) continue;
+        if (z.Name.StartsWith('$')) continue;   // exclude system zones
+        ret.Add(z);
+      }
+      return (0<ret.Count) ? ret : null;
     }
 
     public List<Zone>? GetZonesByPartialName(string partOfname)
@@ -1260,9 +1272,34 @@ retry:
       return null;
     }
 
-    public bool HasZonePartiallyNamedAt(Point pos, string partOfName)
+    public bool HasZonePrefixNamedAt(Point pos, string partOfName)
     {
-      return GetZonesAt(pos)?.Any(zone=>zone.Name.Contains(partOfName)) ?? false;
+      foreach(var z in m_Zones) {
+        if (!z.Bounds.Contains(pos)) continue;
+        if (z.Name.StartsWith(partOfName)) return true;
+      }
+      return false;
+    }
+
+    public bool HasZonePrefixNamedAt(Point pos, IEnumerable<string> prefixes)
+    {
+      foreach(var z in m_Zones) {
+        if (!z.Bounds.Contains(pos)) continue;
+        foreach(var prefix in prefixes) {
+          if (z.Name.StartsWith(prefix)) return true;
+        }
+      }
+      return false;
+    }
+
+
+    public bool HasZoneNamedAt(Point pos, string name)
+    {
+      foreach(var z in m_Zones) {
+        if (!z.Bounds.Contains(pos)) continue;
+        if (name == z.Name) return true;
+      }
+      return false;
     }
 
     /// <summary>Denotes a zone that may legitimately be "cleared" of threat or tourism targets</summary>

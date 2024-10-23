@@ -21,7 +21,7 @@ using Size = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
-    public class BaseTownGenerator : BaseMapGenerator
+  public class BaseTownGenerator : BaseMapGenerator
   {
     public static readonly Parameters DEFAULT_PARAMS = new Parameters {
       MapWidth = RogueGame.MAP_MAX_WIDTH,
@@ -1250,13 +1250,10 @@ restart:
       map.AddZone(MakeUniqueZone("road", rect));
     }
 
+    static private readonly string[] s_special_buildings = { "Sewers Maintenance", "Subway Station", "office", "shop" };
     static private bool IsThereASpecialBuilding(Map map, Rectangle rect)
     {
-      if (map.GetZonesAt(rect.Location)?.Any(zone=> zone.Name.Contains("Sewers Maintenance")
-                                                 || zone.Name.Contains("Subway Station")
-                                                 || zone.Name.Contains("office")
-                                                 || zone.Name.Contains("shop")) ?? false)
-        return true;
+      if (map.HasZonePrefixNamedAt(rect.Location, s_special_buildings)) return true;
       return map.HasAnExitIn(rect); // relatively slow compared to above
     }
 
@@ -1275,15 +1272,15 @@ restart:
     }
 #endif
 
+    static private string[] s_police_known = { "Subway Station", // police guard starts in the subway station
+            "Police Station",
+            "CHAR Office", "CHAR Agency" };   // CHAR company town, police first assume things ok
     static public bool PoliceKnowAtGameStart(Map m,Point pt)
     {
-      if (m.HasZonePartiallyNamedAt(pt, "Subway Station")) return true; // police guard starts in the subway station
-      if (m.HasZonePartiallyNamedAt(pt, "Police Station")) return true;
-      if (m.HasZonePartiallyNamedAt(pt, "CHAR Office")) return true;   // CHAR company town, police first assume things ok
-      if (m.HasZonePartiallyNamedAt(pt, "CHAR Agency")) return true;   // CHAR company town, police first assume things ok
+      if (m.HasZonePrefixNamedAt(pt, s_police_known)) return true;
       // stores have their own police AI cheat
       foreach(var x in shop_name_images) {
-        if (m.HasZonePartiallyNamedAt(pt, x.Key)) return true;
+        if (m.HasZonePrefixNamedAt(pt, x.Key)) return true;
       }
       return false;
     }
@@ -3924,9 +3921,9 @@ restart:
       }
       for (int index = 0; index < 10; ++index) {
         Actor newHospitalPatient = CreateNewHospitalPatient(0);
-        ActorPlace(m_DiceRoller, map, newHospitalPatient, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "patient room")));
+        ActorPlace(m_DiceRoller, map, newHospitalPatient, pt => map.HasZonePrefixNamedAt(pt, "patient room@"));
       }
-      Predicate<Point> in_corridor = (pt => map.HasZonePartiallyNamedAt(pt, "corridor"));
+      Predicate<Point> in_corridor = (pt => map.HasZonePrefixNamedAt(pt, "corridor@"));
       for (int index = 0; index < 4; ++index) {
         Actor newHospitalNurse = CreateNewHospitalNurse(0);
         ActorPlace(m_DiceRoller, map, newHospitalNurse, in_corridor);
@@ -3961,7 +3958,7 @@ restart:
         MakeHospitalOfficeRoom(map, "office", offices_room, false);
         offices_room.Y += HOSPITAL_TYPICAL_WIDTH_HEIGHT-1;
       }
-      Predicate<Point> in_office = (pt => map.HasZonePartiallyNamedAt(pt, "office"));
+      Predicate<Point> in_office = (pt => map.HasZonePrefixNamedAt(pt, "office@"));
       for (int index = 0; index < 5; ++index) {
         Actor newHospitalNurse = CreateNewHospitalNurse(0);
         ActorPlace(m_DiceRoller, map, newHospitalNurse, in_office);
@@ -3998,9 +3995,9 @@ restart:
       }
       for (int index = 0; index < 20; ++index) {
         Actor newHospitalPatient = CreateNewHospitalPatient(0);
-        ActorPlace(m_DiceRoller, map, newHospitalPatient, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "patient room")));
+        ActorPlace(m_DiceRoller, map, newHospitalPatient, (Predicate<Point>) (pt => map.HasZonePrefixNamedAt(pt, "patient room@")));
       }
-      Predicate<Point> in_corridor = (pt => map.HasZonePartiallyNamedAt(pt, "corridor"));
+      Predicate<Point> in_corridor = (pt => map.HasZonePrefixNamedAt(pt, "corridor@"));
       for (int index = 0; index < 8; ++index) {
         Actor newHospitalNurse = CreateNewHospitalNurse(0);
         ActorPlace(m_DiceRoller, map, newHospitalNurse, in_corridor);

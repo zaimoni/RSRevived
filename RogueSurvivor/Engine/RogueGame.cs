@@ -14317,7 +14317,7 @@ retry:
             }
             break;
           case 1:
-            if (!p_map.HasZonePartiallyNamedAt(prisoner.Location.Position, "jail") && Rules.IsAdjacent(player.Location.Position, prisoner.Location.Position) && !prisoner.IsSleeping && !prisoner.IsEnemyOf(player)) {
+            if (!p_map.HasZonePrefixNamedAt(prisoner.Location.Position, "jail@") && Rules.IsAdjacent(player.Location.Position, prisoner.Location.Position) && !prisoner.IsSleeping && !prisoner.IsEnemyOf(player)) {
                 var base_at = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District;
                 string[] local_7 = new string[8]
                 {
@@ -14839,7 +14839,7 @@ retry:
 
     public static bool IsInCHAROffice(Location location)
     {
-      return location.Map.HasZonePartiallyNamedAt(location.Position, "CHAR Office@");
+      return location.Map.HasZonePrefixNamedAt(location.Position, "CHAR Office@");
     }
 
     static public bool IsInCHARProperty(Location location)
