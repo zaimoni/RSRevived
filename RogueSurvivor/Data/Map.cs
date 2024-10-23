@@ -80,6 +80,7 @@ namespace djack.RogueSurvivor.Data
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
     private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     private readonly List<TimedTask> m_Timers = new List<TimedTask>(5); // The end-of-turn timers.
+    private readonly Observed<Actor> m_OnEnterTile = new();
     // position inverting caches
     [NonSerialized] private readonly Dictionary<Point, Actor> m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
     [NonSerialized] private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
@@ -2434,6 +2435,13 @@ retry:
 
       m_Timers.OnlyIfNot(elapse);
     }
+
+    public void AddOnEnterTile(Observer<Actor> o) => m_OnEnterTile.Add(o);
+#if DEAD_FUNC
+    // would be expected by Create-Read-Update-Delete idiom
+    public void Remove(Observer<Actor> o) { m_OnEnterTile.Remove(o); }
+#endif
+    public void OnEnterTile(Actor a) => m_OnEnterTile.update(a);
 
     public KeyValuePair<bool,bool> AdvanceLocalTime()
     {

@@ -8373,6 +8373,7 @@ namespace djack.RogueSurvivor.Engine
       if (!map.IsTrapCoveringMapObjectAt(pos)) {
         if (0 == OnActorReachIntoTile(actor, actor.Location)) return; // no further processing if dead
       }
+      map.OnEnterTile(actor);
     }
 
     public int OnActorReachIntoTile(Actor actor, Location dest)
@@ -14154,7 +14155,7 @@ retry:
        }
     }
 
-    private void ShowNewAchievement(Achievement.IDs id, Actor victor)
+    public void ShowNewAchievement(Achievement.IDs id, Actor victor)
     {
       var score = victor.ActorScoring;
       score.SetCompletedAchievement(id);
@@ -14239,8 +14240,6 @@ retry:
     private void CheckSpecialPlayerEventsAfterAction(Actor player)
     { // XXX player is always m_Player here.
       // arguably, we should instead reuqire not-hostile to CHAR and actual CHAR guards for credit for breaking into a CHAR office.
-      if (!player.Model.Abilities.IsUndead && !player.IsFaction(GameFactions.IDs.TheCHARCorporation) && (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && IsInCHAROffice(player.Location)))
-        ShowNewAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, player);
       var p_map = player.Location.Map;
       if (!player.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY)) {
         Map CHARmap = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap;

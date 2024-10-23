@@ -10,6 +10,7 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
+using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,33 @@ using Size = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
+  [Serializable]
+  internal class EnterCHAROffice : Observer<Actor>
+  {
+    private readonly ZoneLoc m_surveiled;
+
+    public EnterCHAROffice(ZoneLoc src) {
+      m_surveiled = src;
+    }
+
+    public bool update(Actor a) {
+      var oai = a.Controller as ObjectiveAI;
+      if (null == oai) return false;
+      if (a.IsFaction(GameFactions.IDs.TheCHARCorporation)) return false;
+      if (a.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE)) return false;
+      if (!m_surveiled.Contains(a.Location)) return false;
+      if (m_surveiled.Contains(oai.PrevLocation)) return false;
+      if (!m_surveiled.Any(loc => {
+          var actor = loc.Actor;
+          if (null == actor) return false;
+          return actor.IsFaction(GameFactions.IDs.TheCHARCorporation);
+        }))
+        return true;    // no CHAR guards: expire, no break-in achievement
+      RogueGame.Game.ShowNewAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, a);
+      return false;
+    }
+  }
+
   public class BaseTownGenerator : BaseMapGenerator
   {
     public static readonly Parameters DEFAULT_PARAMS = new Parameters {
@@ -1619,6 +1647,7 @@ restart:
       (new ItemEntertainment(GameItems.CHAR_GUARD_MANUAL))?.DropAt(map, m_DiceRoller.Choose(table_pos));
       Zone zone = MakeUniqueZone("CHAR Office", b.BuildingRect);
       map.AddZone(zone);
+      map.AddOnEnterTile(new EnterCHAROffice(new(map, zone)));
       MakeWalkwayZones(map, b);
 
       PopulateCHAROfficeBuilding(map, CHAR_guard_locs);
