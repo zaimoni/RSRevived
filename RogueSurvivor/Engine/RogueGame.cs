@@ -8370,25 +8370,8 @@ namespace djack.RogueSurvivor.Engine
       (actor.Controller as ObjectiveAI)?.OnMove();  // 2019-08-24: both calls required to pass regression test
       Map map = actor.Location.Map;
       Point pos = actor.Location.Position;
-      if (map.IsTrapCoveringMapObjectAt(pos)) return;
-      List<Actor>? trap_owners = null;
-      int cur_hp = actor.HitPoints;
-      map.RemoveAt<ItemTrap>(trap => {
-          bool trap_gone = TryTriggerTrap(trap, actor);
-          int new_hp = actor.HitPoints;
-          if (cur_hp > new_hp) {
-              var owner = trap.Owner;
-              if (null != owner) (trap_owners ??= new List<Actor>()).Add(owner);
-              cur_hp = new_hp;
-          }
-          return trap_gone;
-      }, pos);
-      if (0 >= cur_hp) {
-        var owner = trap_owners?[0];
-        // look the other way when it comes to friendly trap kills
-        if (null != owner && !string.IsNullOrEmpty(owner.AIwillNotMurder)) owner = null;
-        // the above can trigger killing of actor already; hard crash
-        if (!actor.IsDead) KillActor(owner, actor, "trap");
+      if (!map.IsTrapCoveringMapObjectAt(pos)) {
+        if (0 == OnActorReachIntoTile(actor, actor.Location)) return; // no further processing if dead
       }
     }
 
@@ -8409,9 +8392,8 @@ namespace djack.RogueSurvivor.Engine
       }, dest.Position);
       if (0 >= cur_hp) {
         var owner = trap_owners?[0];
-        if (null != owner && actor.IsFirstClassCitizen()) {
-          if (owner.IsFirstClassCitizen()) owner = null; // look the other way when it comes to friendly trap kills
-        }
+        // look the other way when it comes to friendly trap kills
+        if (null != owner && !string.IsNullOrEmpty(owner.AIwillNotMurder)) owner = null;
         // the above can trigger killing of actor already; hard crash
         if (!actor.IsDead) KillActor(owner, actor, "trap");
         return 0;
