@@ -1429,6 +1429,8 @@ restart:
           map.SetIsInsideAt(x, y);
           tile.AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO);
       }));
+      map.AddZone(new Zone("$Inside", b.InsideRect));
+
       PlaceShoplikeEntrance(map, b, GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor);
       DecorateOutsideWalls(map, b.BuildingRect, pt => {
         if (map.HasMapObjectAt(pt) || !map.AnyAdjacent<DoorWindow>(pt)) return null;
@@ -1930,6 +1932,7 @@ restart:
         if (iOutsideRoom == i) {
           // make sure all tiles are marked as outside
           DoForEachTile(roomRect, (pt) => map.SetIsInsideAt(pt,false));
+          map.AddZone(new Zone("$Outside", roomRect));
 
           // then shrink it properly so we dont overlap with tiles from other rooms and mess things up.
           if (roomRect.Left != b.BuildingRect.Left) {
@@ -2038,6 +2041,8 @@ restart:
         for (int top = b.InsideRect.Top; top < b.InsideRect.Bottom; ++top)
           map.SetIsInsideAt(left, top);
       }
+      map.AddZone(new Zone("$Inside", b.InsideRect));
+
       Direction direction = m_DiceRoller.Choose(Direction.COMPASS_4);   // \todo CHAR zoning
       Point doorAt = b.BuildingRect.Anchor((Compass.XCOMlike)direction.Index);
       Direction orthogonal = direction.Left.Left;
@@ -2097,6 +2102,8 @@ restart:
           loc.Map.SetIsInsideAt(loc.Position);    // XXX this is a severe change -- combined with the early generation,
           // it guarantees the subway is inside when the NPCs are placed.  With late generation, it was possible to overwrite a park
       });
+      map.AddZone(new Zone("$Inside", b.BuildingRect));
+
       const int height = 4;
       Point rail = SubwayRail(map.District);  // both the N-S and E-W railways use this as their reference point
 

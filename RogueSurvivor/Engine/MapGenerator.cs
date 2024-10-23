@@ -21,25 +21,18 @@ namespace djack.RogueSurvivor.Engine
     public abstract Map Generate(int seed, string name, District d);
 
 #region Tile filling
-    protected static void TileFill(Map map, TileModel model, bool inside)
-    {
-      TileFill(map, model, 0, 0, map.Width, map.Height, inside);
-    }
-
-    protected static void TileFill(Map map, TileModel model, Action<Tile, TileModel, short, short> decoratorFn=null)
-    {
-      TileFill(map, model, 0, 0, map.Width, map.Height, decoratorFn);
-    }
-
     protected static void TileFill(Map map, TileModel model, Rectangle rect, bool inside)
     {
       TileFill(map, model, rect.Left, rect.Top, rect.Width, rect.Height, inside);
+      if (inside) map.AddZone(new Zone("$Inside", rect));
     }
+    protected static void TileFill(Map map, TileModel model, bool inside) => TileFill(map, model, map.Rect, inside);
 
     protected static void TileFill(Map map, TileModel model, Rectangle rect, Action<Tile, TileModel, short, short> decoratorFn=null)
     {
       TileFill(map, model, rect.Left, rect.Top, rect.Width, rect.Height, decoratorFn);
     }
+    protected static void TileFill(Map map, TileModel model, Action<Tile, TileModel, short, short> decoratorFn=null) => TileFill(map, model, map.Rect, decoratorFn);
 
     protected static void TileFill(Map map, TileModel model, short left, short top, int width, int height, Action<Tile, TileModel, short, short> decoratorFn=null)
     {
