@@ -56,8 +56,8 @@ namespace djack.RogueSurvivor.Data
     public District District { get { return m_District!; } }
 #nullable restore
     public readonly string Name;
-    private string m_BgMusic;  // alpha10
 #nullable enable
+    public readonly string BgMusic;  // alpha10
     private Lighting m_Lighting;
 	public readonly WorldTime LocalTime;
     public readonly Size Extent;
@@ -116,7 +116,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public string BgMusic { get => m_BgMusic; }
     public Lighting Lighting { get { return m_Lighting; } }
     public bool Illuminate(bool on) {
 #if DEBUG
@@ -175,7 +174,7 @@ namespace djack.RogueSurvivor.Data
         ?? throw new ArgumentNullException(nameof(name))
 #endif
       ;
-      m_BgMusic = music;
+      BgMusic = music;
       Extent = new Size(width,height);
 	  m_District = d;
       DistrictPos = d.WorldPosition;
@@ -218,7 +217,7 @@ namespace djack.RogueSurvivor.Data
       info.read(ref m_TileIDs, "m_TileIDs");
       info.read(ref m_IsInside, "m_IsInside");
       info.read(ref m_Decorations, "m_Decorations");
-      m_BgMusic = info.GetString("m_BgMusic");   // alpha10
+      BgMusic = info.GetString("m_BgMusic");   // alpha10
       // readonly block
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Viewpoints = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findViewpoints);
@@ -249,7 +248,7 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_TileIDs", m_TileIDs);
       info.AddValue("m_IsInside", m_IsInside);
       info.AddValue("m_Decorations", m_Decorations);
-      info.AddValue("m_BgMusic", m_BgMusic);    // alpha10
+      info.AddValue("m_BgMusic", BgMusic);    // alpha10
 #if CPU_HOG_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "ready to save: "+this);
 #endif
@@ -303,8 +302,7 @@ namespace djack.RogueSurvivor.Data
       RepairHash(ref _hash);
       LocalTime = decode.LoadInline<WorldTime>();
 
-      Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_BgMusic); // alpha10
-      if (string.IsNullOrEmpty(m_BgMusic)) m_BgMusic = null;
+      Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref BgMusic); // alpha10
 
       decode.LoadFrom(ref m_IsInside);
       decode.LoadFrom(ref m_TileIDs); // dimensions should agree with Extent
@@ -394,7 +392,7 @@ namespace djack.RogueSurvivor.Data
       Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, Extent);
       Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, DistrictPos);
       Zaimoni.Serialization.ISave.InlineSave(encode, in LocalTime);
-      Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_BgMusic ?? string.Empty); // alpha10
+      Zaimoni.Serialization.Formatter.Serialize(encode.dest, BgMusic); // alpha10
       encode.SaveTo(m_IsInside);
       encode.SaveTo(m_TileIDs); // dimensions should agree with Extent
       encode.SaveTo(m_Zones);
@@ -509,7 +507,7 @@ namespace djack.RogueSurvivor.Data
     public District District { get { return m_District!; } }
 #nullable restore
     public readonly string Name;    // involved in Dictionary hashcode
-    private string m_BgMusic;  // alpha10
+    public readonly string BgMusic;  // alpha10
 #nullable enable
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;
@@ -550,7 +548,7 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized] private /* readonly */ int _hash;
 #endif
 
-    public void toJson(string id, Utf8JsonWriter writer, JsonSerializerOptions options) {
+        public void toJson(string id, Utf8JsonWriter writer, JsonSerializerOptions options) {
       writer.WriteStartObject();
       writer.WriteString("$id", id);
       writer.WriteString("Name", Name);
