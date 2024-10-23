@@ -300,10 +300,14 @@ namespace djack.RogueSurvivor.Engine
     public List<Actor>? FollowersWhendDied { get { return m_FollowersWhenDied; } }
     public Actor? ZombifiedPlayer { get { return m_ZombifiedPlayer; } }
 
-    public Scoring_fatality(Actor killer, Actor victim, string death_loc) // historically victim is a player, but we don't check that here
+    public Scoring_fatality(Actor killer, Actor victim) // historically victim is a player, but we don't check that here
     {
       Killer = killer;
-      DeathPlace = death_loc;
+
+      var zonesAt = victim.Location.Map.GetZonesAt(victim.Location.Position);
+      var map_name = victim.Location.Map.Name;
+      DeathPlace = (zonesAt != null ? string.Format("{0} at {1}", map_name, zonesAt[0].Name) : map_name);
+
       m_FollowersWhenDied = victim.Followers?.ToList();
     }
 

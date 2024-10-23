@@ -408,9 +408,9 @@ namespace djack.RogueSurvivor.Engine
             }
         }
 
-        public void LatestKill(Actor killer, Actor victim, string death_loc)
+        public void LatestKill(Actor killer, Actor victim)
         {
-            m_Scoring_fatality = new Scoring_fatality(killer, victim, death_loc);
+            m_Scoring_fatality = new Scoring_fatality(killer, victim);
         }
 
         public static void Save(Session session, string filepath, SaveFormat format)

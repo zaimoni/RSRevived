@@ -11234,9 +11234,7 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.Stop();
       m_MusicManager.Play(GameMusics.PLAYER_DEATH, MusicPriority.PRIORITY_EVENT);
 
-      var zonesAt = Player.Location.Map.GetZonesAt(Player.Location.Position);
-
-      Session.Get.LatestKill(killer,Player,(zonesAt != null ? string.Format("{0} at {1}", Player.Location.Map.Name, zonesAt[0].Name) : Player.Location.Map.Name));
+      Session.Get.LatestKill(killer,Player);
 
       Player.ActorScoring.DeathReason = killer == null ? string.Format("Death by {0}", reason)
                                                        : string.Format("{0} by {1} {2}", Rules.IsMurder(killer, Player) ? "Murdered" : "Killed", killer.Model.Name, killer.TheName);
