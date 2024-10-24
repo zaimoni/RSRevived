@@ -303,11 +303,9 @@ namespace djack.RogueSurvivor.Data
         public Location Location { get; set; }
   }
 
-#if PROTOTYPE
   public interface ILocation_readonly {
         public Location Location { get; }
   }
-#endif
 }
 
 namespace Zaimoni.Serialization {
