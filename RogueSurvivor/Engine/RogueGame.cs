@@ -13287,11 +13287,6 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePlayerClearWaypoint(Actor player)
     {
-      // build out implementation here
-      // should be a standard menu once the objective system is built out
-      // for now, forward to set way point
-//    HandlePlayerSetWaypoint(player);
-
       var pc = player.Controller as PlayerController;
       var w_pts = pc.Waypoints;
       if (null == w_pts) {
@@ -13335,7 +13330,11 @@ namespace djack.RogueSurvivor.Engine
       }
 
       PagedPopup("Reviewing...", w_pts.Count, label, details, false);
-      PanViewportTo(player);
+      if (Player == player) {
+        PanViewportTo(player.Location);
+      } else {
+        PanViewportTo(player);
+      }
     }
 
     private KeyValuePair<List<PlayerController>, List<Actor>>? _ForceVisibleToPlayer(Map map, in Point position)
