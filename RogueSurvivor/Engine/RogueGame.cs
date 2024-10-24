@@ -7495,6 +7495,7 @@ namespace djack.RogueSurvivor.Engine
       if (aiController?.Order != null) lines.Add(string.Format("Order : {0}.", aiController.Order.ToString())); // 2020-01-15 IL doesn't want temporary for aiController?.Order
       var leader = actor.LiveLeader;
       if (null != leader) {
+        lines.Add(string.Format("Leader : {0}.", leader.Name.Capitalize()));
         if (leader.IsPlayer) {  // \todo should this test be leader == Player ?
           lines.Add(TrustInLeaderText(actor.TrustInLeader));
 
@@ -7503,8 +7504,7 @@ namespace djack.RogueSurvivor.Engine
           lines.Add(string.Format("Slp : {0} {1}h", actor.SleepPoints, actor.HoursUntilSleepy));
           lines.Add(string.Format("San : {0} {1}h", actor.Sanity, actor.HoursUntilUnstable));
           lines.Add(string.Format("Inf : {0} {1}%", actor.Infection, actor.InfectionPercent));
-        } else
-          lines.Add(string.Format("Leader : {0}.", leader.Name.Capitalize()));
+        }
       }
       int murders = actor.MurdersOnRecord(Player);
       if (Player.Model.Abilities.IsLawEnforcer && 0 < murders) {

@@ -5596,14 +5596,7 @@ restart_chokepoints:
       if (!string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) return null;
       var candidates = RecruitableRadio();
       if (null == candidates) return null;
-#if DEBUG
-      var backup_player = RogueGame.Player;
-      if (!RogueGame.IsSimulating) RogueGame.Game.PanViewportTo(m_Actor);
-      var target = (RogueGame.IsSimulating ? RecruitRadioChoose(candidates) : RogueGame.Game.RecruitRadioChoose(SortByGridDistance(candidates)));
-      if (!RogueGame.IsSimulating) RogueGame.Game.PanViewportTo(backup_player);
-#else
       var target = RecruitRadioChoose(candidates);
-#endif
       if (null == target) return null;
 
       return new ActionTakeLead(m_Actor, target);
