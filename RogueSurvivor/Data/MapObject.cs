@@ -472,8 +472,6 @@ namespace djack.RogueSurvivor.Data
     }
 #endregion
 
-    public void TransferFrom(Item it, Inventory dest) { m_Inventory.Transfer(it, dest); }
-
     public string ReasonCantPutItemIn(Actor actor)
     {
       if (   !actor.Model.Abilities.HasInventory

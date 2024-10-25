@@ -4559,12 +4559,13 @@ namespace djack.RogueSurvivor.Engine
       {
         if (isPlayerInventory) return _HandlePlayerInventory(Player, it);
 
-        if (Player.CanGet(it, out string reason2)) {
-          DoTakeItem(Player, Player.Location, it);
-          return true;
+        var act = new _Action.TakeItem(Player, Player.Location, it);
+        if (!act.IsPerformable()) {
+          ErrorPopup(string.Format("Cannot take {0} : {1}.", it.TheName, act.FailReason));
+          return false;
         }
-        ErrorPopup(string.Format("Cannot take {0} : {1}.", it.TheName, reason2));
-        return false;
+        act.Perform();
+        return true;
       }
 
       ClearOverlays();
@@ -4798,12 +4799,13 @@ namespace djack.RogueSurvivor.Engine
         ErrorPopup(string.Format("No item at ground slot {0}.", slot + 1));
         return false;
       }
-      if (player.CanGet(it, out string reason)) {
-        DoTakeItem(player, player.Location, it);
-        return true;
+      var act = new _Action.TakeItem(player, player.Location, it);
+      if (!act.IsPerformable()) {
+        ErrorPopup(string.Format("Cannot take {0} : {1}.", it.TheName, act.FailReason));
+        return false;
       }
-      ErrorPopup(string.Format("Cannot take {0} : {1}.", it.TheName, reason));
-      return false;
+      act.Perform();
+      return true;
     }
 
     private bool DoPlayerItemSlotDrop(Actor player, int slot)
@@ -9996,33 +9998,6 @@ namespace djack.RogueSurvivor.Engine
         }
     }
 
-    public void HandlePlayerTakeItemFromContainer(PlayerController pc, ShelfLike container)
-    {
-      var player = pc.ControlledActor;
-      var inv = container.Inventory;
-#if DEBUG
-      if (inv.IsEmpty) throw new ArgumentNullException(nameof(container)+".Inventory");
-      if (1 != Rules.GridDistance(player.Location,container.Location)) throw new ArgumentOutOfRangeException(nameof(container), container, "not adjacent");
-#endif
-      if (2 > inv.CountItems) {
-        DoTakeItem(player, container, inv.TopItem!);
-        return;
-      }
-
-      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index])); }
-      bool details(int index) {
-        Item obj = inv[index]!;
-        if (player.CanGet(obj, out string reason)) {
-          DoTakeItem(player, container, obj);
-          return true;
-        }
-        ErrorPopup(string.Format("{0} take {1} : {2}.", player.TheName, DescribeItemShort(obj), reason));
-        return false;
-      }
-
-      PagedPopup("Taking...", inv.CountItems, label, details);
-    }
-
     public void HandlePlayerTakeItem(PlayerController pc, InvOrigin src)
     {
       var player = pc.ControlledActor;
@@ -10099,66 +10074,6 @@ namespace djack.RogueSurvivor.Engine
       } else if (null != see_take && see_take.Value.ForceVisible()) {
         AddMessage(see_take.Value, MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
       }
-    }
-
-    public void DoTakeItem(Actor actor, ShelfLike container, Item it)
-    {
-      var g_inv = container.Inventory;
-#if DEBUG
-      if (null == g_inv || !g_inv.Contains(it)) throw new InvalidOperationException(it.ToString()+" not where expected");
-      if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
-#endif
-      actor.Inventory.RepairContains(it, "have already taken ");
-      actor.SpendActionPoints();
-      if (it is ItemTrap trap) trap.Desactivate(); // alpha10
-      g_inv.RepairCrossLink(actor.Inventory);
-      container.TransferFrom(it, actor.Inventory);   // invalidates g_inv if that was the last item
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(container))
-        AddMessage(MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
-      if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
-        it.EquippedBy(actor);
-      if (Player==actor) RedrawPlayScreen();
-      g_inv.RejectCrossLink(actor.Inventory);
-    }
-
-    public void DoTakeItem(Actor actor, in Location loc, Item it)
-    {
-      var invspec = loc == actor.Location ? loc.InventoryAtFeet() : new Data.Model.InvOrigin(loc);
-      var g_inv = invspec?.Inventory;
-#if DEBUG
-      if (null == g_inv || !g_inv.Contains(it)) throw new InvalidOperationException(it.ToString()+" not where expected");
-      if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
-#endif
-      actor.Inventory!.RepairContains(it, "have already taken ");
-      actor.SpendActionPoints();
-      if (it is ItemTrap trap) trap.Desactivate(); // alpha10
-      g_inv.RepairCrossLink(actor.Inventory);
-      (new InventorySource<Item>(invspec.Value, it)).TransferFrom(actor.Inventory);
-
-      var witnesses = _ForceVisibleToPlayer(actor);
-      var see_take = PlayersInLOS(loc)?.SetDifference(witnesses);
-
-      if (null != witnesses) {
-        RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_TAKE.Conjugate(actor), it));
-        if (null != see_take && 0 < see_take.Value.Key.Count) {
-            var msg = MakeMessage(see_take.Value.Key[0], actor, VERB_TAKE.Conjugate(actor), it);
-            foreach (var pc in see_take.Value.Key) pc.Messages.Add(msg);
-        }
-      } else if (null != see_take && see_take.Value.ForceVisible()) {
-        AddMessage(see_take.Value, MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
-      }
-
-      if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
-        it.EquippedBy(actor);
-      if (Player==actor) RedrawPlayScreen();
-      loc.Items?.RejectCrossLink(actor.Inventory);
-    }
-
-    public void DoTakeItem(Actor actor, in Point position, Item it)
-    {
-      var loc = new Location(actor.Location.Map, position);
-      if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc), loc, "not canonical");
-      DoTakeItem(actor, loc, it);
     }
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift, Item? received)

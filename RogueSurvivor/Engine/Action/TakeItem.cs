@@ -60,14 +60,20 @@ namespace djack.RogueSurvivor.Engine._Action
             var dist = Rules.GridDistance(m_Actor.Location, m_src.Location);
             if (1 < dist) return false;
             m_Crouching = 1 == dist && m_src.IsGroundInventory;
-            if (m_Crouching && !m_Actor.CanCrouch()) return false;
+            if (m_Crouching && !m_Actor.CanCrouch(out m_FailReason)) return false;
             return true;
         }
 
         public override void Perform()
         {
           m_Actor.SpendActionPoints();
-          if (m_Crouching) m_Actor.Crouch();
+          if (m_Crouching) {
+            m_Actor.Crouch();
+            var code = RogueGame.Game.OnActorReachIntoTile(m_Actor, m_src.Location);
+            if (0 >= code) { // we took a hit -- cancel taking item
+              return;
+            }
+          }
           if (m_Item is Engine.Items.ItemTrap trap) trap.Desactivate(); // alpha10
           m_src.Inventory.Transfer(m_Item, m_Actor.Inventory);
           if (!m_Item.Model.DontAutoEquip && m_Actor.CanEquip(m_Item) && null == m_Actor.GetEquippedItem(m_Item.Model.EquipmentPart))
