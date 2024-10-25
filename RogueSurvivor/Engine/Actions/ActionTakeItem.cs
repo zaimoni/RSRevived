@@ -16,7 +16,6 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Gameplay.Item_IDs m_ID;
     [NonSerialized] private Item? m_Item = null;
-    [NonSerialized] private InventorySource<Item>? m_InvSrc = null;
     [NonSerialized] private _Action.TakeItem? _resolved = null;
 
     public ActionTake(Actor actor, Gameplay.Item_IDs it) : base(actor)
@@ -41,7 +40,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (null != _resolved) {
         if (!_resolved.IsLegal()) {
           m_Item = null;
-          m_InvSrc = null;
           m_FailReason = null;
           _resolved = null;
         }
@@ -58,7 +56,6 @@ namespace djack.RogueSurvivor.Engine.Actions
         var act = new _Action.TakeItem(m_Actor, in stack, obj);
         if (!act.IsPerformable()) continue;
         m_Item = obj;
-        m_InvSrc = new(stack, m_Item);
         _resolved = act;
         return;
       }
