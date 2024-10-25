@@ -148,7 +148,6 @@
     <Compile Include="Gameplay\GameMusics.cs" />
     <Compile Include="Gameplay\GameTips.cs" />
     <Compile Include="Gameplay\GameFactions.cs" />
-    <Compile Include="Gameplay\ZoneAttributes.cs" />
     <Compile Include="Gameplay\Skills.cs" />
     <Compile Include="Gameplay\GameImages.cs" />
     <Compile Include="Gameplay\GameSounds.cs" />
@@ -276,7 +275,6 @@
     <Compile Include="Engine\Action\Fork.cs" />
     <Compile Include="Engine\Action\Join.cs" />
     <Compile Include="Engine\Action\PushOnto.cs" />
-    <Compile Include="Engine\Action\TakeFromLocation.cs" />
     <Compile Include="Engine\AI\Sensor.cs" />
     <Compile Include="Engine\AI\Percept.cs" />
     <Compile Include="Engine\AI\MemorizedSensor.cs" />
