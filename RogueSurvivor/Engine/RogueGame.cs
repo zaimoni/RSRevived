@@ -4535,6 +4535,16 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
+    private bool Interpret(_Action.TakeItem act)
+    {
+      if (!act.IsPerformable()) {
+        ErrorPopup(string.Format("Cannot take {0} : {1}.", act.Take.TheName, act.FailReason));
+        return false;
+      }
+      act.Perform();
+      return true;
+    }
+
     private bool HandleMouseInventory(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
       hasDoneAction = false;
@@ -4559,13 +4569,7 @@ namespace djack.RogueSurvivor.Engine
       {
         if (isPlayerInventory) return _HandlePlayerInventory(Player, it);
 
-        var act = new _Action.TakeItem(Player, Player.Location, it);
-        if (!act.IsPerformable()) {
-          ErrorPopup(string.Format("Cannot take {0} : {1}.", it.TheName, act.FailReason));
-          return false;
-        }
-        act.Perform();
-        return true;
+        return Interpret(new _Action.TakeItem(Player, Player.Location, it));
       }
 
       ClearOverlays();
@@ -4799,13 +4803,7 @@ namespace djack.RogueSurvivor.Engine
         ErrorPopup(string.Format("No item at ground slot {0}.", slot + 1));
         return false;
       }
-      var act = new _Action.TakeItem(player, player.Location, it);
-      if (!act.IsPerformable()) {
-        ErrorPopup(string.Format("Cannot take {0} : {1}.", it.TheName, act.FailReason));
-        return false;
-      }
-      act.Perform();
-      return true;
+      return Interpret(new _Action.TakeItem(player, player.Location, it));
     }
 
     private bool DoPlayerItemSlotDrop(Actor player, int slot)
@@ -9998,30 +9996,22 @@ namespace djack.RogueSurvivor.Engine
         }
     }
 
-    public void HandlePlayerTakeItem(PlayerController pc, InvOrigin src)
+    public void HandlePlayerTakeItem(PlayerController pc, Data.Model.InvOrigin src)
     {
       var player = pc.ControlledActor;
-      var inv = src.inv;
+      var inv = src.Inventory;
 #if DEBUG
       if (inv.IsEmpty) throw new ArgumentNullException(nameof(src)+".inv");
       if (null == src.obj_owner && null == src.loc) throw new InvalidOperationException("only take from unresisting targets");
       if (1 < Rules.GridDistance(player.Location, src.Location)) throw new ArgumentOutOfRangeException(nameof(src), src, "not adjacent");
 #endif
       if (2 > inv.CountItems) {
-        DoTakeItem(player, new InventorySource<Item>(src, inv.TopItem!));
+        Interpret(new _Action.TakeItem(Player, in src, inv.TopItem!));
         return;
       }
 
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index])); }
-      bool details(int index) {
-        Item obj = inv[index]!;
-        if (player.CanGet(obj, out string reason)) {
-          DoTakeItem(player, new InventorySource<Item>(src, obj));
-          return true;
-        }
-        ErrorPopup(string.Format("{0} take {1} : {2}.", player.TheName, DescribeItemShort(obj), reason));
-        return false;
-      }
+      bool details(int index) => Interpret(new _Action.TakeItem(Player, in src, inv[index]!));
 
       PagedPopup("Taking...", inv.CountItems, label, details);
     }

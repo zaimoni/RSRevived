@@ -785,7 +785,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         return;
       }
-      if (act is ActionTake || act is ActorTake || act is ActionTrade) {
+      if (act is ActorTake || act is ActionTrade) {
         // these actions are inventory-altering and will invalidate inventory-based pathing
         _last_move = null;
         return;

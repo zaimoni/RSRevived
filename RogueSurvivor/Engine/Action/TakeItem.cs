@@ -1,10 +1,12 @@
 ﻿using System;
 using djack.RogueSurvivor.Data;
 
+#nullable enable
+
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    internal class TakeItem : ActorAction, ActorTake
+    internal class TakeItem : ActorAction, ActorTake, Target<MapObject?>
     {
         private readonly Data.Model.InvOrigin m_src;
         private readonly Item m_Item;
@@ -45,6 +47,7 @@ namespace djack.RogueSurvivor.Engine._Action
         }
 
         public Item Take { get => m_Item; }
+        public MapObject? What { get => m_src.obj_owner; }
 
         public override bool IsLegal()
         {
@@ -73,6 +76,9 @@ namespace djack.RogueSurvivor.Engine._Action
             if (0 >= code) { // we took a hit -- cancel taking item
               return;
             }
+          } else if (null != m_src.obj_owner) {
+            // need to stand to make this work
+            m_Actor.StandUp();
           }
           if (m_Item is Engine.Items.ItemTrap trap) trap.Desactivate(); // alpha10
           m_src.Inventory.Transfer(m_Item, m_Actor.Inventory);

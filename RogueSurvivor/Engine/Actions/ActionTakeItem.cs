@@ -15,8 +15,9 @@ namespace djack.RogueSurvivor.Engine.Actions
   internal class ActionTake : ActorAction,ActorTake,Target<MapObject?>
   {
     private readonly Gameplay.Item_IDs m_ID;
-    [NonSerialized] private Item? m_Item;
-    [NonSerialized] private InventorySource<Item>? m_InvSrc;
+    [NonSerialized] private Item? m_Item = null;
+    [NonSerialized] private InventorySource<Item>? m_InvSrc = null;
+    [NonSerialized] private _Action.TakeItem? _resolved = null;
 
     public ActionTake(Actor actor, Gameplay.Item_IDs it) : base(actor)
     {
@@ -26,18 +27,25 @@ namespace djack.RogueSurvivor.Engine.Actions
     public Gameplay.Item_IDs ID { get { return m_ID; } }
 
     public Item? Take { get {
-      init();
-      return m_Item;
+      if (null == _resolved) init();
+      return _resolved?.Take;
     } }
 
     public MapObject? What { get {
-      init();
-      return m_InvSrc.Value.obj_owner;
+      if (null == _resolved) init();
+      return _resolved?.What;
     } }
 
     private void init()
     {
-      if (null != m_Item && m_InvSrc.Value.inv.Contains(m_Item)) return;
+      if (null != _resolved) {
+        if (!_resolved.IsLegal()) {
+          m_Item = null;
+          m_InvSrc = null;
+          m_FailReason = null;
+          _resolved = null;
+        }
+      }
 
       var stacks = Map.GetAccessibleInventoryOrigins(m_Actor.Location);
       if (null == stacks) return;
@@ -45,32 +53,51 @@ namespace djack.RogueSurvivor.Engine.Actions
       ItemModel model = Gameplay.GameItems.From(m_ID);
 
       foreach(var stack in stacks) {
-        m_Item = stack.Inventory!.GetFirstByModel(model);
-        if (null != m_Item) {
-          m_InvSrc = new(stack, m_Item);
-          return;
-        }
+        var obj = stack.Inventory!.GetFirstByModel(model);
+        if (null == obj) continue;
+        var act = new _Action.TakeItem(m_Actor, in stack, obj);
+        if (!act.IsPerformable()) continue;
+        m_Item = obj;
+        m_InvSrc = new(stack, m_Item);
+        _resolved = act;
+        return;
       }
     }
-
-    private Inventory? _inv { get { return m_InvSrc.Value.inv; } }
 
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
     {
-      var it = Take;
-      if (null == it) {
-        m_FailReason = "not in reach";
-        return false;
+      if (null == _resolved) {
+        if (!string.IsNullOrEmpty(m_FailReason)) return false;
+        init();
+        if (null == _resolved) {
+          m_FailReason = "not in reach";
+          return false;
+        }
       }
-      return m_Actor.CanGet(it, out m_FailReason);
+      bool ret = _resolved!.IsLegal();
+      if (!ret) m_FailReason = _resolved.FailReason;
+      return ret;
     }
+
+    public override bool IsPerformable()
+    {
+      if (null == _resolved) {
+        if (!string.IsNullOrEmpty(m_FailReason)) return false;
+        init();
+        if (null == _resolved) {
+          m_FailReason = "not in reach";
+          return false;
+        }
+      }
+      bool ret = _resolved!.IsPerformable();
+      if (!ret) m_FailReason = _resolved.FailReason;
+      return ret;
+    }
+
     public override void Perform()
     {
-      Item it = Take!;  // cf IsLegal(), above
-      m_Actor.Inventory.RejectCrossLink(_inv!);
-      RogueGame.Game.DoTakeItem(m_Actor, m_InvSrc.Value);
-      _inv?.RejectCrossLink(m_Actor.Inventory);
+      _resolved.Perform();
     }
 
     public override string ToString()

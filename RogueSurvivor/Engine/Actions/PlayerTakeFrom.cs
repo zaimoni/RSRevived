@@ -7,10 +7,10 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
     internal class PlayerTakeFrom : ActorAction
     {
-        private readonly InvOrigin m_Src;
+        private readonly Data.Model.InvOrigin m_Src;
 
         // error checks in ...::create
-        private PlayerTakeFrom(PlayerController pc, InvOrigin obj) : base(pc.ControlledActor)
+        private PlayerTakeFrom(PlayerController pc, Data.Model.InvOrigin obj) : base(pc.ControlledActor)
         {
             m_Src = obj;
         }
@@ -31,13 +31,13 @@ namespace djack.RogueSurvivor.Engine.Actions
             RogueGame.Game.HandlePlayerTakeItem(m_Actor.Controller as PlayerController, m_Src);
         }
 
-        static private string ReasonCantGetFrom(in InvOrigin src)
+        static private string ReasonCantGetFrom(in Data.Model.InvOrigin src)
         {
-            if (src.inv.IsEmpty) return "nothing to take there";
+            if (src.Inventory.IsEmpty) return "nothing to take there";
             return "";
         }
 
-        static private bool CanGetFrom(in InvOrigin src, out string reason)
+        static private bool CanGetFrom(in Data.Model.InvOrigin src, out string reason)
         {
             reason = ReasonCantGetFrom(in src);
             return string.IsNullOrEmpty(reason);
@@ -63,7 +63,7 @@ namespace djack.RogueSurvivor.Engine.Actions
                 }
                 if (!ok) return null;
             }
-            return new PlayerTakeFrom(pc, new InvOrigin(loc));
+            return new PlayerTakeFrom(pc, new(loc));
         }
 
         static public PlayerTakeFrom? create(PlayerController pc, ShelfLike obj)
@@ -83,9 +83,9 @@ namespace djack.RogueSurvivor.Engine.Actions
                 }
                 if (!ok) return null;
             }
-            return new PlayerTakeFrom(pc, new InvOrigin(obj));
+            return new PlayerTakeFrom(pc, new(obj));
         }
 
-        public override string ToString() => "take from: " + m_Src + "; "+m_Src.inv;
+        public override string ToString() => "take from: " + m_Src + "; "+m_Src.Inventory;
     }
 }
