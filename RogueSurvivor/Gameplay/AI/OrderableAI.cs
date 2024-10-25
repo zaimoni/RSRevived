@@ -3584,58 +3584,63 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   if (-1==item_compare) break;
                 }
                 break;
-              case ActionTakeItem new_take:
-                item_compare = 1;
-                foreach(var old_loc in considering) {
-                  switch(get_item[old_loc]) {
-                  case Use<Item> old_use:
-                    // generally better to take than use
-                    if (old_use.Use.ModelID!=new_take.Take.ModelID) dominated.Add(old_loc);
-                    else item_compare = 0;
-                    break;
-                  case ActorTake old_take:
-                     if (get_item[old_loc] is not ActorGive) { // definitely not a trade
-                       if (new_take.Take.ModelID==old_take.Take.ModelID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
-                         item_compare = -1;
-                         break;
-                       }
-                     }
-                     if (RHSMoreInteresting(new_take.Take,old_take.Take)) {
-                       item_compare = -1;
-                       break;
-                     }
-                     if (RHSMoreInteresting(old_take.Take, new_take.Take)) dominated.Add(old_loc);
-                     else item_compare = 0;
-                    break;
-                  }
-                  if (-1==item_compare) break;
-                }
-                break;
-              case ActorTake new_trade:
-                item_compare = 1;
-                foreach(var old_loc in considering) {
-                  switch(get_item[old_loc]) {
-                  case Use<Item> old_use:
-                    // generally better to take than use
-                    if (old_use.Use.ModelID!= new_trade.Take.ModelID) dominated.Add(old_loc);
-                    else item_compare = 0;
-                    break;
-                  case ActorTake old_take:
-                     if (get_item[old_loc] is ActorGive) { // trade, not as good
-                       if (new_trade.Take.ModelID == old_take.Take.ModelID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
-                         item_compare = -1;
-                         break;
-                       }
-                     }
-                    if (RHSMoreInteresting(new_trade.Take,old_take.Take)) {
-                      item_compare = -1;
+              case ActorTake new_take:
+                if (x.Value is ActorGive) { // trade
+                  item_compare = 1;
+                  foreach (var old_loc in considering) {
+                    switch (get_item[old_loc])
+                    {
+                    case Use<Item> old_use:
+                      // generally better to take than use
+                      if (old_use.Use.ModelID != new_take.Take.ModelID) dominated.Add(old_loc);
+                      else item_compare = 0;
+                      break;
+                    case ActorTake old_take:
+                      if (get_item[old_loc] is ActorGive) { // trade
+                        if (new_take.Take.ModelID == old_take.Take.ModelID)
+                        { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
+                          item_compare = -1;
+                          break;
+                        }
+                      }
+                      if (RHSMoreInteresting(new_take.Take, old_take.Take)) {
+                        item_compare = -1;
+                        break;
+                      }
+                      if (RHSMoreInteresting(old_take.Take, new_take.Take)) dominated.Add(old_loc);
+                      else item_compare = 0;
                       break;
                     }
-                    if (RHSMoreInteresting(old_take.Take, new_trade.Take)) dominated.Add(old_loc);
-                    else item_compare = 0;
-                    break;
+                    if (-1 == item_compare) break;
                   }
-                  if (-1==item_compare) break;
+                } else { // take
+                  item_compare = 1;
+                  foreach (var old_loc in considering) {
+                    switch (get_item[old_loc])
+                    {
+                    case Use<Item> old_use:
+                      // generally better to take than use
+                      if (old_use.Use.ModelID != new_take.Take.ModelID) dominated.Add(old_loc);
+                      else item_compare = 0;
+                      break;
+                    case ActorTake old_take:
+                      if (get_item[old_loc] is not ActorGive) { // take
+                        if (new_take.Take.ModelID == old_take.Take.ModelID)
+                        { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
+                          item_compare = -1;
+                          break;
+                        }
+                      }
+                      if (RHSMoreInteresting(new_take.Take, old_take.Take)) {
+                        item_compare = -1;
+                        break;
+                      }
+                      if (RHSMoreInteresting(old_take.Take, new_take.Take)) dominated.Add(old_loc);
+                      else item_compare = 0;
+                      break;
+                    }
+                  }
+                  if (-1 == item_compare) break;
                 }
                 break;
               }
