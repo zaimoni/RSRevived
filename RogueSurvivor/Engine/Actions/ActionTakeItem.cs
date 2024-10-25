@@ -123,7 +123,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       ItemModel model = Gameplay.GameItems.From(m_ID);
 
       foreach(var stack in stacks) {
-        m_Item = stack.inv.GetFirstByModel(model);
+        m_Item = stack.Inventory!.GetFirstByModel(model);
         if (null != m_Item) {
           m_InvSrc = new(stack, m_Item);
           return;

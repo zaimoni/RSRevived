@@ -3291,7 +3291,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #nullable restore
 
-    private ActorAction? _takeThis(in InvOrigin stack, Item obj, ActorAction recover, bool is_real)
+    private ActorAction? _takeThis(in Data.Model.InvOrigin stack, Item obj, ActorAction recover, bool is_real)
     {
 #if DEBUG
       if (null == stack.obj_owner && null == stack.loc) throw new InvalidOperationException("do not try to take from actor inventory");
@@ -3307,7 +3307,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         if (is_real && !m_Actor.MayTakeFrom(in stack)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take");
 #endif
-        var tmp = new ActionTakeItem(m_Actor, in stack, obj);
+        var tmp = new Engine._Action.TakeItem(m_Actor, in stack, obj);
         if (tmp.IsLegal()) return tmp; // in case this is the biker/trap pickup crash [cairo123]
         if (m_Actor.Inventory.IsFull && null != recover && recover.IsLegal()) {
           if (recover is ActorGive drop) {
@@ -3332,7 +3332,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         if (is_real && !m_Actor.MayTakeFromStackAt(in loc)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + loc + " at " + m_Actor.Location);
 #endif
-        var tmp = new ActionTakeItem(m_Actor, in loc, obj);
+        var tmp = new Engine._Action.TakeItem(m_Actor, in loc, obj);
         if (tmp.IsLegal()) return tmp; // in case this is the biker/trap pickup crash [cairo123]
         if (m_Actor.Inventory.IsFull && null != recover && recover.IsLegal()) {
           if (recover is ActorGive drop) {
@@ -3344,12 +3344,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    public ActorAction? WouldGrabFromAccessibleStack(in InvOrigin stack, bool is_real=false)
+    public ActorAction? WouldGrabFromAccessibleStack(in Data.Model.InvOrigin stack, bool is_real=false)
     {
 #if DEBUG
       if (null == stack.obj_owner && null == stack.loc) throw new InvalidOperationException("do not try to grab from actor inventory");
 #endif
-      Item obj = MostInterestingItemInStack(stack.inv);
+      Item obj = MostInterestingItemInStack(stack.Inventory);
       if (obj == null) return null;
 
       // but if we cannot take it, ignore anyway

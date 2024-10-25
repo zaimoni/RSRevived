@@ -124,6 +124,19 @@ namespace djack.RogueSurvivor.Data
        }
      }
 
+     public InventorySource(Model.InvOrigin src, T? obj = null) {
+       inv = src.Inventory!;
+       a_owner = src.a_owner;
+       obj_owner = src.obj_owner;
+       loc = src.loc;
+       if (null != obj) {
+#if DEBUG
+          if (!inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
+#endif
+          it = obj;
+       }
+     }
+
      public InventorySource(InvOrigin src, Actor a, T? obj = null) {
        inv = src.inv;
        a_owner = a;
@@ -139,6 +152,9 @@ namespace djack.RogueSurvivor.Data
 
     public InvOrigin Origin {
       get { return new InvOrigin(inv, a_owner, obj_owner, loc); }
+    }
+    public Data.Model.InvOrigin ModelOrigin {
+      get { return new(a_owner, obj_owner, loc); }
     }
 
     public Location Location {
@@ -954,7 +970,7 @@ namespace djack.RogueSurvivor.Data
             return ret2;
         }
 
-        static public InvOrigin? InventoryAtFeet(this Location origin)
+        static public Model.InvOrigin? InventoryAtFeet(this Location origin)
         {
             var shelf = origin.MapObject as ShelfLike;
             if (null != shelf && shelf.IsJumpable) {

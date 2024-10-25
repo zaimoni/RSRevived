@@ -384,7 +384,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       SetObjective(new InferActor(m_Actor, target));
     }
 
-    public void Track(in InvOrigin src, Item_IDs take)
+    public void Track(in Data.Model.InvOrigin src, Item_IDs take)
     {
       var goal = Goal<PathToStack>();
       if (null != goal) {
@@ -6446,7 +6446,7 @@ restart_chokepoints:
     }
 
 #nullable enable
-    private ActorAction? _BehaviorDropOrExchange(Item give, Item take, in InvOrigin stack, bool use_ok=true)
+    private ActorAction? _BehaviorDropOrExchange(Item give, Item take, in Data.Model.InvOrigin stack, bool use_ok=true)
     {
 #if DEBUG
       if (null == stack.obj_owner && null == stack.loc) throw new InvalidOperationException("do not try to exchange with actor inventory");
@@ -6603,7 +6603,7 @@ restart_chokepoints:
       return worst;
     }
 
-    public ActorAction BehaviorMakeRoomFor(Item it, in InvOrigin stack, bool use_ok=true)
+    public ActorAction BehaviorMakeRoomFor(Item it, in Data.Model.InvOrigin stack, bool use_ok=true)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
@@ -7636,7 +7636,7 @@ restart_chokepoints:
 #nullable restore
 
     /// pt is just an abstract key here, not used in position calculations directly
-    private static void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon>? rws, in InvOrigin pt, Dictionary<InvOrigin, ItemRangedWeapon[]> best_rw, Dictionary<InvOrigin, ItemRangedWeapon[]> reload_empty_rw, Dictionary<InvOrigin, ItemRangedWeapon[]> discard_empty_rw, Dictionary<InvOrigin, ItemRangedWeapon[]> reload_rw)
+    private static void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon>? rws, in Data.Model.InvOrigin pt, Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> best_rw, Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> reload_empty_rw, Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> discard_empty_rw, Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> reload_rw)
     {
         if (null == rws || !rws.Any()) return;
 
@@ -7709,11 +7709,11 @@ restart_chokepoints:
       if (null == ground_inv) return null;
 
       // set up pattern-matching for ranged weapons
-      InvOrigin viewpoint_inventory = new(m_Actor); // intentionally chosen to be impossible, as a flag
-      Dictionary<InvOrigin, ItemRangedWeapon[]> best_rw = new();
-      Dictionary<InvOrigin, ItemRangedWeapon[]> reload_empty_rw = new();
-      Dictionary<InvOrigin, ItemRangedWeapon[]> discard_empty_rw = new();
-      Dictionary<InvOrigin, ItemRangedWeapon[]> reload_rw = new();
+      Data.Model.InvOrigin viewpoint_inventory = new(m_Actor); // intentionally chosen to be impossible, as a flag
+      Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> best_rw = new();
+      Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> reload_empty_rw = new();
+      Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> discard_empty_rw = new();
+      Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> reload_rw = new();
 
       _InterpretRangedWeapons(rws, in viewpoint_inventory, best_rw, reload_empty_rw, discard_empty_rw, reload_rw);
 
@@ -7726,7 +7726,7 @@ restart_chokepoints:
             var local_ammo = inv.GetCompatibleAmmoItem(local_rw);
             if (null == local_ammo) continue;
             foreach(var stack in ground_inv) {
-             var remote_ammo = stack.inv.GetCompatibleAmmoItem(local_rw);
+             var remote_ammo = stack.Inventory!.GetCompatibleAmmoItem(local_rw);
              if (null == remote_ammo) continue;
              SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(m_Actor, (Item_IDs)(i + (int)Item_IDs.AMMO_LIGHT_PISTOL))));
              return UseAmmo(local_ammo, local_rw);
@@ -7736,14 +7736,14 @@ restart_chokepoints:
 
         // prepare to analyze ranged weapon swaps.
         foreach(var stack in ground_inv) {
-          var ground_rws = stack.inv.GetItemsByType<ItemRangedWeapon>();
+          var ground_rws = stack.Inventory!.GetItemsByType<ItemRangedWeapon>();
           _InterpretRangedWeapons(ground_rws, stack, best_rw, reload_empty_rw, discard_empty_rw, reload_rw);
         }
 
         ItemRangedWeapon? alt_rw;
         if (discard_empty_rw.ContainsKey(viewpoint_inventory)) {
           // we should not have been able to reload this i.e. no ammo.
-          InvOrigin? dest = null;
+          Data.Model.InvOrigin? dest = null;
           ItemRangedWeapon? test = null;
           ItemRangedWeapon? src = null;
           int i = (int)AmmoType._COUNT;
@@ -7767,7 +7767,7 @@ restart_chokepoints:
 
         // optimization: swap for most-loaded ranged weapon taking same ammo
         {
-          InvOrigin? dest = null;
+          Data.Model.InvOrigin? dest = null;
           ItemRangedWeapon? test = null;
           ItemRangedWeapon? src = null;
           int i = (int)AmmoType._COUNT;

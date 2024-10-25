@@ -4221,7 +4221,7 @@ namespace djack.RogueSurvivor.Engine
 
           bool details_follower(int index) {
             var src = x.Key.Inv(item_type).Value;
-            (available_followers[index].Controller as ObjectiveAI).Track(src.Origin, item_type);
+            (available_followers[index].Controller as ObjectiveAI).Track(src.ModelOrigin, item_type);
             return true;
           };
 
@@ -4594,7 +4594,7 @@ namespace djack.RogueSurvivor.Engine
       var invspec = Player.Location.InventoryAtFeet();
       if (null == invspec) return null;
 
-      var itemsAt = invspec.Value.inv!;
+      var itemsAt = invspec.Value.Inventory!;
       var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen);
       int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
       if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
@@ -10123,8 +10123,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoTakeItem(Actor actor, in Location loc, Item it)
     {
-      var invspec = loc == actor.Location ? loc.InventoryAtFeet() : new InvOrigin(loc);
-      var g_inv = invspec?.inv;
+      var invspec = loc == actor.Location ? loc.InventoryAtFeet() : new Data.Model.InvOrigin(loc);
+      var g_inv = invspec?.Inventory;
 #if DEBUG
       if (null == g_inv || !g_inv.Contains(it)) throw new InvalidOperationException(it.ToString()+" not where expected");
       if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
@@ -11862,7 +11862,7 @@ namespace djack.RogueSurvivor.Engine
                   if (Player.Inventory != null && Player.Model.Abilities.HasInventory)
                     DrawInventory(Player.Inventory, "Inventory", true, Map.GROUND_INVENTORY_SLOTS, Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
                   var invspec = Player.Location.InventoryAtFeet();
-                  DrawInventory(invspec?.inv, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
+                  DrawInventory(invspec?.Inventory, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
                   DrawCorpsesList(Player.Location.Corpses, "Corpses on ground", Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, CORPSESPANEL_Y);
                   if (0 < Player.MySkills.CountSkills)
                     DrawActorSkillTable(Player, SKILLTABLE_X, SKILLTABLE_Y);

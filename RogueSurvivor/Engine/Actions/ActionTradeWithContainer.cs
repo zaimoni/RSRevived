@@ -60,6 +60,31 @@ namespace djack.RogueSurvivor.Engine.Actions
             return null;
         }
 
+        static public ActionTradeWith Cast(in Data.Model.InvOrigin dest, Actor actor, Item give, Item take)
+        {
+            if (null == dest.Inventory || !dest.Inventory.Contains(take)) {
+#if DEBUG
+                throw new InvalidOperationException("cannot take from this inventory");
+#endif
+                return null;    // arguably invariant failure
+            }
+
+            if (null != dest.obj_owner) {
+                // trade w/container
+                return new ActionTradeWithContainer(actor, give, take, dest.obj_owner);
+            }
+            if (null != dest.loc) {
+                return new ActionTradeWithGround(actor, give, take, dest.loc.Value);
+            }
+            if (null != dest.a_owner && !dest.a_owner.IsPlayer) {
+                return new ActionTradeWithActor(actor, give, take, dest.a_owner);
+            }
+#if DEBUG
+            throw new InvalidOperationException("tracing"); // need to verify null return
+#endif
+            return null;
+        }
+
         static public ActionTradeWith Cast(Location loc, Actor actor, Item give, Item take)
         {
             var obj = loc.MapObject as ShelfLike;

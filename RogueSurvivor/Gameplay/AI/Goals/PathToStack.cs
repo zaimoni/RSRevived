@@ -12,21 +12,21 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     [Serializable]
     internal class PathToStack : Objective, LatePathable, PreciseCountermand
     {
-        private readonly List<KeyValuePair<InvOrigin, Item_IDs>> _stacks = new(1);
+        private readonly List<KeyValuePair<Data.Model.InvOrigin, Item_IDs>> _stacks = new(1);
         [NonSerialized] private ObjectiveAI oai;
-        [NonSerialized] private List<KeyValuePair<InvOrigin, ActorAction>>? _inventory_actions = null;
+        [NonSerialized] private List<KeyValuePair<Data.Model.InvOrigin, ActorAction>>? _inventory_actions = null;
 
 #if DEAD_FUNC
         public IEnumerable<Inventory> Inventories { get { return _stacks.Select(p => p.Key.inv); } }
         public IEnumerable<Location> Destinations { get { return _stacks.Select(p => p.Key.Location); } }
 #endif
 
-        public PathToStack(Actor who, in InvOrigin src, Item_IDs take) : base(who.Location.Map.LocalTime.TurnCounter, who)
+        public PathToStack(Actor who, in Data.Model.InvOrigin src, Item_IDs take) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
             if (!(who.Controller is ObjectiveAI ai)) throw new InvalidOperationException("need an ai with inventory");
             oai = ai;
 
-            KeyValuePair<InvOrigin, Item_IDs> stage = new(src, take);
+            KeyValuePair<Data.Model.InvOrigin, Item_IDs> stage = new(src, take);
             if (!_stacks.Contains(stage)) _stacks.Add(stage);
         }
 
@@ -38,17 +38,17 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             oai = m_Actor.Controller as ObjectiveAI;
         }
 
-        public void Add(in InvOrigin src, Item_IDs take) {
-            KeyValuePair<InvOrigin, Item_IDs> stage = new(src, take);
+        public void Add(in Data.Model.InvOrigin src, Item_IDs take) {
+            KeyValuePair<Data.Model.InvOrigin, Item_IDs> stage = new(src, take);
             if (!_stacks.Contains(stage)) _stacks.Add(stage);
         }
 
-        private static ActorAction? Take(Actor who, in InvOrigin src, Item_IDs what) {
-          var take = src.inv.GetWorstDestackable(GameItems.From(what));
+        private static ActorAction? Take(Actor who, in Data.Model.InvOrigin src, Item_IDs what) {
+          var take = src.Inventory.GetWorstDestackable(GameItems.From(what));
           if (null == take) return null;
           bool src_is_inanimate = null != src.loc || null != src.obj_owner;
           if (!who.Inventory!.IsFull) {
-            if (src_is_inanimate) return new ActionTakeItem(who, in src, take);
+            if (src_is_inanimate) return new Engine._Action.TakeItem(who, in src, take);
           }
           // will have to trade.
           if (src_is_inanimate) {
@@ -77,7 +77,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                         continue;
                     }
                     // no longer has target
-                    if (!_stacks[i].Key.inv.Has(_stacks[i].Value)) {
+                    if (!_stacks[i].Key.Inventory.Has(_stacks[i].Value)) {
                         leader?.Controller.ReportNotThere(_stacks[i].Key, _stacks[i].Value, m_Actor);
                         _stacks.RemoveAt(i);
                         oai.ClearLastMove(); // unsure if this is needed

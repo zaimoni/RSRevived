@@ -37,6 +37,13 @@ namespace djack.RogueSurvivor.Data.Model
 
         public InvOrigin(Location src) => loc = src;
 
+        public InvOrigin(Actor? _a_owner, ShelfLike? _obj_owner, Location? _loc)
+        {
+            a_owner = _a_owner;
+            obj_owner = _obj_owner;
+            loc = _loc;
+        }
+
         public Data.Inventory? Inventory { get {
             if (null != a_owner) return a_owner.Inventory;
             if (null != obj_owner) return obj_owner.Inventory;

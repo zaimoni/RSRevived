@@ -3632,7 +3632,7 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantGet(it));
     }
 
-    public bool MayTakeFrom(in InvOrigin stack)
+    public bool MayTakeFrom(in Data.Model.InvOrigin stack)
     {
       // Rules.IsAdjacent would also check the other side of the stairs.
       if (1 >= Rules.GridDistance(in m_Location, stack.Location)) return true;

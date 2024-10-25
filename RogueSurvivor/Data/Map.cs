@@ -2053,9 +2053,10 @@ retry:
        return ret;
     }
 
-    public static List<InvOrigin>? GetAccessibleInventoryOrigins(Location origin)
+    /// <returns>A list of inanimate inventory origins, that are currently non-empty</returns>
+    public static List<Model.InvOrigin>? GetAccessibleInventoryOrigins(Location origin)
     {
-      List<InvOrigin> ret = new();
+      List<Model.InvOrigin> ret = new();
 
       var g_inv = origin.InventoryAtFeet();
       if (null != g_inv) ret.Add(g_inv.Value);

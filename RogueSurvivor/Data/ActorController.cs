@@ -70,10 +70,10 @@ namespace djack.RogueSurvivor.Data
     }
 
     // check-in with leader
-    public virtual bool ReportBlocked(in InvOrigin src, Actor who) { return true; }
-    public virtual bool ReportGone(in InvOrigin src, Actor who) { return true; }
-    public virtual bool ReportNotThere(in InvOrigin src, Gameplay.Item_IDs what, Actor who) { return true; }
-    public virtual bool ReportTaken(in InvOrigin src, Item it, Actor who) { return true; }
+    public virtual bool ReportBlocked(in Data.Model.InvOrigin src, Actor who) { return true; }
+    public virtual bool ReportGone(in Data.Model.InvOrigin src, Actor who) { return true; }
+    public virtual bool ReportNotThere(in Data.Model.InvOrigin src, Gameplay.Item_IDs what, Actor who) { return true; }
+    public virtual bool ReportTaken(in Data.Model.InvOrigin src, Item it, Actor who) { return true; }
 #endregion
 
     public virtual Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int>? ItemMemory {
