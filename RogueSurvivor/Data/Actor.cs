@@ -3609,9 +3609,13 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
+    public bool CanGetItems() {
+      return Model.Abilities.HasInventory && Model.Abilities.CanUseMapObjects && null != m_Inventory;
+    }
+
     private string ReasonCantGet(Item it)
     {
-      if (!Model.Abilities.HasInventory || !Model.Abilities.CanUseMapObjects || m_Inventory == null) return "no inventory";
+      if (!CanGetItems()) return "no inventory";
       if (m_Inventory.IsFull && !m_Inventory.CanAddAtLeastOne(it)) return "inventory is full";
       if (it is ItemTrap trap && trap.IsTriggered) return "triggered trap";
       return "";

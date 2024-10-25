@@ -6,30 +6,6 @@ using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-    public interface ActorGive {
-        public Item Give { get; }
-    }
-
-    public interface ActorTake
-    {
-        public Item Take { get; }
-    }
-
-    public interface TargetActor
-    {
-        public Actor Whom { get; }
-    }
-
-    internal interface TargetCorpse
-    {
-        public Corpse What { get; }
-    }
-
-    internal interface Target<out T> where T:MapObject
-    {
-        public T What { get; }
-    }
-
     [Serializable]
     public abstract class ActionTradeWith : ActorAction,ActorGive,ActorTake
     {

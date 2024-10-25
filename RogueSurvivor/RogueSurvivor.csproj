@@ -76,6 +76,7 @@
     <Compile Include="Engine\Action\BehavioristABC.cs" />
     <Compile Include="Engine\Action\Chain.cs" />
     <Compile Include="Engine\Action\Choice.cs" />
+    <Compile Include="Engine\Action\TakeItem.cs" />
     <Compile Include="Engine\Action\TransferFollower.cs" />
     <Compile Include="Engine\Action\MoveStep.cs" />
     <Compile Include="Engine\Goal\DeathTrapped.cs" />

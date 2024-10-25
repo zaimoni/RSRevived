@@ -10085,6 +10085,22 @@ namespace djack.RogueSurvivor.Engine
       if (Player==actor) RedrawPlayScreen();
     }
 
+    public void UI_TakeItem(Actor actor, Location loc, Item it)
+    {
+      var witnesses = _ForceVisibleToPlayer(actor);
+      var see_take = PlayersInLOS(loc)?.SetDifference(witnesses);
+
+      if (null != witnesses) {
+        RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_TAKE.Conjugate(actor), it));
+        if (null != see_take && 0 < see_take.Value.Key.Count) {
+            var msg = MakeMessage(see_take.Value.Key[0], actor, VERB_TAKE.Conjugate(actor), it);
+            foreach (var pc in see_take.Value.Key) pc.Messages.Add(msg);
+        }
+      } else if (null != see_take && see_take.Value.ForceVisible()) {
+        AddMessage(see_take.Value, MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
+      }
+    }
+
     public void DoTakeItem(Actor actor, ShelfLike container, Item it)
     {
       var g_inv = container.Inventory;

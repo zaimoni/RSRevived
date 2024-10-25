@@ -4,6 +4,7 @@
 
 namespace djack.RogueSurvivor.Data.Model
 {
+    [Serializable]
     public readonly record struct InvOrigin : IInventory, ILocation_readonly
     {
         public readonly Actor? a_owner = null;
@@ -49,6 +50,8 @@ namespace djack.RogueSurvivor.Data.Model
             if (null != obj_owner) return obj_owner.Location;
             throw new InvalidOperationException("tracing");
         } }
+
+        public bool IsGroundInventory { get => null == a_owner && null == obj_owner; }
 
         // not really...some extra conditions involved
         public bool IsAccessible(Location origin)
