@@ -10016,40 +10016,6 @@ namespace djack.RogueSurvivor.Engine
       PagedPopup("Taking...", inv.CountItems, label, details);
     }
 
-    public void DoTakeItem(Actor actor, in InventorySource<Item> src)
-    {
-      var it = src.it;  // backward compatibility
-      var g_inv = src.inv;  // backward compatibility
-#if DEBUG
-      if (null == src.it) throw new ArgumentNullException("src.it");
-      if (null == src.obj_owner && null == src.loc) throw new InvalidOperationException("do not take from actor inventory");
-      if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
-#endif
-      // stance changes
-      if (null != src.loc && 1==Rules.GridDistance(actor.Location, src.loc.Value)) {
-        // need to crouch to make this work
-        actor.Crouch();
-        var code = OnActorReachIntoTile(actor, src.loc.Value);
-        if (0 >= code) { // we took a hit -- cancel taking item
-          actor.SpendActionPoints();
-          return;
-        }
-      } else if (null != src.obj_owner) {
-        // need to stand to make this work
-        actor.StandUp();
-      }
-
-      actor.SpendActionPoints();
-      if (it is ItemTrap trap) trap.Desactivate(); // alpha10
-      g_inv.RepairCrossLink(actor.Inventory);
-      src.TransferFrom(actor.Inventory);   // invalidates g_inv if that was the last item
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(src))
-        AddMessage(MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
-      if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
-        it.EquippedBy(actor);
-      if (Player==actor) RedrawPlayScreen();
-    }
-
     public void UI_TakeItem(Actor actor, Location loc, Item it)
     {
       var witnesses = _ForceVisibleToPlayer(actor);
