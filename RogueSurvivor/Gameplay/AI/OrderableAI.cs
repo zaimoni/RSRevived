@@ -3562,10 +3562,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
               // relying on more specific cases blocking less-specific cases in C# here
               // ActionTakeItem does implement ActorTake; we want ActorTake to handle the various trade-with-inventory classes
               switch(x.Value) {
+              case Use<Item> new_use:
+                item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
+                foreach(var old_loc in considering) {
+                  switch(get_item[old_loc]) {
+                    case Use<Item> old_use:
+                      if (old_use.Use.ModelID==new_use.Use.ModelID) { // duplicate
+                        item_compare = -1;
+                        break;
+                      }
+                      break;
+                    case ActorTake old_take:
+                      if (get_item[old_loc] is not ActorGive) { // not a trade
+                        if (old_take.Take.ModelID!=new_use.Use.ModelID) { // generally better to take than use
+                          item_compare = -1;
+                          break;
+                        }
+                      }
+                      break;
+                  }
+                  if (-1==item_compare) break;
+                }
+                break;
               case ActionTakeItem new_take:
                 item_compare = 1;
                 foreach(var old_loc in considering) {
                   switch(get_item[old_loc]) {
+                  case Use<Item> old_use:
+                    // generally better to take than use
+                    if (old_use.Use.ModelID!=new_take.Take.ModelID) dominated.Add(old_loc);
+                    else item_compare = 0;
+                    break;
                   case ActionTakeItem old_take:
                      if (new_take.Take.ModelID==old_take.Take.ModelID) { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
                        item_compare = -1;
@@ -3586,11 +3613,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
                      if (RHSMoreInteresting(old_trade.Take, new_take.Take)) dominated.Add(old_loc);
                      else item_compare = 0;
                     break;
-                  case Use<Item> old_use:
-                    // generally better to take than use
-                    if (old_use.Use.ModelID!=new_take.Take.ModelID) dominated.Add(old_loc);
-                    else item_compare = 0;
-                    break;
                   }
                   if (-1==item_compare) break;
                 }
@@ -3599,6 +3621,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 item_compare = 1;
                 foreach(var old_loc in considering) {
                   switch(get_item[old_loc]) {
+                  case Use<Item> old_use:
+                    // generally better to take than use
+                    if (old_use.Use.ModelID!= new_trade.Take.ModelID) dominated.Add(old_loc);
+                    else item_compare = 0;
+                    break;
                   case ActionTakeItem old_take:
                      if (RHSMoreInteresting(new_trade.Take,old_take.Take)) {
                        item_compare = -1;
@@ -3619,31 +3646,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
                      if (RHSMoreInteresting(old_trade.Take, new_trade.Take)) dominated.Add(old_loc);
                      else item_compare = 0;
                     break;
-                  case Use<Item> old_use:
-                    // generally better to take than use
-                    if (old_use.Use.ModelID!= new_trade.Take.ModelID) dominated.Add(old_loc);
-                    else item_compare = 0;
-                    break;
-                  }
-                  if (-1==item_compare) break;
-                }
-                break;
-              case Use<Item> new_use:
-                item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
-                foreach(var old_loc in considering) {
-                  switch(get_item[old_loc]) {
-                    case Use<Item> old_use:
-                      if (old_use.Use.ModelID==new_use.Use.ModelID) { // duplicate
-                        item_compare = -1;
-                        break;
-                      }
-                      break;
-                    case ActionTakeItem old_take:
-                      if (old_take.Take.ModelID!=new_use.Use.ModelID) { // generally better to take than use
-                        item_compare = -1;
-                        break;
-                      }
-                      break;
                   }
                   if (-1==item_compare) break;
                 }
