@@ -4849,7 +4849,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 
-    private bool DirectionCommandFiltered<T>(Func<Direction,T?> select, Predicate<T?> execute, string? no_options=null) where T:class
+    private bool DirectionCommandFiltered<T>(Func<Direction,T?> select, Predicate<T?> execute, string? no_options=null)
     {
       Dictionary<Direction,T>? options = null;
       var staging = select(Direction.NEUTRAL);
@@ -4885,53 +4885,31 @@ namespace djack.RogueSurvivor.Engine
         AddOverlay(new OverlayPopup(MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
         var player = pc.ControlledActor;
-        string err = "Nothing in sight.";
+        Data.Model.InvOrigin src = default;
+        Data.Model.InvOrigin? dest;
 
-#if false
         Data.Model.InvOrigin? transfer_from(Direction dir) {
-          err = "Nothing to close there.";
           if (dir == Direction.NEUTRAL) {
             return player.Location.InventoryAtFeet();
           }
           var loc = player.Location + dir;
           if (!Map.Canonical(ref loc)) return null;
           var candidates = Map.AllItemsAt(loc);
-
-        var door = player.Location.Map.GetMapObjectAt(pos) as DoorWindow;
-        if (null == door) return null;
-
-        if (!player.CanClose(door, out string reason)) {
-          err = string.Format("Can't close {0} : {1}.", door.TheName, reason);
-          return null;
+          if (null == candidates) return null;
+          return candidates[0];
         }
-        return door;
-      }
 
-      DoorWindow? close_where(Direction dir) {
-        err = "Nothing to close there.";
-        if (dir == Direction.NEUTRAL) return null;
-        var pos = player.Location.Position + dir;
-        if (!player.Location.Map.IsInBounds(pos)) return null;  // doors never generate on map edges so IsInBounds ok
-
-        var door = player.Location.Map.GetMapObjectAt(pos) as DoorWindow;
-        if (null == door) return null;
-
-        if (!player.CanClose(door, out string reason)) {
-          err = string.Format("Can't close {0} : {1}.", door.TheName, reason);
-          return null;
-        }
-        return door;
-      }
-
-      bool close(DoorWindow? door) {
-        if (null != door) {
-          DoCloseDoor(player, door, player.Location==(player.Controller as BaseAI).PrevLocation);
+        bool record_transfer_from(Data.Model.InvOrigin? x) {
+          if (null == x) return false;
+          src = x.Value;
           return true;
         }
-        ErrorPopup(err);
-        return false;
-      }
 
+        if (!DirectionCommandFiltered(transfer_from, record_transfer_from, "Nothing in sight.")) {
+          ClearOverlays();
+          return false; // actionDone;
+        }
+#if false
       bool actionDone = DirectionCommandFiltered(close_where, close, "Nothing to close here.");
 #endif
         ClearOverlays();
