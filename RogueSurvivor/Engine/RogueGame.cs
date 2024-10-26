@@ -172,10 +172,7 @@ namespace djack.RogueSurvivor.Engine
     public const int VIEW_RADIUS = 10;  // also maximum living sight range; severe UI issues if sight radius exceeds UI view radius, cf. Cataclysm family for what goes wrong
     public const int HALF_VIEW_WIDTH = VIEW_RADIUS; // \todo eliminate these constants in favor of VIEW_RADIUS
     public const int HALF_VIEW_HEIGHT = VIEW_RADIUS;
-#if DEAD_FUNC
-    public const int TILE_VIEW_WIDTH = 2 * HALF_VIEW_WIDTH + 1;
-    public const int TILE_VIEW_HEIGHT = 2 * HALF_VIEW_HEIGHT + 1;
-#endif
+
     // RS Alpha 10.1- define these here.  Backward compatibility constants
     public const int CANVAS_WIDTH = IRogueUI.CANVAS_WIDTH;
     public const int CANVAS_HEIGHT = IRogueUI.CANVAS_HEIGHT;
@@ -205,9 +202,11 @@ namespace djack.RogueSurvivor.Engine
     private const int INVENTORY_SLOTS_PER_LINE = 10;
     private const int SKILLTABLE_X = RIGHTPANEL_X + 4;
     private const int SKILLTABLE_Y = CORPSESPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
-    private const int SKILLTABLE_LINES = 8;  // alpha10; formerly 10
+    // we need enough slots (SKILLTABLE_LINES*3) to display all skills in the endgame
+    private const int SKILLTABLE_LINES = 7; // formerly 10, which supports 30 skills; lower bound set by Skills::_LIVING_COUNT
     private const int SKILLTABLE_COL_WIDTH = 120;   // 3 columns (theoretical 118 width)
-    private const int SKILL_LINE_SPACING = LINE_SPACING+4;
+    private const int SKILL_LINE_SPACING = LINE_SPACING+4; // for x-axis, not y-axis
+
     private const int LOCATIONPANEL_X = RIGHTPANEL_X;
     public const int LOCATIONPANEL_Y = MESSAGES_Y;
     private const int LOCATIONPANEL_TEXT_X = LOCATIONPANEL_X+4;
@@ -221,6 +220,9 @@ namespace djack.RogueSurvivor.Engine
     private const int EXIT_SLOT_X = RIGHTPANEL_X+4;
     private const int EXIT_SLOT_Y0 = LOCATIONPANEL_Y-TILE_SIZE* EXIT_SLOTS;
     private const int MINI_TRACKER_OFFSET = 1;
+
+    private const int SKILLTABLE_Y_ALT = MINIMAP_Y - SKILLTABLE_LINES * LINE_SPACING - 4;
+
     public const int DELAY_SHORT = 250;
     public const int DELAY_NORMAL = 500;
     public const int DELAY_LONG = 1000;
@@ -11737,7 +11739,7 @@ namespace djack.RogueSurvivor.Engine
                   DrawInventory(invspec?.Inventory, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
                   DrawCorpsesList(Player.Location.Corpses, "Corpses on ground", Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, CORPSESPANEL_Y);
                   if (0 < Player.MySkills.CountSkills)
-                    DrawActorSkillTable(Player, SKILLTABLE_X, SKILLTABLE_Y);
+                    DrawActorSkillTable(Player, SKILLTABLE_X, SKILLTABLE_Y_ALT);
                 }
                 lock (m_Overlays) {
                   foreach (Overlay mOverlay in m_Overlays)
