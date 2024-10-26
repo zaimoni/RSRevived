@@ -182,13 +182,22 @@ namespace djack.RogueSurvivor.Engine
     public const int LINE_SPACING = IRogueUI.LINE_SPACING;
     public const int BOLD_LINE_SPACING = IRogueUI.BOLD_LINE_SPACING;
 
-    private const int DAMAGE_DX = 10;
-    private const int DAMAGE_DY = 10;
+    // (2*VIEW_RADIUS+1)*TILE_SIZE == 672
+    private const int MESSAGES_X = 4;
+    public const int MESSAGES_Y = 676;
+    private const int MESSAGES_SPACING = LINE_SPACING;
+//  private const int MAX_MESSAGES = 7;
+    private const int MAX_MESSAGES = (CANVAS_HEIGHT - LOCATIONPANEL_Y) / MESSAGES_SPACING;
+//  private const int MESSAGES_HISTORY = 59;
+    private const int MESSAGES_HISTORY = (CANVAS_HEIGHT - 3 * BOLD_LINE_SPACING) / MESSAGES_SPACING;
+    private const int MESSAGES_LINE_LENGTH = 91;    // in characters (empirical constant rather than measured)
+
     private const int RIGHTPANEL_X = 676;
     private const int RIGHTPANEL_Y = 0;
     private const int RIGHTPANEL_TEXT_X = RIGHTPANEL_X+4;
     private const int RIGHTPANEL_TEXT_Y = RIGHTPANEL_Y+4;
     private const int INVENTORYPANEL_X = RIGHTPANEL_X+4;
+    // DrawActorStatus uses 11 bold lines: 154 before vertical margins
     private const int INVENTORYPANEL_Y = RIGHTPANEL_TEXT_Y + 170; // alpha10; formerly +156; formerly +142 (responds to maximum bold lines needed, etc.)
 
     private const int GROUNDINVENTORYPANEL_Y = INVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
@@ -197,19 +206,13 @@ namespace djack.RogueSurvivor.Engine
     private const int SKILLTABLE_X = RIGHTPANEL_X + 4;
     private const int SKILLTABLE_Y = CORPSESPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
     private const int SKILLTABLE_LINES = 8;  // alpha10; formerly 10
+    private const int SKILLTABLE_COL_WIDTH = 120;   // 3 columns (theoretical 118 width)
+    private const int SKILL_LINE_SPACING = LINE_SPACING+4;
     private const int LOCATIONPANEL_X = RIGHTPANEL_X;
-    public const int LOCATIONPANEL_Y = 676;
+    public const int LOCATIONPANEL_Y = MESSAGES_Y;
     private const int LOCATIONPANEL_TEXT_X = LOCATIONPANEL_X+4;
     private const int LOCATIONPANEL_TEXT_X_COL2 = LOCATIONPANEL_TEXT_X+(CANVAS_WIDTH - LOCATIONPANEL_TEXT_X)/3;
     private const int LOCATIONPANEL_TEXT_Y = LOCATIONPANEL_Y+4;
-    private const int MESSAGES_X = 4;
-    public const int MESSAGES_Y = LOCATIONPANEL_Y;
-    private const int MESSAGES_SPACING = LINE_SPACING;
-//  private const int MAX_MESSAGES = 7;
-    private const int MAX_MESSAGES = (CANVAS_HEIGHT - LOCATIONPANEL_Y) / MESSAGES_SPACING;
-//  private const int MESSAGES_HISTORY = 59;
-    private const int MESSAGES_HISTORY = (CANVAS_HEIGHT - 3 * BOLD_LINE_SPACING) / MESSAGES_SPACING;
-    private const int MESSAGES_LINE_LENGTH = 91;    // in characters (empirical constant rather than measured)
     public const int MINITILE_SIZE = 2;
     private const int MINIMAP_X = 750;  // cf. LOCATIONPANEL_X
     private const int MINIMAP_Y = LOCATIONPANEL_Y-MINITILE_SIZE*(2+2*MINIMAP_RADIUS);
@@ -221,15 +224,10 @@ namespace djack.RogueSurvivor.Engine
     public const int DELAY_SHORT = 250;
     public const int DELAY_NORMAL = 500;
     public const int DELAY_LONG = 1000;
-    private const int SKILL_LINE_SPACING = LINE_SPACING+4;
     private const int CREDIT_CHAR_SPACING = 8;
     private const int CREDIT_LINE_SPACING = 12;
     private const int TEXTFILE_CHARS_PER_LINE = 120;
     private const int TEXTFILE_LINES_PER_PAGE = 50;
-    public const string NAME_SUBWAY_STATION = "Subway Station";
-    public const string NAME_SEWERS_MAINTENANCE = "Sewers Maintenance";
-    public const string NAME_SUBWAY_RAILS = "rails";
-    public const string NAME_POLICE_STATION_JAILS_CELL = "jail";
     private const int SPAWN_DISTANCE_TO_PLAYER = WorldTime.TURNS_PER_HOUR/3;
     private const int SEWERS_INVASION_CHANCE = 1;
     public const float SEWERS_UNDEADS_FACTOR = 0.5f;
@@ -8477,6 +8475,9 @@ namespace djack.RogueSurvivor.Engine
 
     private void DefenderDamageIcon(Actor defender, string icon, string damage)
     {
+      const int DAMAGE_DX = 10;
+      const int DAMAGE_DY = 10;
+
       if (IsInViewRect(defender.Location)) {
         var screenPos = MapToScreen(defender.Location);
         AddOverlay(new OverlayImage(screenPos, icon));
@@ -12817,7 +12818,7 @@ namespace djack.RogueSurvivor.Engine
         if (++num >= SKILLTABLE_LINES) {
           num = 0;
           gy1 = gy;
-          gx1 += TEXTFILE_CHARS_PER_LINE;
+          gx1 += SKILLTABLE_COL_WIDTH;
         } else gy1 += LINE_SPACING;
       }
     }
