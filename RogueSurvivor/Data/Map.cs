@@ -2053,6 +2053,18 @@ retry:
        return ret;
     }
 
+    static public List<Model.InvOrigin>? AllInventoriesAt(Location loc, Actor? a=null)
+    {
+       if (!Map.Canonical(ref loc)) return null;  // \todo? precondition
+       if (!loc.TileModel.IsWalkable) return null;
+       List<Model.InvOrigin>? ret = null;
+       var obj = loc.MapObject;
+       var shelf = obj as ShelfLike;
+       if (null != shelf) (ret ??= new()).Add(new(shelf));
+       if (null == obj || !obj.BlocksReachInto()) (ret ??= new()).Add(new(loc));
+       return ret;
+    }
+
     /// <returns>A list of inanimate inventory origins, that are currently non-empty</returns>
     public static List<Model.InvOrigin>? GetAccessibleInventoryOrigins(Location origin)
     {

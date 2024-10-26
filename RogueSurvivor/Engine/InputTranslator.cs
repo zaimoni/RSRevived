@@ -28,6 +28,9 @@ namespace djack.RogueSurvivor.Engine
       if (key.KeyData == (orders | Keys.Control | Keys.Shift)) return PlayerCommand.ORDER_PC_MODE;
       if (key.KeyData == (orders | Keys.Alt | Keys.Shift)) return PlayerCommand.COUNTERMAND_PC;
 
+      Keys take_charge = RogueGame.KeyBindings.Get(PlayerCommand.LEAD_MODE);
+      if (key.KeyData == (take_charge | Keys.Control)) return PlayerCommand.TRANSFER_ITEM;
+
       if (key.KeyData == (Keys.A | Keys.Control)) return PlayerCommand.ABANDON_PC;  // debugging/cheat command
 
       PlayerCommand playerCommand = RogueGame.KeyBindings.Get(key.KeyData);

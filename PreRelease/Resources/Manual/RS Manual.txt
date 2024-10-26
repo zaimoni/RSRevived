@@ -542,6 +542,9 @@ You can initiate a trade deal by offering an item.
 This works like normal trading, except you chose which your items you want to exhange.
 Move the mouse on the item, press the key, then choose someone next to you in a direction.
 
+> TRANSFER ITEM between adjacent ground or shelf inventories
+  (CTRL-[Take Lead], default CTRL-T)
+
 > UNLOADING RANGED WEAPONS (default U)
 Move the mouse on the item in an inventory, then press the key.  The unloaded ammo will be dropped, if there is not room in your inventory.
 
@@ -598,6 +601,15 @@ You do not need the carpentry skill to repair fortifications.
 > LEADING  (default T)
 Take or leave a follower. See the Followers section for more details.
 
+It is possible to recruit a follower through an active police radio.
+The RADIO RECRUIT status text indicates when this is an option.
+
+Having line of sight on someone is enough to start recruiting them (RS Revived 
+now has parity with AI here, you and the recruiting target will walk towards each 
+other if not already adjacent).
+
+Due to how much work is needed to get reasonable AI, you may choose
+to convert your new follower into a PC immediately.
 
 > SWITCHING PLACE  (default Ctrl-S)
 You can switch place with one of your follower. 

@@ -3461,6 +3461,9 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.INITIATE_TRADE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerInitiateTrade(pc, point);
                 break;
+              case PlayerCommand.TRANSFER_ITEM:
+                flag1 = !TryPlayerInsanity() && !HandlePlayerTransferItem(pc);
+                break;
               case PlayerCommand.LEAD_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerTakeLead(player);
                 break;
@@ -4878,7 +4881,6 @@ namespace djack.RogueSurvivor.Engine
       } while (true);
     }
 
-#if PROTOTYPE
     private bool HandlePlayerTransferItem(PlayerController pc) {
         const string MODE_TEXT = "TRANSFER ITEM - directions to select inventories, ESC cancels";
         const string SRC_TEXT = "Taking from:";
@@ -4908,7 +4910,7 @@ namespace djack.RogueSurvivor.Engine
         }
 
         var aux_offset = GDI_Point.Empty;
-        aux_offset.Y += BOLD_LINE_SPACING+4;
+        aux_offset.Y += BOLD_LINE_SPACING+2;
 
         var aux = new OverlayPopup(SRC_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, aux_offset);
         AddOverlay(aux);
@@ -4927,9 +4929,9 @@ namespace djack.RogueSurvivor.Engine
           }
           var loc = player.Location + dir;
           if (!Map.Canonical(ref loc)) return null;
-          var candidates = Map.AllItemsAt(loc); // XXX
+          var candidates = Map.AllInventoriesAt(loc);
           if (null == candidates) return null;
-          foreach(var inv in candidates) if (inv != src) return inv;
+          if (src != candidates[0]) return candidates[0];
 
           return null;
         }
@@ -4956,15 +4958,12 @@ namespace djack.RogueSurvivor.Engine
           return false;
         }
 
-        var ret = src.Inventory!.Transfer(it, dest.Inventory);
-#if false
-      bool actionDone = DirectionCommandFiltered(close_where, close, "Nothing to close here.");
-#endif
+        player.SpendActionPoints();
+        bool ret = src.Stance(player) && dest.Stance(player) && src.Inventory!.Transfer(it, dest);
         ClearOverlays();
         RedrawPlayScreen();
         return ret;
-      }
-#endif
+    }
 
     private bool HandlePlayerUnloadItem(PlayerController pc, GDI_Point screen)
     {

@@ -39,7 +39,7 @@ namespace djack.RogueSurvivor.Engine._Action
 #if DEBUG
             if (actor.Controller is not Gameplay.AI.ObjectiveAI ai) throw new ArgumentNullException(nameof(ai));  // not for a trained dog fetching something
             if (!m_Actor.CanGetItems()) throw new InvalidOperationException("!m_Actor.CanGetItems()");
-            if (!ai.IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
+            if (!actor.IsPlayer && !ai.IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
             if (null == stack.loc && null == stack.obj_owner) throw new InvalidOperationException("trying to take from actor");
 #endif
             m_src = stack;

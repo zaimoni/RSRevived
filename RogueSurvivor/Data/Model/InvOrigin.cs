@@ -60,6 +60,20 @@ namespace djack.RogueSurvivor.Data.Model
 
         public bool IsGroundInventory { get => null == a_owner && null == obj_owner; }
 
+        public bool Stance(Actor a) {
+            var dist = Engine.Rules.GridDistance(a.Location, Location);
+            if (1 != dist) return true; // not relevant
+            if (IsGroundInventory) {
+                a.Crouch();
+                var code = Engine.RogueGame.Game.OnActorReachIntoTile(a, Location);
+                if (0 >= code) return false; // we took a hit -- cancel taking item
+            } else if (null != obj_owner) {
+                // need to stand to make this work
+                a.StandUp();
+            }
+            return true;
+        }
+
         // not really...some extra conditions involved
         public bool IsAccessible(Location origin)
         {

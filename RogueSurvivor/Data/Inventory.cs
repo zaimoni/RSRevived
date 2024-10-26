@@ -405,6 +405,18 @@ namespace djack.RogueSurvivor.Data
       return IsEmpty;
     }
 
+    public bool Transfer(Item it, Model.InvOrigin dest) {
+#if DEBUG
+      if (!Contains(it)) throw new InvalidOperationException("item not here");
+#endif
+      var d_inv = dest.Inventory;
+      if (null != d_inv) return Transfer(it, d_inv);
+      // null inventory is a location whose ground inventory is empty
+      dest.Location.Drop(it);
+      RemoveAllQuantity(it);
+      return IsEmpty;
+    }
+
     // for loading from file
     public void DestructiveTransferAll(Inventory dest)
     {
