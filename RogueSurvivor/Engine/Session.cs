@@ -403,7 +403,7 @@ namespace djack.RogueSurvivor.Engine
                 Police.ItemMemory.Set(loc, null, 0);
             } else {
                 HashSet<Gameplay.Item_IDs> seen_items = new();
-                foreach (var inv in allItems) seen_items.UnionWith(inv.inv.Items.Select(x => x.InventoryMemoryID));
+                foreach (var inv in allItems) seen_items.UnionWith(inv.Inventory.Items.Select(x => x.InventoryMemoryID));
                 Police.ItemMemory.Set(loc, seen_items, 0);
             }
         }

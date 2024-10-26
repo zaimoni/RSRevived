@@ -2042,10 +2042,10 @@ retry:
     /// <summary>
     /// All inventories at that position, regardless of type.  Actors are not meant to be equally efficient at noticing inventories.
     /// </summary>
-    static public List<InventorySource<Item>>? AllItemsAt(Location loc, Actor? a=null)
+    static public List<Model.InvOrigin>? AllItemsAt(Location loc, Actor? a=null)
     {
        if (!Map.Canonical(ref loc)) return null;  // \todo? precondition
-       List<InventorySource<Item>>? ret = null;
+       List<Model.InvOrigin>? ret = null;
        var stage = loc.GroundInv();
        if (null != stage) (ret ??= new()).Add(stage.Value);
        stage = loc.ShelfInv();

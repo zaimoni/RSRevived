@@ -943,29 +943,29 @@ namespace djack.RogueSurvivor.Data
 
     static internal class Inventory_ext
     {
-        static public InventorySource<Item>? GroundInv(this Location loc)
+        static public Model.InvOrigin? GroundInv(this Location loc)
         {
             var g_inv = loc.Items;
-            if (null != g_inv && !g_inv.IsEmpty) return new(new InvOrigin(loc));
+            if (null != g_inv && !g_inv.IsEmpty) return new(loc);
             return null;
         }
 
-        static public InventorySource<Item>? ShelfInv(this Location loc)
+        static public Model.InvOrigin? ShelfInv(this Location loc)
         {
             var shelf = loc.MapObject as ShelfLike;
             var o_inv = shelf?.NonEmptyInventory;
-            if (null != o_inv /* && !o_inv.IsEmpty */) return new( new InvOrigin(shelf!));
+            if (null != o_inv /* && !o_inv.IsEmpty */) return new(shelf!);
             return null;
         }
 
         // historical behavior: favor shelf inventory over ground inventory (RS Alpha 10.1- does not support both at once at same location)
         // but only limited clairvoyance allowed
-        static public InventorySource<Item>? Inv(this Location loc, Gameplay.Item_IDs item_type)
+        static public Model.InvOrigin? Inv(this Location loc, Gameplay.Item_IDs item_type)
         {
             var ret = loc.ShelfInv();
-            if (null != ret && ret.Value.inv.HasPrecise(item_type)) return ret;
+            if (null != ret && ret.Value.Inventory!.HasPrecise(item_type)) return ret;
             var ret2 = loc.GroundInv();
-            if (null != ret2 && ret2.Value.inv.HasPrecise(item_type)) return ret;
+            if (null != ret2 && ret2.Value.Inventory!.HasPrecise(item_type)) return ret2;
             if (null != ret) return ret;
             return ret2;
         }

@@ -116,15 +116,15 @@ namespace djack.RogueSurvivor.Data
         var loc_ok = false;
         while (0 < ub) {
           var itemsAt = allItems[--ub];
-          if (ok(itemsAt.inv)) loc_ok = true;
+          if (ok(itemsAt.Inventory)) loc_ok = true;
         }
         if (loc_ok) ret.Add(x.Key, x.Value);
         else {
-          HashSet<Gameplay.Item_IDs> staging = new(allItems[0].inv.Items.Select(x => x.InventoryMemoryID));
+          HashSet<Gameplay.Item_IDs> staging = new(allItems[0].Inventory.Items.Select(x => x.InventoryMemoryID));
           ub = allItems.Count;
           while (1 < ub) {
             var itemsAt = allItems[--ub];
-            staging.UnionWith(itemsAt.inv.Items.Select(x => x.InventoryMemoryID));
+            staging.UnionWith(itemsAt.Inventory.Items.Select(x => x.InventoryMemoryID));
           }
           it_memory.Set(x.Key, staging, x.Key.Map.LocalTime.TurnCounter);   // extrasensory perception update
         }
