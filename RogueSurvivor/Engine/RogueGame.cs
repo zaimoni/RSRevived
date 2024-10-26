@@ -4878,6 +4878,67 @@ namespace djack.RogueSurvivor.Engine
       } while (true);
     }
 
+#if PROTOTYPE
+    private bool HandlePlayerTransferItem(PlayerController pc) {
+        const string MODE_TEXT = "TRANSFER ITEM - directions to select inventories, ESC cancels";
+        ClearOverlays();
+        AddOverlay(new OverlayPopup(MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+
+        var player = pc.ControlledActor;
+        string err = "Nothing in sight.";
+
+#if false
+        Data.Model.InvOrigin? transfer_from(Direction dir) {
+          err = "Nothing to close there.";
+          if (dir == Direction.NEUTRAL) {
+            return player.Location.InventoryAtFeet();
+          }
+          var loc = player.Location + dir;
+          if (!Map.Canonical(ref loc)) return null;
+          var candidates = Map.AllItemsAt(loc);
+
+        var door = player.Location.Map.GetMapObjectAt(pos) as DoorWindow;
+        if (null == door) return null;
+
+        if (!player.CanClose(door, out string reason)) {
+          err = string.Format("Can't close {0} : {1}.", door.TheName, reason);
+          return null;
+        }
+        return door;
+      }
+
+      DoorWindow? close_where(Direction dir) {
+        err = "Nothing to close there.";
+        if (dir == Direction.NEUTRAL) return null;
+        var pos = player.Location.Position + dir;
+        if (!player.Location.Map.IsInBounds(pos)) return null;  // doors never generate on map edges so IsInBounds ok
+
+        var door = player.Location.Map.GetMapObjectAt(pos) as DoorWindow;
+        if (null == door) return null;
+
+        if (!player.CanClose(door, out string reason)) {
+          err = string.Format("Can't close {0} : {1}.", door.TheName, reason);
+          return null;
+        }
+        return door;
+      }
+
+      bool close(DoorWindow? door) {
+        if (null != door) {
+          DoCloseDoor(player, door, player.Location==(player.Controller as BaseAI).PrevLocation);
+          return true;
+        }
+        ErrorPopup(err);
+        return false;
+      }
+
+      bool actionDone = DirectionCommandFiltered(close_where, close, "Nothing to close here.");
+#endif
+        ClearOverlays();
+        return false; // actionDone;
+      }
+#endif
+
     private bool HandlePlayerUnloadItem(PlayerController pc, GDI_Point screen)
     {
       var invSpec = MouseToInventoryItem(screen);
