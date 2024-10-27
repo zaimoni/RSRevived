@@ -176,6 +176,8 @@ namespace djack.RogueSurvivor.Data
             KillPoints = asc.KillPoints;
             SurvivalPoints = asc.SurvivalPoints;
         }
+
+        public int TotalPoints { get => SurvivalPoints + KillPoints + AchievementPoints; }
     }
 
     [Serializable]
@@ -338,6 +340,22 @@ namespace djack.RogueSurvivor.Data
                     m_Quick.Remove(index);
                 }
             }
+        }
+
+        public List<KeyValuePair<ActorTag, Ranking>> Rankings() {
+            List<KeyValuePair<ActorTag, Ranking>> ret = m_Quick.ToList();
+
+            static int cmp(KeyValuePair<ActorTag, Ranking> lhs, KeyValuePair<ActorTag, Ranking> rhs) {
+                var code = lhs.Value.TotalPoints.CompareTo(rhs.Value.TotalPoints);
+                if (0 != code) return -code;
+                code = lhs.Value.t0.CompareTo(rhs.Value.t0);
+                if (0 != code) return -code;
+                return lhs.Key.Name.CompareTo(rhs.Key.Name);
+            }
+
+            ret.Sort(cmp);
+
+            return ret;
         }
     }
 }
