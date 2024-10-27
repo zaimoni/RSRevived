@@ -32,20 +32,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor;
     private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
-    private SmellSensor m_MasterSmellSensor;
-    private ExplorationData m_Exploration;
+    private SmellSensor? m_MasterSmellSensor = null;
+    private ExplorationData? m_Exploration = null;
 
     public ZombieAI(Actor src) : base(src)
     {
       m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES, src), LOS_MEMORY);
-    }
-
-    public override void TakeControl()
-    {
-      base.TakeControl();
       if (!m_Actor.Model.Abilities.IsUndeadMaster) m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
-      if (!m_Actor.Model.Abilities.ZombieAI_Explore) return;
-      m_Exploration = new ExplorationData();
+      if (m_Actor.Model.Abilities.ZombieAI_Explore) m_Exploration = new ExplorationData();
     }
 
 #nullable enable
