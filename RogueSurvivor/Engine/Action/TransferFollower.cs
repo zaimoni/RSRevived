@@ -75,7 +75,7 @@ namespace djack.RogueSurvivor.Engine._Action
                 old_leader.RemoveFollower(whom);
                 whom.SetTrustIn(old_leader, whom.TrustInLeader);
             }
-            if (whom.IsPlayer && !dest.IsPlayer) dest.Controller = new PlayerController(dest);
+            if (whom.IsPlayer && !dest.IsPlayer) dest.MakePC();
             dest.AddFollower(whom);
             int trustIn = whom.GetTrustIn(dest);
             whom.TrustInLeader = trustIn;

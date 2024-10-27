@@ -90,11 +90,7 @@ namespace djack.RogueSurvivor.Data
       m_itemMemory = m_Actor.IsFaction(GameFactions.IDs.ThePolice) ? Session.Get.Police.ItemMemory
                                                                    : new();
 
-      const int MESSAGES_SPACING = RogueGame.LINE_SPACING;
-      const int MAX_MESSAGES = (RogueGame.CANVAS_HEIGHT - RogueGame.LOCATIONPANEL_Y) / MESSAGES_SPACING; // historically 7
-      const int MESSAGES_HISTORY = (RogueGame.CANVAS_HEIGHT - 3 * RogueGame.BOLD_LINE_SPACING) / MESSAGES_SPACING; // historically 59
-
-      Messages = upgrading?.Messages ?? new MessageManager(MESSAGES_SPACING, MESSAGES_HISTORY, MAX_MESSAGES);
+      Messages = upgrading?.Messages ?? new MessageManager(RogueGame.MESSAGES_SPACING, RogueGame.MESSAGES_HISTORY, RogueGame.MAX_MESSAGES);
     }
 
 #region UI messages

@@ -2333,7 +2333,7 @@ restart:
         if (Session.Get.CMDoptionExists("subway-cop")) {
           var home_district_xy = World.Get.Size;
           home_district_xy /= 2;
-          if (map.DistrictPos == new Point(home_district_xy, home_district_xy)) newPoliceman.Controller = new PlayerController(newPoliceman);
+          if (map.DistrictPos == new Point(home_district_xy, home_district_xy)) newPoliceman.MakePC();
         }
         ActorPlace(m_DiceRoller, map, newPoliceman, b.InsideRect);
       }

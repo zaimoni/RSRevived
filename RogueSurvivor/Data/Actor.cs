@@ -279,7 +279,7 @@ namespace djack.RogueSurvivor.Data
         }
         return m_Controller;
       }
-      set {
+      private set {
         int playerDelta = 0;
         if (null != m_Controller) {
           if (m_Controller is PlayerController) playerDelta -= 1;
@@ -294,6 +294,23 @@ namespace djack.RogueSurvivor.Data
         }
         if (0 != playerDelta) m_Location.Map?.Players.Recalc();
       }
+    }
+
+    public void MakePC() {
+        if (m_Controller is PlayerController) return; // XXX invariant violation
+        m_Subconscious = null;
+        m_Controller?.LeaveControl();
+        m_Controller = new PlayerController(this);
+        m_Controller.TakeControl();
+        m_Location.Map?.Players.Recalc();
+    }
+
+    public void UpgradePC() {
+        if (m_Controller is not PlayerController pc) return; // XXX invariant violation
+        m_Subconscious = null;
+        m_Controller?.LeaveControl();
+        m_Controller = new PlayerController(this, pc);
+        m_Controller.TakeControl();
     }
 
     public ActorController? AsAI {

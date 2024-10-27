@@ -182,11 +182,11 @@ namespace djack.RogueSurvivor.Engine
     // (2*VIEW_RADIUS+1)*TILE_SIZE == 672
     private const int MESSAGES_X = 4;
     public const int MESSAGES_Y = 676;
-    private const int MESSAGES_SPACING = LINE_SPACING;
+    public const int MESSAGES_SPACING = LINE_SPACING;
 //  private const int MAX_MESSAGES = 7;
-    private const int MAX_MESSAGES = (CANVAS_HEIGHT - LOCATIONPANEL_Y) / MESSAGES_SPACING;
+    public const int MAX_MESSAGES = (CANVAS_HEIGHT - LOCATIONPANEL_Y) / MESSAGES_SPACING;
 //  private const int MESSAGES_HISTORY = 59;
-    private const int MESSAGES_HISTORY = (CANVAS_HEIGHT - 3 * BOLD_LINE_SPACING) / MESSAGES_SPACING;
+    public const int MESSAGES_HISTORY = (CANVAS_HEIGHT - 3 * BOLD_LINE_SPACING) / MESSAGES_SPACING;
     private const int MESSAGES_LINE_LENGTH = 91;    // in characters (empirical constant rather than measured)
 
     private const int RIGHTPANEL_X = 676;
@@ -6371,7 +6371,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (!follower.IsPlayer) {
         orders.Add(new("We need to talk...", () => {
-          follower.Controller = new PlayerController(follower);
+          follower.MakePC();
           Session.Get.Scoring.UseReincarnation(); // intentionally unconditional
           return true;
         }));
@@ -8770,7 +8770,7 @@ namespace djack.RogueSurvivor.Engine
       }
 #endif
       if (actor.IsPlayer && !other.IsPlayer && YesNoPopup("Make "+other+" a PC")) {
-          other.Controller = new PlayerController(other);
+          other.MakePC();
           Session.Get.Scoring.UseReincarnation(); // intentionally unconditional
       }
     }
@@ -11110,7 +11110,7 @@ namespace djack.RogueSurvivor.Engine
         Actor reinc = killer.LiveLeader ?? killer;
         if (!reinc.IsPlayer && Session.Get.Scoring.ReincarnationNumber < s_Options.MaxReincarnations) {
           if (YesNoPopup("Use a reincarnation on your " + (killer == reinc ? " killer " : " killer's leader ") + reinc.Name)) {
-            reinc.Controller = new PlayerController(reinc);
+            reinc.MakePC();
             Session.Get.Scoring.UseReincarnation();
           }
         }
@@ -11562,7 +11562,7 @@ namespace djack.RogueSurvivor.Engine
         if (oai.CanBecomeCop()) {
           if (YesNoPopup("Become a cop") && oai.BecomeCop()) {
             // 2020-09-12: NPC CivilianAI do not have pre-existing item memory and upgrade theirs without help.
-            upgradeActor.Controller = new PlayerController(upgradeActor, upgradeActor.Controller as PlayerController);
+            upgradeActor.UpgradePC();
           }
         }
       }
@@ -11771,7 +11771,7 @@ namespace djack.RogueSurvivor.Engine
         Session.Get.Scoring_fatality?.SetZombifiedPlayer(actor);
         if (Session.Get.Scoring.ReincarnationNumber < s_Options.MaxReincarnations) {
           if (YesNoPopup(deadVictim.Name + " rises as a zombie.  Use a reincarnation")) {
-            actor.Controller = new PlayerController(actor);
+            actor.MakePC();
             Session.Get.Scoring.UseReincarnation();
           }
         }
@@ -14025,7 +14025,7 @@ namespace djack.RogueSurvivor.Engine
         actor.RecomputeStartingStats();
         actor.CreateCivilianDeductFoodSleep();
       }
-      actor.Controller = new PlayerController(actor);
+      actor.MakePC();
       if (Session.CommandLineOptions.TryGetValue("spawn-district", out string district_spec)) {
         var prune = district_spec.IndexOf('@');
         if (-1 < prune) district_spec = district_spec.Substring(prune+1);
@@ -14430,7 +14430,7 @@ retry:
         return;
       }
 
-      newPlayerAvatar.Controller = new PlayerController(newPlayerAvatar);
+      newPlayerAvatar.MakePC();
       if (newPlayerAvatar.Activity != Data.Activity.SLEEPING) newPlayerAvatar.Activity = Data.Activity.IDLE;
       newPlayerAvatar.PrepareForPlayerControl();
       setPlayer(newPlayerAvatar).ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.StartNewLife()));
