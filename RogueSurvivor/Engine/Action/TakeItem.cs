@@ -63,7 +63,15 @@ namespace djack.RogueSurvivor.Engine._Action
             var dist = Rules.GridDistance(m_Actor.Location, m_src.Location);
             if (1 < dist) return false;
             m_Crouching = 1 == dist && m_src.IsGroundInventory;
-            if (m_Crouching && !m_Actor.CanCrouch(out m_FailReason)) return false;
+            if (m_Crouching) {
+                if (!m_Actor.CanCrouch(out m_FailReason)) return false;
+                var actor = m_src.Location.Actor;
+                if (null != actor) {
+                    var allies = m_Actor.Allies;
+                    if (null == allies) return false;
+                    if (!allies.Contains(actor)) return false;
+                }
+            }
             return true;
         }
 
