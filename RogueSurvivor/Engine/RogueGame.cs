@@ -2040,7 +2040,7 @@ namespace djack.RogueSurvivor.Engine
         }
 #endif
 
-        HandleAiActor(nextActorToAct);
+        HandleAiActor(nextActorToAct.Controller);
       }
       if (nextActorToAct.AfterAction()) map.AfterAction();
     }
@@ -3472,6 +3472,13 @@ namespace djack.RogueSurvivor.Engine
                 break;
               case PlayerCommand.TRANSFER_ITEM:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerTransferItem(pc);
+                break;
+              case PlayerCommand.AS_AI:
+                HandleAiActor(player.AsAI);
+                flag1 = false;
+                if (2 <= hotkey_turns) {
+                  (s_CountedCommands ??= new()).Add(new(pc, new(hotkey_turns-1, PlayerCommand.AS_AI)));
+                }
                 break;
               case PlayerCommand.LEAD_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerTakeLead(player);
@@ -6723,8 +6730,13 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    private void HandleAiActor(Actor aiActor)
+    private void HandleAiActor(ActorController ai)
     {
+#if DEBUG
+      if (ai is PlayerController) throw new ArgumentOutOfRangeException(nameof(ai), "ai is PlayerController");
+#endif
+      var aiActor = ai.ControlledActor; // backward compatibility
+
 #if DEBUG
       if (aiActor.IsSleeping) throw new ArgumentOutOfRangeException(nameof(aiActor),"cannot act while sleeping");
       if (aiActor.IsDebuggingTarget) World.Get.DaimonMap(); // so we have a completely correct map when things go wrong
@@ -6733,9 +6745,9 @@ namespace djack.RogueSurvivor.Engine
       int AP_checkpoint = aiActor.ActionPoints;
       Location loc_checkpoint = aiActor.Location;
 #endif
-      var actorAction = aiActor.Controller.GetAction();
+      var actorAction = ai.GetAction();
       if (actorAction == null) throw new InvalidOperationException("AI returned null action.");
-      if (!actorAction.IsPerformable()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), aiActor.Controller.GetType().ToString(), actorAction.FailReason));
+      if (!actorAction.IsPerformable()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), ai.GetType().ToString(), actorAction.FailReason));
       if (aiActor.IsInsane && Rules.Get.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         var insaneAction = GenerateInsaneAction(aiActor);
         if (null != insaneAction && insaneAction.IsPerformable()) actorAction = insaneAction;
@@ -6756,7 +6768,7 @@ namespace djack.RogueSurvivor.Engine
         World.Get._RejectInventoryDamage(errors, aiActor);
         if (0 < errors.Count) throw new InvalidOperationException(aiActor.Name + " action " + actorAction + " triggered:\n" + string.Join("\n", errors));
       }
-      if (actorAction is ActorDest && null != aiActor.Threats) aiActor.Controller.UpdateSensors(); // to trigger fast threat/tourism update
+      if (actorAction is ActorDest && null != aiActor.Threats) ai.UpdateSensors(); // to trigger fast threat/tourism update
     }
 
     private void HandleAdvisor(Actor player)
@@ -12735,12 +12747,12 @@ namespace djack.RogueSurvivor.Engine
       if (!string.IsNullOrEmpty(m_Status)) return m_Status;
       var ai = a.Controller as ObjectiveAI;
       if (null != ai) {
+        var recruit = ai.RecruitableRadio();
+        if (null != recruit) return "RADIO RECRUIT";
         if (null != ai.ContrafactualZTracker(a.Location)) return "WANT ZTRACKER";
       }
       if (a.Controller.InCombat) return "IN COMBAT";
       if (null != ai) {
-        var recruit = ai.RecruitableRadio();
-        if (null != recruit) return "RADIO RECRUIT";
         var code = ai.InterruptLongActivity();
         if (ObjectiveAI.ReactionCode.NONE != code) {
           if (ObjectiveAI.ReactionCode.NONE != (code & ObjectiveAI.ReactionCode.ENEMY)) return "THREAT NEAR";

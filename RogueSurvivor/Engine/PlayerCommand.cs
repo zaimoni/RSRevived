@@ -72,6 +72,7 @@ namespace djack.RogueSurvivor.Engine
     PULL_MODE, // alpha10
     COUNTERMAND_PC,
     UNLOAD,
-    TRANSFER_ITEM
+    TRANSFER_ITEM,
+    AS_AI
     }
 }

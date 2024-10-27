@@ -313,7 +313,7 @@ namespace djack.RogueSurvivor.Data
         m_Controller.TakeControl();
     }
 
-    public ActorController? AsAI {
+    public ActorController AsAI {
       get {
         if (m_Controller is PlayerController) {
           return m_Subconscious ??= Model.InstanciateController(this);
