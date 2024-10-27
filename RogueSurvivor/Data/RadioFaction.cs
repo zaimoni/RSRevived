@@ -156,6 +156,42 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Serializable]
+    public record struct Ranking {
+        public readonly int t0;
+        public readonly int SurvivalPoints;
+        public readonly int KillPoints;
+        public readonly int AchievementPoints;
+
+        public Ranking(Actor a) {
+            t0 = a.Location.Map.LocalTime.TurnCounter;
+            var asc = a.ActorScoring;
+            AchievementPoints = asc.AchievementPoints;
+            KillPoints = asc.KillPoints;
+            SurvivalPoints = asc.SurvivalPoints;
+        }
+
+        public Ranking(Ranking src, ActorScoring asc) {
+            t0 = src.t0;
+            AchievementPoints = asc.AchievementPoints;
+            KillPoints = asc.KillPoints;
+            SurvivalPoints = asc.SurvivalPoints;
+        }
+    }
+
+    [Serializable]
+    public record struct Demise {
+        public readonly int t1;
+        public readonly ActorTag killer;
+        public readonly Location loc;
+
+        public Demise(Actor victim, Actor? kill) {
+            loc = victim.Location;
+            t1 = loc.Map.LocalTime.TurnCounter;
+            killer = (null == kill ? default : new(kill));
+        }
+    }
+
+    [Serializable]
     public class RadioFaction
     {
         public readonly Ary2Dictionary<Location, Gameplay.Item_IDs, int> ItemMemory = new();
@@ -173,6 +209,8 @@ namespace djack.RogueSurvivor.Data
         // killing of own: no restriction
 
         private List<SVOevent> m_EventLog = new();
+        private Dictionary<ActorTag, Ranking> m_Quick = new();
+        private Dictionary<ActorTag, KeyValuePair<Ranking,Demise>> m_Dead = new();
 
         public RadioFaction(GameFactions.IDs faction, Gameplay.Item_IDs radio)
         {
@@ -272,11 +310,34 @@ namespace djack.RogueSurvivor.Data
             return (0<ret.Count) ? ret : null;
         }
 
-        public void OnKilled(ActorTag perp)
-        {
-            var ub = m_EventLog.Count;
-            while(0 <= --ub) if (m_EventLog[ub].subject == perp) m_EventLog.RemoveAt(ub);
+        public void onTurnStart(Actor a) {
+            ActorTag index = new(a);
+            lock (m_Quick) {
+                if (m_Quick.TryGetValue(index, out var rank)) {
+                    m_Quick[index] = new(rank, a.ActorScoring);
+                } else {
+                    m_Quick.Add(index, new(a));
+                }
+            }
         }
-        public void OnKilled(Actor perp) => OnKilled(new ActorTag(perp));
+
+        private void OnKilled(ActorTag perp)
+        {
+            lock (m_EventLog) {
+                var ub = m_EventLog.Count;
+                while (0 <= --ub) if (m_EventLog[ub].subject == perp) m_EventLog.RemoveAt(ub);
+            }
+        }
+
+        public void OnKilled(Actor victim, Actor? killer) {
+            ActorTag index = new(victim);
+            OnKilled(index);
+            lock (m_Quick) {
+                if (m_Quick.TryGetValue(index, out var rank)) {
+                    m_Dead.Add(index, new(rank, new(victim, killer)));
+                    m_Quick.Remove(index);
+                }
+            }
+        }
     }
 }

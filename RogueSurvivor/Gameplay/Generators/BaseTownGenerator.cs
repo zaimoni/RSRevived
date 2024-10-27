@@ -37,7 +37,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (a.IsFaction(GameFactions.IDs.TheCHARCorporation)) return false;
       if (a.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE)) return false;
       if (!m_surveiled.Contains(a.Location)) return false;
-      if (m_surveiled.Contains(oai.PrevLocation)) return false;
+      if (a.Controller is OrderableAI && m_surveiled.Contains(oai.PrevLocation)) return false;
       if (!m_surveiled.Any(loc => {
           var actor = loc.Actor;
           if (null == actor) return false;

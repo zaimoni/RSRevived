@@ -2000,6 +2000,15 @@ namespace djack.RogueSurvivor.Engine
       if (nextActorToAct.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
 #endif
       nextActorToAct.PreviousStaminaPoints = nextActorToAct.StaminaPoints;
+
+      var police = Session.Get.Police;
+      if (police.IsMine(nextActorToAct)) police.onTurnStart(nextActorToAct);
+      else {
+        var leader = nextActorToAct.LiveLeader;
+        if (null!=leader && police.IsMine(leader) && (nextActorToAct.Controller as ObjectiveAI).InCommunicationWith(leader))
+             police.onTurnStart(nextActorToAct);
+      }
+
       if (nextActorToAct.Controller == null)
 #if DEBUG
         throw new InvalidOperationException("nextActorToAct.Controller == null");
@@ -11073,7 +11082,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.
-      Session.Get.Police.OnKilled(deadGuy);
+      Session.Get.Police.OnKilled(deadGuy, killer);
       Session.Get.Police.Record(police_relevant);
 
       if (deadGuy.IsPlayer && (!killer?.IsPlayer ?? false)) {
