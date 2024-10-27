@@ -3979,7 +3979,7 @@ namespace djack.RogueSurvivor.Data
     }
 #endregion
 #region Event-based Dies implementation
-    public struct DieArgs
+    public readonly struct DieArgs
     {
       public readonly Actor _deadGuy;
       public readonly Actor? _killer;

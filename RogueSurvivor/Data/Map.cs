@@ -1317,7 +1317,7 @@ retry:
     }
 
     public bool IsClearableZone(ZoneLoc z) {
-        return m_ClearableZones!.Values.Contains(z);
+        return m_ClearableZones!.ContainsValue(z);
     }
 
     public List<ZoneLoc>? TrivialPathingFor(Point pt) {
@@ -1756,7 +1756,7 @@ retry:
     public int TurnOrderFor(Actor a) { return m_ActorsList.IndexOf(a); }
 
     [Serializable]
-    public struct ActorCode {
+    public readonly struct ActorCode {
         public readonly District.MapCode Key;
         public readonly int Value;
 
@@ -3355,7 +3355,7 @@ namespace Zaimoni.Serialization
 #region save/load m_Exits
         static void LinearSaveSigned<T>(EncodeObjects encode, Dictionary<Point, T>? src) where T : ISerialize
         {
-            var count = src?.Count() ?? 0;
+            var count = src?.Count ?? 0;
             Formatter.Serialize7bit(encode.dest, count);
             if (0 < count) {
                 foreach (var x in src!) SaveSigned(encode, x);
@@ -3405,7 +3405,7 @@ namespace Zaimoni.Serialization
 #region save/load ...
         static void LinearSave<T>(EncodeObjects encode, Dictionary<Point, T>? src) where T : ISerialize
         {
-            var count = src?.Count() ?? 0;
+            var count = src?.Count ?? 0;
             Formatter.Serialize7bit(encode.dest, count);
             if (0 < count) {
                 foreach (var x in src!) Save(encode, x);
@@ -3455,7 +3455,7 @@ namespace Zaimoni.Serialization
 #region save/load Dictionary<Point,HashSet<string>> m_Decorations
         static void LinearSave(EncodeObjects encode, Dictionary<Point, HashSet<string>>? src)
         {
-            var count = src?.Count() ?? 0;
+            var count = src?.Count ?? 0;
             Formatter.Serialize7bit(encode.dest, count);
             if (0 < count) {
                 foreach (var x in src!) Save(encode, x);
@@ -3554,7 +3554,7 @@ namespace Zaimoni.Serialization
 
         static void LinearSaveInline<T>(EncodeObjects encode, Dictionary<Point, List<T>>? src) where T:ISerialize
         {
-            var count = src?.Count() ?? 0;
+            var count = src?.Count ?? 0;
             Formatter.Serialize7bit(encode.dest, count);
             if (0 < count) {
                 foreach (var x in src) {
@@ -3566,7 +3566,7 @@ namespace Zaimoni.Serialization
 
         static void LinearSaveInline<T>(EncodeObjects encode, Dictionary<Point, T>? src) where T:ISerialize
         {
-            var count = src?.Count() ?? 0;
+            var count = src?.Count ?? 0;
             Formatter.Serialize7bit(encode.dest, count);
             if (0 < count) {
                 foreach (var x in src) {

@@ -432,7 +432,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(msg);
     }
 
-    public bool AddMessage(List<PlayerController> witnesses, UI.Message msg)
+    public static bool AddMessage(List<PlayerController> witnesses, UI.Message msg)
     {
         bool rendered = false;
         foreach(var pc in witnesses) if (pc.AddMessage(msg)) rendered = true;
@@ -11718,7 +11718,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void ChangeWeather()
+    private static void ChangeWeather()
     {
       var world = World.Get;
       var turn = Session.Get.WorldTime.TurnCounter;
