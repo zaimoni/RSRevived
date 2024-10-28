@@ -258,7 +258,9 @@ namespace djack.RogueSurvivor.Data
               break;
           case 5:
               {
+              Map.s_LoadOwner = this;
               var stage = JsonSerializer.Deserialize<Map[]>(ref reader, options) ?? throw new JsonException();
+              Map.s_LoadOwner = null;
               m_Maps.AddRange(stage);
               }
               break;

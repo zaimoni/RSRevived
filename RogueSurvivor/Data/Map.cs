@@ -413,6 +413,7 @@ namespace djack.RogueSurvivor.Data
     }
         #endregion
 
+        private const int field_code_UB = 6;
         static private int field_code(ref Utf8JsonReader reader)
         {
             if (reader.ValueTextEquals("Name")) return 1;
@@ -420,7 +421,7 @@ namespace djack.RogueSurvivor.Data
             else if (reader.ValueTextEquals("LocalTime")) return 3;
             else if (reader.ValueTextEquals("Extent")) return 4;
             else if (reader.ValueTextEquals("NextActorIndex")) return 5;
-            else if (reader.ValueTextEquals("Zones")) return 6;
+            else if (reader.ValueTextEquals("Zones")) return field_code_UB;
             // \todo factor this out
             else if (reader.ValueTextEquals("$id")) return -1;
 
@@ -428,18 +429,26 @@ namespace djack.RogueSurvivor.Data
             throw new JsonException();
         }
 
+        [NonSerialized] public static District? s_LoadOwner = null;
         private Map(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
             if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
             int origin_depth = reader.CurrentDepth;
             reader.Read();
 
+            if (null != s_LoadOwner) {
+                m_District = s_LoadOwner;
+                DistrictPos = m_District.WorldPosition;
+            }
+
             string? relay_id = null;
             string? relay_name = null;
             WorldTime relay_localtime = default;
             Size relay_extent = default;
+            Span<bool> seen = stackalloc bool[field_code_UB];   // default-initializes to constant false
 
-            void read(ref Utf8JsonReader reader)
+//          void read(ref Utf8JsonReader reader)
+            int read(ref Utf8JsonReader reader)
             {
                 int code = field_code(ref reader);
                 reader.Read();
@@ -455,7 +464,7 @@ namespace djack.RogueSurvivor.Data
                     case 2:
                         {
                         string stage = reader.GetString();
-                        if (Enum.TryParse(stage, out m_Lighting)) return;
+                        if (Enum.TryParse(stage, out m_Lighting)) return 0;
                         Engine.RogueGame.Game.ErrorPopup("unrecognized light level " + stage);
                         }
                         throw new JsonException();
@@ -475,23 +484,32 @@ namespace djack.RogueSurvivor.Data
                         }
                         break;
                 }
+                return code;
             }
 
             while (reader.CurrentDepth != origin_depth || JsonTokenType.EndObject != reader.TokenType)
             {
                 if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
 
-                read(ref reader);
+                var code = read(ref reader);
+                if (0 < code) seen[code - 1] = true;
+                switch (code) {
+                    case 1:
+                        Name = relay_name;
+                        break;
+                    case 3:
+                        LocalTime = relay_localtime;
+                        break;
+                    case 4:
+                        Extent = relay_extent;
+                        Rect = new Rectangle(Point.Empty, Extent);
+                        break;
+                }
 
                 reader.Read();
             }
 
             if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
-
-            if (null != relay_name) Name = relay_name;
-            LocalTime = relay_localtime;
-            Extent = relay_extent;
-            Rect = new Rectangle(Point.Empty, Extent);
 
             relay_id?.RecordRef(this);
         }
@@ -502,13 +520,8 @@ namespace djack.RogueSurvivor.Data
 
 #if false
     public readonly int Seed; // savefile break: make non-serialized, used only in map generation? or retain for audit trail?
-    public readonly Point DistrictPos; // should be District.WorldPosition by construction     // involved in Dictionary hashcode
-#nullable enable
-    [NonSerialized] private District? m_District; // keep reference cycle out of savefile
-    public District District { get { return m_District!; } }
-#nullable restore
     public readonly string Name;    // involved in Dictionary hashcode
-    public readonly string BgMusic;  // alpha10
+    public readonly string BgMusic;  // alpha10; very few values, may be able to recompute on-fly
 #nullable enable
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;

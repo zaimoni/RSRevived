@@ -4499,7 +4499,7 @@ namespace djack.RogueSurvivor.Engine
                     display.Add("...");
                 }
             }
-            opts.Add(new("Vahalla", police_graveyard));
+            opts.Add(new("Valhalla", police_graveyard));
         }
       }
 
