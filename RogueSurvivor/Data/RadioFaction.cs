@@ -343,9 +343,8 @@ namespace djack.RogueSurvivor.Data
         }
 
         public List<KeyValuePair<ActorTag, Ranking>> Rankings() {
-            List<KeyValuePair<ActorTag, Ranking>> ret = m_Quick.ToList();
-
-            static int cmp(KeyValuePair<ActorTag, Ranking> lhs, KeyValuePair<ActorTag, Ranking> rhs) {
+            static int cmp(KeyValuePair<ActorTag, Ranking> lhs, KeyValuePair<ActorTag, Ranking> rhs)
+            {
                 var code = lhs.Value.TotalPoints.CompareTo(rhs.Value.TotalPoints);
                 if (0 != code) return -code;
                 code = lhs.Value.t0.CompareTo(rhs.Value.t0);
@@ -353,8 +352,23 @@ namespace djack.RogueSurvivor.Data
                 return lhs.Key.Name.CompareTo(rhs.Key.Name);
             }
 
+            List<KeyValuePair<ActorTag, Ranking>> ret = m_Quick.ToList();
             ret.Sort(cmp);
+            return ret;
+        }
 
+        public List<KeyValuePair<ActorTag, KeyValuePair<Ranking, Demise>>> Deceased() {
+            static int cmp(KeyValuePair<ActorTag, KeyValuePair<Ranking, Demise>> lhs, KeyValuePair<ActorTag, KeyValuePair<Ranking, Demise>> rhs)
+            {
+                var code = lhs.Value.Key.TotalPoints.CompareTo(rhs.Value.Key.TotalPoints);
+                if (0 != code) return -code;
+                code = lhs.Value.Key.t0.CompareTo(rhs.Value.Key.t0);
+                if (0 != code) return -code;
+                return lhs.Key.Name.CompareTo(rhs.Key.Name);
+            }
+
+            List<KeyValuePair<ActorTag, KeyValuePair<Ranking, Demise>>> ret = m_Dead.ToList();
+            ret.Sort(cmp);
             return ret;
         }
     }

@@ -4479,6 +4479,28 @@ namespace djack.RogueSurvivor.Engine
             }
         }
         opts.Add(new("Reputation", police_rankings));
+
+        var deceased = Session.Get.Police.Deceased();
+        if (0 < deceased.Count) {
+            void police_graveyard(List<string> display) {
+                string header = string.Concat("   Score   ", "   Start   ").PadLeft(MESSAGES_LINE_LENGTH);
+                int me = -1;
+                int scan = -1;
+                ActorTag self = new(Player);
+
+                void name_him(KeyValuePair<ActorTag, KeyValuePair<Ranking, Demise>> x) {
+                    ++scan;
+                    display.Add(string.Concat(string.Concat((scan + 1).ToString(), ") ").PadLeft(7), x.Key.Name.PadRight(MESSAGES_LINE_LENGTH - 29), x.Value.Key.TotalPoints.ToString().PadLeft(11), x.Value.Key.t0.ToString().PadLeft(11)));
+                    if (x.Key == self) me = scan;
+                }
+                deceased.DoForEach_(name_him, () => display.Add(header));
+                if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT < display.Count) {
+                    display.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT - 1, (display.Count - SHOW_SPECIAL_DIALOGUE_LINE_LIMIT) + 1);
+                    display.Add("...");
+                }
+            }
+            opts.Add(new("Vahalla", police_graveyard));
+        }
       }
 
       if (string.IsNullOrEmpty(header)) header = "Reviewing...";
