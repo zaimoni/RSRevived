@@ -529,15 +529,12 @@ namespace djack.RogueSurvivor.Engine
         // \todo consider eliminating power generators as a pathable target (rely on behaviors instead and path to adjacent squares)
         if (mapObjectAt is PowerGenerator powGen) {
           if (powGen.IsOn) {
-            Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
-            if (tmp != null && actor.CanRecharge(tmp, out reason))
-              return new ActionRechargeItemBattery(actor, tmp);
-            tmp = actor.GetEquippedItem(DollPart.RIGHT_HAND);   // formal correctness
-            if (tmp != null && actor.CanRecharge(tmp, out reason))
-              return new ActionRechargeItemBattery(actor, tmp);
-            tmp = actor.GetEquippedItem(DollPart.HIP_HOLSTER);   // the police tracker
-            if (tmp != null && actor.CanRecharge(tmp, out reason))
-              return new ActionRechargeItemBattery(actor, tmp);
+            var charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.LEFT_HAND));   // normal lights and trackers
+            if (null != charge) return charge;
+            charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.RIGHT_HAND));  // formal correctness
+            if (null != charge) return charge;
+            charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.HIP_HOLSTER)); // the police tracker
+            if (null != charge) return charge;
           }
           if (actor.CanSwitch(powGen, out reason)) {
              if (actor.IsPlayer || !powGen.IsOn) return new ActionSwitchPowerGenerator(actor, powGen);
@@ -832,15 +829,12 @@ retry:
           return new ActionBreak(actor, mapObjectAt);
       if (mapObjectAt is PowerGenerator powGen) {
           if (powGen.IsOn) {
-            Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
-            if (tmp != null && actor.CanRecharge(tmp, out reason))
-              return new ActionRechargeItemBattery(actor, tmp);
-            tmp = actor.GetEquippedItem(DollPart.RIGHT_HAND);   // formal correctness
-            if (tmp != null && actor.CanRecharge(tmp, out reason))
-              return new ActionRechargeItemBattery(actor, tmp);
-            tmp = actor.GetEquippedItem(DollPart.HIP_HOLSTER);   // the police tracker
-            if (tmp != null && actor.CanRecharge(tmp, out reason))
-              return new ActionRechargeItemBattery(actor, tmp);
+            var charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.LEFT_HAND));   // normal lights and trackers
+            if (null != charge) return charge;
+            charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.RIGHT_HAND));  // formal correctness
+            if (null != charge) return charge;
+            charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.HIP_HOLSTER)); // the police tracker
+            if (null != charge) return charge;
           }
           if (actor.CanSwitch(powGen, out reason)) {
              if (actor.IsPlayer || !powGen.IsOn) return new ActionSwitchPowerGenerator(actor, powGen);

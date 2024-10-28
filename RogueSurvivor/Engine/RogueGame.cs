@@ -10511,10 +10511,8 @@ namespace djack.RogueSurvivor.Engine
       if (null != witnesses) RedrawPlayScreen();
     }
 
-    public void DoRechargeItemBattery(Actor actor, Item it)
+    public void UI_RechargeItemBattery(Actor actor, Item it)
     {
-      actor.SpendActionPoints();
-      (it as BatteryPowered).Recharge();
       var witnesses = actor.PlayersInLOS();
       if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_RECHARGE.Conjugate(actor), it, " batteries."));
     }
@@ -13145,7 +13143,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void PanViewportTo(List<PlayerController> witnesses) {
       if (0 >= witnesses.Count) return;
-      if (witnesses.Contains(Player.Controller as PlayerController)) RedrawPlayScreen();
+      if (Player.Controller is PlayerController pc && witnesses.Contains(pc)) RedrawPlayScreen();
       else PanViewportTo(witnesses[0].ControlledActor);
     }
 

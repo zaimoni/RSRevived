@@ -35,7 +35,9 @@ namespace djack.RogueSurvivor.Data
         public T What { get; }
     }
 
-  [Serializable]
+    internal interface NotSchedulable { }
+
+    [Serializable]
   public abstract class ActorAction
   {
     protected readonly Actor m_Actor;

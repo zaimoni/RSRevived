@@ -120,23 +120,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _isExpired = true;
         return true;
       }
-      {
-      var lights = m_Actor?.Inventory.GetItemsByType<ItemLight>();
-      if (0 < (lights?.Count ?? 0)) {
-        foreach(var x in lights) {
-          ret = (m_Actor.Controller as ObjectiveAI)?.DoctrineRechargeToFull(x);
+
+      var recharge = ActionRechargeItemBattery.WantsToRecharge(m_Actor);
+      if (null != recharge) {
+          ret = (m_Actor.Controller as ObjectiveAI)?.DoctrineRechargeToFull(recharge);
           if (null != ret) return true;
-        }
-      }
-      }
-      {
-      var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => Item_IDs.TRACKER_POLICE_RADIO!=it.ModelID);
-      if (0 < (trackers?.Count ?? 0)) {
-        foreach(var x in trackers) {
-          ret = (m_Actor.Controller as ObjectiveAI)?.DoctrineRechargeToFull(x);
-          if (null != ret) return true;
-        }
-      }
       }
 
       _isExpired = true;
@@ -1579,16 +1567,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable enable
     public ActorAction? RechargeWithAdjacentGenerator()
     {
-      var recharge_these = m_Actor.Inventory.GetItemsByType<ItemLight>(it => it.MaxBatteries - it.Batteries >= (it as BatteryPowered).RechargeRate);
-      if (null == recharge_these) return null;
+      var recharge = m_Actor.Inventory.GetFirstMatching<ItemLight>(it => it.MaxBatteries - it.Batteries >= (it as BatteryPowered).RechargeRate);
+      if (null == recharge) return null;
       HashSet<Location> recharge_at = new();
       foreach(var gen in m_Actor.Location.Map.PowerGenerators.Get) {
         // design decision to not turn on here
         if (gen.IsOn) {
           if (Rules.IsAdjacent(m_Actor.Location, gen.Location)) {
-            var recharge = recharge_these[0];
-            recharge.EquippedBy(m_Actor);
-            return new ActionRechargeItemBattery(m_Actor, recharge);
+            return ActionRechargeItemBattery.Recharge(m_Actor, recharge);
           } else {
             var candidates = gen.Location.Adjacent(loc => loc.IsWalkableFor(m_Actor));
             if (null != candidates) recharge_at.UnionWith(candidates);
@@ -8033,8 +8019,7 @@ restart_chokepoints:
       var generators_on = generators.FindAll(power => power.IsOn);
       if (0 >= generators_on.Count) return new ActionSwitchPowerGenerator(m_Actor,generators[0]);
       if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
-      if (!it.IsEquipped) it.EquippedBy(m_Actor);
-      return new ActionRechargeItemBattery(m_Actor,it);
+      return ActionRechargeItemBattery.Recharge(m_Actor, it);
     }
 
     public ActorAction? DoctrineButcher(Corpse c)

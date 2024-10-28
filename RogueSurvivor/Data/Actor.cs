@@ -2577,27 +2577,6 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
-	private string ReasonCantRecharge(Item it)
-	{
-      if (!Model.Abilities.CanUseItems) return "no ability to use items";
-      if (!it.IsEquipped || !m_Inventory.Contains(it)) return "item not equipped";
-      if (!(it is BatteryPowered)) return "not a battery powered item";
-      return "";
-	}
-
-    public bool CanRecharge(Item it, out string reason)
-    {
-	  reason = ReasonCantRecharge(it);
-	  return string.IsNullOrEmpty(reason);
-    }
-
-#if DEAD_FUNC
-    public bool CanRecharge(Item it)
-    {
-	  return string.IsNullOrEmpty(ReasonCantRecharge(it));
-    }
-#endif
-
     // event timing
     public void SpendActionPoints(int actionCost = BASE_ACTION_COST)
     {
@@ -3905,6 +3884,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // event handlers
+    // should prefer to call it.EquippedBy(whom); rather than whom.Equip(it); , for side effects
     public void Equip(Item it)
     {
 #if CPU_HOG
