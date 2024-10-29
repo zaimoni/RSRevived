@@ -10194,11 +10194,12 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DoGiveItemTo(Actor actor, Actor target, Item gift, Item? received)
+    public void DoGiveItemTo(Actor actor, OrderableAI t_ordai, Item gift, Item? received)
     {
 #if DEBUG
       if (!actor.Inventory.Contains(gift)) throw new InvalidOperationException("no longer had gift");
 #endif
+      var target = t_ordai.ControlledActor;
       if (null != received) {
 #if DEBUG
         if (!target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
@@ -10217,7 +10218,7 @@ namespace djack.RogueSurvivor.Engine
           if (!target.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("no longer had recieved");
 #endif
           actor.Inventory.RepairContains(trade.Value.Value, "already had recieved ");
-          DoTrade(actor.Controller as OrderableAI, trade, target.Controller as OrderableAI, false);
+          DoTrade(actor.Controller as OrderableAI, trade, t_ordai, false);
           return;
         }
       }
@@ -10226,9 +10227,8 @@ namespace djack.RogueSurvivor.Engine
       // If cannot trade, outright give
       if (target.Inventory.IsFull && !target.CanGet(gift)) {
         if (null == received) { // \todo refactor this -- repeat block from ActionGiveItem
-          var ai = (target.Controller as Gameplay.AI.ObjectiveAI)!;
-          var recover = ai.BehaviorMakeRoomFor(gift,actor.Location); // unsure if this works cross-map
-          if (null != recover && !recover.IsLegal() && recover is ActionUseItem) recover = ai.BehaviorMakeRoomFor(gift); // ammo can get confused, evidently
+          var recover = t_ordai.BehaviorMakeRoomFor(gift,actor.Location); // unsure if this works cross-map
+          if (null != recover && !recover.IsLegal() && recover is ActionUseItem) recover = t_ordai.BehaviorMakeRoomFor(gift); // ammo can get confused, evidently
 
           static Item? parse_recovery(ActorAction? act) {
             if (act is Resolvable chain) return parse_recovery(chain.ConcreteAction); // historically ActionChain
@@ -10247,7 +10247,7 @@ namespace djack.RogueSurvivor.Engine
 
         if (null != received) {
           if (do_not_crash_on_target_turn) DoWait(target);
-          DoTrade(actor.Controller as OrderableAI, new KeyValuePair<Item,Item>(gift,received), target.Controller as OrderableAI, false);
+          DoTrade(actor.Controller as OrderableAI, new KeyValuePair<Item,Item>(gift,received), t_ordai, false);
           return;
         }
       }

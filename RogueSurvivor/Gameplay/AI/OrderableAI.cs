@@ -3774,7 +3774,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach (var x in insurance) {
                 int dist = Rules.InteractionDistance(m_Actor.Location, x.Key.Location);
                 if (dist >= min_dist) continue;
-                var request = new ActionGiveTo(x.Key, m_Actor, x.Value);
+                var request = new ActionGiveTo(x.Key, this, x.Value);
                 if (!request.IsLegal()) continue;
                 if (1 >= dist) return request;
                 if ((x.Key.Controller as ObjectiveAI).IsFocused) continue; // stacking this can backfire badly
@@ -3801,7 +3801,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach (var x in want) {
                 int dist = Rules.InteractionDistance(m_Actor.Location, x.Key.Location);
                 if (dist >= min_dist) continue;
-                var request = new ActionGiveTo(x.Key, m_Actor, x.Value);
+                var request = new ActionGiveTo(x.Key, this, x.Value);
                 if (!request.IsLegal()) continue;
                 if (1 >= dist) return request;
                 if ((x.Key.Controller as ObjectiveAI).IsFocused) continue; // stacking this can backfire badly

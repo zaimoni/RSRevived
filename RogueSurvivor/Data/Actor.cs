@@ -3403,10 +3403,8 @@ namespace djack.RogueSurvivor.Data
       if (!buyer.Model.Abilities.CanTrade) throw new InvalidOperationException("cannot trade");
 #endif
 
-#if OBSOLETE
-#else
       if (buyer.IsPlayer && IsPlayer) return m_Inventory.Items.ToList();
-#endif
+
       var buyer_ai = buyer.Controller as Gameplay.AI.ObjectiveAI;
       var ai = Controller as Gameplay.AI.ObjectiveAI;
 

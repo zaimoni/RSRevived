@@ -104,18 +104,18 @@ namespace djack.RogueSurvivor.Engine.Actions
   internal class ActionGiveTo : ActorAction,ActorGive,TargetActor
   {
     private readonly Gameplay.Item_IDs m_ID;
-    private readonly Actor m_Target;
+    private readonly Gameplay.AI.OrderableAI m_Target;
     [NonSerialized] Item? gift;
     [NonSerialized] Item? received;
     [NonSerialized] ActorAction? m_ConcreteAction; // not meant to be Resolvable
 
-    public ActionGiveTo(Actor actor, Actor target, Gameplay.Item_IDs it) : base(actor)
+    public ActionGiveTo(Actor actor, Gameplay.AI.OrderableAI target, Gameplay.Item_IDs it) : base(actor)
     {
       m_ID = it;
       m_Target = target;
     }
 
-    public Actor Whom { get { return m_Target; } }
+    public Actor Whom { get => m_Target.ControlledActor; }
 
     public Gameplay.Item_IDs ID { get { return m_ID; } }
 
@@ -128,9 +128,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsLegal()
     {
       // can happen if double-executing
-      if (null != received && !m_Target.Inventory.Contains(received)) { m_FailReason = "no longer had received"; return false; }
+      if (null != received && !m_Target.ControlledActor.Inventory.Contains(received)) { m_FailReason = "no longer had received"; return false; }
       if (null==Give) { m_FailReason = "not in inventory"; return false; }
-      if ((m_Target.Controller as Gameplay.AI.ObjectiveAI)!.ItemIsUseless(gift)) return false;
+      if (m_Target.ItemIsUseless(gift)) return false;
       return true;
     }
 
@@ -140,16 +140,18 @@ namespace djack.RogueSurvivor.Engine.Actions
 #if DEBUG
       if (!m_Actor.Inventory.Contains(gift)) throw new InvalidOperationException("no longer had gift");
 #endif
-      m_Target.Inventory.RepairContains(gift, "already had ");
+      var t_actor = m_Target.ControlledActor;
+      var t_inv = t_actor.Inventory;
+      t_inv.RepairContains(gift, "already had ");
       if (null != m_ConcreteAction) {
         if (m_ConcreteAction.IsPerformable()) return true;
         m_ConcreteAction = null;
       }
-      if (!m_Target.IsPlayer && m_Target.Inventory.IsFull && !RogueGame.CanPickItemsToTrade(m_Actor, m_Target, gift)) {
-        if (m_Target.CanGet(gift)) return true;
-        var recover = (m_Target.Controller as Gameplay.AI.ObjectiveAI)!.BehaviorMakeRoomFor(gift,m_Actor.Location,false); // unsure if this works cross-map
+      if (t_inv.IsFull && !RogueGame.CanPickItemsToTrade(m_Actor, t_actor, gift)) {
+        if (t_actor.CanGet(gift)) return true;
+        var recover = m_Target.BehaviorMakeRoomFor(gift,m_Actor.Location,false); // unsure if this works cross-map
         if (null == recover) return false;
-        if (recover is ActionTradeWithActor trade && trade.Whom == m_Target) {
+        if (recover is ActionTradeWithActor trade && trade.Whom == t_actor) {
           if (trade.IsPerformable()) {
             m_ConcreteAction = trade;
             return true;
@@ -165,7 +167,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         if (null!=(received = parse_recovery(recover))) {
 #if DEBUG
-          if (!m_Target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
+          if (!t_inv.Contains(received)) throw new InvalidOperationException("no longer had recieved");
 #endif
           m_Actor.Inventory.RepairContains(received, "already had recieved ");
           return true;
@@ -189,7 +191,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override string ToString()
     {
-      return m_Actor.Name + " giving " + m_ID.ToString() + " to " + m_Target.Name;
+      return m_Actor.Name + " giving " + m_ID.ToString() + " to " + m_Target.ControlledActor.Name;
     }
   } // ActionTake
 }
