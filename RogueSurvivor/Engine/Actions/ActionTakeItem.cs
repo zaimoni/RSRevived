@@ -186,7 +186,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       if (null != m_ConcreteAction) m_ConcreteAction.Perform();
-      else RogueGame.Game.DoGiveItemTo(m_Actor, m_Target, gift!, received!);
+      else RogueGame.Game.DoGiveItemTo(m_Actor.Controller as Gameplay.AI.OrderableAI, m_Target, gift!, received!);
     }
 
     public override string ToString()

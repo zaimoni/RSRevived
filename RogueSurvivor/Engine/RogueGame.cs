@@ -10194,8 +10194,9 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DoGiveItemTo(Actor actor, OrderableAI t_ordai, Item gift, Item? received)
+    public void DoGiveItemTo(OrderableAI src_ordai, OrderableAI t_ordai, Item gift, Item? received)
     {
+      var actor = src_ordai.ControlledActor;
 #if DEBUG
       if (!actor.Inventory.Contains(gift)) throw new InvalidOperationException("no longer had gift");
 #endif
@@ -10210,7 +10211,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool do_not_crash_on_target_turn = (0 < target.ActionPoints && target.Location.Map.NextActorToAct == target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
       // try to trade with NPC first
-      if (!target.IsPlayer) {
+      {
         var trade = PickItemsToTrade(actor, target, gift);
         if (null != trade) {
           if (do_not_crash_on_target_turn) DoWait(target);
@@ -10218,7 +10219,7 @@ namespace djack.RogueSurvivor.Engine
           if (!target.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("no longer had recieved");
 #endif
           actor.Inventory.RepairContains(trade.Value.Value, "already had recieved ");
-          DoTrade(actor.Controller as OrderableAI, trade, t_ordai, false);
+          DoTrade(src_ordai, trade, t_ordai, false);
           return;
         }
       }
@@ -10247,7 +10248,7 @@ namespace djack.RogueSurvivor.Engine
 
         if (null != received) {
           if (do_not_crash_on_target_turn) DoWait(target);
-          DoTrade(actor.Controller as OrderableAI, new KeyValuePair<Item,Item>(gift,received), t_ordai, false);
+          DoTrade(src_ordai, new KeyValuePair<Item,Item>(gift,received), t_ordai, false);
           return;
         }
       }
