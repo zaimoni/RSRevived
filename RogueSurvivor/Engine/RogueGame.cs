@@ -4463,20 +4463,94 @@ namespace djack.RogueSurvivor.Engine
 
         void police_rankings(List<string> display) {
             string header = string.Concat("   Score   ","   Start   ").PadLeft(MESSAGES_LINE_LENGTH);
+            var header_score = "Score";
+            var header_start = "Start";
+            List<KeyValuePair<string,int>> whom = new();
+            List<string> their_score = new();
+            List<string> their_start = new();
+
             int me = -1;
             int scan = -1;
             ActorTag self = new(Player);
 
-            void name_him(KeyValuePair<ActorTag, Ranking> x) {
-              ++scan;
-              display.Add(string.Concat(string.Concat((scan+1).ToString(), ") ").PadLeft(7), x.Key.Name.PadRight(MESSAGES_LINE_LENGTH-29), x.Value.TotalPoints.ToString().PadLeft(11) , x.Value.t0.ToString().PadLeft(11)));
-              if (x.Key== self) me = scan;
+            scores.DoForEach(x => {
+                ++scan;
+                var place = string.Concat((scan + 1).ToString(), ") ");
+                whom.Add(new(string.Concat(place, x.Key.Name), place.Length));
+                their_score.Add(x.Value.TotalPoints.ToString());
+                their_start.Add(x.Value.t0.ToString());
+                if (x.Key == self) me = scan;
+            });
+
+            var raw_count = whom.Count;
+            bool truncating = SHOW_SPECIAL_DIALOGUE_LINE_LIMIT - 1 < raw_count;
+            if (truncating) {
+              var trim = (whom.Count - SHOW_SPECIAL_DIALOGUE_LINE_LIMIT) + 2;
+              whom.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT-2, trim);
+              their_score.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT-2, trim);
+              their_start.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT-2, trim);
             }
-            scores.DoForEach_(name_him, () => display.Add(header));
-            if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT < display.Count) {
-              display.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT-1, (display.Count-SHOW_SPECIAL_DIALOGUE_LINE_LIMIT)+1);
-              display.Add("...");
+
+            var align = whom[^1].Value;
+            var len_ub = 0;
+            scan = whom.Count;
+            while(0 <= --scan) {
+                var delta = align - whom[scan].Value;
+                if (0 < delta) whom[scan] = new(string.Concat(new string(' ', delta), whom[scan].Key), align);
+                var len = whom[scan].Key.Length;
+                if (len_ub < len) len_ub = len;
             }
+            var whom_len_ub = len_ub;
+            scan = whom.Count;
+            while(0 <= --scan) {
+                var delta = len_ub - whom[scan].Key.Length;
+                if (0 < delta) whom[scan] = new(string.Concat(whom[scan].Key, new string(' ', delta)), align);
+            }
+
+            len_ub = header_score.Length;
+            scan = their_score.Count;
+            while(0 <= --scan) {
+                var len = their_score[scan].Length;
+                if (len_ub < len) len_ub = len;
+            }
+            scan = their_score.Count;
+            while(0 <= --scan) {
+                var delta = len_ub - their_score[scan].Length;
+                if (0 < delta) their_score[scan] = string.Concat(new string(' ', delta), their_score[scan]);
+            }
+            var h_delta = len_ub - header_score.Length;
+            if (0 < h_delta) {
+                var h_delta_div_2 = h_delta/2;
+                header_score = string.Concat(new string(' ', h_delta - h_delta_div_2), header_score, new string(' ', h_delta_div_2));
+            }
+
+            len_ub = header_start.Length;
+            scan = their_start.Count;
+            while(0 <= --scan) {
+                var len = their_score[scan].Length;
+                if (len_ub < len) len_ub = len;
+            }
+            scan = their_start.Count;
+            while(0 <= --scan) {
+                var delta = len_ub - their_start[scan].Length;
+                if (0 < delta) their_start[scan] = string.Concat(new string(' ', delta), their_start[scan]);
+            }
+            h_delta = len_ub - header_start.Length;
+            if (0 < h_delta) {
+                var h_delta_div_2 = h_delta/2;
+                header_start = string.Concat(new string(' ', h_delta - h_delta_div_2), header_start, new string(' ', h_delta_div_2));
+            }
+
+            scan = -1;
+            whom.DoForEach_(x => {
+                ++scan;
+                string dest = string.Concat(x.Key, " ", their_score[scan], " ", their_start[scan]);
+                display.Add(dest);
+            }, () => {
+                string dest = string.Concat(new string(' ', whom_len_ub), " ", header_score, " ", header_start);
+                display.Add(dest);
+            });
+            if (truncating) display.Add("...");
         }
         opts.Add(new("Reputation", police_rankings));
 
