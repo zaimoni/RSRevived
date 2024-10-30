@@ -4359,7 +4359,45 @@ namespace djack.RogueSurvivor.Engine
       List<KeyValuePair<string, Action<List<string>>>> opts = new();
       string header = string.Empty;
 
-      void police_status(List<string> display) {
+      static void LeftPadColumn(List<string> dest, ref string header) {
+            var len_ub = header.Length;
+            var scan = dest.Count;
+            while(0 <= --scan) {
+                var len = dest[scan].Length;
+                if (len_ub < len) len_ub = len;
+            }
+            scan = dest.Count;
+            while(0 <= --scan) {
+                var delta = len_ub - dest[scan].Length;
+                if (0 < delta) dest[scan] = string.Concat(new string(' ', delta), dest[scan]);
+            }
+            var h_delta = len_ub - header.Length;
+            if (0 < h_delta) {
+                var h_delta_div_2 = h_delta/2;
+                header = string.Concat(new string(' ', h_delta - h_delta_div_2), header, new string(' ', h_delta_div_2));
+            }
+      }
+
+      static int AlignNames(List<KeyValuePair<string,int>> whom) {
+            var align = whom[^1].Value;
+            var len_ub = 0;
+            var scan = whom.Count;
+            while(0 <= --scan) {
+                var delta = align - whom[scan].Value;
+                if (0 < delta) whom[scan] = new(string.Concat(new string(' ', delta), whom[scan].Key), align);
+                var len = whom[scan].Key.Length;
+                if (len_ub < len) len_ub = len;
+            }
+            var whom_len_ub = len_ub;
+            scan = whom.Count;
+            while(0 <= --scan) {
+                var delta = len_ub - whom[scan].Key.Length;
+                if (0 < delta) whom[scan] = new(string.Concat(whom[scan].Key, new string(' ', delta)), align);
+            }
+            return whom_len_ub;
+      }
+
+    void police_status(List<string> display) {
          // full knowledge: police storyline
          if (0 <= Session.Get.ScriptStage_PoliceCHARrelations) {
                     // XXX should have NPC start-of-game district chief
@@ -4462,9 +4500,8 @@ namespace djack.RogueSurvivor.Engine
         var scores = Session.Get.Police.Rankings();
 
         void police_rankings(List<string> display) {
-            string header = string.Concat("   Score   ","   Start   ").PadLeft(MESSAGES_LINE_LENGTH);
-            var header_score = "Score";
-            var header_start = "Start";
+            string header_score = "Score";
+            string header_start = "Start";
             List<KeyValuePair<string,int>> whom = new();
             List<string> their_score = new();
             List<string> their_start = new();
@@ -4491,64 +4528,23 @@ namespace djack.RogueSurvivor.Engine
               their_start.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT-2, trim);
             }
 
-            var align = whom[^1].Value;
-            var len_ub = 0;
-            scan = whom.Count;
-            while(0 <= --scan) {
-                var delta = align - whom[scan].Value;
-                if (0 < delta) whom[scan] = new(string.Concat(new string(' ', delta), whom[scan].Key), align);
-                var len = whom[scan].Key.Length;
-                if (len_ub < len) len_ub = len;
-            }
-            var whom_len_ub = len_ub;
-            scan = whom.Count;
-            while(0 <= --scan) {
-                var delta = len_ub - whom[scan].Key.Length;
-                if (0 < delta) whom[scan] = new(string.Concat(whom[scan].Key, new string(' ', delta)), align);
-            }
+            var whom_len_ub = AlignNames(whom);
+            LeftPadColumn(their_score, ref header_score);
+            LeftPadColumn(their_start, ref header_start);
 
-            len_ub = header_score.Length;
-            scan = their_score.Count;
-            while(0 <= --scan) {
-                var len = their_score[scan].Length;
-                if (len_ub < len) len_ub = len;
-            }
-            scan = their_score.Count;
-            while(0 <= --scan) {
-                var delta = len_ub - their_score[scan].Length;
-                if (0 < delta) their_score[scan] = string.Concat(new string(' ', delta), their_score[scan]);
-            }
-            var h_delta = len_ub - header_score.Length;
-            if (0 < h_delta) {
-                var h_delta_div_2 = h_delta/2;
-                header_score = string.Concat(new string(' ', h_delta - h_delta_div_2), header_score, new string(' ', h_delta_div_2));
-            }
-
-            len_ub = header_start.Length;
-            scan = their_start.Count;
-            while(0 <= --scan) {
-                var len = their_score[scan].Length;
-                if (len_ub < len) len_ub = len;
-            }
-            scan = their_start.Count;
-            while(0 <= --scan) {
-                var delta = len_ub - their_start[scan].Length;
-                if (0 < delta) their_start[scan] = string.Concat(new string(' ', delta), their_start[scan]);
-            }
-            h_delta = len_ub - header_start.Length;
-            if (0 < h_delta) {
-                var h_delta_div_2 = h_delta/2;
-                header_start = string.Concat(new string(' ', h_delta - h_delta_div_2), header_start, new string(' ', h_delta_div_2));
-            }
-
+            string[] relay = new string[3];
             scan = -1;
             whom.DoForEach_(x => {
                 ++scan;
-                string dest = string.Concat(x.Key, " ", their_score[scan], " ", their_start[scan]);
-                display.Add(dest);
+                relay[0] = x.Key;
+                relay[1] = their_score[scan];
+                relay[2] = their_start[scan];
+                display.Add(string.Join(" ", relay));
             }, () => {
-                string dest = string.Concat(new string(' ', whom_len_ub), " ", header_score, " ", header_start);
-                display.Add(dest);
+                relay[0] = new string(' ', whom_len_ub);
+                relay[1] = header_score;
+                relay[2] = header_start;
+                display.Add(string.Join(" ", relay));
             });
             if (truncating) display.Add("...");
         }
@@ -4557,21 +4553,65 @@ namespace djack.RogueSurvivor.Engine
         var deceased = Session.Get.Police.Deceased();
         if (0 < deceased.Count) {
             void police_graveyard(List<string> display) {
-                string header = string.Concat("   Score   ", "   Start   ").PadLeft(MESSAGES_LINE_LENGTH);
-                int me = -1;
-                int scan = -1;
-                ActorTag self = new(Player);
+            string header_score = "Score";
+            string header_start = "Start";
+            string header_end = "End";
+            string header_killer = "Killer";
+            List<KeyValuePair<string,int>> whom = new();
+            List<string> their_score = new();
+            List<string> their_killer = new();
+            List<string> their_start = new();
+            List<string> their_end = new();
 
-                void name_him(KeyValuePair<ActorTag, KeyValuePair<Ranking, Demise>> x) {
-                    ++scan;
-                    display.Add(string.Concat(string.Concat((scan + 1).ToString(), ") ").PadLeft(7), x.Key.Name.PadRight(MESSAGES_LINE_LENGTH - 29), x.Value.Key.TotalPoints.ToString().PadLeft(11), x.Value.Key.t0.ToString().PadLeft(11)));
-                    if (x.Key == self) me = scan;
-                }
-                deceased.DoForEach_(name_him, () => display.Add(header));
-                if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT < display.Count) {
-                    display.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT - 1, (display.Count - SHOW_SPECIAL_DIALOGUE_LINE_LIMIT) + 1);
-                    display.Add("...");
-                }
+            int me = -1;
+            int scan = -1;
+            ActorTag self = new(Player);
+
+            deceased.DoForEach(x => {
+                ++scan;
+                var place = string.Concat((scan + 1).ToString(), ") ");
+                whom.Add(new(string.Concat(place, x.Key.Name), place.Length));
+                their_score.Add(x.Value.Key.TotalPoints.ToString());
+                their_start.Add(x.Value.Key.t0.ToString());
+                their_killer.Add(x.Value.Value.killer.Name);
+                their_end.Add(x.Value.Value.t1.ToString());
+                if (x.Key == self) me = scan;
+            });
+
+            var raw_count = whom.Count;
+            bool truncating = SHOW_SPECIAL_DIALOGUE_LINE_LIMIT - 1 < raw_count;
+            if (truncating) {
+              var trim = (whom.Count - SHOW_SPECIAL_DIALOGUE_LINE_LIMIT) + 2;
+              whom.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT-2, trim);
+              their_score.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT-2, trim);
+              their_start.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT-2, trim);
+            }
+
+            var whom_len_ub = AlignNames(whom);
+            LeftPadColumn(their_score, ref header_score);
+            LeftPadColumn(their_start, ref header_start);
+            LeftPadColumn(their_end, ref header_end);
+            LeftPadColumn(their_killer, ref header_killer);
+
+            string[] relay = new string[5];
+            scan = -1;
+            whom.DoForEach_(x => {
+                ++scan;
+                relay[0] = x.Key;
+                relay[1] = their_killer[scan];
+                relay[2] = their_score[scan];
+                relay[3] = their_end[scan];
+                relay[4] = their_start[scan];
+                display.Add(string.Join(" ", relay));
+            }, () => {
+                relay[0] = new string(' ', whom_len_ub);
+                relay[1] = header_killer;
+                relay[2] = header_score;
+                relay[3] = header_end;
+                relay[4] = header_start;
+                display.Add(string.Join(" ", relay));
+            });
+            if (truncating) display.Add("...");
             }
             opts.Add(new("Valhalla", police_graveyard));
         }
