@@ -4021,11 +4021,9 @@ namespace djack.RogueSurvivor.Engine
     {
       var staging_size = RogueForm.Get.Measure(msg);
 #if DEBUG
-      if (   CANVAS_HEIGHT-4 < staging_size[^1].Height
-          || CANVAS_WIDTH-4  < staging_size[^1].Width)
-        throw new InvalidOperationException("test case");
+      if (CANVAS_HEIGHT-4 < staging_size[^1].Height) throw new InvalidOperationException("test case: height " + staging_size[^1].Height.ToString());
+      if (CANVAS_WIDTH-4  < staging_size[^1].Width) throw new InvalidOperationException("test case: width " + staging_size[^1].Width.ToString());
 #endif
-
       var working = new OverlayPopup(msg, Color.Red, Color.Red, Color.Black, new GDI_Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) / 2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) / 2));
       AddOverlay(working);
       RedrawPlayScreen();
@@ -4038,9 +4036,8 @@ namespace djack.RogueSurvivor.Engine
     {
       var staging_size = RogueForm.Get.Measure(msg);
 #if DEBUG
-      if (   CANVAS_HEIGHT-4 < staging_size[^1].Height
-          || CANVAS_WIDTH-4  < staging_size[^1].Width)
-        throw new InvalidOperationException("test case");
+      if (CANVAS_HEIGHT-4 < staging_size[^1].Height) throw new InvalidOperationException("test case: height " + staging_size[^1].Height.ToString());
+      if (CANVAS_WIDTH-4  < staging_size[^1].Width) throw new InvalidOperationException("test case: width " + staging_size[^1].Width.ToString());
 #endif
 
       var working = new OverlayPopup(msg, Color.White, MODE_BORDERCOLOR, Color.Black, new GDI_Point((CANVAS_WIDTH - 4 - staging_size[^1].Width) / 2, (CANVAS_HEIGHT - 4 - staging_size[^1].Height) / 2));

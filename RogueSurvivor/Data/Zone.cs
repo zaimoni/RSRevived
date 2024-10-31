@@ -80,7 +80,7 @@ namespace djack.RogueSurvivor.Data
   // not meant to be self-contained
   [Serializable]
   public class Zone : Zaimoni.Serialization.ISerialize
-    {
+  {
     private readonly string m_Name = "unnamed zone";
     private Rectangle m_Bounds; // assumed to be fully in bounds of the underlying map
     // while zone attributes have great potential, RS Alpha 9 underwhelms in its use of them.
@@ -112,6 +112,8 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, in m_Bounds);
     }
 #endregion
+
+    public override string ToString() => m_Name + " " + m_Bounds.to_s();
   }
 
   [Serializable]    // just in case
@@ -525,6 +527,8 @@ namespace djack.RogueSurvivor.Data
       }
       return ret;
     } }
+
+    public override string ToString() => m.ToString() + " " + Rect.to_s();
   }
 
 #if CTHORPE_BROKEN_GENERICS
