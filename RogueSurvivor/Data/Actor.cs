@@ -817,8 +817,9 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsViewpoint { get { return IsPlayer || IsDebuggingTarget; } } // i.e., is camera viewpoint
-    public bool IsNPCviewpoint { get { return IsDebuggingTarget; } }
+    // 2024-11-01: NPC viewpoint support removed as obsolescent for debugging
+    public bool IsViewpoint { get => IsPlayer /* || IsDebuggingTarget */; } // i.e., is camera viewpoint
+//  public bool IsNPCviewpoint { get { return IsDebuggingTarget; } }
 
     [NonSerialized] private string[]? _force_PC_names = null; // only used below
     public void CommandLinePlayer() // would prefer private

@@ -13632,12 +13632,6 @@ namespace djack.RogueSurvivor.Engine
         } else if (null != d_witness && 0 < d_witness.Value.Key.Count) {
             PanViewportTo(d_witness.Value.Key[0].ControlledActor);
             return new(false,true);
-        } else if (a.IsNPCviewpoint) {
-            PanViewportTo(a);
-            return new(true,true);
-        } else if (d.IsNPCviewpoint) {
-            PanViewportTo(d);
-            return new(IsVisibleToPlayer(a.Location), true);
         } else if (null != ad_witness && 0 < ad_witness.Value.Value.Count) {
             PanViewportTo(ad_witness.Value.Value[0]);
             return new(true,true);
