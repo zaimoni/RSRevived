@@ -5128,7 +5128,8 @@ namespace djack.RogueSurvivor.Engine
         }
 
         player.SpendActionPoints();
-        bool ret = src.Stance(player) && dest.Stance(player) && src.Inventory!.Transfer(it, dest);
+        bool ret = src.Stance(player) && dest.Stance(player);
+        src.Inventory!.Transfer(it, dest);
         ClearOverlays();
         RedrawPlayScreen();
         return ret;

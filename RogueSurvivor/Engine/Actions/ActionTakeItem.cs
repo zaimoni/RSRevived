@@ -51,6 +51,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       foreach(var stack in stacks) {
         var obj = stack.Inventory!.GetFirstByModel(model);
         if (null == obj) continue;
+        if (!m_Actor.IsPlayer && !(m_Actor.Controller as Gameplay.AI.ObjectiveAI).IsInterestingItem(obj)) continue; // XXX temporary, not valid once safehouses are landing
         var act = new _Action.TakeItem(m_Actor, in stack, obj);
         if (!act.IsPerformable()) continue;
         _resolved = act;
