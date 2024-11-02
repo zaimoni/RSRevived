@@ -35,36 +35,26 @@ namespace djack.RogueSurvivor.Data
 
 #region UI messages
     // forwarder system for to RogueGame::AddMessage
-    public void AddMessage(UI.Message msg, KeyValuePair<List<PlayerController>, List<Actor>> witnesses) {
-      if (0 < witnesses.Key.Count) {
-        foreach(var witness in witnesses.Key) witness.AddMessage(msg);
+    public void AddMessage(UI.Message msg, List<PlayerController> witnesses) {
+      if (0 < witnesses.Count) {
+        foreach(var witness in witnesses) witness.AddMessage(msg);
       }
     }
 
-    public virtual void AddMessageForceRead(UI.Message msg, KeyValuePair<List<PlayerController>, List<Actor>> witnesses) {
-      if (0 < witnesses.Key.Count) {
+    public virtual void AddMessageForceRead(UI.Message msg, List<PlayerController> witnesses) {
+      if (0 < witnesses.Count) {
         bool rendered = false;
-        foreach(var witness in witnesses.Key) if (witness.AddMessage(msg)) rendered = true;
-        if (!rendered) RogueGame.Game.PanViewportTo(witnesses.Key);
-        return;
-      }
-      if (0 < witnesses.Value.Count) {
-        RogueGame.Game.PanViewportTo(witnesses.Value);
-        RogueGame.Game.RedrawPlayScreen(msg);
+        foreach(var witness in witnesses) if (witness.AddMessage(msg)) rendered = true;
+        if (!rendered) RogueGame.Game.PanViewportTo(witnesses);
         return;
       }
     }
 
-    public virtual void AddMessageForceReadClear(UI.Message msg, KeyValuePair<List<PlayerController>, List<Actor>> witnesses) {
-      if (0 < witnesses.Key.Count) {
+    public virtual void AddMessageForceReadClear(UI.Message msg, List<PlayerController> witnesses) {
+      if (0 < witnesses.Count) {
         bool rendered = false;
-        foreach(var witness in witnesses.Key) if (witness.AddMessage(msg)) rendered = true;
-        if (!rendered) RogueGame.Game.PanViewportTo(witnesses.Key);
-        return;
-      }
-      if (0 < witnesses.Value.Count) {
-        RogueGame.Game.PanViewportTo(witnesses.Value);
-        RogueGame.Game.RedrawPlayScreen(msg);
+        foreach(var witness in witnesses) if (witness.AddMessage(msg)) rendered = true;
+        if (!rendered) RogueGame.Game.PanViewportTo(witnesses);
         return;
       }
     }

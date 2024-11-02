@@ -45,7 +45,7 @@ namespace djack.RogueSurvivor.Engine.Items
       actor.RegenSanity(actor.ScaleMedicineEffect(SanityCure));
       inv.Consume(this);
       var witnesses = actor.PlayersInLOS();
-      if (null != witnesses) RogueGame.Game.RedrawPlayScreen(witnesses.Value, RogueGame.MakePanopticMessage(actor, RogueGame.VERB_HEAL_WITH.Conjugate(actor), this));
+      if (null != witnesses) RogueGame.Game.RedrawPlayScreen(witnesses, RogueGame.MakePanopticMessage(actor, RogueGame.VERB_HEAL_WITH.Conjugate(actor), this));
     }
     public string ReasonCantUse(Actor a) {
       if (!CouldUse(a)) return "undeads cannot use medecine";

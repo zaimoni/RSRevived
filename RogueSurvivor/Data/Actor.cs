@@ -772,7 +772,7 @@ namespace djack.RogueSurvivor.Data
       m_DraggedCorpse = c; // \todo? call StopDraggingCorpse to get that message (RS Alpha does not do this)
       var witnesses = this.PlayersInLOS();
       if (null != witnesses) {
-        RogueGame.Game.RedrawPlayScreen(witnesses.Value, RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_START.Conjugate(this), c.DeadGuy.Name)));
+        RogueGame.Game.RedrawPlayScreen(witnesses, RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_START.Conjugate(this), c.DeadGuy.Name)));
       }
     }
 
@@ -783,7 +783,7 @@ namespace djack.RogueSurvivor.Data
         m_DraggedCorpse = null;
         var witnesses = this.PlayersInLOS();
         if (null != witnesses) {
-          RogueGame.Game.RedrawPlayScreen(witnesses.Value, RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_STOP.Conjugate(this), dead_name)));
+          RogueGame.Game.RedrawPlayScreen(witnesses, RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_STOP.Conjugate(this), dead_name)));
         }
       }
     }
@@ -3253,7 +3253,7 @@ namespace djack.RogueSurvivor.Data
         Remove(equippedItem);
         var witnesses = this.PlayersInLOS();
         if (null != witnesses) {
-          game.ImportantMessage(witnesses.Value, RogueGame.MakePanopticMessage(this, string.Format(": {0} breaks and is now useless!", equippedItem.TheName)), IsPlayer ? Engine.RogueGame.DELAY_NORMAL : Engine.RogueGame.DELAY_SHORT);
+          game.ImportantMessage(witnesses, RogueGame.MakePanopticMessage(this, string.Format(": {0} breaks and is now useless!", equippedItem.TheName)), IsPlayer ? Engine.RogueGame.DELAY_NORMAL : Engine.RogueGame.DELAY_SHORT);
         }
       }
       if (IsSleeping) game.DoWakeUp(this);

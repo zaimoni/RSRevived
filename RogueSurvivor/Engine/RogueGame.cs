@@ -446,7 +446,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 < delay) AnimDelay(delay);
     }
 
-    public void ImportantMessage(KeyValuePair<List<PlayerController>, List<Actor>> witnesses, UI.Message msg, int delay=0)
+    public void ImportantMessage(List<PlayerController> witnesses, UI.Message msg, int delay=0)
     {
       RedrawPlayScreen(witnesses, msg);
       if (0 < delay) AnimDelay(delay);
@@ -494,72 +494,46 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void AddMessageIfVisible<S,O>(S subject, KeyValuePair<List<PlayerController>, List<Actor>>? s_witnesses, string verb, O direct_object, KeyValuePair<List<PlayerController>, List<Actor>>? o_witnesses, string end_sentence, Color msg_color) where S:ILocation,INoun where O:ILocation,INoun
+    private void AddMessageIfVisible<S,O>(S subject, List<PlayerController>? s_witnesses, string verb, O direct_object, List<PlayerController>? o_witnesses, string end_sentence, Color msg_color) where S:ILocation,INoun where O:ILocation,INoun
     {
       if (null == o_witnesses && null == o_witnesses) return;
       var both_witnesses = s_witnesses?.Intersect(o_witnesses);
       s_witnesses = s_witnesses?.SetDifference(both_witnesses);
       o_witnesses = o_witnesses?.SetDifference(both_witnesses);
-      bool msg_pc = false;
       bool have_rendered = false;
       // based on RogueGame::MakeMessage
       var t0 = Session.Get.WorldTime.TurnCounter;
       var stage_msg = new string[4];
       stage_msg[1] = verb;
       stage_msg[3] = end_sentence;
-      if (null != both_witnesses && 0 < both_witnesses.Value.Key.Count) {
-        stage_msg[0] = subject.TheName;
-        stage_msg[2] = direct_object.TheName;
-        UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
-        RedrawPlayScreen(both_witnesses.Value.Key, stage);
-        msg_pc = true;
-        have_rendered = true;
-      }
-      if (null != s_witnesses && 0 < s_witnesses.Value.Key.Count) {
-        stage_msg[0] = subject.TheName;
-        stage_msg[2] = direct_object.UnknownPronoun;
-        UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
-        if (!have_rendered) {
-          RedrawPlayScreen(s_witnesses.Value.Key, stage);
-          have_rendered = true;
-        } else {
-          AddMessage(s_witnesses.Value.Key, stage);
-        }
-        msg_pc = true;
-      }
-      if (null != o_witnesses && 0 < o_witnesses.Value.Key.Count) {
-        stage_msg[0] = subject.UnknownPronoun.Capitalize();
-        stage_msg[2] = direct_object.TheName;
-        UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
-        if (!have_rendered) {
-          RedrawPlayScreen(o_witnesses.Value.Key, stage);
-          have_rendered = true;
-        } else {
-          AddMessage(o_witnesses.Value.Key, stage);
-        }
-        msg_pc = true;
-      }
-      if (msg_pc) return;
       if (null != both_witnesses) {
         stage_msg[0] = subject.TheName;
         stage_msg[2] = direct_object.TheName;
         UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
-        RedrawPlayScreen(both_witnesses.Value.Value, stage);
-        return;
+        RedrawPlayScreen(both_witnesses, stage);
+        have_rendered = true;
       }
       if (null != s_witnesses) {
         stage_msg[0] = subject.TheName;
         stage_msg[2] = direct_object.UnknownPronoun;
         UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
-        RedrawPlayScreen(s_witnesses.Value.Value, stage);
-        return;
+        if (!have_rendered) {
+          RedrawPlayScreen(s_witnesses, stage);
+          have_rendered = true;
+        } else {
+          AddMessage(s_witnesses, stage);
+        }
       }
       if (null != o_witnesses) {
         stage_msg[0] = subject.UnknownPronoun.Capitalize();
         stage_msg[2] = direct_object.TheName;
         UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
-        RedrawPlayScreen(o_witnesses.Value.Value, stage);
-        return;
+        if (!have_rendered) {
+          RedrawPlayScreen(o_witnesses, stage);
+          have_rendered = true;
+        } else {
+          AddMessage(o_witnesses, stage);
+        }
       }
     }
 
@@ -2133,18 +2107,18 @@ namespace djack.RogueSurvivor.Engine
                 if (infectionPercent >= Rules.INFECTION_LEVEL_5_DEATH) flag4 = true;
                 else if (infectionPercent >= Rules.INFECTION_LEVEL_4_BLEED) {
                   actor.Vomit();
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} blood.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses.Value);
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} blood.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses);
                   if (actor.RawDamage(Rules.INFECTION_LEVEL_4_BLEED_HP)) flag4 = true;
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_3_VOMIT) {
                   actor.Vomit();
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0}.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses.Value);
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0}.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses);
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_2_TIRED) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_2_TIRED_STA);
                   actor.Drowse(Rules.INFECTION_LEVEL_2_TIRED_SLP);
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} sick and tired.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses.Value);
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} sick and tired.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses);
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_1_WEAK) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_1_WEAK_STA);
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} sick and weak.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses.Value);
+                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} sick and weak.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses);
                 }
                 if (flag4) (actorList ??= new List<Actor>()).Add(actor);
               }
@@ -2154,7 +2128,7 @@ namespace djack.RogueSurvivor.Engine
             foreach (Actor actor in actorList) {
               var witnesses = actor.PlayersInLOS();
               if (null != witnesses) {
-                RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} of infection!", VERB_DIE.Conjugate(actor))));
+                RedrawPlayScreen(witnesses, MakePanopticMessage(actor, string.Format("{0} of infection!", VERB_DIE.Conjugate(actor))));
               }
               KillActor(null, actor, "infection");
             }
@@ -2180,7 +2154,7 @@ namespace djack.RogueSurvivor.Engine
             if (actor.IsRotStarving && rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE) {
               var witnesses = actor.PlayersInLOS();
               if (null != witnesses) {
-                RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, "is rotting away."));
+                RedrawPlayScreen(witnesses, MakePanopticMessage(actor, "is rotting away."));
               }
               if (actor.RawDamage(1)) (actorList1 ??= new()).Add(actor);
             }
@@ -2199,7 +2173,7 @@ namespace djack.RogueSurvivor.Engine
                 actor.SpendStaminaPoints(Rules.SANITY_NIGHTMARE_STA_LOSS);
                 var witnesses = actor.PlayersInLOS();
                 if (null != witnesses) {
-                  RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} from a horrible nightmare!", VERB_WAKE_UP.Conjugate(actor))));
+                  RedrawPlayScreen(witnesses, MakePanopticMessage(actor, string.Format("{0} from a horrible nightmare!", VERB_WAKE_UP.Conjugate(actor))));
                 }
                 if (actor.IsPlayer) {
                    // FIXME replace with sfx
@@ -2229,7 +2203,7 @@ namespace djack.RogueSurvivor.Engine
               } else if (rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE)) {
                 var witnesses = actor.PlayersInLOS();
                 if (null != witnesses) {
-                  RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0}.", VERB_SNORE.Conjugate(actor))));
+                  RedrawPlayScreen(witnesses, MakePanopticMessage(actor, string.Format("{0}.", VERB_SNORE.Conjugate(actor))));
                 }
               }
 #endregion
@@ -2239,7 +2213,7 @@ namespace djack.RogueSurvivor.Engine
               actor.StartSleeping();
               var witnesses = actor.PlayersInLOS();
               if (null != witnesses) {
-                RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} from exhaustion !!", VERB_COLLAPSE.Conjugate(actor))));
+                RedrawPlayScreen(witnesses, MakePanopticMessage(actor, string.Format("{0} from exhaustion !!", VERB_COLLAPSE.Conjugate(actor))));
               }
               if (actor == Player) {
                 Player.Controller.UpdateSensors();
@@ -2271,14 +2245,14 @@ namespace djack.RogueSurvivor.Engine
           foreach (Actor actor in actorList1) {
             var witnesses = actor.PlayersInLOS();
             if (null != witnesses) {
-              RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} !!", VERB_DIE_FROM_STARVATION.Conjugate(actor))));
+              RedrawPlayScreen(witnesses, MakePanopticMessage(actor, string.Format("{0} !!", VERB_DIE_FROM_STARVATION.Conjugate(actor))));
             }
             KillActor(null, actor, "starvation");
             if (!actor.Model.Abilities.IsUndead && Session.Get.HasImmediateZombification && rules.RollChance(s_Options.StarvedZombificationChance)) {
               map.TryRemoveCorpseOf(actor);
               Zombify(null, actor, false);
               if (null != witnesses) {
-                ImportantMessage(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} into a Zombie!", "turn".Conjugate(actor))), DELAY_LONG);
+                ImportantMessage(witnesses, MakePanopticMessage(actor, string.Format("{0} into a Zombie!", "turn".Conjugate(actor))), DELAY_LONG);
               }
             }
           }
@@ -2294,7 +2268,7 @@ namespace djack.RogueSurvivor.Engine
           if (it is BatteryPowered batt && is_drained(batt)) {
             var witnesses = actor.PlayersInLOS();
             if (null != witnesses) {
-              RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format(": {0} goes off.", it.TheName)));
+              RedrawPlayScreen(witnesses, MakePanopticMessage(actor, string.Format(": {0} goes off.", it.TheName)));
             }
           };
         }
@@ -4880,12 +4854,12 @@ namespace djack.RogueSurvivor.Engine
       SeeingCauseInsanity(a, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
       int num = a.DamageVsCorpses;
       if (null != witnesses) {
-        RedrawPlayScreen(witnesses.Value, MakePanopticMessage(a, string.Format("{0} {1} corpse for {2} damage.", VERB_BUTCHER.Conjugate(a), c.DeadGuy.Name, num)));
+        RedrawPlayScreen(witnesses, MakePanopticMessage(a, string.Format("{0} {1} corpse for {2} damage.", VERB_BUTCHER.Conjugate(a), c.DeadGuy.Name, num)));
       }
       if (!c.TakeDamage(num)) return;
       a.Location.Map.Destroy(c);
       if (null != witnesses) {
-        RedrawPlayScreen(witnesses.Value, new(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
+        RedrawPlayScreen(witnesses, new(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
       }
     }
 
@@ -8756,19 +8730,19 @@ namespace djack.RogueSurvivor.Engine
         victim.TakeDamage(dmg);
         if (null != witnesses) {
           DefenderDamageIcon(victim, GameImages.ICON_MELEE_DAMAGE, dmg.ToString());
-          ImportantMessage(witnesses.Value, MakePanopticMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, dmg)), victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
+          ImportantMessage(witnesses, MakePanopticMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, dmg)), victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           ClearOverlays();
           RedrawPlayScreen();
         }
       }
       if (trapModel.IsNoisy) {
-        if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(victim, string.Format("stepping on {0} makes a bunch of noise!", trap.AName)));
+        if (null != witnesses) RedrawPlayScreen(witnesses, MakePanopticMessage(victim, string.Format("stepping on {0} makes a bunch of noise!", trap.AName)));
         OnLoudNoise(victim.Location, trapModel.NoiseName);
       }
       if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
 
       if (!trap.CheckStepOnBreaks()) return false;
-      if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(victim, string.Format("{0} {1}.", VERB_CRUSH.Conjugate(victim), trap.TheName)));
+      if (null != witnesses) RedrawPlayScreen(witnesses, MakePanopticMessage(victim, string.Format("{0} {1}.", VERB_CRUSH.Conjugate(victim), trap.TheName)));
       return trap.Consume();
     }
 
@@ -9257,7 +9231,7 @@ namespace djack.RogueSurvivor.Engine
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead) {
             attacker.RegenHitPoints(attacker.BiteHpRegen(dmg));
             attacker.RottingEat(dmg);
-            if (null != a_witness) AddMessage(a_witness.Value, MakePanopticMessage(attacker, VERB_FEAST_ON.Conjugate(attacker), defender, " flesh !"));
+            if (null != a_witness) AddMessage(a_witness, MakePanopticMessage(attacker, VERB_FEAST_ON.Conjugate(attacker), defender, " flesh !"));
             defender.Infect(attacker.InfectionForDamage(dmg));
           }
           if (fatal) {
@@ -9300,7 +9274,7 @@ namespace djack.RogueSurvivor.Engine
         attacker.OnUnequipItem(itemMeleeWeapon);
         attacker.Inventory.Consume(itemMeleeWeapon);
         if (null != a_witness) {
-          ImportantMessage(a_witness.Value, MakePanopticMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+          ImportantMessage(a_witness, MakePanopticMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       if (isDefVisible || isAttVisible) ClearOverlays();  // alpha10: if test
@@ -9319,7 +9293,7 @@ namespace djack.RogueSurvivor.Engine
       if (   r_attack.Kind == AttackKind.FIREARM
           && (rules.RollChance(World.Get.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN))) {
         var a_witnesses = _ForceVisibleToPlayer(attacker, defender);
-        if (null != a_witnesses) RedrawPlayScreen(a_witnesses.Value, MakePanopticMessage(attacker, " : weapon jam!"));
+        if (null != a_witnesses) RedrawPlayScreen(a_witnesses, MakePanopticMessage(attacker, " : weapon jam!"));
         return;
       }
 
@@ -9477,7 +9451,7 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
       if (null != witnesses_throw) {
-        ImportantMessage(witnesses_throw.Value, MakePanopticMessage(actor, string.Format("{0} a {1}!", VERB_THROW.Conjugate(actor), itemGrenade.Model.SingleName)), DELAY_LONG);
+        ImportantMessage(witnesses_throw, MakePanopticMessage(actor, string.Format("{0} a {1}!", VERB_THROW.Conjugate(actor), itemGrenade.Model.SingleName)), DELAY_LONG);
       } else {
         ImportantMessage(MakeMessage(actor, string.Format("{0} a {1}!", VERB_THROW.Conjugate(actor), itemGrenade.Model.SingleName)), DELAY_LONG);
       }
@@ -9513,7 +9487,7 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
       if (null != witnesses_throw) {
-        ImportantMessage(witnesses_throw.Value, MakePanopticMessage(actor, string.Format("{0} back a {1}!", VERB_THROW.Conjugate(actor), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);
+        ImportantMessage(witnesses_throw, MakePanopticMessage(actor, string.Format("{0} back a {1}!", VERB_THROW.Conjugate(actor), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);
       } else {
         ImportantMessage(MakeMessage(actor, string.Format("{0} back a {1}!", VERB_THROW.Conjugate(actor), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);
       }
@@ -9589,17 +9563,17 @@ namespace djack.RogueSurvivor.Engine
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
         if (dmg > 0) {
           if (null != witnesses) {
-            RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actorAt, string.Format("is hit for {0} damage!", dmg), Color.Crimson));
+            RedrawPlayScreen(witnesses, MakePanopticMessage(actorAt, string.Format("is hit for {0} damage!", dmg), Color.Crimson));
           }
           if (actorAt.TakeDamage(dmg) && !actorAt.IsDead) {
             KillActor(null, actorAt, string.Format("explosion {0} damage", dmg));
             if (null != witnesses) {
-              RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actorAt, "dies in the explosion!", Color.Crimson));
+              RedrawPlayScreen(witnesses, MakePanopticMessage(actorAt, "dies in the explosion!", Color.Crimson));
             }
           }
         } else {
           if (null != witnesses) {
-            RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actorAt, "is hit for no damage.", Color.White));
+            RedrawPlayScreen(witnesses, MakePanopticMessage(actorAt, "is hit for no damage.", Color.White));
           }
         }
       }
@@ -9924,7 +9898,7 @@ namespace djack.RogueSurvivor.Engine
 //    RedrawPlayScreen(); // redraw handled by AddMessage calls below
 
       // no need to spam other PCs with above messages
-      var witnesses = speaker.PlayersInLOS()!.Value;
+      var witnesses = speaker.PlayersInLOS()!;
 
       if (!acceptDeal) {
         speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))), witnesses);
@@ -9949,7 +9923,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
       target.RejectCrossLink(speaker.Inventory!);
-      var witnesses = speaker.PlayersInLOS()!.Value;
+      var witnesses = speaker.PlayersInLOS()!;
 
       var trade = PickItemToTrade(target, pc, itSpeaker);
       if (null == trade) return;
@@ -10003,7 +9977,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       inv.RejectCrossLink(dest);
       var witnesses = _ForceVisibleToPlayer(actor);
-      if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)), witnesses.Value);
+      if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)), witnesses);
 
       actor.SpendActionPoints();
       actor.Remove(give);
@@ -10250,7 +10224,7 @@ namespace djack.RogueSurvivor.Engine
     {
         var witnesses = actor.PlayersInLOS();
         if (null != witnesses) {
-            RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, string.Format(": {0}", text), isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
+            RedrawPlayScreen(witnesses, MakePanopticMessage(actor, string.Format(": {0}", text), isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
         }
     }
 
@@ -10289,7 +10263,7 @@ namespace djack.RogueSurvivor.Engine
       var see_take = PlayersInLOS(loc)?.SetDifference(witnesses);
 
       if (null != witnesses) {
-        RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_TAKE.Conjugate(actor), it));
+        RedrawPlayScreen(witnesses, MakePanopticMessage(actor, VERB_TAKE.Conjugate(actor), it));
         if (null != see_take) {
             var msg = MakeMessage(see_take[0], actor, VERB_TAKE.Conjugate(actor), it);
             foreach (var pc in see_take) pc.Messages.Add(msg);
@@ -10410,13 +10384,13 @@ namespace djack.RogueSurvivor.Engine
       var witnesses = actor.PlayersInLOS();
       if (it.IsUseless) {
         DiscardItem(actor, it);
-        if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), it));
+        if (null != witnesses) RedrawPlayScreen(witnesses, MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), it));
         return;
       }
       // XXX using containers can go here, but we may want a different action anyway
       if (obj == it) DropItem(actor, it);
       else DropCloneItem(actor, it, obj);
-      if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_DROP.Conjugate(actor), obj));
+      if (null != witnesses) RedrawPlayScreen(witnesses, MakePanopticMessage(actor, VERB_DROP.Conjugate(actor), obj));
       actor.Location.Items?.RejectCrossLink(actor.Inventory);
     }
 
@@ -10448,13 +10422,13 @@ namespace djack.RogueSurvivor.Engine
       var witnesses = actor.PlayersInLOS();
       if (it.IsUseless) {
         DiscardItem(actor, it);
-        if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), it));
+        if (null != witnesses) RedrawPlayScreen(witnesses, MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), it));
         return;
       }
       // XXX using containers can go here, but we may want a different action anyway
       if (obj == it) DropItem(actor, it, in dest);
       else DropCloneItem(actor, it, obj, in dest);
-      if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_DROP.Conjugate(actor), obj));
+      if (null != witnesses) RedrawPlayScreen(witnesses, MakePanopticMessage(actor, VERB_DROP.Conjugate(actor), obj));
       dest.Items?.RejectCrossLink(actor.Inventory);
     }
 
@@ -10528,7 +10502,7 @@ namespace djack.RogueSurvivor.Engine
       dest.fireChange();
 
       var witnesses = actor.PlayersInLOS();
-      if (null!=witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_UNLOAD.Conjugate(actor), src.it));
+      if (null!=witnesses) RedrawPlayScreen(witnesses, MakePanopticMessage(actor, VERB_UNLOAD.Conjugate(actor), src.it));
       return true;
     }
 
@@ -10603,14 +10577,14 @@ namespace djack.RogueSurvivor.Engine
 #endif
         break;
       }
-      if (null != witnesses) AddMessage(witnesses.Value, MakePanopticMessage(actor, VERB_ENJOY.Conjugate(actor), ent));
+      if (null != witnesses) AddMessage(witnesses, MakePanopticMessage(actor, VERB_ENJOY.Conjugate(actor), ent));
       int boreChance = ent.Model.BoreChance;
       if (boreChance == 100) {
         actor.Inventory!.Consume(ent);
-        if (null != witnesses) AddMessage(witnesses.Value, MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), ent));
+        if (null != witnesses) AddMessage(witnesses, MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), ent));
       } else if (Rules.Get.RollChance(boreChance)) {
         ent.AddBoringFor(actor);
-        if (null != witnesses) AddMessage(witnesses.Value, MakePanopticMessage(actor, string.Format("{0} now bored of {1}.", VERB_BE.Conjugate(actor), ent.TheName)));
+        if (null != witnesses) AddMessage(witnesses, MakePanopticMessage(actor, string.Format("{0} now bored of {1}.", VERB_BE.Conjugate(actor), ent.TheName)));
       }
       if (null != witnesses) RedrawPlayScreen();
     }
@@ -10618,7 +10592,7 @@ namespace djack.RogueSurvivor.Engine
     public void UI_RechargeItemBattery(Actor actor, Item it)
     {
       var witnesses = actor.PlayersInLOS();
-      if (null != witnesses) RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_RECHARGE.Conjugate(actor), it, " batteries."));
+      if (null != witnesses) RedrawPlayScreen(witnesses, MakePanopticMessage(actor, VERB_RECHARGE.Conjugate(actor), it, " batteries."));
     }
 
     public void DoOpenDoor(Actor actor, DoorWindow door)
@@ -10969,7 +10943,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Activity = Data.Activity.IDLE;
       actor.IsSleeping = false;
       var witnesses = _ForceVisibleToPlayer(actor);
-      if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("{0}.", VERB_WAKE_UP.Conjugate(actor))), witnesses.Value);
+      if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("{0}.", VERB_WAKE_UP.Conjugate(actor))), witnesses);
       // stop sleep music if player.
       if (actor.IsPlayer && m_MusicManager.Music == GameMusics.SLEEP) m_MusicManager.Stop();
     }
@@ -10980,7 +10954,7 @@ namespace djack.RogueSurvivor.Engine
       --spray.PaintQuantity;
       actor.Location.Map.AddDecorationAt(spray.Model.TagImageID, in pos);
       var witnesses = _ForceVisibleToPlayer(actor);
-      if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("{0} a tag.", VERB_SPRAY.Conjugate(actor))), witnesses.Value);
+      if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("{0} a tag.", VERB_SPRAY.Conjugate(actor))), witnesses);
     }
 
 #nullable enable
@@ -11033,7 +11007,7 @@ namespace djack.RogueSurvivor.Engine
         var witnesses = _ForceVisibleToPlayer(actor);
         DoWakeUp(actor);
         if (null != witnesses) {
-          RedrawPlayScreen(witnesses.Value, new(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), loc.Map.LocalTime.TurnCounter, actor == Player ? Color.Red : Color.White));
+          RedrawPlayScreen(witnesses, new(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), loc.Map.LocalTime.TurnCounter, actor == Player ? Color.Red : Color.White));
         }
       }
     }
@@ -11090,7 +11064,7 @@ namespace djack.RogueSurvivor.Engine
         if (a.HasBondWith(deadGuy)) {
           a.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
           var witnesses = a.PlayersInLOS();
-          if (null != witnesses) a.Controller.AddMessageForceRead(MakePanopticMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)), witnesses.Value);
+          if (null != witnesses) a.Controller.AddMessageForceRead(MakePanopticMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)), witnesses);
         }
       }
 
@@ -11172,7 +11146,7 @@ namespace djack.RogueSurvivor.Engine
             var witnesses = killer.PlayersInLOS();
             if (null != witnesses) {
               AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(killer.Location), SIZE_OF_ACTOR)));
-              ImportantMessage(witnesses.Value, MakePanopticMessage(killer, string.Format("{0} a {1} horror!", VERB_TRANSFORM_INTO.Conjugate(killer), actorModel.Name)), DELAY_LONG);
+              ImportantMessage(witnesses, MakePanopticMessage(killer, string.Format("{0} a {1} horror!", VERB_TRANSFORM_INTO.Conjugate(killer), actorModel.Name)), DELAY_LONG);
               ClearOverlays();
             }
           }
@@ -11186,7 +11160,7 @@ namespace djack.RogueSurvivor.Engine
         if (isMurder.cache) {
           killer.HasMurdered(deadGuy);
           var witnesses = _ForceVisibleToPlayer(killer);
-          if (null != witnesses) killer.Controller.AddMessage(MakePanopticMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)), witnesses.Value);
+          if (null != witnesses) killer.Controller.AddMessage(MakePanopticMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)), witnesses);
 
           // \todo while soldiers won't actively track down murderers, they will respond if it happens in sight
           PropagateSight(killer.Location, a => {
@@ -11879,7 +11853,7 @@ namespace djack.RogueSurvivor.Engine
       var lost = actor.MySkills.LoseRandomSkill();
       if (null != lost) {
         var witnesses = _ForceVisibleToPlayer(actor);
-        if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("regressed in {0}!", Skills.Name(lost.Value))), witnesses.Value);
+        if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("regressed in {0}!", Skills.Name(lost.Value))), witnesses);
       }
     }
 
@@ -13504,63 +13478,46 @@ namespace djack.RogueSurvivor.Engine
       return viewing;
     }
     private List<PlayerController>? _ForceVisibleToPlayer(in Location location) => _ForceVisibleToPlayer(location.Map, location.Position);
-#nullable restore
 
-    private KeyValuePair<List<PlayerController>, List<Actor>>? _ForceVisibleToPlayer(Actor actor)
+    private List<PlayerController>? _ForceVisibleToPlayer(Actor actor)
     {
       var viewing = actor.PlayersInLOS();
       if (null == viewing) return null;
-      if (actor.IsViewpoint) {
+      if (actor.Controller is PlayerController a_pc) {
         if (actor == Player) return viewing;
-        if (   viewing.Value.Key.Contains(actor.Controller as PlayerController)
-            || viewing.Value.Value.Contains(actor)) {
+        if (viewing.Contains(a_pc)) {
           PanViewportTo(actor);
           return viewing;
         }
       }
-      if (   viewing.Value.Key.Contains(Player.Controller as PlayerController)
-          || viewing.Value.Value.Contains(Player)) {
-        return viewing;
-      }
-      if (0 < viewing.Value.Key.Count) {
-        PanViewportTo(viewing.Value.Key);
-        return viewing;
-      }
-      PanViewportTo(viewing.Value.Value);
+      if (viewing.Contains(Player.Controller as PlayerController)) return viewing;
+      PanViewportTo(viewing);
       return viewing;
     }
 
-    private KeyValuePair<List<PlayerController>, List<Actor>>? _ForceVisibleToPlayer(Actor actor, Actor want)
+    private List<PlayerController>? _ForceVisibleToPlayer(Actor actor, Actor want)
     {
       var viewing = actor.PlayersInLOS();
       if (null == viewing) return null;
-      if (actor.IsViewpoint) {
+      if (actor.Controller is PlayerController a_pc) {
         if (actor == Player) return viewing;
-        if (   viewing.Value.Key.Contains(actor.Controller as PlayerController)
-            || viewing.Value.Value.Contains(actor)) {
+        if (viewing.Contains(a_pc)) {
           PanViewportTo(actor);
           return viewing;
         }
       }
-      if (want.IsViewpoint) {
+      if (want.Controller is PlayerController w_pc) {
         if (want == Player) return viewing;
-        if (   viewing.Value.Key.Contains(want.Controller as PlayerController)
-            || viewing.Value.Value.Contains(want)) {
+        if (viewing.Contains(w_pc)) {
           PanViewportTo(want);
           return viewing;
         }
       }
-      if (   viewing.Value.Key.Contains(Player.Controller as PlayerController)
-          || viewing.Value.Value.Contains(Player)) {
-        return viewing;
-      }
-      if (0 < viewing.Value.Key.Count) {
-        PanViewportTo(viewing.Value.Key);
-        return viewing;
-      }
-      PanViewportTo(viewing.Value.Value);
+      if (viewing.Contains(Player.Controller as PlayerController)) return viewing;
+      PanViewportTo(viewing);
       return viewing;
     }
+#nullable restore
 
     private bool ForceVisibleToPlayer(Map map, in Point position)
     {
@@ -13598,7 +13555,7 @@ namespace djack.RogueSurvivor.Engine
       return ForceVisibleToPlayer(src.a_owner);
     }
 
-    private KeyValuePair<bool,bool> ForceVisibleToPlayer(Actor a, Actor d, KeyValuePair<List<PlayerController>, List<Actor>>? ad_witness, KeyValuePair<List<PlayerController>, List<Actor>>?  a_witness, KeyValuePair<List<PlayerController>, List<Actor>>?  d_witness)
+    private KeyValuePair<bool,bool> ForceVisibleToPlayer(Actor a, Actor d, List<PlayerController>? ad_witness, List<PlayerController>?  a_witness, List<PlayerController>?  d_witness)
     {
         if (a.IsPlayer) {
             PanViewportTo(a);
@@ -13606,23 +13563,11 @@ namespace djack.RogueSurvivor.Engine
         } else if (d.IsPlayer) {
             PanViewportTo(d);
             return new(IsVisibleToPlayer(a.Location), true);
-        } else if (null != ad_witness && 0 < ad_witness.Value.Key.Count) {
-            PanViewportTo(ad_witness.Value.Key[0].ControlledActor);
+        } else if (null != ad_witness) {
+            PanViewportTo(ad_witness[0].ControlledActor);
             return new(true,true);
-        } else if (null != a_witness && 0 < a_witness.Value.Key.Count) {
-            PanViewportTo(a_witness.Value.Key[0].ControlledActor);
-            return new(true,false);
-        } else if (null != d_witness && 0 < d_witness.Value.Key.Count) {
-            PanViewportTo(d_witness.Value.Key[0].ControlledActor);
-            return new(false,true);
-        } else if (null != ad_witness && 0 < ad_witness.Value.Value.Count) {
-            PanViewportTo(ad_witness.Value.Value[0]);
-            return new(true,true);
-        } else if (null != a_witness && 0 < a_witness.Value.Value.Count) {
-            PanViewportTo(a_witness.Value.Value[0]);
-            return new(true,false);
-        } else if (null != d_witness && 0 < d_witness.Value.Value.Count) {
-            PanViewportTo(d_witness.Value.Value[0]);
+        } else if (null != d_witness) {
+            PanViewportTo(d_witness[0].ControlledActor);
             return new(false,true);
         }
         return default;
@@ -14723,38 +14668,27 @@ retry:
         var PC_witnesses = actor.PlayersInLOS();
         if (null == PC_witnesses) continue;
         bool have_messaged = false;
-        if (null != pc_did_it && PC_witnesses.Value.Key.Remove(pc_did_it)) {
+        if (null != pc_did_it && PC_witnesses.Remove(pc_did_it)) {
           if (need_to_message_performer) {
               pc_did_it.AddMessage(new("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
               need_to_message_performer = false;
               have_messaged = true;
               PanViewportTo(whoDoesTheAction);
           }
+          if (0 >= PC_witnesses.Count) continue;
         }
-        if (actor == whoDoesTheAction && PC_witnesses.Value.Value.Remove(whoDoesTheAction)) {
-              PanViewportTo(whoDoesTheAction);
-              RedrawPlayScreen(new UI.Message("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
-              have_messaged = true;
-        }
-        if (0 >= PC_witnesses.Value.Key.Count && 0 >= PC_witnesses.Value.Value.Count) continue;
-        if (actor.Controller is PlayerController a_pc && PC_witnesses.Value.Key.Remove(a_pc)) {
+        if (actor.Controller is PlayerController a_pc && PC_witnesses.Remove(a_pc)) {
           a_pc.AddMessage(pc_saw ?? (pc_saw = new(string.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange)));
           have_messaged = true;
           PanViewportTo(actor);
+          if (0 >= PC_witnesses.Count) continue;
         }
-        if (0 >= PC_witnesses.Value.Key.Count && 0 >= PC_witnesses.Value.Value.Count) continue;
         var broadcast = whoDoesTheAction == actor ? MakePanopticMessage(actor, string.Format("{0} done something very disturbing...", VERB_HAVE.Conjugate(actor)))
                                                   : MakePanopticMessage(actor, string.Format("{0} something very disturbing...", VERB_SEE.Conjugate(actor)));
-        if (0 < PC_witnesses.Value.Key.Count) {
-          foreach (var witness in PC_witnesses.Value.Key) witness.AddMessage(broadcast);
-          if (!have_messaged) {
-            PanViewportTo(PC_witnesses.Value.Key);
-            return;
-          }
-        }
-        if (!have_messaged && 0 < PC_witnesses.Value.Key.Count) {
-          PanViewportTo(PC_witnesses.Value.Value);
-          RedrawPlayScreen(broadcast);
+        foreach (var witness in PC_witnesses) witness.AddMessage(broadcast);
+        if (!have_messaged) {
+          PanViewportTo(PC_witnesses);
+          return;
         }
       }
     }
@@ -14901,7 +14835,7 @@ retry:
           if (null == actorAt) return;
           KillActor(null, actorAt, "crushed");    // XXX \todo credit the gate operator with a murder (with usual exemptions)
           var witnesses = _ForceVisibleToPlayer(actorAt);
-          if (null != witnesses) actorAt.Controller.AddMessage(MakePanopticMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))), witnesses.Value);
+          if (null != witnesses) actorAt.Controller.AddMessage(MakePanopticMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))), witnesses);
       });
     }
 #nullable restore
@@ -15294,11 +15228,11 @@ retry:
         return (0 < ret.Key.Count || 0 < ret.Value.Count) ? ret : null;
     }
 
-    static public List<PlayerController>? SetDifference(this List<PlayerController> lhs, KeyValuePair<List<PlayerController>, List<Actor>>? rhs) {
+    static public List<PlayerController>? SetDifference(this List<PlayerController> lhs, List<PlayerController>? rhs) {
         if (null == rhs) return null;
         List<PlayerController> ret = new(lhs);
         if (0 < ret.Count) {
-            foreach(var actor in rhs.Value.Key) ret.Remove(actor);
+            foreach(var actor in rhs) ret.Remove(actor);
         }
         return 0 < ret.Count ? ret : null;
     }
@@ -15315,19 +15249,13 @@ retry:
         return (0 < ret.Key.Count || 0 < ret.Value.Count) ? ret : null;
     }
 
-    static public bool ForceVisible(this KeyValuePair<List<PlayerController>, List<Actor>> viewing) {
-      var player = RogueGame.Player;
-      if (player.Controller is PlayerController pc && viewing.Key.Contains(pc)) return true;
-      if (viewing.Value.Contains(player)) return true;
-      if (0 < viewing.Key.Count) {
-        RogueGame.Game.PanViewportTo(viewing.Key);
-        return true;
-      }
-      if (0 < viewing.Value.Count) {
-        RogueGame.Game.PanViewportTo(viewing.Value);
-        return true;
-      }
-      return false;
+    static public List<PlayerController>? Intersect(this List<PlayerController> lhs, List<PlayerController>? rhs) {
+        if (null == rhs) return null;
+        List<PlayerController> ret = new();
+        if (0 < lhs.Count) {
+            foreach(var actor in rhs) if (lhs.Contains(actor)) ret.Add(actor);
+        }
+        return 0 < ret.Count ? ret : null;
     }
 
     static public void DrawIcon(this string icon, in GDI_Point origin, Color tint) {
@@ -15462,11 +15390,7 @@ retry:
       }
     }
 
-#if false
-    static public KeyValuePair<List<PlayerController>, List<Actor>>? PlayersInLOS(this ILocation view) => RogueGame.PlayersInLOS(view.Location);
-#else
-    static public KeyValuePair<List<PlayerController>, List<Actor>>? PlayersInLOS(this ILocation view) => new(RogueGame.PlayersInLOS(view.Location), new());
-#endif
+    static public List<PlayerController>? PlayersInLOS(this ILocation view) => RogueGame.PlayersInLOS(view.Location);
 
     static public string? VisibleIdentity(this KeyValuePair<List<PlayerController>, List<Actor>> witnesses, Actor observer, Actor whom) {
         foreach(var pc in witnesses.Key) if (pc.ControlledActor == observer) return whom.TheName;
