@@ -6355,11 +6355,8 @@ namespace djack.RogueSurvivor.Engine
       if (!follower.IsTrustingLeader) {
         if (IsVisibleToPlayer(follower))
           follower.Say(player, "Sorry, I don't trust you enough yet.", Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
-        else if (AreLinkedByPhone(follower, player)) {
-          ClearMessages();
-          AddMessage(MakeMessage(follower, "Sorry, I don't trust you enough yet."));
-          AddMessagePressEnter();
-        }
+        else if (AreLinkedByPhone(follower, player))
+          pc.AddMessageForceRead(MakeMessage(follower, "Sorry, I don't trust you enough yet."));
         return false;
       }
       string str1 = DescribePlayerFollowerStatus(follower);
@@ -11563,7 +11560,7 @@ namespace djack.RogueSurvivor.Engine
     private void OnNewNight() => World.Get.DoForAllActors(a => HandleNewNight(a));
     private void OnNewDay() => World.Get.DoForAllActors(a => StayingAliveAchievements(a));
 
-    private void HandlePlayerDecideUpgrade(Actor upgradeActor)
+    private void HandlePlayerDecideUpgrade(PlayerController pc, Actor upgradeActor)
     {
       List<Skills.IDs> upgrade = RollSkillsToUpgrade(upgradeActor, 300);
       string str = upgradeActor == Player ? "You" : upgradeActor.Name;
@@ -11655,7 +11652,7 @@ namespace djack.RogueSurvivor.Engine
         var followers = player.Followers;
         if (null == followers) return;
         pc.AddMessageForceRead(new("Your followers learned new skills at your side!", Session.Get.WorldTime.TurnCounter, Color.Green));
-        foreach (var fo in followers) HandlePlayerDecideUpgrade(fo);
+        foreach (var fo in followers) HandlePlayerDecideUpgrade(pc, fo);
     }
 #nullable restore
 
@@ -11665,8 +11662,8 @@ namespace djack.RogueSurvivor.Engine
         if (actor.Model.Abilities.IsUndead) continue;
         var leader = actor.LiveLeader;
         if (null != leader && leader.IsPlayer) continue; // leader triggers upgrade
-        if (actor.IsPlayer) {
-          HandlePlayerDecideUpgrade(actor);
+        if (actor.Controller is PlayerController pc) {
+          HandlePlayerDecideUpgrade(pc, actor);
           continue;
         }
         Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor);
@@ -11683,8 +11680,8 @@ namespace djack.RogueSurvivor.Engine
         if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(actor.Model)) continue;
         var leader = actor.LiveLeader;
         if (null != leader && leader.IsPlayer) continue; // leader triggers upgrade
-        if (actor.IsPlayer) {
-          HandlePlayerDecideUpgrade(actor);
+        if (actor.Controller is PlayerController pc) {
+          HandlePlayerDecideUpgrade(pc, actor);
           continue;
         }
         Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor);
