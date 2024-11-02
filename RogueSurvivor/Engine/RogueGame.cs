@@ -342,10 +342,7 @@ namespace djack.RogueSurvivor.Engine
     public static Keybindings KeyBindings { get { return s_KeyBindings; } }
 
     static public bool IsSimulating { get { return "Simulation Thread" == Thread.CurrentThread.Name; } }
-
-#if DEAD_FUNC
-    public IRogueUI UI { get { return m_UI; } }
-#endif
+    public IRogueUI UI { get => m_UI; }
 
 #region Session save/load assistants
     static public void AfterLoad(Map.ActorCode src)
@@ -623,20 +620,6 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Messages.AddNoLog(new("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
-      m_UI.WaitEnter();
-      Messages.RemoveLastMessage();
-      RedrawPlayScreen();
-    }
-
-    public void AddMessagePressEnter(PlayerController pc)
-    {
-#if DEBUG
-      if (IsSimulating) throw new InvalidOperationException("simulation cannot request UI interaction");
-#else
-      if (IsSimulating) return;   // visual no-op
-#endif
-      pc.Messages.AddNoLog(new("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      PanViewportTo(pc.ControlledActor.Location);
       m_UI.WaitEnter();
       Messages.RemoveLastMessage();
       RedrawPlayScreen();

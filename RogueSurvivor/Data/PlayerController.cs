@@ -56,8 +56,8 @@ namespace djack.RogueSurvivor.Data
             game.PlayEventMusic(music);
             pc.Messages.Clear();
             pc.Messages.Add(new Message(msg, Session.Get.WorldTime.TurnCounter, Color.Yellow));
-            game.AddMessagePressEnter(pc);
-        }
+            pc.AddMessagePressEnter();
+            }
         return true;
     }
   }
@@ -112,11 +112,27 @@ namespace djack.RogueSurvivor.Data
         return false;
     }
 
+    public void AddMessagePressEnter()
+    {
+#if DEBUG
+      if (RogueGame.IsSimulating) throw new InvalidOperationException("simulation cannot request UI interaction");
+#else
+      if (IsSimulating) return;   // visual no-op
+#endif
+      Messages.AddNoLog(new("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      var game = RogueGame.Game;
+      game.PanViewportTo(m_Actor.Location);
+      game.UI.WaitEnter();
+      Messages.RemoveLastMessage();
+      game.RedrawPlayScreen();
+    }
+
+
     public void AddMessageForceRead(Message msg) {
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
         Messages.Clear();
         Messages.Add(msg);
-        RogueGame.Game.AddMessagePressEnter(this);
+        AddMessagePressEnter();
       } else Messages.Add(msg);
     }
 
@@ -126,7 +142,7 @@ namespace djack.RogueSurvivor.Data
         if (witnesses.Remove(this)) {
           Messages.Clear();
           Messages.Add(msg);
-          RogueGame.Game.AddMessagePressEnter(this);
+          AddMessagePressEnter();
           have_panned = true;
           if (0 >= witnesses.Count) return;
         }
@@ -145,7 +161,7 @@ namespace djack.RogueSurvivor.Data
       if (RogueGame.IsPlayer(m_Actor) && !RogueGame.IsSimulating) {
         Messages.Clear();
         Messages.Add(msgs);
-        RogueGame.Game.AddMessagePressEnter(this);
+        AddMessagePressEnter();
       } else Messages.Add(msgs);
     }
 
@@ -155,7 +171,7 @@ namespace djack.RogueSurvivor.Data
         if (witnesses.Remove(this)) {
           Messages.Clear();
           Messages.Add(msg);
-          RogueGame.Game.AddMessagePressEnter(this);
+          AddMessagePressEnter();
           have_panned = true;
           if (0 >= witnesses.Count) return;
         }
@@ -601,7 +617,7 @@ namespace djack.RogueSurvivor.Data
             Messages.Clear();
             Messages.Add(desc_msg);
             Messages.Add(where_msg);
-            game.AddMessagePressEnter(this);
+            AddMessagePressEnter();
         } else {
             Messages.Add(desc_msg);
             Messages.Add(where_msg);
