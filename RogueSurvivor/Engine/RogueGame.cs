@@ -342,7 +342,6 @@ namespace djack.RogueSurvivor.Engine
     public static Keybindings KeyBindings { get { return s_KeyBindings; } }
 
     static public bool IsSimulating { get { return "Simulation Thread" == Thread.CurrentThread.Name; } }
-    public IRogueUI UI { get => m_UI; }
 
 #region Session save/load assistants
     static public void AfterLoad(Map.ActorCode src)
@@ -11530,19 +11529,17 @@ namespace djack.RogueSurvivor.Engine
 
     private void PCsurvival(PlayerController pc, UI.Message msg_alive, UI.Message msg_welcome)
     {
-        if (IsSimulating || IsPlayer(pc.ControlledActor)) {
+        if (IsSimulating || !IsPlayer(pc.ControlledActor)) {
             pc.AddMessage(msg_alive);
             pc.AddMessage(msg_welcome);
         } else {
             m_MusicManager.Stop();
             m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
-            ClearMessages();
-            AddMessage(msg_alive);
             pc.UpdateSensors();
-            AddMessagePressEnter();
+            pc.AddMessageForceRead(msg_alive);
             // HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
-            ClearMessages();
-            AddMessage(msg_welcome);
+            pc.Messages.Clear();
+            pc.AddMessage(msg_welcome);
             RedrawPlayScreen();
             m_MusicManager.Stop();
         }
@@ -11649,18 +11646,19 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      if (upgradeActor.IsPlayer) HandlePlayerFollowersUpgrade(upgradeActor);
+      if (upgradeActor.Controller is PlayerController pc) HandlePlayerFollowersUpgrade(pc);
     }
 
-    private void HandlePlayerFollowersUpgrade(Actor player)
+#nullable restore
+    private void HandlePlayerFollowersUpgrade(PlayerController pc)
     {
-      if (player.CountFollowers == 0) return;
-      ClearMessages();
-      AddMessage(new("Your followers learned new skills at your side!", Session.Get.WorldTime.TurnCounter, Color.Green));
-      AddMessagePressEnter();
-      foreach (Actor follower in player.Followers)
-        HandlePlayerDecideUpgrade(follower);
+        var player = pc.ControlledActor;
+        var followers = player.Followers;
+        if (null == followers) return;
+        pc.AddMessageForceRead(new("Your followers learned new skills at your side!", Session.Get.WorldTime.TurnCounter, Color.Green));
+        foreach (var fo in followers) HandlePlayerDecideUpgrade(fo);
     }
+#nullable restore
 
     private void HandleLivingNPCsUpgrade(Map map)
     {
@@ -14226,8 +14224,8 @@ retry:
       } else {
         m_MusicManager.PlayLooping(achievement.MusicID, MusicPriority.PRIORITY_EVENT);
         AddOverlay(new OverlayPopup(lines.ToArray(), Color.Gold, Color.Gold, Color.DimGray, GDI_Point.Empty));
-        ClearMessages();
-        AddMessagePressEnter();
+        pc.Messages.Clear();
+        pc.AddMessagePressEnter();
         ClearOverlays();
       }
     }

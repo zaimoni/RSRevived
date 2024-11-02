@@ -122,7 +122,7 @@ namespace djack.RogueSurvivor.Data
       Messages.AddNoLog(new("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       var game = RogueGame.Game;
       game.PanViewportTo(m_Actor.Location);
-      game.UI.WaitEnter();
+      IRogueUI.UI.WaitEnter();
       Messages.RemoveLastMessage();
       game.RedrawPlayScreen();
     }
