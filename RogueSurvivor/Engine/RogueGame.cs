@@ -488,12 +488,9 @@ namespace djack.RogueSurvivor.Engine
       var PCs = PCsNearby(loc, GameActors.HUMAN_AUDIO, hears);
       if (null == PCs) return;
 
-      foreach(var pc in PCs.Value.Key) {
+      foreach(var pc in PCs) {
         var msg = pc.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
-        if (null != msg) {
-            pc.AddMessage(msg);
-            if (IsPlayer(pc.ControlledActor)) RedrawPlayScreen();
-        }
+        if (null != msg) pc.AddMessage(msg);
       }
     }
 
@@ -2108,7 +2105,7 @@ namespace djack.RogueSurvivor.Engine
                 Zombify(null, corpse.DeadGuy, false);
                 var witnesses = _ForceVisibleToPlayer(corpse.Location);
                 if (null != witnesses) {
-                    RedrawPlayScreen(witnesses.Value, new("The " + corpse.ToString() + " rises again!!", map.LocalTime.TurnCounter, Color.Red));
+                    RedrawPlayScreen(witnesses, new("The " + corpse.ToString() + " rises again!!", map.LocalTime.TurnCounter, Color.Red));
                     m_MusicManager.Play(GameSounds.UNDEAD_RISE, MusicPriority.PRIORITY_EVENT);
                 }
                 map.Destroy(corpse);
@@ -2119,7 +2116,7 @@ namespace djack.RogueSurvivor.Engine
           foreach (Corpse c in corpseList2) {
             map.Destroy(c);
             var witnesses = _ForceVisibleToPlayer(c.Location);
-            if (null != witnesses) RedrawPlayScreen(witnesses.Value, new("The " + c.ToString() + " turns into dust.", map.LocalTime.TurnCounter, Color.Purple));
+            if (null != witnesses) RedrawPlayScreen(witnesses, new("The " + c.ToString() + " turns into dust.", map.LocalTime.TurnCounter, Color.Purple));
           }
 #endregion
         }
@@ -9760,15 +9757,11 @@ namespace djack.RogueSurvivor.Engine
 
     // the two lists are disjoint by construction.
     // This excludes NPCS, who do not get UI messages
-    static private KeyValuePair<List<PlayerController>, List<Actor>>? PCsNearby(Location loc, int radius, Func<Actor,bool> ok) {
+    static private List<PlayerController>? PCsNearby(Location loc, int radius, Func<Actor,bool> ok) {
         List<PlayerController> ret = new();
-        List<Actor> ret_viewpoints = new();
 
         void classify(Actor? actor) {
-            if (null != actor && !actor.IsDead && actor.IsViewpoint && ok(actor)) {
-                if (actor.Controller is PlayerController pc) ret.Add(pc);
-                else ret_viewpoints.Add(actor);
-            }
+            if (null != actor && !actor.IsDead && actor.Controller is PlayerController pc && ok(actor)) ret.Add(pc);
         };
 
         var survey = new Rectangle(loc.Position+(short)radius*Direction.NW, (Point)(2*radius+1));
@@ -9781,10 +9774,10 @@ namespace djack.RogueSurvivor.Engine
         var exit = loc.Exit;
         if (null != exit) classify(exit.Location.Actor);
 
-        return (0<ret.Count || 0<ret_viewpoints.Count) ? new(ret, ret_viewpoints) : null;
+        return 0<ret.Count ? ret : null;
     }
 
-    static public KeyValuePair<List<PlayerController>, List<Actor>>? PlayersInLOS(Location view) {
+    static public List<PlayerController>? PlayersInLOS(Location view) {
       if (!Map.Canonical(ref view)) return null;
 
       bool sees(Actor a) { return a.Controller.CanSee(view); };
@@ -10297,12 +10290,10 @@ namespace djack.RogueSurvivor.Engine
 
       if (null != witnesses) {
         RedrawPlayScreen(witnesses.Value, MakePanopticMessage(actor, VERB_TAKE.Conjugate(actor), it));
-        if (null != see_take && 0 < see_take.Value.Key.Count) {
-            var msg = MakeMessage(see_take.Value.Key[0], actor, VERB_TAKE.Conjugate(actor), it);
-            foreach (var pc in see_take.Value.Key) pc.Messages.Add(msg);
+        if (null != see_take) {
+            var msg = MakeMessage(see_take[0], actor, VERB_TAKE.Conjugate(actor), it);
+            foreach (var pc in see_take) pc.Messages.Add(msg);
         }
-      } else if (null != see_take && see_take.Value.ForceVisible()) {
-        AddMessage(see_take.Value, MakeMessage(actor, VERB_TAKE.Conjugate(actor), it));
       }
     }
 
@@ -13497,7 +13488,8 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private KeyValuePair<List<PlayerController>, List<Actor>>? _ForceVisibleToPlayer(Map map, in Point position)
+#nullable enable
+    private List<PlayerController>? _ForceVisibleToPlayer(Map map, in Point position)
     {
       if (null == map) return null; // convince Duckman to not superheroically crash many games on turn 0
 
@@ -13507,16 +13499,12 @@ namespace djack.RogueSurvivor.Engine
       var viewing = PlayersInLOS(view);
       if (null == viewing) return null;
 
-      if (viewing.Value.Key.Contains(Player.Controller as PlayerController)) return viewing;
-      if (viewing.Value.Value.Contains(Player)) return viewing;
-      if (0 < viewing.Value.Key.Count) {
-        PanViewportTo(viewing.Value.Key);
-        return viewing;
-      }
-      PanViewportTo(viewing.Value.Value);
+      if (viewing.Contains(Player.Controller as PlayerController)) return viewing;
+      PanViewportTo(viewing);
       return viewing;
     }
-    private KeyValuePair<List<PlayerController>, List<Actor>>? _ForceVisibleToPlayer(in Location location) => _ForceVisibleToPlayer(location.Map, location.Position);
+    private List<PlayerController>? _ForceVisibleToPlayer(in Location location) => _ForceVisibleToPlayer(location.Map, location.Position);
+#nullable restore
 
     private KeyValuePair<List<PlayerController>, List<Actor>>? _ForceVisibleToPlayer(Actor actor)
     {
@@ -13584,13 +13572,8 @@ namespace djack.RogueSurvivor.Engine
       var viewing = PlayersInLOS(view);
       if (null == viewing) return false;
 
-      if (viewing.Value.Key.Contains(Player.Controller as PlayerController)) return true;
-      if (viewing.Value.Value.Contains(Player)) return true;
-      if (0 < viewing.Value.Key.Count) {
-        PanViewportTo(viewing.Value.Key);
-        return true;
-      }
-      PanViewportTo(viewing.Value.Value);
+      if (viewing.Contains(Player.Controller as PlayerController)) return true;
+      PanViewportTo(viewing);
       return true;
     }
 
@@ -15311,6 +15294,15 @@ retry:
         return (0 < ret.Key.Count || 0 < ret.Value.Count) ? ret : null;
     }
 
+    static public List<PlayerController>? SetDifference(this List<PlayerController> lhs, KeyValuePair<List<PlayerController>, List<Actor>>? rhs) {
+        if (null == rhs) return null;
+        List<PlayerController> ret = new(lhs);
+        if (0 < ret.Count) {
+            foreach(var actor in rhs.Value.Key) ret.Remove(actor);
+        }
+        return 0 < ret.Count ? ret : null;
+    }
+
     static public KeyValuePair<List<PlayerController>, List<Actor>>? Intersect(this KeyValuePair<List<PlayerController>, List<Actor>> lhs, KeyValuePair<List<PlayerController>, List<Actor>>? rhs) {
         if (null == rhs) return null;
         KeyValuePair<List<PlayerController>, List<Actor>> ret = new(new(), new());
@@ -15470,7 +15462,11 @@ retry:
       }
     }
 
+#if false
     static public KeyValuePair<List<PlayerController>, List<Actor>>? PlayersInLOS(this ILocation view) => RogueGame.PlayersInLOS(view.Location);
+#else
+    static public KeyValuePair<List<PlayerController>, List<Actor>>? PlayersInLOS(this ILocation view) => new(RogueGame.PlayersInLOS(view.Location), new());
+#endif
 
     static public string? VisibleIdentity(this KeyValuePair<List<PlayerController>, List<Actor>> witnesses, Actor observer, Actor whom) {
         foreach(var pc in witnesses.Key) if (pc.ControlledActor == observer) return whom.TheName;
