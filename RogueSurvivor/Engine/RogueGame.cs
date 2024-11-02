@@ -421,16 +421,6 @@ namespace djack.RogueSurvivor.Engine
 
 #nullable enable
     public static void AddMessage(UI.Message msg) => Messages.Add(msg);
-    public static void AddMessages(IEnumerable<UI.Message> msgs) => Messages.Add(msgs);
-
-    public static void AddMessage(KeyValuePair<List<PlayerController>, List<Actor>> witnesses, UI.Message msg)
-    {
-        if (0 < witnesses.Key.Count) {
-            foreach(var pc in witnesses.Key) pc.Messages.Add(msg);
-            return;
-        }
-        AddMessage(msg);
-    }
 
     public static bool AddMessage(List<PlayerController> witnesses, UI.Message msg)
     {
@@ -438,7 +428,6 @@ namespace djack.RogueSurvivor.Engine
         foreach(var pc in witnesses) if (pc.AddMessage(msg)) rendered = true;
         return rendered;
     }
-
 
     public void ImportantMessage(UI.Message msg, int delay=0)
     {
@@ -12260,7 +12249,7 @@ namespace djack.RogueSurvivor.Engine
         if (GameTiles.FLOOR_SEWER_WATER == tile.Model) m_UI.UI_DrawImage(_movingWaterImage[Session.Get.WorldTime.TurnCounter % _movingWaterImage.Length], screen.X, screen.Y, tint);
         tile.DoForAllDecorations(decoration => m_UI.UI_DrawImage(decoration, screen.X, screen.Y));
       } else {
-        if (!tile.IsVisited || IsPlayerSleeping()) return;
+        if (!tile.IsVisited || Player.IsSleeping) return;
         m_UI.UI_DrawGrayLevelImage(tile.Model.ImageID, screen.X, screen.Y);
         if (GameTiles.FLOOR_SEWER_WATER == tile.Model) m_UI.UI_DrawGrayLevelImage(_movingWaterImage[Session.Get.WorldTime.TurnCounter % _movingWaterImage.Length], screen.X, screen.Y);
         tile.DoForAllDecorations(decoration => m_UI.UI_DrawGrayLevelImage(decoration, screen.X, screen.Y));
@@ -12271,7 +12260,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (tile.IsInView) {
         m_UI.UI_DrawImage(tile.Model.WaterCoverImageID, screen.X, screen.Y, tint);
-      } else if (tile.IsVisited && !IsPlayerSleeping()) {
+      } else if (tile.IsVisited && !Player.IsSleeping) {
         m_UI.UI_DrawGrayLevelImage(tile.Model.WaterCoverImageID, screen.X, screen.Y);
       }
     }
@@ -12294,7 +12283,7 @@ namespace djack.RogueSurvivor.Engine
         if (!(mapObj is DoorWindow doorWindow) || 0 >= doorWindow.BarricadePoints) return;
         DrawMapHealthBar(doorWindow.BarricadePoints, Rules.BARRICADING_MAX, screen.X, screen.Y, Color.Green);
         m_UI.UI_DrawImage(GameImages.EFFECT_BARRICADED, screen.X, screen.Y, tint);
-      } else if (tile.IsVisited && !IsPlayerSleeping()) {
+      } else if (tile.IsVisited && !Player.IsSleeping) {
         draw(mapObj, screen, mapObj.HiddenImageID, (imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy));
         if (!string.IsNullOrEmpty(overlay)) m_UI.UI_DrawImage(overlay, screen.X, screen.Y, tint);
       }
@@ -13571,11 +13560,6 @@ namespace djack.RogueSurvivor.Engine
             return new(false,true);
         }
         return default;
-    }
-
-    private bool IsPlayerSleeping()
-    {
-      return m_Player?.IsSleeping ?? false;
     }
 
     static private int FindLongestLine(string[] lines)
