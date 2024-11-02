@@ -3258,18 +3258,18 @@ namespace djack.RogueSurvivor.Engine
           case PlayerCommand.MOVE_SW:
           case PlayerCommand.MOVE_W:
           case PlayerCommand.MOVE_NW:
-            if (TryPlayerInsanity() || !DoPlayerBump(player, Direction.COMPASS[(int)(pc_command.Value) - (int)(PlayerCommand.MOVE_N)])) {
+            if (TryInsanity(pc) || !DoPlayerBump(player, Direction.COMPASS[(int)(pc_command.Value) - (int)(PlayerCommand.MOVE_N)])) {
               if (null != index) s_CountedCommands.RemoveAt(index.Value);
             };
             break;
           case PlayerCommand.WAIT_OR_SELF:
-            if (TryPlayerInsanity()) {
+            if (TryInsanity(pc)) {
               if (null != index) s_CountedCommands.RemoveAt(index.Value);
             };
             DoWait(player);
             break;
           case PlayerCommand.USE_SPRAY:
-            if (TryPlayerInsanity() || !HandlePlayerUseSpray(player)) {
+            if (TryInsanity(pc) || !HandlePlayerUseSpray(player)) {
               if (null != index) s_CountedCommands.RemoveAt(index.Value);
             };
             break;
@@ -3353,7 +3353,7 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.MOVE_SW:
               case PlayerCommand.MOVE_W:
               case PlayerCommand.MOVE_NW:
-                if (TryPlayerInsanity()) {
+                if (TryInsanity(pc)) {
                   flag1 = false;
                   break;
                 }
@@ -3365,14 +3365,14 @@ namespace djack.RogueSurvivor.Engine
                 };
                 break;
               case PlayerCommand.RUN_TOGGLE:
-                if (TryPlayerInsanity()) {
+                if (TryInsanity(pc)) {
                   flag1 = false;
                   break;
                 }
                 HandlePlayerRunToggle(player);
                 break;
               case PlayerCommand.WAIT_OR_SELF:
-                if (TryPlayerInsanity()) {
+                if (TryInsanity(pc)) {
                   flag1 = false;
                   break;
                 }
@@ -3383,37 +3383,37 @@ namespace djack.RogueSurvivor.Engine
                 DoWait(player);
                 break;
               case PlayerCommand.BARRICADE_MODE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerBarricade(player);
+                flag1 = !TryInsanity(pc) && !HandlePlayerBarricade(player);
                 break;
               case PlayerCommand.BREAK_MODE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerBreak(player);
+                flag1 = !TryInsanity(pc) && !HandlePlayerBreak(player);
                 break;
               case PlayerCommand.BUILD_LARGE_FORTIFICATION:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerBuildFortification(player, true);
+                flag1 = !TryInsanity(pc) && !HandlePlayerBuildFortification(player, true);
                 break;
               case PlayerCommand.BUILD_SMALL_FORTIFICATION:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerBuildFortification(player, false);
+                flag1 = !TryInsanity(pc) && !HandlePlayerBuildFortification(player, false);
                 break;
               case PlayerCommand.CLEAR_WAYPOINT:
                 HandlePlayerClearWaypoint(player);
                 break;
               case PlayerCommand.CLOSE_DOOR:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerCloseDoor(player);
+                flag1 = !TryInsanity(pc) && !HandlePlayerCloseDoor(player);
                 break;
               case PlayerCommand.EAT_CORPSE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerEatCorpse(player, point);
+                flag1 = !TryInsanity(pc) && !HandlePlayerEatCorpse(player, point);
                 break;
               case PlayerCommand.FIRE_MODE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerFireMode(pc);
+                flag1 = !TryInsanity(pc) && !HandlePlayerFireMode(pc);
                 break;
               case PlayerCommand.GIVE_ITEM:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerGiveItem(player, point);
+                flag1 = !TryInsanity(pc) && !HandlePlayerGiveItem(player, point);
                 break;
               case PlayerCommand.INITIATE_TRADE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerInitiateTrade(pc, point);
+                flag1 = !TryInsanity(pc) && !HandlePlayerInitiateTrade(pc, point);
                 break;
               case PlayerCommand.TRANSFER_ITEM:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerTransferItem(pc);
+                flag1 = !TryInsanity(pc) && !HandlePlayerTransferItem(pc);
                 break;
               case PlayerCommand.AS_AI:
                 HandleAiActor(player.AsAI);
@@ -3423,54 +3423,54 @@ namespace djack.RogueSurvivor.Engine
                 }
                 break;
               case PlayerCommand.LEAD_MODE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerTakeLead(player);
+                flag1 = !TryInsanity(pc) && !HandlePlayerTakeLead(player);
                 break;
               case PlayerCommand.MARK_ENEMIES_MODE:
-                if (TryPlayerInsanity()) {
+                if (TryInsanity(pc)) {
                   flag1 = false;
                   break;
                 }
                 HandlePlayerMarkEnemies(player);
                 break;
               case PlayerCommand.ORDER_MODE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerOrderMode(pc);
+                flag1 = !TryInsanity(pc) && !HandlePlayerOrderMode(pc);
                 break;
               case PlayerCommand.ORDER_PC_MODE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerOrderPCMode(pc);
+                flag1 = !TryInsanity(pc) && !HandlePlayerOrderPCMode(pc);
                 if (flag1) play_timer.Reset(); // glitches otherwise
                 break;
               case PlayerCommand.COUNTERMAND_PC:
                 HandlePlayerCountermandPC(pc);
                 break;
               case PlayerCommand.PULL_MODE: // alpha10
-                flag1 = !TryPlayerInsanity() && !HandlePlayerPull(player);
+                flag1 = !TryInsanity(pc) && !HandlePlayerPull(player);
                 break;
               case PlayerCommand.PUSH_MODE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerPush(player);
+                flag1 = !TryInsanity(pc) && !HandlePlayerPush(player);
                 break;
               case PlayerCommand.REVIVE_CORPSE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerReviveCorpse(player, point);
+                flag1 = !TryInsanity(pc) && !HandlePlayerReviveCorpse(player, point);
                 break;
               case PlayerCommand.SET_WAYPOINT:
                 HandlePlayerSetWaypoint(player);
                 break;
-              case PlayerCommand.SHOUT:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerShout(player, null);
+              case PlayerCommand.SHOUT: 
+                flag1 = !TryInsanity(pc) && !HandlePlayerShout(player, null);
                 break;
               case PlayerCommand.SLEEP:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerSleep(player);
+                flag1 = !TryInsanity(pc) && !HandlePlayerSleep(player);
                 break;
               case PlayerCommand.SWITCH_PLACE:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerSwitchPlace(player);
+                flag1 = !TryInsanity(pc) && !HandlePlayerSwitchPlace(player);
                 break;
               case PlayerCommand.UNLOAD:
-                flag1 = !TryPlayerInsanity() && !HandlePlayerUnloadItem(pc, point);
+                flag1 = !TryInsanity(pc) && !HandlePlayerUnloadItem(pc, point);
                 break;
               case PlayerCommand.USE_EXIT:
-                flag1 = !TryPlayerInsanity() && !DoLeaveMap(player, player.Location.Position);
+                flag1 = !TryInsanity(pc) && !DoLeaveMap(player, player.Location.Position);
                 break;
               case PlayerCommand.USE_SPRAY:
-                if (TryPlayerInsanity()) {
+                if (TryInsanity(pc)) {
                   flag1 = false;
                   break;
                 }
@@ -3504,70 +3504,70 @@ namespace djack.RogueSurvivor.Engine
                   hotkey_turns = 1;
                   break;
                 }
-                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 0, key);
+                flag1 = !TryInsanity(pc) && !DoPlayerItemSlot(player, 0, key);
                 break;
               case PlayerCommand.ITEM_SLOT_1:
                 if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
                   hotkey_turns = 2;
                   break;
                 }
-                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 1, key);
+                flag1 = !TryInsanity(pc) && !DoPlayerItemSlot(player, 1, key);
                 break;
               case PlayerCommand.ITEM_SLOT_2:
                 if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
                   hotkey_turns = 3;
                   break;
                 }
-                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 2, key);
+                flag1 = !TryInsanity(pc) && !DoPlayerItemSlot(player, 2, key);
                 break;
               case PlayerCommand.ITEM_SLOT_3:
                 if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
                   hotkey_turns = 4;
                   break;
                 }
-                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 3, key);
+                flag1 = !TryInsanity(pc) && !DoPlayerItemSlot(player, 3, key);
                 break;
               case PlayerCommand.ITEM_SLOT_4:
                 if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
                   hotkey_turns = 5;
                   break;
                 }
-                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 4, key);
+                flag1 = !TryInsanity(pc) && !DoPlayerItemSlot(player, 4, key);
                 break;
               case PlayerCommand.ITEM_SLOT_5:
                 if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
                   hotkey_turns = 6;
                   break;
                 }
-                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 5, key);
+                flag1 = !TryInsanity(pc) && !DoPlayerItemSlot(player, 5, key);
                 break;
               case PlayerCommand.ITEM_SLOT_6:
                 if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
                   hotkey_turns = 7;
                   break;
                 }
-                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 6, key);
+                flag1 = !TryInsanity(pc) && !DoPlayerItemSlot(player, 6, key);
                 break;
               case PlayerCommand.ITEM_SLOT_7:
                 if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
                   hotkey_turns = 8;
                   break;
                 }
-                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 7, key);
+                flag1 = !TryInsanity(pc) && !DoPlayerItemSlot(player, 7, key);
                 break;
               case PlayerCommand.ITEM_SLOT_8:
                 if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
                   hotkey_turns = 9;
                   break;
                 }
-                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 8, key);
+                flag1 = !TryInsanity(pc) && !DoPlayerItemSlot(player, 8, key);
                 break;
               case PlayerCommand.ITEM_SLOT_9:
                 if (0 == (key.Modifiers & (Keys.Alt | Keys.Control | Keys.Shift))) {
                   hotkey_turns = 0;
                   break;
                 }
-                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 9, key);
+                flag1 = !TryInsanity(pc) && !DoPlayerItemSlot(player, 9, key);
                 break;
               default: throw new ArgumentException("command unhandled");
             }  // end indentation failure
@@ -3597,14 +3597,13 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    private bool TryPlayerInsanity()
+    private bool TryInsanity(PlayerController pc)
     {
-      if (!Player.IsInsane || !Rules.Get.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) return false;
-      var insaneAction = GenerateInsaneAction(Player);
+      var player = pc.ControlledActor;
+      if (!player.IsInsane || !Rules.Get.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) return false;
+      var insaneAction = GenerateInsaneAction(player);
       if (null == insaneAction || !insaneAction.IsPerformable()) return false;
-      ClearMessages();
-      AddMessage(new("(your insanity takes over)", Player.Location.Map.LocalTime.TurnCounter, Color.Orange));
-      AddMessagePressEnter();
+      pc.AddMessageForceRead(new("(your insanity takes over)", Player.Location.Map.LocalTime.TurnCounter, Color.Orange));
       insaneAction.Perform();
       return true;
     }
