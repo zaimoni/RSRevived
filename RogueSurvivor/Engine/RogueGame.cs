@@ -425,6 +425,15 @@ namespace djack.RogueSurvivor.Engine
         return rendered;
     }
 
+    public static bool AddMessage(List<PlayerController>? a_only_witnesses, List<PlayerController>? ad_witnesses, List<PlayerController>? d_only_witnesses, UI.Message[] msgs)
+    {
+        bool rendered = false;
+        if (null != ad_witnesses && null != msgs[1]) foreach(var pc in ad_witnesses) if (pc.AddMessage(msgs[1])) rendered = true;
+        if (null != a_only_witnesses && null != msgs[0]) foreach(var pc in a_only_witnesses) if (pc.AddMessage(msgs[0])) rendered = true;
+        if (null != d_only_witnesses && null != msgs[2]) foreach(var pc in d_only_witnesses) if (pc.AddMessage(msgs[2])) rendered = true;
+        return rendered;
+    }
+
     public void ImportantMessage(UI.Message msg, int delay=0)
     {
       RedrawPlayScreen(msg);
@@ -580,6 +589,26 @@ namespace djack.RogueSurvivor.Engine
       return new(string.Join(" ", msg), Session.Get.WorldTime.TurnCounter, (actor.IsPlayer || target.IsPlayer) ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
+    /// <returns>only actor visible, both visible, only target visible</returns>
+    private static UI.Message[] MakeMessages(Actor actor, string doWhat, Actor target, string phraseEnd = ".")
+    {
+      var ret = new UI.Message[3];
+      var viewpoint = actor.Controller;
+      if (!actor.IsPlayer) {
+        viewpoint = target.IsPlayer ? target.Controller : Player.Controller;
+      }
+      int turn = Session.Get.WorldTime.TurnCounter;
+      var msg_color = (actor.IsPlayer || target.IsPlayer) ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR;
+      // we inline Actor::VisibleIdentity(Actor) here
+      var msg = new string[] { actor.TheName, doWhat, "someone" + phraseEnd };
+      ret[0] = new(string.Join(" ", msg), turn, msg_color);
+      msg[2] = target.TheName + phraseEnd;
+      ret[1] = new(string.Join(" ", msg), turn, msg_color);
+      msg[0] = "Someone";
+      ret[2] = new(string.Join(" ", msg), turn, msg_color);
+      return ret;
+    }
+
     private static UI.Message MakeMessage(ActorController viewpoint, Actor actor, string doWhat, MapObject target, string phraseEnd)
     {
       var msg = new string[] { viewpoint.VisibleIdentity(actor), doWhat, viewpoint.VisibleIdentity(target)+phraseEnd };
@@ -609,20 +638,6 @@ namespace djack.RogueSurvivor.Engine
     }
 
     private static void ClearMessages() { Messages.Clear(); }
-
-    private void AddMessagePressEnter()
-    {
-#if DEBUG
-      if (IsSimulating) throw new InvalidOperationException("simulation cannot request UI interaction");
-#else
-      if (IsSimulating) return;   // visual no-op
-#endif
-      Messages.AddNoLog(new("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-      RedrawPlayScreen();
-      m_UI.WaitEnter();
-      Messages.RemoveLastMessage();
-      RedrawPlayScreen();
-    }
 
     static private string Truncate(string s, int maxLength)
     {
@@ -3305,7 +3320,7 @@ namespace djack.RogueSurvivor.Engine
                 HandleHelpMode();
                 break;
               case PlayerCommand.ADVISOR:
-                HandleAdvisor(player);
+                HandleAdvisor(pc);
                 break;
               case PlayerCommand.OPTIONS_MODE:
                 HandleOptions(true);
@@ -6843,7 +6858,7 @@ namespace djack.RogueSurvivor.Engine
       if (actorAction is ActorDest && null != aiActor.Threats) ai.UpdateSensors(); // to trigger fast threat/tourism update
     }
 
-    private void HandleAdvisor(Actor player)
+    private void HandleAdvisor(PlayerController pc)
     {
       if (s_Hints.HasAdvisorGivenAllHints()) {
         ShowAdvisorMessage("YOU KNOW THE BASICS!", new string[7]{
@@ -7528,18 +7543,24 @@ namespace djack.RogueSurvivor.Engine
 
     private void ShowAdvisorMessage(string title, string[] lines)
     {
-      ClearMessages();
-      ClearOverlays();
+      var pc = Player.Controller as PlayerController ?? throw new ArgumentNullException("Player.Controller");
+
       string[] lines1 = new string[lines.Length + 2];
       lines1[0] = "HINT : " + title;
       Array.Copy(lines, 0, lines1, 1, lines.Length);
       lines1[lines.Length + 1] = string.Format("(hint {0}/{1})", s_Hints.CountAdvisorHintsGiven(), (int)AdvisorHint._COUNT);
+
+      int turn = Session.Get.WorldTime.TurnCounter;
+      List<UI.Message> msgs = new() {
+        new("You can disable the advisor in the options screen.", turn, Color.White),
+        new(string.Format("To show the options screen : <{0}>.", s_KeyBindings.AsString(PlayerCommand.OPTIONS_MODE)), turn, Color.White)
+      };
+
+      ClearOverlays();
       AddOverlay(new OverlayPopup(lines1, Color.White, Color.White, Color.Black, GDI_Point.Empty));
-      ClearMessages();
-      AddMessage(new("You can disable the advisor in the options screen.", Session.Get.WorldTime.TurnCounter, Color.White));
-      AddMessage(new(string.Format("To show the options screen : <{0}>.", s_KeyBindings.AsString(PlayerCommand.OPTIONS_MODE)), Session.Get.WorldTime.TurnCounter, Color.White));
-      AddMessagePressEnter();
-      ClearMessages();
+      pc.AddMessagesForceRead(msgs);
+
+      pc.Messages.Clear();
       ClearOverlays();
       RedrawPlayScreen();
     }
@@ -9129,9 +9150,11 @@ namespace djack.RogueSurvivor.Engine
         var a_witness = attacker.PlayersInLOS();
         var d_witness = defender.PlayersInLOS();
         var ad_witness = a_witness?.Intersect(d_witness);
-        a_witness = a_witness?.SetDifference(ad_witness);
-        d_witness = d_witness?.SetDifference(ad_witness);
+        var a_only_witness = a_witness?.SetDifference(ad_witness);
+        var d_only_witness = d_witness?.SetDifference(ad_witness);
         KeyValuePair<bool,bool> sees = ForceVisibleToPlayer(attacker, defender, ad_witness, a_witness, d_witness);
+        PlayerController? a_pc = IsPlayer(attacker) ? attacker.Controller as PlayerController : null;
+        PlayerController? d_pc = IsPlayer(defender) ? defender.Controller as PlayerController : null;
 
       // backward compatibility
       bool isDefVisible = sees.Value;
@@ -9179,12 +9202,12 @@ namespace djack.RogueSurvivor.Engine
           Item disarmIt = Disarm(defender);
           if (null != disarmIt) {
             // show
-            if (isDefVisible) {
-              if (isPlayer) ClearMessages();
-              AddMessage(MakeMessage(attacker, VERB_DISARM.Conjugate(attacker), defender));
-              AddMessage(new(string.Format("{0} is sent flying!", disarmIt.TheName), attacker.Location.Map.LocalTime.TurnCounter));
-              if (isPlayer) {
-                AddMessagePressEnter();
+            if (null != d_witness) {
+              d_pc?.Messages.Clear();
+              AddMessage(null, ad_witness, d_only_witness, MakeMessages(attacker, VERB_DISARM.Conjugate(attacker), defender));
+              defender.Controller.AddMessage(new(string.Format("{0} is sent flying!", disarmIt.TheName), attacker.Location.Map.LocalTime.TurnCounter), d_witness);
+              if (null != d_pc) {
+                d_pc.AddMessagePressEnter();
               } else {
                 RedrawPlayScreen();
                 AnimDelay(DELAY_SHORT);
@@ -10170,18 +10193,19 @@ namespace djack.RogueSurvivor.Engine
     {
       speaker.SpendActionPoints();
       OnLoudNoise(speaker.Location, "A SHOUT");
-      if (!AreLinkedByPhone(speaker, Player) && !ForceVisibleToPlayer(speaker)) return;
-      if (Player == speaker.Leader) {
-        ClearMessages();
+      // Alpha 10- also allowed shouting through phone...we need to re-think this
+      if (/* !AreLinkedByPhone(speaker, Player) && */ !ForceVisibleToPlayer(speaker)) return;
+      if (Player == speaker.Leader && Player.Controller is PlayerController pc) {
+        pc.Messages.Clear();
         AddOverlay((new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR))));
-        AddMessage(MakeMessage(speaker, string.Format("{0}!!", VERB_RAISE_ALARM.Conjugate(speaker))));
+        DoEmote(speaker, string.Format("{0}!!", VERB_RAISE_ALARM.Conjugate(speaker)), true);
         if (null != text) DoEmote(speaker, text, true);
-        AddMessagePressEnter();
         ClearOverlays();
+        pc.AddMessagePressEnter();
       } else {
         var verb = VERB_SHOUT.Conjugate(speaker);
         if (null == text)
-          AddMessage(MakeMessage(speaker, string.Format("{0}!", verb)));
+          DoEmote(speaker, string.Format("{0}!", verb), true);
         else
           DoEmote(speaker, string.Format("{0} \"{1}\"", verb, text), true);
       }
@@ -11321,20 +11345,20 @@ namespace djack.RogueSurvivor.Engine
         "Did you know that...",
         Rules.Get.DiceRoller.Choose(GameTips.TIPS)
       }, Color.White, Color.White, POPUP_FILLCOLOR, GDI_Point.Empty));
-      ClearMessages();
-      AddMessage(new("**** YOU DIED! ****", turn, Color.Red));
-      if (killer != null) AddMessage(new(string.Format("Killer : {0}.", killer.TheName), turn, Color.Red));
-      AddMessage(new(string.Format("Reason : {0}.", reason), turn, Color.Red));
-      AddMessage(new(Player.Model.Abilities.IsUndead ? "You die one last time... Game over!"
-                                                     : "You join the realm of the undeads... Game over!", turn, Color.Red));
-      if (s_Options.IsPermadeathOn) DeleteSavedGame(GetUserSave());
+
+      List<UI.Message> msgs = new() { new("**** YOU DIED! ****", turn, Color.Red) };
+      if (killer != null) msgs.Add(new(string.Format("Killer : {0}.", killer.TheName), turn, Color.Red));
+      msgs.Add(new(string.Format("Reason : {0}.", reason), turn, Color.Red));
+      msgs.Add(new(Player.Model.Abilities.IsUndead ? "You die one last time... Game over!"
+                                                   : "You join the realm of the undeads... Game over!", turn, Color.Red));
       if (s_Options.IsDeathScreenshotOn) {
         RedrawPlayScreen();
         var screenshot = DoTakeScreenshot();
-        AddMessage((null == screenshot) ? MakeErrorMessage("could not save death screenshot.")
+        msgs.Add((null == screenshot) ? MakeErrorMessage("could not save death screenshot.")
                                         : new(string.Format("Death screenshot saved : {0}.", screenshot), turn, Color.Red));
       }
-      AddMessagePressEnter();
+      (Player.Controller as PlayerController)!.AddMessagesForceRead(msgs);
+
       HandlePostMortem();
       m_MusicManager.Stop();
     }
@@ -11617,11 +11641,9 @@ namespace djack.RogueSurvivor.Engine
             int skill_level = skills.GetSkillLevel(sk);
 		    string msg = (1 == skill_level ? string.Format("{0} learned skill {1}.", upgradeActor.Name, Skills.Name(sk))
 			            : string.Format("{0} improved skill {1} to level {2}.", upgradeActor.Name, Skills.Name(sk), skill_level));
-            AddMessage(new(msg, Session.Get.WorldTime.TurnCounter, Color.LightGreen));
             upgradeActor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, msg);
-            AddMessagePressEnter();
             RemoveOverlay(popup);
-            RedrawPlayScreen();
+            pc.AddMessageForceRead(new(msg, Session.Get.WorldTime.TurnCounter, Color.LightGreen));
             return true;
           }
           RemoveOverlay(popup);
@@ -11642,7 +11664,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      if (upgradeActor.Controller is PlayerController pc) HandlePlayerFollowersUpgrade(pc);
+      if (upgradeActor.Controller is PlayerController u_pc) HandlePlayerFollowersUpgrade(u_pc);
     }
 
 #nullable restore
