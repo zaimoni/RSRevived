@@ -9364,39 +9364,43 @@ namespace djack.RogueSurvivor.Engine
             if (defender.TakeDamage(dmg)) {
               if (see_defender) {
                 AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
-                ImportantMessage(MakeMessage(attacker, (defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)).Conjugate(attacker), defender, " !"), DELAY_LONG);
               } else if (see_attacker) {
                 if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-                ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
               }
+              if (null != d_witness) ImportantMessage(null, ad_witness, d_only_witness, MakeMessages(attacker, (defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)).Conjugate(attacker), defender, " !"), DELAY_LONG);
+              if (null != a_only_witness) ImportantMessage(a_only_witness, MakeMessages(attacker, attack.Verb.Conjugate(attacker), defender)[0], player_involved ? DELAY_NORMAL : DELAY_SHORT);
               KillActor(attacker, defender, "shot");
-            } else if (see_defender) {
-              DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, dmg.ToString());
-              ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, string.Format(" for {0} damage.", dmg)), player_involved ? DELAY_NORMAL : DELAY_SHORT);
-            } else if (see_attacker) { // yes, no difference between destroying and merely attacking if defender isn't seen
-              if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-              ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            } else {
+              if (see_defender) {
+                DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, dmg.ToString());
+              } else if (see_attacker) { // yes, no difference between destroying and merely attacking if defender isn't seen
+                if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
+              }
+              if (null != d_witness) ImportantMessage(null, ad_witness, d_only_witness, MakeMessages(attacker, attack.Verb.Conjugate(attacker), defender, string.Format(" for {0} damage.", dmg)), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              if (null != a_only_witness) ImportantMessage(a_only_witness, MakeMessages(attacker, attack.Verb.Conjugate(attacker), defender)[0], player_involved ? DELAY_NORMAL : DELAY_SHORT);
             }
-          } else if (see_defender) {
-            AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
-            ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, " for no effect."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
-          } else if (see_attacker) {
-            if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-            ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+          } else {
+            if (see_defender) {
+              AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+            } else if (see_attacker) {
+              if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
+            }
+            if (null != d_witness) ImportantMessage(null, ad_witness, d_only_witness, MakeMessages(attacker, attack.Verb.Conjugate(attacker), defender, " for no effect."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            if (null != a_only_witness) ImportantMessage(a_only_witness, MakeMessages(attacker, attack.Verb.Conjugate(attacker), defender)[0], player_involved ? DELAY_NORMAL : DELAY_SHORT);
           }
         } else {
+          bool are_adjacent = Rules.IsAdjacent(attacker.Location, defender.Location);
           if (see_defender) {
             AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
-            ImportantMessage(MakeMessage(attacker, VERB_MISS.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
           } else if (see_attacker) {
-            if (Rules.IsAdjacent(attacker.Location,defender.Location)) {  // difference between melee range miss and hit is visible, even with firearms
+            if (are_adjacent) {  // difference between melee range miss and hit is visible, even with firearms
               if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
-              ImportantMessage(MakeMessage(attacker, VERB_MISS.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
             } else {  // otherwise, not visible
               if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-              ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
             }
-        }
+          }
+          if (null != d_witness) ImportantMessage(null, ad_witness, d_only_witness, MakeMessages(attacker, VERB_MISS.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+          if (null != a_only_witness) ImportantMessage(a_only_witness, MakeMessages(attacker, (are_adjacent ? VERB_MISS : attack.Verb).Conjugate(attacker), defender)[0], player_involved ? DELAY_NORMAL : DELAY_SHORT);
         }
         if (see_attacker || see_defender) ClearOverlays();  // alpha10: if-clause bugfix
     }
