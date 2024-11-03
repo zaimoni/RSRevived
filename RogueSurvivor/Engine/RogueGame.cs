@@ -446,6 +446,15 @@ namespace djack.RogueSurvivor.Engine
       if (0 < delay) AnimDelay(delay);
     }
 
+    public void ImportantMessage(List<PlayerController>? a_only_witness, List<PlayerController>? ad_witness, List<PlayerController>? d_only_witness, UI.Message[] msgs, int delay=0)
+    {
+      bool rendered = false;
+      if (null != ad_witness && null != msgs[1]) foreach (var pc in ad_witness) if (pc.AddMessage(msgs[1])) rendered = true;
+      if (null != a_only_witness && null != msgs[0]) foreach (var pc in a_only_witness) if (pc.AddMessage(msgs[0])) rendered = true;
+      if (null != d_only_witness && null != msgs[2]) foreach (var pc in d_only_witness) if (pc.AddMessage(msgs[2])) rendered = true;
+      if (rendered && 0 < delay) AnimDelay(delay);
+    }
+
     // allows propagating sound to NPCs, in theory (API needs extending)
     // should also allow specifying range of sound as parameter (default is very loud), or possibly "energy" so we can model things better
     public void PropagateSound(Location loc, string text, Action<Actor> doFn, Predicate<Actor> player_knows)
@@ -9152,13 +9161,14 @@ namespace djack.RogueSurvivor.Engine
         var ad_witness = a_witness?.Intersect(d_witness);
         var a_only_witness = a_witness?.SetDifference(ad_witness);
         var d_only_witness = d_witness?.SetDifference(ad_witness);
-        KeyValuePair<bool,bool> sees = ForceVisibleToPlayer(attacker, defender, ad_witness, a_witness, d_witness);
+        KeyValuePair<bool,bool> sees = ForceVisibleToPlayer(attacker, defender, a_only_witness, ad_witness, d_only_witness);
         PlayerController? a_pc = IsPlayer(attacker) ? attacker.Controller as PlayerController : null;
         PlayerController? d_pc = IsPlayer(defender) ? defender.Controller as PlayerController : null;
 
       // backward compatibility
       bool isDefVisible = sees.Value;
       bool isAttVisible = sees.Key;
+      bool isVisible = isAttVisible || isDefVisible;
       bool isPlayer = attacker.IsPlayer || defender.IsPlayer;   // (player1 OR player2) IMPLIES isPlayer?
       bool display_defender = isDefVisible || m_MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
 
@@ -9221,13 +9231,13 @@ namespace djack.RogueSurvivor.Engine
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead) {
             attacker.RegenHitPoints(attacker.BiteHpRegen(dmg));
             attacker.RottingEat(dmg);
-            if (null != a_witness) AddMessage(a_witness, MakePanopticMessage(attacker, VERB_FEAST_ON.Conjugate(attacker), defender, " flesh !"));
+            if (isVisible) AddMessage(a_only_witness, ad_witness, d_only_witness, MakeMessages(attacker, VERB_FEAST_ON.Conjugate(attacker), defender, " flesh !"));
             defender.Infect(attacker.InfectionForDamage(dmg));
           }
           if (fatal) {
-            if (isAttVisible || isDefVisible) {
+            if (isVisible) {
               if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
-              ImportantMessage(MakeMessage(attacker, (defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)).Conjugate(attacker), defender, " !"), DELAY_LONG);
+              ImportantMessage(a_only_witness, ad_witness, d_only_witness, MakeMessages(attacker, (defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)).Conjugate(attacker), defender, " !"), DELAY_LONG);
             }
             // need to know whether it's a zombifying hit or not
             bool to_immediately_zombify = Session.Get.HasImmediateZombification && attacker.Model.Abilities.CanZombifyKilled
@@ -9240,24 +9250,24 @@ namespace djack.RogueSurvivor.Engine
                 defender.Location.Map.TryRemoveCorpseOf(defender);
                 Zombify(attacker, defender, false);
                 if (isDefVisible) {
-                  ImportantMessage(MakeMessage(attacker, "turn".Conjugate(attacker), defender, " into a Zombie!"), DELAY_LONG);
+                  ImportantMessage(null, ad_witness, d_only_witness, MakeMessages(attacker, "turn".Conjugate(attacker), defender, " into a Zombie!"), DELAY_LONG);
                 }
               }
             // RS Alpha 9 had instant player zombification on kill even in infection mode.  It is still possible to play as your zombified self,
             // but the game time has to elapse like for everyone else.
             }
-          } else if (isAttVisible || isDefVisible) {
+          } else if (isVisible) {
             if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_MELEE_DAMAGE, dmg.ToString());
-            ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, string.Format(" for {0} damage.", dmg)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(a_only_witness, ad_witness, d_only_witness, MakeMessages(attacker, attack.Verb.Conjugate(attacker), defender, string.Format(" for {0} damage.", dmg)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
-        } else if (isAttVisible || isDefVisible) {
+        } else if (isVisible) {
           if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
-          ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, " for no effect."), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+          ImportantMessage(a_only_witness, ad_witness, d_only_witness, MakeMessages(attacker, attack.Verb.Conjugate(attacker), defender, " for no effect."), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
-      else if (isAttVisible || isDefVisible) {
+      else if (isVisible) {
         if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
-        ImportantMessage(MakeMessage(attacker, VERB_MISS.Conjugate(attacker), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
+        ImportantMessage(a_only_witness, ad_witness, d_only_witness, MakeMessages(attacker, VERB_MISS.Conjugate(attacker), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
       }
       if (attacker.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
       {
@@ -9267,7 +9277,7 @@ namespace djack.RogueSurvivor.Engine
           ImportantMessage(a_witness, MakePanopticMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
-      if (isDefVisible || isAttVisible) ClearOverlays();  // alpha10: if test
+      if (isVisible) ClearOverlays();  // alpha10: if test
       if (!defender.IsDead) (attacker.Controller as ObjectiveAI)?.RecruitHelp(defender);
       defender.InferEnemy(attacker);
     }
@@ -9303,9 +9313,11 @@ namespace djack.RogueSurvivor.Engine
         var a_witness = attacker.PlayersInLOS();
         var d_witness = defender.PlayersInLOS();
         var ad_witness = a_witness?.Intersect(d_witness);
-        a_witness = a_witness?.SetDifference(ad_witness);
-        d_witness = d_witness?.SetDifference(ad_witness);
-        KeyValuePair<bool,bool> sees = ForceVisibleToPlayer(attacker, defender, ad_witness, a_witness, d_witness);
+        var a_only_witness = a_witness?.SetDifference(ad_witness);
+        var d_only_witness = d_witness?.SetDifference(ad_witness);
+        KeyValuePair<bool,bool> sees = ForceVisibleToPlayer(attacker, defender, a_only_witness, ad_witness, d_only_witness);
+        PlayerController? a_pc = IsPlayer(attacker) ? attacker.Controller as PlayerController : null;
+        PlayerController? d_pc = IsPlayer(defender) ? defender.Controller as PlayerController : null;
 
         // backward compatibility
         bool see_defender = sees.Value;
@@ -9372,17 +9384,19 @@ namespace djack.RogueSurvivor.Engine
             if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
             ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
           }
-        } else if (see_defender) {
-          AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
-          ImportantMessage(MakeMessage(attacker, VERB_MISS.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
-        } else if (see_attacker) {
-          if (Rules.IsAdjacent(attacker.Location,defender.Location)) {  // difference between melee range miss and hit is visible, even with firearms
-            if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+        } else {
+          if (see_defender) {
+            AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
             ImportantMessage(MakeMessage(attacker, VERB_MISS.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
-          } else {  // otherwise, not visible
-            if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
-            ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender, "."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
-          }
+          } else if (see_attacker) {
+            if (Rules.IsAdjacent(attacker.Location,defender.Location)) {  // difference between melee range miss and hit is visible, even with firearms
+              if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+              ImportantMessage(MakeMessage(attacker, VERB_MISS.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            } else {  // otherwise, not visible
+              if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
+              ImportantMessage(MakeMessage(attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            }
+        }
         }
         if (see_attacker || see_defender) ClearOverlays();  // alpha10: if-clause bugfix
     }
@@ -13543,7 +13557,7 @@ namespace djack.RogueSurvivor.Engine
       return ForceVisibleToPlayer(src.a_owner);
     }
 
-    private KeyValuePair<bool,bool> ForceVisibleToPlayer(Actor a, Actor d, List<PlayerController>? ad_witness, List<PlayerController>?  a_witness, List<PlayerController>?  d_witness)
+    private KeyValuePair<bool,bool> ForceVisibleToPlayer(Actor a, Actor d, List<PlayerController>? a_only_witness, List<PlayerController>?  ad_witness, List<PlayerController>?  d_only_witness)
     {
         if (a.IsPlayer) {
             PanViewportTo(a);
@@ -13554,8 +13568,11 @@ namespace djack.RogueSurvivor.Engine
         } else if (null != ad_witness) {
             PanViewportTo(ad_witness[0].ControlledActor);
             return new(true,true);
-        } else if (null != d_witness) {
-            PanViewportTo(d_witness[0].ControlledActor);
+        } else if (null != d_only_witness) {
+            PanViewportTo(d_only_witness[0].ControlledActor);
+            return new(false,true);
+        } else if (null != a_only_witness) {
+            PanViewportTo(a_only_witness[0].ControlledActor);
             return new(false,true);
         }
         return default;
