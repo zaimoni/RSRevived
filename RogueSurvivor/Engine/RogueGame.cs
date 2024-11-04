@@ -5724,31 +5724,28 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (itemGrenade == null && itemGrenadePrimed == null) throw new InvalidOperationException("No grenade to throw.");  // precondition
 #endif
-      ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
+      ActionThrowGrenade act = (null != itemGrenade) ? new ActionThrowGrenade(player, player.Location.Position, itemGrenade)
+                                                     : new ActionThrowGrenade(player, player.Location.Position, itemGrenadePrimed);
+
       var mode = new OverlayPopup(THROW_GRENADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
       List<OverlayImage> path = new();
-      Map map = player.Location.Map;
-      Point point1 = player.Location.Position;
-      int num = player.MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
-      var LoF = new List<Point>();
 
-      string? display(Point dest) {
-        LoF.Clear();
-        bool can_throw = player.CanThrowTo(dest, out var reason, LoF);
+      string? display() {
+        bool can_throw = act.IsLegal();
         ClearOverlays();
         AddOverlay(mode);
         string imageID = can_throw ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BLOCKED;
         path.Clear();
-        foreach (Point mapPosition in LoF) {
+        foreach (Point mapPosition in act.LoF) {
           var o = new OverlayImage(MapToScreen(mapPosition), imageID);
           path.Add(o);
           AddOverlay(o);
         }
         RedrawPlayScreen();
-        return reason;
+        return act.FailReason;
       }
 
-      var err = display(point1);
+      var err = display();
 
       bool? handler(KeyEventArgs key) {
         PlayerCommand command = InputTranslator.KeyToCommand(key);
@@ -5756,14 +5753,11 @@ namespace djack.RogueSurvivor.Engine
         case Keys.F:
             if (string.IsNullOrEmpty(err)) {
               bool flag4 = true;
-              if (Rules.GridDistance(player.Location.Position, in point1) <= itemGrenadeModel.BlastAttack.Radius) {
+              if (act.ThrowerInBlast()) {
                 flag4 = YesNoPopup(new string[] { "You are in the blast radius!", "Really throw there? (Y/N)" });
               }
               if (flag4) {
-                if (itemGrenade != null)
-                  DoThrowGrenadeUnprimed(player, in point1);
-                else
-                  DoThrowGrenadePrimed(player, in point1);
+                act.Perform();
                 return true;
               }
             } else {
@@ -5774,9 +5768,8 @@ namespace djack.RogueSurvivor.Engine
            {
            var dir = CommandToDirection(command);
            if (dir != null) {
-              Point point2 = point1 + dir;
-              if (map.IsValid(point2) && Rules.GridDistance(player.Location.Position, in point2) <= num) {
-                err = display(point1 = point2);
+              if (act.update(act.ThrowDest + dir)) {
+                err = display();
               }
            }
            return null;

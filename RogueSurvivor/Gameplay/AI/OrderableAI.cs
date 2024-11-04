@@ -1797,7 +1797,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (null == bestSpot) return null;
       if (!firstGrenade.IsEquipped) firstGrenade.EquippedBy(m_Actor);    // XXX required by the legality check
-      var actorAction = new ActionThrowGrenade(m_Actor, bestSpot.Value);
+      var actorAction = new ActionThrowGrenade(m_Actor, bestSpot.Value, firstGrenade);
 #if DEBUG
       if (!actorAction.IsPerformable()) throw new InvalidProgramException("created illegal ActionThrowGrenade");  // invariant failure
 #endif

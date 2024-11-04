@@ -944,36 +944,6 @@ namespace djack.RogueSurvivor.Data
       return baseRange + SKILL_STRONG_THROW_BONUS * MySkills.GetSkillLevel(Skills.IDs.STRONG);
     }
 
-    private string ReasonCouldntThrowTo(ItemGrenadeModel model, Point pos, List<Point>? LoF)
-    {
-      int maxRange = MaxThrowRange(model.MaxThrowDistance);
-      if (Rules.GridDistance(Location.Position, in pos) > maxRange) return "out of throwing range";
-      if (!LOS.CanTraceThrowLine(in m_Location, in pos, maxRange, LoF)) return "no line of throwing";
-      return "";
-    }
-
-    private string ReasonCouldntThrowTo(Point pos, List<Point>? LoF)
-    {
-      LoF?.Clear();
-      var w = GetEquippedWeapon();
-      if (w is ItemGrenade grenade) return ReasonCouldntThrowTo(grenade.Model, pos, LoF);
-      if (w is ItemGrenadePrimed primed) return ReasonCouldntThrowTo(primed.Model.GrenadeModel, pos, LoF);
-      return "no grenade equipped";
-    }
-
-    public bool CanThrowTo(Point pos, out string reason, List<Point>? LoF=null)
-    {  // 2019-11-02 release-mode IL Code size       18 (0x12)
-      reason = ReasonCouldntThrowTo(pos,LoF);
-      return string.IsNullOrEmpty(reason);
-    }
-
-#if DEAD_FUNC
-    public bool CanThrowTo(Point pos, List<Point> LoF=null)
-    {
-      return string.IsNullOrEmpty(ReasonCouldntThrowTo(pos,LoF));
-    }
-#endif
-
   // alpha10
   /// <summary>
   /// Estimate chances to hit with a ranged attack. <br></br>
