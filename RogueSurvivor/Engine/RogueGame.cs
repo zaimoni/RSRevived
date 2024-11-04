@@ -434,12 +434,6 @@ namespace djack.RogueSurvivor.Engine
         return rendered;
     }
 
-    public void ImportantMessage(UI.Message msg, int delay=0)
-    {
-      RedrawPlayScreen(msg);
-      if (0 < delay) AnimDelay(delay);
-    }
-
     public void ImportantMessage(List<PlayerController> witnesses, UI.Message msg, int delay=0)
     {
       RedrawPlayScreen(witnesses, msg);
@@ -608,14 +602,27 @@ namespace djack.RogueSurvivor.Engine
     private static UI.Message[] MakeMessages(Actor actor, string doWhat, Actor target, string phraseEnd = ".")
     {
       var ret = new UI.Message[3];
-      var viewpoint = actor.Controller;
-      if (!actor.IsPlayer) {
-        viewpoint = target.IsPlayer ? target.Controller : Player.Controller;
-      }
       int turn = Session.Get.WorldTime.TurnCounter;
       var msg_color = (actor.IsPlayer || target.IsPlayer) ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR;
+
       // we inline Actor::VisibleIdentity(Actor) here
       var msg = new string[] { actor.TheName, doWhat, "someone" + phraseEnd };
+      ret[0] = new(string.Join(" ", msg), turn, msg_color);
+      msg[2] = target.TheName + phraseEnd;
+      ret[1] = new(string.Join(" ", msg), turn, msg_color);
+      msg[0] = "Someone";
+      ret[2] = new(string.Join(" ", msg), turn, msg_color);
+      return ret;
+    }
+
+    private static UI.Message[] MakeMessages(Actor actor, string doWhat, INoun target, string phraseEnd = ".")
+    {
+      var ret = new UI.Message[3];
+      int turn = Session.Get.WorldTime.TurnCounter;
+      var msg_color = actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR;
+
+      // we inline Actor::VisibleIdentity(Actor) here
+      var msg = new string[] { actor.TheName, doWhat, target.UnknownPronoun + phraseEnd };
       ret[0] = new(string.Join(" ", msg), turn, msg_color);
       msg[2] = target.TheName + phraseEnd;
       ret[1] = new(string.Join(" ", msg), turn, msg_color);
@@ -10645,13 +10652,23 @@ namespace djack.RogueSurvivor.Engine
           if ((actor.GetEquippedWeapon() as ItemMeleeWeapon) != bestMeleeWeapon) bestMeleeWeapon.EquippedBy(actor);
         }
       }
+
+        var a_witness = actor.PlayersInLOS();
+        var d_witness = mapObj.PlayersInLOS();
+        var ad_witness = a_witness?.Intersect(d_witness);
+        var a_only_witness = a_witness?.SetDifference(ad_witness);
+        var d_only_witness = d_witness?.SetDifference(ad_witness);
+        KeyValuePair<bool,bool> sees = ForceVisibleToPlayer(actor, a_only_witness, ad_witness, d_only_witness);
+        PlayerController? a_pc = IsPlayer(actor) ? actor.Controller as PlayerController : null;
+        bool isVisible = sees.Key || sees.Value;
+
       Attack attack = actor.MeleeAttack(mapObj);
       if (mapObj is DoorWindow doorWindow && doorWindow.IsBarricaded) {
         actor.SpendActionPoints();
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
         doorWindow.Barricade(-attack.DamageValue);
         OnLoudNoise(doorWindow.Location, "A loud *BASH*");
-        if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(doorWindow)) {
+        if (isVisible) {
           AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", VERB_BASH.Conjugate(actor))));
         }
         bool player_knows(Actor a) {
@@ -10681,19 +10698,19 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
         bool flag = mapObj.Damage(attack.DamageValue);
         if (!flag) OnLoudNoise(mapObj.Location, "A loud *CRASH*");
-        bool player1 = ForceVisibleToPlayer(actor);
-        bool player2 = player1 ? IsVisibleToPlayer(mapObj) : ForceVisibleToPlayer(mapObj);
-        if (player1 || player2) {
+        bool player1 = sees.Key;
+        bool player2 = sees.Value;
+        if (isVisible) {
           if (player1) AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
           if (player2) AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(mapObj.Location), SIZE_OF_TILE)));
           if (flag) {
             if (player1) AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
             if (player2) AddOverlay(new OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_KILLED));
-            ImportantMessage(MakeMessage(actor, VERB_BREAK.Conjugate(actor), mapObj), DELAY_LONG);
+            ImportantMessage(a_only_witness, ad_witness, d_only_witness, MakeMessages(actor, VERB_BREAK.Conjugate(actor), mapObj), DELAY_LONG);
           } else {
             if (player1) AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
             if (player2) AddOverlay(new OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_MELEE_DAMAGE));
-            ImportantMessage(MakeMessage(actor, VERB_BASH.Conjugate(actor), mapObj), actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
+            ImportantMessage(a_only_witness, ad_witness, d_only_witness, MakeMessages(actor, VERB_BASH.Conjugate(actor), mapObj), actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
           ClearOverlays();
         }
