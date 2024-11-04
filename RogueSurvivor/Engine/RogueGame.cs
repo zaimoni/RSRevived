@@ -587,6 +587,7 @@ namespace djack.RogueSurvivor.Engine
       return MakeMessage(actor.IsPlayer ? actor.Controller : Player.Controller, actor, doWhat, color);
     }
     public static UI.Message MakeMessage(Actor actor, string doWhat) => MakeMessage(actor, doWhat, OTHER_ACTION_COLOR);
+    public static UI.Message MakeMessage(ActorController viewpoint, Actor actor, string doWhat) => MakeMessage(viewpoint, actor, doWhat, OTHER_ACTION_COLOR);
 
     private static UI.Message MakeMessage(Actor actor, string doWhat, Actor target, string phraseEnd = ".")
     {
@@ -9421,41 +9422,22 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    public void DoThrowGrenadeUnprimed(Actor actor, in Point targetPos)
+    public void UI_ThrowGrenadeUnprimed(Actor actor, Point targetPos, ItemGrenade itemGrenade, List<PlayerController>? a_witness, List<PlayerController>? d_witness)
     {
-      if (!(actor.GetEquippedWeapon() is ItemGrenade itemGrenade)) throw new InvalidOperationException("throwing grenade but no grenade equipped");
-      actor.SpendActionPoints();
-      actor.Inventory.Consume(itemGrenade);
-      // XXX \todo fuse affected by whether target district executes before or after ours (need an extra turn if before)
-      // Cf. Map::DistrictDeltaCode
-      Location dest = new(actor.Location.Map, targetPos);
-      if (!Map.Canonical(ref dest)) throw new InvalidOperationException("throwing to non-existent location");
-      var itemGrenadePrimed = new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID));
-      dest.Drop(itemGrenadePrimed);
+#if DEBUG
+        if (null == a_witness && null == d_witness) throw new InvalidOperationException("tracing");
+#endif
 
-      short radius = (short)itemGrenadePrimed.Model.BlastAttack.Radius;
-      var avoid = new ZoneLoc(dest.Map, new Rectangle(dest.Position + radius * Direction.NW.Vector, (short)(2* radius+1) *Direction.SE));
-      var flee = new Gameplay.AI.Goals.FleeExplosive(actor, avoid, itemGrenadePrimed);
-
-      void fear_explosive(Actor who) {
-        if (who.IsDead || who.IsSleeping) return;
-        if (!(who.Controller is ObjectiveAI oai)) return;
-        if (!oai.UsesExplosives) return;
-        oai.SetUnownedObjective(flee);
-      }
-
-      PropagateSight(dest, fear_explosive);
-
-      var witnesses_throw = _ForceVisibleToPlayer(actor);
-      if (null == witnesses_throw && !ForceVisibleToPlayer(dest)) return;
+        var ad_witness = a_witness?.Intersect(d_witness);
+        var a_only_witness = a_witness?.SetDifference(ad_witness);
+        var d_only_witness = d_witness?.SetDifference(ad_witness);
+        KeyValuePair<bool,bool> sees = ForceVisibleToPlayer(actor, a_only_witness, ad_witness, d_only_witness);
 
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
-      if (null != witnesses_throw) {
-        ImportantMessage(witnesses_throw, MakePanopticMessage(actor, string.Format("{0} a {1}!", VERB_THROW.Conjugate(actor), itemGrenade.Model.SingleName)), DELAY_LONG);
-      } else {
-        ImportantMessage(MakeMessage(actor, string.Format("{0} a {1}!", VERB_THROW.Conjugate(actor), itemGrenade.Model.SingleName)), DELAY_LONG);
-      }
+      var phrase = string.Format("{0} a {1}!", VERB_THROW.Conjugate(actor), itemGrenade.Model.SingleName);
+      if (null != a_witness) ImportantMessage(a_witness, MakePanopticMessage(actor, phrase), DELAY_LONG);
+      if (null != d_only_witness) ImportantMessage(d_only_witness, MakeMessage(d_only_witness[0], actor, phrase), DELAY_LONG);
       ClearOverlays();
       RedrawPlayScreen();
     }
@@ -13562,6 +13544,24 @@ namespace djack.RogueSurvivor.Engine
         } else if (d.IsPlayer) {
             PanViewportTo(d);
             return new(IsVisibleToPlayer(a.Location), true);
+        } else if (null != ad_witness) {
+            PanViewportTo(ad_witness[0].ControlledActor);
+            return new(true,true);
+        } else if (null != d_only_witness) {
+            PanViewportTo(d_only_witness[0].ControlledActor);
+            return new(false,true);
+        } else if (null != a_only_witness) {
+            PanViewportTo(a_only_witness[0].ControlledActor);
+            return new(false,true);
+        }
+        return default;
+    }
+
+    private KeyValuePair<bool,bool> ForceVisibleToPlayer(Actor a, List<PlayerController>? a_only_witness, List<PlayerController>?  ad_witness, List<PlayerController>?  d_only_witness)
+    {
+        if (a.IsPlayer) {
+            PanViewportTo(a);
+            return new(true,true);
         } else if (null != ad_witness) {
             PanViewportTo(ad_witness[0].ControlledActor);
             return new(true,true);

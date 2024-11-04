@@ -10,6 +10,7 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Items;
 
 using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 
 #nullable enable
 
@@ -18,6 +19,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   public sealed class ActionThrowGrenade : ActorAction, CombatAction, NotSchedulable
     {
     private Point m_ThrowPos;
+    private Location m_Loc;
     private readonly ItemGrenade? m_Grenade = null;
     private readonly ItemGrenadePrimed? m_Primed = null;
     private readonly List<Point> m_LoF = new();
@@ -29,6 +31,8 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (!actor.Inventory.Contains(it)) throw new InvalidOperationException("tracing");
 #endif
       m_ThrowPos = throwPos;
+      m_Loc = new(m_Actor.Location.Map, m_ThrowPos);
+      if (!Map.Canonical(ref m_Loc)) m_Loc = default;
       m_Grenade = it;
       maxRange = actor.MaxThrowRange(ModelThrow.MaxThrowDistance);
     }
@@ -53,10 +57,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      if (null != m_Grenade) {
-        m_Grenade.EquippedBy(m_Actor);
-        RogueGame.Game.DoThrowGrenadeUnprimed(m_Actor, in m_ThrowPos);
-      } else {
+      if (null != m_Grenade) ThrowGrenadeUnprimed();
+      else {
         m_Primed.EquippedBy(m_Actor);
         RogueGame.Game.DoThrowGrenadePrimed(m_Actor, in m_ThrowPos);
       }
@@ -64,6 +66,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     // interactive UI support
     public Point ThrowDest { get => m_ThrowPos; }
+    public Location ThrowLoc { get => m_Loc; }
     public IEnumerable<Point> LoF { get => m_LoF; }
 
     public bool ThrowerInBlast() {
@@ -78,7 +81,10 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
 
     public bool update(Point src) {
-      if (m_Actor.Location.Map.IsValid(src) && Rules.GridDistance(m_Actor.Location.Position, in src) <= maxRange) {
+      if (Rules.GridDistance(m_Actor.Location.Position, in src) <= maxRange) {
+        Location test = new(m_Actor.Location.Map, src);
+        if (!Map.Canonical(ref test)) return false;
+        m_Loc = test;
         m_ThrowPos = src;
         return true;
       }
@@ -89,9 +95,36 @@ namespace djack.RogueSurvivor.Engine.Actions
     private string ReasonCouldntThrowTo(Point pos)
     {
       m_LoF.Clear();
-      if (Rules.GridDistance(m_Actor.Location.Position, in pos) > maxRange) return "out of throwing range";
+      if (null == m_Loc.Map || Rules.GridDistance(m_Actor.Location.Position, in pos) > maxRange) return "out of throwing range";
       if (!LOS.CanTraceThrowLine(m_Actor.Location, in pos, maxRange, m_LoF)) return "no line of throwing";
       return "";
+    }
+
+    private void ThrowGrenadeUnprimed() {
+      m_Grenade.EquippedBy(m_Actor);
+      m_Actor.SpendActionPoints();
+      m_Actor.Inventory.Consume(m_Grenade);
+      // XXX \todo fuse affected by whether target district executes before or after ours (need an extra turn if before)
+      // Cf. Map::DistrictDeltaCode
+      var itemGrenadePrimed = new ItemGrenadePrimed(Gameplay.GameItems.Cast<ItemGrenadePrimedModel>(m_Grenade.PrimedModelID));
+      m_Loc.Drop(itemGrenadePrimed);
+
+      short radius = (short)itemGrenadePrimed.Model.BlastAttack.Radius;
+      var avoid = new ZoneLoc(m_Loc.Map, new Rectangle(m_Loc.Position + radius * Direction.NW.Vector, (short)(2* radius+1) *Direction.SE));
+      var flee = new Gameplay.AI.Goals.FleeExplosive(m_Actor, avoid, itemGrenadePrimed);
+
+      void fear_explosive(Actor who) {
+        if (who.IsDead || who.IsSleeping) return;
+        if (!(who.Controller is Gameplay.AI.ObjectiveAI oai)) return;
+        if (!oai.UsesExplosives) return;
+        oai.SetUnownedObjective(flee);
+      }
+
+      RogueGame.PropagateSight(m_Loc, fear_explosive);
+
+      var a_witness = m_Actor.PlayersInLOS();
+      var d_witness = RogueGame.PlayersInLOS(m_Loc);
+      if (null != a_witness || null != d_witness) RogueGame.Game.UI_ThrowGrenadeUnprimed(m_Actor, m_ThrowPos, m_Grenade, a_witness, d_witness);
     }
   }
 }
