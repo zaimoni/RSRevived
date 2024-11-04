@@ -58,10 +58,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       if (null != m_Grenade) ThrowGrenadeUnprimed();
-      else {
-        m_Primed.EquippedBy(m_Actor);
-        RogueGame.Game.DoThrowGrenadePrimed(m_Actor, in m_ThrowPos);
-      }
+      else ThrowGrenadePrimed();
     }
 
     // interactive UI support
@@ -125,6 +122,32 @@ namespace djack.RogueSurvivor.Engine.Actions
       var a_witness = m_Actor.PlayersInLOS();
       var d_witness = RogueGame.PlayersInLOS(m_Loc);
       if (null != a_witness || null != d_witness) RogueGame.Game.UI_ThrowGrenadeUnprimed(m_Actor, m_ThrowPos, m_Grenade, a_witness, d_witness);
+    }
+
+    private void ThrowGrenadePrimed() {
+      m_Primed.EquippedBy(m_Actor);
+      m_Actor.SpendActionPoints();
+      m_Actor.Inventory.RemoveAllQuantity(m_Primed);
+      // XXX \todo fuse affected by whether target district executes before or after ours (need an extra turn if before)
+      // Cf. Map::DistrictDeltaCode
+      m_Loc.Drop(m_Primed);
+
+      short radius = (short)m_Primed.Model.BlastAttack.Radius;
+      var avoid = new ZoneLoc(m_Loc.Map, new Rectangle(m_Loc.Position + radius * Direction.NW.Vector, (short)(2* radius+1) *Direction.SE));
+      var flee = new Gameplay.AI.Goals.FleeExplosive(m_Actor, avoid, m_Primed);
+
+      void fear_explosive(Actor who) {
+        if (who.IsDead || who.IsSleeping) return;
+        if (!(who.Controller is Gameplay.AI.ObjectiveAI oai)) return;
+        if (!oai.UsesExplosives) return;
+        oai.SetUnownedObjective(flee);
+      }
+
+      RogueGame.PropagateSight(m_Loc, fear_explosive);
+
+      var a_witness = m_Actor.PlayersInLOS();
+      var d_witness = RogueGame.PlayersInLOS(m_Loc);
+      if (null != a_witness || null != d_witness) RogueGame.Game.UI_ThrowGrenadePrimed(m_Actor, m_ThrowPos, m_Primed, a_witness, d_witness);
     }
   }
 }

@@ -9447,41 +9447,26 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
-    public void DoThrowGrenadePrimed(Actor actor, in Point targetPos)
+    public void UI_ThrowGrenadePrimed(Actor actor, Point targetPos, ItemGrenadePrimed itemGrenadePrimed, List<PlayerController>? a_witness, List<PlayerController>? d_witness)
     {
-      if (!(actor.GetEquippedWeapon() is ItemGrenadePrimed itemGrenadePrimed)) throw new InvalidOperationException("throwing primed grenade but no primed grenade equipped");
-      actor.SpendActionPoints();
-      actor.Inventory.RemoveAllQuantity(itemGrenadePrimed);
-      Location dest = new(actor.Location.Map, targetPos);
-      if (!Map.Canonical(ref dest)) throw new InvalidOperationException("throwing to non-existent location");
-      dest.Drop(itemGrenadePrimed);
+#if DEBUG
+        if (null == a_witness && null == d_witness) throw new InvalidOperationException("tracing");
+#endif
 
-      short radius = (short)itemGrenadePrimed.Model.BlastAttack.Radius;
-      var avoid = new ZoneLoc(dest.Map, new Rectangle(dest.Position + radius * Direction.NW.Vector, (short)(2* radius+1) *Direction.SE));
-      var flee = new Gameplay.AI.Goals.FleeExplosive(actor, avoid, itemGrenadePrimed);
-
-      void fear_explosive(Actor who) {
-        if (who.IsDead || who.IsSleeping) return;
-        if (!(who.Controller is ObjectiveAI oai)) return;
-        if (!oai.UsesExplosives) return;
-        oai.SetUnownedObjective(flee);
-      }
-
-      PropagateSight(dest, fear_explosive);
-
-      var witnesses_throw = _ForceVisibleToPlayer(actor);
-      if (null == witnesses_throw && !ForceVisibleToPlayer(dest)) return;
+        var ad_witness = a_witness?.Intersect(d_witness);
+        var a_only_witness = a_witness?.SetDifference(ad_witness);
+        var d_only_witness = d_witness?.SetDifference(ad_witness);
+        KeyValuePair<bool,bool> sees = ForceVisibleToPlayer(actor, a_only_witness, ad_witness, d_only_witness);
 
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
-      if (null != witnesses_throw) {
-        ImportantMessage(witnesses_throw, MakePanopticMessage(actor, string.Format("{0} back a {1}!", VERB_THROW.Conjugate(actor), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);
-      } else {
-        ImportantMessage(MakeMessage(actor, string.Format("{0} back a {1}!", VERB_THROW.Conjugate(actor), itemGrenadePrimed.Model.SingleName)), DELAY_LONG);
-      }
+      var phrase = string.Format("{0} back a {1}!", VERB_THROW.Conjugate(actor), itemGrenadePrimed.Model.SingleName);
+      if (null != a_witness) ImportantMessage(a_witness, MakePanopticMessage(actor, phrase), DELAY_LONG);
+      if (null != d_only_witness) ImportantMessage(d_only_witness, MakeMessage(d_only_witness[0], actor, phrase), DELAY_LONG);
       ClearOverlays();
       RedrawPlayScreen();
     }
+
 
 #nullable enable
     private void ShowBlastImage(GDI_Point screenPos, BlastAttack attack, int damage)
