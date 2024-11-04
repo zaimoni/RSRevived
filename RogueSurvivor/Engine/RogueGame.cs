@@ -11120,6 +11120,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (null != killer) {
         killer.RecordKill(deadGuy);
+        var killer_pc = killer.Controller as PlayerController;
         if (Session.Get.HasEvolution && killer.Model.Abilities.IsUndead) {
           var actorModel = CheckUndeadEvolution(killer);
           if (actorModel != null) {
@@ -11127,7 +11128,7 @@ namespace djack.RogueSurvivor.Engine
             var skills = killer.MySkills.Skills;
             killer.Model = actorModel;
             killer.APreset(); // to avoid triggering a debug-mode crash
-            if (killer.IsPlayer) killer.PrepareForPlayerControl();
+            if (null != killer_pc) killer.PrepareForPlayerControl();
             if (null != skills) {
               foreach (var sk in skills) {
                 for (int index = 0; index < sk.Value; ++index) killer.SkillUpgrade(sk.Key);
@@ -11166,13 +11167,13 @@ namespace djack.RogueSurvivor.Engine
         }
         if (killer.Model.Abilities.IsLawEnforcer && !killer.Faction.IsEnemyOf(deadGuy.Faction)) {
           if (0 < Session.Get.Police.CountMurders(deadGuy)) {
-            if (killer.IsPlayer)
-              AddMessage(new("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
+            if (null != killer_pc)
+              killer_pc.AddMessage(new("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
             else
               killer.Say(deadGuy, "Good riddance, murderer!", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
           } else if (0 < Session.Get.Police.CountAssaults(deadGuy)) {
-            if (killer.IsPlayer)
-              AddMessage(new("You feel like you did your duty with killing a violent criminal.", Session.Get.WorldTime.TurnCounter, Color.White));
+            if (null != killer_pc)
+              killer_pc.AddMessage(new("You feel like you did your duty with killing a violent criminal.", Session.Get.WorldTime.TurnCounter, Color.White));
             else
               killer.Say(deadGuy, "Good riddance!", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
           }
