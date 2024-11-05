@@ -9,7 +9,8 @@ using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionEatCorpse : ActorAction
+  // schedulable version would target a Location
+  internal class ActionEatCorpse : ActorAction,NotSchedulable
   {
     private readonly Corpse m_Target;
 
@@ -24,12 +25,31 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return m_Actor.CanEatCorpse(out m_FailReason);
+      m_FailReason = ReasonCantEatCorpse();
+      return string.IsNullOrEmpty(m_FailReason);
     }
+
+    // strictly speaking, performability requires being in the same location
+    // but all three of our construction callers handle this; this is a legacy class
 
     public override void Perform()
     {
       RogueGame.Game.DoEatCorpse(m_Actor, m_Target);
     }
+
+    // AI support
+    // this has to be coordinated with ReasonCantEatCorpse
+    static public bool WantToEatCorpse(Actor a) {
+      if (a.Model.Abilities.IsUndead) return a.HitPoints < a.MaxHPs; // legal regardless, but AI would not choose this
+      if (a.IsStarving) return true;
+      return a.IsInsane;
+    }
+
+    private string ReasonCantEatCorpse()
+    { // this needs revision for feral dogs, which do not have sanity and should be able to eat corpses when merely hungry
+      if (!m_Actor.Model.Abilities.IsUndead && !m_Actor.IsStarving && !m_Actor.IsInsane) return "not starving or insane";
+      return "";
+    }
+
   }
 }

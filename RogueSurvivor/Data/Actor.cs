@@ -2986,21 +2986,6 @@ namespace djack.RogueSurvivor.Data
       m_FoodPoints = Math.Min(m_FoodPoints + BiteNutritionValue(f), MaxRot);
     }
 
-    private string ReasonCantEatCorpse()
-    {
-      if (!Model.Abilities.IsUndead && !IsStarving && !IsInsane) return "not starving or insane";
-      return "";
-    }
-
-    public bool CanEatCorpse(out string reason) {
-      reason = ReasonCantEatCorpse();
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanEatCorpse() {
-      return string.IsNullOrEmpty(ReasonCantEatCorpse());
-    }
-
 #nullable enable
     private string ReasonCantButcher(Corpse corpse) // XXX \todo enable AI for this
     {

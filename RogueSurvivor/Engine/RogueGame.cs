@@ -4767,11 +4767,12 @@ namespace djack.RogueSurvivor.Engine
       bool OnRMBCorpse(Corpse c)
       {
         if (Player.Model.Abilities.IsUndead) {
-          if (Player.CanEatCorpse(out string reason)) { // currently automatically succeeds
-            DoEatCorpse(Player, c);
+          var act = new ActionEatCorpse(Player, c);
+          if (act.IsPerformable()) {
+            act.Perform();
             return true;
           }
-          ErrorPopup(string.Format("Cannot eat {0} corpse : {1}.", c.DeadGuy.Name, reason));
+          ErrorPopup(string.Format("Cannot eat {0} corpse : {1}.", c.DeadGuy.Name, act.FailReason));
           return false;
         }
         if (Player.CanButcher(c, out string reason1)) {
@@ -4830,12 +4831,13 @@ namespace djack.RogueSurvivor.Engine
     {
       var corpse = MouseToCorpse(mousePos);
       if (corpse == null) return false;
-      if (!player.CanEatCorpse(out string reason)) {
-        ErrorPopup(string.Format("Cannot eat {0} corpse : {1}.", corpse.DeadGuy.Name, reason));
-        return false;
+      var act = new ActionEatCorpse(player, corpse);
+      if (act.IsPerformable()) {
+        act.Perform();
+        return true;
       }
-      DoEatCorpse(player, corpse);
-      return true;
+      ErrorPopup(string.Format("Cannot eat {0} corpse : {1}.", corpse.DeadGuy.Name, act.FailReason));
+      return false;
     }
 
     private bool HandlePlayerReviveCorpse(Actor player, GDI_Point mousePos)

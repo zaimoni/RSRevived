@@ -14,6 +14,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Zaimoni.Data;
 
@@ -148,6 +149,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // that allowed a non-null non-empty percepts
     // to be seen as returning null from FilterNearest anyway, from
     // the outside (Contracts saw a non-null return)
+    [return: NotNullIfNotNull("percepts")]
     protected _T_? FilterNearest<_T_>(IEnumerable<_T_>? percepts) where _T_: class,ILocation
     {
       return percepts?.Minimize(p=>Rules.InteractionStdDistance(m_Actor.Location, p.Location));
@@ -873,14 +875,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorGoEatCorpse(List<Percept>? percepts)
     {
 	  if (   !Session.Get.HasCorpses
-          || !m_Actor.CanEatCorpse()
-          || (m_Actor.Model.Abilities.IsUndead && m_Actor.HitPoints >= m_Actor.MaxHPs))
+          || !ActionEatCorpse.WantToEatCorpse(m_Actor))
         return null;
-	  var corpsesPercepts = percepts?.FilterT<List<Corpse>>();
+	  var corpsesPercepts = percepts?.FilterCast<List<Corpse>>();
 	  if (null == corpsesPercepts) return null;
       m_Actor.Activity = Activity.IDLE;
       var percept = FilterNearest(corpsesPercepts);
-	  if (m_Actor.Location == percept.Location) return new ActionEatCorpse(m_Actor, (percept.Percepted as List<Corpse>)[0]);
+	  if (m_Actor.Location == percept.Location) return new ActionEatCorpse(m_Actor, percept.Percepted[0]);
       return BehaviorHeadFor(percept.Location,true,true);
     }
 #nullable restore

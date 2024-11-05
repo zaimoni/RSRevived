@@ -156,7 +156,18 @@ namespace djack.RogueSurvivor.Engine.AI
       List<Percept_<_T_>>? ret = null;
       foreach(var p in percepts) {
         // XXX arguably should be tmp.Count() but unclear how CPU vs. GC thrashing works here
-        if (p.Percepted is _T_ test && fn(test)) (ret ??= new List<Percept_<_T_>>()).Add(new Percept_<_T_>(test, p.Turn, p.Location));
+        if (p.Percepted is _T_ test && fn(test)) (ret ??= new()).Add(new(test, p.Turn, p.Location));
+      }
+	  return ret;
+	}
+
+	internal static List<Percept_<_T_>>? FilterCast<_T_>(this IEnumerable<Percept_<object>> percepts) where _T_:class
+	{
+      if (!percepts.Any()) return null;
+      List<Percept_<_T_>>? ret = null;
+      foreach(var p in percepts) {
+        // XXX arguably should be tmp.Count() but unclear how CPU vs. GC thrashing works here
+        if (p.Percepted is _T_ test) (ret ??= new()).Add(new(test, p.Turn, p.Location));
       }
 	  return ret;
 	}
