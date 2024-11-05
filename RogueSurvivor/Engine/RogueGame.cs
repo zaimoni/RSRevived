@@ -560,8 +560,7 @@ namespace djack.RogueSurvivor.Engine
       var msg = new string[] { actor.TheName, verb, direct_object.TheName , ends_with };
       return new(string.Join(" ",msg), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : color);
     }
-    public static UI.Message MakePanopticMessage(Actor actor, string verb, INoun direct_object, string ends_with) => MakePanopticMessage(actor, verb, direct_object, ends_with, OTHER_ACTION_COLOR);
-
+    public static UI.Message MakePanopticMessage(Actor actor, string verb, INoun direct_object, string ends_with=".") => MakePanopticMessage(actor, verb, direct_object, ends_with, OTHER_ACTION_COLOR);
 
     private static UI.Message MakePanopticMessage(Actor actor, string doWhat, Color color)
     {
@@ -8560,12 +8559,21 @@ namespace djack.RogueSurvivor.Engine
       actor.StandUp();  // movement cancels crouching, for now (duck walk very low priority to implement)
 	  actor.Moved();
       newLocation.Place(actor);
-      bool dest_seen = ForceVisibleToPlayer(actor);
+      var a_witness = actor.PlayersInLOS();
+      var d_witness = PlayersInLOS(location);
+      var ad_witness = a_witness?.Intersect(d_witness);
+      var a_only_witness = a_witness?.SetDifference(ad_witness);
+      var d_only_witness = d_witness?.SetDifference(ad_witness);
+
+      bool dest_seen = null != a_witness;
+      if (null != a_witness) PanViewportTo(a_witness);
+
       var draggedCorpse = actor.DraggedCorpse;
       if (draggedCorpse != null) {
         draggedCorpse.Location = actor.Location;
-        if (dest_seen || ForceVisibleToPlayer(in location))
-          AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", VERB_DRAG.Conjugate(actor), draggedCorpse.DeadGuy.TheName)));
+        var msg = MakePanopticMessage(actor, string.Format("{0} {1} corpse.", VERB_DRAG.Conjugate(actor), draggedCorpse.DeadGuy.TheName));
+        if (null != a_witness) AddMessage(a_witness, msg);
+        if (null != d_only_witness) AddMessage(d_only_witness, msg);
       }
       int actionCost = Actor.BASE_ACTION_COST;
       if (actor.IsRunning) {
@@ -8575,10 +8583,10 @@ namespace djack.RogueSurvivor.Engine
       var mapObjectAt = newLocation.MapObject;
       if (null != mapObjectAt && mapObjectAt.IsJumpable) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
-        if (dest_seen) AddMessage(MakeMessage(actor, VERB_JUMP_ON.Conjugate(actor), mapObjectAt));
+        if (null != a_witness) AddMessage(a_witness, MakePanopticMessage(actor, VERB_JUMP_ON.Conjugate(actor), mapObjectAt));
         if (actor.Model.Abilities.CanJumpStumble && Rules.Get.RollChance(JUMP_STUMBLE_CHANCE)) {
           actionCost += JUMP_STUMBLE_ACTION_COST;
-          if (dest_seen) AddMessage(MakeMessage(actor, string.Format("{0}!", VERB_STUMBLE.Conjugate(actor))));
+          if (null != a_witness) AddMessage(a_witness, MakePanopticMessage(actor, string.Format("{0}!", VERB_STUMBLE.Conjugate(actor))));
         }
       }
 
