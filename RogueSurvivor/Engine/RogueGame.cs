@@ -4871,11 +4871,13 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoEatCorpse(Actor a, Corpse c)
     {
-      bool player = ForceVisibleToPlayer(a);
+      var a_witness = a.PlayersInLOS();
+      bool player = null != a_witness;
+      if (player) PanViewportTo(a_witness);
       a.SpendActionPoints();
       int num = a.DamageVsCorpses;
       if (player) {
-        AddMessage(MakeMessage(a, string.Format("{0} {1} corpse.", VERB_FEAST_ON.Conjugate(a), c.DeadGuy.Name)));
+        AddMessage(a_witness, MakePanopticMessage(a, string.Format("{0} {1} corpse.", VERB_FEAST_ON.Conjugate(a), c.DeadGuy.Name)));
         // alpha10 replace with sfx
         m_MusicManager.Stop();
         m_MusicManager.Play(GameSounds.UNDEAD_EAT, MusicPriority.PRIORITY_EVENT);
@@ -4883,7 +4885,7 @@ namespace djack.RogueSurvivor.Engine
       if (c.TakeDamage(num)) {
         a.Location.Map.Destroy(c);
         if (player)
-          AddMessage(new(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
+          AddMessage(a_witness, new(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
       }
       if (a.Model.Abilities.IsUndead) {
         a.RegenHitPoints(a.BiteHpRegen(num));
