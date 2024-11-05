@@ -429,8 +429,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void ImportantMessage(List<PlayerController> witnesses, UI.Message msg, int delay=0)
     {
-      RedrawPlayScreen(witnesses, msg);
-      if (0 < delay) AnimDelay(delay);
+      foreach(var pc in witnesses) pc.ImportantMessage(msg, delay);
     }
 
     public void ImportantMessage(List<PlayerController>? a_only_witness, List<PlayerController>? ad_witness, List<PlayerController>? d_only_witness, UI.Message[] msgs, int delay=0)
@@ -658,10 +657,10 @@ namespace djack.RogueSurvivor.Engine
       return (s.Length > maxLength) ? s.Substring(0, maxLength) : s;
     }
 
-    private void AnimDelay(int msecs)
+    static public void AnimDelay(int msecs)
     {
       if (IsSimulating) return;   // deadlocks otherwise
-      if (s_Options.IsAnimDelayOn) m_UI.UI_Wait(msecs);
+      if (s_Options.IsAnimDelayOn) IRogueUI.UI.UI_Wait(msecs);
     }
 
     public void PlayEventMusic(string music, bool loop=false)
@@ -2243,10 +2242,8 @@ namespace djack.RogueSurvivor.Engine
 #region Kill (zombify) starved actors.
         if (actorList1 != null) {
           foreach (Actor actor in actorList1) {
-            var witnesses = actor.PlayersInLOS();
-            if (null != witnesses) {
-              RedrawPlayScreen(witnesses, MakePanopticMessage(actor, string.Format("{0} !!", VERB_DIE_FROM_STARVATION.Conjugate(actor))));
-            }
+            var witnesses = _ForceVisibleToPlayer(actor);
+            witnesses?.AddMessage(MakePanopticMessage(actor, string.Format("{0} !!", VERB_DIE_FROM_STARVATION.Conjugate(actor))));
             KillActor(null, actor, "starvation");
             if (!actor.Model.Abilities.IsUndead && Session.Get.HasImmediateZombification && rules.RollChance(s_Options.StarvedZombificationChance)) {
               map.TryRemoveCorpseOf(actor);
@@ -8730,7 +8727,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool DoTriggerTrap(ItemTrap trap, Actor victim)
     {
-      var witnesses = victim.PlayersInLOS();
+      var witnesses = _ForceVisibleToPlayer(victim);
       trap.IsTriggered = true;
       ItemTrapModel trapModel = trap.Model;
       int dmg = trapModel.Damage * trap.Quantity;
@@ -11136,7 +11133,7 @@ namespace djack.RogueSurvivor.Engine
               }
               killer.RecomputeStartingStats();
             }
-            var witnesses = killer.PlayersInLOS();
+            var witnesses = _ForceVisibleToPlayer(killer);
             if (null != witnesses) {
               AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(killer.Location), SIZE_OF_ACTOR)));
               ImportantMessage(witnesses, MakePanopticMessage(killer, string.Format("{0} a {1} horror!", VERB_TRANSFORM_INTO.Conjugate(killer), actorModel.Name)), DELAY_LONG);
@@ -13433,7 +13430,7 @@ namespace djack.RogueSurvivor.Engine
     }
     private List<PlayerController>? _ForceVisibleToPlayer(in Location location) => _ForceVisibleToPlayer(location.Map, location.Position);
 
-    private List<PlayerController>? _ForceVisibleToPlayer(Actor actor)
+    public List<PlayerController>? _ForceVisibleToPlayer(Actor actor)
     {
       var viewing = actor.PlayersInLOS();
       if (null == viewing) return null;

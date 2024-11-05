@@ -112,6 +112,16 @@ namespace djack.RogueSurvivor.Data
         return false;
     }
 
+    public bool ImportantMessage(Message msg, int delay) {
+        Messages.Add(msg);
+        if (RogueGame.IsPlayer(m_Actor)) {
+          RogueGame.Game.RedrawPlayScreen();
+          if (0 < delay) RogueGame.AnimDelay(delay);
+          return true;
+        }
+        return false;
+    }
+
     public void AddMessagePressEnter()
     {
 #if DEBUG
