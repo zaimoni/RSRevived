@@ -9233,7 +9233,7 @@ namespace djack.RogueSurvivor.Engine
             if (null != d_witness) {
               d_pc?.Messages.Clear();
               AddMessage(null, ad_witness, d_only_witness, MakeMessages(attacker, VERB_DISARM.Conjugate(attacker), defender));
-              defender.Controller.AddMessage(new(string.Format("{0} is sent flying!", disarmIt.TheName), attacker.Location.Map.LocalTime.TurnCounter), d_witness);
+              AddMessage(d_witness, new(string.Format("{0} is sent flying!", disarmIt.TheName), attacker.Location.Map.LocalTime.TurnCounter));
               if (null != d_pc) {
                 d_pc.AddMessagePressEnter();
               } else {
@@ -9893,11 +9893,11 @@ namespace djack.RogueSurvivor.Engine
       var witnesses = speaker.PlayersInLOS()!;
 
       if (!acceptDeal) {
-        speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))), witnesses);
+        AddMessage(witnesses, MakePanopticMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
         return false;
       }
 
-      speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))), witnesses);
+      AddMessage(witnesses, MakePanopticMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
 
       if (target.Leader == speaker && flag3) target.Say(speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
       speaker.Remove(itSpeaker);
@@ -9920,7 +9920,7 @@ namespace djack.RogueSurvivor.Engine
       var trade = PickItemToTrade(target, pc, itSpeaker);
       if (null == trade) return;
 
-      speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("swaps {0} for {1}.", trade.AName, itSpeaker.AName)), witnesses);
+      AddMessage(witnesses, MakePanopticMessage(speaker, string.Format("swaps {0} for {1}.", trade.AName, itSpeaker.AName)));
 
       AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
@@ -9929,7 +9929,7 @@ namespace djack.RogueSurvivor.Engine
 //    RedrawPlayScreen(); // redraw will be triggered by messaging, below
 
       if (!acceptDeal) {
-        speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))), witnesses);
+        AddMessage(witnesses, MakePanopticMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
         return;
       }
 
@@ -9939,7 +9939,7 @@ namespace djack.RogueSurvivor.Engine
       if (!itSpeaker.IsUseless) target.AddAsMuchAsPossible(itSpeaker);
       if (trade is ItemTrap trap) trap.Desactivate();
       speaker.Inventory.AddAsMuchAsPossible(trade);
-      speaker.Controller.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))), witnesses);
+      AddMessage(witnesses, MakePanopticMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
       target.RejectCrossLink(speaker.Inventory);
     }
 
@@ -9969,7 +9969,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       inv.RejectCrossLink(dest);
       var witnesses = _ForceVisibleToPlayer(actor);
-      if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)), witnesses);
+      if (null != witnesses) AddMessage(witnesses, MakePanopticMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
 
       actor.SpendActionPoints();
       actor.Remove(give);
@@ -10946,7 +10946,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Activity = Data.Activity.IDLE;
       actor.IsSleeping = false;
       var witnesses = _ForceVisibleToPlayer(actor);
-      if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("{0}.", VERB_WAKE_UP.Conjugate(actor))), witnesses);
+      if (null != witnesses) AddMessage(witnesses, MakePanopticMessage(actor, string.Format("{0}.", VERB_WAKE_UP.Conjugate(actor))));
       // stop sleep music if player.
       if (actor.IsPlayer && m_MusicManager.Music == GameMusics.SLEEP) m_MusicManager.Stop();
     }
@@ -10957,7 +10957,7 @@ namespace djack.RogueSurvivor.Engine
       --spray.PaintQuantity;
       actor.Location.Map.AddDecorationAt(spray.Model.TagImageID, in pos);
       var witnesses = _ForceVisibleToPlayer(actor);
-      if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("{0} a tag.", VERB_SPRAY.Conjugate(actor))), witnesses);
+      if (null != witnesses) AddMessage(witnesses, MakePanopticMessage(actor, string.Format("{0} a tag.", VERB_SPRAY.Conjugate(actor))));
     }
 
 #nullable enable
@@ -11164,7 +11164,7 @@ namespace djack.RogueSurvivor.Engine
         if (isMurder.cache) {
           killer.HasMurdered(deadGuy);
           var witnesses = _ForceVisibleToPlayer(killer);
-          if (null != witnesses) killer.Controller.AddMessage(MakePanopticMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)), witnesses);
+          if (null != witnesses) AddMessage(witnesses, MakePanopticMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)));
 
           // \todo while soldiers won't actively track down murderers, they will respond if it happens in sight
           PropagateSight(killer.Location, a => {
@@ -11854,7 +11854,7 @@ namespace djack.RogueSurvivor.Engine
       var lost = actor.MySkills.LoseRandomSkill();
       if (null != lost) {
         var witnesses = _ForceVisibleToPlayer(actor);
-        if (null != witnesses) actor.Controller.AddMessage(MakePanopticMessage(actor, string.Format("regressed in {0}!", Skills.Name(lost.Value))), witnesses);
+        if (null != witnesses) AddMessage(witnesses, MakePanopticMessage(actor, string.Format("regressed in {0}!", Skills.Name(lost.Value))));
       }
     }
 
@@ -14816,7 +14816,7 @@ retry:
           if (null == actorAt) return;
           KillActor(null, actorAt, "crushed");    // XXX \todo credit the gate operator with a murder (with usual exemptions)
           var witnesses = _ForceVisibleToPlayer(actorAt);
-          if (null != witnesses) actorAt.Controller.AddMessage(MakePanopticMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))), witnesses);
+          if (null != witnesses) AddMessage(witnesses, MakePanopticMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))));
       });
     }
 #nullable restore

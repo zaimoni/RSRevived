@@ -35,12 +35,6 @@ namespace djack.RogueSurvivor.Data
 
 #region UI messages
     // forwarder system for to RogueGame::AddMessage
-    public void AddMessage(UI.Message msg, List<PlayerController> witnesses) {
-      if (0 < witnesses.Count) {
-        foreach(var witness in witnesses) witness.AddMessage(msg);
-      }
-    }
-
     public virtual void AddMessageForceRead(UI.Message msg, List<PlayerController> witnesses) {
       if (0 < witnesses.Count) {
         bool rendered = false;
