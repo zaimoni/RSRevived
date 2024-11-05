@@ -11991,41 +11991,11 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
-    public void RedrawPlayScreen(KeyValuePair<List<PlayerController>, List<Actor>> witnesses)
-    {
-        if (0 < witnesses.Key.Count) {
-            PanViewportTo(witnesses.Key);
-            return;
-        }
-        PanViewportTo(witnesses.Value);
-    }
-
-    public void RedrawPlayScreen(KeyValuePair<List<PlayerController>, List<Actor>> witnesses, UI.Message msg)
-    {
-        if (0 < witnesses.Key.Count) {
-            foreach(var pc in witnesses.Key) pc.Messages.Add(msg);
-            PanViewportTo(witnesses.Key);
-            return;
-        }
-        PanViewportTo(witnesses.Value);
-        RedrawPlayScreen(msg);
-    }
-
     public void RedrawPlayScreen(List<PlayerController> PCs, UI.Message msg)
     {
         bool rendered = false;
         foreach(var pc in PCs) if (pc.AddMessage(msg)) rendered = true;
         if (!rendered) PanViewportTo(PCs);
-    }
-
-    public void RedrawPlayScreen(List<Actor> NPCs, UI.Message msg)
-    {
-        foreach(var a in NPCs) if (Player == a) {
-            RedrawPlayScreen(msg);
-            return;
-        }
-        AddMessage(msg);
-        PanViewportTo(NPCs);
     }
 
 #nullable enable
@@ -13212,12 +13182,6 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     public void PanViewportTo(Actor player) {
       if (Player != player) PanViewportTo(setPlayer(player).Location);
-    }
-
-    public void PanViewportTo(List<Actor> witnesses) {
-      if (0 >= witnesses.Count) return;
-      if (witnesses.Contains(Player)) RedrawPlayScreen();
-      else PanViewportTo(witnesses[0]);
     }
 
     public void PanViewportTo(List<PlayerController> witnesses) {
