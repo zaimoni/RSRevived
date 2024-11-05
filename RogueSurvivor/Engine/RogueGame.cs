@@ -6196,7 +6196,8 @@ namespace djack.RogueSurvivor.Engine
       const string SPRAY_MODE_TEXT = "SPRAY MODE - directions to spray or wait key to spray on yourself, ESC cancels";  // alpha10
 
       // Check if has odor suppressor, etc.
-      if (!player.CanSprayOdorSuppressor(spray, out string reason)) {
+      string? reason = ActionSprayOdorSuppressor.ReasonCant(spray);
+      if (!string.IsNullOrEmpty(reason)) {
         ErrorPopup(reason);
         return false;
       }
@@ -6210,13 +6211,15 @@ namespace djack.RogueSurvivor.Engine
         if (null == who) {
           ErrorPopup("No one to spray on there.");
           return false;
-        } else if (player.CanSprayOdorSuppressor(spray, who, out string reason)) {
-          DoSprayOdorSuppressor(player, spray, who);
-          return true;
-        } else {
-          ErrorPopup(string.Format("Can't spray here : {0}.", reason));
-          return false;
         }
+
+        var act = new ActionSprayOdorSuppressor(player, spray, who);
+        if (act.IsPerformable()) {
+            act.Perform();
+            return true;
+        }
+        ErrorPopup(string.Format("Can't spray here : {0}.", act.FailReason));
+        return false;
       }
 
       actionDone = DirectionCommandFiltered(spray_who, spray_on, "No one to spray on here.");
@@ -10962,15 +10965,10 @@ namespace djack.RogueSurvivor.Engine
 
 #nullable enable
     // alpha10 new way to use spray scent
-    public void DoSprayOdorSuppressor(Actor actor, ItemSprayScent suppressor, Actor sprayOn)
+    public void UI_SprayOdorSuppressor(Actor actor, ItemSprayScent suppressor, Actor sprayOn)
     {
-      actor.SpendActionPoints();  // spend AP.
-      --suppressor.SprayQuantity;   // spend spray.
-      sprayOn.OdorSuppressorCounter += suppressor.Model.Strength; // add odor suppressor on spray target
-
-      // message.
-      if (ForceVisibleToPlayer(actor))
-        AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_SPRAY.Conjugate(actor), (sprayOn == actor ? actor.HimselfOrHerself : sprayOn.Name))));
+      var witnesses = _ForceVisibleToPlayer(actor);
+      if (null != witnesses) AddMessage(witnesses, MakeMessage(actor, string.Format("{0} {1}.", VERB_SPRAY.Conjugate(actor), (sprayOn == actor ? actor.HimselfOrHerself : sprayOn.Name))));
     }
 
     private void DoGiveOrderTo(Actor master, OrderableAI? ordai, ActorOrder order)

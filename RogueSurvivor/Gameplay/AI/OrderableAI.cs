@@ -3158,7 +3158,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (a.IsPlayer) return false;
 
         // only if self or adjacent
-        if (a != m_Actor && !Rules.IsAdjacent(m_Actor.Location, a.Location)) return false;
+        if (null != ActionSprayOdorSuppressor.ReasonCant(m_Actor, a)) return false;
 
         // dont spray if already suppressed for 2h or more
         if (a.OdorSuppressorCounter >= 2 * WorldTime.TURNS_PER_HOUR) return false;
@@ -3188,7 +3188,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       //  spray?
       if (sprayOn != null) {
-        spray.EquippedBy(m_Actor);
         var sprayIt = new ActionSprayOdorSuppressor(m_Actor, spray, sprayOn);
         if (sprayIt.IsPerformable()) return sprayIt;  // should be tautological given above
       }

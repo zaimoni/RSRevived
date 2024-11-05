@@ -875,7 +875,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorGoEatCorpse(List<Percept>? percepts)
     {
 	  if (   !Session.Get.HasCorpses
-          || !ActionEatCorpse.WantToEatCorpse(m_Actor))
+          || !ActionEatCorpse.WantTo(m_Actor))
         return null;
 	  var corpsesPercepts = percepts?.FilterCast<List<Corpse>>();
 	  if (null == corpsesPercepts) return null;

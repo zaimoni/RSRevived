@@ -25,7 +25,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      m_FailReason = ReasonCantEatCorpse();
+      m_FailReason = ReasonCant();
       return string.IsNullOrEmpty(m_FailReason);
     }
 
@@ -39,13 +39,13 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     // AI support
     // this has to be coordinated with ReasonCantEatCorpse
-    static public bool WantToEatCorpse(Actor a) {
+    static public bool WantTo(Actor a) {
       if (a.Model.Abilities.IsUndead) return a.HitPoints < a.MaxHPs; // legal regardless, but AI would not choose this
       if (a.IsStarving) return true;
       return a.IsInsane;
     }
 
-    private string ReasonCantEatCorpse()
+    private string ReasonCant()
     { // this needs revision for feral dogs, which do not have sanity and should be able to eat corpses when merely hungry
       if (!m_Actor.Model.Abilities.IsUndead && !m_Actor.IsStarving && !m_Actor.IsInsane) return "not starving or insane";
       return "";
