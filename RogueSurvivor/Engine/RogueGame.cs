@@ -418,15 +418,6 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     public static void AddMessage(UI.Message msg) => Messages.Add(msg);
 
-    public static bool AddMessage(List<PlayerController>? a_only_witnesses, List<PlayerController>? ad_witnesses, List<PlayerController>? d_only_witnesses, UI.Message[] msgs)
-    {
-        bool rendered = false;
-        if (null != ad_witnesses && null != msgs[1]) foreach(var pc in ad_witnesses) if (pc.AddMessage(msgs[1])) rendered = true;
-        if (null != a_only_witnesses && null != msgs[0]) foreach(var pc in a_only_witnesses) if (pc.AddMessage(msgs[0])) rendered = true;
-        if (null != d_only_witnesses && null != msgs[2]) foreach(var pc in d_only_witnesses) if (pc.AddMessage(msgs[2])) rendered = true;
-        return rendered;
-    }
-
     public void ImportantMessage(List<PlayerController> witnesses, UI.Message msg, int delay=0)
     {
       foreach(var pc in witnesses) pc.ImportantMessage(msg, delay);
@@ -9240,7 +9231,9 @@ namespace djack.RogueSurvivor.Engine
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead) {
             attacker.RegenHitPoints(attacker.BiteHpRegen(dmg));
             attacker.RottingEat(dmg);
-            if (isVisible) AddMessage(a_only_witness, ad_witness, d_only_witness, MakeMessages(attacker, VERB_FEAST_ON.Conjugate(attacker), defender, " flesh !"));
+            ad_witness?.AddMessage(MakeMessage(ad_witness[0], attacker, VERB_FEAST_ON.Conjugate(attacker), defender, " flesh !"));
+            a_only_witness?.AddMessage(MakeMessage(a_only_witness[0], attacker, VERB_FEAST_ON.Conjugate(attacker), defender, " flesh !"));
+            d_only_witness?.AddMessage(MakeMessage(d_only_witness[0], attacker, VERB_FEAST_ON.Conjugate(attacker), defender, " flesh !"));
             defender.Infect(attacker.InfectionForDamage(dmg));
           }
           if (fatal) {
