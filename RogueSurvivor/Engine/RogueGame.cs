@@ -418,11 +418,6 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     public static void AddMessage(UI.Message msg) => Messages.Add(msg);
 
-    public void ImportantMessage(List<PlayerController> witnesses, UI.Message msg, int delay=0)
-    {
-      foreach(var pc in witnesses) pc.ImportantMessage(msg, delay);
-    }
-
     public void ImportantMessage(List<PlayerController>? a_only_witness, List<PlayerController>? ad_witness, List<PlayerController>? d_only_witness, UI.Message[] msgs, int delay=0)
     {
       bool rendered = false;
@@ -2239,9 +2234,7 @@ namespace djack.RogueSurvivor.Engine
             if (!actor.Model.Abilities.IsUndead && Session.Get.HasImmediateZombification && rules.RollChance(s_Options.StarvedZombificationChance)) {
               map.TryRemoveCorpseOf(actor);
               Zombify(null, actor, false);
-              if (null != witnesses) {
-                ImportantMessage(witnesses, MakePanopticMessage(actor, string.Format("{0} into a Zombie!", "turn".Conjugate(actor))), DELAY_LONG);
-              }
+              witnesses?.ImportantMessage(MakePanopticMessage(actor, string.Format("{0} into a Zombie!", "turn".Conjugate(actor))), DELAY_LONG);
             }
           }
         }
@@ -8726,7 +8719,7 @@ namespace djack.RogueSurvivor.Engine
         victim.TakeDamage(dmg);
         if (null != witnesses) {
           DefenderDamageIcon(victim, GameImages.ICON_MELEE_DAMAGE, dmg.ToString());
-          ImportantMessage(witnesses, MakePanopticMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, dmg)), victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
+          witnesses.ImportantMessage(MakePanopticMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, dmg)), victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           ClearOverlays();
           RedrawPlayScreen();
         }
@@ -9271,13 +9264,10 @@ namespace djack.RogueSurvivor.Engine
         if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
         ImportantMessage(a_only_witness, ad_witness, d_only_witness, MakeMessages(attacker, VERB_MISS.Conjugate(attacker), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
       }
-      if (attacker.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
-      {
+      if (attacker.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE)) {
         attacker.OnUnequipItem(itemMeleeWeapon);
         attacker.Inventory.Consume(itemMeleeWeapon);
-        if (null != a_witness) {
-          ImportantMessage(a_witness, MakePanopticMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
-        }
+        a_witness?.ImportantMessage(MakePanopticMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
       }
       if (isVisible) ClearOverlays();  // alpha10: if test
       if (!defender.IsDead) (attacker.Controller as ObjectiveAI)?.RecruitHelp(defender);
@@ -9369,8 +9359,9 @@ namespace djack.RogueSurvivor.Engine
               } else if (see_attacker) {
                 if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
               }
-              if (null != d_witness) ImportantMessage(null, ad_witness, d_only_witness, MakeMessages(attacker, (defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)).Conjugate(attacker), defender, " !"), DELAY_LONG);
-              if (null != a_only_witness) ImportantMessage(a_only_witness, MakeMessage(a_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
               KillActor(attacker, defender, "shot");
             } else {
               if (see_defender) {
@@ -9379,7 +9370,9 @@ namespace djack.RogueSurvivor.Engine
                 if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
               }
               if (null != d_witness) ImportantMessage(null, ad_witness, d_only_witness, MakeMessages(attacker, attack.Verb.Conjugate(attacker), defender, string.Format(" for {0} damage.", dmg)), player_involved ? DELAY_NORMAL : DELAY_SHORT);
-              if (null != a_only_witness) ImportantMessage(a_only_witness, MakeMessage(a_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
             }
           } else {
             if (see_defender) {
@@ -9387,8 +9380,9 @@ namespace djack.RogueSurvivor.Engine
             } else if (see_attacker) {
               if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
             }
-            if (null != d_witness) ImportantMessage(null, ad_witness, d_only_witness, MakeMessages(attacker, attack.Verb.Conjugate(attacker), defender, " for no effect."), player_involved ? DELAY_NORMAL : DELAY_SHORT);
-            if (null != a_only_witness) ImportantMessage(a_only_witness, MakeMessage(a_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
           }
         } else {
           bool are_adjacent = Rules.IsAdjacent(attacker.Location, defender.Location);
@@ -9401,8 +9395,9 @@ namespace djack.RogueSurvivor.Engine
               if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
             }
           }
-          if (null != d_witness) ImportantMessage(null, ad_witness, d_only_witness, MakeMessages(attacker, VERB_MISS.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
-          if (null != a_only_witness) ImportantMessage(a_only_witness, MakeMessage(a_only_witness[0], attacker, (are_adjacent ? VERB_MISS : attack.Verb).Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+          ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, (are_adjacent ? VERB_MISS : attack.Verb).Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+          d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, (are_adjacent ? VERB_MISS : attack.Verb).Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+          a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, (are_adjacent ? VERB_MISS : attack.Verb).Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
         }
         if (see_attacker || see_defender) ClearOverlays();  // alpha10: if-clause bugfix
     }
@@ -9444,8 +9439,8 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
       var phrase = string.Format("{0} a {1}!", VERB_THROW.Conjugate(actor), itemGrenade.Model.SingleName);
-      if (null != a_witness) ImportantMessage(a_witness, MakePanopticMessage(actor, phrase), DELAY_LONG);
-      if (null != d_only_witness) ImportantMessage(d_only_witness, MakeMessage(d_only_witness[0], actor, phrase), DELAY_LONG);
+      a_witness?.ImportantMessage(MakePanopticMessage(actor, phrase), DELAY_LONG);
+      d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], actor, phrase), DELAY_LONG);
       ClearOverlays();
       RedrawPlayScreen();
     }
@@ -9464,8 +9459,8 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
       var phrase = string.Format("{0} back a {1}!", VERB_THROW.Conjugate(actor), itemGrenadePrimed.Model.SingleName);
-      if (null != a_witness) ImportantMessage(a_witness, MakePanopticMessage(actor, phrase), DELAY_LONG);
-      if (null != d_only_witness) ImportantMessage(d_only_witness, MakeMessage(d_only_witness[0], actor, phrase), DELAY_LONG);
+      a_witness?.ImportantMessage(MakePanopticMessage(actor, phrase), DELAY_LONG);
+      d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], actor, phrase), DELAY_LONG);
       ClearOverlays();
       RedrawPlayScreen();
     }
@@ -11129,7 +11124,7 @@ namespace djack.RogueSurvivor.Engine
             var witnesses = _ForceVisibleToPlayer(killer);
             if (null != witnesses) {
               AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(killer.Location), SIZE_OF_ACTOR)));
-              ImportantMessage(witnesses, MakePanopticMessage(killer, string.Format("{0} a {1} horror!", VERB_TRANSFORM_INTO.Conjugate(killer), actorModel.Name)), DELAY_LONG);
+              witnesses.ImportantMessage(MakePanopticMessage(killer, string.Format("{0} a {1} horror!", VERB_TRANSFORM_INTO.Conjugate(killer), actorModel.Name)), DELAY_LONG);
               ClearOverlays();
             }
           }
@@ -15199,6 +15194,13 @@ retry:
         bool rendered = false;
         foreach(var pc in witnesses) if (pc.AddMessage(msg)) rendered = true;
         return rendered;
+    }
+
+    static public bool ImportantMessage(this List<PlayerController> witnesses, UI.Message msg, int delay=0)
+    {
+      bool rendered = false;
+      foreach(var pc in witnesses) if (pc.ImportantMessage(msg, delay)) rendered = true;
+      return rendered;
     }
 
     static public void DrawIcon(this string icon, in GDI_Point origin, Color tint) {
