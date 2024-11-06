@@ -8857,13 +8857,12 @@ namespace djack.RogueSurvivor.Engine
     public void DoWait(Actor actor)
     {
       actor.Wait();
-      if (ForceVisibleToPlayer(actor)) {
-        AddMessage(MakeMessage(actor, (actor.StaminaPoints < actor.MaxSTA)
-                                    ? string.Format("{0} {1} breath.", VERB_CATCH.Conjugate(actor), actor.HisOrHer)
-                                    : string.Format("{0}.", VERB_WAIT.Conjugate(actor))));
-      }
       actor.RegenStaminaPoints(Actor.STAMINA_REGEN_WAIT);
-      if (Player == actor) RedrawPlayScreen();
+
+      var witness = _ForceVisibleToPlayer(actor);
+      witness?.AddMessage(MakeMessage(actor, (actor.StaminaPoints < actor.MaxSTA)
+                                           ? string.Format("{0} {1} breath.", VERB_CATCH.Conjugate(actor), actor.HisOrHer)
+                                           : string.Format("{0}.", VERB_WAIT.Conjugate(actor))));
     }
 #nullable restore
 
