@@ -10163,10 +10163,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoEmote(Actor actor, string text, bool isDanger = false)
     {
-        var witnesses = actor.PlayersInLOS();
-        if (null != witnesses) {
-            RedrawPlayScreen(witnesses, MakePanopticMessage(actor, string.Format(": {0}", text), isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
-        }
+        var witnesses = _ForceVisibleToPlayer(actor);
+        witnesses?.AddMessage(MakePanopticMessage(actor, string.Format(": {0}", text), isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
     }
 
     private Item? Choose(Inventory? inv, string prompt) {
