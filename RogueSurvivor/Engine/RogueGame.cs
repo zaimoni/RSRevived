@@ -2251,8 +2251,7 @@ namespace djack.RogueSurvivor.Engine
           map.DoForAllMapObjects(obj => {
               if (obj.IsOnFire && rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE)) {
                   obj.Extinguish();
-                  if (ForceVisibleToPlayer(obj))
-                      AddMessage(new("The rain has put out a fire.", map.LocalTime.TurnCounter));
+                  _ForceVisibleToPlayer(obj)?.AddMessage(new("The rain has put out a fire.", map.LocalTime.TurnCounter));
               }
           });
         }
@@ -8699,16 +8698,16 @@ namespace djack.RogueSurvivor.Engine
     private bool DoTriggerTrap(ItemTrap trap, MapObject obj)
     {
       ItemTrapModel trapModel = trap.Model;
-      bool player = ForceVisibleToPlayer(obj);
+      var o_witness = _ForceVisibleToPlayer(obj);
       trap.IsTriggered = true;
       if (trapModel.IsNoisy) {
-        if (player) AddMessage(new(string.Format("{0} makes a lot of noise!", trap.TheName.Capitalize()), obj.Location.Map.LocalTime.TurnCounter));
+        o_witness?.AddMessage(new(string.Format("{0} makes a lot of noise!", trap.TheName.Capitalize()), obj.Location.Map.LocalTime.TurnCounter));
         OnLoudNoise(obj.Location, trapModel.NoiseName);
       }
       if (trapModel.IsOneTimeUse) trap.Desactivate();  //alpha10
 
       if (!trap.CheckStepOnBreaks(obj)) return false;
-      if (player) AddMessage(new(string.Format("{0} breaks the {1}.", obj.TheName.Capitalize(), trap.TheName), obj.Location.Map.LocalTime.TurnCounter));
+      o_witness?.AddMessage(new(string.Format("{0} breaks the {1}.", obj.TheName.Capitalize(), trap.TheName), obj.Location.Map.LocalTime.TurnCounter));
       return trap.Consume();
     }
 
@@ -10700,22 +10699,22 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoPushPullFollowersHelp(Actor actor, MapObject mapObj, bool isPulling, ref int staCost)    // alpha10
     {
-      bool isVisibleMobj = IsVisibleToPlayer(mapObj);
-
-      List<Actor> helpers = null;
+      List<Actor>? helpers = null;
       foreach (Actor fo in actor.Followers) {
         // follower can help if: not sleeping, idle and adj to map object.
         if (!fo.IsSleeping && fo.IsAvailableToHelp && Rules.IsAdjacent(fo.Location, mapObj.Location)) {
-          (helpers ??= new List<Actor>(actor.CountFollowers)).Add(fo);
+          (helpers ??= new(actor.CountFollowers)).Add(fo);
         }
       }
       if (helpers != null) {
         // share the sta cost.
         staCost = mapObj.Weight / (1 + helpers.Count);
+        var o_witness = _ForceVisibleToPlayer(mapObj);
         foreach (Actor h in helpers) {
           h.SpendActionPoints();
           h.SpendStaminaPoints(staCost);
-          if (isVisibleMobj || IsVisibleToPlayer(h)) AddMessage(MakeMessage(h, String.Format("{0} {1} {2} {3}.", VERB_HELP.Conjugate(h), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
+          if (null != o_witness) o_witness.AddMessage(MakeMessage(h, string.Format("{0} {1} {2} {3}.", VERB_HELP.Conjugate(h), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
+          else _ForceVisibleToPlayer(h)?.AddMessage(MakeMessage(h, string.Format("{0} {1} {2} {3}.", VERB_HELP.Conjugate(h), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
         }
       }
     }
@@ -13395,6 +13394,14 @@ namespace djack.RogueSurvivor.Engine
           return viewing;
         }
       }
+      if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
+      return viewing;
+    }
+
+    public List<PlayerController>? _ForceVisibleToPlayer<T>(T actor) where T:ILocation
+    {
+      var viewing = actor.PlayersInLOS();
+      if (null == viewing) return null;
       if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
       return viewing;
     }
