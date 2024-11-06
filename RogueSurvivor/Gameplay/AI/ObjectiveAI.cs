@@ -8024,7 +8024,7 @@ restart_chokepoints:
 
     public ActorAction? DoctrineButcher(Corpse c)
     {
-      if (!m_Actor.CanButcher(c)) return null;
+      if (!string.IsNullOrEmpty(ActionButcher.ReasonCant(m_Actor, c))) return null;
       if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
 
       m_Actor.GetBestMeleeWeapon()?.EquippedBy(m_Actor);

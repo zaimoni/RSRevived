@@ -4713,12 +4713,13 @@ namespace djack.RogueSurvivor.Engine
           ErrorPopup(string.Format("Cannot eat {0} corpse : {1}.", c.DeadGuy.Name, act.FailReason));
           return false;
         }
-        if (Player.CanButcher(c, out string reason1)) {
-          DoButcherCorpse(Player, c);
-          return true;
+        var act2 = new ActionButcher(Player, c);
+        if (act2.IsPerformable()) {
+            act2.Perform();
+            return true;
         }
-       ErrorPopup(string.Format("Cannot butcher {0} corpse : {1}.", c.DeadGuy.Name, reason1));
-       return false;
+        ErrorPopup(string.Format("Cannot butcher {0} corpse : {1}.", c.DeadGuy.Name, act2.FailReason));
+        return false;
      }
 
      bool OnLMBCorpse(Corpse c)
@@ -4794,19 +4795,15 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoButcherCorpse(Actor a, Corpse c)  // AI doesn't currently do this, but should be able to once it knows how to manage sanity
     {
-      var witnesses = a.PlayersInLOS();
       a.SpendActionPoints();
       // XXX Unlike most sources of sanity loss, this is a living doing this.  Thus, this should affect reputation.
       SeeingCauseInsanity(a, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
       int num = a.DamageVsCorpses;
-      if (null != witnesses) {
-        RedrawPlayScreen(witnesses, MakePanopticMessage(a, string.Format("{0} {1} corpse for {2} damage.", VERB_BUTCHER.Conjugate(a), c.DeadGuy.Name, num)));
-      }
+      var witnesses = _ForceVisibleToPlayer(a);
+      witnesses?.AddMessage(MakePanopticMessage(a, string.Format("{0} {1} corpse for {2} damage.", VERB_BUTCHER.Conjugate(a), c.DeadGuy.Name, num)));
       if (!c.TakeDamage(num)) return;
       a.Location.Map.Destroy(c);
-      if (null != witnesses) {
-        RedrawPlayScreen(witnesses, new(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
-      }
+      witnesses?.AddMessage(new(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
     }
 
     public void DoEatCorpse(Actor a, Corpse c)

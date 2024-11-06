@@ -2987,24 +2987,6 @@ namespace djack.RogueSurvivor.Data
     }
 
 #nullable enable
-    private string ReasonCantButcher(Corpse corpse) // XXX \todo enable AI for this
-    {
-      if (IsTired) return "tired";
-      if (corpse.Location != Location || !Location.Map.Has(corpse)) return "not in same location";
-      return "";
-    }
-
-    public bool CanButcher(Corpse corpse, out string reason)
-    {
-      reason = ReasonCantButcher(corpse);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanButcher(Corpse corpse)
-    {
-      return string.IsNullOrEmpty(ReasonCantButcher(corpse));
-    }
-
     // theoretically should be returning an enumeration
     // 0: failed to start dragging
     // 1: ok to start dragging
