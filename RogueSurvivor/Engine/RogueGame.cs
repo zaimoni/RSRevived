@@ -9338,8 +9338,6 @@ namespace djack.RogueSurvivor.Engine
               }
               ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, attack.Verb.Conjugate(attacker), defender, string.Format(" for {0} damage.", dmg)), player_involved ? DELAY_NORMAL : DELAY_SHORT);
               d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender, string.Format(" for {0} damage.", dmg)), player_involved ? DELAY_NORMAL : DELAY_SHORT);
-              ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
-              d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
               a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
             }
           } else {
