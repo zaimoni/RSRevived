@@ -13373,21 +13373,16 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    private List<PlayerController>? _ForceVisibleToPlayer(Map map, in Point position)
+    private List<PlayerController>? _ForceVisibleToPlayer(in Location view)
     {
-      if (null == map) return null; // convince Duckman to not superheroically crash many games on turn 0
-
-      Location view = new(map, position);
-      if (!Map.Canonical(ref view)) return null;
+      if (null == view.Map) return null; // convince Duckman to not superheroically crash many games on turn 0
 
       var viewing = PlayersInLOS(view);
       if (null == viewing) return null;
 
-      if (viewing.Contains(Player.Controller as PlayerController)) return viewing;
-      PanViewportTo(viewing);
+      if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
       return viewing;
     }
-    private List<PlayerController>? _ForceVisibleToPlayer(in Location location) => _ForceVisibleToPlayer(location.Map, location.Position);
 
     public List<PlayerController>? _ForceVisibleToPlayer(Actor actor)
     {
@@ -13400,8 +13395,7 @@ namespace djack.RogueSurvivor.Engine
           return viewing;
         }
       }
-      if (viewing.Contains(Player.Controller as PlayerController)) return viewing;
-      PanViewportTo(viewing);
+      if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
       return viewing;
     }
 
@@ -13423,24 +13417,19 @@ namespace djack.RogueSurvivor.Engine
           return viewing;
         }
       }
-      if (viewing.Contains(Player.Controller as PlayerController)) return viewing;
-      PanViewportTo(viewing);
+      if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
       return viewing;
     }
 #nullable restore
 
-    private bool ForceVisibleToPlayer(Map map, in Point position)
+    private bool ForceVisibleToPlayer(in Location view)
     {
-      if (null == map) return false; // convince Duckman to not superheroically crash many games on turn 0
-
-      Location view = new(map, position);
-      if (!Map.Canonical(ref view)) return false;
+      if (null == view.Map) return false; // convince Duckman to not superheroically crash many games on turn 0
 
       var viewing = PlayersInLOS(view);
       if (null == viewing) return false;
 
-      if (viewing.Contains(Player.Controller as PlayerController)) return true;
-      PanViewportTo(viewing);
+      if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
       return true;
     }
 
@@ -13456,7 +13445,6 @@ namespace djack.RogueSurvivor.Engine
     }
 
     private bool ForceVisibleToPlayer(MapObject mapObj) { return ForceVisibleToPlayer(mapObj.Location); }
-    private bool ForceVisibleToPlayer(in Location location) { return ForceVisibleToPlayer(location.Map, location.Position); }
 
     private bool ForceVisibleToPlayer(in InventorySource<Item> src) {
       if (null != src.obj_owner) return ForceVisibleToPlayer(src.obj_owner);
