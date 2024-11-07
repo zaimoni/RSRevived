@@ -10542,9 +10542,13 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoOpenDoor(Actor actor, DoorWindow door)
     {
+      bool was_opaque = !door.IsTransparent;
       door.SetState(DoorWindow.STATE_OPEN);
       actor.SpendActionPoints();
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) RedrawPlayScreen(MakeMessage(actor, VERB_OPEN.Conjugate(actor), door));    }
+      if (was_opaque) actor.Controller.UpdateSensors();
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) RedrawPlayScreen(MakeMessage(actor, VERB_OPEN.Conjugate(actor), door));
+      if (IsPlayer(actor)) AnimDelay(DELAY_SHORT);
+     }
 
     public void DoCloseDoor(Actor actor, DoorWindow door, bool free)
     {
