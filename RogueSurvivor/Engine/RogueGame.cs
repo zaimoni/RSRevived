@@ -602,6 +602,15 @@ namespace djack.RogueSurvivor.Engine
 
     private static void ClearMessages() { Messages.Clear(); }
 
+    static public List<PlayerController>? Union(List<PlayerController>? lhs, List<PlayerController>? rhs) {
+        if (null == lhs) return rhs;
+        if (null == rhs) return lhs;
+        List<PlayerController> ret = new(lhs);
+        foreach(var pc in rhs) if (!lhs.Contains(pc)) ret.Add(pc);
+        return ret;
+    }
+
+
     static private string Truncate(string s, int maxLength)
     {
       return (s.Length > maxLength) ? s.Substring(0, maxLength) : s;
@@ -10798,7 +10807,6 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoPull(Actor actor, MapObject mapObj, in Location actor_dest) // alpha10
     {
-      bool isVisible = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(mapObj);
       int staCost = mapObj.Weight;
 
       if (!TryActorLeaveTile(actor)) {  // try leaving tile
@@ -10808,6 +10816,25 @@ namespace djack.RogueSurvivor.Engine
 
       // followers help?
       if (actor.CountFollowers > 0) DoPushPullFollowersHelp(actor, mapObj, true, ref staCost);
+
+      var a_witness = actor.PlayersInLOS();
+      var o_witness = mapObj.PlayersInLOS();
+      var l_witness = PlayersInLOS(actor_dest);
+
+      var o_only_witness = o_witness?.SetDifference(a_witness)?.SetDifference(l_witness);
+      var l_only_witness = l_witness?.SetDifference(a_witness)?.SetDifference(o_witness);
+
+      bool isVisible = IsPlayer(actor);
+      UI.Message? o_only_msg = null;
+
+      if (!isVisible) {
+        if (null != a_witness) { PanViewportTo(a_witness); isVisible = true; }
+        else if (null != l_only_witness) { PanViewportTo(l_only_witness); isVisible = true; }
+        else if (null != o_only_witness) {
+          PanViewportTo(o_only_witness); isVisible = true;
+          o_only_msg = MakeMessage(o_only_witness[0], actor, VERB_PULL.Conjugate(actor), mapObj);
+        }
+      }
 
       // spend AP & STA.
       actor.SpendActionPoints();
@@ -10825,7 +10852,12 @@ namespace djack.RogueSurvivor.Engine
       objDest.Place(mapObj);
 
       // noise/message.
-      if (isVisible) RedrawPlayScreen(MakeMessage(actor, VERB_PULL.Conjugate(actor), mapObj));
+      if (isVisible) {
+        a_witness?.AddMessage(MakePanopticMessage(actor, VERB_PULL.Conjugate(actor), mapObj));
+        l_only_witness?.AddMessage(MakeMessage(l_only_witness[0], actor, VERB_PULL.Conjugate(actor), mapObj));
+        o_only_witness?.AddMessage(o_only_msg);
+      }
+
       // loud noise.
       OnLoudNoise(mapObj.Location, "Something being pushed");
 
