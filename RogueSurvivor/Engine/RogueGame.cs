@@ -11156,12 +11156,15 @@ namespace djack.RogueSurvivor.Engine
           });
         }
         if (killer.Model.Abilities.IsLawEnforcer && !killer.Faction.IsEnemyOf(deadGuy.Faction)) {
+          bool justice_served = false;
           if (0 < Session.Get.Police.CountMurders(deadGuy)) {
+            justice_served = true;
             if (null != killer_pc)
               killer_pc.AddMessage(new("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
             else
               killer.Say(deadGuy, "Good riddance, murderer!", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
           } else if (0 < Session.Get.Police.CountAssaults(deadGuy)) {
+            justice_served = true;
             if (null != killer_pc)
               killer_pc.AddMessage(new("You feel like you did your duty with killing a violent criminal.", Session.Get.WorldTime.TurnCounter, Color.White));
             else
@@ -11169,7 +11172,7 @@ namespace djack.RogueSurvivor.Engine
           }
 
           // Police report all (non-murder) kills via police radio.  National Guard likely to do same.
-          if (!isMurder.cache) {
+          if (justice_served || !isMurder.cache) {
             // optimized version of this feasible...but if we want AI to respond directly then much of that optimization goes away
             // also need to consider background thread to main thread issues
             // possible verbs: killed, terminated, erased, downed, wasted.
