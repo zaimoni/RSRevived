@@ -127,7 +127,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (RogueGame.IsSimulating) throw new InvalidOperationException("simulation cannot request UI interaction");
 #else
-      if (IsSimulating) return;   // visual no-op
+      if (RogueGame.IsSimulating) return;   // visual no-op
 #endif
       Messages.AddNoLog(new("<press ENTER>", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       var game = RogueGame.Game;
