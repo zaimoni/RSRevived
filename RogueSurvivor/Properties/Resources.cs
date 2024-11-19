@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Properties
 {
   [DebuggerNonUserCode]
   [CompilerGenerated]
-  [GeneratedCode("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+  [GeneratedCode("System.Resources.Tools.StronglyTypedResourceBuilder", "9.0.0.0")]
   internal class Resources
   {
     private static ResourceManager resourceMan;
