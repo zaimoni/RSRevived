@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows7.0</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms> <!-- unsure if this is correct -->
 
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -25,7 +25,9 @@
   <ItemGroup>
     <Content Include="IconPNG.ico" />
   </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.Serialization.Formatters" Version="9.0.0-*" />
+  </ItemGroup>
   <!-- no target platforms other than AnyCPU for .NET Core 3.0 -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>

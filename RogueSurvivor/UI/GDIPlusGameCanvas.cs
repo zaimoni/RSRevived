@@ -40,9 +40,9 @@ namespace djack.RogueSurvivor.UI
     private readonly int m_MinimapStride;
     private IContainer components;
 
-    public bool ShowFPS { get; set; }
-    public bool NeedRedraw { get; set; }
-    public Point MouseLocation { get; set; }
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)] public bool ShowFPS { get; set; }
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)] public bool NeedRedraw { get; set; }
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)] public Point MouseLocation { get; set; }
 
     public float ScaleX
     {
