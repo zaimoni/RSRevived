@@ -1,4 +1,4 @@
-*** The manual is a ouf of date ***
+*** The manual is out of date ***
 
 ROGUE SURVIVOR
 Game Manual
@@ -542,6 +542,9 @@ You can initiate a trade deal by offering an item.
 This works like normal trading, except you chose which your items you want to exhange.
 Move the mouse on the item, press the key, then choose someone next to you in a direction.
 
+> TRANSFER ITEM between adjacent ground or shelf inventories
+  (CTRL-[Take Lead], default CTRL-T)
+
 > UNLOADING RANGED WEAPONS (default U)
 Move the mouse on the item in an inventory, then press the key.  The unloaded ammo will be dropped, if there is not room in your inventory.
 
@@ -598,6 +601,15 @@ You do not need the carpentry skill to repair fortifications.
 > LEADING  (default T)
 Take or leave a follower. See the Followers section for more details.
 
+It is possible to recruit a follower through an active police radio.
+The RADIO RECRUIT status text indicates when this is an option.
+
+Having line of sight on someone is enough to start recruiting them (RS Revived 
+now has parity with AI here, you and the recruiting target will walk towards each 
+other if not already adjacent).
+
+Due to how much work is needed to get reasonable AI, you may choose
+to convert your new follower into a PC immediately.
 
 > SWITCHING PLACE  (default Ctrl-S)
 You can switch place with one of your follower. 
@@ -658,8 +670,10 @@ Various items related to your current faction.  Police are much more "helpful".
 > SET WAYPOINT (Alt-Shift-[City Info], default Alt-Shift-I)
 Designate a location as a waypoint.  This is done via a far-look command; to just far-look, cancel setting the waypoint with Escape.
 * Far-look works as advertised with usual movement keys (keypad 1-9 and X)
-* W)alk and R)un work as advertised, but do not designate waypoints.  These use AI pathfinding, and are canceled by an enemy in line of sight.
+* W)alk and R)un work as advertised, but do not designate waypoints.  These use AI pathfinding, and are canceled by the nebulous IN COMBAT status.
+** for Civilians, this is just enemy in sight.  Police stress out more easily, with their radio implementing threat tracking.
 * keyboard 1..9 request walking 1-9 steps towards the waypoint, with AI pathfinding.  This *does* designate the waypoint.
+* One can O)rder in-communication followers to go somewhere.  They won't stay there, and will forget the order on sighting an enemy.
 
 > CLEAR WAYPOINT (Alt-Ctrl-[City Info], default Alt-Ctrl-I)
 Brings up a popup menu of previously designated waypoints.  Selecting a waypoint far-looks at the waypoint, from which
@@ -680,7 +694,7 @@ Display the advisor hint.
 > (System) ABANDONING & QUITTING
 Abandoning by suicide (default Shift-A) gets you back to the main menu.
 Quitting the game (default Shift-Q) exits the program.
-Abandoning a PC (hard-coded Ctrl-A) restores AI control to that PC.
+Abandoning a PC (hard-coded Ctrl-A) restores AI control to that PC.  This does reduce your avatar count by one.
 
 If there are zero PCs after abandoning, reincarnation is attempted.
 
@@ -896,7 +910,7 @@ Coward     : always flee melee.
 Cautious   : try fighting in melee intelligently.
 Courageous : always fight in melee when you do.
 
-Orders
+(Legacy) Orders (most of these are NPC-only)
 - Cancel Order     : Give up current order.
 - Barricade (one)  : Move to the position and barricade one time.
 - Barricade (max)  : Move to the position and barricade as much as possible.
@@ -907,6 +921,10 @@ Orders
 - Build large fort : Move to the position and build a large fortification.
 - Report events    : Tell you what they saw.
 - Give me          : Give you one of their item - you must be next to him.
+
+Objective-based orders:
+- What's up?         : shows objective-based orders, and allows countermanding them.
+- We need to talk... : converts an NPC follower to a PC follower, increasing avatar count by one.
 
 When on guard or patrol duty, the follower will have a very restricted behavior :
   - when seeing an enemy : shout or phone you to warn you and stop duty (cancel order).
@@ -932,7 +950,7 @@ Sometimes they will help you fight, other times they will attempt to flee from d
 If they see an interesting item they might go and pick it up, unless told not to.
 If they need to eat or sleep they will do so, unless your directives disallow it.
 There are pattern to their behaviors which you can use to your benefit.
-You can give items to them with the Give action. You can also still trade items with them like a normal civilian or ask them to drop all their items.
+You can give items to them with the Give action. You can also still trade items with them like a normal civilian.
 From time to time you will see other people hanging with followers too. You're not the only wanna be hero in town you know.
 
 
