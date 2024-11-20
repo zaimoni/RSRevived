@@ -877,14 +877,6 @@ namespace djack.RogueSurvivor.Data
       m_CurrentRangedAttack = Attack.BLANK;
     }
 
-    // don't worry about CPU cost as long as this is profile-cold
-    static private bool PossiblyAlive(Actor a)
-    {
-      if (!a.IsDead) return true;
-      if (!Session.Get.HasCorpses) return false;
-      return !World.Get.Any(m => m.HasCorpseOf(a));
-    }
-
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
     {
       _has_to_eat = Model.Abilities.HasToEat;

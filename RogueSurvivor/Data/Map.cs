@@ -2412,12 +2412,6 @@ retry:
       return false;
     }
 
-    public bool HasCorpseOf(Actor a)
-    {
-      foreach (var c in m_CorpsesList) if (c.DeadGuy == a) return true;
-      return false;
-    }
-
     public Dictionary<Point, List<Corpse>>? FilterCorpses(Predicate<Corpse> ok)
     {
         var ub = m_aux_CorpsesByPosition.Count;
