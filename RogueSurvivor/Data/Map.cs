@@ -905,7 +905,7 @@ namespace djack.RogueSurvivor.Data
     public void AddTimedDecoration(Point pt, string imageId, int deltaT, Func<Map,Point,bool> test)
     {
       if (test(this, pt)) {
-        if (!HasDecorationAt(imageId, in pt)) AddDecorationAt(imageId, in pt);
+        AddDecorationAt(imageId, in pt); // hashset automatically deduplicates
         bool not_yet = true;
         int ub = m_Timers.Count;
         while(0 <= --ub) {
