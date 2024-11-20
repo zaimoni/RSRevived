@@ -351,7 +351,6 @@ namespace djack.RogueSurvivor.Engine
 
 /*
             PlayerController.Save(info, context);
-            info.AddValue("World", World.Get, typeof(World));
             RogueGame.Save(info, context);
  */
 

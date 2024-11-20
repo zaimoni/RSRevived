@@ -506,6 +506,23 @@ namespace djack.RogueSurvivor.Data
                         break;
                 }
 
+                // if we have both Extent and Zones then we can recompute IsInside
+                if (seen[3] && seen[5] && null == m_IsInside) {
+                    m_IsInside = new byte[(Extent.X * Extent.Y - 1) / 8 + 1];
+                    var inside = GetZonesByPartialName("$Inside");   // XXX exact match ok for these
+                    var outside = GetZonesByPartialName("$Outside");
+                    if (null != inside) {
+                        foreach (var z in inside) {
+                            z.Bounds.DoForEach(pt => SetIsInsideAt(pt));
+                        }
+                    }
+                    if (null != outside) {
+                        foreach (var z in inside) {
+                            z.Bounds.DoForEach(pt => SetIsInsideAt(pt, false));
+                        }
+                    }
+                }
+
                 reader.Read();
             }
 
@@ -524,7 +541,6 @@ namespace djack.RogueSurvivor.Data
     public readonly string BgMusic;  // alpha10; very few values, may be able to recompute on-fly
 #nullable enable
     private readonly byte[,] m_TileIDs;
-    private readonly byte[] m_IsInside;
     private readonly Dictionary<Point,HashSet<string>> m_Decorations = new();
     private readonly Dictionary<Point, Exit> m_Exits = new();   // keys may have negative coordinates
     private readonly List<Actor> m_ActorsList = new(5);
