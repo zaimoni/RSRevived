@@ -5389,29 +5389,25 @@ namespace djack.RogueSurvivor.Engine
       const string BUILD_LARGE_FORT_MODE_TEXT = "BUILD LARGE FORTIFICATION MODE - directions to build, ESC cancels";
       const string BUILD_SMALL_FORT_MODE_TEXT = "BUILD SMALL FORTIFICATION MODE - directions to build, ESC cancels";
 
-      if (0 == player.MySkills.GetSkillLevel(Skills.IDs.CARPENTRY)) {
-        ErrorPopup("need carpentry skill.");
+      var err = ActionBuildFortification.ReasonCant(player, isLarge);
+      if (!string.IsNullOrEmpty(err)) {
+        ErrorPopup(err);
         return false;
       }
-      int num = player.BarricadingMaterialNeedForFortification(isLarge);
-      if (player.CountItems<ItemBarricadeMaterial>() < num) {
-        ErrorPopup(string.Format("not enough barricading material, need {0}.", num));
-        return false;
-      }
+
       ClearOverlays();
       AddOverlay(new OverlayPopup(isLarge ? BUILD_LARGE_FORT_MODE_TEXT : BUILD_SMALL_FORT_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      Point? build_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
-      bool build(Point? pos) {
-        if (null == pos) return false;
-        if (!player.Location.Map.IsValid(pos.Value)) return false;
-        if (player.CanBuildFortification(pos.Value, isLarge, out string reason)) {
-          DoBuildFortification(player, pos.Value, isLarge);
-          return true;
-        } else {
-          ErrorPopup(string.Format("Cannot build here : {0}.", reason));
-          return false;
+      Direction? build_where(Direction dir) { return dir == Direction.NEUTRAL ? null : dir; }
+      bool build(Direction? dir) {
+        if (null == dir) return false;
+        var act = new ActionBuildFortification(player, dir, isLarge);
+        if (act.IsPerformable()) {
+            act.Perform();
+            return true;
         }
+        ErrorPopup(string.Format("Cannot build here : {0}.", act.FailReason));
+        return false;
       }
 
       bool actionDone = DirectionCommand(build_where, build);
@@ -10567,7 +10563,7 @@ namespace djack.RogueSurvivor.Engine
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) RedrawPlayScreen(MakeMessage(actor, VERB_BARRICADE.Conjugate(actor), door));
     }
 
-    public void DoBuildFortification(Actor actor, in Point buildPos, bool isLarge)
+    public void DoBuildFortification(Actor actor, in Location dest, bool isLarge)
     {
       actor.SpendActionPoints();
       var inv = actor.Inventory!;
@@ -10575,12 +10571,12 @@ namespace djack.RogueSurvivor.Engine
       for (int index = 0; index < num; ++index) {
         inv.Consume(inv.GetSmallestStackOf<ItemBarricadeMaterial>());
       }
-      Fortification fortification = isLarge ? BaseMapGenerator.MakeObjLargeFortification() : BaseMapGenerator.MakeObjSmallFortification();
-      actor.Location.Map.PlaceAt(fortification, buildPos);  // XXX cross-map fortification change target
+      var fortification = new Fortification(isLarge);
+      dest.Place(fortification);
 
       bool is_visible = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fortification);
       if (is_visible) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_BUILD.Conjugate(actor), fortification.AName)));
-      CheckMapObjectTriggersTraps(actor.Location.Map, buildPos);
+      CheckMapObjectTriggersTraps(dest.Map, dest.Position);
       if (is_visible) RedrawPlayScreen();
     }
 

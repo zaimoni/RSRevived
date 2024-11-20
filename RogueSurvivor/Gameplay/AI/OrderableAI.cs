@@ -919,10 +919,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private ActorAction ExecuteBuildFortification(Location location, bool isLarge)
     {
       if (m_Actor.Location.Map != location.Map) return null;
-      if (!m_Actor.CanBuildFortification(location.Position, isLarge)) return null;
+      if (!string.IsNullOrEmpty(ActionBuildFortification.ReasonCant(m_Actor, isLarge))) {
+        SetOrder(null);
+        return null;
+      }
+      if (!string.IsNullOrEmpty(ActionBuildFortification.ReasonCant(location))) return null;
       ActorAction tmpAction = null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, location.Position)) {
-        tmpAction = new ActionBuildFortification(m_Actor, location.Position, isLarge);
+        tmpAction = new ActionBuildFortification(m_Actor, location, isLarge);
         if (!tmpAction.IsLegal()) return null;
         SetOrder(null);
         return tmpAction;
@@ -2661,24 +2665,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorBuildLargeFortification(int startLineChance)
     {
-      if (0 == m_Actor.MySkills.GetSkillLevel(Skills.IDs.CARPENTRY)) return null;
-      if (m_Actor.CountItems<ItemBarricadeMaterial>() < m_Actor.BarricadingMaterialNeedForFortification(true)) return null;
+      if (!string.IsNullOrEmpty(ActionBuildFortification.ReasonCant(m_Actor, true))) return null;
+
       Map map = m_Actor.Location.Map;
       var choiceEval = Choose(Direction.COMPASS, dir =>
       {
+        var dest = m_Actor.Location + dir;
+        if (!Map.Canonical(ref dest)) return false;
+        if (!string.IsNullOrEmpty(ActionBuildFortification.ReasonCant(in dest))) return false;
+        var inv = dest.Items;
+        if (null != inv && inv.Items.Any(it => !it.IsUseless)) return false;   // this should be more intentional
+
         Point pt = m_Actor.Location.Position + dir;
-        if (!map.IsInBounds(pt) || !map.IsWalkable(pt) || map.IsOnMapBorder(pt) || map.HasActorAt(in pt) || map.HasExitAt(in pt) || map.IsInsideAt(pt))
-          return false;
-        var inv = map.GetItemsAt(pt);
-        if (null != inv && !inv.IsEmpty && inv.Items.Any(it => !it.IsUseless)) return false;   // this should be more intentional
+        if (!map.IsInBounds(pt) || map.IsOnMapBorder(pt) || map.HasExitAt(in pt)) return false;
         int num1 = map.CountAdjacentTo(pt, ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable); // allows IsInBounds above
         int num2 = map.CountAdjacent<Fortification>(pt, fortification => !fortification.IsTransparent);
         return (num1 == 3 && num2 == 0 && Rules.Get.RollChance(startLineChance)) || (num1 == 0 && num2 == 1);
       }, dir => Rules.Get.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
-      Point pt1 = m_Actor.Location.Position + choiceEval.Choice;
-      if (!m_Actor.CanBuildFortification(in pt1, true)) return null;
-      return new ActionBuildFortification(m_Actor, in pt1, true);
+      var ret = new ActionBuildFortification(m_Actor, choiceEval.Choice, true);
+      if (ret.IsLegal()) return ret;
+      return null;
     }
 
     protected static bool IsDoorwayOrCorridor(Map map, in Point pos)
@@ -2708,20 +2715,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorBuildSmallFortification()
     {
-      if (0 == m_Actor.MySkills.GetSkillLevel(Skills.IDs.CARPENTRY)) return null;
-      if (m_Actor.CountItems<ItemBarricadeMaterial>() < m_Actor.BarricadingMaterialNeedForFortification(false)) return null;
+      if (!string.IsNullOrEmpty(ActionBuildFortification.ReasonCant(m_Actor, false))) return null;
       Map map = m_Actor.Location.Map;
       var choiceEval = Choose(Direction.COMPASS, dir =>
       {
+        var dest = m_Actor.Location + dir;
+        if (!Map.Canonical(ref dest)) return false;
+        if (!string.IsNullOrEmpty(ActionBuildFortification.ReasonCant(in dest))) return false;
+
         Point pt = m_Actor.Location.Position + dir;
-        if (!map.IsInBounds(pt) || !map.IsWalkable(pt) || map.IsOnMapBorder(pt) || map.HasActorAt(in pt) || map.HasExitAt(in pt))
-          return false;
+        if (!map.IsInBounds(pt) || map.IsOnMapBorder(pt)) return false;
         return IsDoorwayOrCorridor(map, in pt); // this allows using IsInBounds rather than IsValid
       }, dir => Rules.Get.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
-      Point pt1 = m_Actor.Location.Position + choiceEval.Choice;
-      if (!m_Actor.CanBuildFortification(in pt1, false)) return null;
-      return new ActionBuildFortification(m_Actor, in pt1, false);
+      var ret = new ActionBuildFortification(m_Actor, choiceEval.Choice, false);
+      if (ret.IsLegal()) return ret;
+      return null;
     }
 
     /// <returns>0 for disallowed, 1 for allowed, 2+ for "better".</returns>

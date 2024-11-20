@@ -397,8 +397,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static protected MapObject MakeObjWireFence() => MapObject.create(GameImages.OBJ_WIRE_FENCE); // alpha10
     static protected MapObject MakeObjIronFence() => MapObject.create(GameImages.OBJ_IRON_FENCE);
     static protected MapObject MakeObjIronGate() => MapObject.create(GameImages.OBJ_GATE_CLOSED);
-    static public Fortification MakeObjSmallFortification() => new(GameImages.OBJ_SMALL_WOODEN_FORTIFICATION);
-    static public Fortification MakeObjLargeFortification() => new(GameImages.OBJ_LARGE_WOODEN_FORTIFICATION);
     static protected MapObject MakeObjTree() => MapObject.create(GameImages.OBJ_TREE);
     static protected MapObject MakeObjWreckedCar(DiceRoller roller) => MakeObjWreckedCar(roller.Choose(CARS));
     static protected MapObject MakeObjWreckedCar(string carImageID) => MapObject.create(carImageID);

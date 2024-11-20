@@ -17,7 +17,10 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     public const int SMALL_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS/2;
     public const int LARGE_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS;
 
+#if OBSOLETE
     public Fortification(string imageID) : base(imageID, Fire.BURNABLE) {}
+#endif
+    public Fortification(bool isLarge) : base(isLarge ? Gameplay.GameImages.OBJ_LARGE_WOODEN_FORTIFICATION : Gameplay.GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fire.BURNABLE) {}
 
 #region implement Zaimoni.Serialization.ISerialize
     protected Fortification(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
