@@ -874,10 +874,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction? BehaviorGoEatCorpse(List<Percept>? percepts)
     {
-	  if (   !Session.Get.HasCorpses
-          || !ActionEatCorpse.WantTo(m_Actor))
-        return null;
-	  var corpsesPercepts = percepts?.FilterCast<List<Corpse>>();
+#if false
+	  if (!Session.Get.HasCorpses || !ActionEatCorpse.WantTo(m_Actor)) return null;
+#else
+	  if (!Session.HasCorpses || !ActionEatCorpse.WantTo(m_Actor)) return null;
+#endif
+            var corpsesPercepts = percepts?.FilterCast<List<Corpse>>();
 	  if (null == corpsesPercepts) return null;
       m_Actor.Activity = Activity.IDLE;
       var percept = FilterNearest(corpsesPercepts);

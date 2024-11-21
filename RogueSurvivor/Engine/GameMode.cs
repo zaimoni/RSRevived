@@ -11,8 +11,10 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   public enum GameMode
   {
+#if false
     GM_STANDARD,
-    GM_CORPSES_INFECTION,
+#endif
+    GM_CORPSES_INFECTION = 1,
     GM_VINTAGE,
     GM_WORLD_WAR_Z,
   }
@@ -20,5 +22,8 @@ namespace djack.RogueSurvivor.Engine
   internal enum GameMode_Bounds
   {
     _COUNT = (int)GameMode.GM_WORLD_WAR_Z + 1
+#if true
+           - 1
+#endif
   }
 }

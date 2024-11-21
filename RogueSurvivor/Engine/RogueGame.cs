@@ -1000,15 +1000,18 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleNewGameMode()
     {
-      string[] entries = Enumerable.Range(0,(int)GameMode_Bounds._COUNT).Select(i => Session.DescGameMode((GameMode)(i))).ToArray();
+      string[] entries = Enumerable.Range(0,(int)GameMode_Bounds._COUNT).Select(i => Session.DescGameMode((GameMode)(i + 1))).ToArray();
       string[] values = new string[(int)GameMode_Bounds._COUNT] {
+#if false
         SetupConfig.GAME_NAME+" standard game.",
+#endif
         "Don't get a cold. Keep an eye on your deceased diseased friends.",
         "The classic zombies next door.",
         "Almost standard game, disregarding the 1960's Hayes code."
       };
       // XXX \todo should refactor text to react to game mode (proofreading)
       List<string>[] summaries = new List<string>[(int)GameMode_Bounds._COUNT] {
+#if false
         new List<string>(){
           "This is the standard game setting.",
           "Recommended for beginners.",
@@ -1018,6 +1021,7 @@ namespace djack.RogueSurvivor.Engine
           "- No infection.",
           "- No corpses."
         },
+#endif
         new List<string>(){
           "This is the standard game setting plus corpses and infection.",
           "Recommended to experience all the features of the game.",
@@ -1066,9 +1070,11 @@ namespace djack.RogueSurvivor.Engine
         if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return false;
         switch(x.Substring(0,1))
         {
+#if false
         case "C":   // Classic
           m_CharGen.GameMode = GameMode.GM_STANDARD;
           return true;
+#endif
         case "I":   // Infection
           m_CharGen.GameMode = GameMode.GM_CORPSES_INFECTION;
           return true;
@@ -1081,8 +1087,9 @@ namespace djack.RogueSurvivor.Engine
           return true;
         default: return false;
         }
-        // character 0 is the game mode.  Choice values are 0..2 currently
+        // character 0 is the game mode.
         // we encode this as: C)lassic, I)nfection, V)intage, Z)-war
+        // 2024-11-21: eliminated C)lassic since some planned game mechanics require corpses
       }
 
       if (command_line()) return true;
@@ -1105,6 +1112,7 @@ namespace djack.RogueSurvivor.Engine
       });
       Func<int, bool?> choice_handler = (currentChoice => {
         switch (currentChoice) {
+#if false
           case 0:
             m_CharGen.GameMode = GameMode.GM_STANDARD;
             return true;
@@ -1118,6 +1126,18 @@ namespace djack.RogueSurvivor.Engine
           case 3:
             m_CharGen.GameMode = GameMode.GM_WORLD_WAR_Z;
             return true;
+#else
+          case 0:
+            m_CharGen.GameMode = GameMode.GM_CORPSES_INFECTION;
+            return true;
+          case 1:
+            m_CharGen.GameMode = GameMode.GM_VINTAGE;
+            ApplyOptions(false);
+            return true;
+          case 2:
+            m_CharGen.GameMode = GameMode.GM_WORLD_WAR_Z;
+            return true;
+#endif
         }
         return null;
       });
@@ -2017,7 +2037,11 @@ namespace djack.RogueSurvivor.Engine
 
       var rules = Rules.Get;
       if ((sim & RogueGame.SimFlags.LODETAIL_TURN) == RogueGame.SimFlags.NOT_SIMULATING) {
+#if false
         if (Session.Get.HasCorpses && map.HasCorpses) {
+#else
+        if (Session.HasCorpses && map.HasCorpses) {
+#endif
 #region corpses: decide who zombify or rots.
           List<Corpse> corpseList1 = new();
           List<Corpse> corpseList2 = new();
@@ -11098,7 +11122,11 @@ namespace djack.RogueSurvivor.Engine
 
       if (!deadGuy_isUndead.cache) {
         SplatterBlood(deadGuy.Location.Map, deadGuy.Location.Position);
+#if false
         if (Session.Get.HasCorpses) DropCorpse(deadGuy);
+#else
+        if (Session.HasCorpses) DropCorpse(deadGuy);
+#endif
       }
 #if FAIL
       else UndeadRemains(deadGuy.Location.Map, deadGuy.Location.Position);

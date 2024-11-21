@@ -65,7 +65,11 @@ namespace djack.RogueSurvivor.Engine
         public Scoring Scoring { get { return m_Scoring; } }
         public Scoring_fatality Scoring_fatality { get { return m_Scoring_fatality; } }
 
+#if false
         private Session(GameMode mode = GameMode.GM_STANDARD)
+#else
+        private Session(GameMode mode = GameMode.GM_WORLD_WAR_Z)
+#endif
         {
             m_CommandLineOptions = (0 >= (CommandLineOptions?.Count ?? 0) ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new Dictionary<string, string>(Session.CommandLineOptions)));
             s_seed = (0 == COMMAND_LINE_SEED ? (int)DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
@@ -560,7 +564,9 @@ namespace djack.RogueSurvivor.Engine
     public static string DescGameMode(GameMode mode)
     {
       switch (mode) {
+#if false
         case GameMode.GM_STANDARD: return "STD - Standard Game";
+#endif
         case GameMode.GM_CORPSES_INFECTION: return "C&I - Corpses & Infection";
         case GameMode.GM_VINTAGE: return "VTG - Vintage Zombies";
         case GameMode.GM_WORLD_WAR_Z: return "WWZ - World War Z";
@@ -571,7 +577,9 @@ namespace djack.RogueSurvivor.Engine
     public static string DescShortGameMode(GameMode mode)
     {
       switch (mode) {
+#if false
         case GameMode.GM_STANDARD: return "STD";
+#endif
         case GameMode.GM_CORPSES_INFECTION: return "C&I";
         case GameMode.GM_VINTAGE: return "VTG";
         case GameMode.GM_WORLD_WAR_Z: return "WWZ";
@@ -579,6 +587,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#if false
     public bool HasImmediateZombification {
       get { return GameMode.GM_STANDARD == GameMode || GameMode.GM_WORLD_WAR_Z == GameMode; }
     }
@@ -590,6 +599,11 @@ namespace djack.RogueSurvivor.Engine
     public bool HasCorpses {
       get { return GameMode.GM_STANDARD != GameMode; }
     }
+#else
+    public bool HasImmediateZombification { get => GameMode.GM_WORLD_WAR_Z == GameMode; }
+    public bool HasInfection { get => GameMode.GM_WORLD_WAR_Z != GameMode; }
+    public const bool HasCorpses = true;
+#endif
 
     public bool HasEvolution {
       get { return GameMode.GM_VINTAGE != GameMode; }

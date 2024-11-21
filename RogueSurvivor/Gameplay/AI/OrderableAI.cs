@@ -3210,7 +3210,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable enable
     protected ActorAction? BehaviorGoReviveCorpse(List<Percept>? percepts)
     {
+#if false
 	  if (!Session.Get.HasCorpses) return null;
+#else
+	  if (!Session.HasCorpses) return null;
+#endif
       if (0 == m_Actor.MySkills.GetSkillLevel(Skills.IDs.MEDIC)) return null;
       if (!m_Actor.HasItemOfModel(GameItems.MEDIKIT)) return null;
       var corpsePercepts = percepts?.FilterT<List<Corpse>>()?.Filter(p =>
