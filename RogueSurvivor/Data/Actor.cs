@@ -3765,7 +3765,7 @@ namespace djack.RogueSurvivor.Data
         m_CurrentRangedAttack = rw.Attack;   // value-copy due to struct Attack
         return;
       }
-      if (model is ItemBodyArmorModel armor) {
+      if (model is Data.Model.BodyArmor armor) {
         m_CurrentDefence += armor.ToDefence();
         return;
       }
@@ -3787,7 +3787,7 @@ namespace djack.RogueSurvivor.Data
         m_CurrentRangedAttack = Attack.BLANK;
         return;
       }
-      if (model is ItemBodyArmorModel armor) {
+      if (model is Data.Model.BodyArmor armor) {
         m_CurrentDefence -= armor.ToDefence();
         return;
       }

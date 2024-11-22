@@ -6287,7 +6287,7 @@ restart_chokepoints:
         return 1;
       }
       {
-      if (it is ItemBodyArmorModel armor) {
+      if (it is Data.Model.BodyArmor armor) {
         var best = m_Actor.GetBestBodyArmor();
         if (null == best) return 2; // want 3, but RHSMoreInteresting  says 2
         return best.Rating < armor.Rating ? 2 : 0; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here

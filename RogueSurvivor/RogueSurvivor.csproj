@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="Data\BatteryPowered.cs" />
     <Compile Include="Data\IInventory.cs" />
+    <Compile Include="Data\Model\BodyArmor.cs" />
     <Compile Include="Data\Model\InvOrigin.cs" />
     <Compile Include="Data\Model\Item.cs" />
     <Compile Include="Data\Model\MapObject.cs" />
@@ -206,7 +207,6 @@
     <Compile Include="Engine\CSVTable.cs" />
     <Compile Include="Engine\CSVParser.cs" />
     <Compile Include="Engine\PlayerCommand.cs" />
-    <Compile Include="Engine\Items\ItemBodyArmorModel.cs" />
     <Compile Include="Engine\Items\ItemBarricadeMaterialModel.cs" />
     <Compile Include="Engine\Items\AmmoType.cs" />
     <Compile Include="Engine\Items\ItemAmmoModel.cs" />
@@ -324,6 +324,10 @@
     <Compile Include="Zaimoni\Serialization\LoadManager.cs" />
     <Compile Include="Zaimoni\Serialization\SaveManager.cs" />
     <Compile Include="Zaimoni\Serialization\StreamingContext.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\Item\" />
   </ItemGroup>
 <!--  <ItemGroup>
     <EmbeddedResource Include="Bugreport.resx" />

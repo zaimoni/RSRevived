@@ -27,15 +27,15 @@ namespace djack.RogueSurvivor.Engine.Items
     private const int MIN_GANG_ARMOR_ID = (int)Item_IDs.ARMOR_HELLS_SOULS_JACKET;
     private const int MIN_GANG_ID = (int)GameGangs.IDs.NONE+1;
 
-    new public ItemBodyArmorModel Model { get {return (base.Model as ItemBodyArmorModel)!; } }
-    public int Protection_Hit { get { return Model.Protection_Hit; } }
-    public int Protection_Shot { get { return Model.Protection_Shot; } }
-    public int Encumbrance { get { return Model.Encumbrance; } }
-    public int Weight { get { return Model.Weight; } }
-    public int Rating { get { return Model.Rating; } }
-    public static int Rate(ItemBodyArmor armor) { return armor.Rating; }
+    new public Data.Model.BodyArmor Model { get => (base.Model as Data.Model.BodyArmor)!; }
+    public int Protection_Hit { get => Model.Protection_Hit; }
+    public int Protection_Shot { get => Model.Protection_Shot; }
+    public int Encumbrance { get => Model.Encumbrance; }
+    public int Weight { get => Model.Weight; }
+    public int Rating { get => Model.Rating; }
+    public static int Rate(ItemBodyArmor armor) => armor.Rating;
 
-    public ItemBodyArmor(ItemBodyArmorModel model) : base(model) {}
+    public ItemBodyArmor(Data.Model.BodyArmor model) : base(model) {}
 
 #region implement Zaimoni.Serialization.ISerialize
     protected ItemBodyArmor(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
