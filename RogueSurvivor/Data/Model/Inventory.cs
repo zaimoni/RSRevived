@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Data.Model
             }
         }
 
-        public Inventory(IEnumerable<Item>? src) {
+        public Inventory(IEnumerable<Data.Item>? src) {
             if (null != src) {
                 List<Item_s> stage = new();
                 foreach (var y in src) {

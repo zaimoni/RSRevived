@@ -3290,16 +3290,16 @@ restart:
       var list = MakeRoomsPlan(map, rect1, 5);
 
       KeyValuePair<ItemModel, int>[] stock = {
-        new KeyValuePair<ItemModel,int>(GameItems.POLICE_JACKET,10),
-        new KeyValuePair<ItemModel,int>(GameItems.POLICE_RIOT,10),
-        new KeyValuePair<ItemModel,int>(GameItems.FLASHLIGHT,5),
-        new KeyValuePair<ItemModel,int>(GameItems.BIG_FLASHLIGHT,5),
-        new KeyValuePair<ItemModel,int>(GameItems.POLICE_RADIO,10),
-        new KeyValuePair<ItemModel,int>(GameItems.TRUNCHEON,20),
-        new KeyValuePair<ItemModel,int>(GameItems.PISTOL,6),
-        new KeyValuePair<ItemModel,int>(GameItems.AMMO_LIGHT_PISTOL,14),
-        new KeyValuePair<ItemModel,int>(GameItems.SHOTGUN,6),
-        new KeyValuePair<ItemModel,int>(GameItems.AMMO_SHOTGUN,14)
+        new(GameItems.POLICE_JACKET,10),
+        new(GameItems.POLICE_RIOT,10),
+        new(GameItems.FLASHLIGHT,5),
+        new(GameItems.BIG_FLASHLIGHT,5),
+        new(GameItems.POLICE_RADIO,10),
+        new(GameItems.TRUNCHEON,20),
+        new(GameItems.PISTOL,6),
+        new(GameItems.AMMO_LIGHT_PISTOL,14),
+        new(GameItems.SHOTGUN,6),
+        new(GameItems.AMMO_SHOTGUN,14)
       };
 #if DEBUG
       if (100 != stock.Sum(x => x.Value)) throw new InvalidProgramException("failed crosscheck");

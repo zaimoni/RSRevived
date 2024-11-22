@@ -58,6 +58,7 @@
     <Compile Include="Data\BatteryPowered.cs" />
     <Compile Include="Data\IInventory.cs" />
     <Compile Include="Data\Model\InvOrigin.cs" />
+    <Compile Include="Data\Model\Item.cs" />
     <Compile Include="Data\Model\MapObject.cs" />
     <Compile Include="Data\Model\Inventory.cs" />
     <Compile Include="Data\Waypoint.cs" />
