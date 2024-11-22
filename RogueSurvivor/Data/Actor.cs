@@ -3212,12 +3212,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool HasItemOfModel(ItemModel model)
+    public bool HasItemOfModel(Model.Item model)
     {
       return m_Inventory?.HasModel(model) ?? false;
     }
 
-    public int Count(ItemModel model)
+    public int Count(Model.Item model)
     {
       return m_Inventory?.Count(model) ?? 0;
     }
@@ -3256,7 +3256,7 @@ namespace djack.RogueSurvivor.Data
       return CountItemsOfSameType(it.GetType()) >= n;
     }
 
-    public bool HasAtLeastFullStackOf(ItemModel it, int n) => m_Inventory?.HasAtLeastFullStackOf(it, n) ?? false; // release mode IL 20h i.e. would inline
+    public bool HasAtLeastFullStackOf(Model.Item it, int n) => m_Inventory?.HasAtLeastFullStackOf(it, n) ?? false; // release mode IL 20h i.e. would inline
 //  public bool HasAtLeastFullStackOf(Item it, int n) => HasAtLeastFullStackOf(it.Model, n); // manually inlined below
     public bool HasAtLeastFullStackOf(Item it, int n) => m_Inventory?.HasAtLeastFullStackOf(it.Model, n) ?? false;
 

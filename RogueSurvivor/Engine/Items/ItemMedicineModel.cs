@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal sealed class ItemMedicineModel : ItemModel
+  internal sealed class ItemMedicineModel : Data.Model.Item
   {
     public readonly int Healing;
     public readonly int StaminaBoost;

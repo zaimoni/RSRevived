@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor.Data.Model
             return 0;
         }
 
-        public int? GetBestDestackable(ItemModel it)    // alpha10 equivalent: GetSmallestStackByModel.  XXX \todo rename for legibility?
+        public int? GetBestDestackable(Model.Item it)    // alpha10 equivalent: GetSmallestStackByModel.  XXX \todo rename for legibility?
         {
             int? ret = default;
             if (null != m_Items) {
@@ -71,7 +71,7 @@ namespace djack.RogueSurvivor.Data.Model
             return ret;
         }
 
-        public int? GetWorstDestackable(ItemModel it)
+        public int? GetWorstDestackable(Model.Item it)
         {
             int? ret = default;
             if (null != m_Items) {

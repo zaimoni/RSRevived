@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       var stacks = Map.GetAccessibleInventoryOrigins(m_Actor.Location);
       if (null == stacks) return;
 
-      ItemModel model = Gameplay.GameItems.From(m_ID);
+      var model = Gameplay.GameItems.From(m_ID);
 
       foreach(var stack in stacks) {
         var obj = stack.Inventory!.GetFirstByModel(model);

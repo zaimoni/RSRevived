@@ -11,7 +11,7 @@ using System;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal sealed class ItemSprayPaintModel : ItemModel
+  internal sealed class ItemSprayPaintModel : Data.Model.Item
   {
     public readonly int MaxPaintQuantity;
     public readonly string TagImageID;

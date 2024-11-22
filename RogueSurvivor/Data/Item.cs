@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Data
             Flags = flags;
         }
 
-        public ItemModel Model { get { return Gameplay.GameItems.From(ModelID); } }
+        public Model.Item Model { get => Gameplay.GameItems.From(ModelID); }
         public bool Consume() => 0 >= Interlocked.Decrement(ref QtyLike);
     }
 
@@ -55,10 +55,10 @@ namespace djack.RogueSurvivor.Data
     private int m_Quantity;
     public DollPart EquippedPart { get; private set; }
 
-    public ItemModel Model { get { return Gameplay.GameItems.From(ModelID); } }
-    public virtual string ImageID { get { return Model.ImageID; } }
-    public virtual Gameplay.Item_IDs InventoryMemoryID { get { return ModelID; }  }
-    public virtual Item_s toStruct() { return new Item_s(ModelID, m_Quantity);  }
+    public Data.Model.Item Model { get => Gameplay.GameItems.From(ModelID); }
+    public virtual string ImageID { get => Model.ImageID; }
+    public virtual Gameplay.Item_IDs InventoryMemoryID { get => ModelID;  }
+    public virtual Item_s toStruct() => new Item_s(ModelID, m_Quantity);
     public virtual void toStruct(ref Item_s dest) {
         dest.ModelID = ModelID;
         dest.QtyLike = m_Quantity;
@@ -67,7 +67,7 @@ namespace djack.RogueSurvivor.Data
 
     public string TheName {
       get {
-        ItemModel model = Model;
+        var model = Model;
         if (model.IsProper) return model.SingleName;
         if (m_Quantity > 1 || model.IsPlural) return model.PluralName.PrefixDefinitePluralArticle();
         return model.SingleName.PrefixDefiniteSingularArticle();
@@ -77,7 +77,7 @@ namespace djack.RogueSurvivor.Data
 
     public string AName {
       get {
-        ItemModel model = Model;
+        var model = Model;
         if (model.IsProper) return model.SingleName;
         if (m_Quantity > 1 || model.IsPlural) return model.PluralName.PrefixIndefinitePluralArticle();
         return model.SingleName.PrefixIndefiniteSingularArticle();
@@ -110,7 +110,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsUnique { get { return Model.IsUnique; } }
     public virtual bool IsUseless { get { return false; } }
 
-    public Item(ItemModel model, int qty = 1)
+    public Item(Model.Item model, int qty = 1)
     {
 #if DEBUG
       if (0 >= qty) throw new ArgumentOutOfRangeException(nameof(qty)); // reddit/Brasz 2020-10-23

@@ -5947,7 +5947,7 @@ restart_chokepoints:
       return (m_Actor.CanDrop(it) ? new ActionDropItem(m_Actor, it) : null);
     }
 
-    public bool ItemIsUseless(ItemModel it)
+    public bool ItemIsUseless(Data.Model.Item it)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
@@ -5997,10 +5997,7 @@ restart_chokepoints:
         return 1;
     }
 
-    private int ItemRatingCode_generic(ItemModel it)
-    {
-        return m_Actor.HasAtLeastFullStackOf(it, 1) ? 0 : 1;
-    }
+    private int ItemRatingCode_generic(Data.Model.Item it) => m_Actor.HasAtLeastFullStackOf(it, 1) ? 0 : 1;
 
     private int ItemRatingCode(ItemTracker it)
     {
@@ -6241,7 +6238,7 @@ restart_chokepoints:
     // this variant should only be used on targets not in inventory
     // evaluations based on item location knowledge shouldn't reach here (that is,
     // there are cases working off of item model ID that do not belong here)
-    private int ItemRatingCode(ItemModel it)
+    private int ItemRatingCode(Data.Model.Item it)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
@@ -6802,7 +6799,7 @@ restart_chokepoints:
       // medicine glut ... drop it
       foreach(var x in GameItems.medicine) {
         if (it.ModelID == x) continue;
-        ItemModel model = GameItems.From(x);
+        var model = GameItems.From(x);
         if (2>m_Actor.Count(model)) continue;
         Item tmp = m_Actor.Inventory.GetBestDestackable(model);
         if (null != tmp) return _BehaviorDropOrExchange(tmp, it, stack, use_ok);
@@ -6925,7 +6922,7 @@ restart_chokepoints:
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
       if (it is ItemMeleeWeapon || it is ItemFood) {
         foreach(var x in GameItems.ammo) {
-          ItemModel model = GameItems.From(x);
+          var model = GameItems.From(x);
           if (2<=m_Actor.Count(model)) {
             ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
             return _BehaviorDropOrExchange(ammo, it, in stack, use_ok);
@@ -7217,7 +7214,7 @@ restart_chokepoints:
       // medicine glut ... drop it
       foreach(var x in GameItems.medicine) {
         if (it.ModelID == x) continue;
-        ItemModel model = GameItems.From(x);
+        var model = GameItems.From(x);
         if (2>m_Actor.Count(model)) continue;
         Item tmp = m_Actor.Inventory.GetBestDestackable(model);
         if (null != tmp) return _BehaviorDropOrExchange(tmp, it, position, use_ok);
@@ -7340,7 +7337,7 @@ restart_chokepoints:
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
       if (it is ItemMeleeWeapon || it is ItemFood) {
         foreach(var x in GameItems.ammo) {
-          ItemModel model = GameItems.From(x);
+          var model = GameItems.From(x);
           if (2<=m_Actor.Count(model)) {
             ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
             return _BehaviorDropOrExchange(ammo, it, position, use_ok);
@@ -7885,7 +7882,7 @@ restart_chokepoints:
       List<Item_IDs> want = new((int)Item_IDs._COUNT);
       var i = Item_IDs._COUNT;
       Inventory inv = m_Actor.Inventory;
-      ItemModel model;
+      Data.Model.Item model;
       while(0 < i--) {
         if (null == inv.GetBestDestackable((model = GameItems.From(i)))) continue;   // not really in inventory
         var code = ItemRatingCode(i);

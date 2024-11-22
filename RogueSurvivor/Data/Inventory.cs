@@ -474,7 +474,7 @@ namespace djack.RogueSurvivor.Data
       return smallest;
     }
 
-    public Item? GetBestDestackable(ItemModel it)    // alpha10 equivalent: GetSmallestStackByModel.  XXX \todo rename for legibility?
+    public Item? GetBestDestackable(Data.Model.Item it)    // alpha10 equivalent: GetSmallestStackByModel.  XXX \todo rename for legibility?
     {
       Item? obj = null;
       foreach (Item mItem in m_Items) {
@@ -484,7 +484,7 @@ namespace djack.RogueSurvivor.Data
       return obj;
     }
 
-    public Item? GetWorstDestackable(ItemModel it)
+    public Item? GetWorstDestackable(Data.Model.Item it)
     {
       Item? obj = null;
       foreach (Item mItem in m_Items) {
@@ -644,39 +644,39 @@ namespace djack.RogueSurvivor.Data
       RepairZeroQty();
     }
 
-    public bool HasModel(ItemModel model)
+    public bool HasModel(Model.Item model)
     {
       foreach (Item mItem in m_Items) if (mItem.Model == model) return true;
       return false;
     }
 
-    public Item? GetFirstByModel(ItemModel model)
+    public Item? GetFirstByModel(Model.Item model)
     {
       foreach (Item mItem in m_Items) if (mItem.Model == model) return mItem;
       return null;
     }
 
-    public Item? GetFirstByModel<_T_>(ItemModel model, Predicate<_T_> ok) where _T_ : Item
+    public Item? GetFirstByModel<_T_>(Model.Item model, Predicate<_T_> ok) where _T_ : Item
     {
       foreach (Item mItem in m_Items) if (mItem.Model == model && mItem is _T_ it && ok(it)) return mItem;
       return null;
     }
 
-    public int Count(ItemModel model)
+    public int Count(Model.Item model)
     {
       int num = 0;
       foreach (Item mItem in m_Items) if (!mItem.IsUseless && mItem.Model == model) num++;
       return num;
     }
 
-    public int CountQuantityOf(ItemModel model)
+    public int CountQuantityOf(Model.Item model)
     {
       int num = 0;
       foreach (Item mItem in m_Items) if (mItem.Model == model) num += mItem.Quantity;
       return num;
     }
 
-    public bool HasAtLeastFullStackOf(ItemModel it, int n)
+    public bool HasAtLeastFullStackOf(Model.Item it, int n)
     {
       if (IsEmpty) return false;
       if (it.IsStackable) return CountQuantityOf(it) >= n * it.StackingLimit;

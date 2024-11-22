@@ -3289,7 +3289,7 @@ restart:
       force_QuadSplit_width = OFFICES_WIDTH - 3 - 8; // Police building codes maximize supplies: width 9, including walls
       var list = MakeRoomsPlan(map, rect1, 5);
 
-      KeyValuePair<ItemModel, int>[] stock = {
+      KeyValuePair<Data.Model.Item, int>[] stock = {
         new(GameItems.POLICE_JACKET,10),
         new(GameItems.POLICE_RIOT,10),
         new(GameItems.FLASHLIGHT,5),
@@ -3385,12 +3385,12 @@ restart:
         // these two will not be taken by the SWAT team
         var radios = counts[(int)Item_IDs.TRACKER_POLICE_RADIO];
 
-        static void transmutate(Inventory inv, ItemModel dest) {
+        static void transmutate(Inventory inv, Data.Model.Item dest) {
           inv.RemoveAllQuantity(inv[0]);
           inv.AddAll(dest.create());
         }
 
-        bool transmutate_from_radio(ItemModel dest) {
+        bool transmutate_from_radio(Data.Model.Item dest) {
           if (2 <= radios) {
             transmutate(overview[Item_IDs.TRACKER_POLICE_RADIO].Last().Value[0], dest);
             return true;
@@ -3402,7 +3402,7 @@ restart:
         var big_light = counts[(int)Item_IDs.LIGHT_BIG_FLASHLIGHT];
         var lights = light + big_light;
 
-        bool transmutate_from_light(ItemModel dest) {
+        bool transmutate_from_light(Data.Model.Item dest) {
           if (2 <= lights) {
             if (1 <= light) {
               transmutate(overview[Item_IDs.LIGHT_FLASHLIGHT].Last().Value[0], dest);
@@ -3419,7 +3419,7 @@ restart:
         // we don't care about truncheons, but can transmutate from them
         var truncheon = counts[(int)Item_IDs.MELEE_TRUNCHEON];
 
-        bool transmutate_from_truncheon(ItemModel dest) {
+        bool transmutate_from_truncheon(Data.Model.Item dest) {
           if (3 <= truncheon) {
             transmutate(overview[Item_IDs.MELEE_TRUNCHEON].Last().Value[0], dest);
             return true;
@@ -3431,7 +3431,7 @@ restart:
         var riot = counts[(int)Item_IDs.ARMOR_POLICE_RIOT];
         var armors = jacket + riot;
 
-        bool transmutate_from_armor(ItemModel dest) {
+        bool transmutate_from_armor(Data.Model.Item dest) {
           if (2 <= armors) {
             if (1 <= jacket) {
               transmutate(overview[Item_IDs.ARMOR_POLICE_JACKET].Last().Value[0], dest);
@@ -3449,7 +3449,7 @@ restart:
         var pistol_ammo = counts[(int)Item_IDs.AMMO_LIGHT_PISTOL];
         var pistol_ok = 1 <= pistol && 1 <= pistol_ammo;
 
-        bool transmutate_from_pistol(ItemModel dest) {
+        bool transmutate_from_pistol(Data.Model.Item dest) {
           if (!pistol_ok) return false;
           if (2 <= pistol && pistol >= pistol_ammo) {
             transmutate(overview[Item_IDs.RANGED_PISTOL].Last().Value[0], dest);
@@ -3466,7 +3466,7 @@ restart:
         var shotgun_ammo = counts[(int)Item_IDs.AMMO_SHOTGUN];
         var shotgun_ok = 1 <= shotgun && 1 <= shotgun_ammo;
 
-        bool transmutate_from_shotgun(ItemModel dest) {
+        bool transmutate_from_shotgun(Data.Model.Item dest) {
           if (!shotgun_ok) return false;
           if (2 <= shotgun && shotgun >= shotgun_ammo) {
             transmutate(overview[Item_IDs.RANGED_SHOTGUN].Last().Value[0], dest);
@@ -4377,7 +4377,7 @@ restart:
       DressCHARGuard(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, "Gd.");
 
-      ItemModel[] default_inv = { GameItems.SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.CHAR_LT_BODYARMOR };
+      Data.Model.Item[] default_inv = { GameItems.SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.CHAR_LT_BODYARMOR };
       foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
 
       return numberedName;
@@ -4389,7 +4389,7 @@ restart:
       DressArmy(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
 
-      ItemModel[] default_inv = { GameItems.ARMY_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.ARMY_BODYARMOR };
+      Data.Model.Item[] default_inv = { GameItems.ARMY_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.ARMY_BODYARMOR };
       foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
       numberedName.Inventory.AddAll(GameItems.WOODENPLANK.instantiate(GameItems.WOODENPLANK.StackingLimit));
 
@@ -4454,7 +4454,7 @@ restart:
       DressBlackOps(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
 
-      ItemModel[] default_inv = { GameItems.PRECISION_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.BLACKOPS_GPS };
+      Data.Model.Item[] default_inv = { GameItems.PRECISION_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.BLACKOPS_GPS };
       foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
 
       return numberedName;

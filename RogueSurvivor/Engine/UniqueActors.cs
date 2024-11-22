@@ -12,7 +12,6 @@ using BaseMapGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseMapGenerato
 using BaseTownGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseTownGenerator;
 using DollPart = djack.RogueSurvivor.Data.DollPart;
 using GameFactions = djack.RogueSurvivor.Data.GameFactions;
-using ItemModel = djack.RogueSurvivor.Data.ItemModel;
 using ItemMeleeWeapon = djack.RogueSurvivor.Engine.Items.ItemMeleeWeapon;
 using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
 using Map = djack.RogueSurvivor.Data.Map;
@@ -218,7 +217,7 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.AGILE,5);
       named.StartingSkill(Skills.IDs.FIREARMS,5);
 
-     ItemModel[] default_inv = { GameItems.UNIQUE_SANTAMAN_SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.AMMO_SHOTGUN };
+     Data.Model.Item[] default_inv = { GameItems.UNIQUE_SANTAMAN_SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.AMMO_SHOTGUN };
       foreach(var x in default_inv) named.Inventory.AddAll(x.create());
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       named.Inventory.AddAll(tgen.MakeItemCannedFood());

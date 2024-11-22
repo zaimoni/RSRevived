@@ -11,7 +11,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  public sealed class ItemTrackerModel : ItemModel
+  public sealed class ItemTrackerModel : Data.Model.Item
   {
     public readonly TrackingFlags Tracking;
     public readonly int MaxBatteries;

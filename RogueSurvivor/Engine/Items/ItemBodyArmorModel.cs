@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  public sealed class ItemBodyArmorModel : ItemModel
+  public sealed class ItemBodyArmorModel : Data.Model.Item
   {
     public readonly int Protection_Hit;
     public readonly int Protection_Shot;

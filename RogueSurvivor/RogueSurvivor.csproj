@@ -111,7 +111,6 @@
     <Compile Include="Bugreport.cs" />
     <Compile Include="PointExtensions.cs" />
     <Compile Include="Data\ActorController.cs" />
-    <Compile Include="Data\ItemModel.cs" />
     <Compile Include="Data\ActorAction.cs" />
     <Compile Include="Data\TileModel.cs" />
     <Compile Include="Data\Odor.cs" />

@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  public sealed class ItemTrapModel : ItemModel
+  public sealed class ItemTrapModel : Data.Model.Item
   {
     private readonly Flags m_Flags = Flags.NONE;
     public readonly int TriggerChance;

@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  public abstract class ItemWeaponModel : ItemModel
+  public abstract class ItemWeaponModel : Data.Model.Item
   {
     private readonly Attack m_Attack;
 
@@ -20,11 +20,7 @@ namespace djack.RogueSurvivor.Engine.Items
       : base(_id, aName, theNames, imageID, flavor, DollPart.RIGHT_HAND)
     {
       m_Attack = attack;
-      if (is_artifact) {
-        IsProper = true;
-        IsUnbreakable = true;
-        IsUnique = true;
-      }
+      if (is_artifact) IsUnbreakable = true;
     }
   }
 }

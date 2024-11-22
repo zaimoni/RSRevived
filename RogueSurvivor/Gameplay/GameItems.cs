@@ -114,7 +114,7 @@ namespace djack.RogueSurvivor.Gameplay
     private static readonly Verb STAB = new Verb("stab");
     private static readonly Verb STRIKE = new Verb("strike");
 
-    private static readonly ItemModel[] m_Models = new ItemModel[(int) Item_IDs._COUNT];
+    private static readonly Data.Model.Item[] m_Models = new Data.Model.Item[(int) Item_IDs._COUNT];
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<Item_IDs> ammo
     = new(new List<Item_IDs>{ Item_IDs.AMMO_LIGHT_PISTOL,
             Item_IDs.AMMO_HEAVY_PISTOL,
@@ -181,17 +181,17 @@ namespace djack.RogueSurvivor.Gameplay
         Item_IDs.ENT_MAGAZINE,
         Item_IDs.ENT_CHAR_GUARD_MANUAL});
 
-    public static ItemModel From(int id) { return m_Models[id];  }
-    public static ItemModel From(Item_IDs id) { return m_Models[(int)id];  }
+    public static Data.Model.Item From(int id) { return m_Models[id];  }
+    public static Data.Model.Item From(Item_IDs id) { return m_Models[(int)id];  }
 
-    private static void _setModel(ItemModel model) {
+    private static void _setModel(Data.Model.Item model) {
 #if DEBUG
       if (null != m_Models[(int) model.ID]) throw new InvalidOperationException("can only set item model once");
 #endif
       m_Models[(int) model.ID] = model;
     }
 
-	public static _T_ Cast<_T_>(int id) where _T_:ItemModel
+	public static _T_ Cast<_T_>(int id) where _T_:Data.Model.Item
 	{
 	  return m_Models[id] as _T_;
 	}
@@ -617,7 +617,7 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
-    static public ItemModel UNIQUE_SUBWAY_BADGE {
+    static public Data.Model.Item UNIQUE_SUBWAY_BADGE {
       get {
         return m_Models[(int)Item_IDs.UNIQUE_SUBWAY_BADGE];
       }
@@ -864,10 +864,9 @@ namespace djack.RogueSurvivor.Gameplay
       // this manual is *very* relevant, but dry reading.
       _setModel(new ItemEntertainmentModel(Item_IDs.ENT_CHAR_GUARD_MANUAL, "CHAR Guard Manual","CHAR Guard Manuals", GameImages.ITEM_BOOK, DATA_ENT_MAGAZINE.VALUE, 0, DATA_ENT_BOOK.STACKING, DATA_ENT_BOOK.FLAVOR));
 
-      _setModel(new ItemModel(Item_IDs.UNIQUE_SUBWAY_BADGE, "Subway Worker Badge", "Subways Worker Badges", GameImages.ITEM_SUBWAY_BADGE, "You got yourself a new job!", DollPart.LEFT_HAND, true)
+      _setModel(new Data.Model.Item(Item_IDs.UNIQUE_SUBWAY_BADGE, "Subway Worker Badge", "Subways Worker Badges", GameImages.ITEM_SUBWAY_BADGE, "You got yourself a new job!", DollPart.LEFT_HAND, true)
       {
         IsUnique = true,
-        IsForbiddenToAI = true
       });
     }
 
