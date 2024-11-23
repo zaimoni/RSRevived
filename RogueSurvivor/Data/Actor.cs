@@ -147,7 +147,7 @@ namespace djack.RogueSurvivor.Data
     private ActorController? m_Subconscious = null; // alternate
     private SkillTable m_Skills;
     public readonly int SpawnTime;
-    private Inventory? m_Inventory;
+    private Inventory? m_Inventory; // hammerspace inventory
     private Doll m_Doll;
     private int m_HitPoints;
     private int m_previousHitPoints;
@@ -697,7 +697,8 @@ namespace djack.RogueSurvivor.Data
       int baseChance = SKILL_UNSUSPICIOUS_BONUS * MySkills.GetSkillLevel(Skills.IDs.UNSUSPICIOUS);
 
       // retain general-purpose code within the cases
-      if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor armor && !armor.IsNeutral) {
+      var armor = GetEquippedArmor();
+      if (null != armor && !armor.IsNeutral) {
         int bonus() {
           switch(observer.Faction.ID) {
             case GameFactions.IDs.ThePolice:
@@ -887,7 +888,8 @@ namespace djack.RogueSurvivor.Data
       m_CurrentMeleeAttack = (null != melee) ? melee.Model.BaseMeleeAttack(Model) : Model.UnarmedAttack;
 
       m_CurrentDefence = Model.BaseDefence;
-      if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor armor) m_CurrentDefence += armor.Model.ToDefence();
+      var armor = GetEquippedArmor();
+      if (null != armor) m_CurrentDefence += armor.Model.ToDefence();
     }
 
     void IDeserializationCallback.OnDeserialization(object? sender)
@@ -2571,7 +2573,8 @@ namespace djack.RogueSurvivor.Data
         if (IsTired) { num *= 2f; num /= 3f; }
         if (IsExhausted) num /= 2f;
         else if (IsSleepy) { num *= 2f; num /= 3f; }
-        if (GetEquippedItem(DollPart.TORSO) is Engine.Items.ItemBodyArmor armor) num -= armor.Weight;
+        var armor = GetEquippedArmor();
+        if (null != armor) num -= armor.Weight;
         if (null != m_DraggedCorpse) num /= 2f;
         return Math.Max((int) num, 0);
       }
@@ -3178,10 +3181,11 @@ namespace djack.RogueSurvivor.Data
 
       if (Model.Abilities.CanTire) m_StaminaPoints -= dmg;
       var game = RogueGame.Game;
-      if (GetEquippedItem(DollPart.TORSO) is ItemBodyArmor equippedItem && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
-        Remove(equippedItem);
+      var worn = GetEquippedArmor();
+      if (null != worn && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
+        Remove(worn);
         var witnesses = game._ForceVisibleToPlayer(this);
-        witnesses?.ImportantMessage(RogueGame.MakePanopticMessage(this, string.Format(": {0} breaks and is now useless!", equippedItem.TheName)), IsPlayer ? Engine.RogueGame.DELAY_NORMAL : Engine.RogueGame.DELAY_SHORT);
+        witnesses?.ImportantMessage(RogueGame.MakePanopticMessage(this, string.Format(": {0} breaks and is now useless!", worn.TheName)), IsPlayer ? Engine.RogueGame.DELAY_NORMAL : Engine.RogueGame.DELAY_SHORT);
       }
       if (IsSleeping) game.DoWakeUp(this);
       return RawDamage(dmg);
@@ -3272,15 +3276,8 @@ namespace djack.RogueSurvivor.Data
       return melee.Where(Item.notEquipped).Minimize(rate) ?? melee.Minimize(rate);
     }
 
-    public ItemBodyArmor? GetBestBodyArmor()
-    {
-      return m_Inventory?.Maximize<ItemBodyArmor, int>(ItemBodyArmor.Rate);
-    }
-
-    public ItemBodyArmor? GetWorstBodyArmor()
-    {
-      return m_Inventory?.Minimize<ItemBodyArmor, int>(Item.notEquipped, ItemBodyArmor.Rate);
-    }
+    public ItemBodyArmor? GetBestBodyArmor() => m_Inventory?.Maximize<ItemBodyArmor, int>(ItemBodyArmor.Rate);
+    public ItemBodyArmor? GetWorstBodyArmor() => m_Inventory?.Minimize<ItemBodyArmor, int>(Item.notEquipped, ItemBodyArmor.Rate);
 
     public bool HasEnoughFoodFor(int nutritionNeed, ItemFood? exclude=null)
     {
@@ -3356,12 +3353,26 @@ namespace djack.RogueSurvivor.Data
     // equipped items
     public Item? GetEquippedItem(DollPart part)
     {
+      if (DollPart.TORSO == part) return GetEquippedArmor();
       return m_Inventory?.GetFirst<Item>(obj => obj.EquippedPart == part);
     }
 
     public Item? GetEquippedItem(Gameplay.Item_IDs id)
     {
       return m_Inventory?.GetFirst<Item>(obj => obj.ModelID == id && DollPart.NONE != obj.EquippedPart);
+    }
+
+    // considering these as change target
+    public ItemBodyArmor? GetEquippedArmor()
+    {
+      return m_Inventory?.GetFirst<ItemBodyArmor>(obj => obj.EquippedPart == DollPart.TORSO);
+    }
+
+    public ItemBodyArmor? UsingCopArmor()
+    {
+      var ret = GetEquippedArmor();
+      if (null != ret && ret.IsFriendlyForCops()) return ret;
+      return null;
     }
 
     // this cannot be side-effecting (martial arts, grenades)

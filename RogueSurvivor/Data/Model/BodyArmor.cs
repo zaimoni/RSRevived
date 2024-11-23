@@ -1,4 +1,6 @@
-﻿namespace djack.RogueSurvivor.Data.Model
+﻿#nullable enable
+
+namespace djack.RogueSurvivor.Data.Model
 {
     public sealed class BodyArmor : Item
     {
