@@ -3759,14 +3759,7 @@ namespace djack.RogueSurvivor.Data
     // should prefer to call it.EquippedBy(whom); rather than whom.Equip(it); , for side effects
     public void Equip(Item it)
     {
-#if CPU_HOG
-      var inv = m_Inventory!;
-      if (null != inv._HasMultiEquippedItems()) throw new InvalidOperationException("already was multi-equipped");
-#endif
       it.Equip();
-#if CPU_HOG
-      if (null != inv._HasMultiEquippedItems()) throw new InvalidOperationException("became multi-equipped");
-#endif
       var model = it.Model;
       if (model is ItemMeleeWeaponModel melee) {
         m_CurrentMeleeAttack = melee.BaseMeleeAttack(Model);

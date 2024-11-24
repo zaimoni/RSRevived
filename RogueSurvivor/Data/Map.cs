@@ -2296,6 +2296,7 @@ retry:
       if (null == src) return false;
       var it = src.Value.Value.GetFirst(want);
       if (null == it) return false;
+      giving.Unequip();
       it.Unequip();
 
       src.Value.Value.RemoveAllQuantity(it);
