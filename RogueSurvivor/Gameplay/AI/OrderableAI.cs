@@ -1652,7 +1652,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int need = m_Actor.MaxFood - m_Actor.FoodPoints;
       ItemFood obj1 = null;
       int rating = int.MinValue;
-      foreach (Item obj2 in m_Actor.Inventory.Items) {
+      foreach (Item obj2 in m_Actor.Inventory) {
         if (!(obj2 is ItemFood food)) continue;
         int num3 = 0;
         int num4 = food.NutritionAt(turnCounter);
@@ -1676,7 +1676,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int need = m_Actor.MaxFood - m_Actor.FoodPoints;
       ItemFood obj1 = null;
       int rating = int.MinValue;
-      foreach (Item obj2 in m_Actor.Inventory.Items) {
+      foreach (Item obj2 in m_Actor.Inventory) {
         if (!(obj2 is ItemFood food)) continue;
         if (!food.IsPerishable) continue;
         if (food.IsSpoiledAt(turnCounter)) continue;
@@ -1829,7 +1829,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (percept.Percepted is Actor old_a) return string.Format("I saw {0} {1} {2}.", old_a.Name, str1, str2);
       else if (percept.Percepted is Inventory inventory) {
         if (inventory.IsEmpty) return null;
-        Item it = Rules.Get.DiceRoller.Choose(inventory.Items);
+        Item it = Rules.Get.DiceRoller.Choose(inventory);
         if (!IsItemWorthTellingAbout(it)) return null;
         int num = audience.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather);
         if ((double) Rules.StdDistance(percept.Location, audience.Location) <= (double) (2 + num)) return null;
@@ -2674,7 +2674,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!Map.Canonical(ref dest)) return false;
         if (!string.IsNullOrEmpty(ActionBuildFortification.ReasonCant(in dest))) return false;
         var inv = dest.Items;
-        if (null != inv && inv.Items.Any(it => !it.IsUseless)) return false;   // this should be more intentional
+        if (null != inv && inv.Any(it => !it.IsUseless)) return false;   // this should be more intentional
 
         Point pt = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(pt) || map.IsOnMapBorder(pt) || map.HasExitAt(in pt)) return false;
@@ -2743,7 +2743,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (loc.Map.AnyAdjacentExt<DoorWindow>(loc.Position)) return 0;
       if (loc.Map.HasExitAt(loc.Position)) return 0;    // both unsafe, and problematic for pathing in general
       var g_inv = loc.Items;
-      if (null != g_inv) foreach(var it in g_inv.Items) { // sleeping on useful items is bad for others' pathing
+      if (null != g_inv) foreach(var it in g_inv) { // sleeping on useful items is bad for others' pathing
         if (it.IsUseless) continue;
         if (it is ItemTrap trap) { // cf. ObjectiveAI::ItemIsUseless
           if (!trap.IsActivated) return 0;
@@ -3099,14 +3099,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return Items.Any(it => IsInterestingItem(it));
     }
 
-    public bool HasAnyInterestingItem(Inventory inv)
-    {
-#if DEBUG
-      if (inv?.IsEmpty ?? true) throw new ArgumentNullException(nameof(inv));
-#endif
-      return HasAnyInterestingItem(inv.Items);
-    }
-
     // XXX \todo replace/augment this behavior to generally take action to manage sanity
     // that is: entertainment (currently), medication, and chatting.
     // the use medicine behavior is used in combat so it should not be nearly as finicky about sanity as the non-combat management here
@@ -3257,11 +3249,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmp.ToList();
     }
 
-    private List<Item>? InterestingItems(Inventory inv)
-    {
-      return InterestingItems(inv.Items);
-    }
-
     private Item MostInterestingItemInStack(Inventory stack)
     {
 #if DEBUG
@@ -3372,7 +3359,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
       if (cant_get && null == recover) {
         int obj_code = ItemRatingCode(obj);
-        foreach(Item it in m_Actor.Inventory.Items) {
+        foreach(Item it in m_Actor.Inventory) {
           int it_code = ItemRatingCode(it);
           if (obj_code > it_code) throw new InvalidOperationException("passing up more important item than what is in inventory");
         }
@@ -3410,7 +3397,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
       if (cant_get && null == recover) {
         int obj_code = ItemRatingCode(obj);
-        foreach(Item it in m_Actor.Inventory.Items) {
+        foreach(Item it in m_Actor.Inventory) {
           int it_code = ItemRatingCode(it);
           if (obj_code > it_code) throw new InvalidOperationException("passing up more important item than what is in inventory");
         }
@@ -3456,7 +3443,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
       if (cant_get && null == recover) {
         int obj_code = ItemRatingCode(obj);
-        foreach(Item it in m_Actor.Inventory.Items) {
+        foreach(Item it in m_Actor.Inventory) {
           int it_code = ItemRatingCode(it);
           if (obj_code > it_code) throw new InvalidOperationException("passing up more important item than what is in inventory");
         }

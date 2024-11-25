@@ -104,11 +104,11 @@ namespace djack.RogueSurvivor.Data
         }
         if (loc_ok) ret.Add(x.Key, x.Value);
         else {
-          HashSet<Gameplay.Item_IDs> staging = new(allItems[0].Inventory.Items.Select(x => x.InventoryMemoryID));
+          HashSet<Gameplay.Item_IDs> staging = new(allItems[0].Inventory.Select(x => x.InventoryMemoryID));
           ub = allItems.Count;
           while (1 < ub) {
             var itemsAt = allItems[--ub];
-            staging.UnionWith(itemsAt.Inventory.Items.Select(x => x.InventoryMemoryID));
+            staging.UnionWith(itemsAt.Inventory.Select(x => x.InventoryMemoryID));
           }
           it_memory.Set(x.Key, staging, x.Key.Map.LocalTime.TurnCounter);   // extrasensory perception update
         }

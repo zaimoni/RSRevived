@@ -501,7 +501,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (string.IsNullOrEmpty(reason)) return false;
       var itemsAt = map.GetItemsAt(pos);
       if (null == itemsAt) return true;
-      return 3 >= itemsAt.Items.Count(it => it is ItemTrap itemTrap && itemTrap.IsActivated);
+      return 3 >= itemsAt.Count(it => it is ItemTrap itemTrap && itemTrap.IsActivated);
     }
 
     protected ActorAction? BehaviorAttackBarricade()

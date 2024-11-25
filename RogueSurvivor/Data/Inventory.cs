@@ -209,7 +209,7 @@ namespace djack.RogueSurvivor.Data
 
 
   [Serializable]
-  public sealed class Inventory : Zaimoni.Serialization.ISerialize
+  public sealed class Inventory : IEnumerable<Item>, Zaimoni.Serialization.ISerialize
     {
     private readonly List<Item> m_Items = new(1);
     private int m_maxCapacity;
@@ -218,7 +218,14 @@ namespace djack.RogueSurvivor.Data
         m_maxCapacity = (0 < value) ? value : 1;
       } }
 
+#region IEnumerable<Item> implementation
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => m_Items.GetEnumerator();
+    public IEnumerator<Item> GetEnumerator() => m_Items.GetEnumerator();
+#endregion
+
+#if false
     public IEnumerable<Item> Items { get { return m_Items; } }
+#endif
     public int CountItems { get { return m_Items.Count; } }
 
     public List<Item>? grep(Predicate<Item> ok) {

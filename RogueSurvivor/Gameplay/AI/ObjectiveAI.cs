@@ -2437,7 +2437,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
          var adj_clan = clan.Where(who => Rules.IsAdjacent(m_Actor.Location, who.Location));
          foreach(var a in adj_clan) {
             if (a.IsPlayer) continue;
-            var they_want = m_Actor.Inventory.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(a));
+            var they_want = m_Actor.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(a));
             if (!they_want.Any()) continue;
             var defend = they_want.Where(it => it is UsableItem use && use.UseBeforeDrop(m_Actor));
             if (defend.Any()) {
@@ -2445,7 +2445,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                if (act.IsPerformable()) return act;
                continue;
             }
-            var i_want = a.Inventory!.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
+            var i_want = a.Inventory!.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
             return new ActionTradeWithActor(m_Actor, they_want.First(), i_want.First(), a);
          }
@@ -2462,7 +2462,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
          foreach(var a in adj_clan) {
             if (a.IsPlayer) continue;
             if (!use.UseBeforeDrop(a)) continue;
-            var i_want = a.Inventory!.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
+            var i_want = a.Inventory!.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
             return new ActionTradeWithActor(m_Actor, give, i_want.First(), a);
          }
@@ -2474,7 +2474,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // canned food is too valuable to just eat
       const bool tracing = false; // debugging hook
 
-      var microoptimize_items = m_Actor.Inventory!.Items.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor));
+      var microoptimize_items = m_Actor.Inventory!.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor));
       if (microoptimize_items.Any()) {
         var obj = microoptimize_items.First();
         if (obj is ItemAmmo ammo) return UseAmmo(ammo, ammo.rw);
@@ -5641,7 +5641,7 @@ restart_chokepoints:
         if (null != ai_items) {
           if (null!= ItemMemory && ItemMemory == ai_items) continue; // already updated
           foreach (Percept p in stacks) {
-            ai_items.Set(p.Location, new HashSet<Gameplay.Item_IDs>((p.Percepted as Inventory).Items.Select(x => x.InventoryMemoryID)), p.Location.Map.LocalTime.TurnCounter);
+            ai_items.Set(p.Location, new HashSet<Gameplay.Item_IDs>((p.Percepted as Inventory).Select(x => x.InventoryMemoryID)), p.Location.Map.LocalTime.TurnCounter);
           }
           continue; // followers with item memory can decide on their own what to do
         }
@@ -5796,7 +5796,7 @@ restart_chokepoints:
     {
       var inv = m_Actor.Inventory;
       if (inv == null) return null;
-      IEnumerable<Item> ret = inv.Items.Where(it => IsTradeableItem(it));
+      IEnumerable<Item> ret = inv.Where(it => IsTradeableItem(it));
       return ret.Any() ? ret.ToList() : null;
     }
 #nullable restore
@@ -6008,7 +6008,7 @@ restart_chokepoints:
       // AI does not yet use z-trackers or blackops trackers correctly; possible only threat-aware AIs use them
       Inventory inv;
       if ((inv = m_Actor.Inventory).Contains(it)) return (ok_trackers.Contains(it.ModelID) && null!=m_Actor.LiveLeader) ? 2 : 1;
-      if (inv.Items.Any(obj => !obj.IsUseless && obj.Model == it.Model)) return 0;
+      if (inv.Any(obj => !obj.IsUseless && obj.Model == it.Model)) return 0;
       return (ok_trackers.Contains(it.ModelID) && null != m_Actor.LiveLeader) ? 2 : 1;
     }
 
@@ -6255,7 +6255,7 @@ restart_chokepoints:
         if (m_Actor.NeedActiveCellPhone) ok_trackers.push(Item_IDs.TRACKER_CELL_PHONE);
         if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(Item_IDs.TRACKER_POLICE_RADIO);
         // AI does not yet use z-trackers or blackops trackers correctly; possible only threat-aware AIs use them
-        if (m_Actor.Inventory.Items.Any(obj => !obj.IsUseless && obj.Model == it)) return 0;
+        if (m_Actor.Inventory.Any(obj => !obj.IsUseless && obj.Model == it)) return 0;
         return (ok_trackers.Contains(it.ID) && null != m_Actor.LiveLeader) ? 2 : 1;
       }
 
@@ -6268,7 +6268,7 @@ restart_chokepoints:
       }
       {
       if (it is ItemLightModel) {
-        if (m_Actor.Inventory.Items.Any(obj => !obj.IsUseless && obj is ItemLight)) return 0;
+        if (m_Actor.Inventory.Any(obj => !obj.IsUseless && obj is ItemLight)) return 0;
         return 2;   // historically low priority but ideal kit has one
       }
       }
@@ -6400,7 +6400,7 @@ restart_chokepoints:
     {
       Inventory inv = m_Actor.Inventory;
       if (inv.IsEmpty) return null;
-      foreach (Item it in inv.Items) {
+      foreach (Item it in inv) {
         if (ItemIsUseless(it)) return BehaviorDropItem(it); // allows recovering cleanly from bugs and charismatic trades
       }
 
@@ -6625,7 +6625,7 @@ restart_chokepoints:
       }
       }
 
-      var consume_to_free_slot = inv.Items.Where(obj => obj is UsableItem use && use.FreeSlotByUse(m_Actor));
+      var consume_to_free_slot = inv.Where(obj => obj is UsableItem use && use.FreeSlotByUse(m_Actor));
       if (consume_to_free_slot.Any()) {
         var act = _PrefilterDrop(consume_to_free_slot.First(), use_ok);
         if (null != act) return act;
@@ -6647,7 +6647,7 @@ restart_chokepoints:
 
         int i = 0;
         while(++i < it_rating) {
-          Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => ItemRatingCode_no_recursion(obj) == i && !TradeVeto(obj,it) && !InventoryTradeVeto(it,obj)));
+          Item worst = GetWorst(m_Actor.Inventory.Where(obj => ItemRatingCode_no_recursion(obj) == i && !TradeVeto(obj,it) && !InventoryTradeVeto(it,obj)));
           if (null == worst) continue;
           return _BehaviorDropOrExchange(worst, it, in stack, use_ok);
         }
@@ -6836,7 +6836,7 @@ restart_chokepoints:
 
       if (it is ItemLight) {
         if (1 >= it_rating) return null;
-        Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => 1 >= ItemRatingCode(obj)));
+        Item worst = GetWorst(m_Actor.Inventory.Where(obj => 1 >= ItemRatingCode(obj)));
         if (null != worst) return _BehaviorDropOrExchange(worst, it, in stack, use_ok);
         // at this point...try finding something that loses importance when it's dropped
         var rws = m_Actor.Inventory.Has<ItemLight>() ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
@@ -7039,7 +7039,7 @@ restart_chokepoints:
       }
       }
 
-      var consume_to_free_slot = inv.Items.Where(obj => obj is UsableItem use && use.FreeSlotByUse(m_Actor));
+      var consume_to_free_slot = inv.Where(obj => obj is UsableItem use && use.FreeSlotByUse(m_Actor));
       if (consume_to_free_slot.Any()) {
         var act = _PrefilterDrop(consume_to_free_slot.First(), use_ok);
         if (null != act) return act;
@@ -7061,7 +7061,7 @@ restart_chokepoints:
 
         int i = 0;
         while(++i < it_rating) {
-          Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => ItemRatingCode_no_recursion(obj) == i && !TradeVeto(obj,it) && !InventoryTradeVeto(it,obj)));
+          Item worst = GetWorst(m_Actor.Inventory.Where(obj => ItemRatingCode_no_recursion(obj) == i && !TradeVeto(obj,it) && !InventoryTradeVeto(it,obj)));
           if (null == worst) continue;
           return _BehaviorDropOrExchange(worst, it, position, use_ok);
         }
@@ -7251,7 +7251,7 @@ restart_chokepoints:
 
       if (it is ItemLight) {
         if (1 >= it_rating) return null;
-        Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => 1 >= ItemRatingCode(obj)));
+        Item worst = GetWorst(m_Actor.Inventory.Where(obj => 1 >= ItemRatingCode(obj)));
         if (null != worst) return _BehaviorDropOrExchange(worst, it, position, use_ok);
         // at this point...try finding something that loses importance when it's dropped
         var rws = m_Actor.Inventory.Has<ItemLight>() ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
@@ -7508,7 +7508,7 @@ restart_chokepoints:
         int item_rating = ItemRatingCode(it);   // may need to be no-recursion form here?
         if (1 >= item_rating) return false;
         // check inventory for less-interesting item.  Force high visibility in debugger.
-        foreach(Item obj in m_Actor.Inventory.Items) {
+        foreach(Item obj in m_Actor.Inventory) {
           int test_rating = ItemRatingCode(obj);   // may need to be no-recursion form here?
           if (test_rating < item_rating) return true;
         }
@@ -7591,7 +7591,7 @@ restart_chokepoints:
       if (ret && 1>item_rating) throw new InvalidOperationException("interesting item thought to have no use");
       if (!ret && 1<item_rating && !m_Actor.Inventory.Has(it.ModelID)) {
         // check inventory for less-interesting item.  Force high visibility in debugger.
-        foreach(Item obj in m_Actor.Inventory.Items) {
+        foreach(Item obj in m_Actor.Inventory) {
           if (it.Model == obj.Model) continue;
           int test_rating = ItemRatingCode(obj);
           if (test_rating < item_rating) throw new InvalidOperationException("uninteresting item thought to have a clear use");

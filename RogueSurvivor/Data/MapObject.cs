@@ -490,7 +490,7 @@ namespace djack.RogueSurvivor.Data
 
     protected override void _destroy() {
       if (!m_Inventory.IsEmpty) {
-        foreach (Item it in m_Inventory.Items.ToArray()) {
+        foreach (Item it in m_Inventory.ToArray()) {
           if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
           Location.Drop(it);
         }

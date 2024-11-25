@@ -2314,7 +2314,7 @@ retry:
         Dictionary<Gameplay.Item_IDs, Dictionary<Point, List<Inventory> > > ret = new();
 
         foreach(var x in m_GroundItemsByPosition) {
-          foreach(var it in x.Value.Items) {
+          foreach(var it in x.Value) {
             if (!ret.TryGetValue(it.ModelID, out var cache)) ret.Add(it.ModelID, cache = new());
             if (!cache.TryGetValue(x.Key, out var cache2)) cache.Add(x.Key, cache2 = new());
             if (!cache2.Contains(x.Value)) cache2.Add(x.Value);
@@ -2324,7 +2324,7 @@ retry:
         foreach(var x in m_MapObjectsByPosition) {
           var inv = (x.Value as ShelfLike)?.NonEmptyInventory;
           if (null == inv) continue;
-          foreach (var it in inv.Items) {
+          foreach (var it in inv) {
             if (!ret.TryGetValue(it.ModelID, out var cache)) ret.Add(it.ModelID, cache = new());
             if (!cache.TryGetValue(x.Key, out var cache2)) cache.Add(x.Key, cache2 = new());
             if (!cache2.Contains(inv)) cache2.Add(inv);

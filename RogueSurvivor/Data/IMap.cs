@@ -41,7 +41,7 @@ namespace djack.RogueSurvivor.Data
             void _process_inv(Inventory? inv, int x, int y) {
                 if (null != inv && !inv.IsEmpty) {
                     string p_txt = '(' + x.ToString() + ',' + y.ToString() + ')';
-                    foreach (Item it in inv.Items) {
+                    foreach (Item it in inv) {
                         inv_data.Add("<tr class='inv'><td>" + p_txt + "</td><td>" + it.ToString() + "</td></tr>");
                     }
                     ascii_map[y][x] = "&"; // Angband/Nethack pile.

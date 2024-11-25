@@ -6917,17 +6917,17 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.ITEM_GRAB_FLOOR:
           var itemsAt = map.GetItemsAt(position);
           if (itemsAt == null) return false;
-          foreach (var it in itemsAt.Items) if (Player.CanGet(it)) return true;
+          foreach (var it in itemsAt) if (Player.CanGet(it)) return true;
           return false;
         case AdvisorHint.ITEM_UNEQUIP:
           var inventory1 = Player.Inventory;
           if (inventory1?.IsEmpty ?? true) return false;
-          foreach (Item it in inventory1.Items) if (Player.CanUnequip(it)) return true;
+          foreach (Item it in inventory1) if (Player.CanUnequip(it)) return true;
           return false;
         case AdvisorHint.ITEM_EQUIP:
           var inventory2 = Player.Inventory;
           if (inventory2?.IsEmpty ?? true) return false;
-          foreach (Item it in inventory2.Items) if (!it.IsEquipped && Player.CanEquip(it)) return true;
+          foreach (Item it in inventory2) if (!it.IsEquipped && Player.CanEquip(it)) return true;
           return false;
         case AdvisorHint.ITEM_TYPE_BARRICADING:
           var inventory3 = Player.Inventory;
@@ -6936,12 +6936,12 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.ITEM_DROP:
           var inventory4 = Player.Inventory;
           if (inventory4?.IsEmpty ?? true) return false;
-          foreach (Item it in inventory4.Items) if (Player.CanDrop(it)) return true;
+          foreach (Item it in inventory4) if (Player.CanDrop(it)) return true;
           return false;
         case AdvisorHint.ITEM_USE:
           var inventory5 = Player.Inventory;
           if (inventory5?.IsEmpty ?? true) return false;
-          foreach (Item it in inventory5.Items) if (Player.CanUse(it)) return true;
+          foreach (Item it in inventory5) if (Player.CanUse(it)) return true;
           return false;
         case AdvisorHint.FLASHLIGHT: return Player.Inventory.Has<ItemLight>();
         case AdvisorHint.CELLPHONES: return Player.Inventory.GetFirstByModel(GameItems.CELL_PHONE) != null;
@@ -6953,7 +6953,7 @@ namespace djack.RogueSurvivor.Engine
           if (!(Player.GetEquippedWeapon() is ItemRangedWeapon)) return false;
           var inventory6 = Player.Inventory;
           if (inventory6?.IsEmpty ?? true) return false;
-          foreach (Item it in inventory6.Items) if (it is ItemAmmo && Player.CanUse(it)) return true;
+          foreach (Item it in inventory6) if (it is ItemAmmo && Player.CanUse(it)) return true;
           return false;
         case AdvisorHint.GRENADE: return Player.Has<ItemGrenade>();
         case AdvisorHint.DOORWINDOW_OPEN:
@@ -8008,8 +8008,8 @@ namespace djack.RogueSurvivor.Engine
     {
       var lines = new string[inv.CountItems];
       int n = 0;
-      foreach(var it in inv.Items) lines[n++] = string.Format(it.IsEquipped ? "- {0} (equipped)"
-                                                                            : "- {0}", DescribeItemShort(it));
+      foreach(var it in inv) lines[n++] = string.Format(it.IsEquipped ? "- {0} (equipped)"
+                                                                      : "- {0}", DescribeItemShort(it));
       return lines;
     }
 
@@ -9578,7 +9578,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == inv || inv.IsEmpty) return;
       List<ItemExplosive>? itemExplosiveList = null;
       List<ItemPrimedExplosive>? itemPrimedExplosiveList = null;
-      foreach (Item obj in inv.Items) {
+      foreach (Item obj in inv) {
         if (!(obj is ItemExplosive itemExplosive)) continue;
         if (itemExplosive is ItemPrimedExplosive primed) primed.Cook();
         else {
@@ -10150,7 +10150,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
 //    if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
-      List<Item> objList = speaker.Items.ToList(); // inventory has no mentality, trivialize
+      List<Item> objList = speaker.ToList(); // inventory has no mentality, trivialize
       if (objList == null || 0>=objList.Count) return null;
 
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index])); }
@@ -11111,7 +11111,7 @@ namespace djack.RogueSurvivor.Engine
           var it = GameItems.POLICE_RADIO.instantiate();
           if (Rules.Get.RollChance(ItemSurviveKillProbability(it, reason))) deadGuy.Location.Drop(it);
         }
-        foreach (Item it in deadGuy.Inventory.Items.ToArray()) {
+        foreach (Item it in deadGuy.Inventory.ToArray()) {
           if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
           if (it.Model.IsUnbreakable || it.IsUnique || Rules.Get.RollChance(ItemSurviveKillProbability(it, reason)))
             DropItem(deadGuy, it);
@@ -11454,7 +11454,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == inv || inv.IsEmpty) {
         textFile.Append(string.Format("{0} was humble. Or dirt poor.", str1));
       } else {
-        foreach (Item it in inv.Items) {
+        foreach (Item it in inv) {
           textFile.Append(string.Format((it.IsEquipped ? "- {0} (equipped)." : "- {0}."), DescribeItemShort(it)));
         }
       }
@@ -12550,8 +12550,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (0>=(inventory?.CountItems ?? 0)) throw new ArgumentNullException(nameof(inventory));
 #endif
-      foreach (Item it in inventory.Items)
-        DrawItem(it, screen.X, screen.Y, tint);
+      foreach (Item it in inventory) DrawItem(it, screen.X, screen.Y, tint);
     }
 
     public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy)
@@ -12943,7 +12942,7 @@ namespace djack.RogueSurvivor.Engine
       int gx2 = gx;
       int gy2 = gy;
       int num2 = 0;
-      foreach (Item it in inventory.Items) {
+      foreach (Item it in inventory) {
         if (it.IsEquipped)
           m_UI.UI_DrawImage(GameImages.ITEM_EQUIPPED, gx2, gy2);
         if (it is ItemRangedWeapon rw) {
@@ -14600,7 +14599,7 @@ retry:
         case 3:
           var inventory = actor.Inventory;
           if (null == inventory || inventory.IsEmpty) return null;
-          Item it = rules.DiceRoller.Choose(inventory.Items);
+          Item it = rules.DiceRoller.Choose(inventory);
           var use = new ActionUseItem(actor, it);
           if (use.IsPerformable()) return use;
           if (it.IsEquipped) {

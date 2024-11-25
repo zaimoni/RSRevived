@@ -3235,7 +3235,11 @@ namespace djack.RogueSurvivor.Data
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
       int num = 0;
-      foreach (Item obj in m_Inventory.Items) {
+      foreach (Item obj in m_Inventory) {
+        if (obj.IsUseless) continue;
+        if (obj.GetType() == tt) ++num;
+      }
+      foreach (Item obj in m_Inventory) {
         if (obj.IsUseless) continue;
         if (obj.GetType() == tt) ++num;
       }
@@ -3245,7 +3249,7 @@ namespace djack.RogueSurvivor.Data
     public int CountItems<_T_>() where _T_ : Item
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
-      return m_Inventory.Items.Where(it=>it is _T_).Select(it => it.Quantity).Sum();
+      return m_Inventory.Where(it=>it is _T_).Select(it => it.Quantity).Sum();
     }
 
     public bool Has<_T_>() where _T_ : Item
@@ -3328,13 +3332,13 @@ namespace djack.RogueSurvivor.Data
       if (!buyer.Model.Abilities.CanTrade) throw new InvalidOperationException("cannot trade");
 #endif
 
-      if (buyer.IsPlayer && IsPlayer) return m_Inventory.Items.ToList();
+      if (buyer.IsPlayer && IsPlayer) return m_Inventory.ToList();
 
       var buyer_ai = buyer.Controller as Gameplay.AI.ObjectiveAI;
       var ai = Controller as Gameplay.AI.ObjectiveAI;
 
       // IsInterestingTradeItem includes a charisma check i.e. RNG invocation, so cannot use .Any() prescreen safely
-      var objList = m_Inventory.Items.Where(it=> buyer_ai.IsInterestingTradeItem(this, it) && ai.IsTradeableItem(it)).ToList();  // \todo upgrade ObjectiveAI::IsTradeableItem to virtual with a PlayerController override
+      var objList = m_Inventory.Where(it=> buyer_ai.IsInterestingTradeItem(this, it) && ai.IsTradeableItem(it)).ToList();  // \todo upgrade ObjectiveAI::IsTradeableItem to virtual with a PlayerController override
       return 0<objList.Count ? objList : null;
     }
 
@@ -3344,9 +3348,7 @@ namespace djack.RogueSurvivor.Data
       if (!Model.Abilities.CanTrade) throw new InvalidOperationException(Name+" cannot trade");
 #endif
 
-//    if (buyer.IsPlayer) return Inventory.Items
-
-      var objList = m_Inventory.Items.Where(it=> buyer.IsRationalTradeItem(it) && (Controller as Gameplay.AI.OrderableAI).IsTradeableItem(it));
+      var objList = m_Inventory.Where(it=> buyer.IsRationalTradeItem(it) && (Controller as Gameplay.AI.OrderableAI).IsTradeableItem(it));
       return objList.Any() ? objList.ToList() : null;
     }
 

@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         }
         HashSet<Item_IDs>? staging = new();
         foreach(var inv in allItems) {
-          staging.UnionWith(inv.Inventory.Items.Select(x => x.InventoryMemoryID));
+          staging.UnionWith(inv.Inventory.Select(x => x.InventoryMemoryID));
           perceptList.Add(new Percept(inv, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));
           (_items ??= new())[loc] = inv.Inventory; // \todo may have to retype this
         }

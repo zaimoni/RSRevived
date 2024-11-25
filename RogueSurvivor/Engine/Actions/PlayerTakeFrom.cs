@@ -55,7 +55,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (null == p_inv) return null;
             if (p_inv.IsFull) {
                 var ok = false;
-                foreach (var it in inv.Items) {
+                foreach (var it in inv) {
                     if (p_inv.CanAddAtLeastOne(it)) {
                         ok = true;
                         break;
@@ -75,7 +75,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (null == p_inv) return null;
             if (p_inv.IsFull) {
                 var ok = false;
-                foreach (var it in inv.Items) {
+                foreach (var it in inv) {
                     if (p_inv.CanAddAtLeastOne(it)) {
                         ok = true;
                         break;
