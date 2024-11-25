@@ -7857,7 +7857,7 @@ namespace djack.RogueSurvivor.Engine
       // 9. Inventory.
       var inv = actor.Inventory;
       if (null != inv && !inv.IsEmpty) {
-        lines.Add(string.Format("Items {0}/{1} : ", inv.CountItems, actor.MaxInv));
+        lines.Add(string.Format("Items {0}/{1} : ", inv.Count(), actor.MaxInv));
         lines.AddRange(DescribeInventory(inv));
       }
 
@@ -8006,7 +8006,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeInventory(Inventory inv)
     {
-      var lines = new string[inv.CountItems];
+      var lines = new string[inv.Count()];
       int n = 0;
       foreach(var it in inv) lines[n++] = string.Format(it.IsEquipped ? "- {0} (equipped)"
                                                                       : "- {0}", DescribeItemShort(it));
@@ -10196,14 +10196,14 @@ namespace djack.RogueSurvivor.Engine
     private Item? Choose(Inventory? inv, string prompt) {
       if (null == inv) return null;
       if (inv.IsEmpty) return null;
-      if (2 > inv.CountItems) return inv.TopItem!;
+      if (2 > inv.Count()) return inv.TopItem!;
 
       Item? ret = null;
 
-      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index])); }
+      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.Count(), DescribeItemShort(inv[index])); }
       bool details(int index) { ret = inv[index]!; return true; }
 
-      PagedPopup(prompt, inv.CountItems, label, details);
+      PagedPopup(prompt, inv.Count(), label, details);
 
       return ret;
     }
@@ -12548,7 +12548,7 @@ namespace djack.RogueSurvivor.Engine
     public void DrawItemsStack(Inventory inventory, GDI_Point screen, Color tint)
     {
 #if DEBUG
-      if (0>=(inventory?.CountItems ?? 0)) throw new ArgumentNullException(nameof(inventory));
+      if (null == inventory && 0 >= inventory.Count()) throw new ArgumentNullException(nameof(inventory));
 #endif
       foreach (Item it in inventory) DrawItem(it, screen.X, screen.Y, tint);
     }

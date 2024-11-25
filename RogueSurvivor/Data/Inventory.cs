@@ -223,11 +223,6 @@ namespace djack.RogueSurvivor.Data
     public IEnumerator<Item> GetEnumerator() => m_Items.GetEnumerator();
 #endregion
 
-#if false
-    public IEnumerable<Item> Items { get { return m_Items; } }
-#endif
-    public int CountItems { get { return m_Items.Count; } }
-
     public List<Item>? grep(Predicate<Item> ok) {
       List<Item> ret = new();
       foreach(var it in m_Items) {

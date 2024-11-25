@@ -5936,7 +5936,7 @@ restart_chokepoints:
         var container = Rules.CanActorPutItemIntoContainer(m_Actor, in pos);
         if (null == container) continue;
         var itemsAt = container.Inventory;
-        if (itemsAt.CountItems+1 >= itemsAt.MaxCapacity) continue; // practical consideration
+        if (itemsAt.Count() + 1 >= itemsAt.MaxCapacity) continue; // practical consideration
 #if DEBUG
         if (itemsAt.IsFull) throw new InvalidOperationException("illegal put into container attempted");
 #endif
