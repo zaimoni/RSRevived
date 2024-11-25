@@ -4671,7 +4671,7 @@ namespace djack.RogueSurvivor.Engine
       var invSpec = MouseToInventoryItem(mousePos);
       if (null == invSpec) return false; // this command can work against ground inventory
 
-      bool isPlayerInventory = invSpec.Value.Key.a_owner == Player;
+      bool isPlayerInventory = invSpec.Value.Key.Origin.a_owner == Player;
 
       bool OnRMBItem(Item it)
       {
@@ -4705,7 +4705,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    private KeyValuePair<InventorySource<Item>, GDI_Point>? MouseToInventoryItem(GDI_Point screen)
+    private KeyValuePair<Data.Model.InventorySource<Item>, GDI_Point>? MouseToInventoryItem(GDI_Point screen)
     {
       var inventory = Player.Inventory;
       if (null == inventory) return null;
@@ -4713,7 +4713,7 @@ namespace djack.RogueSurvivor.Engine
       int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
       if (index1 >= 0 && index1 < inventory.MaxCapacity) {
         if (null == inventory[index1]) return null;
-        return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(new InvOrigin(Player), inventory[index1]), InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1));
+        return new(new(new Data.Model.InvOrigin(Player), inventory[index1]), InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1));
       }
       var invspec = Player.Location.InventoryAtFeet();
       if (null == invspec) return null;
@@ -4724,7 +4724,7 @@ namespace djack.RogueSurvivor.Engine
       if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
       if (null == itemsAt[index2]) return null;
       // hard crash if this inventory is flagged as seen by player
-      return new KeyValuePair<InventorySource<Item>, GDI_Point>(new(invspec.Value, itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
+      return new(new(invspec.Value, itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
     }
 #nullable restore
 
@@ -5086,20 +5086,17 @@ namespace djack.RogueSurvivor.Engine
       if (null == invSpec) return false; // this command can work against ground inventory
 
       if (!(invSpec.Value.Key.it is ItemRangedWeapon rw)) return false;
+      if (0 >= rw.Ammo) return false;
 
-      var original_ammo = rw.Ammo;
-      if (0 >= original_ammo) return false;
-
-      var player = pc.ControlledActor;
-      InventorySource<ItemRangedWeapon> src = new(invSpec.Value.Key.Origin, rw);
-//    InventorySource<ItemRangedWeapon> src = (inv == player.Inventory) ? new(player, rw) : new(player.Location, player, rw);
+      Data.Model.InventorySource<ItemRangedWeapon> src = new(invSpec.Value.Key.Origin, rw);
 
       // try unloading to our own inventory first
-      InvOrigin dest = new(player);
+      var player = pc.ControlledActor;
+      Data.Model.InvOrigin dest = new(player);
       if (DoUnload(player, src, dest)) return true;
 
       // If that fails, and we are unloading from a container, try the container's inventory
-      if (null != src.obj_owner) {
+      if (null != src.Origin.obj_owner) {
         if (DoUnload(player, src, src.Origin)) return true;
       }
 
@@ -5114,13 +5111,13 @@ namespace djack.RogueSurvivor.Engine
       const string GIVE_MODE_TEXT = "GIVE MODE - directions to give item to someone, ESC cancels";
 
       var invSpec = MouseToInventoryItem(screen);
-      if (null == invSpec || invSpec.Value.Key.a_owner != player) return false;
+      if (null == invSpec || invSpec.Value.Key.Origin.a_owner != player) return false;
 
       ClearOverlays();
       AddOverlay(new OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      List<InvOrigin>? give_where_alt(Direction dir) { return Map.GetGivingInventoryOrigins(player, dir); }
-      bool give_alt(List<InvOrigin>? src) {
+      List<Data.Model.InvOrigin>? give_where_alt(Direction dir) { return Map.GetGivingInventoryOrigins(player, dir); }
+      bool give_alt(List<Data.Model.InvOrigin>? src) {
         if (null == src) {
           ErrorPopup("Noone there.");
           return false;
@@ -5205,13 +5202,13 @@ namespace djack.RogueSurvivor.Engine
     {
       var player = pc.ControlledActor;
       var invSpec = MouseToInventoryItem(screen);
-      if (null == invSpec || invSpec.Value.Key.a_owner != player) return false;
+      if (null == invSpec || invSpec.Value.Key.Origin.a_owner != player) return false;
 
       ClearOverlays();
       AddOverlay(new OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      List<InvOrigin>? trade_where_alt(Direction dir) { return Map.GetTradingInventoryOrigins(player, dir); }
-      bool trade_alt(List<InvOrigin>? src) {
+      List<Data.Model.InvOrigin>? trade_where_alt(Direction dir) { return Map.GetTradingInventoryOrigins(player, dir); }
+      bool trade_alt(List<Data.Model.InvOrigin>? src) {
         if (null == src) {
           ErrorPopup("Noone there.");
           return false;
@@ -9917,7 +9914,7 @@ namespace djack.RogueSurvivor.Engine
       target.RejectCrossLink(speaker.Inventory);
     }
 
-    private void DoTrade(PlayerController pc, Item itSpeaker, InvOrigin target)
+    private void DoTrade(PlayerController pc, Item itSpeaker, Data.Model.InvOrigin target)
     {
       var speaker = pc.ControlledActor;
       if (speaker.Location != target.Location) {
@@ -9932,7 +9929,7 @@ namespace djack.RogueSurvivor.Engine
         }
         if (null != target.obj_owner) speaker.StandUp();
       }
-      DoTrade(pc, itSpeaker, target.inv);
+      DoTrade(pc, itSpeaker, target.Inventory);
     }
 
     private void DoTradeWith(Actor actor, Inventory dest, Item give, Item take)
@@ -10449,21 +10446,21 @@ namespace djack.RogueSurvivor.Engine
       _Drop(clone, in dest);
     }
 
-    public bool DoUnload(Actor actor, InventorySource<ItemRangedWeapon> src, InvOrigin dest)
+    public bool DoUnload(Actor actor, Data.Model.InventorySource<ItemRangedWeapon> src, Data.Model.InvOrigin dest)
     {
       var ammo = ItemAmmo.make(src.it.ModelID);
       ammo.Quantity = src.it.Ammo;
-      if (null != dest.inv) {
-        var added = dest.inv.AddAsMuchAsPossible(ammo);
+      if (null != dest.Inventory) {
+        var added = dest.Inventory.AddAsMuchAsPossible(ammo);
         if (0 >= added) return false;
         src.it.Ammo -= added;
       } else {
-        dest.loc.Value.Drop(ammo);
+        dest.Location.Drop(ammo);
         src.it.Ammo = 0;
       }
 
       actor.SpendActionPoints();
-      src.fireChange();
+      src.Origin.fireChange();
       dest.fireChange();
 
       var witnesses = actor.PlayersInLOS();
@@ -13513,11 +13510,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool ForceVisibleToPlayer(MapObject mapObj) { return ForceVisibleToPlayer(mapObj.Location); }
 
-    private bool ForceVisibleToPlayer(in InventorySource<Item> src) {
-      if (null != src.obj_owner) return ForceVisibleToPlayer(src.obj_owner);
-      if (null != src.loc) return ForceVisibleToPlayer(src.loc.Value);
-      // a_owner will be non-null
-      return ForceVisibleToPlayer(src.a_owner);
+    private bool ForceVisibleToPlayer(in Data.Model.InventorySource<Item> src) {
+      if (null != src.Origin.a_owner) return ForceVisibleToPlayer(src.Origin.a_owner);
+      return ForceVisibleToPlayer(src.Origin.Location);
     }
 
     private KeyValuePair<bool,bool> ForceVisibleToPlayer(Actor a, Actor d, List<PlayerController>? a_only_witness, List<PlayerController>?  ad_witness, List<PlayerController>?  d_only_witness)

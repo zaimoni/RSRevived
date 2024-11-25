@@ -35,38 +35,14 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override abstract void Perform();
 
-        static public ActionTradeWith Cast(in InvOrigin dest, Actor actor, Item give, Item take)
-        {
-            if (null == dest.inv || !dest.inv.Contains(take)) {
-#if DEBUG
-                throw new InvalidOperationException("cannot take from this inventory");
-#endif
-                return null;    // arguably invariant failure
-            }
-
-            if (null != dest.obj_owner) {
-                // trade w/container
-                return new ActionTradeWithContainer(actor, give, take, dest.obj_owner);
-            }
-            if (null != dest.loc) {
-                return new ActionTradeWithGround(actor, give, take, dest.loc.Value);
-            }
-            if (null != dest.a_owner && !dest.a_owner.IsPlayer) {
-                return new ActionTradeWithActor(actor, give, take, dest.a_owner);
-            }
-#if DEBUG
-            throw new InvalidOperationException("tracing"); // need to verify null return
-#endif
-            return null;
-        }
-
         static public ActionTradeWith Cast(in Data.Model.InvOrigin dest, Actor actor, Item give, Item take)
         {
             if (null == dest.Inventory || !dest.Inventory.Contains(take)) {
 #if DEBUG
                 throw new InvalidOperationException("cannot take from this inventory");
-#endif
+#else
                 return null;    // arguably invariant failure
+#endif
             }
 
             if (null != dest.obj_owner) {
@@ -81,8 +57,9 @@ namespace djack.RogueSurvivor.Engine.Actions
             }
 #if DEBUG
             throw new InvalidOperationException("tracing"); // need to verify null return
-#endif
+#else
             return null;
+#endif
         }
 
         static public ActionTradeWith Cast(Location loc, Actor actor, Item give, Item take)

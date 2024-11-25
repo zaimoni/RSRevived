@@ -2117,9 +2117,9 @@ retry:
       return 0<ret.Count ? ret : null;
     }
 
-    public static List<InvOrigin>? GetTradingInventoryOrigins(Actor a, Direction dir)
+    public static List<Data.Model.InvOrigin>? GetTradingInventoryOrigins(Actor a, Direction dir)
     {
-      List<InvOrigin> ret = new();
+      List<Data.Model.InvOrigin> ret = new();
       var origin = a.Location;
 
       if (Direction.NEUTRAL == dir) {
@@ -2153,9 +2153,9 @@ retry:
       return 0<ret.Count ? ret : null;
     }
 
-    public static List<InvOrigin>? GetGivingInventoryOrigins(Actor a, Direction dir)
+    public static List<Data.Model.InvOrigin>? GetGivingInventoryOrigins(Actor a, Direction dir)
     {
-      List<InvOrigin> ret = new();
+      List<Data.Model.InvOrigin> ret = new();
       var origin = a.Location;
 
       if (Direction.NEUTRAL == dir) {

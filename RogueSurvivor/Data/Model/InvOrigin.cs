@@ -105,4 +105,33 @@ namespace djack.RogueSurvivor.Data.Model
             return "(invalid inventory source)";
         }
     }
+
+  [Serializable]
+  public readonly record struct InventorySource<T> where T:Data.Item
+  {
+     public readonly InvOrigin Origin;
+     public readonly T it;
+
+     public InventorySource(InvOrigin src, T obj) {
+       Origin = src;
+       it = obj
+#if DEBUG
+          ?? throw new ArgumentNullException(nameof(obj));
+#endif
+        ;
+#if DEBUG
+       var inv = src.Inventory;
+       if (null == inv || !inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
+#endif
+     }
+
+    public bool TransferFrom(Data.Inventory dest) {
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
+      return Origin.Inventory.Transfer(it, dest);
+    }
+
+    public override string ToString() => Origin.ToString() + " containing " + it.ToString();
+  }
 }
