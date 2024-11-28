@@ -817,4 +817,28 @@ namespace djack.RogueSurvivor.Data
             return new(origin);
         }
     }
+
+    // Angband-style inventory slots
+    // the exact interpretation of the slots, is not relevant to this class
+    public sealed class InventorySlots
+    {
+        private readonly Item?[] m_Items;
+
+        public InventorySlots(int maxCapacity)
+        {
+#if DEBUG
+          if (0 >= maxCapacity) throw new ArgumentOutOfRangeException(nameof(maxCapacity),maxCapacity,"must be positive");
+#endif
+          m_Items = new Item?[maxCapacity];
+        }
+
+        public int MaxCapacity { get => m_Items.Length; }
+
+        public Item? this[int index] {
+            get {
+                if (index < 0 || index >= m_Items.Length) return null;
+                return m_Items[index];
+            }
+        }
+    }
 }

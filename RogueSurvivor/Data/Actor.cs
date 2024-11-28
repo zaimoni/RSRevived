@@ -148,6 +148,7 @@ namespace djack.RogueSurvivor.Data
     private SkillTable m_Skills;
     public readonly int SpawnTime;
     private Inventory? m_Inventory; // hammerspace inventory
+    private InventorySlots? m_InventorySlots; // Angband-ish inventory
     private Doll m_Doll;
     private int m_HitPoints;
     private int m_previousHitPoints;
@@ -873,6 +874,9 @@ namespace djack.RogueSurvivor.Data
       m_Sanity = m_previousSanity = model.BaseSanity;
       m_Inventory = (model.Abilities.HasInventory ? new Inventory(model.BaseInventoryCapacity)
                                                   : null); // any previous inventory will be irrevocably destroyed
+      // just human-torso slot, for now
+      m_InventorySlots = (model.Abilities.HasInventory ? new InventorySlots(1)
+                                                       : null); // any previous inventory will be irrevocably destroyed
       m_CurrentMeleeAttack = model.UnarmedAttack;
       m_CurrentDefence = Model.BaseDefence;
       m_CurrentRangedAttack = Attack.BLANK;
