@@ -10,8 +10,6 @@ using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Linq;
 
-using djack.RogueSurvivor.Engine;
-
 using ItemAmmo = djack.RogueSurvivor.Engine.Items.ItemAmmo;
 using ItemAmmoModel = djack.RogueSurvivor.Engine.Items.ItemAmmoModel;
 using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
@@ -820,7 +818,7 @@ namespace djack.RogueSurvivor.Data
 
     // Angband-style inventory slots
     // the exact interpretation of the slots, is not relevant to this class
-    public sealed class InventorySlots
+    public sealed class InventorySlots : IEnumerable<Item>
     {
         private readonly Item?[] m_Items;
 
@@ -831,6 +829,11 @@ namespace djack.RogueSurvivor.Data
 #endif
           m_Items = new Item?[maxCapacity];
         }
+
+#region IEnumerable<Item> implementation
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => new Zaimoni.Collections.EnumeratorNondefault<Item>(m_Items);
+        public IEnumerator<Item> GetEnumerator() => new Zaimoni.Collections.EnumeratorNondefault<Item>(m_Items);
+#endregion
 
         public int MaxCapacity { get => m_Items.Length; }
 
