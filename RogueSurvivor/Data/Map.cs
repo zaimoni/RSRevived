@@ -48,7 +48,7 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   public sealed class Map : ISerializable, IMap, Zaimoni.Serialization.ISerialize
     {
-    public const int GROUND_INVENTORY_SLOTS = 10;
+    public const int GROUND_INVENTORY_SLOTS = RogueGame.INVENTORY_SLOTS_PER_LINE;
     public readonly int Seed;
     public readonly Point DistrictPos; // should be District.WorldPosition by construction
 #nullable enable

@@ -10,6 +10,7 @@
 // #define POLICE_NO_QUESTIONS_ASKED
 
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine._Action;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
@@ -39,13 +40,10 @@ using Color = System.Drawing.Color;
 using GDI_Point = System.Drawing.Point;
 using GDI_Rectangle = System.Drawing.Rectangle;
 using GDI_Size = System.Drawing.Size;
-using System.Numerics;
-using System.Runtime;
-using djack.RogueSurvivor.Engine._Action;
 
 namespace djack.RogueSurvivor.Engine
 {
-    internal class RogueGame
+  internal class RogueGame
   {
     private readonly Color POPUP_FILLCOLOR = Color.FromArgb(192, Color.CornflowerBlue);
     // these are used by OverlayPopup, so are used as arrays of strings anyway
@@ -199,7 +197,7 @@ namespace djack.RogueSurvivor.Engine
 
     private const int GROUNDINVENTORYPANEL_Y = INVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
     private const int CORPSESPANEL_Y = GROUNDINVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
-    private const int INVENTORY_SLOTS_PER_LINE = 10;
+    public const int INVENTORY_SLOTS_PER_LINE = 10;
     private const int SKILLTABLE_X = RIGHTPANEL_X + 4;
     private const int SKILLTABLE_Y = CORPSESPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
     // we need enough slots (SKILLTABLE_LINES*3) to display all skills in the endgame
@@ -11972,10 +11970,10 @@ namespace djack.RogueSurvivor.Engine
                   if (0 < capital_crimes) m_UI.UI_DrawString(Color.White, string.Format("Capital crimes {0}", capital_crimes), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-BOLD_LINE_SPACING);
                   DrawActorStatus(Player, RIGHTPANEL_TEXT_X, RIGHTPANEL_TEXT_Y);
                   if (Player.Inventory != null && Player.Model.Abilities.HasInventory)
-                    DrawInventory(Player.Inventory, "Inventory", true, Map.GROUND_INVENTORY_SLOTS, Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
+                    DrawInventory(Player.Inventory, "Inventory", true, Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
                   var invspec = Player.Location.InventoryAtFeet();
-                  DrawInventory(invspec?.Inventory, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
-                  DrawCorpsesList(Player.Location.Corpses, "Corpses on ground", Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, CORPSESPANEL_Y);
+                  DrawInventory(invspec?.Inventory, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
+                  DrawCorpsesList(Player.Location.Corpses, "Corpses on ground", INVENTORYPANEL_X, CORPSESPANEL_Y);
                   if (0 < Player.MySkills.CountSkills)
                     DrawActorSkillTable(Player, SKILLTABLE_X, SKILLTABLE_Y_ALT);
                 }
@@ -12467,14 +12465,14 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawImage(imageID, gx + num3, gy + num4);
     }
 
-    public void DrawCorpsesList(List<Corpse> list, string title, int slots, int gx, int gy)
+    public void DrawCorpsesList(List<Corpse> list, string title, int gx, int gy)
     {
       var is_dragging = Player.DraggedCorpse;
       int num2 = list == null ? 0 : list.Count;
       if (num2 > 0) title += " : " + num2;
       m_UI.UI_DrawStringBold(Color.White, title, gx, gy - BOLD_LINE_SPACING, new Color?());
       int gx1 = gx;
-      for (int index = 0; index < slots; ++index) {
+      for (int index = 0; index < INVENTORY_SLOTS_PER_LINE; ++index) {
         m_UI.UI_DrawImage(GameImages.ITEM_SLOT, gx1, gy);
         if (index < num2) {
           var c = list[index];
@@ -12547,7 +12545,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null == inventory && 0 >= inventory.Count()) throw new ArgumentNullException(nameof(inventory));
 #endif
-      foreach (Item it in inventory) DrawItem(it, screen.X, screen.Y, tint);
+      foreach (Item it in inventory) DrawItem(it, screen, tint);
     }
 
     public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy)
@@ -12920,80 +12918,80 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DrawInventory(Inventory inventory, string title, bool drawSlotsNumbers, int slotsPerLine, int maxSlots, int gx, int gy)
+#nullable enable
+    private void DrawInventory(IEnumerable<Item>? inventory, string title, bool drawSlotsNumbers, int maxSlots, int gx, int gy)
     {
-      m_UI.UI_DrawStringBold(Color.White, title, gx, gy-BOLD_LINE_SPACING, new Color?());
-      int gx1 = gx;
-      int gy1 = gy;
-      int num1 = 0;
+      m_UI.UI_DrawStringBold(Color.White, title, gx, gy-BOLD_LINE_SPACING);
+      Vector2D_stack<int> pixel_pos = new(gx, gy);
+      int slot = 0;
+
       for (int index = 0; index < maxSlots; ++index) {
-        m_UI.UI_DrawImage(GameImages.ITEM_SLOT, gx1, gy1);
-        if (++num1 >= slotsPerLine) {
-          num1 = 0;
-          gy1 += TILE_SIZE;
-          gx1 = gx;
+        m_UI.UI_DrawImage(GameImages.ITEM_SLOT, pixel_pos.X, pixel_pos.Y);
+        if (++slot >= INVENTORY_SLOTS_PER_LINE) {
+          slot = 0;
+          pixel_pos.Y += TILE_SIZE;
+          pixel_pos.X = gx;
         } else
-          gx1 += TILE_SIZE;
+          pixel_pos.X += TILE_SIZE;
       }
-      if (inventory == null) return;
-      int gx2 = gx;
-      int gy2 = gy;
-      int num2 = 0;
+      if (null == inventory) return;
+
+      pixel_pos = new(gx, gy);
+      slot = 0;
+
       foreach (Item it in inventory) {
         if (it.IsEquipped)
-          m_UI.UI_DrawImage(GameImages.ITEM_EQUIPPED, gx2, gy2);
+          m_UI.UI_DrawImage(GameImages.ITEM_EQUIPPED, pixel_pos.X, pixel_pos.Y);
         if (it is ItemRangedWeapon rw) {
-          if (0 >= rw.Ammo) m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_AMMO, gx2, gy2);
-          DrawBar(rw.Ammo, rw.Ammo, rw.Model.MaxAmmo, 0, TILE_SIZE - 4, 3, gx2 + 2, gy2 + (TILE_SIZE - 5), Color.Blue, Color.Blue, Color.Blue, Color.DarkGray);
+          if (0 >= rw.Ammo) m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_AMMO, pixel_pos.X, pixel_pos.Y);
+          DrawBar(rw.Ammo, rw.Ammo, rw.Model.MaxAmmo, 0, TILE_SIZE - 4, 3, pixel_pos.X + 2, pixel_pos.Y + (TILE_SIZE - 5), Color.Blue, Color.Blue, Color.Blue, Color.DarkGray);
         } else if (it is ItemSprayPaint sprayPaint) {
-          DrawBar(sprayPaint.PaintQuantity, sprayPaint.PaintQuantity, sprayPaint.Model.MaxPaintQuantity, 0, TILE_SIZE - 4, 3, gx2 + 2, gy2 + (TILE_SIZE - 5), Color.Gold, Color.Gold, Color.Gold, Color.DarkGray);
+          DrawBar(sprayPaint.PaintQuantity, sprayPaint.PaintQuantity, sprayPaint.Model.MaxPaintQuantity, 0, TILE_SIZE - 4, 3, pixel_pos.X + 2, pixel_pos.Y + (TILE_SIZE - 5), Color.Gold, Color.Gold, Color.Gold, Color.DarkGray);
         } else if (it is ItemSprayScent sprayScent) {
-          DrawBar(sprayScent.SprayQuantity, sprayScent.SprayQuantity, sprayScent.Model.MaxSprayQuantity, 0, TILE_SIZE - 4, 3, gx2 + 2, gy2 + (TILE_SIZE - 5), Color.Cyan, Color.Cyan, Color.Cyan, Color.DarkGray);
+          DrawBar(sprayScent.SprayQuantity, sprayScent.SprayQuantity, sprayScent.Model.MaxSprayQuantity, 0, TILE_SIZE - 4, 3, pixel_pos.X + 2, pixel_pos.Y + (TILE_SIZE - 5), Color.Cyan, Color.Cyan, Color.Cyan, Color.DarkGray);
         }
         else if (it is BatteryPowered electric) {
           Color bar_color = (it is ItemLight ? Color.Yellow : Color.Pink);
-          if (0 >= electric.Batteries) m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_BATTERIES, gx2, gy2);
-          DrawBar(electric.Batteries, electric.Batteries, electric.MaxBatteries, 0, TILE_SIZE-4, 3, gx2 + 2, gy2 + (TILE_SIZE - 5), bar_color, bar_color, bar_color, Color.DarkGray);
-        } else if (it is ItemFood food) food.StatusIcon()?.DrawIcon(gx2, gy2);
-        else if (it is ItemTrap trap) trap.StatusIcon()?.DrawIcon(gx2, gy2);
+          if (0 >= electric.Batteries) m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_BATTERIES, pixel_pos.X, pixel_pos.Y);
+          DrawBar(electric.Batteries, electric.Batteries, electric.MaxBatteries, 0, TILE_SIZE-4, 3, pixel_pos.X + 2, pixel_pos.Y + (TILE_SIZE - 5), bar_color, bar_color, bar_color, Color.DarkGray);
+        } else if (it is ItemFood food) food.StatusIcon()?.DrawIcon(pixel_pos.X, pixel_pos.Y);
+        else if (it is ItemTrap trap) trap.StatusIcon()?.DrawIcon(pixel_pos.X, pixel_pos.Y);
         else if (it is ItemEntertainment ent && ent.IsBoringFor(Player))
-          m_UI.UI_DrawImage(GameImages.ICON_BORING_ITEM, gx2, gy2);
-        DrawItem(it, gx2, gy2);
-        if (++num2 >= slotsPerLine) {
-          num2 = 0;
-          gy2 += TILE_SIZE;
-          gx2 = gx;
+          m_UI.UI_DrawImage(GameImages.ICON_BORING_ITEM, pixel_pos.X, pixel_pos.Y);
+        DrawItem(it, in pixel_pos);
+        if (++slot >= INVENTORY_SLOTS_PER_LINE) {
+          slot = 0;
+          pixel_pos.Y += TILE_SIZE;
+          pixel_pos.X = gx;
         } else
-          gx2 += TILE_SIZE;
+          pixel_pos.X += TILE_SIZE;
       }
       if (!drawSlotsNumbers) return;
-      int gx3 = gx + 4;
-      int gy3 = gy + TILE_SIZE;
-      for (int index = 0; index < inventory.MaxCapacity; ++index) {
-        m_UI.UI_DrawString(Color.White, (index + 1).ToString(), gx3, gy3, new Color?());
-        gx3 += TILE_SIZE;
+
+      pixel_pos = new(gx + 4, gy + TILE_SIZE);
+
+      // XXX assumes maxSlots <= INVENTORY_SLOTS_PER_LINE
+      for (int index = 0; index < maxSlots; ++index) {
+        m_UI.UI_DrawString(Color.White, (index + 1).ToString(), pixel_pos.X, pixel_pos.Y);
+        pixel_pos.X += TILE_SIZE;
       }
     }
 
-    public void DrawItem(Item it, int gx, int gy)
+    private void DrawItem(Item it, in Vector2D_stack<int> pos, Color tint)
     {
-      DrawItem(it, gx, gy, Color.White);
-    }
-
-#nullable enable
-    public void DrawItem(Item it, int gx, int gy, Color tint)
-    {
-      m_UI.UI_DrawImage(it.ImageID, gx, gy, tint);
+      m_UI.UI_DrawImage(it.ImageID, pos.X, pos.Y, tint);
       if (it.Model.IsStackable) {
-        string text = string.Format("{0}", it.Quantity);
-        int gx1 = gx + TILE_SIZE - 10;
+        string text = it.Quantity.ToString();
+        int gx1 = pos.X + TILE_SIZE - 10;
         if (it.Quantity >= 100) gx1 -= 10;
         else if (it.Quantity >= 10) gx1 -= 4;
-        m_UI.UI_DrawString(Color.DarkGray, text, gx1 + 1, gy + 1, new Color?());
-        m_UI.UI_DrawString(Color.White, text, gx1, gy, new Color?());
+        m_UI.UI_DrawString(Color.DarkGray, text, gx1 + 1, pos.Y + 1);
+        m_UI.UI_DrawString(Color.White, text, gx1, pos.Y);
       }
-      (it as ItemTrap)?.StatusIcon()?.DrawIcon(gx, gy);
+      (it as ItemTrap)?.StatusIcon()?.DrawIcon(pos.X, pos.Y);
     }
+    private void DrawItem(Item it, in Vector2D_stack<int> pos) => DrawItem(it, in pos, Color.White);
+    private void DrawItem(Item it, GDI_Point pos, Color tint) => DrawItem(it, new(pos.X, pos.Y), tint);
 #nullable restore
 
     public void DrawActorSkillTable(Actor actor, int gx, int gy)
