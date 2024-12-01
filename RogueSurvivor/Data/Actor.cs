@@ -172,6 +172,7 @@ namespace djack.RogueSurvivor.Data
     private Corpse? m_DraggedCorpse;   // sparse field, correlated with Corpse::DraggedBy
     public int OdorSuppressorCounter;   // sparse field
     public readonly Engine.ActorScoring ActorScoring;
+    public Activity Activity;
 
     [NonSerialized] private Actor? m_Leader;              // Backpointer
     [NonSerialized] private Attack m_CurrentMeleeAttack;    // dataflow candidate
@@ -375,66 +376,62 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public Inventory? Inventory { get => m_Inventory; }
+    public InventorySlots? InventorySlots { get => m_InventorySlots; }
 
-    public Inventory? Inventory { get { return m_Inventory; } }
-
-    public int HitPoints { get { return m_HitPoints; } }
-    public int PreviousHitPoints { get { return m_previousHitPoints; } }
-    public int StaminaPoints { get { return m_StaminaPoints; } }
+    public int HitPoints { get => m_HitPoints; }
+    public int PreviousHitPoints { get => m_previousHitPoints; }
+    public int StaminaPoints { get => m_StaminaPoints; }
 
     public int PreviousStaminaPoints {
-      get { return m_previousStamina; }
+      get => m_previousStamina;
       set { m_previousStamina = value; }
     }
 
-    public int FoodPoints { get { return m_FoodPoints; } }
-    public int PreviousFoodPoints { get { return m_previousFoodPoints; } }
-    public int SleepPoints { get { return m_SleepPoints; } }
-    public int PreviousSleepPoints { get { return m_previousSleepPoints; } }
-    public int Sanity { get { return m_Sanity; } }
-    public int PreviousSanity { get { return m_previousSanity; } }
+    public int FoodPoints { get => m_FoodPoints; }
+    public int PreviousFoodPoints { get => m_previousFoodPoints; }
+    public int SleepPoints { get => m_SleepPoints; }
+    public int PreviousSleepPoints { get => m_previousSleepPoints; }
+    public int Sanity { get => m_Sanity; }
+    public int PreviousSanity { get => m_previousSanity; }
     public SkillTable MySkills { get => m_Skills; }
 
-    public int ActionPoints { get { return m_ActionPoints; } }
+    public int ActionPoints { get => m_ActionPoints; }
     public void APreset() { m_ActionPoints = 0; }
 
     public Location Location { // \todo replace this with a field if setting up access controls is not worth it
-      get { return m_Location; }
+      get => m_Location;
       set { m_Location = value; }
     }
 
-    public Activity Activity;
-
-    public bool IsAvailableToHelp { get { return Activity.IDLE == Activity || Activity.FOLLOWING == Activity; } }
-    public bool IsEngaged { get { return Activity.CHASING == Activity || Activity.FIGHTING == Activity; } }
+    public bool IsAvailableToHelp { get => Activity.IDLE == Activity || Activity.FOLLOWING == Activity; }
+    public bool IsEngaged { get => Activity.CHASING == Activity || Activity.FIGHTING == Activity; }
 
     public Actor? TargetActor { // \todo replace this with a field if setting up access controls is not worth it
-      get { return m_TargetActor; }
+      get => m_TargetActor;
       set { m_TargetActor = value; }
     }
 
     // might be useful for e.g. deafness from being too close to an explosion
     public int AudioRange { get => Model.BaseAudioRange; }
 
-    public ref Attack CurrentMeleeAttack { get { return ref m_CurrentMeleeAttack; } }
-    public ref Attack CurrentRangedAttack { get { return ref m_CurrentRangedAttack; } }
-    public ref Defence CurrentDefence { get { return ref m_CurrentDefence; } }
+    public ref Attack CurrentMeleeAttack { get => ref m_CurrentMeleeAttack; }
+    public ref Attack CurrentRangedAttack { get => ref m_CurrentRangedAttack; }
+    public ref Defence CurrentDefence { get => ref m_CurrentDefence; }
 
     // Leadership
-    public Actor? Leader { get { return m_Leader; } }
-    public Actor? LiveLeader { get { return (null != m_Leader && !m_Leader.IsDead) ? m_Leader : null; } }
-    public bool HasLeader { get { return !(m_Leader?.IsDead ?? true); } }
+    public Actor? Leader { get => m_Leader; }
+    public Actor? LiveLeader { get => (null != m_Leader && !m_Leader.IsDead) ? m_Leader : null; }
+    public bool HasLeader { get => !(m_Leader?.IsDead ?? true); }
     // null != LiveLeader is equivalent to HasLeader
 
     public int TrustInLeader {
-      get { return m_TrustInLeader; }
+      get => m_TrustInLeader;
       set { m_TrustInLeader = value; }  // \todo 4 change targets to eliminate public setter; CPU cost may be excessive
     }
 
     public bool IsTrustingLeader {
-      get {
-        return HasLeader && TRUST_TRUSTING_THRESHOLD <= m_TrustInLeader;
-      }
+      get => HasLeader && TRUST_TRUSTING_THRESHOLD <= m_TrustInLeader;
     }
 
     public bool HasBondWith(Actor target)

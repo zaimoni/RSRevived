@@ -11969,6 +11969,8 @@ namespace djack.RogueSurvivor.Engine
                   var capital_crimes = Session.Get.Police.CountCapitalCrimes(Player);
                   if (0 < capital_crimes) m_UI.UI_DrawString(Color.White, string.Format("Capital crimes {0}", capital_crimes), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-BOLD_LINE_SPACING);
                   DrawActorStatus(Player, RIGHTPANEL_TEXT_X, RIGHTPANEL_TEXT_Y);
+                  var slots = Player.InventorySlots;
+                  if (null != slots) DrawInventory(slots, null, false, slots.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y - TILE_SIZE - BOLD_LINE_SPACING);
                   if (Player.Inventory != null && Player.Model.Abilities.HasInventory)
                     DrawInventory(Player.Inventory, "Inventory", true, Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
                   var invspec = Player.Location.InventoryAtFeet();
@@ -12919,9 +12921,9 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    private void DrawInventory(IEnumerable<Item>? inventory, string title, bool drawSlotsNumbers, int maxSlots, int gx, int gy)
+    private void DrawInventory(IEnumerable<Item>? inventory, string? title, bool drawSlotsNumbers, int maxSlots, int gx, int gy)
     {
-      m_UI.UI_DrawStringBold(Color.White, title, gx, gy-BOLD_LINE_SPACING);
+      if (!string.IsNullOrEmpty(title)) m_UI.UI_DrawStringBold(Color.White, title, gx, gy-BOLD_LINE_SPACING);
       Vector2D_stack<int> pixel_pos = new(gx, gy);
       int slot = 0;
 
@@ -12991,7 +12993,7 @@ namespace djack.RogueSurvivor.Engine
       (it as ItemTrap)?.StatusIcon()?.DrawIcon(pos.X, pos.Y);
     }
     private void DrawItem(Item it, in Vector2D_stack<int> pos) => DrawItem(it, in pos, Color.White);
-    private void DrawItem(Item it, GDI_Point pos, Color tint) => DrawItem(it, new(pos.X, pos.Y), tint);
+    private void DrawItem(Item it, GDI_Point pos, Color tint) => DrawItem(it, new Vector2D_stack<int>(pos.X, pos.Y), tint);
 #nullable restore
 
     public void DrawActorSkillTable(Actor actor, int gx, int gy)
