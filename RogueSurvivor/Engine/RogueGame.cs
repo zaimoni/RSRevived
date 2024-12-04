@@ -8693,6 +8693,12 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    public void UI_ItemBreaks(Actor victim, Item worn)
+    {
+        var witnesses = _ForceVisibleToPlayer(victim);
+        witnesses?.ImportantMessage(MakePanopticMessage(victim, string.Format(": {0} breaks and is now useless!", worn.TheName)), victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
+    }
+
     private bool DoTriggerTrap(ItemTrap trap, Actor victim)
     {
       var witnesses = _ForceVisibleToPlayer(victim);
@@ -13440,7 +13446,7 @@ namespace djack.RogueSurvivor.Engine
       return viewing;
     }
 
-    public List<PlayerController>? _ForceVisibleToPlayer(Actor actor)
+    private List<PlayerController>? _ForceVisibleToPlayer(Actor actor)
     {
       var viewing = actor.PlayersInLOS();
       if (null == viewing) return null;

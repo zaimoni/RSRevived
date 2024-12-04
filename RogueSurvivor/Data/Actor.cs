@@ -138,6 +138,9 @@ namespace djack.RogueSurvivor.Data
     public static double SKILL_ZLIGHT_EATER_FOOD_BONUS = 0.1;
     public static int SKILL_ZSTRONG_DMG_BONUS = 2;
 
+    // humanoid inventory slots
+    private const int SLOT_H_TORSO = 0;
+
     private Flags m_Flags;
     private GameActors.IDs m_ModelID;
     private GameFactions.IDs m_FactionID;
@@ -3184,9 +3187,8 @@ namespace djack.RogueSurvivor.Data
       var game = RogueGame.Game;
       var worn = GetEquippedArmor();
       if (null != worn && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
-        Remove(worn);
-        var witnesses = game._ForceVisibleToPlayer(this);
-        witnesses?.ImportantMessage(RogueGame.MakePanopticMessage(this, string.Format(": {0} breaks and is now useless!", worn.TheName)), IsPlayer ? Engine.RogueGame.DELAY_NORMAL : Engine.RogueGame.DELAY_SHORT);
+        Destroyed(worn);
+        game.UI_ItemBreaks(this, worn);
       }
       if (IsSleeping) game.DoWakeUp(this);
       return RawDamage(dmg);
@@ -3796,8 +3798,20 @@ namespace djack.RogueSurvivor.Data
       }
       if (model is Data.Model.BodyArmor armor) {
         m_CurrentDefence -= armor.ToDefence();
+        if (null != m_InventorySlots && it == m_InventorySlots[SLOT_H_TORSO]) {
+          if (m_InventorySlots.Transfer(SLOT_H_TORSO, new(this))) return;
+          m_InventorySlots.Transfer(SLOT_H_TORSO, new(Location));
+        }
         return;
       }
+    }
+
+    public void Destroyed(Item it)
+    {
+      if (null == m_InventorySlots || !m_InventorySlots.Destroyed(it)) {
+        m_Inventory?.RemoveAllQuantity(it);
+      }
+      it.UnequippedBy(this, false);
     }
 
     public void Remove(Item it, bool canMessage=true)

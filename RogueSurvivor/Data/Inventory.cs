@@ -843,5 +843,33 @@ namespace djack.RogueSurvivor.Data
                 return m_Items[index];
             }
         }
+
+        public bool Destroyed(Item it) {
+          var ub = m_Items.Length;
+          while(0 <= --ub)
+            if (m_Items[ub] == it) {
+              m_Items[ub] = null;
+              return true;
+            }
+          return false;
+        }
+
+        public bool Transfer(int index, Model.InvOrigin dest) {
+            if (null == m_Items[index]) return true;
+            var inv = dest.Inventory;
+            if (null != inv) {
+                if (inv.AddAll(m_Items[index])) {
+                    m_Items[index] = null;
+                    return true;
+                }
+                return false;
+            }
+            if (dest.IsGroundInventory) {
+                dest.Location.Drop(m_Items[index]);
+                m_Items[index] = null;
+                return true;
+            }
+            return false;
+        }
     }
 }

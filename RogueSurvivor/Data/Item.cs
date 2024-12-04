@@ -143,9 +143,7 @@ namespace djack.RogueSurvivor.Data
 
     public void UnequippedBy(Actor actor, bool canMessage=true)
     {
-#if CPU_HOG
-      if (!actor.Inventory?.Contains(this) ?? true) throw new ArgumentNullException("actor.Inventory?.Contains(this)");
-#endif
+      // a destroyed item won't be in inventory at this point
       if (IsEquipped) {  // other half of actor.CanUnequip(it) [precondition part is above]
         Unequip();
         actor.OnUnequipItem(this);
