@@ -92,10 +92,10 @@ namespace djack.RogueSurvivor.Engine.Items
         actor.Location.Drop(emptyCan);
       }
       var witnesses = actor.PlayersInLOS();
-      if (null != witnesses) RogueGame.Game.RedrawPlayScreen(witnesses, RogueGame.MakePanopticMessage(actor, RogueGame.VERB_EAT.Conjugate(actor), this));
+      witnesses?.RedrawPlayScreen(RogueGame.MakePanopticMessage(actor, RogueGame.VERB_EAT.Conjugate(actor), this));
       if (!IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !Rules.Get.RollChance(FOOD_EXPIRED_VOMIT_CHANCE)) return;
       actor.Vomit();
-      if (null != witnesses) RogueGame.Game.RedrawPlayScreen(witnesses, RogueGame.MakePanopticMessage(actor, string.Format("{0} from eating spoiled food!", RogueGame.VERB_VOMIT.Conjugate(actor))));
+      witnesses?.RedrawPlayScreen(RogueGame.MakePanopticMessage(actor, string.Format("{0} from eating spoiled food!", RogueGame.VERB_VOMIT.Conjugate(actor))));
     }
     public string ReasonCantUse(Actor a) {
       if (!CouldUse(a)) return "no ability to eat";

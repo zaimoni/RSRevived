@@ -72,8 +72,6 @@ namespace djack.RogueSurvivor.Engine
     public const int SANITY_RECOVER_BOND = 4 * WorldTime.TURNS_PER_HOUR;  // was 1h
     public const int SANITY_RECOVER_CHAT_OR_TRADE = 3 * WorldTime.TURNS_PER_HOUR;
     public const int FOOD_STARVING_DEATH_CHANCE = 5;
-    public const int ROT_STARVING_HP_CHANCE = 5;
-    public const int ROT_HUNGRY_SKILL_CHANCE = 5;
     public const int SLEEP_EXHAUSTION_COLLAPSE_CHANCE = 5;
     public const int SLEEP_ON_COUCH_HEAL_CHANCE = 5;
     public const int SLEEP_HEAL_HITPOINTS = 2;

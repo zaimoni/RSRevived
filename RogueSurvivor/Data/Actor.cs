@@ -772,10 +772,7 @@ namespace djack.RogueSurvivor.Data
     public void StartDragging(Corpse c)
     {
       m_DraggedCorpse = c; // \todo? call StopDraggingCorpse to get that message (RS Alpha does not do this)
-      var witnesses = this.PlayersInLOS();
-      if (null != witnesses) {
-        RogueGame.Game.RedrawPlayScreen(witnesses, RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_START.Conjugate(this), c.DeadGuy.Name)));
-      }
+      this.PlayersInLOS()?.RedrawPlayScreen(RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_START.Conjugate(this), c.DeadGuy.Name)));
     }
 
     public void StopDraggingCorpse()
@@ -783,10 +780,7 @@ namespace djack.RogueSurvivor.Data
       var dead_name = m_DraggedCorpse?.DeadGuy.Name;
       if (null != dead_name) {
         m_DraggedCorpse = null;
-        var witnesses = this.PlayersInLOS();
-        if (null != witnesses) {
-          RogueGame.Game.RedrawPlayScreen(witnesses, RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_STOP.Conjugate(this), dead_name)));
-        }
+        this.PlayersInLOS()?.RedrawPlayScreen(RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_STOP.Conjugate(this), dead_name)));
       }
     }
 #nullable restore
