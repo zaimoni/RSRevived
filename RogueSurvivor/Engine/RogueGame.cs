@@ -9261,7 +9261,7 @@ namespace djack.RogueSurvivor.Engine
         d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, VERB_MISS.Conjugate(attacker), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
       }
       if (attacker.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE)) {
-        attacker.OnUnequipItem(itemMeleeWeapon);
+        itemMeleeWeapon.UnequippedBy(attacker, false);
         attacker.Inventory.Consume(itemMeleeWeapon);
         a_witness?.ImportantMessage(MakePanopticMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
       }
