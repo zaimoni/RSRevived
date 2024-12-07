@@ -75,7 +75,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       newCivilian.Name = "The Prisoner Who Should Not Be";
       for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
-        newCivilian.Inventory.AddAll(GameItems.ARMY_RATION.instantiate());
+        newCivilian.Take(GameItems.ARMY_RATION.instantiate());
       PoliceStationPrisoner = new UniqueActor(newCivilian,true);
     }
 
@@ -91,7 +91,7 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.STRONG,3);
       named.StartingSkill(Skills.IDs.AGILE,3);
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,3);
-      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_JASON_MYERS_AXE));
+      named.Take(new ItemMeleeWeapon(GameItems.UNIQUE_JASON_MYERS_AXE));
       JasonMyers = new UniqueActor(named, true, false, GameMusics.INSANE);
     }
 
@@ -111,8 +111,8 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.MARTIAL_ARTS, 5);  // to get the most out of his scythe
       named.StartingSkill(Skills.IDs.AGILE, 5);
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
-      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_FATHER_TIME_SCYTHE));
-      named.Inventory.AddAll(GameItems.ARMY_RATION.instantiate());    // Doesn't want to be a target, so only one ration
+      named.Take(new ItemMeleeWeapon(GameItems.UNIQUE_FATHER_TIME_SCYTHE));
+      named.Take(GameItems.ARMY_RATION.instantiate());    // Doesn't want to be a target, so only one ration
       FatherTime = new UniqueActor(named,false,true,null, "You hear new year's music.");  // XXX \todo GameMusics.FATHER_TIME_THEME_SONG (Auld Lang Syne?)
     }
 
@@ -159,12 +159,12 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.HARDY,5);
       named.StartingSkill(Skills.IDs.STRONG,5);
       named.StartingSkill(Skills.IDs.TOUGH,5);
-      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_BIGBEAR_BAT));
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Take(new ItemMeleeWeapon(GameItems.UNIQUE_BIGBEAR_BAT));
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
       BigBear = new UniqueActor(named,false,true, GameMusics.BIGBEAR_THEME_SONG, "You hear an angry man shouting 'FOOLS!'");
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(BIG_BEAR_EMOTES);
     }
@@ -188,12 +188,12 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.AGILE,5);
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
       named.StartingSkill(Skills.IDs.MARTIAL_ARTS,5);   // otherwise katana isn't awesome
-      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_FAMU_FATARU_KATANA));
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Take(new ItemMeleeWeapon(GameItems.UNIQUE_FAMU_FATARU_KATANA));
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
       FamuFataru = new UniqueActor(named,false,true, GameMusics.FAMU_FATARU_THEME_SONG, "You hear a woman laughing.");
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(FAMU_FATARU_EMOTES);
     }
@@ -218,9 +218,9 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.FIREARMS,5);
 
      Data.Model.Item[] default_inv = { GameItems.UNIQUE_SANTAMAN_SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.AMMO_SHOTGUN };
-      foreach(var x in default_inv) named.Inventory.AddAll(x.create());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      foreach(var x in default_inv) named.Take(x.create());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
       Santaman = new UniqueActor(named,false,true, GameMusics.SANTAMAN_THEME_SONG, "You hear christmas music and drunken vomiting.");
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(SANTAMAN_EMOTES);
     }
@@ -243,12 +243,12 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.HARDY,5);
       named.StartingSkill(Skills.IDs.LEADERSHIP,5);
       named.StartingSkill(Skills.IDs.CHARISMATIC,5);
-      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_ROGUEDJACK_KEYBOARD));
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Take(new ItemMeleeWeapon(GameItems.UNIQUE_ROGUEDJACK_KEYBOARD));
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
       Roguedjack = new UniqueActor(named,false,true, GameMusics.ROGUEDJACK_THEME_SONG, "You hear a man shouting in French.");
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(ROGUEDJACK_EMOTES);
     }
@@ -272,12 +272,12 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.STRONG,5);
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
       named.StartingSkill(Skills.IDs.MARTIAL_ARTS,5);
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
       Duckman = new UniqueActor(named,false,true, GameMusics.DUCKMAN_THEME_SONG, "You hear loud demented QUACKS.");
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(DUCKMAN_EMOTES);
     }
@@ -300,12 +300,12 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.FIREARMS,5);
       named.StartingSkill(Skills.IDs.LEADERSHIP,5);
       named.StartingSkill(Skills.IDs.NECROLOGY,5);
-      named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_HANS_VON_HANZ_PISTOL));
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
-      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Take(new ItemRangedWeapon(GameItems.UNIQUE_HANS_VON_HANZ_PISTOL));
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
+      named.Take(tgen.MakeItemCannedFood());
       HansVonHanz = new UniqueActor(named,false,true,GameMusics.HANS_VON_HANZ_THEME_SONG, "You hear a man barking orders in German.");
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(HANS_VON_HANZ_EMOTES);
     }

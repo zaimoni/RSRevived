@@ -3219,6 +3219,10 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool Take(Item it) {
+      return m_Inventory?.AddAll(it) ?? false;
+    }
+
     public bool HasItemOfModel(Model.Item model)
     {
       return m_Inventory?.HasModel(model) ?? false;
@@ -3370,6 +3374,8 @@ namespace djack.RogueSurvivor.Data
     // considering these as change target
     public ItemBodyArmor? GetEquippedArmor()
     {
+      if (null != m_InventorySlots && m_InventorySlots[SLOT_H_TORSO] is ItemBodyArmor armor) return armor;
+      // legacy implementation
       return m_Inventory?.GetFirst<ItemBodyArmor>(obj => obj.EquippedPart == DollPart.TORSO);
     }
 

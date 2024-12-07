@@ -3854,7 +3854,7 @@ restart:
         if (JAILS_WIDTH-3 == dest.X) Session.Get.UniqueActors.init_Prisoner(newCivilian);   // a political prisoner
         else {
           // being held with cause, at least as understood before the z-apocalypse
-          newCivilian.Inventory.AddAll(MakeItemGroceries());
+          newCivilian.Take(MakeItemGroceries());
         }
         map.PlaceAt(newCivilian, in dest);
       }
@@ -4127,7 +4127,7 @@ restart:
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_NURSE_UNIFORM);
       GiveRandomSkillsToActor(numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.MEDIC);
-      numberedName.Inventory.AddAll(PostprocessQuantity(GameItems.BANDAGE.create()));
+      numberedName.Take(PostprocessQuantity(GameItems.BANDAGE.create()));
       return numberedName;
     }
 
@@ -4140,8 +4140,8 @@ restart:
       GiveRandomSkillsToActor(numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.MEDIC,3);
       numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
-      numberedName.Inventory.AddAll(GameItems.MEDIKIT.create());
-      numberedName.Inventory.AddAll(PostprocessQuantity(GameItems.BANDAGE.create()));
+      numberedName.Take(GameItems.MEDIKIT.create());
+      numberedName.Take(PostprocessQuantity(GameItems.BANDAGE.create()));
       return numberedName;
     }
 #nullable restore
@@ -4237,7 +4237,7 @@ restart:
          }
       }
 
-      actor.Inventory.AddAll(equip_this());
+      actor.Take(equip_this());
     }
 
     public Actor CreateNewRefugee(int spawnTime, int itemsToCarry)
@@ -4262,17 +4262,16 @@ restart:
       GiveNameToActor(m_DiceRoller, numberedName);
       DressCivilian(m_DiceRoller, numberedName);
       numberedName.Doll.AddDecoration(DollPart.HEAD, flag ? GameImages.SURVIVOR_MALE_BANDANA : GameImages.SURVIVOR_FEMALE_BANDANA);
-      var inv = numberedName.Inventory!;
-      inv.AddAll(MakeItemCannedFood());
-      inv.AddAll(GameItems.ARMY_RATION.instantiate());
+      numberedName.Take(MakeItemCannedFood());
+      numberedName.Take(GameItems.ARMY_RATION.instantiate());
       {
       var rw = (m_DiceRoller.RollChance(50) ? GameItems.ARMY_RIFLE : GameItems.SHOTGUN).create();
-      inv.AddAll(rw);
-      inv.AddAll(m_DiceRoller.RollChance(50) ? (Item)ItemAmmo.make(rw.ModelID) : MakeItemGrenade());
+      numberedName.Take(rw);
+      numberedName.Take(m_DiceRoller.RollChance(50) ? (Item)ItemAmmo.make(rw.ModelID) : MakeItemGrenade());
       }
-      inv.AddAll(GameItems.MEDIKIT.create());
-      inv.AddAll(PostprocessQuantity(GameItems.From(m_DiceRoller.Choose(survivor_pills)).create()));
-      inv.AddAll(GameItems.ARMY_BODYARMOR.create());
+      numberedName.Take(GameItems.MEDIKIT.create());
+      numberedName.Take(PostprocessQuantity(GameItems.From(m_DiceRoller.Choose(survivor_pills)).create()));
+      numberedName.Take(GameItems.ARMY_BODYARMOR.create());
       GiveRandomSkillsToActor(numberedName, 3 + new WorldTime(spawnTime).Day);
       numberedName.CreateCivilianDeductFoodSleep();
       return numberedName;
@@ -4305,17 +4304,17 @@ restart:
       // Inline the functional part instead.
       {
       var rw = (m_DiceRoller.RollChance(50) ? GameItems.PISTOL : GameItems.SHOTGUN).create();
-      numberedName.Inventory.AddAll(rw);
-      numberedName.Inventory.AddAll(ItemAmmo.make(rw.ModelID));
+      numberedName.Take(rw);
+      numberedName.Take(ItemAmmo.make(rw.ModelID));
       numberedName.Equip(rw);
       }
       // do not issue truncheon if martial arts would nerf it
-      if (0 >= numberedName.MySkills.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Inventory.AddAll(GameItems.TRUNCHEON.create());
-      numberedName.Inventory.AddAll(GameItems.FLASHLIGHT.create());
-//    numberedName.Inventory.AddAll(MakeItemPoliceRadio()); // class prop, implicit for police
+      if (0 >= numberedName.MySkills.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Take(GameItems.TRUNCHEON.create());
+      numberedName.Take(GameItems.FLASHLIGHT.create());
+//    numberedName.Take(MakeItemPoliceRadio()); // class prop, implicit for police
       if (m_DiceRoller.RollChance(50)) {
         var armor = (m_DiceRoller.RollChance(80) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT).create();
-        numberedName.Inventory.AddAll(armor);
+        numberedName.Take(armor);
         numberedName.Equip(armor);
       }
       return numberedName;
@@ -4378,7 +4377,7 @@ restart:
       GiveNameToActor(m_DiceRoller, numberedName, "Gd.");
 
       Data.Model.Item[] default_inv = { GameItems.SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.CHAR_LT_BODYARMOR };
-      foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
+      foreach(var x in default_inv) numberedName.Take(x.create());
 
       return numberedName;
     }
@@ -4390,8 +4389,8 @@ restart:
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
 
       Data.Model.Item[] default_inv = { GameItems.ARMY_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.ARMY_BODYARMOR };
-      foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
-      numberedName.Inventory.AddAll(GameItems.WOODENPLANK.instantiate(GameItems.WOODENPLANK.StackingLimit));
+      foreach(var x in default_inv) numberedName.Take(x.create());
+      numberedName.Take(GameItems.WOODENPLANK.instantiate(GameItems.WOODENPLANK.StackingLimit));
 
       // National Guard training includes firing range and construction.
       // The minimum physical fitness standards slide off with age.
@@ -4416,8 +4415,8 @@ restart:
       (numberedName.Controller as AI.GangAI)!.Join(gangId);
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Inventory.AddAll(PostprocessQuantity((m_DiceRoller.RollChance(50) ? GameItems.CROWBAR : GameItems.BASEBALLBAT).create()));
-      numberedName.Inventory.AddAll(ItemBodyArmor.make(gangId));
+      numberedName.Take(PostprocessQuantity((m_DiceRoller.RollChance(50) ? GameItems.CROWBAR : GameItems.BASEBALLBAT).create()));
+      numberedName.Take(ItemBodyArmor.make(gangId));
       GiveRandomSkillsToActor(numberedName, new WorldTime(spawnTime).Day - RogueGame.BIKERS_RAID_DAY);
       return numberedName;
     }
@@ -4436,7 +4435,7 @@ restart:
       DressGangsta(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       // Gangsters don't seem very prepared: no reserve ammo
-      numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? (Item)MakeItemRandomPistol() : GameItems.BASEBALLBAT.create());
+      numberedName.Take(m_DiceRoller.RollChance(50) ? (Item)MakeItemRandomPistol() : GameItems.BASEBALLBAT.create());
       GiveRandomSkillsToActor(numberedName, new WorldTime(spawnTime).Day - RogueGame.GANGSTAS_RAID_DAY);
       return numberedName;
     }
@@ -4455,7 +4454,7 @@ restart:
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
 
       Data.Model.Item[] default_inv = { GameItems.PRECISION_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.BLACKOPS_GPS };
-      foreach(var x in default_inv) numberedName.Inventory.AddAll(x.create());
+      foreach(var x in default_inv) numberedName.Take(x.create());
 
       return numberedName;
     }

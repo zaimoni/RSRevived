@@ -3054,16 +3054,15 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Sgt");   // \todo look up some example rank systems -- some would expect Cpl here)
       armyNationalGuard.StartingSkill(Skills.IDs.LEADERSHIP);
-      if (map.LocalTime.Day > NATGUARD_ZTRACKER_DAY)
-        armyNationalGuard.Inventory.AddAll(GameItems.ZTRACKER.create());
+      if (map.LocalTime.Day > NATGUARD_ZTRACKER_DAY) armyNationalGuard.Take(GameItems.ZTRACKER.create());
       return (SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER) ? armyNationalGuard : null);
     }
 
     private Actor? SpawnNewNatGuardTrooper(Actor leader)
     {
       Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard("Pvt", leader);
-      armyNationalGuard.Inventory.AddAll(Rules.Get.RollChance(50) ? GameItems.COMBAT_KNIFE.create()
-                                                                  : m_TownGenerator.MakeItemGrenade());  // does not seem hyper-critical to use the town generator's RNG
+      armyNationalGuard.Take(Rules.Get.RollChance(50) ? GameItems.COMBAT_KNIFE.create()
+                                                      : m_TownGenerator.MakeItemGrenade());  // does not seem hyper-critical to use the town generator's RNG
       return SpawnActorNear(leader.Location, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, 3);
     }
 
@@ -9877,8 +9876,8 @@ namespace djack.RogueSurvivor.Engine
       if (target.Leader == speaker && flag3) target.Say(speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
       speaker.Remove(itSpeaker);
       target.Remove(trade);
-      speaker.Inventory.AddAll(trade);
-      target.Inventory.AddAll(itSpeaker);
+      speaker.Take(trade);
+      target.Take(itSpeaker);
       target.Inventory.RejectCrossLink(speaker.Inventory);
       return true;
     }
@@ -10016,8 +10015,8 @@ namespace djack.RogueSurvivor.Engine
       speaker.Remove(donate);
       Item take = trade.Value.Value;
       target.Remove(take);
-      speaker.Inventory.AddAll(take);
-      target.Inventory.AddAll(donate);
+      speaker.Take(take);
+      target.Take(donate);
     }
 
     public void DoTrade(OrderableAI speaker_c, OrderableAI target_c, Item give, Item take)
