@@ -130,7 +130,14 @@ namespace djack.RogueSurvivor.Data.Model
         public Data.Item? GetFirst(Gameplay.Item_IDs id)
         {
             var inv = Inventory;
-            return inv?.GetFirst(id);
+            Data.Item? ret = inv?.GetFirst(id);
+            if (null != ret) return ret;
+            // auto-equip items path. non-autoequip items would be handled before checking hammerspace inventory
+            if (null != a_owner) {
+                var slots = a_owner.InventorySlots;
+                if (null != slots) return slots.GetFirst(id);
+            }
+            return null;
         }
 
         public bool Transfer(Data.Item it, InvOrigin dest) {

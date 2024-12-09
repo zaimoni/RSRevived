@@ -844,6 +844,12 @@ namespace djack.RogueSurvivor.Data
             }
         }
 
+        public Item? GetFirst(Gameplay.Item_IDs id)
+        {
+            foreach (Item? it in m_Items) if (null != it && id == it.ModelID) return it;
+            return null;
+        }
+
         public bool Destroyed(Item it) {
           var ub = m_Items.Length;
           while(0 <= --ub)
