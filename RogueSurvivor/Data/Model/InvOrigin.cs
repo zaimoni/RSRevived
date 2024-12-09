@@ -111,11 +111,20 @@ namespace djack.RogueSurvivor.Data.Model
 
         public void Remove(Data.Item it)
         {
+            if (null != a_owner) {
+                var slots = a_owner.InventorySlots;
+                if (null != slots && slots.Destroyed(it)) {
+                    it.UnequippedBy(a_owner);
+                    return;
+                }
+            }
+
             var inv = Inventory;
 #if DEBUG
             if (null == inv || !inv.Contains(it)) throw new InvalidOperationException("tracing");
 #endif
             inv.RemoveAllQuantity(it);
+            if (null != a_owner) it.UnequippedBy(a_owner);
         }
 
         public Data.Item? GetFirst(Gameplay.Item_IDs id)
