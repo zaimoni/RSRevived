@@ -97,6 +97,42 @@ namespace djack.RogueSurvivor.Data.Model
             }
         }
 
+        // start change targets for centralized actor handling
+        public bool AddAll(Data.Item it)
+        {
+            var inv = Inventory;
+            if (null != inv) return inv.AddAll(it);
+            if (null != loc) {
+                loc.Value.Drop(it);
+                return true;
+            }
+            return false;
+        }
+
+        public void Remove(Data.Item it)
+        {
+            var inv = Inventory;
+#if DEBUG
+            if (null == inv || !inv.Contains(it)) throw new InvalidOperationException("tracing");
+#endif
+            inv.RemoveAllQuantity(it);
+        }
+
+        public Data.Item? GetFirst(Gameplay.Item_IDs id)
+        {
+            var inv = Inventory;
+            return inv?.GetFirst(id);
+        }
+
+        public bool Transfer(Data.Item it, InvOrigin dest) {
+          var inv = Inventory;
+#if DEBUG
+          if (null == inv || !inv.Contains(it)) throw new InvalidOperationException("tracing");
+#endif
+          return inv.Transfer(it, dest);
+        }
+        // end change targets for centralized actor handling
+
         public override string ToString()
         {
             if (null != obj_owner) return obj_owner.ToString();
@@ -124,13 +160,6 @@ namespace djack.RogueSurvivor.Data.Model
        if (null == inv || !inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
 #endif
      }
-
-    public bool TransferFrom(Data.Inventory dest) {
-#if DEBUG
-      if (null == it) throw new ArgumentNullException(nameof(it));
-#endif
-      return Origin.Inventory.Transfer(it, dest);
-    }
 
     public override string ToString() => Origin.ToString() + " containing " + it.ToString();
   }

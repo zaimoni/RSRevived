@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Engine._Action
             m_Actor.StandUp();
           }
           if (m_Item is Engine.Items.ItemTrap trap) trap.Desactivate(); // alpha10
-          m_src.Inventory.Transfer(m_Item, m_Actor.Inventory);
+          m_src.Transfer(m_Item, new Data.Model.InvOrigin(m_Actor));
           if (!m_Item.Model.DontAutoEquip && m_Actor.CanEquip(m_Item) && null == m_Actor.GetEquippedItem(m_Item.Model.EquipmentPart))
             m_Item.EquippedBy(m_Actor);
 

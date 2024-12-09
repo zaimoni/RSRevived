@@ -3373,7 +3373,7 @@ restart:
       // if we have a truncheon, we can use it -- get a second one
       foreach(Actor cop in map.Police.Get) {
         if (!cop.Inventory.Has(Item_IDs.MELEE_TRUNCHEON)) continue;
-        map.TakeItemType(Item_IDs.MELEE_TRUNCHEON, cop.Inventory);
+        map.TakeItemType(Item_IDs.MELEE_TRUNCHEON, new(cop));
       }
 
       // this is not correct in general; it relies on all game-start inventories having exactly one item and being mapobject
@@ -3535,9 +3535,10 @@ restart:
       // armor tuneup
       foreach(Actor cop in map.Police.Get) {
         if (cop.Inventory.Has(Item_IDs.ARMOR_POLICE_RIOT)) continue;
-        if (map.SwapItemTypes(Item_IDs.ARMOR_POLICE_RIOT, Item_IDs.ARMOR_POLICE_JACKET, cop.Inventory)) continue;
+        Data.Model.InvOrigin cop_inv = new(cop);
+        if (map.SwapItemTypes(Item_IDs.ARMOR_POLICE_RIOT, Item_IDs.ARMOR_POLICE_JACKET, cop_inv)) continue;
         if (cop.Inventory.Has(Item_IDs.ARMOR_POLICE_JACKET)) continue;
-        map.TakeItemType(Item_IDs.ARMOR_POLICE_JACKET, cop.Inventory);
+        map.TakeItemType(Item_IDs.ARMOR_POLICE_JACKET, cop_inv);
         while(reserve_uniform(map));
       }
 
@@ -3546,14 +3547,14 @@ restart:
       // first, try to get a backup gun and clip
       foreach(Actor cop in map.Police.Get) {
         if (cop.Inventory.Has(Item_IDs.RANGED_PISTOL)) {
-          if (!map.TakeItemType(Item_IDs.RANGED_SHOTGUN, cop.Inventory)) continue;
+          if (!map.TakeItemType(Item_IDs.RANGED_SHOTGUN, new(cop))) continue;
           while(reserve_uniform(map));
-          map.TakeItemType(Item_IDs.AMMO_SHOTGUN, cop.Inventory);
+          map.TakeItemType(Item_IDs.AMMO_SHOTGUN, new(cop));
           while(reserve_uniform(map));
         } else /* if (a.Inventory.Has(Item_IDs.RANGED_SHOTGUN)) */ {
-          if (!map.TakeItemType(Item_IDs.RANGED_PISTOL, cop.Inventory)) continue;
+          if (!map.TakeItemType(Item_IDs.RANGED_PISTOL, new(cop))) continue;
           while(reserve_uniform(map));
-          map.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
+          map.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, new(cop));
           while(reserve_uniform(map));
         }
       }
@@ -3563,20 +3564,20 @@ restart:
         if (cop.Inventory.IsFull) continue;
         if (!cop.Inventory.Has(Item_IDs.AMMO_LIGHT_PISTOL)) {
           // shotgunner, failed to get full backup
-          map.TakeItemType(Item_IDs.AMMO_SHOTGUN, cop.Inventory);
+          map.TakeItemType(Item_IDs.AMMO_SHOTGUN, new(cop));
           while(reserve_uniform(map));
           continue;
         } else if (!cop.Inventory.Has(Item_IDs.AMMO_SHOTGUN)) {
           // pistol; failed to get full backup
-          map.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
+          map.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, new(cop));
           while(reserve_uniform(map));
           continue;
         } else {
           // full kit and still has a slot open.  Prefer pistol ammo
-          map.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
+          map.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, new(cop));
           while(reserve_uniform(map));
           if (cop.Inventory.IsFull) continue;
-          map.TakeItemType(Item_IDs.AMMO_SHOTGUN, cop.Inventory);
+          map.TakeItemType(Item_IDs.AMMO_SHOTGUN, new(cop));
           while(reserve_uniform(map));
           continue;
         }

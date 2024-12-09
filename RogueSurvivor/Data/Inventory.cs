@@ -201,7 +201,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     /// <returns>true if and only if the source inventory is now empty</returns>
-    public bool Transfer(Item it, Inventory dest) {
+    private bool transfer(Item it, Inventory dest) {
 #if DEBUG
       if (!Contains(it)) throw new InvalidOperationException("item not here");
 #endif
@@ -224,7 +224,7 @@ namespace djack.RogueSurvivor.Data
       if (!Contains(it)) throw new InvalidOperationException("item not here");
 #endif
       var d_inv = dest.Inventory;
-      if (null != d_inv) return Transfer(it, d_inv);
+      if (null != d_inv) return transfer(it, d_inv);
       // null inventory is a location whose ground inventory is empty
       dest.Location.Drop(it);
       RemoveAllQuantity(it);

@@ -2276,7 +2276,7 @@ retry:
     }
 
     // Clairvoyant.
-    public bool TakeItemType(Gameplay.Item_IDs id, Inventory dest)
+    public bool TakeItemType(Gameplay.Item_IDs id, Data.Model.InvOrigin dest)
     {
       var src = GetInventoryHaving(id);
       if (null == src) return false;
@@ -2287,7 +2287,7 @@ retry:
     }
 
     // Clairvoyant.
-    public bool SwapItemTypes(Gameplay.Item_IDs want, Gameplay.Item_IDs donate, Inventory dest)
+    public bool SwapItemTypes(Gameplay.Item_IDs want, Gameplay.Item_IDs donate, Data.Model.InvOrigin dest)
     {
       var giving = dest.GetFirst(donate);
       if (null == giving) return TakeItemType(want, dest);
@@ -2300,9 +2300,9 @@ retry:
       it.Unequip();
 
       src.Value.Value.RemoveAllQuantity(it);
-      dest.RemoveAllQuantity(giving);
+      dest.Remove(giving);
       src.Value.Value.AddAsMuchAsPossible(giving);
-      dest.AddAsMuchAsPossible(it);
+      dest.AddAll(it);
       return true;
     }
 
@@ -2335,13 +2335,13 @@ retry:
 //      return (0 < ret.Count) ? ret : null;
     }
 
-    public List<Inventory> EmptyContainerInventories(Rectangle view) {
-        List<Inventory> ret = new();
+    public List<Data.Model.InvOrigin> EmptyContainerInventories(Rectangle view) {
+        List<Data.Model.InvOrigin> ret = new();
 
         foreach (var x in m_MapObjectsByPosition) {
             if (!view.Contains(x.Key)) continue;
-            var inv = (x.Value as ShelfLike)?.Inventory;
-            if (null != inv && inv.IsEmpty) ret.Add(inv);
+            if (x.Value is not ShelfLike shelf) continue;
+            if (shelf.Inventory.IsEmpty) ret.Add(new(shelf));
         }
 
         return ret;
