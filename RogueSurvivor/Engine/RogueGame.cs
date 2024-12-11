@@ -10380,23 +10380,21 @@ namespace djack.RogueSurvivor.Engine
 
     static private void _Drop(Item it, in Location dest)
     {
+      it.Unequip();
       var invspec = dest.DropOntoInventory();
 
       if (null == invspec.obj_owner) {
          dest.Drop(it);
-         it.Unequip();
          return;
       }
 
       if (!invspec.Inventory.IsFull) {
          invspec.Inventory.AddAll(it);
-         it.Unequip();
          return;
       }
 
       // \todo XXX replace this failover later
       dest.Drop(it);
-      it.Unequip();
     }
 
     static private void DropItem(Actor actor, Item it)
@@ -11086,6 +11084,24 @@ namespace djack.RogueSurvivor.Engine
           if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
           if (it.Model.IsUnbreakable || it.IsUnique || Rules.Get.RollChance(ItemSurviveKillProbability(it, reason)))
             DropItem(deadGuy, it);
+        }
+        // pending deciding what "passes through"
+        var slots = deadGuy.InventorySlots;
+        if (null != slots) {
+            var ub = slots.Count();
+            while(0 <= --ub) {
+                var it = slots[ub];
+                if (null == it) continue;
+                if (it.IsUseless) continue;
+                if (it.Model.IsUnbreakable || it.IsUnique || Rules.Get.RollChance(ItemSurviveKillProbability(it, reason))) {
+                    // for now, drop like normal inventory.
+                    // this is clearly correct for left/right hand equipped items.
+                    slots.Destroyed(it);
+                    _Drop(it, deadGuy.Location);
+                } else {
+                    slots.Destroyed(it);
+                }
+            }
         }
         deadGuy.Inventory.Clear(); // will stay data-live through corpses otherwise
         Session.Get.Police.Investigate.Record(deadGuy.Location);  // cheating ai: police consider death drops tourism targets
