@@ -108,6 +108,18 @@ namespace djack.RogueSurvivor.Data
       RepairZeroQty();
     }
 
+    public bool CanAddAll(Item it) {
+      if (!IsFull) return true;
+      var itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
+      return null != itemsStackableWith && stackedQuantity >= it.Quantity;
+    }
+
+    public bool CanAddAny(Item it) {
+      if (!IsFull) return true;
+      var itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
+      return null != itemsStackableWith && stackedQuantity >= 1;
+    }
+
     public bool AddAll(Item it)
     {
 #if DEBUG

@@ -98,8 +98,17 @@ namespace djack.RogueSurvivor.Data.Model
         }
 
         // start change targets for centralized actor handling
+        public bool CanAddAll(Data.Item it)
+        {
+            if (null != a_owner) return a_owner.CanTake(it);
+            var inv = Inventory;
+            if (null != inv) return inv.CanAddAll(it);
+            return null != loc;
+        }
+
         public bool AddAll(Data.Item it)
         {
+            if (null != a_owner) return a_owner.Take(it);
             var inv = Inventory;
             if (null != inv) return inv.AddAll(it);
             if (null != loc) {
@@ -107,6 +116,16 @@ namespace djack.RogueSurvivor.Data.Model
                 return true;
             }
             return false;
+        }
+
+        int AddAsMuchAsPossible(Data.Item it) {
+            var inv = Inventory;
+            if (null != inv) return inv.AddAsMuchAsPossible(it);
+            if (null != loc) {
+                loc.Value.Drop(it);
+                return it.Quantity;
+            }
+            return 0;
         }
 
         public void Remove(Data.Item it)
@@ -141,11 +160,13 @@ namespace djack.RogueSurvivor.Data.Model
         }
 
         public bool Transfer(Data.Item it, InvOrigin dest) {
-          var inv = Inventory;
-#if DEBUG
-          if (null == inv || !inv.Contains(it)) throw new InvalidOperationException("tracing");
-#endif
-          return inv.Transfer(it, dest);
+          if (dest.CanAddAll(it)) {
+            Remove(it);
+            dest.AddAll(it);
+            return true;
+          }
+          dest.AddAsMuchAsPossible(it);
+          return false;
         }
         // end change targets for centralized actor handling
 

@@ -3213,6 +3213,10 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool CanTake(Item it) {
+      return m_Inventory?.CanAddAll(it) ?? false;
+    }
+
     public bool Take(Item it) {
       return m_Inventory?.AddAll(it) ?? false;
     }
