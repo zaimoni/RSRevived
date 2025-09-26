@@ -161,12 +161,11 @@ namespace djack.RogueSurvivor.Data
       if (!actor.Inventory?.Contains(this) ?? true) throw new ArgumentNullException("actor.Inventory?.Contains(this)");
 #endif
       already?.UnequippedBy(actor);
-      actor.Equip(this);
+      actor.Equip(this, true);
 #if FAIL
       // postcondition: item is unequippable (but this breaks on merge)
       if (!Rules.CanActorUnequipItem(actor,this)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+Model.ID.ToString());
 #endif
-      actor.PlayersInLOS()?.RedrawPlayScreen(RogueGame.MakePanopticMessage(actor, RogueGame.VERB_EQUIP.Conjugate(actor), this));
     }
 
     // thin wrappers

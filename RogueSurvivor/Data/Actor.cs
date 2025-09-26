@@ -3218,7 +3218,26 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool Take(Item it) {
-      return m_Inventory?.AddAll(it) ?? false;
+     if (null != m_InventorySlots) {
+        // assume OrderableAI i.e. humanoid inventory, for now
+        if (it is ItemBodyArmor armor) {
+          var worn = m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
+          if (null != worn) {
+            // making player act like AI here, is not ideal.
+            if (worn.Rating >= armor.Rating) return false;
+            m_InventorySlots.RemoveAt(SLOT_H_TORSO);
+            worn.UnequippedBy(this);
+          }
+          if (m_InventorySlots.SetIfNull(SLOT_H_TORSO, it)) {
+            Equip(it, null != m_Location.Map);
+            if (null != worn) {
+              if (!m_Inventory.AddAll(worn)) m_Location.Drop(worn);
+            }
+            return true;
+          }
+        }
+     }
+     return m_Inventory?.AddAll(it) ?? false;
     }
 
     public bool HasItemOfModel(Model.Item model)
@@ -3765,10 +3784,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // event handlers
-    // should prefer to call it.EquippedBy(whom); rather than whom.Equip(it); , for side effects
-    public void Equip(Item it)
-    {
-      it.Equip();
+    private void onEquip(Item it) {
       var model = it.Model;
       if (model is ItemMeleeWeaponModel melee) {
         m_CurrentMeleeAttack = melee.BaseMeleeAttack(Model);
@@ -3786,6 +3802,16 @@ namespace djack.RogueSurvivor.Data
         --powered.Batteries;
         if (powered.AugmentsSenses(this)) Controller.UpdateSensors();
         return;
+      }
+    }
+
+    // should prefer to call it.EquippedBy(whom); rather than whom.Equip(it); , for side effects
+    public void Equip(Item it, bool canMessage = false)
+    {
+      it.Equip();
+      onEquip(it);
+      if (canMessage) {
+        this.PlayersInLOS()?.RedrawPlayScreen(RogueGame.MakePanopticMessage(this, RogueGame.VERB_EQUIP.Conjugate(this), it));
       }
     }
 
@@ -3812,7 +3838,7 @@ namespace djack.RogueSurvivor.Data
 
     public void Destroyed(Item it)
     {
-      if (null == m_InventorySlots || !m_InventorySlots.Destroyed(it)) {
+      if (null == m_InventorySlots || !m_InventorySlots.Remove(it)) {
         m_Inventory?.RemoveAllQuantity(it);
       }
       it.UnequippedBy(this, false);

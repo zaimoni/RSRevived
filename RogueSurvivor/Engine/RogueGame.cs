@@ -11096,10 +11096,10 @@ namespace djack.RogueSurvivor.Engine
                 if (it.Model.IsUnbreakable || it.IsUnique || Rules.Get.RollChance(ItemSurviveKillProbability(it, reason))) {
                     // for now, drop like normal inventory.
                     // this is clearly correct for left/right hand equipped items.
-                    slots.Destroyed(it);
+                    slots.Remove(it);
                     _Drop(it, deadGuy.Location);
                 } else {
-                    slots.Destroyed(it);
+                    slots.Remove(it);
                 }
             }
         }

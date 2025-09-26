@@ -862,7 +862,7 @@ namespace djack.RogueSurvivor.Data
             return null;
         }
 
-        public bool Destroyed(Item it) {
+        public bool Remove(Item it) {
           var ub = m_Items.Length;
           while(0 <= --ub)
             if (m_Items[ub] == it) {
@@ -870,6 +870,20 @@ namespace djack.RogueSurvivor.Data
               return true;
             }
           return false;
+        }
+
+        public Item? RemoveAt(int index) {
+          if (index < 0 || index >= m_Items.Length) throw new ArgumentOutOfRangeException("tracing");
+          var ret = m_Items[index];
+          m_Items[index] = null;
+          return ret;
+        }
+
+        public bool SetIfNull(int index, Item it) {
+          if (index < 0 || index >= m_Items.Length) throw new ArgumentOutOfRangeException("tracing");
+          if (null != m_Items[index]) return false;
+          m_Items[index] = it;
+          return true;
         }
 
         public bool Transfer(int index, Model.InvOrigin dest) {

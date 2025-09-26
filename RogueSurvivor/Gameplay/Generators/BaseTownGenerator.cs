@@ -4316,7 +4316,6 @@ restart:
       if (m_DiceRoller.RollChance(50)) {
         var armor = (m_DiceRoller.RollChance(80) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT).create();
         numberedName.Take(armor);
-        numberedName.Equip(armor);
       }
       return numberedName;
     }

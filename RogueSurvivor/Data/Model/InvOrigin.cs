@@ -132,7 +132,7 @@ namespace djack.RogueSurvivor.Data.Model
         {
             if (null != a_owner) {
                 var slots = a_owner.InventorySlots;
-                if (null != slots && slots.Destroyed(it)) {
+                if (null != slots && slots.Remove(it)) {
                     it.UnequippedBy(a_owner);
                     return;
                 }
