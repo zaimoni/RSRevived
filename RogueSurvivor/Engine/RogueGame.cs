@@ -11092,14 +11092,12 @@ namespace djack.RogueSurvivor.Engine
             while(0 <= --ub) {
                 var it = slots[ub];
                 if (null == it) continue;
+                slots.Remove(it); // want to enable garbage collection
                 if (it.IsUseless) continue;
                 if (it.Model.IsUnbreakable || it.IsUnique || Rules.Get.RollChance(ItemSurviveKillProbability(it, reason))) {
                     // for now, drop like normal inventory.
                     // this is clearly correct for left/right hand equipped items.
-                    slots.Remove(it);
                     _Drop(it, deadGuy.Location);
-                } else {
-                    slots.Remove(it);
                 }
             }
         }
