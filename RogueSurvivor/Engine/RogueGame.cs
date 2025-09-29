@@ -13846,90 +13846,13 @@ namespace djack.RogueSurvivor.Engine
 
       PlayerController.Reset(); // not safe to use before this point (relies on unique actor/item data)
 
-      void link_N(Map origin, Map? dest) {
-          if (null != dest) {
-#if DEBUG
-            if (dest.Width != origin.Width) throw new InvalidOperationException("mismatched district width");
-#endif
-            for (short x2 = 0; x2 < origin.Width; ++x2) {
-                Point from1 = new Point(x2, -1);
-                Point from2 = new Point(x2, dest.Height);
-                Point to1 = from2 + Direction.N;
-                Point to2 = from1 + Direction.S;
-                if (CheckIfExitIsGood(origin, to2)) GenerateExit(dest, from2, origin, to2);
-                if (CheckIfExitIsGood(dest, to1)) GenerateExit(origin, from1, dest, to1);
-            }
-          }
-      };
-
-      void link_W(Map origin, Map? dest) {
-          if (null != dest) {
-#if DEBUG
-            if (dest.Height != origin.Height) throw new InvalidOperationException("mismatched district height");
-#endif
-            for (short y2 = 0; y2 < origin.Height; ++y2) {
-                Point from1 = new Point(-1, y2);
-                Point from2 = new Point(dest.Width, y2);
-                Point to1 = from2 + Direction.W;
-                Point to2 = from1 + Direction.E;
-                if (CheckIfExitIsGood(origin, to2)) GenerateExit(dest, from2, origin, to2);
-                if (CheckIfExitIsGood(dest, to1)) GenerateExit(origin, from1, dest, to1);
-            }
-          }
-      };
-
-      void link_NW(Map origin, Map? dest) {
-          if (null != dest) {
-              Point from1 = new Point(-1, -1);
-              Point from2 = new Point(dest.Width, dest.Height);
-              Point to1 = from2 + Direction.NW;
-              Point to2 = from1 + Direction.SE;
-              if (CheckIfExitIsGood(origin, to2)) GenerateExit(dest, from2, origin, to2);
-              if (CheckIfExitIsGood(dest, to1)) GenerateExit(origin, from1, dest, to1);
-          }
-      };
-
-      void link_NE(Map origin, Map? dest) {
-          if (null != dest) {
-              Point to_origin = origin.Rect.Anchor(Compass.XCOMlike.NE);
-              Point to_dest = dest.Rect.Anchor(Compass.XCOMlike.SW);
-              Point from_dest = dest.Rect.Anchor(Compass.XCOMlike.SW) + Direction.SW;
-              Point from_origin = origin.Rect.Anchor(Compass.XCOMlike.NE) + Direction.NE;
-              if (CheckIfExitIsGood(origin, to_origin)) GenerateExit(dest, from_dest, origin, to_origin);
-              if (CheckIfExitIsGood(dest, to_dest)) GenerateExit(origin, from_origin, dest, to_dest);
-          }
-      };
-
-      for (short x1 = 0; x1 < world.Size; ++x1) {
-        for (short y1 = 0; y1 < world.Size; ++y1) {
-          if (isVerbose) m_UI.DrawHeadNote(string.Format("Linking District@{0}...", World.CoordToString(x1, y1)));
-          Point dest = new Point(x1, y1);
-
-          // In RS Alpha 9, the peacewalls meant the entry map and the sewers map had to be handled differently.
-          // Retain this duplication for now.
-          Map entryMap1 = world[dest].EntryMap;
-          link_N(entryMap1, world.At(dest + Direction.N)?.EntryMap);
-          link_W(entryMap1, world.At(dest + Direction.W)?.EntryMap);
-          link_NW(entryMap1, world.At(dest + Direction.NW)?.EntryMap);
-          link_NE(entryMap1, world.At(dest + Direction.NE)?.EntryMap);
-
-          var sewersMap1 = world[dest].SewersMap;
-          if (null != sewersMap1) {
-            link_N(sewersMap1, world.At(dest + Direction.N)?.SewersMap);
-            link_W(sewersMap1, world.At(dest + Direction.W)?.SewersMap);
-            link_NW(sewersMap1, world.At(dest + Direction.NW)?.SewersMap);
-            link_NE(sewersMap1, world.At(dest + Direction.NE)?.SewersMap);
-          }
-
-          // Subway has a different geometry than the other two canonical maps.
-          // The diagonal corridors can have only of of two exits valid.
-          var subwayMap1 = world[x1, y1].SubwayMap;
-          if (null != subwayMap1) {
-            link_N(subwayMap1, world.At(dest + Direction.N)?.SubwayMap);
-            link_W(subwayMap1, world.At(dest + Direction.W)?.SubwayMap);
-          }
-        }
+      void link(World world, District d) {
+        if (isVerbose) m_UI.DrawHeadNote(string.Format("Linking District@{0}...", World.CoordToString(d.WorldPosition)));
+        District.InterpolateExits(world, d);
       }
+
+      world.DoForAllDistricts(link);
+
       if (isVerbose) m_UI.DrawHeadNote("Spawning player...");
 
       world.DoForAllMaps(m=>m.RegenerateZoneExits()); // must run early to not crash police PCs
@@ -13976,16 +13899,6 @@ namespace djack.RogueSurvivor.Engine
       World.Get.DaimonMap();    // start of game cheat map...useful for figuring out who should be PC on the command line
       if (!isVerbose) return;
       m_UI.DrawHeadNote("Generating game world... done!");
-    }
-
-    static private bool CheckIfExitIsGood(Map toMap, Point to)
-    {
-      return toMap.GetTileModelAt(to).IsWalkable;
-    }
-
-    static private void GenerateExit(Map fromMap, Point from, Map toMap, Point to)
-    {
-      fromMap.SetExitAt(from, new Exit(toMap, in to));
     }
 
     static private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)

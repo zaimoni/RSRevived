@@ -201,6 +201,11 @@ namespace djack.RogueSurvivor.Data
       foreach(District d in m_DistrictsGrid) op(d);
     }
 
+    public void DoForAllDistricts(Action<World,District> op)
+    {
+      foreach(District d in m_DistrictsGrid) op(this, d);
+    }
+
     public void DoForAllMaps(Action<Map> op,Predicate<District> ok)
     {
       foreach(District d in m_DistrictsGrid) {
@@ -1051,10 +1056,8 @@ RestartActorActorCrossLinkCheck:
       if (Size < test) src.Width -= (short)(test-Size);
     }
 
-    public static string CoordToString(int x, int y)
-    {
-      return string.Format("{0}{1}", (object) (char) (65 + x), (object) y);
-    }
+    public static string CoordToString(int x, int y) => string.Format("{0}{1}", (char)(65 + x), y);
+    public static string CoordToString(Point src) => string.Format("{0}{1}", (char)(65 + src.X), src.Y);
   }
 }
 
