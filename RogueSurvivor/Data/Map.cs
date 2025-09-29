@@ -11,9 +11,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Runtime.Serialization;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Text.Json;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using ItemMeleeWeapon = djack.RogueSurvivor.Engine.Items.ItemMeleeWeapon;
@@ -24,8 +26,6 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
-using System.Text.Json;
-using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -540,9 +540,8 @@ namespace djack.RogueSurvivor.Data
     public readonly string Name;    // involved in Dictionary hashcode
     public readonly string BgMusic;  // alpha10; very few values, may be able to recompute on-fly
 #nullable enable
-    private readonly byte[,] m_TileIDs;
+    private readonly byte[,] m_TileIDs; // required to load exits
     private readonly Dictionary<Point,HashSet<string>> m_Decorations = new();
-    private readonly Dictionary<Point, Exit> m_Exits = new();   // keys may have negative coordinates
     private readonly List<Actor> m_ActorsList = new(5);
     private readonly Dictionary<Point, MapObject> m_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
     private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
@@ -934,6 +933,18 @@ namespace djack.RogueSurvivor.Data
       var ret = new Dictionary<Location, Exit>();
       foreach(var x in m_Exits) {
         if (test(x.Value)) {
+          var loc = new Location(this, x.Key);
+          if (!Canonical(ref loc)) continue; // \todo invariant violation if this fails, but we need to guarantee normal form
+          ret.Add(loc, x.Value);
+        }
+      }
+      return ret;
+    }
+
+    public Dictionary<Location,Exit> GetExits(Predicate<Point> test) {
+      var ret = new Dictionary<Location, Exit>();
+      foreach(var x in m_Exits) {
+        if (test(x.Key)) {
           var loc = new Location(this, x.Key);
           if (!Canonical(ref loc)) continue; // \todo invariant violation if this fails, but we need to guarantee normal form
           ret.Add(loc, x.Value);

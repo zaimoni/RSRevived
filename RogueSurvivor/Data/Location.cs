@@ -8,11 +8,12 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 
 // map coordinate definitions.  Want to switch this away from System.Drawing.Point to get a better hash function in.
 using Point = Zaimoni.Data.Vector2D<short>;
-using UPoint = Zaimoni.Data.Vector2D<ushort>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
 
@@ -79,6 +80,7 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     public Inventory? Items { get => Map.GetItemsAt(Position); }
     public Exit? Exit { get => Map.GetExitAt(Position); }
+    public void SetExit(in Location dest) => Map.SetExitAt(Position, new Exit(in dest));
     public List<Corpse>? Corpses { get => Map.GetCorpsesAt(Position); }
     public Tile Tile { get => Map.GetTileAt(Position); }
     public TileModel TileModel { get => Map.GetTileModelAt(Position); }
@@ -306,6 +308,35 @@ namespace djack.RogueSurvivor.Data
   public interface ILocation_readonly {
         public Location Location { get; }
   }
+}
+
+// The Dragonfly tutorial indicates we should always use a JSON-format reference,
+// for the Map object in Location.
+namespace Zaimoni.JsonConvert
+{
+    public class Location : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Data.Location>
+    {
+        public override djack.RogueSurvivor.Data.Location Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            if (System.Text.Json.JsonTokenType.StartArray != reader.TokenType) throw new JsonException();
+            reader.Read();
+            var relay_pos = JsonSerializer.Deserialize<Point>(ref reader, options);
+            reader.Read();
+            if (System.Text.Json.JsonTokenType.EndArray == reader.TokenType) return new(null, relay_pos);
+            var relay_map = reader.TryReadRef<Map>();
+            reader.Read();
+            if (System.Text.Json.JsonTokenType.EndArray != reader.TokenType) throw new JsonException();
+            return new(relay_map, relay_pos);
+        }
+
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.Location src, JsonSerializerOptions options)
+        {
+            writer.WriteStartArray();
+            JsonSerializer.Serialize(writer, src.Position, options);
+            if (null != src.Map) src.Map.SaveAsRef(writer);
+            writer.WriteEndArray();
+        }
+    }
 }
 
 namespace Zaimoni.Serialization {

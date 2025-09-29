@@ -10,6 +10,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Data
 {
+  // deriving from Zaimoni.Serialization.ISerialize, prevents using a primary constructor
   [Serializable]
   public sealed class Exit : Zaimoni.Serialization.ISerialize
     {
@@ -19,10 +20,8 @@ namespace djack.RogueSurvivor.Data
     public Location Location { get { return m_Location; } }
 
 #nullable enable
-    public Exit(Map toMap, in Point toPosition)
-    {
-      m_Location = new Location(toMap,toPosition);
-    }
+    public Exit(in Location dest) { m_Location = dest; }
+    public Exit(Map toMap, in Point toPosition) : this(new Location(toMap, toPosition)) {}
 
 #region implement Zaimoni.Serialization.ISerialize
     protected Exit(Zaimoni.Serialization.DecodeObjects decode)

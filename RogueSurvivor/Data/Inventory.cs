@@ -830,6 +830,7 @@ namespace djack.RogueSurvivor.Data
 
     // Angband-style inventory slots
     // the exact interpretation of the slots, is not relevant to this class
+    [Serializable]
     public sealed class InventorySlots : IEnumerable<Item>
     {
         private readonly Item?[] m_Items;

@@ -24,6 +24,15 @@ namespace Zaimoni.JSON
             return id;
         }
 
+        static public void SaveAsRef<T>(this T src, Utf8JsonWriter writer) where T : class
+        {
+            var resolve = PreserveReferenceHandler.Resolver;
+            var id = resolve.GetReference(src);
+            writer.WriteStartObject();
+            writer.WriteString("$ref", id);
+            writer.WriteEndObject();
+        }
+
         public static T? TryReadRef<T>(this ref Utf8JsonReader reader) where T:class
         {
             var test = reader;

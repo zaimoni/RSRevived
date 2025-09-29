@@ -43,6 +43,13 @@ namespace Zaimoni.JSON
            return referenceId!;
        }
 
+       public string GetReference(object value)
+       {
+           var alreadyExists = ObjectToReference.TryGetValue(value, out string? referenceId);
+            if (!alreadyExists) throw new JsonException("reference does not yet exist");
+           return referenceId!;
+       }
+
        public override object ResolveReference(string referenceId)
        {
             if (null == _referenceIdToObjectMap) throw new JsonException("id not found: " + referenceId);

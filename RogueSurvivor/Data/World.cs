@@ -363,6 +363,7 @@ namespace djack.RogueSurvivor.Data
         else if (reader.ValueTextEquals("PlayerDistrict")) return 5;
         else if (reader.ValueTextEquals("SimDistrict")) return 6;
         else if (reader.ValueTextEquals("Ready")) return 7;
+        else if (reader.ValueTextEquals("Map_Links")) return 8;
 
         Engine.RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -375,7 +376,7 @@ namespace djack.RogueSurvivor.Data
       reader.Read();
 
       short relay_size = default;
-      District[] relay_districts = null;
+      District[]? relay_districts = null;
 
       void read(ref Utf8JsonReader reader) {
           int code = field_code(ref reader);
@@ -413,6 +414,16 @@ namespace djack.RogueSurvivor.Data
               foreach(var d in stage) m_Ready.Enqueue(d);
               }
               break;
+          case 8:
+              {
+              var stage = JsonSerializer.Deserialize<Location[]>(ref reader, options) ?? throw new JsonException();
+              var scan = stage.Length;
+              while (0 <= (scan -= 2)) {
+                stage[scan].SetExit(stage[scan + 1]);
+                stage[scan + 1].SetExit(stage[scan]);
+              }
+              }
+              break;
           }
       }
 
@@ -427,10 +438,16 @@ namespace djack.RogueSurvivor.Data
       if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
 
       m_Size = relay_size;
+      if (null == relay_districts) throw new ArgumentNullException(nameof(relay_districts));
       if (relay_districts.Length != m_Size * m_Size) throw new InvalidOperationException("tracing");
       m_DistrictsGrid = new District[m_Size,m_Size];
       foreach(var d in relay_districts) m_DistrictsGrid[d.WorldPosition.X, d.WorldPosition.Y] = d;
       relay_districts = null; // allow early garbage collection
+
+#if PROTOTYPE
+      // needs tile ids to save/load first
+      DoForAllDistricts(District.InterpolateExits);
+#endif
 
       // from OnDeserialized
       m_Extent = new Rectangle(Point.Empty, new Point(m_Size, m_Size));
@@ -461,6 +478,30 @@ namespace djack.RogueSurvivor.Data
       }
       writer.WritePropertyName("Ready");
       JsonSerializer.Serialize(writer, m_Ready.ToArray(), options);
+
+      List<KeyValuePair<Location,Location>>? in_bounds_links = new();
+      DoForAllMaps(m => {
+          var stage = m.GetExits(pt => m.IsInBounds(pt));
+          foreach (var x in stage) {
+              KeyValuePair<Location, Location> alt = new(x.Value.Location, x.Key);
+              if (in_bounds_links.Contains(alt)) continue;
+              KeyValuePair<Location, Location> prime = new(x.Key, x.Value.Location);
+              if (in_bounds_links.Contains(prime)) continue;
+              in_bounds_links.Add(prime);
+          }
+      });
+      if (0 < in_bounds_links.Count) {
+        List<Location> relay_links = new();
+        relay_links.Capacity = 2*in_bounds_links.Count;
+        foreach(var x in in_bounds_links) {
+          relay_links.Add(x.Key);
+          relay_links.Add(x.Value);
+        }
+        in_bounds_links = null; // allow garbage collection
+        writer.WritePropertyName("Map_Links");
+        JsonSerializer.Serialize(writer, relay_links.ToArray(), options);
+      }
+
       writer.WriteEndObject();
     }
 

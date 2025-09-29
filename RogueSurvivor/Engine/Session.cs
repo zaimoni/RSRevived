@@ -466,6 +466,7 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.WorldTime());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Vector2D_short());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Box2D_short());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Location());
 
           s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Map());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Session());
