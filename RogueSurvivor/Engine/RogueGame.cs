@@ -8125,7 +8125,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private List<string> DescribeItemExplosive(ItemExplosive ex)
     {
-      ItemExplosiveModel itemExplosiveModel = ex.Model;
+      var itemExplosiveModel = ex.Model;
       var lines = new List<string>{ "> explosive" };
       ref readonly var blast = ref itemExplosiveModel.BlastAttack;
       if (blast.CanDamageObjects) lines.Add("Can damage objects.");
@@ -9559,7 +9559,7 @@ namespace djack.RogueSurvivor.Engine
         else {
           if (null == itemPrimedExplosiveList) itemPrimedExplosiveList = new();
           (itemExplosiveList ?? new()).Add(itemExplosive);
-          var primed_model = GameItems.Cast<ItemExplosiveModel>(itemExplosive.PrimedModelID);
+          var primed_model = itemExplosive.Model.Primed;
           for (int index = 0; index < obj.Quantity; ++index) {
             itemPrimedExplosiveList.Add((ItemPrimedExplosive)(primed_model.create()));
           }

@@ -14,25 +14,17 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   public abstract class ItemExplosive : Item
   {
-    new public ItemExplosiveModel Model { get {return (base.Model as ItemExplosiveModel)!; } }
-    public readonly int PrimedModelID;
+    new public Data.Model.Explosive Model { get {return (base.Model as Data.Model.Explosive)!; } }
 
-    public ItemExplosive(ItemExplosiveModel model, ItemExplosiveModel primedModel, int qty=1)
-      : base(model, qty)
-    {
-      PrimedModelID = (int) primedModel.ID;
-    }
+    public ItemExplosive(Data.Model.Explosive model, int qty=1) : base(model, qty) {}
 
 #region implement Zaimoni.Serialization.ISerialize
-    protected ItemExplosive(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
-        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref PrimedModelID);
-    }
+    protected ItemExplosive(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
 
     new protected void save(Zaimoni.Serialization.EncodeObjects encode) {
         base.save(encode);
-        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, PrimedModelID);
     }
 #endregion
 
-  }
+    }
 }

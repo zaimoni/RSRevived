@@ -5954,7 +5954,7 @@ restart_chokepoints:
 #endif
 	  if (it.IsForbiddenToAI) return true;
 	  if (it is ItemSprayPaintModel) return true;
-      if (it is ItemGrenadePrimedModel) return true;    // XXX want a general primed explosive model test
+      if (it is Data.Model.PrimedExplosive) return true;
 
       // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue; unsure about why gangsters dont)
       if (Item_IDs.EXPLOSIVE_GRENADE == it.ID && !UsesExplosives) return true;
@@ -6337,7 +6337,7 @@ restart_chokepoints:
       if (it is ItemRangedWeaponModel rw) return ItemRatingCode(rw.Example);
       }
       {
-      if (it is ItemGrenadeModel grenade) {
+      if (it is Data.Model.Explosive grenade) {
         if (m_Actor.Inventory.IsFull) return 1;
         if (m_Actor.HasAtLeastFullStackOf(grenade, 1)) return 1;
         return 2;

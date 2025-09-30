@@ -13,9 +13,8 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   public sealed class ItemGrenadePrimed : ItemPrimedExplosive, Zaimoni.Serialization.ISerialize
     {
-    new public ItemGrenadePrimedModel Model { get {return (base.Model as ItemGrenadePrimedModel)!; } }
-    public ItemGrenadePrimed(ItemGrenadePrimedModel model) : base(model) {}
-    public ItemGrenadePrimed(ItemGrenadePrimedModel model, int fuse_left) : base(model, fuse_left) {}
+    public ItemGrenadePrimed(Data.Model.Explosive model) : base(model) {}
+    public ItemGrenadePrimed(Data.Model.Explosive model, int fuse_left) : base(model, fuse_left) {}
 
 
 #region implement Zaimoni.Serialization.ISerialize

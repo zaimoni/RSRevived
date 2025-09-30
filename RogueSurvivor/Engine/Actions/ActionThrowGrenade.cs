@@ -70,10 +70,10 @@ namespace djack.RogueSurvivor.Engine.Actions
       return Rules.GridDistance(m_Actor.Location.Position, in m_ThrowPos) <= ModelThrow.BlastAttack.Radius;
     }
 
-    public ItemGrenadeModel ModelThrow {
+    public Data.Model.Explosive ModelThrow {
         get {
           if (null != m_Grenade) return m_Grenade.Model;
-          else return m_Primed.Model.GrenadeModel;
+          else return m_Primed.Unprimed;
         }
     }
 
@@ -103,7 +103,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Actor.Inventory.Consume(m_Grenade);
       // XXX \todo fuse affected by whether target district executes before or after ours (need an extra turn if before)
       // Cf. Map::DistrictDeltaCode
-      var itemGrenadePrimed = new ItemGrenadePrimed(Gameplay.GameItems.Cast<ItemGrenadePrimedModel>(m_Grenade.PrimedModelID));
+      var itemGrenadePrimed = new ItemGrenadePrimed(m_Grenade.Model);
       m_Loc.Drop(itemGrenadePrimed);
 
       short radius = (short)itemGrenadePrimed.Model.BlastAttack.Radius;

@@ -18,12 +18,15 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public int FuseTimeLeft { get { return m_FuseTimeLeft; } }
 
-    protected ItemPrimedExplosive(ItemExplosiveModel model) : base(model, model)
+    new public Data.Model.PrimedExplosive Model { get {return base.Model.Primed; } }
+    public Data.Model.Explosive Unprimed { get {return base.Model; } }
+
+    protected ItemPrimedExplosive(Data.Model.Explosive model) : base(model)
     {
       m_FuseTimeLeft = model.FuseDelay;
     }
 
-    protected ItemPrimedExplosive(ItemExplosiveModel model, int delay) : base(model, model)
+    protected ItemPrimedExplosive(Data.Model.Explosive model, int delay) : base(model)
     {
       m_FuseTimeLeft = delay; // dud would be "much longer than designed"
     }

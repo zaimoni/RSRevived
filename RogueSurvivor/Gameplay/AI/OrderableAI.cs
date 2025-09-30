@@ -1766,7 +1766,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (3 > _enemies.Count) return null;
       ItemGrenade firstGrenade = m_Actor.Inventory.GetFirstMatching<ItemGrenade>();
       if (firstGrenade == null) return null;
-      ItemGrenadeModel itemGrenadeModel = firstGrenade.Model;
+      var itemGrenadeModel = firstGrenade.Model;
       int maxRange = m_Actor.MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
       int blast_radius = itemGrenadeModel.BlastAttack.Radius;
       var a_map = m_Actor.Location.Map;

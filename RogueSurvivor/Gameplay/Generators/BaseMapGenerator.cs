@@ -453,7 +453,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public ItemGrenade MakeItemGrenade()
     {
-      return new ItemGrenade(GameItems.GRENADE, GameItems.GRENADE_PRIMED, m_DiceRoller.Roll(1, GameItems.GRENADE.StackingLimit));
+      return new ItemGrenade(GameItems.GRENADE, m_DiceRoller.Roll(1, GameItems.GRENADE.StackingLimit));
     }
 #nullable restore
 

@@ -58,6 +58,8 @@
     <Compile Include="Data\BatteryPowered.cs" />
     <Compile Include="Data\IInventory.cs" />
     <Compile Include="Data\Model\BodyArmor.cs" />
+    <Compile Include="Data\Model\PrimedExplosive.cs" />
+    <Compile Include="Data\Model\Explosive.cs" />
     <Compile Include="Data\Model\InvOrigin.cs" />
     <Compile Include="Data\Model\Item.cs" />
     <Compile Include="Data\Model\MapObject.cs" />
@@ -215,8 +217,6 @@
     <Compile Include="Engine\Items\ItemExplosive.cs" />
     <Compile Include="Engine\Items\ItemMeleeWeaponModel.cs" />
     <Compile Include="Engine\Items\ItemLight.cs" />
-    <Compile Include="Engine\Items\ItemExplosiveModel.cs" />
-    <Compile Include="Engine\Items\ItemGrenadePrimedModel.cs" />
     <Compile Include="Engine\Items\ItemMedicineModel.cs" />
     <Compile Include="Engine\Items\ItemMedicine.cs" />
     <Compile Include="Engine\Items\ItemWeapon.cs" />
@@ -226,7 +226,6 @@
     <Compile Include="Engine\Items\ItemEntertainmentModel.cs" />
     <Compile Include="Engine\Items\ItemRangedWeaponModel.cs" />
     <Compile Include="Engine\Items\ItemBodyArmor.cs" />
-    <Compile Include="Engine\Items\ItemGrenadeModel.cs" />
     <Compile Include="Engine\Items\ItemRangedWeapon.cs" />
     <Compile Include="Engine\Items\ItemSprayScentModel.cs" />
     <Compile Include="Engine\Items\ItemEntertainment.cs" />
