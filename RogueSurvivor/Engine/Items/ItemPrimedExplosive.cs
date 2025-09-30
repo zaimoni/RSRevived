@@ -48,5 +48,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool Expire() { return 0 >= Interlocked.Decrement(ref m_FuseTimeLeft); }
 
     static public bool IsExpired(ItemPrimedExplosive e) { return 0 >= e.m_FuseTimeLeft; }
+
+    public override Data.Item_s toStruct() { return new Data.Item_s(ModelID, m_FuseTimeLeft); }
   }
 }
