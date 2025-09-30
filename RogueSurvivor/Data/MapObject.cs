@@ -5,12 +5,11 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Engine.MapObjects;
+using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Linq;
-using System.Runtime.Serialization;
 using Zaimoni.Data;
 
-using ItemBarricadeMaterial = djack.RogueSurvivor.Engine.Items.ItemBarricadeMaterial;
 using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Data
@@ -302,7 +301,7 @@ namespace djack.RogueSurvivor.Data
         int val2 = 1 + MaxHitPoints / 40;
         while (val2 > 0) {
           var qty = Math.Min(Gameplay.GameItems.WOODENPLANK.StackingLimit, val2);
-          Location.Drop(new ItemBarricadeMaterial(Gameplay.GameItems.WOODENPLANK, qty));
+          Location.Drop(GameItems.WOODENPLANK.instantiate(qty));
           val2 -= qty;
         }
         var rules = Engine.Rules.Get;

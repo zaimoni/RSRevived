@@ -12,7 +12,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemMedicine : Item,UsableItem, Zaimoni.Serialization.ISerialize
+  public sealed class ItemMedicine : Item,UsableItem, Zaimoni.Serialization.ISerialize
     {
     new public ItemMedicineModel Model { get {return (base.Model as ItemMedicineModel)!; } }
     public int Healing { get { return Model.Healing; } }

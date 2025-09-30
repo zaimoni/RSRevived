@@ -12,7 +12,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemBarricadeMaterial : Item, Zaimoni.Serialization.ISerialize
+  public sealed class ItemBarricadeMaterial : Item, Zaimoni.Serialization.ISerialize
     {
     new public ItemBarricadeMaterialModel Model { get {return (base.Model as ItemBarricadeMaterialModel)!; } }
 

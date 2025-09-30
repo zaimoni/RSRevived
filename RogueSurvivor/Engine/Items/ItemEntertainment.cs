@@ -16,7 +16,7 @@ using Zaimoni.Data;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemEntertainment : Item, UsableItem, Zaimoni.Serialization.ISerialize
+  public sealed class ItemEntertainment : Item, UsableItem, Zaimoni.Serialization.ISerialize
     {
     List<ActorTag>? m_BoringFor = null; // alpha10 boring items moved out of Actor
 

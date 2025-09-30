@@ -1644,7 +1644,7 @@ restart:
       foreach (Rectangle rect4 in rectangleList)
         ItemsDrop(map, rect4, (pt => map.GetTileModelAt(pt) == GameTiles.FLOOR_OFFICE && !map.HasMapObjectAt(pt)), pt => MakeRandomCHAROfficeItem());
 
-      (new ItemEntertainment(GameItems.CHAR_GUARD_MANUAL))?.DropAt(map, m_DiceRoller.Choose(table_pos));
+      (new ItemEntertainment(GameItems.CHAR_GUARD_MANUAL)).DropAt(map, m_DiceRoller.Choose(table_pos));
       Zone zone = MakeUniqueZone("CHAR Office", b.BuildingRect);
       map.AddZone(zone);
       map.AddOnEnterTile(new EnterCHAROffice(new(map, zone)));

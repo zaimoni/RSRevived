@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal sealed class ItemBarricadeMaterialModel : Data.Model.Item
+  public sealed class ItemBarricadeMaterialModel : Data.Model.Item
   {
     public readonly int BarricadingValue;
 

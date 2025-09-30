@@ -10,7 +10,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  internal class ItemEntertainmentModel : Data.Model.Item
+  public class ItemEntertainmentModel : Data.Model.Item
   {
     public readonly int Value;
     public readonly int BoreChance;
