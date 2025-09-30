@@ -216,6 +216,12 @@ namespace djack.RogueSurvivor.Engine.Items
       return (skills.GetSkillLevel(Gameplay.Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + skills.GetSkillLevel(Gameplay.Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - Model.BlockChance * Quantity);
     }
 
+    public override Data.Item_s toStruct() {
+      uint flags = m_IsActivated ? 1U : 0;
+      if (m_IsTriggered) flags += 2U;
+      return new Data.Item_s(ModelID, Quantity, flags);
+    }
+
     public override string ToString()
     {
       var ret = base.ToString();
