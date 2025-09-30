@@ -11,6 +11,7 @@ using djack.RogueSurvivor.Engine.Items;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
+using PrimedExplosive = djack.RogueSurvivor.Data._Item.PrimedExplosive;
 
 #nullable enable
 
@@ -21,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     private Point m_ThrowPos;
     private Location m_Loc;
     private readonly ItemGrenade? m_Grenade = null;
-    private readonly ItemGrenadePrimed? m_Primed = null;
+    private readonly PrimedExplosive? m_Primed = null;
     private readonly List<Point> m_LoF = new();
     private readonly int maxRange;
 
@@ -37,7 +38,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       maxRange = actor.MaxThrowRange(ModelThrow.MaxThrowDistance);
     }
 
-    public ActionThrowGrenade(Actor actor, Point throwPos, ItemGrenadePrimed it) : base(actor)
+    public ActionThrowGrenade(Actor actor, Point throwPos, PrimedExplosive it) : base(actor)
     {
 #if DEBUG
       if (!actor.Inventory.Contains(it)) throw new InvalidOperationException("tracing");
@@ -103,7 +104,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Actor.Inventory.Consume(m_Grenade);
       // XXX \todo fuse affected by whether target district executes before or after ours (need an extra turn if before)
       // Cf. Map::DistrictDeltaCode
-      var itemGrenadePrimed = new ItemGrenadePrimed(m_Grenade.Model);
+      var itemGrenadePrimed = new PrimedExplosive(m_Grenade.Model);
       m_Loc.Drop(itemGrenadePrimed);
 
       short radius = (short)itemGrenadePrimed.Model.BlastAttack.Radius;

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
-using djack.RogueSurvivor.Engine.Items;
 
 using Point = Zaimoni.Data.Vector2D<short>;
+using PrimedExplosive = djack.RogueSurvivor.Data._Item.PrimedExplosive;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
@@ -13,9 +13,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     public sealed class FleeExplosive: Objective
     {
         private readonly ZoneLoc m_Fear;
-        private ItemPrimedExplosive m_Explosive;
+        private PrimedExplosive m_Explosive;
 
-        public FleeExplosive(Actor who, ZoneLoc avoid, ItemPrimedExplosive obj) : base(who.Location.Map.LocalTime.TurnCounter, who)
+        public FleeExplosive(Actor who, ZoneLoc avoid, PrimedExplosive obj) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
             m_Fear = avoid;
             m_Explosive = obj;

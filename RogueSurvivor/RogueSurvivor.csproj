@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="Data\BatteryPowered.cs" />
     <Compile Include="Data\IInventory.cs" />
+    <Compile Include="Data\Item\PrimedExplosive.cs" />
     <Compile Include="Data\Model\BodyArmor.cs" />
     <Compile Include="Data\Model\PrimedExplosive.cs" />
     <Compile Include="Data\Model\Explosive.cs" />
@@ -232,8 +233,6 @@
     <Compile Include="Engine\Items\ItemFoodModel.cs" />
     <Compile Include="Engine\Items\ItemTrap.cs" />
     <Compile Include="Engine\Items\ItemBarricadeMaterial.cs" />
-    <Compile Include="Engine\Items\ItemPrimedExplosive.cs" />
-    <Compile Include="Engine\Items\ItemGrenadePrimed.cs" />
     <Compile Include="Engine\Items\ItemFood.cs" />
     <Compile Include="Engine\Items\ItemSprayPaintModel.cs" />
     <Compile Include="Engine\Items\ItemSprayScent.cs" />
@@ -324,10 +323,6 @@
     <Compile Include="Zaimoni\Serialization\LoadManager.cs" />
     <Compile Include="Zaimoni\Serialization\SaveManager.cs" />
     <Compile Include="Zaimoni\Serialization\StreamingContext.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Data\Item\" />
   </ItemGroup>
 <!--  <ItemGroup>
     <EmbeddedResource Include="Bugreport.resx" />

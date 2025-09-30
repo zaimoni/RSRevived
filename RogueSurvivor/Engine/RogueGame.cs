@@ -2238,14 +2238,14 @@ namespace djack.RogueSurvivor.Engine
 
 #region 6. Check explosives.
         bool hasExplosivesToExplode = false;
-        void expire_exp(ItemPrimedExplosive exp) { if (exp.Expire()) hasExplosivesToExplode = true; }
-        void expire_all_exp(Inventory inv) { inv.GetItemsByType<ItemPrimedExplosive>()?.ForEach(expire_exp); }
+        void expire_exp(Data._Item.PrimedExplosive exp) { if (exp.Expire()) hasExplosivesToExplode = true; }
+        void expire_all_exp(Inventory inv) { inv.GetItemsByType<Data._Item.PrimedExplosive>()?.ForEach(expire_exp); }
         map.DoForAllInventory(expire_all_exp);  // 6.1 Update fuses.
 
         if (hasExplosivesToExplode) {
 #region 6.2 Explode.
           bool find_live_grenade(Inventory inv, Location loc) {
-            var tmp = inv.GetItemsByType<ItemPrimedExplosive>(ItemPrimedExplosive.IsExpired);
+            var tmp = inv.GetItemsByType<Data._Item.PrimedExplosive>(Data._Item.PrimedExplosive.IsExpired);
             if (null != tmp) foreach (var exp in tmp) {
                 inv.RemoveAllQuantity(exp);
                 DoBlast(loc, exp.Model.BlastAttack);
@@ -5423,7 +5423,7 @@ namespace djack.RogueSurvivor.Engine
 
       var player = pc.ControlledActor;  // backward compability
 
-      if (player.GetEquippedWeapon() is ItemGrenade || player.GetEquippedWeapon() is ItemGrenadePrimed)
+      if (player.GetEquippedWeapon() is ItemGrenade || player.GetEquippedWeapon() is Data._Item.PrimedExplosive)
         return HandlePlayerThrowGrenade(player);
       if (!(player.GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) {
         ErrorPopup("No weapon ready to fire.");
@@ -5672,7 +5672,7 @@ namespace djack.RogueSurvivor.Engine
       const string THROW_GRENADE_MODE_TEXT = "THROW GRENADE MODE - directions to select, F to fire,  ESC cancels";
 
       var itemGrenade = player.GetEquippedWeapon() as ItemGrenade;
-      var itemGrenadePrimed = player.GetEquippedWeapon() as ItemGrenadePrimed;
+      var itemGrenadePrimed = player.GetEquippedWeapon() as Data._Item.PrimedExplosive;
 #if DEBUG
       if (itemGrenade == null && itemGrenadePrimed == null) throw new InvalidOperationException("No grenade to throw.");  // precondition
 #endif
@@ -8130,7 +8130,7 @@ namespace djack.RogueSurvivor.Engine
       ref readonly var blast = ref itemExplosiveModel.BlastAttack;
       if (blast.CanDamageObjects) lines.Add("Can damage objects.");
       if (blast.CanDestroyWalls) lines.Add("Can destroy walls.");
-      var primed = ex as ItemPrimedExplosive;
+      var primed = ex as Data._Item.PrimedExplosive;
       lines.Add((null != primed) ? string.Format("Fuse          : {0} turn(s) left!", primed.FuseTimeLeft)
                                  : string.Format("Fuse          : {0} turn(s)", itemExplosiveModel.FuseDelay));
       int tmp_i = blast.Radius;
@@ -9421,7 +9421,7 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
-    public void UI_ThrowGrenadePrimed(Actor actor, Point targetPos, ItemGrenadePrimed itemGrenadePrimed, List<PlayerController>? a_witness, List<PlayerController>? d_witness)
+    public void UI_ThrowGrenadePrimed(Actor actor, Point targetPos, Data._Item.PrimedExplosive itemGrenadePrimed, List<PlayerController>? a_witness, List<PlayerController>? d_witness)
     {
 #if DEBUG
         if (null == a_witness && null == d_witness) throw new InvalidOperationException("tracing");
@@ -9523,7 +9523,7 @@ namespace djack.RogueSurvivor.Engine
         ExplosionChainReaction(itemsAt, in location);
         int chance = num1;
         map.RemoveAtExt<Item>(obj => {
-            return !obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive exp) || exp.FuseTimeLeft > 0) && Rules.Get.RollChance(chance);
+            return !obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is Data._Item.PrimedExplosive exp) || exp.FuseTimeLeft > 0) && Rules.Get.RollChance(chance);
         }, location.Position);
       }
       if (blast.CanDamageObjects) {
@@ -9552,16 +9552,16 @@ namespace djack.RogueSurvivor.Engine
     {
       if (null == inv || inv.IsEmpty) return;
       List<ItemExplosive>? itemExplosiveList = null;
-      List<ItemPrimedExplosive>? itemPrimedExplosiveList = null;
+      List<Data._Item.PrimedExplosive>? itemPrimedExplosiveList = null;
       foreach (Item obj in inv) {
         if (!(obj is ItemExplosive itemExplosive)) continue;
-        if (itemExplosive is ItemPrimedExplosive primed) primed.Cook();
+        if (itemExplosive is Data._Item.PrimedExplosive primed) primed.Cook();
         else {
           if (null == itemPrimedExplosiveList) itemPrimedExplosiveList = new();
           (itemExplosiveList ?? new()).Add(itemExplosive);
           var primed_model = itemExplosive.Model.Primed;
           for (int index = 0; index < obj.Quantity; ++index) {
-            itemPrimedExplosiveList.Add((ItemPrimedExplosive)(primed_model.create()));
+            itemPrimedExplosiveList.Add(new(itemExplosive.Model, 0));
           }
         }
       }

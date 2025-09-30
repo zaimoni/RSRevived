@@ -5133,8 +5133,8 @@ restart_chokepoints:
     private void AddExplosivesToDamageField(List<Percept_<Inventory>>? goals)
     {
       if (null == goals) return;
-      IEnumerable<Percept_<ItemPrimedExplosive>> explosives = goals.Select(p => new Percept_<ItemPrimedExplosive>((p.Percepted as Inventory).GetFirst<ItemPrimedExplosive>(), p.Turn, p.Location));
-      foreach (Percept_<ItemPrimedExplosive> exp in explosives) {
+      IEnumerable<Percept_<Data._Item.PrimedExplosive>> explosives = goals.Select(p => new Percept_<Data._Item.PrimedExplosive>((p.Percepted as Inventory).GetFirst<Data._Item.PrimedExplosive>(), p.Turn, p.Location));
+      foreach (var exp in explosives) {
         ref readonly var tmp_blast = ref exp.Percepted.Model.BlastAttack;
         Point pt = exp.Location.Position;
         if (_damage_field.ContainsKey(pt)) _damage_field[pt] += tmp_blast.Damage[0];
@@ -5156,7 +5156,7 @@ restart_chokepoints:
 
     private void AddExplosivesToDamageField(List<Percept>? percepts)
     {
-      AddExplosivesToDamageField(percepts?.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
+      AddExplosivesToDamageField(percepts?.FilterCast<Inventory>(inv => inv.Has<Data._Item.PrimedExplosive>()));
     }
 
     private void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept>? percepts)
@@ -5983,7 +5983,7 @@ restart_chokepoints:
       if (ItemIsUseless(it.Model)) return true;
 
       if (it is ItemTrap trap && trap.IsActivated) return true;
-      if (it.IsUseless || it is ItemPrimedExplosive) return true;
+      if (it.IsUseless || it is Data._Item.PrimedExplosive) return true;
       if (it is ItemEntertainment ent && ent.IsBoringFor(m_Actor)) return true;
       Inventory inv;
       if (it is ItemRangedWeapon rw && 0==rw.Ammo && null == (inv = m_Actor.Inventory).GetCompatibleAmmoItem(rw) && inv.IsFull) return true;
