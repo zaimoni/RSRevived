@@ -9887,7 +9887,7 @@ namespace djack.RogueSurvivor.Engine
       target.RemoveAllQuantity(trade);
       if (!itSpeaker.IsUseless) target.AddAsMuchAsPossible(itSpeaker);
       if (trade is ItemTrap trap) trap.Desactivate();
-      speaker.Inventory.AddAsMuchAsPossible(trade);
+      speaker.TakeAsMuchAsPossible(trade);
       witnesses.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
       target.RejectCrossLink(speaker.Inventory);
     }
@@ -9924,7 +9924,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Remove(give);
       dest.RemoveAllQuantity(take);
       if (!give.IsUseless) dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
-      inv.AddAsMuchAsPossible(take);
+      actor.TakeAsMuchAsPossible(take);
       inv.RejectCrossLink(dest);
     }
 

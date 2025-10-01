@@ -119,6 +119,7 @@ namespace djack.RogueSurvivor.Data.Model
         }
 
         int AddAsMuchAsPossible(Data.Item it) {
+            if (null != a_owner) return a_owner.TakeAsMuchAsPossible(it);
             var inv = Inventory;
             if (null != inv) return inv.AddAsMuchAsPossible(it);
             if (null != loc) {

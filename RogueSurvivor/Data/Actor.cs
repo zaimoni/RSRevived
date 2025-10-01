@@ -3224,7 +3224,7 @@ namespace djack.RogueSurvivor.Data
           var worn = m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
           if (null != worn) {
             // making player act like AI here, is not ideal.
-            if (worn.Rating >= armor.Rating) return false;
+            if (worn.Rating >= armor.Rating) goto final_exit;
             m_InventorySlots.RemoveAt(SLOT_H_TORSO);
             worn.UnequippedBy(this);
           }
@@ -3237,7 +3237,32 @@ namespace djack.RogueSurvivor.Data
           }
         }
      }
+final_exit:
      return m_Inventory?.AddAll(it) ?? false;
+    }
+
+    public int TakeAsMuchAsPossible(Item it) {
+      if (null != m_InventorySlots) {
+        // assume OrderableAI i.e. humanoid inventory, for now
+        if (it is ItemBodyArmor armor) {
+          var worn = m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
+          if (null != worn) {
+            // making player act like AI here, is not ideal.
+            if (worn.Rating >= armor.Rating) goto final_exit;
+            m_InventorySlots.RemoveAt(SLOT_H_TORSO);
+            worn.UnequippedBy(this);
+          }
+          if (m_InventorySlots.SetIfNull(SLOT_H_TORSO, it)) {
+            Equip(it, null != m_Location.Map);
+            if (null != worn) {
+              if (!m_Inventory.AddAll(worn)) m_Location.Drop(worn);
+            }
+            return 1;
+          }
+        }
+      }
+final_exit:
+      return m_Inventory?.AddAsMuchAsPossible(it) ?? 0;
     }
 
     public bool HasItemOfModel(Model.Item model)
