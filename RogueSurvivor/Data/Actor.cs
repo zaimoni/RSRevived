@@ -3217,51 +3217,39 @@ namespace djack.RogueSurvivor.Data
       return m_Inventory?.CanAddAll(it) ?? false;
     }
 
+    private bool Take(ItemBodyArmor armor) {
+      var worn = m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
+      if (null != worn) {
+          // making player act like AI here, is not ideal.
+          if (worn.Rating >= armor.Rating) goto final_exit;
+          m_InventorySlots.RemoveAt(SLOT_H_TORSO);
+          worn.UnequippedBy(this);
+      }
+      if (m_InventorySlots.SetIfNull(SLOT_H_TORSO, armor)) {
+          Equip(armor, null != m_Location.Map);
+          if (null != worn) {
+            if (!m_Inventory.AddAll(worn)) m_Location.Drop(worn);
+          }
+          return true;
+      }
+final_exit:
+     return m_Inventory?.AddAll(armor) ?? false;
+    }
+
+
     public bool Take(Item it) {
      if (null != m_InventorySlots) {
         // assume OrderableAI i.e. humanoid inventory, for now
-        if (it is ItemBodyArmor armor) {
-          var worn = m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
-          if (null != worn) {
-            // making player act like AI here, is not ideal.
-            if (worn.Rating >= armor.Rating) goto final_exit;
-            m_InventorySlots.RemoveAt(SLOT_H_TORSO);
-            worn.UnequippedBy(this);
-          }
-          if (m_InventorySlots.SetIfNull(SLOT_H_TORSO, it)) {
-            Equip(it, null != m_Location.Map);
-            if (null != worn) {
-              if (!m_Inventory.AddAll(worn)) m_Location.Drop(worn);
-            }
-            return true;
-          }
-        }
+        if (it is ItemBodyArmor armor) return Take(armor);
      }
-final_exit:
      return m_Inventory?.AddAll(it) ?? false;
     }
 
     public int TakeAsMuchAsPossible(Item it) {
       if (null != m_InventorySlots) {
         // assume OrderableAI i.e. humanoid inventory, for now
-        if (it is ItemBodyArmor armor) {
-          var worn = m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
-          if (null != worn) {
-            // making player act like AI here, is not ideal.
-            if (worn.Rating >= armor.Rating) goto final_exit;
-            m_InventorySlots.RemoveAt(SLOT_H_TORSO);
-            worn.UnequippedBy(this);
-          }
-          if (m_InventorySlots.SetIfNull(SLOT_H_TORSO, it)) {
-            Equip(it, null != m_Location.Map);
-            if (null != worn) {
-              if (!m_Inventory.AddAll(worn)) m_Location.Drop(worn);
-            }
-            return 1;
-          }
-        }
+        if (it is ItemBodyArmor armor) return Take(armor) ? 1 : 0;
       }
-final_exit:
       return m_Inventory?.AddAsMuchAsPossible(it) ?? 0;
     }
 
