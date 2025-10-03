@@ -6406,7 +6406,7 @@ restart_chokepoints:
 
       // strict domination checks
       var armor = m_Actor.GetWorstBodyArmor();
-      if (null != armor && 2 <= m_Actor.CountQuantityOf<ItemBodyArmor>()) return BehaviorDropItem(armor);
+      if (null != armor) return BehaviorDropItem(armor);
 
       ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
       if (null != weapon) {
@@ -6603,9 +6603,9 @@ restart_chokepoints:
       }
 
       // not-best body armor can be dropped
-      if (2<=m_Actor.CountQuantityOf<ItemBodyArmor>()) {
-        var armor = m_Actor.GetWorstBodyArmor();
-        if (null != armor) return _BehaviorDropOrExchange(armor, it, in stack, use_ok);
+      {
+      var armor = m_Actor.GetWorstBodyArmor();
+      if (null != armor) return _BehaviorDropOrExchange(armor, it, in stack, use_ok);
       }
 
       { // not-best melee weapon can be dropped
@@ -7016,10 +7016,9 @@ restart_chokepoints:
       if (null != useless) return _BehaviorDropOrExchange(useless, it, position, use_ok);
       }
 
-      // not-best body armor can be dropped
-      if (2<=m_Actor.CountQuantityOf<ItemBodyArmor>()) {
-        var armor = m_Actor.GetWorstBodyArmor();
-        if (null != armor) return _BehaviorDropOrExchange(armor,it,position, use_ok);
+      { // not-best body armor can be dropped
+      var armor = m_Actor.GetWorstBodyArmor();
+      if (null != armor) return _BehaviorDropOrExchange(armor,it,position, use_ok);
       }
 
       { // not-best melee weapon can be dropped
@@ -7451,10 +7450,10 @@ restart_chokepoints:
     private bool AmmoAtLimit {
       get {
         // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
+        // but equipped armor now is in the torso slot
         // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
         Inventory inv = m_Actor.Inventory;
         int limit = inv.MaxCapacity;
-        if (0< inv.CountType<ItemBodyArmor>()) limit--;
         if (0< inv.CountType<ItemLight>()) limit--;
         if (0< inv.CountType<ItemFood>()) limit--;
         if (0< inv.CountType<ItemExplosive>()) limit--;

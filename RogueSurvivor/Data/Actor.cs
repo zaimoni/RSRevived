@@ -3317,7 +3317,12 @@ final_exit:
       return melee.Where(Item.notEquipped).Minimize(rate) ?? melee.Minimize(rate);
     }
 
-    public ItemBodyArmor? GetBestBodyArmor() => m_Inventory?.Maximize<ItemBodyArmor, int>(ItemBodyArmor.Rate);
+    // the best body armor should be in the inventory slot
+    public ItemBodyArmor? GetBestBodyArmor() {
+      if (null != m_InventorySlots) return m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
+      return null;
+    } 
+    // non-null return implies at least two body armors
     public ItemBodyArmor? GetWorstBodyArmor() => m_Inventory?.Minimize<ItemBodyArmor, int>(Item.notEquipped, ItemBodyArmor.Rate);
 
     public bool HasEnoughFoodFor(int nutritionNeed, ItemFood? exclude=null)
@@ -3404,7 +3409,7 @@ final_exit:
     // considering these as change target
     public ItemBodyArmor? GetEquippedArmor()
     {
-      if (null != m_InventorySlots && m_InventorySlots[SLOT_H_TORSO] is ItemBodyArmor armor) return armor;
+      if (null != m_InventorySlots) return m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
       // legacy implementation
       return m_Inventory?.GetFirst<ItemBodyArmor>(obj => obj.EquippedPart == DollPart.TORSO);
     }

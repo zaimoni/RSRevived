@@ -71,7 +71,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction SelectAction()
     {
       ClearMovePlan();
-      BehaviorEquipBestBodyArmor();
 
       _all = FilterSameMap(UpdateSensors());
 

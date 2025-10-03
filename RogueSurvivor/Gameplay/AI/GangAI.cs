@@ -79,7 +79,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var game = RogueGame.Game;
 
       ClearMovePlan();
-      BehaviorEquipBestBodyArmor();
 
       // start item juggling
       if (!BehaviorEquipCellPhone() && !BehaviorEquipLight()) {}

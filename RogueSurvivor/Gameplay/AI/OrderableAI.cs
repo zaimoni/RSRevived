@@ -1125,21 +1125,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable restore
 
     // Behaviors and support functions
-    // but all body armors are equipped to the torso slot(?)
-    private ItemBodyArmor? GetEquippedBodyArmor()
-    {
-      return m_Actor.Inventory.GetFirst<ItemBodyArmor>(it => it.IsEquipped);
-    }
-
-#nullable enable
-    protected void BehaviorEquipBestBodyArmor()
-    {
-      var bestBodyArmor = m_Actor.GetBestBodyArmor();
-      if (bestBodyArmor == null) return;
-      if (GetEquippedBodyArmor() != bestBodyArmor) bestBodyArmor.EquippedBy(m_Actor);
-    }
-#nullable restore
-
     protected ActorAction ManageMeleeRisk(List<ItemRangedWeapon> available_ranged_weapons)
     {
         const bool tracing = false; // debugging hook
@@ -3297,7 +3282,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         // XXX \todo this has to be able to upgrade to swap in some cases (e.g. if armor is better than best armor)
         if (obj is ItemBodyArmor armor) {
-          var best_armor = GetEquippedBodyArmor();
+          var best_armor = m_Actor.GetEquippedArmor();
           if (null != best_armor && armor.Rating > best_armor.Rating) {
             // we actually want to wear this (second test redundant now, but not once stockpiling goes in)
             return ActionTradeWith.Cast(in stack, m_Actor, best_armor, obj);
@@ -3322,7 +3307,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
         // XXX \todo this has to be able to upgrade to swap in some cases (e.g. if armor is better than best armor)
         if (obj is ItemBodyArmor armor) {
-          var best_armor = GetEquippedBodyArmor();
+          var best_armor = m_Actor.GetEquippedArmor();
           if (null != best_armor && armor.Rating > best_armor.Rating) {
             // we actually want to wear this (second test redundant now, but not once stockpiling goes in)
             return ActionTradeWith.Cast(loc, m_Actor, best_armor, obj);
