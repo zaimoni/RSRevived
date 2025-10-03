@@ -12525,12 +12525,12 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DrawItemsStack(Inventory inventory, GDI_Point screen, Color tint)
+    public void DrawItemsStack(Inventory inv, GDI_Point screen, Color tint)
     {
 #if DEBUG
-      if (null == inventory && 0 >= inventory.Count()) throw new ArgumentNullException(nameof(inventory));
+      if (null == inv && 0 >= inv.Count()) throw new ArgumentNullException(nameof(inv));
 #endif
-      foreach (Item it in inventory) DrawItem(it, screen, tint);
+      foreach (Item it in inv) DrawItem(it, screen, tint);
     }
 
     public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy)

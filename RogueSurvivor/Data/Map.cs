@@ -2218,9 +2218,9 @@ retry:
       var itemsAt = GetItemsAt(position);
       itemsAt?.RepairContains(it, "already had ");
       if (itemsAt == null) {
-        Inventory inventory = new Inventory(GROUND_INVENTORY_SLOTS);
-        m_GroundItemsByPosition.Add(position, inventory);
-        inventory.AddAll(it);
+        Inventory g_inv = new(GROUND_INVENTORY_SLOTS);
+        m_GroundItemsByPosition.Add(position, g_inv);
+        g_inv.AddAll(it);
       } else if (itemsAt.IsFull) {
         int quantity = it.Quantity;
         int quantityAdded = itemsAt.AddAsMuchAsPossible(it);
