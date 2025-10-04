@@ -4667,6 +4667,7 @@ namespace djack.RogueSurvivor.Engine
       {
         if (isPlayerInventory) return _HandlePlayerInventory(Player, it);
 
+//      var fetch_from = Player.Location.InventoryAtFeet(); // want this, but compile error
         return Interpret(new _Action.TakeItem(Player, Player.Location, it));
       }
 
@@ -9956,8 +9957,8 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
 #if DEBUG
-      if (!target.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("no longer have item");
-      if (!speaker.Inventory.Contains(trade.Value.Key)) throw new InvalidOperationException("no longer have item");
+      if (!target.IsCarrying(trade.Value.Value)) throw new InvalidOperationException("no longer have item");
+      if (!speaker.IsCarrying(trade.Value.Key)) throw new InvalidOperationException("no longer have item");
 #endif
       speaker.Inventory.RepairContains(trade.Value.Value, "already had ");
       target.Inventory.RepairContains(trade.Value.Key, "already had ");
@@ -10323,7 +10324,7 @@ namespace djack.RogueSurvivor.Engine
       }
       var witnesses = actor.PlayersInLOS();
       if (it.IsUseless) {
-        DiscardItem(actor, it);
+        actor.Remove(it, false);
         witnesses?.RedrawPlayScreen(MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), it));
         return;
       }
@@ -10361,7 +10362,7 @@ namespace djack.RogueSurvivor.Engine
       }
       var witnesses = actor.PlayersInLOS();
       if (it.IsUseless) {
-        DiscardItem(actor, it);
+        actor.Remove(it, false);
         witnesses?.RedrawPlayScreen(MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), it));
         return;
       }
@@ -10370,12 +10371,6 @@ namespace djack.RogueSurvivor.Engine
       else DropCloneItem(actor, it, obj, in dest);
       witnesses?.RedrawPlayScreen(MakePanopticMessage(actor, VERB_DROP.Conjugate(actor), obj));
       dest.Items?.RejectCrossLink(actor.Inventory);
-    }
-
-    static private void DiscardItem(Actor actor, Item it)
-    {
-      actor.Inventory.RemoveAllQuantity(it);
-      it.Unequip();
     }
 
     static private void _Drop(Item it, in Location dest)
@@ -10399,13 +10394,13 @@ namespace djack.RogueSurvivor.Engine
 
     static private void DropItem(Actor actor, Item it)
     {
-      actor.Inventory.RemoveAllQuantity(it);
+      actor.Remove(it);
       _Drop(it, actor.Location);
     }
 
     static private void DropItem(Actor actor, Item it, in Location dest)
     {
-      actor.Inventory.RemoveAllQuantity(it);
+      actor.Remove(it);
       _Drop(it, in dest);
     }
 

@@ -44,6 +44,12 @@ namespace djack.RogueSurvivor.Data.Model
             loc = _loc;
         }
 
+        private Data.IInventory? IInv { get {
+          if (null != a_owner) return a_owner;
+          if (null != obj_owner) return obj_owner;
+          return null;
+        } }
+
         public Data.Inventory? Inventory { get {
             if (null != a_owner) return a_owner.Inventory;
             if (null != obj_owner) return obj_owner.Inventory;
@@ -129,14 +135,19 @@ namespace djack.RogueSurvivor.Data.Model
             return 0;
         }
 
-        public void Remove(Data.Item it)
+        public bool IsCarrying(Data.Item it) {
+            var iinv = IInv;
+            if (null != iinv) return iinv.IsCarrying(it);
+
+            return Inventory?.Contains(it) ?? false;
+        }
+
+        public void Remove(Data.Item it, bool canMessage = true)
         {
-            if (null != a_owner) {
-                var slots = a_owner.InventorySlots;
-                if (null != slots && slots.Remove(it)) {
-                    it.UnequippedBy(a_owner);
-                    return;
-                }
+            var iinv = IInv;
+            if (null != iinv) {
+                iinv.Remove(it, canMessage);
+                return;
             }
 
             var inv = Inventory;
@@ -144,7 +155,6 @@ namespace djack.RogueSurvivor.Data.Model
             if (null == inv || !inv.Contains(it)) throw new InvalidOperationException("tracing");
 #endif
             inv.RemoveAllQuantity(it);
-            if (null != a_owner) it.UnequippedBy(a_owner);
         }
 
         public Data.Item? GetFirst(Gameplay.Item_IDs id)

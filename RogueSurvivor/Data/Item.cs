@@ -158,7 +158,7 @@ namespace djack.RogueSurvivor.Data
       var already = actor.GetEquippedItem(Model.EquipmentPart);
       if (already == this) return;
 #if DEBUG
-      if (!actor.Inventory?.Contains(this) ?? true) throw new ArgumentNullException("actor.Inventory?.Contains(this)");
+      if (!actor.IsCarrying(this)) throw new ArgumentNullException("actor.Inventory?.Contains(this)");
 #endif
       already?.UnequippedBy(actor);
       actor.Equip(this, true);

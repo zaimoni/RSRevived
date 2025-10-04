@@ -1802,7 +1802,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private bool IsItemWorthTellingAbout(Item it)
     {
-      return it != null && !(it is ItemBarricadeMaterial) && (m_Actor.Inventory.IsEmpty || !m_Actor.Inventory.Contains(it));
+      return it != null && !(it is ItemBarricadeMaterial) && !m_Actor.IsCarrying(it);
     }
 
     protected string DescribePercept(Percept percept, Actor audience)

@@ -10,5 +10,8 @@ namespace djack.RogueSurvivor.Data
     {
         public Inventory Inventory { get; }
 
+        bool IsCarrying(Item it);
+        void Remove(Item it, bool canMessage = true);
+
     }
 }

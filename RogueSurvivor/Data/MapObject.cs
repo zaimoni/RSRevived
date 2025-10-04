@@ -471,6 +471,9 @@ namespace djack.RogueSurvivor.Data
     }
 #endregion
 
+    public void Remove(Item it, bool canMessage = true) => m_Inventory.RemoveAllQuantity(it);
+    public bool IsCarrying(Item it) => m_Inventory.Contains(it);
+
     public string ReasonCantPutItemIn(Actor actor)
     {
       if (   !actor.Model.Abilities.HasInventory

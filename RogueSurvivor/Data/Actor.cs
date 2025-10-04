@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Data
     };
 
   [Serializable]
-  public sealed class Actor : IEquatable<Actor>, IDeserializationCallback, ILocation, Zaimoni.Data.INoun
+  public sealed class Actor : IEquatable<Actor>, IInventory, IDeserializationCallback, ILocation, Zaimoni.Data.INoun
     {
     public const int BASE_ACTION_COST = 100;
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
@@ -3181,7 +3181,7 @@ namespace djack.RogueSurvivor.Data
       var game = RogueGame.Game;
       var worn = GetEquippedArmor();
       if (null != worn && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
-        Destroyed(worn);
+        Remove(worn, false);
         game.UI_ItemBreaks(this, worn);
       }
       if (IsSleeping) game.DoWakeUp(this);
@@ -3508,7 +3508,7 @@ final_exit:
       if (!(it is UsableItem obj)) return "not a usable item type"; // cannot throw due to insane actions
       var err = obj.ReasonCantUse(this);
       if (!string.IsNullOrEmpty(err)) return err;
-      if (!m_Inventory?.Contains(it) ?? true) return "not in inventory";
+      if (!IsCarrying(it)) return "not in inventory";
       return "";
     }
 
@@ -3614,7 +3614,7 @@ final_exit:
     private string ReasonCantUnequip(Item it)
     {
       if (!it.IsEquipped) return "not equipped";
-      if (!m_Inventory?.Contains(it) ?? true) return "not in inventory";
+      if (!IsCarrying(it)) return "not in inventory";
       return "";
     }
 
@@ -3632,7 +3632,7 @@ final_exit:
     private string ReasonCantDrop(Item it)
     {
       if (it.IsEquipped && Controller is PlayerController) return "unequip first";  // AI doesn't need that UI safety
-      if (!m_Inventory?.Contains(it) ?? true) return "not in inventory";
+      if (!IsCarrying(it)) return "not in inventory";
       return "";
     }
 
@@ -3854,18 +3854,19 @@ final_exit:
       }
     }
 
-    public void Destroyed(Item it)
-    {
-      if (null == m_InventorySlots || !m_InventorySlots.Remove(it)) {
-        m_Inventory?.RemoveAllQuantity(it);
-      }
-      it.UnequippedBy(this, false);
+    public bool IsCarrying(Item it) {
+      if (m_InventorySlots?.Contains(it) ?? false) return true;
+      return m_Inventory?.Contains(it) ?? false;
     }
 
     public void Remove(Item it, bool canMessage=true)
     {
+      if (m_InventorySlots?.Remove(it) ?? false) {
+        it.UnequippedBy(this, canMessage);
+        return;
+      }
       it.UnequippedBy(this, canMessage);
-      m_Inventory.RemoveAllQuantity(it);
+      m_Inventory?.RemoveAllQuantity(it);
     }
 
     // Note that an event-based Sees implementation (anchored in RogueGame) cannot avoid constructing messages

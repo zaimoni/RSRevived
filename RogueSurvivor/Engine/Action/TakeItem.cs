@@ -51,8 +51,7 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public override bool IsLegal()
         {
-            var inv = m_src.Inventory;
-            if (null == inv || !inv.Contains(m_Item)) return false;
+            if (!m_src.IsCarrying(m_Item)) return false;
             m_Actor.Inventory!.RejectContains(m_Item, "have already taken ");
             return m_Actor.CanGet(m_Item, out m_FailReason);
         }

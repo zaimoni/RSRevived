@@ -5900,10 +5900,10 @@ restart_chokepoints:
 
     private ActorAction? _PrefilterDrop(Item it, bool use_ok=true)
     {
+        if (!use_ok) return null;
 #if DEBUG
-      if (!m_Actor.Inventory.Contains(it)) throw new InvalidOperationException("invariant violation");
+        if (!m_Actor.Inventory.Contains(it)) throw new InvalidOperationException("invariant violation");
 #endif
-      if (use_ok) {
         if (it is UsableItem obj) {
           if (obj.CouldUse() && obj.CouldUse(m_Actor) && obj.UseBeforeDrop(m_Actor)) {  // \todo first two tests may be redundant
             if (it is ItemAmmo ammo) { return UseAmmo(ammo, ammo.rw); }
@@ -5920,8 +5920,7 @@ restart_chokepoints:
         }
       }
 #endif
-      } // if (use_ok)
-      return null;
+        return null;
     }
 
     protected ActorAction? BehaviorDropItem(Item? it)
@@ -6466,8 +6465,8 @@ restart_chokepoints:
 #if DEBUG
       if (null == lhs) throw new ArgumentNullException(nameof(lhs));
       if (null == rhs) throw new ArgumentNullException(nameof(rhs));
-      if (!m_Actor.Inventory.Contains(lhs) && !IsInterestingItem(lhs)) throw new InvalidOperationException(lhs.ToString()+" not interesting to "+m_Actor.Name);
-      if (!m_Actor.Inventory.Contains(rhs) && !IsInterestingItem(rhs)) throw new InvalidOperationException(rhs.ToString()+" not interesting to "+m_Actor.Name);
+      if (!m_Actor.IsCarrying(lhs) && !IsInterestingItem(lhs)) throw new InvalidOperationException(lhs.ToString()+" not interesting to "+m_Actor.Name);
+      if (!m_Actor.IsCarrying(rhs) && !IsInterestingItem(rhs)) throw new InvalidOperationException(rhs.ToString()+" not interesting to "+m_Actor.Name);
 #endif
       if (lhs.ModelID == rhs.ModelID) {
         if (lhs.Quantity < rhs.Quantity) return true;
@@ -8196,8 +8195,7 @@ restart_chokepoints:
       }
       m_Actor.Faction = GameFactions.ThePolice;
       var it = m_Actor.GetEquippedItem(Item_IDs.TRACKER_POLICE_RADIO); // now implicit; possible RogueGame::DiscardItem is on wrong class
-      m_Actor.Inventory.RemoveAllQuantity(it);
-      it.Unequip();
+      m_Actor.Remove(it);
       m_Actor.PrefixName("Cop"); // adjust job title
       m_Actor.Doll.AddDecoration(DollPart.HEAD, GameImages.POLICE_HAT); // XXX should selectively remove clothes when re-clothing
       m_Actor.Doll.AddDecoration(DollPart.TORSO, GameImages.POLICE_UNIFORM);

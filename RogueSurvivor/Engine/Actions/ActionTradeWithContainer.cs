@@ -15,8 +15,8 @@ namespace djack.RogueSurvivor.Engine.Actions
         protected ActionTradeWith(Actor actor, Item give, Item take) : base(actor)
         {
 #if DEBUG
-            if (null == give || !m_Actor.Inventory.Contains(give)) throw new ArgumentNullException(nameof(give));
-            if (null == take || m_Actor.Inventory.Contains(take)) throw new ArgumentNullException(nameof(take));
+            if (null == give || !m_Actor.IsCarrying(give)) throw new ArgumentNullException(nameof(give));
+            if (null == take || m_Actor.IsCarrying(take)) throw new ArgumentNullException(nameof(take));
 #endif
             m_GiveItem = give;
             m_TakeItem = take;
@@ -28,8 +28,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override bool IsLegal()
         {
-            if (!m_Actor.Inventory.Contains(m_GiveItem)) return false;
-            if (m_Actor.Inventory.Contains(m_TakeItem)) return false;
+            if (!m_Actor.IsCarrying(m_GiveItem)) return false;
+            if (m_Actor.IsCarrying(m_TakeItem)) return false;
             return true;
         }
 
@@ -37,7 +37,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         static public ActionTradeWith Cast(in Data.Model.InvOrigin dest, Actor actor, Item give, Item take)
         {
-            if (null == dest.Inventory || !dest.Inventory.Contains(take)) {
+            if (!dest.IsCarrying(take)) {
 #if DEBUG
                 throw new InvalidOperationException("cannot take from this inventory");
 #else
@@ -64,13 +64,15 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         static public ActionTradeWith Cast(Location loc, Actor actor, Item give, Item take)
         {
-            var obj = loc.MapObject as ShelfLike;
-            var obj_inv = obj?.NonEmptyInventory;
-            if (null != obj_inv && obj_inv.Contains(take)) return new ActionTradeWithContainer(actor, give, take, obj);
+            if (loc.MapObject is ShelfLike obj) {
+                if (obj.IsCarrying(take)) return new ActionTradeWithContainer(actor, give, take, obj);
+            }
             var g_inv = loc.Items;
             if (null != g_inv && g_inv.Contains(take)) return new ActionTradeWithGround(actor, give, take, loc);
-            var a_inv = loc.Actor?.Inventory;
-            if (null != a_inv && a_inv.Contains(take) && !loc.Actor.IsPlayer) return new ActionTradeWithActor(actor, give, take, loc.Actor);
+            var a = loc.Actor;
+            if (!a?.IsPlayer ?? false) {
+                if (a.IsCarrying(take)) return new ActionTradeWithActor(actor, give, take, a);
+            }
 #if DEBUG
             throw new InvalidOperationException("tracing"); // need to verify null return
 #endif
@@ -90,22 +92,17 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public ActionTradeWithContainer(Actor actor, Item give, Item take, ShelfLike obj) : base(actor, give, take)
         {
-#if DEBUG
-            var inv = obj.Inventory;
-            if (inv.Contains(m_GiveItem) || !inv.Contains(m_TakeItem)) throw new ArgumentNullException(nameof(obj)+".Inventory");
-#endif
             m_obj = obj;
+#if DEBUG
+            if (!_isLegal()) throw new ArgumentNullException(nameof(obj)+".Inventory");
+#endif
             actor.Activity = Activity.IDLE;
         }
 
         public MapObject What { get { return m_obj; } }
 
-        public override bool IsLegal()
-        {
-            var inv = m_obj.Inventory;
-            if (null == inv || inv.Contains(m_GiveItem) || !inv.Contains(m_TakeItem)) return false;
-            return base.IsLegal();
-        }
+        private bool _isLegal() => m_obj.IsCarrying(m_TakeItem) && !m_obj.IsCarrying(m_GiveItem);
+        public override bool IsLegal() => _isLegal() && base.IsLegal();
 
         public override bool IsPerformable()
         {
@@ -126,21 +123,20 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public ActionTradeWithGround(Actor actor, Item give, Item take, Location loc) : base(actor, give, take)
         {
-#if DEBUG
-            var g_inv = loc.Items;
-            if (null == g_inv || g_inv.Contains(m_GiveItem) || !g_inv.Contains(m_TakeItem)) throw new ArgumentNullException(nameof(loc) + ".Items");
-#endif
             if (!Map.Canonical(ref loc)) throw new ArgumentOutOfRangeException(nameof(loc), loc, "non-canonical");
             m_Location = loc;
+#if DEBUG
+            if (!_isLegal()) throw new ArgumentNullException(nameof(loc) + ".Items");
+#endif
             actor.Activity = Activity.IDLE;
         }
 
-        public override bool IsLegal()
-        {
+        private bool _isLegal() {
             var g_inv = m_Location.Items;
-            if (null == g_inv || g_inv.Contains(m_GiveItem) || !g_inv.Contains(m_TakeItem)) return false;
-            return base.IsLegal();
+            return null != g_inv && !g_inv.Contains(m_GiveItem) && g_inv.Contains(m_TakeItem);
         }
+
+        public override bool IsLegal() => _isLegal() && base.IsLegal();
 
         public override bool IsPerformable()
         {
@@ -163,20 +159,18 @@ namespace djack.RogueSurvivor.Engine.Actions
         public ActionTradeWithActor(Actor actor, Item give, Item take, Actor whom) : base(actor, give, take)
         {
 #if DEBUG
-            var a_inv = whom.Inventory;
-            if (null == a_inv || a_inv.Contains(m_GiveItem) || !a_inv.Contains(m_TakeItem)) throw new ArgumentNullException(nameof(whom) + ".Inventory");
             if (!(whom.Controller is OrderableAI)) throw new ArgumentNullException("whom.Controller as OrderableAI");
 #endif
             m_Whom = whom;
+#if DEBUG
+            if (!_isLegal()) throw new ArgumentNullException(nameof(whom) + ".Inventory");
+#endif
             actor.Activity = Activity.IDLE;
         }
 
-        public override bool IsLegal()
-        {
-            if (m_Whom.Inventory.Contains(m_GiveItem)) return false;
-            if (!m_Whom.Inventory.Contains(m_TakeItem)) return false;
-            return base.IsLegal();
-        }
+        private bool _isLegal() => m_Whom.IsCarrying(m_TakeItem) && !m_Whom.IsCarrying(m_GiveItem);
+
+        public override bool IsLegal() => _isLegal() && base.IsLegal();
 
         public override bool IsPerformable()
         {

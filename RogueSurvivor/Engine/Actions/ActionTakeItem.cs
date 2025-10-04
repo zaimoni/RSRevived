@@ -129,7 +129,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsLegal()
     {
       // can happen if double-executing
-      if (null != received && !m_Target.ControlledActor.Inventory.Contains(received)) { m_FailReason = "no longer had received"; return false; }
+      if (null != received && !m_Target.ControlledActor.IsCarrying(received)) { m_FailReason = "no longer had received"; return false; }
       if (null==Give) { m_FailReason = "not in inventory"; return false; }
       if (m_Target.ItemIsUseless(gift)) return false;
       return true;
@@ -139,7 +139,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (!base.IsPerformable()) return false;
 #if DEBUG
-      if (!m_Actor.Inventory.Contains(gift)) throw new InvalidOperationException("no longer had gift");
+      if (!m_Actor.IsCarrying(gift)) throw new InvalidOperationException("no longer had gift");
 #endif
       var t_actor = m_Target.ControlledActor;
       var t_inv = t_actor.Inventory;
