@@ -3214,22 +3214,25 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool CanTake(Item it) {
+#if PROTOTYPE
+      if (it is ItemBodyArmor armor) {
+        if (m_InventorySlots[SLOT_H_TORSO] is ItemBodyArmor worn) return worn.Rating < armor.Rating;
+        return true;
+      }
+#endif
       return m_Inventory?.CanAddAll(it) ?? false;
     }
 
     private bool Take(ItemBodyArmor armor) {
-      var worn = m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
-      if (null != worn) {
+      if (m_InventorySlots[SLOT_H_TORSO] is ItemBodyArmor worn) {
           // making player act like AI here, is not ideal.
           if (worn.Rating >= armor.Rating) goto final_exit;
           m_InventorySlots.RemoveAt(SLOT_H_TORSO);
           worn.UnequippedBy(this);
+          if (!m_Inventory.AddAll(worn)) Location.Drop(worn);
       }
       if (m_InventorySlots.SetIfNull(SLOT_H_TORSO, armor)) {
           Equip(armor, null != m_Location.Map);
-          if (null != worn) {
-            if (!m_Inventory.AddAll(worn)) m_Location.Drop(worn);
-          }
           return true;
       }
 final_exit:
@@ -3242,6 +3245,7 @@ final_exit:
         // assume OrderableAI i.e. humanoid inventory, for now
         if (it is ItemBodyArmor armor) return Take(armor);
      }
+     if (it is ItemTrap trap) trap.Desactivate();
      return m_Inventory?.AddAll(it) ?? false;
     }
 
@@ -3250,6 +3254,7 @@ final_exit:
         // assume OrderableAI i.e. humanoid inventory, for now
         if (it is ItemBodyArmor armor) return Take(armor) ? 1 : 0;
       }
+      if (it is ItemTrap trap) trap.Desactivate();
       return m_Inventory?.AddAsMuchAsPossible(it) ?? 0;
     }
 
@@ -3846,10 +3851,6 @@ final_exit:
       }
       if (model is Data.Model.BodyArmor armor) {
         m_CurrentDefence -= armor.ToDefence();
-        if (null != m_InventorySlots && it == m_InventorySlots[SLOT_H_TORSO]) {
-          if (m_InventorySlots.Transfer(SLOT_H_TORSO, new(this))) return;
-          m_InventorySlots.Transfer(SLOT_H_TORSO, new(Location));
-        }
         return;
       }
     }

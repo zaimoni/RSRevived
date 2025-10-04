@@ -33,7 +33,12 @@ namespace djack.RogueSurvivor.Data.Model
 
         public InvOrigin(Location src, Actor agent) : this(src)
         {
+#if DEBUG
+            a_owner = agent ?? throw new ArgumentNullException(nameof(agent));
+            if (null == agent.Inventory) throw new ArgumentNullException("agent.Inventory");
+#else
             a_owner = agent;
+#endif
         }
 
         public InvOrigin(Location src) => loc = src;
@@ -187,6 +192,14 @@ namespace djack.RogueSurvivor.Data.Model
           return false;
         }
         // end change targets for centralized actor handling
+
+        public void Trade(Data.Item give, Data.Item take, InvOrigin dest)
+        {
+            dest.Remove(take);
+            Remove(give);
+            if (!give.IsUseless) dest.Take(give);
+            Take(take);
+        }
 
         [Conditional("DEBUG")]
         public void RejectCrossLink(Data.Inventory? other) {

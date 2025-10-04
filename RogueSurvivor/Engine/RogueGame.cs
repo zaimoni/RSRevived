@@ -19,27 +19,25 @@ using djack.RogueSurvivor.Gameplay.AI;
 using djack.RogueSurvivor.Gameplay.Generators;
 using djack.RogueSurvivor.UI;
 using System;
-using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Zaimoni.Data;
-
 using static Zaimoni.Data.Functor;
-
-using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
-// game coordinate types
-using Point = Zaimoni.Data.Vector2D<short>;
-using Rectangle = Zaimoni.Data.Box2D<short>;
 // GDI+ types
 using Color = System.Drawing.Color;
+using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 using GDI_Point = System.Drawing.Point;
 using GDI_Rectangle = System.Drawing.Rectangle;
 using GDI_Size = System.Drawing.Size;
+// game coordinate types
+using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -9858,41 +9856,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private void DoTrade(PlayerController pc, Item itSpeaker, Inventory target)
-    {
-      var speaker = pc.ControlledActor;
-#if DEBUG
-      if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
-#endif
-      target.RejectCrossLink(speaker.Inventory!);
-      var witnesses = speaker.PlayersInLOS()!;
-
-      var trade = PickItemToTrade(target, pc, itSpeaker);
-      if (null == trade) return;
-
-      witnesses.AddMessage(MakePanopticMessage(speaker, string.Format("swaps {0} for {1}.", trade.AName, itSpeaker.AName)));
-
-      AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-      RedrawPlayScreen();
-      bool acceptDeal = m_UI.WaitYesOrNo();
-      ClearOverlays();
-//    RedrawPlayScreen(); // redraw will be triggered by messaging, below
-
-      if (!acceptDeal) {
-        witnesses.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
-        return;
-      }
-
-      speaker.SpendActionPoints();
-      speaker.Remove(itSpeaker);
-      target.RemoveAllQuantity(trade);
-      if (!itSpeaker.IsUseless) target.AddAsMuchAsPossible(itSpeaker);
-      if (trade is ItemTrap trap) trap.Desactivate();
-      speaker.TakeAsMuchAsPossible(trade);
-      witnesses.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
-      target.RejectCrossLink(speaker.Inventory);
-    }
-
     private void DoTrade(PlayerController pc, Item itSpeaker, Data.Model.InvOrigin target)
     {
       var speaker = pc.ControlledActor;
@@ -9908,7 +9871,34 @@ namespace djack.RogueSurvivor.Engine
         }
         if (null != target.obj_owner) speaker.StandUp();
       }
-      DoTrade(pc, itSpeaker, target.Inventory);
+
+#if DEBUG
+      if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
+#endif
+      target.RejectCrossLink(speaker.Inventory!);
+
+      var trade = PickItemToTrade(target.Inventory, pc, itSpeaker);
+      if (null == trade) return;
+      var act = _Action.TradeItem.Cast(in target, speaker, itSpeaker, trade);
+      if (null == act) return;
+
+      AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+      RedrawPlayScreen();
+      bool acceptDeal = m_UI.WaitYesOrNo();
+      ClearOverlays();
+//    RedrawPlayScreen(); // redraw will be triggered by messaging, below
+
+      if (!acceptDeal) {
+        speaker.PlayersInLOS()!.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
+        return;
+      }
+
+      act.Perform();
+    }
+
+    public void UI_TradeItem(Actor actor, Item give, Item take) {
+      var witnesses = _ForceVisibleToPlayer(actor);
+      witnesses?.AddMessage(MakePanopticMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
     }
 
     private void DoTradeWith(Actor actor, Inventory dest, Item give, Item take)
