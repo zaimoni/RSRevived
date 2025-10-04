@@ -5901,8 +5901,10 @@ restart_chokepoints:
     private ActorAction? _PrefilterDrop(Item it, bool use_ok=true)
     {
         if (!use_ok) return null;
+        // traps are usable, but don't do well with the use heuristic
+        if (it is ItemTrap) return null;
 #if DEBUG
-        if (!m_Actor.Inventory.Contains(it)) throw new InvalidOperationException("invariant violation");
+        if (!m_Actor.IsCarrying(it)) throw new InvalidOperationException("invariant violation");
 #endif
         if (it is UsableItem obj) {
           if (obj.CouldUse() && obj.CouldUse(m_Actor) && obj.UseBeforeDrop(m_Actor)) {  // \todo first two tests may be redundant

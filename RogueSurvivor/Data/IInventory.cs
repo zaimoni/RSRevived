@@ -12,6 +12,7 @@ namespace djack.RogueSurvivor.Data
 
         bool IsCarrying(Item it);
         void Remove(Item it, bool canMessage = true);
+        bool Take(Item it);
 
     }
 }

@@ -2198,13 +2198,14 @@ retry:
     }
 
     // Clairvoyant.  Useful for fine-tuning map generation and little else
-    public KeyValuePair<Point, Inventory>? GetInventoryHaving(Gameplay.Item_IDs id)
+    public Data.Model.InvOrigin? GetInventoryHaving(Gameplay.Item_IDs id)
     {
       if (District.Maps.Contains(this)) throw new InvalidOperationException("do not use GetInventoryHaving except during map generation");
-      foreach (var x in m_GroundItemsByPosition) if (x.Value.Has(id)) return x;
+      foreach (var x in m_GroundItemsByPosition) if (x.Value.Has(id)) return new(new Location(this, x.Key));
       foreach (var x in m_MapObjectsByPosition) {
-         var obj_inv = (x.Value as ShelfLike)?.NonEmptyInventory;
-         if (null != obj_inv && obj_inv.Has(id)) return new KeyValuePair<Point, Inventory>(x.Key, obj_inv);
+         var shelf = x.Value as ShelfLike;
+         var obj_inv = shelf?.NonEmptyInventory;
+         if (null != obj_inv && obj_inv.Has(id)) return new(shelf);
       }
       return null;
     }
@@ -2262,6 +2263,20 @@ retry:
       tmp.Value.Map.DropItemAt(it,tmp.Value.Position);
     }
 
+    public bool RemoveAt(Item doomed, in Point pos)
+    {
+#if DEBUG
+      if (!IsInBounds(pos)) throw new ArgumentOutOfRangeException(nameof(pos), pos, "!IsInBounds(pos)");
+#endif
+      var itemsAt = GetItemsAt(pos);
+      if (null == itemsAt) return false;
+      if (!itemsAt.Contains(doomed)) return false;
+      itemsAt.RemoveAllQuantity(doomed);
+      if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(pos);
+      return true;
+    }
+
+
     public bool RemoveAt<T>(Predicate<T> test, in Point pos) where T:Item
     {
 #if DEBUG
@@ -2291,9 +2306,9 @@ retry:
     {
       var src = GetInventoryHaving(id);
       if (null == src) return false;
-      var it = src.Value.Value.GetFirst(id);
+      var it = src.Value.GetFirst(id);
       if (null == it) return false;
-      if (src.Value.Value.Transfer(it, dest)) m_GroundItemsByPosition.Remove(src.Value.Key);
+      src.Value.Transfer(it, dest);
       return true;
     }
 
@@ -2305,14 +2320,19 @@ retry:
 
       var src = GetInventoryHaving(want);
       if (null == src) return false;
-      var it = src.Value.Value.GetFirst(want);
+      var it = src.Value.GetFirst(want);
       if (null == it) return false;
       it.Unequip();
 
-      src.Value.Value.RemoveAllQuantity(it);
+      src.Value.Remove(it);
       dest.Remove(giving);
-      src.Value.Value.AddAsMuchAsPossible(giving);
-      dest.AddAll(it);
+      src.Value.Take(giving);
+      dest.Take(it);
+
+      src.Value.RejectCrossLink(dest);
+      src.Value.RejectCrossLink(dest.Location.Items);
+      dest.RejectCrossLink(dest.Location.Items);
+
       return true;
     }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 #nullable enable
 
@@ -150,11 +151,17 @@ namespace djack.RogueSurvivor.Data.Model
                 return;
             }
 
-            var inv = Inventory;
-#if DEBUG
-            if (null == inv || !inv.Contains(it)) throw new InvalidOperationException("tracing");
-#endif
-            inv.RemoveAllQuantity(it);
+            loc.Value.Map.RemoveAt(it, loc.Value.Position);
+        }
+
+        public bool Take(Data.Item it) {
+            var iinv = IInv;
+            if (null != iinv) return iinv.Take(it);
+            if (null != loc) {
+                loc.Value.Drop(it);
+                return true;
+            }
+            return false;
         }
 
         public Data.Item? GetFirst(Gameplay.Item_IDs id)
@@ -180,6 +187,14 @@ namespace djack.RogueSurvivor.Data.Model
           return false;
         }
         // end change targets for centralized actor handling
+
+        [Conditional("DEBUG")]
+        public void RejectCrossLink(Data.Inventory? other) {
+            if (null != other) Inventory?.RejectCrossLink(other);
+        }
+
+        [Conditional("DEBUG")]
+        public void RejectCrossLink(InvOrigin other) => RejectCrossLink(other.Inventory);
 
         public override string ToString()
         {

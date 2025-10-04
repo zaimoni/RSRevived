@@ -889,16 +889,8 @@ namespace djack.RogueSurvivor.Data
 
         public bool Transfer(int index, Model.InvOrigin dest) {
             if (null == m_Items[index]) return true;
-            var inv = dest.Inventory;
-            if (null != inv) {
-                if (inv.AddAll(m_Items[index])) {
-                    m_Items[index] = null;
-                    return true;
-                }
-                return false;
-            }
-            if (dest.IsGroundInventory) {
-                dest.Location.Drop(m_Items[index]);
+
+            if (dest.Take(m_Items[index])) {
                 m_Items[index] = null;
                 return true;
             }
