@@ -87,7 +87,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             var _locs = dests.Where(loc => !loc.StrictHasActorAt);
             if (!_locs.Any()) return null;
 
-            var ret = oai.BehaviorPathTo(new HashSet<Location>(_locs));
+            var ret = oai.BehaviorPathTo(new(_locs));
             return (ret?.IsPerformable() ?? false) ? ret : null;
         }
     }

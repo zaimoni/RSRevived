@@ -4,6 +4,14 @@ using System.Linq;
 
 namespace Zaimoni.Data
 {
+    // Generally, if pathfinding fails we want to fail over to null return,
+    // but examine the map at the failure for debugging purposes.
+    public class Pathfail : Exception
+    {
+        public Pathfail(string msg = "tracing") : base(msg) { }
+        public Pathfail(Exception src, string msg = "tracing") : base(msg, src) { }
+    }
+
     /// <summary>
     /// basic floodfill pathfinder.  Morally a Dijkstra mapper.
     /// </summary>
@@ -282,7 +290,7 @@ namespace Zaimoni.Data
                   if (null != _blacklist_fn && _blacklist_fn(pt)) continue;
                   if (max_delta_cost <= (delta_cost = tmp2.Value)) continue;
 #if DEBUG
-                  if (0 >= delta_cost) throw new InvalidOperationException("pathological cost function given to FloodfillFinder");
+                  if (0 >= delta_cost) throw new Pathfail("pathological cost function given to FloodfillFinder");
 #else
                   if (0 >= delta_cost) continue;    // disallow pathological cost functions
 #endif
@@ -330,7 +338,7 @@ namespace Zaimoni.Data
 
             // a proper Dijkstra search is in increasing cost order
             Dictionary<int, HashSet<T>> _now = new Dictionary<int, HashSet<T>>();
-            if (!_bootstrap(goals, _now)) throw new InvalidOperationException("must have at least one goal");
+            if (!_bootstrap(goals, _now)) throw new Pathfail("must have at least one goal");
 
             while (0 < _now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now, max_cost);    // inlined PartialGoalDistance
             var only_reachable = start.Where(pos => _map.ContainsKey(pos));
@@ -348,7 +356,7 @@ namespace Zaimoni.Data
 
             // a proper Dijkstra search is in increasing cost order
             Dictionary<int, HashSet<T>> _now = new Dictionary<int, HashSet<T>>();
-            if (!_bootstrap(goal_costs, _now)) throw new InvalidOperationException("must have at least one goal");
+            if (!_bootstrap(goal_costs, _now)) throw new Pathfail("must have at least one goal");
 
             while (0 < _now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now, max_cost);    // inlined PartialGoalDistance
             var only_reachable = start.Where(pos => _map.ContainsKey(pos));
@@ -371,7 +379,7 @@ namespace Zaimoni.Data
             Dictionary<int, HashSet<T>> _now = new Dictionary<int, HashSet<T>>();
             IEnumerable<T> legal_start = start.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp));
             if (null != _blacklist_fn) legal_start = legal_start.Where(tmp => !_blacklist_fn(tmp));
-            if (!legal_start.Any()) throw new InvalidOperationException("no legal starting points");
+            if (!legal_start.Any()) throw new Pathfail("no legal starting points");
             if (legal_start.Any(tmp => goals(tmp))) return;    // no-op; not a hard error but should not have called
             if (!_bootstrap(legal_start, _now)) return;    // no-op; should be a hard error but a runtime issue
 
@@ -387,7 +395,7 @@ namespace Zaimoni.Data
                   if (max_delta_cost<= tmp2.Value) continue;
                   if (null != _blacklist_fn && _blacklist_fn(tmp2.Key)) continue;
 #if DEBUG
-                  if (0 >= tmp2.Value) throw new InvalidOperationException("pathological cost function given to FloodfillFinder");
+                  if (0 >= tmp2.Value) throw new Pathfail("pathological cost function given to FloodfillFinder");
 #else
                   if (0 >= tmp2.Value) continue;    // disallow pathological cost functions
 #endif

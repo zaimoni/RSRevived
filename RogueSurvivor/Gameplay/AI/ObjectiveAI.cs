@@ -4808,7 +4808,18 @@ restart:
        if (   !District.IsSewersMap(m_Actor.Location.Map)
            && !goals.Any(loc => loc.Map!= m_Actor.Location.Map)) {
          _current_goals = goals;
-         return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(Location.pos))),goals);
+         try {
+           return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(Location.pos))),goals);
+         } catch (Pathfail) {
+#if DEBUG
+           if (!RogueGame.IsSimulating) {
+             RogueGame.Game.PanViewportTo(m_Actor);
+             World.Get.DaimonMap();
+             RogueGame.Game.ErrorPopup("floodfill fail");
+           }
+#endif
+           return null;
+         }
        }
       if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: past single map pathfinder reduction");
 
