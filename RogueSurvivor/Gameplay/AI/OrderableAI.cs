@@ -10,6 +10,7 @@
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.AI;
+using djack.RogueSurvivor.Engine._Action;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
@@ -3285,8 +3286,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var best_armor = m_Actor.GetEquippedArmor();
           if (null != best_armor && armor.Rating > best_armor.Rating) {
             // we actually want to wear this (second test redundant now, but not once stockpiling goes in)
-            return ActionTradeWith.Cast(in stack, m_Actor, best_armor, obj);
-          }
+            return TradeItem.Cast(in stack, m_Actor, best_armor, obj);          }
         }
 #if DEBUG
         if (is_real && !m_Actor.MayTakeFrom(in stack)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take");
@@ -3310,7 +3310,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var best_armor = m_Actor.GetEquippedArmor();
           if (null != best_armor && armor.Rating > best_armor.Rating) {
             // we actually want to wear this (second test redundant now, but not once stockpiling goes in)
-            return ActionTradeWith.Cast(loc, m_Actor, best_armor, obj);
+            return TradeItem.Cast(loc, m_Actor, best_armor, obj);
           }
         }
 #if DEBUG

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
+using djack.RogueSurvivor.Engine._Action;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine.Items;
@@ -21,9 +22,6 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
-using Microsoft.VisualBasic.Logging;
-using static System.Net.Mime.MediaTypeNames;
-using djack.RogueSurvivor.Engine._Action;
 using static djack.RogueSurvivor.Engine._Action.BehavioristABC;
 
 namespace djack.RogueSurvivor.Gameplay.AI
@@ -6441,7 +6439,7 @@ restart_chokepoints:
       var trade = BehaviorTradeWithinClan(give);
       if (null != trade) return trade;
       if (stack.IsAccessible(m_Actor.Location)) {
-        var act = ActionTradeWith.Cast(stack, m_Actor, give, take);
+        var act = TradeItem.Cast(stack, m_Actor, give, take);
         if (null != act) return act;
       }
       return BehaviorDropItem(give);
@@ -6455,7 +6453,7 @@ restart_chokepoints:
       var trade = BehaviorTradeWithinClan(give);
       if (null != trade) return trade;
       if (null != position) {
-        var act = ActionTradeWith.Cast(position.Value, m_Actor, give, take);
+        var act = TradeItem.Cast(position.Value, m_Actor, give, take);
         if (null != act) return act;
       }
       return BehaviorDropItem(give);
@@ -6974,7 +6972,7 @@ restart_chokepoints:
           // flashlights tend to not be very disruptive to other pathing
           var discard = inv.GetFirstMatching<ItemLight>();
           if (null != discard) {
-            var initiate = ActionTradeWith.Cast(in stack, m_Actor, discard, it);
+            var initiate = TradeItem.Cast(in stack, m_Actor, discard, it);
             if (null != initiate) {
               var actions = new List<ActorAction> { initiate };
               actions.Add(new ActionUseItem(m_Actor, it)); // won't be performable, but would be after initiation
@@ -7745,7 +7743,7 @@ restart_chokepoints:
               }
             }
           }
-          if (null != test) return ActionTradeWith.Cast(dest.Value, m_Actor, src, test);
+          if (null != test) return TradeItem.Cast(dest.Value, m_Actor, src, test);
         }
 
         // optimization: swap for most-loaded ranged weapon taking same ammo
@@ -7770,7 +7768,7 @@ restart_chokepoints:
               }
             }
           }
-          if (null != test) return ActionTradeWith.Cast(dest.Value, m_Actor, src, test);
+          if (null != test) return TradeItem.Cast(dest.Value, m_Actor, src, test);
         }
       }
 

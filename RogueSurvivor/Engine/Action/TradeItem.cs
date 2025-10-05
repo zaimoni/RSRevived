@@ -71,11 +71,11 @@ namespace djack.RogueSurvivor.Engine._Action
             }
             var a = loc.Actor;
             if (!a?.IsPlayer ?? false) {
-                if (a.IsCarrying(take)) Cast(new Data.Model.InvOrigin(a), actor, give, take);
+                if (a.IsCarrying(take)) return Cast(new Data.Model.InvOrigin(a), actor, give, take);
             }
 
             var g_inv = loc.Items;
-            if (g_inv?.Contains(take) ?? false) Cast(new Data.Model.InvOrigin(loc), actor, give, take);
+            if (g_inv?.Contains(take) ?? false) return Cast(new Data.Model.InvOrigin(loc), actor, give, take);
 #if DEBUG
             throw new InvalidOperationException("tracing"); // need to verify null return
 #endif
@@ -95,11 +95,11 @@ namespace djack.RogueSurvivor.Engine._Action
             }
             var a = loc.Actor;
             if (!a?.IsPlayer ?? false) {
-                if (a.IsCarrying(take)) Cast(new Data.Model.InvOrigin(a), actor, give, take);
+                if (a.IsCarrying(take)) return Cast(new Data.Model.InvOrigin(a), actor, give, take);
             }
 
             var g_inv = loc.Items;
-            if (g_inv?.Contains(take) ?? false) Cast(new Data.Model.InvOrigin(loc), actor, give, take);
+            if (g_inv?.Contains(take) ?? false) return Cast(new Data.Model.InvOrigin(loc), actor, give, take);
 #if DEBUG
             throw new InvalidOperationException("tracing"); // need to verify null return
 #endif

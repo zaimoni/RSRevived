@@ -1,10 +1,10 @@
-﻿using System;
+﻿using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine._Action;
+using djack.RogueSurvivor.Engine.Actions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
-using djack.RogueSurvivor.Data;
-using djack.RogueSurvivor.Engine.Actions;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
@@ -54,7 +54,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
           if (src_is_inanimate) {
             var recover = (who.Controller as ObjectiveAI)?.BehaviorMakeRoomFor(take, in src, false);
             if (recover is ActorGive give) {
-              return ActionTradeWith.Cast(src, who, give.Give, take);
+              return TradeItem.Cast(src, who, give.Give, take);
             }
           }
           return null;
