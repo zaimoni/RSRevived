@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    public sealed class TradeItem : ActorAction, ActorGive, ActorTake
+    public sealed class TradeItem : ActorAction, ActorGive, ActorTake, TargetActor
     {
         private readonly Item m_TakeItem;
         private readonly Item m_GiveItem;
@@ -18,6 +18,7 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public Item Give { get => m_GiveItem; }
         public Item Take { get => m_TakeItem; }
+        public Actor? Whom { get => m_dest.a_owner; }
 
         private TradeItem(Actor actor, Item give, Item take, in Data.Model.InvOrigin dest) : base(actor)
         {

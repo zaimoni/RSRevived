@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         if (t_actor.CanGet(gift)) return true;
         var recover = m_Target.BehaviorMakeRoomFor(gift,m_Actor.Location,false); // unsure if this works cross-map
         if (null == recover) return false;
-        if (recover is ActionTradeWithActor trade && trade.Whom == t_actor) {
+        if (recover is Engine._Action.TradeItem trade && trade.Whom == t_actor) {
           if (trade.IsPerformable()) {
             m_ConcreteAction = trade;
             return true;

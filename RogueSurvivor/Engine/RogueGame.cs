@@ -9901,38 +9901,6 @@ namespace djack.RogueSurvivor.Engine
       witnesses?.AddMessage(MakePanopticMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
     }
 
-    private void DoTradeWith(Actor actor, Inventory dest, Item give, Item take)
-    {
-      var inv = actor.Inventory;
-#if DEBUG
-      if (null == inv) throw new ArgumentNullException(nameof(actor)+".Inventory");
-#endif
-      inv.RejectCrossLink(dest);
-      var witnesses = _ForceVisibleToPlayer(actor);
-      witnesses?.AddMessage(MakePanopticMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
-
-      actor.SpendActionPoints();
-      actor.Remove(give);
-      dest.RemoveAllQuantity(take);
-      if (!give.IsUseless) dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
-      actor.TakeAsMuchAsPossible(take);
-      inv.RejectCrossLink(dest);
-    }
-
-    public void DoTradeWithContainer(Actor actor, in ShelfLike obj, Item give, Item take)
-    {
-      DoTradeWith(actor, obj.Inventory, give, take);
-    }
-
-    public void DoTradeWithGround(Actor actor, in Location loc, Item give, Item take)
-    {
-      var dest = loc.Items;
-#if DEBUG
-      if (null == dest) throw new ArgumentNullException(nameof(dest));
-#endif
-      DoTradeWith(actor, dest, give, take);
-    }
-
     /// <remark>speaker's item is Key of trade; target's item is Value</remark>
     private void DoTrade(OrderableAI speaker_c, KeyValuePair<Item, Item>? trade, OrderableAI target_c, bool doesTargetCheckForInterestInOffer)
     {
@@ -9983,11 +9951,6 @@ namespace djack.RogueSurvivor.Engine
       target.Remove(take);
       speaker.Take(take);
       target.Take(donate);
-    }
-
-    public void DoTrade(OrderableAI speaker_c, OrderableAI target_c, Item give, Item take)
-    {
-      DoTrade(speaker_c, new KeyValuePair<Item, Item>(give, take), target_c, false);
     }
 
     public void DoTrade(OrderableAI speaker_c, OrderableAI target_c)
