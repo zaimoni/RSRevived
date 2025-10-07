@@ -2445,13 +2445,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             var i_want = a.Inventory!.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
-            return new ActionTradeWithActor(m_Actor, they_want.First(), i_want.First(), a);
+            return TradeItem.Cast(new Data.Model.InvOrigin(a), m_Actor, they_want.First(), i_want.First());
          }
       }
       return null;
     }
 
-    protected ActionTradeWithActor? BehaviorTradeWithinClan(Item give) {
+    protected TradeItem? BehaviorTradeWithinClan(Item give) {
       // somewhat like BehaviorRequestCriticalFromGroup
       if (!(give is UsableItem use && !use.UseBeforeDrop(m_Actor))) return null;
       var clan = m_Actor.ChainOfCommand;
@@ -2462,7 +2462,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (!use.UseBeforeDrop(a)) continue;
             var i_want = a.Inventory!.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
-            return new ActionTradeWithActor(m_Actor, give, i_want.First(), a);
+            return TradeItem.Cast(new Data.Model.InvOrigin(a), m_Actor, give, i_want.First());
          }
       }
       return null;
@@ -6694,7 +6694,7 @@ restart_chokepoints:
               if (null != tmp) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
-              tmp = ActionTradeWith.Cast(in stack, m_Actor, drop, it);
+              tmp = TradeItem.Cast(in stack, m_Actor, drop, it);
               if (null != tmp) recover.Add(tmp);
             }
             if (0 == recover.Count) {
@@ -6734,7 +6734,7 @@ restart_chokepoints:
               if (null != tmp) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
-              tmp = ActionTradeWith.Cast(in stack, m_Actor, drop, it);
+              tmp = TradeItem.Cast(in stack, m_Actor, drop, it);
               if (null != tmp) recover.Add(tmp);
             }
             if (0 == recover.Count) {
@@ -7108,7 +7108,7 @@ restart_chokepoints:
 
               // 3a) drop target without triggering the no-pickup schema
               // 3a) drop target without triggering the no-pickup schema
-              tmp = ActionTradeWith.Cast(position.Value, m_Actor, drop, it);
+              tmp = TradeItem.Cast(position.Value, m_Actor, drop, it);
               if (null != tmp) recover.Add(tmp);
             }
             if (0 == recover.Count) {
@@ -7148,7 +7148,7 @@ restart_chokepoints:
               if (null != tmp) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
-              tmp = ActionTradeWith.Cast(position.Value, m_Actor, drop, it);
+              tmp = TradeItem.Cast(position.Value, m_Actor, drop, it);
               if (null != tmp) recover.Add(tmp);
             }
             if (0 == recover.Count) {
@@ -7396,7 +7396,7 @@ restart_chokepoints:
         // flashlights tend to not be very disruptive to other pathing
         var discard = inv.GetFirstMatching<ItemLight>();
         if (null != discard) {
-          var initiate = ActionTradeWith.Cast(position.Value, m_Actor, discard, it);
+          var initiate = TradeItem.Cast(position.Value, m_Actor, discard, it);
           if (null != initiate) {
             var actions = new List<ActorAction> { initiate };
             actions.Add(new ActionUseItem(m_Actor, it)); // won't be legal but would be after initiation
