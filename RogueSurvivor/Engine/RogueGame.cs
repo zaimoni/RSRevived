@@ -3137,9 +3137,7 @@ namespace djack.RogueSurvivor.Engine
       pc.SparseReset();
       pc.UpdateSensors();
       pc.BeforeAction();
-      setPlayer(m_Player);
       m_PlayerInTurn = player;
-      SetCurrentMap(player.Location);  // multi-PC support
 
       GC.Collect(); // force garbage collection when things should be slow anyway
       GC.WaitForPendingFinalizers();
@@ -3150,7 +3148,7 @@ namespace djack.RogueSurvivor.Engine
       int hotkey_turns = 0;
       bool flag1 = true;
       do {
-        if (Player!=player) SetCurrentMap(setPlayer(player).Location);  // multi-PC support
+        PanViewportTo(player);  // multi-PC support
         m_UI.UI_SetCursor(null);
         // hint available?
         // alpha10 no hint if undead
@@ -13104,6 +13102,17 @@ namespace djack.RogueSurvivor.Engine
       return Player.Controller.IsVisibleTo(mapObj.Location);
     }
 #nullable restore
+
+    public void PanViewportToRedraw(in Location loc)
+    {
+      var stage = loc.View;
+      lock(m_MapView) {
+        if (stage != m_MapView) {
+          m_MapView = loc.View;
+        }
+      }
+      RedrawPlayScreen();
+    }
 
     public void PanViewportTo(in Location loc)
     {
