@@ -19,16 +19,17 @@ namespace djack.RogueSurvivor.Data
     [Serializable]
     public class ImplicitRadio : Observer<Location[]>
     {
-        public readonly ThreatTracking Threats;
-        public readonly LocationSet Investigate;
         public readonly GameFactions.IDs FactionID;
+        public readonly RadioFaction Faction;
 
         public ImplicitRadio(RadioFaction faction)
         {
-            Threats = faction.Threats;
-            Investigate = faction.Investigate;
             FactionID = faction.FactionID;
+            Faction = faction;
         }
+
+        ThreatTracking Threats => Faction.Threats;
+        LocationSet Investigate => Faction.Investigate;
 
         public bool update(Location[] fov) {
             var my_faction = GameFactions.From(FactionID);
