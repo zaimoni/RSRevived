@@ -4406,7 +4406,7 @@ namespace djack.RogueSurvivor.Engine
         var wanted = Session.Get.Police.Wanted();
         if (null != wanted) {
           void police_wanted(List<string> display) {
-            void name_him(ActorTag a) { display.Add(a.Name); }
+            void name_him(KeyValuePair<ActorTag, Engine.AI.WhereWhen> a) { display.Add(a.Key.Name + "; " + a.Value.ToString()); }
             wanted.DoForEach_(name_him, () => display.Add("Death-penalty criminals:"));
             if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT < display.Count) {
               display.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT-1, (display.Count-SHOW_SPECIAL_DIALOGUE_LINE_LIMIT)+1);

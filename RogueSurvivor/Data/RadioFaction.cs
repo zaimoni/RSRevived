@@ -1,4 +1,5 @@
 ﻿using djack.RogueSurvivor.Engine;
+using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,7 @@ namespace djack.RogueSurvivor.Data
                 var actorAt = loc.Actor;
                 if (null != actorAt && (my_faction.IsEnemyOf(actorAt.Faction) || Threats.IsThreat(actorAt))) {
                     Threats.Sighted(actorAt, loc);
+                    Session.FromID(FactionID)?.Sighted(actorAt);
                     continue;
                 }
                 if (!stage.TryGetValue(loc.Map, out var cache)) stage.Add(loc.Map, cache = new List<Point>());
@@ -148,11 +150,17 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Serializable]
-    public record class SVOevent(ActorTag s, sbyte v, ActorTag d_o, int t0) {
+    public record class SVOevent(ActorTag s, WhereWhen seen, sbyte v, ActorTag d_o, int t0) {
         public readonly ActorTag subject = s;
+        public readonly Engine.AI.WhereWhen s_last_seen = seen;
+//        public readonly ActorTag subject = new(s);
+//        public readonly Engine.AI.WhereWhen s_last_seen = new(s.Location, t0);
         public readonly sbyte v_code = v;
         public readonly ActorTag direct_object = d_o;
         public readonly int Turn = t0;
+
+        public SVOevent(Actor s, sbyte v, ActorTag d_o, int t0) : this(new(s), new(s.Location,t0), v, d_o, t0) { }
+        public SVOevent(SVOevent src, WhereWhen update) : this(src.subject, update, src.v_code, src.direct_object, src.Turn) { }
     }
 
     [Serializable]
@@ -244,17 +252,17 @@ namespace djack.RogueSurvivor.Data
 
         public SVOevent? EncodeKill(Actor? killer, Actor victim, int t0) {
             if (null == killer) return null;
-            if (IsMine(victim)) return new(new(killer), 1, new(victim), t0); // faction kill
-            if (Rules.IsMurder(killer, victim)) return new(new(killer), 3, new(victim), t0);
+            if (IsMine(victim)) return new(killer, 1, new(victim), t0); // faction kill
+            if (Rules.IsMurder(killer, victim)) return new(killer, 3, new(victim), t0);
             return null;
         }
 
         public SVOevent? EncodeAggression(Actor killer, Actor victim, int t0) {
             if (Rules.IsMurder(killer, victim)) {
                 if (IsMine(victim)) { // faction aggression
-                    return new(new(killer), 2, new(victim), t0);
+                    return new(killer, 2, new(victim), t0);
                 } else { // assault
-                    return new(new(killer), 4, new(victim), t0);
+                    return new(killer, 4, new(victim), t0);
                 };
             }
             return null;
@@ -301,15 +309,30 @@ namespace djack.RogueSurvivor.Data
         }
         public int CountAssaults(Actor perp) => CountAssaults(new ActorTag(perp));
 
-        public List<ActorTag>? Wanted() {
+        public void Sighted(Actor a) {
+            ActorTag evil = new(a);
+            int i = m_EventLog.Count;
+            while (0 <= --i) {
+                var whom = m_EventLog[i].subject;
+                if (m_EventLog[i].subject == evil) {
+                    m_EventLog[i] = new(m_EventLog[i], new(a.Location, a.Location.Map.LocalTime.TurnCounter));
+                }
+            }
+        }
+
+        public List<KeyValuePair<ActorTag, Engine.AI.WhereWhen> >? Wanted() {
             List<ActorTag> ret = new();
+            List<KeyValuePair<ActorTag, Engine.AI.WhereWhen> > ret2 = new();
             // want time-reversed order
             int i = m_EventLog.Count;
             while (0 <= --i) {
                 var whom = m_EventLog[i].subject;
-                if (!ret.Contains(whom)) ret.Add(whom);
+                if (!ret.Contains(whom)) {
+                    ret.Add(whom);
+                    ret2.Add(new(whom, m_EventLog[i].s_last_seen));
+                }
             }
-            return (0<ret.Count) ? ret : null;
+            return (0<ret2.Count) ? ret2 : null;
         }
 
         public void onTurnStart(Actor a) {

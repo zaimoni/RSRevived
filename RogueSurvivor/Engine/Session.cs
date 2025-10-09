@@ -65,6 +65,12 @@ namespace djack.RogueSurvivor.Engine
         public Scoring Scoring { get { return m_Scoring; } }
         public Scoring_fatality Scoring_fatality { get { return m_Scoring_fatality; } }
 
+        public static RadioFaction? FromID(GameFactions.IDs id) {
+            var police = Get.Police;
+            if (police.FactionID == id) return police;
+            return null;
+        }
+
 #if false
         private Session(GameMode mode = GameMode.GM_STANDARD)
 #else
