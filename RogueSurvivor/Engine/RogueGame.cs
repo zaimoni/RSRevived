@@ -4282,13 +4282,13 @@ namespace djack.RogueSurvivor.Engine
             var len_ub = header.Length;
             var scan = dest.Count;
             while(0 <= --scan) {
-                var len = dest[scan].Length;
+                var len = dest[scan]?.Length ?? 0;
                 if (len_ub < len) len_ub = len;
             }
             scan = dest.Count;
             while(0 <= --scan) {
-                var delta = len_ub - dest[scan].Length;
-                if (0 < delta) dest[scan] = string.Concat(new string(' ', delta), dest[scan]);
+                var delta = len_ub - (dest[scan]?.Length ?? 0);
+                if (0 < delta) dest[scan] = string.Concat(new string(' ', delta), dest[scan] ?? "");
             }
             var h_delta = len_ub - header.Length;
             if (0 < h_delta) {
