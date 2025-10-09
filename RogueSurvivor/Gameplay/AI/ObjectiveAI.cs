@@ -6600,7 +6600,6 @@ restart_chokepoints:
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
-      if (!m_Actor.Inventory.IsFull) throw new InvalidOperationException("already have room for "+it.ToString());
       if (m_Actor.CanGet(it)) throw new InvalidOperationException("already could get "+it.ToString());
       if (ItemIsUseless(it)) throw new InvalidOperationException(it.ToString()+" is useless and need not have room made for it");
       if (null == stack.obj_owner && null == stack.loc) throw new InvalidOperationException("do not try to grab from actor inventory");
@@ -7015,7 +7014,6 @@ restart_chokepoints:
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
-      if (!m_Actor.Inventory.IsFull) throw new InvalidOperationException("already have room for "+it.ToString());
       if (m_Actor.CanGet(it)) throw new InvalidOperationException("already could get "+it.ToString());
       if (ItemIsUseless(it)) throw new InvalidOperationException(it.ToString()+" is useless and need not have room made for it");
       // also should require IsInterestingItem(it), but that's infinite recursion for reasonable use cases

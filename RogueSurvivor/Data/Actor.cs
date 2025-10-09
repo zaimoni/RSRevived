@@ -3214,12 +3214,11 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool CanTake(Item it) {
-#if PROTOTYPE
       if (it is ItemBodyArmor armor) {
         if (m_InventorySlots[SLOT_H_TORSO] is ItemBodyArmor worn) return worn.Rating < armor.Rating;
         return true;
       }
-#endif
+      if (it is ItemTrap trap && trap.IsTriggered) return false;
       return m_Inventory?.CanAddAll(it) ?? false;
     }
 
@@ -3535,8 +3534,10 @@ final_exit:
     private string ReasonCantGet(Item it)
     {
       if (!CanGetItems()) return "no inventory";
-      if (m_Inventory.IsFull && !m_Inventory.CanAddAtLeastOne(it)) return "inventory is full";
-      if (it is ItemTrap trap && trap.IsTriggered) return "triggered trap";
+      if (!CanTake(it)) {
+        if (m_Inventory.IsFull && !m_Inventory.CanAddAtLeastOne(it)) return "inventory is full";
+        if (it is ItemTrap trap && trap.IsTriggered) return "triggered trap";
+      }
       return "";
     }
 

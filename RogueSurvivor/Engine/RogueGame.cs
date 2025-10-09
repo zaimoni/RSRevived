@@ -13107,13 +13107,19 @@ namespace djack.RogueSurvivor.Engine
 
     public void PanViewportTo(in Location loc)
     {
-      lock(m_MapView) { m_MapView = loc.View; }
-      RedrawPlayScreen();
+      var stage = loc.View;
+      lock(m_MapView) {
+        if (stage != m_MapView) {
+          m_MapView = loc.View;
+          RedrawPlayScreen();
+        }
+      }
     }
 
 #nullable enable
     public void PanViewportTo(Actor player) {
       if (Player != player) PanViewportTo(setPlayer(player).Location);
+      else PanViewportTo(player.Location);
     }
 
     public void PanViewportTo(List<PlayerController> witnesses) {

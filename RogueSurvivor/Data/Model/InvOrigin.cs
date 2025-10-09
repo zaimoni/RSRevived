@@ -159,6 +159,13 @@ namespace djack.RogueSurvivor.Data.Model
             loc.Value.Map.RemoveAt(it, loc.Value.Position);
         }
 
+        public bool CanTake(Data.Item it) {
+            var iinv = IInv;
+            if (null != iinv) return iinv.CanTake(it);
+
+            return Inventory?.CanAddAll(it) ?? null != loc;
+        }
+
         public bool Take(Data.Item it) {
             var iinv = IInv;
             if (null != iinv) return iinv.Take(it);
@@ -183,9 +190,9 @@ namespace djack.RogueSurvivor.Data.Model
         }
 
         public bool Transfer(Data.Item it, InvOrigin dest) {
-          if (dest.CanAddAll(it)) {
+          if (dest.CanTake(it)) {
             Remove(it);
-            dest.AddAll(it);
+            dest.Take(it);
             return true;
           }
           dest.AddAsMuchAsPossible(it);
