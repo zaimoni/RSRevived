@@ -28,7 +28,8 @@ namespace djack.RogueSurvivor.Engine.Items
       return null;
     }
 
-    public ItemAmmo(ItemAmmoModel model) : base(model, model.MaxQuantity) {}
+    public ItemAmmo(ItemAmmoModel model, int qty) : base(model, qty) {}
+    public ItemAmmo(ItemAmmoModel model) : this(model, model.MaxQuantity) {}
 
 #region implement Zaimoni.Serialization.ISerialize
         protected ItemAmmo(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}

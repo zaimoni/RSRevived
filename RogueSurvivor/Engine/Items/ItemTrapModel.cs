@@ -45,8 +45,8 @@ namespace djack.RogueSurvivor.Engine.Items
       if (IsFlammable) m_Flags |= Flags.IS_FLAMMABLE;
     }
 
-    public override Item create() { return new ItemTrap(this); }
-    public ItemTrap instantiate() { return new ItemTrap(this); }
+    public override ItemTrap create() => new(this);
+    public override ItemTrap from(in Item_s src) => new(this, src.QtyLike, src.Flags);
 
     [System.Flags]
     private enum Flags

@@ -17,6 +17,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool IsFragile { get { return Model.IsFragile; } }
 
     public ItemMeleeWeapon(ItemMeleeWeaponModel model) : base(model) { }
+    public ItemMeleeWeapon(ItemMeleeWeaponModel model, int qty) : base(model, qty) { }
 
 #region implement Zaimoni.Serialization.ISerialize
     protected ItemMeleeWeapon(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}

@@ -30,6 +30,7 @@ namespace djack.RogueSurvivor.Engine.Items
       Example = create();
     }
 
-    public override ItemRangedWeapon create() { return new ItemRangedWeapon(this); }
+    public override ItemRangedWeapon create() => new(this);
+    public override ItemRangedWeapon from(in Item_s src) => new(this, src.QtyLike);
   }
 }

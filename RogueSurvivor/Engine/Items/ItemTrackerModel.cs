@@ -36,8 +36,9 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public override Item create() { return new ItemTracker(this); }
-    public ItemTracker instantiate() { return new ItemTracker(this); }
+    public override ItemTracker create() => new(this);
+    public ItemTracker instantiate() => new(this);
+    public override ItemTracker from(in Item_s src) => new(this, src.QtyLike);
 
     public void Tracks(ref Span<bool> flags) {
       if (TrackingFlags.NONE != (Tracking & TrackingFlags.FOLLOWER_AND_LEADER)) { flags[(int)TrackingOffset.FOLLOWER_AND_LEADER] = true; }

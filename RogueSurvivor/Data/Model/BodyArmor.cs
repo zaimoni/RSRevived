@@ -22,5 +22,6 @@ namespace djack.RogueSurvivor.Data.Model
         public int Rating { get => Protection_Hit + Protection_Shot; }
 
         public override Engine.Items.ItemBodyArmor create() => new(this);
+        public override Engine.Items.ItemBodyArmor from(in Item_s src) => new(this);
     }
 }

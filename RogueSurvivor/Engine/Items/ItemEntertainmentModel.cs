@@ -23,7 +23,8 @@ namespace djack.RogueSurvivor.Engine.Items
       StackingLimit = stacking;
     }
 
-    public override Item create() { return new ItemEntertainment(this); }
-    public ItemEntertainment instantiate() { return new ItemEntertainment(this); }
+    public override ItemEntertainment create() => new(this);
+    public ItemEntertainment instantiate() => new(this);
+    public override ItemEntertainment from(in Item_s src) => new(this, src.QtyLike);
   }
 }

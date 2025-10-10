@@ -19,7 +19,8 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public int Ammo;
 
-    public ItemRangedWeapon(ItemRangedWeaponModel model) : base(model) { Ammo = model.MaxAmmo; }
+    public ItemRangedWeapon(ItemRangedWeaponModel model, int qty) : base(model) { Ammo = qty; }
+    public ItemRangedWeapon(ItemRangedWeaponModel model) : this(model, model.MaxAmmo) {}
 #region implement Zaimoni.Serialization.ISerialize
     protected ItemRangedWeapon(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
         Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref Ammo);

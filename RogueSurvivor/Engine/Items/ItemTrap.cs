@@ -55,6 +55,10 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
     public ItemTrap(ItemTrapModel model) : base(model) {}
+    public ItemTrap(ItemTrapModel model, int qty, uint flags) : base(model, qty) {
+      m_IsActivated = (0 != (flags & 1U));
+      m_IsTriggered = (0 != (flags & 2U));
+    }
     public ItemTrap Clone() { return new ItemTrap(Model); }
 
 #region implement Zaimoni.Serialization.ISerialize

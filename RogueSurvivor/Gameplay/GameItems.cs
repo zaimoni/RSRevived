@@ -183,8 +183,28 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static Data.Model.Item From(int id) { return m_Models[id];  }
     public static Data.Model.Item From(Item_IDs id) { return m_Models[(int)id];  }
+    public static Item? From(Item_s src) {
+        int id = (int)src.ModelID;
+        if (m_Models.Length <= id) return null;
+        if (0 <= id) return m_Models[id].From(src);
+        if (id < (int)Item_IDs.UNLOADED_HANS_VON_HANZ_PISTOL) return null;
+        return From(decode(id));
+    }
 
-    private static void _setModel(Data.Model.Item model) {
+    private static Item_s decode(int extended) {
+      switch (extended) {
+      case (int)Item_IDs.UNLOADED_SANTAMAN_SHOTGUN: return new Item_s(Item_IDs.UNIQUE_SANTAMAN_SHOTGUN, 0);
+      case (int)Item_IDs.UNLOADED_HANS_VON_HANZ_PISTOL: return new Item_s(Item_IDs.UNIQUE_HANS_VON_HANZ_PISTOL, 0);
+      default: {
+        var delta = -extended;
+        delta -= 1;
+        delta += (int)Item_IDs.RANGED_ARMY_PISTOL;
+        return new Item_s((Item_IDs)delta, 0);
+      }
+      }
+    }
+
+        private static void _setModel(Data.Model.Item model) {
 #if DEBUG
       if (null != m_Models[(int) model.ID]) throw new InvalidOperationException("can only set item model once");
 #endif

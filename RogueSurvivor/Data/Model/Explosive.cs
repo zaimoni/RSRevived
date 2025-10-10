@@ -22,6 +22,7 @@ namespace djack.RogueSurvivor.Data.Model
         }
 
         // formally incorrect, but we only have grenades
-        public override ItemGrenade create() { return new ItemGrenade(this); }
+        public override ItemGrenade create() => new ItemGrenade(this);
+        public override ItemGrenade from(in Item_s src) => new(this, src.QtyLike);
     }
 }

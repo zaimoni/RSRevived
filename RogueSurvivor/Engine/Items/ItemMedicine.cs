@@ -22,6 +22,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public int SanityCure { get { return Model.SanityCure; } }
 
     public ItemMedicine(ItemMedicineModel model) : base(model) {}
+    public ItemMedicine(ItemMedicineModel model, int qty) : base(model, qty) {}
 
 #region implement Zaimoni.Serialization.ISerialize
     protected ItemMedicine(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}

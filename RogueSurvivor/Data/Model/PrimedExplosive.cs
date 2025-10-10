@@ -13,5 +13,7 @@
             FuseDelay = fuseDelay;
             m_Attack = attack;
         }
+
+        public override Data._Item.PrimedExplosive from(in Item_s src) => new(Gameplay.GameItems.From((Gameplay.Item_IDs)((int)ID-1)) as Explosive, src.QtyLike);
     }
 }

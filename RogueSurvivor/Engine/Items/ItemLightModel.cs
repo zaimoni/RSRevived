@@ -28,7 +28,8 @@ namespace djack.RogueSurvivor.Engine.Items
       OutOfBatteriesImageID = outOfBatteriesImageID;
     }
 
-    public override Item create() { return new ItemLight(this); }
-    public ItemLight instantiate() { return new ItemLight(this); }
+    public override ItemLight create() => new(this);
+    public override ItemLight from(in Item_s src) => new(this, src.QtyLike);
+
   }
 }

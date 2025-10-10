@@ -32,6 +32,7 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public override ItemMedicine create() { return new ItemMedicine(this); }
+    public override ItemMedicine create() => new(this);
+    public override ItemMedicine from(in Item_s src) => new(this, src.QtyLike);
   }
 }

@@ -26,6 +26,7 @@ namespace djack.RogueSurvivor.Engine.Items
       TagImageID = tagImageID;
     }
 
-    public override ItemSprayPaint create() { return new ItemSprayPaint(this); }
+    public override ItemSprayPaint create() => new(this);
+    public override ItemSprayPaint from(in Item_s src) => new(this, src.QtyLike);
   }
 }

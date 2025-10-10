@@ -48,6 +48,7 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public override ItemMeleeWeapon create() { return new ItemMeleeWeapon(this); }
+    public override ItemMeleeWeapon create() => new(this);
+    public override ItemMeleeWeapon from(in Item_s src) => new(this, src.QtyLike);
   }
 }

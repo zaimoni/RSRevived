@@ -29,20 +29,18 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public override bool IsUseless { get { return 0 >= PaintQuantity; } }
+    public override bool IsUseless { get { return 0 >= m_PaintQty; } }
 
-    public override Item_s toStruct() { return new Item_s(ModelID, PaintQuantity); }
+    public override Item_s toStruct() => new(ModelID, m_PaintQty);
     public override void toStruct(ref Item_s dest)
     {
             dest.ModelID = ModelID;
-            dest.QtyLike = PaintQuantity;
+            dest.QtyLike = m_PaintQty;
             dest.Flags = 0;
     }
 
-    public ItemSprayPaint(ItemSprayPaintModel model) : base(model)
-    {
-      PaintQuantity = model.MaxPaintQuantity;
-    }
+    public ItemSprayPaint(ItemSprayPaintModel model, int qty) : base(model) { PaintQuantity = qty; }
+    public ItemSprayPaint(ItemSprayPaintModel model) : this(model, model.MaxPaintQuantity) { }
 
 #region implement Zaimoni.Serialization.ISerialize
     protected ItemSprayPaint(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {

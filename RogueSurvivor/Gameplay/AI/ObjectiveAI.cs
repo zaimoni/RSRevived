@@ -7554,10 +7554,10 @@ restart_chokepoints:
       } else if (it is ItemTrap trap) {
         if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
         if (trap.IsActivated) return false;
-#if DEBUG
       } else if (it is ItemEntertainment) {
         if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
         if (2<=WantRestoreSAN) return true;
+#if DEBUG
       } else if (it is ItemBarricadeMaterial) {
         if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
       } else if (it is ItemSprayScent) {

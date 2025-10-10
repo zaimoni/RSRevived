@@ -59,5 +59,11 @@ namespace djack.RogueSurvivor.Data.Model
         }
 
         public virtual Data.Item create() => throw new InvalidOperationException("override Model.Item::create to do anything useful");
+        // C# makes the secure access level (private) a syntax error
+        public virtual Data.Item from(in Item_s src) => new(this, src.QtyLike);
+        public Data.Item From(Item_s src)  {
+            if (src.ModelID != ID) throw new InvalidOperationException("tracing");
+            return from(in src);
+        }
     }
 }

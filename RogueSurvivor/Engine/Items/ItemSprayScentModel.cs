@@ -24,6 +24,8 @@ namespace djack.RogueSurvivor.Engine.Items
       Strength = strength;
     }
 
-    public override ItemSprayScent create() { return new ItemSprayScent(this); }
+    public override ItemSprayScent create() => new(this);
+    public override ItemSprayScent from(in Item_s src) => new(this, src.QtyLike);
+
   }
 }

@@ -48,10 +48,9 @@ namespace djack.RogueSurvivor.Engine.Items
       return Batteries < rhs.Batteries;
     }
 
-    public ItemLight(ItemLightModel model) : base(model)
-    {
-      Batteries = model.MaxBatteries;
-    }
+    public ItemLight(ItemLightModel model, int qty) : base(model) { Batteries = qty; }
+    public ItemLight(ItemLightModel model) : this(model, model.MaxBatteries) {}
+
 
 #region implement Zaimoni.Serialization.ISerialize
     protected ItemLight(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
@@ -64,7 +63,7 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 #endregion
 
-    public override Item_s toStruct() { return new Item_s(ModelID, m_Batteries); }
+    public override Item_s toStruct() => new(ModelID, m_Batteries);
     public override void toStruct(ref Item_s dest)
     {
         dest.ModelID = ModelID;

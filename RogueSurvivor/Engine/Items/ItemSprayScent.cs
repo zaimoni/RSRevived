@@ -36,10 +36,8 @@ namespace djack.RogueSurvivor.Engine.Items
         dest.Flags = 0;
     }
 
-    public ItemSprayScent(ItemSprayScentModel model) : base(model)
-    {
-      SprayQuantity = model.MaxSprayQuantity;
-    }
+    public ItemSprayScent(ItemSprayScentModel model, int qty) : base(model) { SprayQuantity = qty; }
+    public ItemSprayScent(ItemSprayScentModel model) : this(model, model.MaxSprayQuantity) {}
 
 #region implement Zaimoni.Serialization.ISerialize
     protected ItemSprayScent(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {

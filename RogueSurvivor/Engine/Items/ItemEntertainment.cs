@@ -23,6 +23,7 @@ namespace djack.RogueSurvivor.Engine.Items
     new public ItemEntertainmentModel Model { get {return (base.Model as ItemEntertainmentModel)!; } }
 
     public ItemEntertainment(ItemEntertainmentModel model) : base(model) {}
+    public ItemEntertainment(ItemEntertainmentModel model, int qty) : base(model, qty) {}
 
 #region implement Zaimoni.Serialization.ISerialize
     protected ItemEntertainment(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {

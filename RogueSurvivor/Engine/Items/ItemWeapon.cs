@@ -16,6 +16,7 @@ namespace djack.RogueSurvivor.Engine.Items
   {
     new public ItemWeaponModel Model { get {return (base.Model as ItemWeaponModel)!; } }
     protected ItemWeapon(ItemWeaponModel model) : base(model) {}
+    protected ItemWeapon(ItemWeaponModel model, int qty) : base(model, qty) {}
 
 #region implement Zaimoni.Serialization.ISerialize
     protected ItemWeapon(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}

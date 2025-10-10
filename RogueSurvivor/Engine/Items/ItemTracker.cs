@@ -61,10 +61,8 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
 
-    public ItemTracker(ItemTrackerModel model) : base(model)
-    {
-      Batteries = model.MaxBatteries;
-    }
+    public ItemTracker(ItemTrackerModel model, int charge) : base(model) { Batteries = charge; }
+    public ItemTracker(ItemTrackerModel model) : this(model, model.MaxBatteries) {}
 
 #region implement Zaimoni.Serialization.ISerialize
     protected ItemTracker(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {

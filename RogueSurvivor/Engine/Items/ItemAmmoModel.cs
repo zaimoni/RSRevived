@@ -23,6 +23,7 @@ namespace djack.RogueSurvivor.Engine.Items
       StackingLimit = maxQuantity;
     }
 
-    public override ItemAmmo create() { return new ItemAmmo(this); }
+    public override ItemAmmo create() => new(this);
+    public override ItemAmmo from(in Item_s src) => new(this, src.QtyLike);
   }
 }
