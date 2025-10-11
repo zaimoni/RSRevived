@@ -2117,10 +2117,8 @@ namespace djack.RogueSurvivor.Data
         if (loc == Location) {
           if (tmp.IsPerformable()) ret.Add(exit.Location, tmp);
           else {
-            var obj = exit.Location.MapObject;
-            if (null != obj && CanBreak(obj)) {
-              ret.Add(exit.Location, new ActionBreak(this, obj));
-            }
+            var act_break = ActionBreak.schedule(this, exit.Location.MapObject);
+            if (null != act_break) ret.Add(exit.Location, act_break);
           }
         } else {
           ret.Add(exit.Location, new ActionUseExit(this, in loc));

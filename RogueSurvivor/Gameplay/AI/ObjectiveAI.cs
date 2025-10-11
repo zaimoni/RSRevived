@@ -4727,8 +4727,8 @@ restart:
           // copied from BaseAI::BehaviorUseExit
           var actorAt = e.Location.Actor;
           if (null == actorAt) {
-            var mapObjectAt = e.Location.MapObject;
-            if (mapObjectAt != null && m_Actor.CanBreak(mapObjectAt)) return new ActionBreak(m_Actor, mapObjectAt);
+              var act_break = ActionBreak.create(m_Actor, e.Location.MapObject);
+              if (null != act_break) return act_break;
           } else if (!m_Actor.IsEnemyOf(actorAt)) {
               var act = BehaviorMakeTime();
               if (null != act) return act;

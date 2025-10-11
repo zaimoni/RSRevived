@@ -14433,9 +14433,7 @@ retry:
       switch (rules.Roll(0, 5)) {
         case 0: return new ActionShout(actor, "AAAAAAAAAAA!!!");
         case 1: return new ActionBump(actor, rules.RollDirection());
-        case 2:
-          var mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position + rules.RollDirection());
-          return null == mapObjectAt ? null : new ActionBreak(actor, mapObjectAt);
+        case 2: return ActionBreak.create(actor, (actor.Location + rules.RollDirection()).MapObject);
         case 3:
           var inventory = actor.Inventory;
           if (null == inventory || inventory.IsEmpty) return null;

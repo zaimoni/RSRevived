@@ -390,8 +390,7 @@ namespace djack.RogueSurvivor.Engine
           if (null != exit && exit.Location==loc) {
            if (exit.IsNotBlocked(out var a, out var obj, actor)) return new ActionUseExit(actor, actor.Location);
            if (a != null && actor.IsEnemyOf(a) && actor.CanMeleeAttack(a)) return new ActionMeleeAttack(actor, a);
-           if (obj != null && actor.CanBreak(obj)) return new ActionBreak(actor, obj);
-           return null;
+           return ActionBreak.schedule(actor, obj);
           }
         }
         return actionMoveStep;
@@ -476,7 +475,10 @@ namespace djack.RogueSurvivor.Engine
           if (door.BarricadePoints > 0) {
             // pathfinding livings will break barricaded doors (they'll prefer to go around it)
             if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
-            if (actor.CanBreak(door, out reason)) return new ActionBreak(actor, door);
+            {
+            var act_break = ActionBreak.schedule(actor, mapObjectAt);
+            if (null != act_break) return act_break;
+            }
             reason = "cannot bash the barricade";
             return null;
           }
@@ -490,8 +492,10 @@ namespace djack.RogueSurvivor.Engine
         if (null != act) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause
-        if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
-          return new ActionBreak(actor, mapObjectAt);
+        if (actor.Model.Abilities.CanBashDoors) {
+          var act_break = ActionBreak.schedule(actor, mapObjectAt);
+          if (null != act_break) return act_break;
+        }
 
         // pushing is very bad for bumping, but ok for pathing
         if (actor.AbleToPush && actor.CanPush(mapObjectAt)) {
@@ -823,8 +827,10 @@ retry:
       if (null != act) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause
-      if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
-          return new ActionBreak(actor, mapObjectAt);
+      if (actor.Model.Abilities.CanBashDoors) {
+        var act_break = ActionBreak.create(actor, mapObjectAt);
+        if (null != act_break) return act_break;
+      }
       if (mapObjectAt is PowerGenerator powGen) {
           if (powGen.IsOn) {
             var charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.LEFT_HAND));   // normal lights and trackers

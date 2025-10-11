@@ -95,8 +95,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (null != exit && exit.Location == m_NewLocation) {
         if (!see_dest || exit.IsNotBlocked(m_Actor)) return new ActionUseExit(m_Actor, in m_Origin);  // all failures of this test require sight information
         if (null != actorAt) return null;   // should be in combat if enemy; don't have good options for allies
-        if (obj != null && m_Actor.CanBreak(obj)) return new ActionBreak(m_Actor, obj);
-        return null;    // probably an error in map object properties
+        return ActionBreak.schedule(m_Actor, obj);
       }
       }
 
@@ -167,9 +166,10 @@ namespace djack.RogueSurvivor.Engine.Actions
              if (door.BarricadePoints > 0) {
                // pathfinding livings will break barricaded doors (they'll prefer to go around it)
                if (m_Actor.CanBash(door, out m_FailReason)) return new ActionBashDoor(m_Actor, door);
-               if (m_Actor.Model.CanBreak(door, out m_FailReason)) {
-                 if (m_Actor.IsTired) return new ActionWait(m_Actor);
-                 else if (m_Actor.CanBreak(door, out m_FailReason)) return new ActionBreak(m_Actor, door);
+               var act_break = ActionBreak.schedule(m_Actor, door);
+               if (null != act_break) {
+                 if (act_break.IsPerformable()) return act_break;
+                 if ("tired" == act_break.FailReason) return new ActionWait(m_Actor);
                }
                m_FailReason = "cannot bash the barricade";
                return null;

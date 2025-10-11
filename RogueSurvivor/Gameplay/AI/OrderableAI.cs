@@ -689,10 +689,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
         if (Rules.IsAdjacent(m_Actor.Location, in _dest)) {
-          if (m_Actor.CanBreak(door)) {
-            ret = new ActionBreak(m_Actor, door);
-            return true;
-          }
+          ret = ActionBreak.create(m_Actor, door);
+          if (null != ret) return true;
 #if DEBUG
           if (!m_Actor.IsTired) throw new InvalidOperationException("!m_Actor.IsTired");
 #endif

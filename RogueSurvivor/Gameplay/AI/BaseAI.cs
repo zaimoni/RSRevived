@@ -290,8 +290,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
           // alpha10 check special actions
           if (canCheckBreak) {
-            var obj = m_Actor.Location.Map.GetMapObjectAt(next.Position);
-            if (null != obj && m_Actor.CanBreak(obj)) return new ActionBreak(m_Actor, obj);
+            var act_break = ActionBreak.create(m_Actor, m_Actor.Location.Map.GetMapObjectAt(next.Position));
+            if (null != act_break) return act_break;
           }
           if (canCheckPush) {
             var obj = m_Actor.Location.Map.GetMapObjectAt(next.Position);
@@ -511,8 +511,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (m.GetMapObjectAtExt(pt) is DoorWindow dw && dw.IsBarricaded) ? dw : null;
       });
       if (0 >= doors.Count) return null;
-      DoorWindow doorWindow1 = Rules.Get.DiceRoller.Choose(doors).Value;
-      return m_Actor.CanBreak(doorWindow1) ? new ActionBreak(m_Actor, doorWindow1) : null;
+      return ActionBreak.create(m_Actor, Rules.Get.DiceRoller.Choose(doors).Value);
     }
 #nullable restore
 
@@ -849,8 +848,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return new ActionMeleeAttack(m_Actor, actorAt);
       }
       if ((useFlags & UseExitFlags.BREAK_BLOCKING_OBJECTS) != UseExitFlags.NONE) {
-        if (mapObjectAt != null && m_Actor.CanBreak(mapObjectAt))
-          return new ActionBreak(m_Actor, mapObjectAt);
+        var act_break = ActionBreak.create(m_Actor, mapObjectAt);
+        if (null != act_break) return act_break;
       }
       return null;
     }
