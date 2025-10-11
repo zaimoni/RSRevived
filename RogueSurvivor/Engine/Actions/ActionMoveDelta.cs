@@ -165,7 +165,8 @@ namespace djack.RogueSurvivor.Engine.Actions
            if (obj is DoorWindow door) {
              if (door.BarricadePoints > 0) {
                // pathfinding livings will break barricaded doors (they'll prefer to go around it)
-               if (m_Actor.CanBash(door, out m_FailReason)) return new ActionBashDoor(m_Actor, door);
+               var act_bash = ActionBashDoor.schedule(m_Actor, door);
+               if (null != act_bash) return act_bash;
                var act_break = ActionBreak.schedule(m_Actor, door);
                if (null != act_break) {
                  if (act_break.IsPerformable()) return act_break;
@@ -176,8 +177,7 @@ namespace djack.RogueSurvivor.Engine.Actions
              }
              if (door.IsClosed) {
                if (m_Actor.CanOpen(door, out m_FailReason)) return new ActionOpenDoor(m_Actor, door);
-               if (m_Actor.CanBash(door, out m_FailReason)) return new ActionBashDoor(m_Actor, door);
-               return null;
+               return ActionBashDoor.schedule(m_Actor, door);
              }
            }
         // pushing is very bad for bumping, but ok for pathing

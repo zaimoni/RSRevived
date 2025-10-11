@@ -15,23 +15,72 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly DoorWindow m_Door;
     public DoorWindow Target { get { return m_Door; } }
 
-    public ActionBashDoor(Actor actor, DoorWindow door) : base(actor)
-    {
-       m_Door = door
-#if DEBUG
-         ?? throw new ArgumentNullException(nameof(door))
-#endif
-       ;
-    }
+    private ActionBashDoor(Actor actor, DoorWindow door) : base(actor) { m_Door = door; }
 
     public override bool IsLegal()
     {
-      return m_Actor.CanBash(m_Door, out m_FailReason);
+      m_FailReason = CannotBash(m_Actor) ?? CannotBash(m_Door) ?? "";
+      return string.IsNullOrEmpty(m_FailReason);
+    }
+
+    public override bool IsPerformable()
+    {
+      if (!base.IsPerformable()) return false;
+      if (!Rules.IsAdjacent(m_Actor.Location, m_Door.Location)) {
+        m_FailReason = "not adjacent to";
+        return false;
+      }
+      m_FailReason = CouldNotBash(m_Actor) ?? CouldNotBash(m_Door) ?? "";
+      return string.IsNullOrEmpty(m_FailReason);
     }
 
     public override void Perform()
     {
-      RogueGame.Game.DoBreak(m_Actor, (MapObject)m_Door);
+      RogueGame.Game.DoBreak(m_Actor, m_Door);
+    }
+
+    // these four are modeled on Actor::ReasonCantBash
+    private static string? CannotBash(Actor a)
+    {
+      if (!a.Model.Abilities.CanBashDoors) return "can't bash doors";
+      return null;
+    }
+
+    private static string? CannotBash(DoorWindow dw)
+    {
+      if (MapObject.Break.BREAKABLE == dw.BreakState) return null;
+      if (dw.IsBarricaded) return null;
+      return "can't break this object";
+    }
+
+    private static string? CouldNotBash(Actor a)
+    {
+      if (a.IsTired) return "tired";
+      return null;
+    }
+
+    private static string? CouldNotBash(MapObject mapObj)
+    {
+      if (mapObj.Location.StrictHasActorAt) return "someone is there";
+      return null;
+    }
+
+    static public ActionBashDoor? create(Actor actor, DoorWindow? dw)
+    {
+      if (null == dw) return null;
+      if (null != CannotBash(actor)) return null;
+      if (null != CannotBash(dw)) return null;
+      var stage = new ActionBashDoor(actor, dw);
+      if (!stage.IsPerformable()) return null;
+      return stage;
+    }
+
+    static public ActionBashDoor? schedule(Actor actor, DoorWindow? dw)
+    { // inline the IsLegal test so we can avoid vacuous construction
+      if (null == dw) return null;
+      if (null != CannotBash(actor)) return null;
+      if (null != CannotBash(dw)) return null;
+      return new ActionBashDoor(actor, dw);
     }
   }
 }

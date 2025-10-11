@@ -2440,16 +2440,14 @@ namespace djack.RogueSurvivor.Data
       return "";
 	}
 
+#if DEAD_FUNC
     public bool CanBash(DoorWindow door, out string reason)
     {
 	  reason = ReasonCantBash(door);
 	  return string.IsNullOrEmpty(reason);
     }
-
-    public bool CanBash(DoorWindow door)
-    {
-	  return string.IsNullOrEmpty(ReasonCantBash(door));
-    }
+#endif
+    public bool CanBash(DoorWindow door) => string.IsNullOrEmpty(ReasonCantBash(door));
 
 	private string ReasonCantOpen(DoorWindow door)
 	{

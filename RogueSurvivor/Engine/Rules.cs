@@ -474,18 +474,16 @@ namespace djack.RogueSurvivor.Engine
         if (mapObjectAt is DoorWindow door) {
           if (door.BarricadePoints > 0) {
             // pathfinding livings will break barricaded doors (they'll prefer to go around it)
-            if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
-            {
+            var act_bash = ActionBashDoor.schedule(actor, door);
+            if (null != act_bash) return act_bash;
             var act_break = ActionBreak.schedule(actor, mapObjectAt);
             if (null != act_break) return act_break;
-            }
             reason = "cannot bash the barricade";
             return null;
           }
           if (door.IsClosed) {
             if (actor.CanOpen(door, out reason)) return new ActionOpenDoor(actor, door);
-            if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
-            return null;
+            return ActionBashDoor.schedule(actor, door);
           }
         }
         var act = ai?.WouldGetFrom(mapObjectAt as ShelfLike);
@@ -811,17 +809,12 @@ retry:
       if (mapObjectAt is DoorWindow door) {
           if (door.IsClosed) {
             if (actor.CanOpen(door, out reason)) return new ActionOpenDoor(actor, door);
-            if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
-            return null;
           }
           // covers barricaded broken windows...otherwise redundant.
-          if (door.BarricadePoints > 0) {
-            // Z will bash barricaded doors but livings won't, except for specific overrides
-            // this does conflict with the tourism behavior
-            if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
-            reason = "cannot bash the barricade";
-            return null;
-          }
+          var act_bash = ActionBashDoor.create(actor, door);
+          if (null != act_bash) return act_bash;
+          reason = "cannot bash the barricade";
+          return null;
       }
       var act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
       if (null != act) return act;
