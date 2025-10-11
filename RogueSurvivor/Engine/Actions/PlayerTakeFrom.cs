@@ -1,5 +1,4 @@
 ﻿using djack.RogueSurvivor.Data;
-using djack.RogueSurvivor.Engine.MapObjects;
 
 #nullable enable
 
@@ -28,7 +27,9 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public override void Perform()
         {
-            RogueGame.Game.HandlePlayerTakeItem(m_Actor.Controller as PlayerController, m_Src);
+            var game = RogueGame.Game;
+            var it = game.Choose(m_Src.Inventory, "Taking...");
+            if (null != it) game.Interpret(new _Action.TakeItem(m_Actor, in m_Src, it));
         }
 
         static private string ReasonCantGetFrom(in Data.Model.InvOrigin src)

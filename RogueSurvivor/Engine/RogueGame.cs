@@ -4629,7 +4629,7 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    private bool Interpret(_Action.TakeItem act)
+    public bool Interpret(_Action.TakeItem act)
     {
       if (!act.IsPerformable()) {
         ErrorPopup(string.Format("Cannot take {0} : {1}.", act.Take.TheName, act.FailReason));
@@ -10120,7 +10120,7 @@ namespace djack.RogueSurvivor.Engine
         witnesses?.AddMessage(MakePanopticMessage(actor, string.Format(": {0}", text), isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
     }
 
-    private Item? Choose(Inventory? inv, string prompt) {
+    public Item? Choose(Inventory? inv, string prompt) {
       if (null == inv) return null;
       if (inv.IsEmpty) return null;
       if (2 > inv.Count()) return inv.TopItem!;
@@ -10133,20 +10133,6 @@ namespace djack.RogueSurvivor.Engine
       PagedPopup(prompt, inv.Count(), label, details);
 
       return ret;
-    }
-
-    public void HandlePlayerTakeItem(PlayerController pc, Data.Model.InvOrigin src)
-    {
-      var player = pc.ControlledActor;
-      var inv = src.Inventory;
-#if DEBUG
-      if (inv.IsEmpty) throw new ArgumentNullException(nameof(src)+".inv");
-      if (null == src.obj_owner && null == src.loc) throw new InvalidOperationException("only take from unresisting targets");
-      if (1 < Rules.GridDistance(player.Location, src.Location)) throw new ArgumentOutOfRangeException(nameof(src), src, "not adjacent");
-#endif
-
-      var it = Choose(inv, "Taking...");
-      if (null != it) Interpret(new _Action.TakeItem(Player, in src, it));
     }
 
     public void UI_TakeItem(Actor actor, Location loc, Item it)
