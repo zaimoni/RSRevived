@@ -86,12 +86,15 @@ namespace djack.RogueSurvivor.Data.Model
             return true;
         }
 
-        // not really...some extra conditions involved
-        public bool IsAccessible(Location origin)
+        public bool IsAccessible(in Location origin)
         {
-            if (1 == Engine.Rules.GridDistance(origin, Location)) return true;
-            if (null != loc) return loc.Value == origin;
-            return false;
+            if (1 == Engine.Rules.GridDistance(origin, Location)) {
+                if (null != loc) {
+                  if (loc.Value.MapObject?.BlocksReachInto() ?? false) return false;
+                }
+                return true;
+            }
+            return origin == Location;
         }
 
         public bool Exists { get {

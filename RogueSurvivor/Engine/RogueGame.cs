@@ -5071,14 +5071,11 @@ namespace djack.RogueSurvivor.Engine
       Data.Model.InvOrigin dest = new(player);
       if (DoUnload(player, src, dest)) return true;
 
-      // If that fails, and we are unloading from a container, try the container's inventory
-      if (null != src.Origin.obj_owner) {
-        if (DoUnload(player, src, src.Origin)) return true;
-      }
+      // If that fails, try unloading to the inventory origin
+      if (DoUnload(player, src, src.Origin)) return true;
 
-      // If that fails, try unload to ground inventory
-      dest = new(player.Location,  player);
-      return DoUnload(player, src, dest);
+      ErrorPopup("unloading failed");
+      return false;
     }
 
 
@@ -9085,7 +9082,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       void radio_displays(PlayerController pc) {
-        pc.AddMessagesForceRead(player_msgs ??= radio_messages());
+        pc.AddMessages(player_msgs ??= radio_messages());
       }
 
       bool radio_should_record(Actor a) {
@@ -10356,15 +10353,27 @@ namespace djack.RogueSurvivor.Engine
 
     public bool DoUnload(Actor actor, Data.Model.InventorySource<ItemRangedWeapon> src, Data.Model.InvOrigin dest)
     {
+      bool ok = false;
       var ammo = ItemAmmo.make(src.it.ModelID);
       ammo.Quantity = src.it.Ammo;
-      if (null != dest.Inventory) {
-        var added = dest.Inventory.AddAsMuchAsPossible(ammo);
-        if (0 >= added) return false;
-        src.it.Ammo -= added;
-      } else {
-        dest.Location.Drop(ammo);
-        src.it.Ammo = 0;
+restart:
+      if (dest.IsAccessible(actor.Location)) {
+        if (dest.CanTake(ammo)) {
+          dest.Take(ammo);
+          src.it.Ammo = 0;
+          ok = true;
+        } else if (null != dest.Inventory) {
+          var added = dest.Inventory.AddAsMuchAsPossible(ammo);
+          if (0 < added) {
+            src.it.Ammo -= added;
+            ok = true;
+          }
+        }
+      }
+      if (!ok) {
+        if (null != dest.loc) return false;
+        dest = new(dest.Location);
+        goto restart;
       }
 
       actor.SpendActionPoints();
