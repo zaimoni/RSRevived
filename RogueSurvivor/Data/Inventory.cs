@@ -410,7 +410,9 @@ namespace djack.RogueSurvivor.Data
       return (int)cost;
     }
 
-    public bool Contains(Item it) { return m_Items.Contains(it); }
+    public bool Contains(Item it) => m_Items.Contains(it);
+    public bool Contains(Gameplay.Item_IDs id) => null != GetFirst(id);
+
 
         // alpha10
         /// <summary>
@@ -862,6 +864,8 @@ namespace djack.RogueSurvivor.Data
             foreach (Item? it in m_Items) if (null != it && id == it.ModelID) return it;
             return null;
         }
+
+        public bool Contains(Gameplay.Item_IDs id) => null != GetFirst(id);
 
         public bool Remove(Item it) {
           var ub = m_Items.Length;

@@ -3534,10 +3534,10 @@ restart:
 
       // armor tuneup
       foreach(Actor cop in map.Police.Get) {
-        if (cop.Inventory.Has(Item_IDs.ARMOR_POLICE_RIOT)) continue;
+        if (cop.IsCarrying(Item_IDs.ARMOR_POLICE_RIOT)) continue;
         Data.Model.InvOrigin cop_inv = new(cop);
         if (map.SwapItemTypes(Item_IDs.ARMOR_POLICE_RIOT, Item_IDs.ARMOR_POLICE_JACKET, cop_inv)) continue;
-        if (cop.Inventory.Has(Item_IDs.ARMOR_POLICE_JACKET)) continue;
+        if (cop.IsCarrying(Item_IDs.ARMOR_POLICE_JACKET)) continue;
         map.TakeItemType(Item_IDs.ARMOR_POLICE_JACKET, cop_inv);
         while(reserve_uniform(map));
       }

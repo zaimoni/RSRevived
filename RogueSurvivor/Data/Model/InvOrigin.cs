@@ -148,6 +148,14 @@ namespace djack.RogueSurvivor.Data.Model
             return Inventory?.Contains(it) ?? false;
         }
 
+        public bool IsCarrying(Gameplay.Item_IDs id)
+        {
+            var iinv = IInv;
+            if (null != iinv) return iinv.IsCarrying(id);
+
+            return Inventory?.Contains(id) ?? false;
+        }
+
         public void Remove(Data.Item it, bool canMessage = true)
         {
             var iinv = IInv;

@@ -11,6 +11,8 @@ namespace djack.RogueSurvivor.Data
         public Inventory Inventory { get; }
 
         bool IsCarrying(Item it);
+        bool IsCarrying(RogueSurvivor.Gameplay.Item_IDs it);
+
         void Remove(Item it, bool canMessage = true);
         bool CanTake(Item it);
         bool Take(Item it);

@@ -3857,6 +3857,11 @@ final_exit:
       return m_Inventory?.Contains(it) ?? false;
     }
 
+    public bool IsCarrying(Gameplay.Item_IDs id) {
+      if (m_InventorySlots?.Contains(id) ?? false) return true;
+      return m_Inventory?.Contains(id) ?? false;
+    }
+
     public void Remove(Item it, bool canMessage=true)
     {
       if (m_InventorySlots?.Remove(it) ?? false) {
