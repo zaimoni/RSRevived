@@ -2104,14 +2104,7 @@ retry:
        return ret;
     }
 
-    /// <returns>A list of inanimate inventory origins, that are currently non-empty</returns>
-    public static List<Model.InvOrigin>? GetAccessibleInventoryOrigins(Location origin)
-    {
-      List<Model.InvOrigin> ret = new();
-
-      var g_inv = origin.InventoryAtFeet();
-      if (null != g_inv) ret.Add(g_inv.Value);
-
+    private static void adjacentInventoryOrigins(List<Model.InvOrigin> ret, in Location origin) {
       foreach(var adjacent in origin.Position.Adjacent()) {
         var loc = new Location(origin.Map, adjacent);
         if (!Canonical(ref loc)) continue;
@@ -2124,6 +2117,27 @@ retry:
         if (null != obj && obj.BlocksReachInto()) continue;
         ret.Add(new(loc));
       }
+    }
+
+    /// <returns>A list of inanimate inventory origins, that are currently non-empty</returns>
+    public static List<Model.InvOrigin>? GetAccessibleInventoryOrigins(Location origin)
+    {
+      List<Model.InvOrigin> ret = new();
+
+      var g_inv = origin.InventoryAtFeet();
+      if (null != g_inv) ret.Add(g_inv.Value);
+
+      adjacentInventoryOrigins(ret, in origin);
+
+      return 0<ret.Count ? ret : null;
+    }
+
+    // skip inventory at feet for this
+    public static List<Model.InvOrigin>? GetAccessibleAdjacentInventoryOrigins(Location origin)
+    {
+      List<Model.InvOrigin> ret = new();
+
+      adjacentInventoryOrigins(ret, in origin);
 
       return 0<ret.Count ? ret : null;
     }

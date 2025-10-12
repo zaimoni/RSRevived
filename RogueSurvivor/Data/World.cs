@@ -846,11 +846,11 @@ namespace djack.RogueSurvivor.Data
 
       // these are based on morally readonly properties and thus can be used without a lock
       int district_turn = irrational_caution.EntryMap.LocalTime.TurnCounter;
-
-      foreach(var pt in d.WorldPosition.Adjacent()) {
-        var test = At(pt);
-        if (null == test) continue;
-        if (test.IsBefore(irrational_caution) && test.EntryMap.LocalTime.TurnCounter <= district_turn) return;  // reject causality loop
+      if (district_turn > Engine.Session.Get.WorldTime.TurnCounter) {
+#if DEBUG
+        if (district_turn > Engine.Session.Get.WorldTime.TurnCounter+1) throw new InvalidOperationException("skew attempted");
+#endif
+        return;
       }
 
       // we're clear.

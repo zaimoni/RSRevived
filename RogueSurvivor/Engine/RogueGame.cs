@@ -5056,20 +5056,9 @@ namespace djack.RogueSurvivor.Engine
         return ret;
     }
 
-    private bool HandlePlayerUnloadItem(PlayerController pc, GDI_Point screen)
-    {
-      var invSpec = MouseToInventoryItem(screen);
-      if (null == invSpec) return false; // this command can work against ground inventory
-
-      if (!(invSpec.Value.Key.it is ItemRangedWeapon rw)) return false;
-      if (0 >= rw.Ammo) return false;
-
-      Data.Model.InventorySource<ItemRangedWeapon> src = new(invSpec.Value.Key.Origin, rw);
-
+    private bool UnloadItem(Actor player, Data.Model.InventorySource<ItemRangedWeapon> src) {
       // try unloading to our own inventory first
-      var player = pc.ControlledActor;
-      Data.Model.InvOrigin dest = new(player);
-      if (DoUnload(player, src, dest)) return true;
+      if (DoUnload(player, src, new(player))) return true;
 
       // If that fails, try unloading to the inventory origin
       if (DoUnload(player, src, src.Origin)) return true;
@@ -5078,6 +5067,43 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
+    private bool HandlePlayerUnloadItem(PlayerController pc, GDI_Point screen)
+    {
+      var invSpec = MouseToInventoryItem(screen);  // this command can work against ground inventory
+      if (null == invSpec) return HandlePlayerMenuUnload(pc);
+
+      if (!(invSpec.Value.Key.it is ItemRangedWeapon rw)) return false;
+      if (0 >= rw.Ammo) return false;
+
+      Data.Model.InventorySource<ItemRangedWeapon> src = new(invSpec.Value.Key.Origin, rw);
+
+      return UnloadItem(pc.ControlledActor, new(invSpec.Value.Key.Origin, rw));
+    }
+
+    private bool HandlePlayerMenuUnload(PlayerController pc)
+    {
+      var player = pc.ControlledActor;
+      List<Data.Model.InventorySource<ItemRangedWeapon>> unload_these = new();
+      var candidates = Map.GetAccessibleAdjacentInventoryOrigins(player.Location);
+      if (null == candidates) return false;
+      foreach (var x in candidates) {
+        var rws = x.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo);
+        if (null == rws) continue;
+        foreach (var rw in rws) unload_these.Add(new(x, rw));
+      }
+
+      string label(int index)
+      {
+        return string.Format("{0} @ {1}", unload_these[index].it.ToString(), unload_these[index].Origin.Location.ToString());
+      }
+
+      bool details(int index)
+      {
+        return UnloadItem(player, unload_these[index]);
+      }
+
+      return PagedPopup("Unloading:", unload_these.Count, label, details, false);
+    }
 
     private bool HandlePlayerGiveItem(Actor player, GDI_Point screen)
     {
