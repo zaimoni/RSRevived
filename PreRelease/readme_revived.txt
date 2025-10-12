@@ -3,6 +3,8 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 
 REVIVED 0.10.0 CHANGES
 ------------------
+* New command Unload, default key U.  Can be used either by mouseover (for player and ground inventories),
+  or in menu mode for accessible inventories.
 * New command Transfer Item, default key CTRL-T.  This allows transferring items between 
   any two ground inventories "in reach"
 * minimum required .NET is now 8.0.
