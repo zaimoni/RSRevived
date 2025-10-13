@@ -2524,14 +2524,10 @@ retry:
 #endif
     public void OnEnterTile(Actor a) => m_OnEnterTile.update(a);
 
-    public KeyValuePair<bool,bool> AdvanceLocalTime()
+    public void AdvanceLocalTime()
     {
-      bool wasNight = LocalTime.IsNight;
       ++LocalTime.TurnCounter;
-      bool isDay = !LocalTime.IsNight;
-
       Engine.LOS.Expire(this);
-      return new KeyValuePair<bool,bool>(wasNight == isDay, isDay);
     }
 
     public int GetScentByOdorAt(Odor odor, in Point position)

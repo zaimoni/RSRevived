@@ -1881,9 +1881,13 @@ namespace djack.RogueSurvivor.Engine
       if (null != msg) World.Get.DoForAllActors(Map.SkyIsVisible, MessagePCs);
 
       if (time.IsDawn) {
-          OnNewDay();
+        OnNewDay();
+        World.Get.DoForAllActors(a => SkillUpgradeLiving(a));
       } else if (time.IsDusk) {
-          OnNewNight();
+        OnNewNight();
+        if (s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.OFF && GameOptions.IsZupDay(s_Options.ZombifiedsUpgradeDays, Session.Get.WorldTime.Day)) {
+          World.Get.DoForAllActors(a => SkillUpgradeUndead(a));
+        }
       }
     }
 
@@ -2276,15 +2280,7 @@ namespace djack.RogueSurvivor.Engine
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering NPC upgrade, Map: "+map.Name);
 #endif
-      var time = map.AdvanceLocalTime();
-      if (time.Key) { // night/day ended; upgrade NPC skills
-        if (time.Value) {   // day
-          HandleLivingNPCsUpgrade(map);
-        } else {    // night
-          if (s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(s_Options.ZombifiedsUpgradeDays, map.LocalTime.Day)) return;
-          HandleUndeadNPCsUpgrade(map);
-        }
-      }
+      map.AdvanceLocalTime();
     }
 
     // object orientation (Actor) and UI lockdown (RogueGame) heuristics are different locations
@@ -11651,37 +11647,29 @@ restart:
     }
 #nullable restore
 
-    private void HandleLivingNPCsUpgrade(Map map)
-    {
-      foreach (Actor actor in map.Actors) {
-        if (actor.Model.Abilities.IsUndead) continue;
-        var leader = actor.LiveLeader;
-        if (null != leader && leader.IsPlayer) continue; // leader triggers upgrade
-        if (actor.Controller is PlayerController pc) {
-          HandlePlayerDecideUpgrade(pc, actor);
-          continue;
-        }
-        Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor);
-        if (null != upgrade2) actor.SkillUpgrade(upgrade2.Value);
+    private void SkillUpgradeLiving(Actor actor) {
+      if (actor.Model.Abilities.IsUndead) return;
+      if (actor.LiveLeader?.IsPlayer ?? false) return; // leader triggers upgrade
+      if (actor.Controller is PlayerController pc) {
+        HandlePlayerDecideUpgrade(pc, actor);
+        return;
       }
+      Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor);
+      if (null != upgrade2) actor.SkillUpgrade(upgrade2.Value);
     }
 
-    private void HandleUndeadNPCsUpgrade(Map map)
-    {
-      foreach (Actor actor in map.Actors) {
-        if (!actor.Model.Abilities.IsUndead) continue;
-        if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(actor.Model)) continue;
-        if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.RatsUpgrade) && GameActors.IsRatBranch(actor.Model)) continue;
-        if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(actor.Model)) continue;
-        var leader = actor.LiveLeader;
-        if (null != leader && leader.IsPlayer) continue; // leader triggers upgrade
-        if (actor.Controller is PlayerController pc) {
-          HandlePlayerDecideUpgrade(pc, actor);
-          continue;
-        }
-        Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor);
-        if (null != upgrade2) actor.SkillUpgrade(upgrade2.Value);
+    private void SkillUpgradeUndead(Actor actor) {
+      if (!actor.Model.Abilities.IsUndead) return;
+      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(actor.Model)) return;
+      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.RatsUpgrade) && GameActors.IsRatBranch(actor.Model)) return;
+      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(actor.Model)) return;
+      if (actor.LiveLeader?.IsPlayer ?? false) return; // leader triggers upgrade
+      if (actor.Controller is PlayerController pc) {
+        HandlePlayerDecideUpgrade(pc, actor);
+        return;
       }
+      Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor);
+      if (null != upgrade2) actor.SkillUpgrade(upgrade2.Value);
     }
 
     static private List<Skills.IDs> RollSkillsToUpgrade(Actor actor, int maxTries)
