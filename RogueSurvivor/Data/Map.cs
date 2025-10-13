@@ -131,6 +131,7 @@ namespace djack.RogueSurvivor.Data
       m_Lighting = Lighting.DARKNESS;
       return true;
     }
+    static public Predicate<Map> SkyIsVisible => m => Lighting.OUTSIDE == m.m_Lighting;
 
     public IEnumerable<Zone> Zones { get { return m_Zones; } }
     public IEnumerable<Exit> Exits { get { return m_Exits.Values; } }

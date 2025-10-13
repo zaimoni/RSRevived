@@ -90,6 +90,21 @@ namespace djack.RogueSurvivor.Data
       return DayPhase.EVENING;
     }
 
+    public bool PhaseHasChanged { get {
+      if (0 != m_Tick) return false;
+      switch(m_Hour) {
+      case HOUR_MIDNIGHT: return true;
+      case HOUR_MIDNIGHT + 1: return true;
+      case HOUR_SUNRISE: return true;
+      case HOUR_SUNRISE + 1: return true;
+      case HOUR_NOON: return true;
+      case HOUR_NOON + 1: return true;
+      case HOUR_SUNSET: return true;
+      case HOUR_SUNSET + 1: return true;
+      default: return false;
+      }
+    } }
+
     public WorldTime(WorldTime src) : this(src.TurnCounter)
     {
     }

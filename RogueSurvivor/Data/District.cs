@@ -511,6 +511,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public void DoForAllActors(Action<Actor> op) { foreach(Map m in m_Maps) m.DoForAllActors(op); }
+    public void DoForAllActors(Predicate<Map> ok, Action<Actor> op) { foreach(Map m in m_Maps) if (ok(m)) m.DoForAllActors(op); }
     public void DoForAllGroundInventories(Action<Location,Inventory> op) { foreach (Map m in m_Maps) m.DoForAllGroundInventories(op); }
 
     public List<Actor> FilterActors(Predicate<Actor> test) {

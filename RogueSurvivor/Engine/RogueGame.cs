@@ -1516,7 +1516,6 @@ namespace djack.RogueSurvivor.Engine
       ClearMessages();
       RedrawPlayScreen(new UI.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", Player.Name), 0, Color.White));
       play_timer.Start();
-      World.Get.ScheduleForAdvancePlay();   // simulation starts at district A1
       StopSimThread(false);  // alpha10 stop-start
       StartSimThread();
     }
@@ -1792,7 +1791,6 @@ namespace djack.RogueSurvivor.Engine
     {
       var sess = Session.Get;
       var world = World.Get;
-      DayPhase phase1 = sess.WorldTime.Phase;
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District: "+district.Name);
 #endif
@@ -1839,55 +1837,17 @@ namespace djack.RogueSurvivor.Engine
 
       foreach(Map current in district.Maps) NextMapTurn(current, sim);
 
-      // XXX message generation wrappers do not have access to map time, only world time
-      // XXX this set of messages must execute only once
-      // XXX the displayed turn on the message must agree with the displayed turn on the screen
       if (world.Last == district) {
-        bool canSeeSky = Player.CanSeeSky;  // alpha10 message ony if can see sky
-        int turn = sess.WorldTime.TurnCounter;
-
-        DayPhase phase2 = sess.WorldTime.Phase;
-        if (sess.WorldTime.IsDawn) {
-          if (canSeeSky) AddMessage(new("The sun is rising again for you...", turn, DAY_COLOR));
-          OnNewDay();
-        } else if (sess.WorldTime.IsDusk) {
-          if (canSeeSky) AddMessage(new("Night is falling upon you...", turn, NIGHT_COLOR));
-          OnNewNight();
-        } else if (phase1 != phase2) {
-          if (canSeeSky) AddMessage(new(string.Format("Time passes, it is now {0}...", phase2.to_s()), turn, sess.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR));
-        }
 
         // alpha10
         // if time to change weather do it and roll next change time.
+        int turn = sess.WorldTime.TurnCounter;
         if (turn >= world.NextWeatherCheckTurn) ChangeWeather();
 
         // handle unconditional time caches here
         Direction_ext.Now();
       }
 
-      // It looks strange to look across the district boundary and see a z-invasion
-      // but if the map were large enough for timezones to be significant, trying to do the whole world at once would cause non-midnight invasions
-      // vertical slicing doesn't quite work either (midnight is fine but dawn/dusk are latitude-sensitive)
-
-      // with the current scheduler, we could fire the events NW on completing ourselves.
-      // * south border: events to W as well
-      // * east border: events to N as well
-      // * Last (SE corner): self-events
-
-      // Z invasions can remain anchored to the ley lines (district boundaries) indefinitely.
-      // VAPORWARE Other events should be logistically sensitive
-      // * National Guard, Army Supplies, Black Ops: helicopters.  Do not get along well with trees or power lines, but the CHAR HQ city has no power lines.
-      // * Refugees (Civilians (any but likely to favor cars and SUVs, pickup trucks, mopeds, and motorbikes are theoretically possible but rare),
-     //    Bikers (motorbikes), Gangstas (cars), Survivors (vans, pickup trucks, or SUVs): 
-      //   arrive by road (i.e. arrive on the outer edge of the outer districts)
-
-      // the next district type would be "I-435 freeway" (a road ring encircling the city proper).  We need a low enough CPU/RAM loading to pay for this.
-      if (!World.Edge_N_or_W(district)) {
-        EndTurnDistrictEvents(world[district.WorldPosition+Direction.NW]);
-        if (world.Edge_S(district)) EndTurnDistrictEvents(world[district.WorldPosition + Direction.W]);
-        if (world.Edge_E(district)) EndTurnDistrictEvents(world[district.WorldPosition + Direction.N]);
-        if (world.Last == district) EndTurnDistrictEvents(district);
-      }
       district.EndTurn();
       } // end lock (district)
       RedrawPlayScreen();   // \todo this is to update the time elapsed and minimap (doesn't need to try to run if minimap not in scope)
@@ -1896,6 +1856,47 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 #nullable restore
+
+    public void bts_TimeOfDayMessaging() {
+      // XXX message generation wrappers do not have access to map time, only world time
+      // XXX this set of messages must execute only once
+      // XXX the displayed turn on the message must agree with the displayed turn on the screen
+      // we rely on the call graph to enforce the above.
+
+      UI.Message? msg = null;
+      var time = Session.Get.WorldTime;
+      if (time.IsDawn) {
+        msg = new("The sun is rising again for you...", time.TurnCounter, DAY_COLOR);
+      } else if (time.IsDusk) {
+        msg = new("Night is falling upon you...", time.TurnCounter, NIGHT_COLOR);
+      } else if (time.PhaseHasChanged) {
+        msg = new(string.Format("Time passes, it is now {0}...", time.Phase.to_s()), time.TurnCounter, time.IsNight ? NIGHT_COLOR : DAY_COLOR);
+      }
+
+      void MessagePCs(Actor a) {
+        if (a.IsDead || a.IsSleeping) return;
+        if (a.Controller is PlayerController pc) pc.AddMessage(msg);
+      }
+
+      if (null != msg) World.Get.DoForAllActors(Map.SkyIsVisible, MessagePCs);
+
+      if (time.IsDawn) {
+          OnNewDay();
+      } else if (time.IsDusk) {
+          OnNewNight();
+      }
+    }
+
+    // It looks strange to look across the district boundary and see a z-invasion
+    // but if the map were large enough for timezones to be significant, trying to do the whole world at once would cause non-midnight invasions
+    // vertical slicing doesn't quite work either (midnight is fine but dawn/dusk are latitude-sensitive)
+
+    // Z invasions can remain anchored to the ley lines (district boundaries) indefinitely.
+    // VAPORWARE Other events should be logistically sensitive
+    // * National Guard, Army Supplies, Black Ops: helicopters.  Do not get along well with trees or power lines, but the CHAR HQ city has no power lines.
+    // * Refugees (Civilians (any but likely to favor cars and SUVs, pickup trucks, mopeds, and motorbikes are theoretically possible but rare),
+    //    Bikers (motorbikes), Gangstas (cars), Survivors (vans, pickup trucks, or SUVs): 
+    //   arrive by road (i.e. arrive on the outer edge of the outer districts)
 
     private void EndTurnDistrictEvents(District d)
     { // historically, all districts were within city limits so they all could use the same event specifications.
@@ -1910,6 +1911,8 @@ namespace djack.RogueSurvivor.Engine
       if (CheckForEvent_BandOfSurvivors(d.EntryMap)) FireEvent_BandOfSurvivors(d.EntryMap);
       CheckFor_Fire_SewersInvasion(d.SewersMap);
     }
+
+    public void bts_DistrictEvents() => World.Get.DoForAllDistricts(d => EndTurnDistrictEvents(d));
 
     // we would prefer to notify in a radius.  Blocked by rewriting raids to not have ley-line behavior
     static private void NotifyOrderablesAI(RaidType raid, Location loc)

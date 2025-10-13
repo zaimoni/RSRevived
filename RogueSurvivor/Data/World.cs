@@ -4,6 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using djack.RogueSurvivor.Engine;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -44,7 +45,7 @@ namespace djack.RogueSurvivor.Data
 
     private District? m_PlayerDistrict = null;
     private District? m_SimDistrict = null;
-    private readonly Queue<District> m_Ready = new();   // \todo this is expected to have a small maximum that can be hard-coded; measure it
+    private readonly List<District> m_Ready = new();   // \todo this is expected to have a small maximum that can be hard-coded; measure it
     public Weather Weather { get; private set; }
     public int NextWeatherCheckTurn { get; private set; } // alpha10
 
@@ -246,6 +247,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public void DoForAllActors(Action<Actor> op) { foreach(District d in m_DistrictsGrid) d.DoForAllActors(op); }
+    public void DoForAllActors(Predicate<Map> ok, Action<Actor> op) { foreach(District d in m_DistrictsGrid) d.DoForAllActors(ok, op); }
     public void DoForAllGroundInventories(Action<Location,Inventory> op) { foreach (District d in m_DistrictsGrid) d.DoForAllGroundInventories(op); }
 
     public bool WantToAdvancePlay(District x) {
@@ -322,7 +324,7 @@ namespace djack.RogueSurvivor.Data
 
         void onLoaded(District[] src) {
             foreach (var x in src) {
-                m_Ready.Enqueue(x);
+                m_Ready.Add(x);
             }
         }
         Zaimoni.Serialization.ISave.LinearLoad<District>(decode, onLoaded);
@@ -411,7 +413,7 @@ namespace djack.RogueSurvivor.Data
           case 7:
               {
               var stage = JsonSerializer.Deserialize<District[]>(ref reader, options) ?? throw new JsonException();
-              foreach(var d in stage) m_Ready.Enqueue(d);
+              foreach(var d in stage) m_Ready.Add(d);
               }
               break;
           case 8:
@@ -800,12 +802,6 @@ namespace djack.RogueSurvivor.Data
     // Simulation support
     // the public functions all lock on m_PCready in order to ensure thread aborts don't leave us in
     // an inconsistent state
-    public void ScheduleForAdvancePlay() {
-      lock(m_Ready) {
-        ScheduleForAdvancePlay(m_DistrictsGrid[0,0]);
-      }
-    }
-
 /*
  Idea here is to schedule the districts so that they never get "too far ahead" if we should want to build out cross-district pathfinding or line of sight.
 
@@ -839,22 +835,42 @@ namespace djack.RogueSurvivor.Data
  */
     private void ScheduleForAdvancePlay(District d)
     {
-      District irrational_caution = d; // retain original district for debugging purposes
-      if (irrational_caution == m_PlayerDistrict) return;
-      if (irrational_caution == m_SimDistrict) return;
-      if (m_Ready.Contains(irrational_caution)) return;
+      if (d == m_PlayerDistrict) return;
+      if (d == m_SimDistrict) return;
+      if (m_Ready.Contains(d)) return;
 
       // these are based on morally readonly properties and thus can be used without a lock
-      int district_turn = irrational_caution.EntryMap.LocalTime.TurnCounter;
+      int district_turn = d.LocalTime.TurnCounter;
       if (district_turn > Engine.Session.Get.WorldTime.TurnCounter) {
 #if DEBUG
         if (district_turn > Engine.Session.Get.WorldTime.TurnCounter+1) throw new InvalidOperationException("skew attempted");
+        if (d.WorldPosition == Point.Empty) throw new InvalidOperationException("district scheduling sabotaged");
 #endif
         return;
       }
 
       // we're clear.
-      m_Ready.Enqueue(irrational_caution);
+      {
+      var E_early = d.WorldPosition + Direction.E;
+      var SW_early = d.WorldPosition + Direction.SW;
+      var S_early = d.WorldPosition + Direction.SW;
+      var SE_early = d.WorldPosition + Direction.SW;
+      var scan = -1;
+      while(m_Ready.Count > ++scan) {
+        var pos = m_Ready[scan].WorldPosition;
+        if (pos.Y == E_early.Y && pos.X >= E_early.X) {
+          m_Ready.Insert(scan, d);
+          return;
+        }
+        if (pos.Y == SW_early.Y && pos.X >= SW_early.X) {
+          m_Ready.Insert(scan, d);
+          return;
+        }
+      }
+
+      }
+
+      m_Ready.Add(d);
     }
 
     public void ScheduleAdjacentForAdvancePlay(District d)
@@ -873,21 +889,54 @@ namespace djack.RogueSurvivor.Data
         // the ones that would typically be scheduled
         if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
         if (null != tmp_SW) ScheduleForAdvancePlay(tmp_SW);
-		if (0 >= m_Ready.Count && null == m_PlayerDistrict && null== m_SimDistrict) {
-          // \todo world pre-turn invokes here
-          ScheduleForAdvancePlay(m_DistrictsGrid[0, 0]);
-        }
       }
+    }
+
+    private void bootstrap_districts() {
+      if (null != m_PlayerDistrict || null != m_SimDistrict) return;
+      lock (m_Ready) {
+        if (0 < m_Ready.Count) return;
+        int t0 = Engine.Session.Get.WorldTime.TurnCounter;
+        List<Point> past = new();
+        List<Point> now = new();
+        List<Point> future = new();
+        foreach(var d in m_DistrictsGrid) {
+          if (d.LocalTime.TurnCounter == t0) now.Add(d.WorldPosition);
+          else if (d.LocalTime.TurnCounter < t0) past.Add(d.WorldPosition);
+          else future.Add(d.WorldPosition);
+        }
+        if (0 >= past.Count && now.Contains(Point.Empty)) {
+          if (0 < Session.Get.WorldTime.TurnCounter) onBeforeTurn();
+          m_Ready.Add(At(Point.Empty)!);
+          return;
+        }
+        if (0 >= past.Count && 0<now.Count) {
+          m_Ready.Add(At(now[0])!);
+          return;
+        }
+        RogueGame.Game.ErrorPopup("past: "+past.Count.ToString());
+        RogueGame.Game.ErrorPopup("now: "+now.Count.ToString());
+        RogueGame.Game.ErrorPopup("future: "+future.Count.ToString());
+        throw new InvalidOperationException("unimplemented");
+      }
+    } 
+
+    private void onBeforeTurn() {
+      // C-style prefix bts_ for functions called from here.  UI is available due to call graph.
+      Engine.RogueGame.Game.bts_TimeOfDayMessaging();
+      Engine.RogueGame.Game.bts_DistrictEvents();
     }
 
     // avoiding property idiom for these as they affect World state
     public District? CurrentPlayerDistrict()
     {
       if (null != m_PlayerDistrict) return m_PlayerDistrict;
+      if (null == m_SimDistrict) bootstrap_districts();
       lock (m_Ready) {
 restart:
         if (0 >= m_Ready.Count) return null;
-        District tmp = m_Ready.Dequeue();
+        District tmp = m_Ready[0];
+        m_Ready.RemoveAt(0);
         if (tmp.RequiresUI || null != m_SimDistrict) {
           Interlocked.CompareExchange(ref m_PlayerDistrict, tmp, null);
           return m_PlayerDistrict;
@@ -902,12 +951,15 @@ restart:
       if (null != m_SimDistrict) return m_SimDistrict;
       lock (m_Ready) {
         if (0 >= m_Ready.Count) return null;
-        if (m_Ready.All(d => d.RequiresUI)) return null;
-        District? tmp = null;
-        while((tmp = m_Ready.Dequeue()).RequiresUI) m_Ready.Enqueue(tmp);
-        Interlocked.CompareExchange(ref m_SimDistrict, tmp, null);
-        return m_SimDistrict;
+        int scan = -1;
+        while(m_Ready.Count > ++scan) {
+          if (m_Ready[scan].RequiresUI) continue;
+          Interlocked.CompareExchange(ref m_SimDistrict, m_Ready[scan], null);
+          m_Ready.RemoveAt(scan);
+          return m_SimDistrict;
+        }
       }
+      return null;
     }
 
     private void _RejectActorActorInventoryCrossLink(List<string> errors, Actor origin)
