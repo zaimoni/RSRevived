@@ -259,6 +259,26 @@ namespace djack.RogueSurvivor.Data
         return true;
     }
 
+    private void initTurnOrder() {
+      if (null != s_turn_order && s_turn_order.Length == m_Size*m_Size) return;
+      List<Point> stage = new();
+      stage.Add(Point.Empty);
+
+      int scan = -1;
+      while(stage.Count < m_Size*m_Size) {
+        var tmp_E = stage[++scan] + Direction.E;
+        var tmp_SW = stage[scan] + Direction.SW;
+        if (InBounds(tmp_E) && !stage.Contains(tmp_E)) stage.Add(tmp_E);
+        if (InBounds(tmp_SW) && !stage.Contains(tmp_SW)) stage.Add(tmp_SW);
+      }
+
+      s_turn_order = stage.ToArray();
+#if DEBUG
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::initTurnOrder");
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "s_turn_order: " + s_turn_order.to_s());
+#endif
+    }
+
     private World()
     {
       var size = Engine.RogueGame.Options.CitySize;
@@ -274,6 +294,8 @@ namespace djack.RogueSurvivor.Data
       NextWeatherCheckTurn = rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);  // alpha10
 
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(size, size));
+
+      initTurnOrder();
     }
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)
@@ -282,6 +304,7 @@ namespace djack.RogueSurvivor.Data
       var c_size = (short)(m_Size - 2);
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(c_size, c_size));
       s_Recent = this;
+      initTurnOrder();
     }
 
     static public void Load(SerializationInfo info, StreamingContext context)
@@ -331,6 +354,7 @@ namespace djack.RogueSurvivor.Data
 
         m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
         s_Recent = this;
+        initTurnOrder();
     }
 
     private void SaveLoadOk(World test) {
@@ -440,6 +464,8 @@ namespace djack.RogueSurvivor.Data
       if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
 
       m_Size = relay_size;
+      initTurnOrder();
+
       if (null == relay_districts) throw new ArgumentNullException(nameof(relay_districts));
       if (relay_districts.Length != m_Size * m_Size) throw new InvalidOperationException("tracing");
       m_DistrictsGrid = new District[m_Size,m_Size];
@@ -958,6 +984,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    static private Point[]? s_turn_order = null;
+
     private void bootstrap_districts() {
       if (null != m_PlayerDistrict || null != m_SimDistrict) return;
       lock (m_Ready) {
@@ -981,13 +1009,21 @@ namespace djack.RogueSurvivor.Data
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "future: " + future.Count.ToString()+" "+future.to_s());
 #endif
 
+        if (m_Size*m_Size == now.Count) {
+          foreach(var w_pos in s_turn_order!) m_Ready.Add(this[w_pos]);
+          return;
+        }
+#if PROTOTYPE
         if (0 >= past.Count && now.Contains(Point.Empty)) {
           // Rogue Survivor 10- did not run events on the first turn of the game
           if (0 < Session.Get.WorldTime.TurnCounter) onBeforeTurn();
           m_Ready.Add(At(Point.Empty)!);
           return;
         }
-#if PROTOTYPE
+        if (0 < past.Count && 0 >= future.Count) {
+          m_Ready.Add(At(past[0])!);
+          return;
+        }
         if (0 >= past.Count && 0<now.Count) {
           m_Ready.Add(At(now[0])!);
           return;
