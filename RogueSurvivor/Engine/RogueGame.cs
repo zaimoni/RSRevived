@@ -11562,6 +11562,7 @@ restart:
         return;
       }
 
+      PanViewportTo(upgradeActor);
       var skills = upgradeActor.MySkills;
       OverlayPopupTitle? popup = null;
 

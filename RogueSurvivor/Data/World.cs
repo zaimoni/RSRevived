@@ -1010,6 +1010,8 @@ namespace djack.RogueSurvivor.Data
 #endif
 
         if (m_Size*m_Size == now.Count) {
+          // Rogue Survivor 10- did not run events on the first turn of the game
+          if (0 < Session.Get.WorldTime.TurnCounter) onBeforeTurn();
           foreach(var w_pos in s_turn_order!) m_Ready.Add(this[w_pos]);
           return;
         }
