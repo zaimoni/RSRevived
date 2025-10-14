@@ -840,8 +840,18 @@ namespace djack.RogueSurvivor.Data
       if (m_Ready.Contains(d)) return;
 
       // these are based on morally readonly properties and thus can be used without a lock
+      int t0 = Engine.Session.Get.WorldTime.TurnCounter;
+#if DEBUG
+      int t1 = At(Point.Empty)!.LocalTime.TurnCounter;
+      if (t1 < t0) throw new InvalidOperationException("inverted district scheduling");
+#endif
+
       int district_turn = d.LocalTime.TurnCounter;
-      if (district_turn > Engine.Session.Get.WorldTime.TurnCounter) {
+#if DEBUG
+      if (district_turn < t0) throw new InvalidOperationException("inverted district scheduling #2");
+#endif
+
+      if (district_turn > t0) {
 #if DEBUG
         if (district_turn > Engine.Session.Get.WorldTime.TurnCounter+1) throw new InvalidOperationException("skew attempted");
         if (d.WorldPosition == Point.Empty) throw new InvalidOperationException("district scheduling sabotaged");
@@ -875,10 +885,66 @@ namespace djack.RogueSurvivor.Data
 
     public void ScheduleAdjacentForAdvancePlay(District d)
     {
+/*
+550 run main : World::ScheduleAdjacentForAdvancePlay
+551 run main : Interstate Highway@A0: 1
+552 run main : Interstate Highway@A0: 1
+553 run main : Interstate Highway@G6: 0
+554 run main : Interstate Highway@B0: 0
+555 run main : World::ScheduleAdjacentForAdvancePlay
+556 run main : Interstate Highway@B0: 1
+557 run main : Interstate Highway@A0: 1
+558 run main : Interstate Highway@G6: 0
+559 run main : Interstate Highway@C0: 0
+560 run main : Interstate Highway@A1: 0
+ */
+      var t1 = At(Point.Empty)!.LocalTime.TurnCounter;
+      var t0 = Last.LocalTime.TurnCounter;
+      if (t1 == t0 || d == Last) {
+        lock (m_Ready) {
+#if DEBUG
+          if (m_Ready.Contains(d)) throw new InvalidOperationException("already-complete district "+d.Name+" scheduled");
+#endif
+          Interlocked.CompareExchange(ref m_PlayerDistrict, null, d);
+          Interlocked.CompareExchange(ref m_SimDistrict, null, d);
+        }
+        return;
+      }
+      if (t1 != t0+1) throw new InvalidOperationException("World::ScheduleAdjacentForAdvancePlay t1 "+ t1.ToString() + " t0 "+t0.ToString());
+
+      var d_time = d.LocalTime.TurnCounter;
+      if (t1 != d_time) throw new InvalidOperationException("World::ScheduleAdjacentForAdvancePlay t1 "+ t1.ToString() + " d_time " + d_time.ToString());
+
+      // note that the turn counter goes up at the *start* of the next turn
+#if AUDIT
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::ScheduleAdjacentForAdvancePlay");
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, d.Name + ": " + d.LocalTime.TurnCounter.ToString());
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, At(Point.Empty)!.Name + ": " + At(Point.Empty)!.LocalTime.TurnCounter.ToString());
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, Last.Name + ": " + Last.LocalTime.TurnCounter.ToString());
+#endif
+
       // d.WorldPosition is morally readonly
       var tmp_E = At(d.WorldPosition + Direction.E);
       var tmp_SW = At(d.WorldPosition + Direction.SW);
+
+      if (null != tmp_E) {
+        var e_time = tmp_E.LocalTime.TurnCounter;
+
+        if (t1 == e_time) tmp_E = null;
+        else if (t0 != e_time) throw new InvalidOperationException("World::ScheduleAdjacentForAdvancePlay t0 "+ t0.ToString() + " e_time " + e_time.ToString());
+      }
+
+      if (null != tmp_SW) {
+        var sw_time = tmp_SW.LocalTime.TurnCounter;
+        if (t1 == sw_time) tmp_SW = null;
+        else if (t0 != sw_time) throw new InvalidOperationException("World::ScheduleAdjacentForAdvancePlay t0 "+ t0.ToString() + " sw_time " + sw_time.ToString());
+      }
+
       // other directions not needed.  An early protoype also used Direction.NW but this caused global vs. local time skew
+#if AUDIT
+      if (null != tmp_E) Logger.WriteLine(Logger.Stage.RUN_MAIN, tmp_E.Name + ": " + tmp_E.LocalTime.TurnCounter.ToString());
+      if (null != tmp_SW) Logger.WriteLine(Logger.Stage.RUN_MAIN, tmp_SW.Name + ": " + tmp_SW.LocalTime.TurnCounter.ToString());
+#endif
 
       lock (m_Ready) {
 #if DEBUG
@@ -896,27 +962,37 @@ namespace djack.RogueSurvivor.Data
       if (null != m_PlayerDistrict || null != m_SimDistrict) return;
       lock (m_Ready) {
         if (0 < m_Ready.Count) return;
+
         int t0 = Engine.Session.Get.WorldTime.TurnCounter;
         List<Point> past = new();
         List<Point> now = new();
         List<Point> future = new();
+
         foreach(var d in m_DistrictsGrid) {
           if (d.LocalTime.TurnCounter == t0) now.Add(d.WorldPosition);
           else if (d.LocalTime.TurnCounter < t0) past.Add(d.WorldPosition);
           else future.Add(d.WorldPosition);
         }
+
+#if AUDIT
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::bootstrap_districts");
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "past: " + past.Count.ToString()+" "+past.to_s());
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "now: " + now.Count.ToString()+" "+now.to_s());
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "future: " + future.Count.ToString()+" "+future.to_s());
+#endif
+
         if (0 >= past.Count && now.Contains(Point.Empty)) {
+          // Rogue Survivor 10- did not run events on the first turn of the game
           if (0 < Session.Get.WorldTime.TurnCounter) onBeforeTurn();
           m_Ready.Add(At(Point.Empty)!);
           return;
         }
+#if PROTOTYPE
         if (0 >= past.Count && 0<now.Count) {
           m_Ready.Add(At(now[0])!);
           return;
         }
-        RogueGame.Game.ErrorPopup("past: "+past.Count.ToString());
-        RogueGame.Game.ErrorPopup("now: "+now.Count.ToString());
-        RogueGame.Game.ErrorPopup("future: "+future.Count.ToString());
+#endif
         throw new InvalidOperationException("unimplemented");
       }
     } 
@@ -932,11 +1008,23 @@ namespace djack.RogueSurvivor.Data
     {
       if (null != m_PlayerDistrict) return m_PlayerDistrict;
       if (null == m_SimDistrict) bootstrap_districts();
+#if AUDIT
+      var t1 = At(Point.Empty)!.LocalTime.TurnCounter;
+      var t0 = Last.LocalTime.TurnCounter;
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::CurrentPlayerDistrict");
+#endif
       lock (m_Ready) {
 restart:
         if (0 >= m_Ready.Count) return null;
         District tmp = m_Ready[0];
         m_Ready.RemoveAt(0);
+        var d_time = tmp.LocalTime.TurnCounter;
+#if AUDIT
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, tmp.Name + ": " + tmp.LocalTime.TurnCounter.ToString());
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, At(Point.Empty)!.Name + ": " + At(Point.Empty)!.LocalTime.TurnCounter.ToString());
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, Last.Name + ": " + Last.LocalTime.TurnCounter.ToString());
+#endif
+
         if (tmp.RequiresUI || null != m_SimDistrict) {
           Interlocked.CompareExchange(ref m_PlayerDistrict, tmp, null);
           return m_PlayerDistrict;
@@ -949,11 +1037,21 @@ restart:
     public District? CurrentSimulationDistrict()
     {
       if (null != m_SimDistrict) return m_SimDistrict;
+#if AUDIT
+      var t1 = At(Point.Empty)!.LocalTime.TurnCounter;
+      var t0 = Last.LocalTime.TurnCounter;
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::CurrentSimulationDistrict");
+#endif
       lock (m_Ready) {
         if (0 >= m_Ready.Count) return null;
         int scan = -1;
         while(m_Ready.Count > ++scan) {
           if (m_Ready[scan].RequiresUI) continue;
+#if AUDIT
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Ready[scan].Name + ": " + m_Ready[scan].LocalTime.TurnCounter.ToString());
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, At(Point.Empty)!.Name + ": " + t1.ToString());
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, Last.Name + ": " + t0.ToString());
+#endif
           Interlocked.CompareExchange(ref m_SimDistrict, m_Ready[scan], null);
           m_Ready.RemoveAt(scan);
           return m_SimDistrict;

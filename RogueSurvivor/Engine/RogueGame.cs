@@ -1792,7 +1792,7 @@ namespace djack.RogueSurvivor.Engine
       var sess = Session.Get;
       var world = World.Get;
 #if DATAFLOW_TRACE
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "District: "+district.Name);
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "AdvancePlay(District): " + district.Name);
 #endif
 
       lock (district) {
