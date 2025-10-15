@@ -6219,13 +6219,14 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerOrderMode(PlayerController pc)
     {
       var player = pc.ControlledActor; // backward compatibiblity
-      if (player.CountFollowers == 0) {
+      var n_followers = player.CountFollowers;
+      if (0 == n_followers) {
         ErrorPopup("No followers to give orders to.");
         return false;
       }
-      Actor[] actorArray = new Actor[player.CountFollowers];
-      HashSet<Point>[] pointSetArray = new HashSet<Point>[player.CountFollowers];
-      bool[] flagArray = new bool[player.CountFollowers];
+      Actor[] actorArray = new Actor[n_followers];
+      HashSet<Point>[] pointSetArray = new HashSet<Point>[n_followers];
+      bool[] flagArray = new bool[n_followers];
       int index1 = 0;
       foreach (Actor follower in player.Followers) {
         actorArray[index1] = follower;
@@ -6235,7 +6236,7 @@ namespace djack.RogueSurvivor.Engine
         flagArray[index1] = (player.Controller as PlayerController).InCommunicationWith(follower);
         ++index1;
       }
-      if (player.CountFollowers == 1 && flagArray[0]) {
+      if (1 == n_followers && flagArray[0]) {
         bool flag = HandlePlayerOrderFollower(pc, actorArray[0]);
         ClearOverlays();
         ClearMessages();
