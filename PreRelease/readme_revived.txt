@@ -3,6 +3,9 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 
 REVIVED 0.10.0 CHANGES
 ------------------
+* new command line option --faust .
+** --socrates-daimon provides information, such as the cheat map.
+** --faust bends/breaks game mechanics.
 * New command Unload, default key U.  Can be used either by mouseover (for player and ground inventories),
   or in menu mode for accessible inventories.
 * New command Transfer Item, default key CTRL-T.  This allows transferring items between 

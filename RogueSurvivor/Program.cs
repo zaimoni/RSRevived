@@ -45,12 +45,15 @@ namespace djack.RogueSurvivor
           }
           if ("--subway-cop"==tmp) Engine.Session.CommandLineOptions["subway-cop"] = "";    // key just has to exist
           if ("--socrates-daimon"==tmp) Engine.Session.CommandLineOptions["socrates-daimon"] = "";    // key just has to exist
+          if ("--faust"==tmp) Engine.Session.CommandLineOptions["faust"] = "";    // key just has to exist
           if ("--no-spawn"==tmp) Engine.Session.CommandLineOptions["no-spawn"] = "";    // key just has to exist
           if ("--PC"==tmp) reading_PC=true;
           // XXX more command-line options
           // --spawn : choice sequence for the new game dialog set; do not allow random at any stage.
-          // --spawn-district : override district and optionally position.  C2 is default.
-          //    district-only override would be e.g. C1.  C1@5,6 would override both district and position (useful for starting in the police station)
+          // --spawn-district : override district and optionally position.
+          //    The center district (historically C2, now D3) is default.
+          //    district-only override would be e.g. C1.
+          //    C1@5,6 would override both district and position
           // --no-spawn : do not create a random PC.  requires a --PC option to be viable.  Incompatible with --spawn and --spawn-district
           // --city : specify city size and dimensions; default is 5,50
         }
