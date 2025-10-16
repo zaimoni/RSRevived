@@ -8568,37 +8568,10 @@ namespace djack.RogueSurvivor.Engine
       Map map = actor.Location.Map;
       Point pos = actor.Location.Position;
       if (!map.IsTrapCoveringMapObjectAt(pos)) {
-        if (0 == OnActorReachIntoTile(actor, actor.Location)) return; // no further processing if dead
+        if (0 == actor.Location.OnReachInto(actor)) return; // no further processing if dead
       }
       map.OnEnterTile(actor);
     }
-
-    public int OnActorReachIntoTile(Actor actor, Location dest)
-    {
-      List<Actor>? trap_owners = null;
-      int old_hp = actor.HitPoints;
-      int cur_hp = old_hp;
-      dest.Map.RemoveAt<ItemTrap>(trap => {
-          bool trap_gone = TryTriggerTrap(trap, actor);
-          int new_hp = actor.HitPoints;
-          if (cur_hp > new_hp) {
-              var owner = trap.Owner;
-              if (null != owner) (trap_owners ??= new List<Actor>()).Add(owner);
-              cur_hp = new_hp;
-          }
-          return trap_gone;
-      }, dest.Position);
-      if (0 >= cur_hp) {
-        var owner = trap_owners?[0];
-        // look the other way when it comes to friendly trap kills
-        if (null != owner && !string.IsNullOrEmpty(owner.AIwillNotMurder)) owner = null;
-        // the above can trigger killing of actor already; hard crash
-        if (!actor.IsDead) KillActor(owner, actor, "trap");
-        return 0;
-      }
-      return old_hp > cur_hp ? -1 : 1;
-    }
-
 #nullable restore
 
     public bool TryActorLeaveTile(Actor actor)
@@ -8629,7 +8602,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
-    private bool TryTriggerTrap(ItemTrap trap, Actor victim)
+    public bool TryTriggerTrap(ItemTrap trap, Actor victim)
     {
       // \todo possible micro-optimization from common tests behind these function calls
       // sole caller has trap at victim's location

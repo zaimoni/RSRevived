@@ -15,6 +15,7 @@ namespace djack.RogueSurvivor.Engine._Action
         private readonly Item m_TakeItem;
         private readonly Item m_GiveItem;
         private readonly Data.Model.InvOrigin m_dest;
+        [NonSerialized] private bool m_Crouching = false;
 
         public Item Give { get => m_GiveItem; }
         public Item Take { get => m_TakeItem; }
@@ -38,12 +39,23 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public override bool IsPerformable()
         {
+            var dist = Rules.GridDistance(m_Actor.Location, m_dest.Location);
             if (null != m_dest.a_owner) {
               if (!Rules.IsAdjacent(m_Actor.Location, m_dest.Location)) return false;
-            } else {
-              if (1 < Rules.GridDistance(m_Actor.Location, m_dest.Location)) return false;
-            }
+            } else if (1 < dist) return false;
             if (!base.IsPerformable()) return false;
+            m_Crouching = 1 == dist && m_dest.IsGroundInventory;
+            if (m_Crouching)
+            {
+                if (!m_Actor.CanCrouch(out m_FailReason)) return false;
+                var actor = m_dest.Location.Actor;
+                if (null != actor)
+                {
+                    var allies = m_Actor.Allies;
+                    if (null == allies) return false;
+                    if (!allies.Contains(actor)) return false;
+                }
+            }
             return true;
         }
 
@@ -53,6 +65,14 @@ namespace djack.RogueSurvivor.Engine._Action
 
             m_Actor.Activity = Activity.IDLE;
             m_Actor.SpendActionPoints();
+            if (m_Crouching) {
+                m_Actor.Crouch();
+                var code = m_dest.Location.OnReachInto(m_Actor);
+                if (0 >= code) return; // we took a hit -- cancel taking item
+            } else if (null != m_dest.obj_owner) {
+                // need to stand to make this work
+                m_Actor.StandUp();
+            }
             src.Trade(m_GiveItem, m_TakeItem, m_dest);
 
             RogueGame.Game.UI_TradeItem(m_Actor, m_GiveItem, m_TakeItem);

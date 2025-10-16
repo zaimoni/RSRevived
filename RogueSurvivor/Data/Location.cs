@@ -206,6 +206,33 @@ namespace djack.RogueSurvivor.Data
         var obj = MapObject;
         return null != obj && obj.BlocksLivingPathfinding;
     } }
+
+    public int OnReachInto(Actor actor)
+    {
+      List<Actor>? trap_owners = null;
+      int old_hp = actor.HitPoints;
+      int cur_hp = old_hp;
+      Map.RemoveAt<Engine.Items.ItemTrap>(trap => {
+          bool trap_gone = Engine.RogueGame.Game.TryTriggerTrap(trap, actor);
+          int new_hp = actor.HitPoints;
+          if (cur_hp > new_hp) {
+              var owner = trap.Owner;
+              if (null != owner) (trap_owners ??= new()).Add(owner);
+              cur_hp = new_hp;
+          }
+          return trap_gone;
+      }, Position);
+      if (0 >= cur_hp) {
+        var owner = trap_owners?[0];
+        // look the other way when it comes to friendly trap kills
+        if (null != owner && !string.IsNullOrEmpty(owner.AIwillNotMurder)) owner = null;
+        // the above can trigger killing of actor already; hard crash
+        if (!actor.IsDead) Engine.RogueGame.Game.KillActor(owner, actor, "trap");
+        return 0;
+      }
+      return old_hp > cur_hp ? -1 : 1;
+    }
+
 #nullable restore
 
     // alpha10

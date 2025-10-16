@@ -77,7 +77,7 @@ namespace djack.RogueSurvivor.Data.Model
             if (1 != dist) return true; // not relevant
             if (IsGroundInventory) {
                 a.Crouch();
-                var code = Engine.RogueGame.Game.OnActorReachIntoTile(a, Location);
+                var code = Location.OnReachInto(a);
                 if (0 >= code) return false; // we took a hit -- cancel taking item
             } else if (null != obj_owner) {
                 // need to stand to make this work

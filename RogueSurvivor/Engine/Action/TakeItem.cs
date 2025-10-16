@@ -79,10 +79,8 @@ namespace djack.RogueSurvivor.Engine._Action
           m_Actor.SpendActionPoints();
           if (m_Crouching) {
             m_Actor.Crouch();
-            var code = RogueGame.Game.OnActorReachIntoTile(m_Actor, m_src.Location);
-            if (0 >= code) { // we took a hit -- cancel taking item
-              return;
-            }
+            var code = m_src.Location.OnReachInto(m_Actor);
+            if (0 >= code) return; // we took a hit -- cancel taking item
           } else if (null != m_src.obj_owner) {
             // need to stand to make this work
             m_Actor.StandUp();
