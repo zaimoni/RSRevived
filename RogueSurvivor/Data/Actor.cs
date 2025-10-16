@@ -444,6 +444,15 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
+    public void ModifyTrustInLeader(int mod, bool addMessage)
+    {
+      m_TrustInLeader += mod;
+      if (m_TrustInLeader > Rules.TRUST_MAX) m_TrustInLeader = Rules.TRUST_MAX;
+      else if (m_TrustInLeader < Rules.TRUST_MIN) m_TrustInLeader = Rules.TRUST_MIN;
+      if (addMessage && Leader?.Controller is PlayerController pc)
+        pc.AddMessage(new(string.Format("({0} trust with {1})", mod, TheName), Session.Get.WorldTime.TurnCounter, Color.White));
+    }
+
     public IEnumerable<Actor>? Followers { get { return m_Followers; } }
 
     public Actor? FirstFollower(Predicate<Actor> test) {

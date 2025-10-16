@@ -2198,7 +2198,7 @@ namespace djack.RogueSurvivor.Engine
           var a_leader = actor.LiveLeader;
           if (null != a_leader) {
 #region leader trust & leader/follower bond.
-            ModifyActorTrustInLeader(actor, a_leader.TrustIncrease, false);
+            actor.ModifyTrustInLeader(a_leader.TrustIncrease, false);
             if (actor.HasBondWith(a_leader) && rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
               actor.RegenSanity(actor.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
               actor.Leader.RegenSanity(a_leader.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
@@ -2281,16 +2281,6 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering NPC upgrade, Map: "+map.Name);
 #endif
       map.AdvanceLocalTime();
-    }
-
-    // object orientation (Actor) and UI lockdown (RogueGame) heuristics are different locations
-    private void ModifyActorTrustInLeader(Actor a, int mod, bool addMessage)
-    {
-      a.TrustInLeader += mod;
-      if (a.TrustInLeader > Rules.TRUST_MAX) a.TrustInLeader = Rules.TRUST_MAX;
-      else if (a.TrustInLeader < Rules.TRUST_MIN) a.TrustInLeader = Rules.TRUST_MIN;
-      if (addMessage && a.Leader.Controller is PlayerController pc)
-        pc.AddMessage(new(string.Format("({0} trust with {1})", mod, a.TheName), Session.Get.WorldTime.TurnCounter, Color.White));
     }
 
 #nullable enable
@@ -10241,10 +10231,10 @@ namespace djack.RogueSurvivor.Engine
       if (target.Leader == actor) {
         bool flag = (target.Controller as ObjectiveAI).IsInterestingItem(gift);
         target.Say(actor, flag ? "Thank you, I really needed that!" : "Thanks I guess...", Sayflags.IS_FREE_ACTION);
-        ModifyActorTrustInLeader(target, flag ? Rules.TRUST_GOOD_GIFT_INCREASE : Rules.TRUST_MISC_GIFT_INCREASE, true);
+        target.ModifyTrustInLeader(flag ? Rules.TRUST_GOOD_GIFT_INCREASE : Rules.TRUST_MISC_GIFT_INCREASE, true);
       } else if (actor.Leader == target) {
         target.Say(actor, "Well, here it is...", Sayflags.IS_FREE_ACTION);
-        ModifyActorTrustInLeader(actor, Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
+        actor.ModifyTrustInLeader(Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
       }
 
       if (gift is ItemTrap trap) trap.Desactivate();
@@ -11112,7 +11102,7 @@ restart:
         killer.DoForAllFollowers(fo => {
             if ((fo.TargetActor == deadGuy || fo.IsEnemyOf(deadGuy)) && Rules.IsAdjacent(fo.Location, deadGuy.Location)) {
               fo.Say(killer, "That was close! Thanks for the help!!", Sayflags.IS_FREE_ACTION);
-              ModifyActorTrustInLeader(fo, Rules.TRUST_LEADER_KILL_ENEMY, true);
+              fo.ModifyTrustInLeader(Rules.TRUST_LEADER_KILL_ENEMY, true);
             }
         });
         if (isMurder.cache) {
