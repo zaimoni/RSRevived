@@ -10463,21 +10463,11 @@ restart:
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) RedrawPlayScreen(MakeMessage(actor, VERB_BARRICADE.Conjugate(actor), door));
     }
 
-    public void DoBuildFortification(Actor actor, in Location dest, bool isLarge)
+    public void UI_BuildFortification(Actor actor, Fortification fortification)
     {
-      actor.SpendActionPoints();
-      var inv = actor.Inventory!;
-      int num = actor.BarricadingMaterialNeedForFortification(isLarge);
-      for (int index = 0; index < num; ++index) {
-        inv.Consume(inv.GetSmallestStackOf<ItemBarricadeMaterial>());
-      }
-      var fortification = new Fortification(isLarge);
-      dest.Place(fortification);
-
-      bool is_visible = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fortification);
-      if (is_visible) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_BUILD.Conjugate(actor), fortification.AName)));
-      fortification.OnEnterTile();
-      if (is_visible) RedrawPlayScreen();
+      var seen = _ForceVisibleToPlayer(actor);
+      if (null == seen) seen = _ForceVisibleToPlayer(fortification);
+      seen?.AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_BUILD.Conjugate(actor), fortification.AName)));
     }
 
     public void DoRepairFortification(Actor actor, Fortification fort)

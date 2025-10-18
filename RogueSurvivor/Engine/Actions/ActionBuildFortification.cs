@@ -37,7 +37,15 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueGame.Game.DoBuildFortification(m_Actor, in m_Dest, m_IsLarge);
+      m_Actor.SpendActionPoints();
+      var inv = m_Actor.Inventory!;
+      int num = m_Actor.BarricadingMaterialNeedForFortification(m_IsLarge);
+      while(0 <= --num) inv.Consume(inv.GetSmallestStackOf<Engine.Items.ItemBarricadeMaterial>());
+      var fortification = new Engine.MapObjects.Fortification(m_IsLarge);
+      m_Dest.Place(fortification);
+
+      RogueGame.Game.UI_BuildFortification(m_Actor, fortification);
+      fortification.OnEnterTile();
     }
 
     static public string? ReasonCant(Actor a, bool isLarge)
