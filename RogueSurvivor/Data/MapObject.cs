@@ -182,6 +182,16 @@ namespace djack.RogueSurvivor.Data
       return !IsJumpable && !IsWalkable && (!IsMovable || IsOnFire);
     } }
 
+    public void OnEnterTile()
+    {
+      if (TriggersTraps) {
+        Location.Map.RemoveAt<Engine.Items.ItemTrap>(trap => {
+          if (!trap.IsActivated) return false;
+          return Engine.RogueGame.Game.DoTriggerTrap(trap, this);
+        }, Location.Position);
+      }
+    }
+
     protected MapObject(string hiddenImageID, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG

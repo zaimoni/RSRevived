@@ -8620,17 +8620,6 @@ namespace djack.RogueSurvivor.Engine
       return flag;
     }
 
-    private void CheckMapObjectTriggersTraps(Map map, Point pos)
-    {
-      var obj = map.GetMapObjectAt(pos);
-      if (null != obj && obj.TriggersTraps) {
-        map.RemoveAt<ItemTrap>(trap => {
-          if (!trap.IsActivated) return false;
-          return DoTriggerTrap(trap, obj);
-        }, pos);
-      }
-    }
-
     private void DefenderDamageIcon(Actor defender, string icon, string damage)
     {
       const int DAMAGE_DX = 10;
@@ -8675,7 +8664,7 @@ namespace djack.RogueSurvivor.Engine
       return trap.Consume();
     }
 
-    private bool DoTriggerTrap(ItemTrap trap, MapObject obj)
+    public bool DoTriggerTrap(ItemTrap trap, MapObject obj)
     {
       ItemTrapModel trapModel = trap.Model;
       var o_witness = _ForceVisibleToPlayer(obj);
@@ -10487,7 +10476,7 @@ restart:
 
       bool is_visible = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fortification);
       if (is_visible) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_BUILD.Conjugate(actor), fortification.AName)));
-      CheckMapObjectTriggersTraps(dest.Map, dest.Position);
+      fortification.OnEnterTile();
       if (is_visible) RedrawPlayScreen();
     }
 
@@ -10682,7 +10671,7 @@ restart:
         // \todo: get away from the fighting
       }
       PropagateSound(mapObj.Location, "You hear something being pushed",react,player_knows);
-      CheckMapObjectTriggersTraps(objDest.Map, objDest.Position);
+      mapObj.OnEnterTile();
     }
 
     public void DoShove(Actor actor, Actor target, in Location dest)
@@ -10793,7 +10782,7 @@ restart:
 
       // check triggers
       actor.OnEnterTile();
-      CheckMapObjectTriggersTraps(map, mapObj.Location.Position);
+      mapObj.OnEnterTile();
     }
 
     public void DoPullActor(Actor actor, Actor target, in Location dest)    // alpha10
