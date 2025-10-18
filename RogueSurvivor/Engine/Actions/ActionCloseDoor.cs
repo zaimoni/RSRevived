@@ -38,7 +38,9 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueGame.Game.DoCloseDoor(m_Actor, m_Door, m_IsFreeAction);
+      m_Door.SetState(DoorWindow.STATE_CLOSED);
+      if (!m_IsFreeAction) m_Actor.SpendActionPoints();
+      RogueGame.Game.UI_CloseDoor(m_Actor, m_Door);
     }
 
     public override string? ToString() => "close "+m_Door.TheName;

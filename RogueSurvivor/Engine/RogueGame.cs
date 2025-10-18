@@ -10437,12 +10437,11 @@ restart:
       if (IsPlayer(actor)) AnimDelay(DELAY_SHORT);
     }
 
-
-    public void DoCloseDoor(Actor actor, DoorWindow door, bool free)
+    public void UI_CloseDoor(Actor actor, DoorWindow door)
     {
-      door.SetState(DoorWindow.STATE_CLOSED);
-      if (!free) actor.SpendActionPoints();
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) RedrawPlayScreen(MakeMessage(actor, VERB_CLOSE.Conjugate(actor), door));
+      var seen = _ForceVisibleToPlayer(actor);
+      if (null == seen) seen = _ForceVisibleToPlayer(door);
+      seen?.AddMessage(MakeMessage(actor, VERB_CLOSE.Conjugate(actor), door));
     }
 
     public void DoBarricadeDoor(Actor actor, DoorWindow door)
