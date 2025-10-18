@@ -10463,11 +10463,11 @@ restart:
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) RedrawPlayScreen(MakeMessage(actor, VERB_BARRICADE.Conjugate(actor), door));
     }
 
-    public void UI_BuildFortification(Actor actor, Fortification fortification)
+    public void UI_BuildFortification(Actor actor, Fortification fort)
     {
       var seen = _ForceVisibleToPlayer(actor);
-      if (null == seen) seen = _ForceVisibleToPlayer(fortification);
-      seen?.AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_BUILD.Conjugate(actor), fortification.AName)));
+      if (null == seen) seen = _ForceVisibleToPlayer(fort);
+      seen?.AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_BUILD.Conjugate(actor), fort.AName)));
     }
 
     public void DoRepairFortification(Actor actor, Fortification fort)
@@ -10477,23 +10477,25 @@ restart:
       inv.Consume(barricadeMaterial);
       actor.SpendActionPoints();
       fort.Repair(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(fort)) RedrawPlayScreen(MakeMessage(actor, VERB_REPAIR.Conjugate(actor), fort));
+
+      var seen = _ForceVisibleToPlayer(actor);
+      if (null == seen) seen = _ForceVisibleToPlayer(fort);
+      seen?.AddMessage(MakeMessage(actor, VERB_REPAIR.Conjugate(actor), fort));
     }
 
     public void DoSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
     {
       actor.SpendActionPoints();
-      bool have_messaged = false;
-      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen)) {
-        AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " off." : " on."));
-        have_messaged = true;
-      }
+
+      var seen = _ForceVisibleToPlayer(actor);
+      if (null == seen) seen = _ForceVisibleToPlayer(powGen);
+      bool have_messaged = seen?.AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " off." : " on.")) ?? false;
       powGen.TogglePower(actor);
       if (!have_messaged) {
-        if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen))
-          AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " off." : " on."));
+        seen = _ForceVisibleToPlayer(actor);
+        if (null == seen) seen = _ForceVisibleToPlayer(powGen);
+        seen?.AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " off." : " on."));
       }
-      RedrawPlayScreen();
     }
 #nullable restore
 
