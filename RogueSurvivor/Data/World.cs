@@ -45,7 +45,7 @@ namespace djack.RogueSurvivor.Data
 
     private District? m_PlayerDistrict = null;
     private District? m_SimDistrict = null;
-    private readonly List<District> m_Ready = new();   // \todo this is expected to have a small maximum that can be hard-coded; measure it
+    private readonly List<District> m_Ready = new();
     public Weather Weather { get; private set; }
     public int NextWeatherCheckTurn { get; private set; } // alpha10
 
@@ -1045,19 +1045,19 @@ namespace djack.RogueSurvivor.Data
     public District? CurrentPlayerDistrict()
     {
       if (null != m_PlayerDistrict) return m_PlayerDistrict;
-      if (null == m_SimDistrict) bootstrap_districts();
 #if AUDIT
       var t1 = At(Point.Empty)!.LocalTime.TurnCounter;
       var t0 = Last.LocalTime.TurnCounter;
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::CurrentPlayerDistrict");
 #endif
       lock (m_Ready) {
+        if (null == m_SimDistrict) bootstrap_districts();
 restart:
         if (0 >= m_Ready.Count) return null;
         District tmp = m_Ready[0];
         m_Ready.RemoveAt(0);
-        var d_time = tmp.LocalTime.TurnCounter;
 #if AUDIT
+        var d_time = tmp.LocalTime.TurnCounter;
         Logger.WriteLine(Logger.Stage.RUN_MAIN, tmp.Name + ": " + tmp.LocalTime.TurnCounter.ToString());
         Logger.WriteLine(Logger.Stage.RUN_MAIN, At(Point.Empty)!.Name + ": " + At(Point.Empty)!.LocalTime.TurnCounter.ToString());
         Logger.WriteLine(Logger.Stage.RUN_MAIN, Last.Name + ": " + Last.LocalTime.TurnCounter.ToString());
@@ -1082,20 +1082,11 @@ restart:
 #endif
       lock (m_Ready) {
         if (0 >= m_Ready.Count) return null;
-        int scan = -1;
-        while(m_Ready.Count > ++scan) {
-          if (m_Ready[scan].RequiresUI) continue;
-#if AUDIT
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Ready[scan].Name + ": " + m_Ready[scan].LocalTime.TurnCounter.ToString());
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, At(Point.Empty)!.Name + ": " + t1.ToString());
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, Last.Name + ": " + t0.ToString());
-#endif
-          Interlocked.CompareExchange(ref m_SimDistrict, m_Ready[scan], null);
-          m_Ready.RemoveAt(scan);
-          return m_SimDistrict;
-        }
+        if (m_Ready[0].RequiresUI) return null;
+        Interlocked.CompareExchange(ref m_SimDistrict, m_Ready[0], null);
+        m_Ready.RemoveAt(0);
+        return m_SimDistrict;
       }
-      return null;
     }
 
     private void _RejectActorActorInventoryCrossLink(List<string> errors, Actor origin)
