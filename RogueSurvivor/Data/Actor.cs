@@ -672,13 +672,6 @@ namespace djack.RogueSurvivor.Data
     // aggression statistics, etc.
     public int KillsCount { get { return ActorScoring.KillsCount; } }
 
-#if DEAD_FUNC
-    public IEnumerable<Actor> AggressorOf { get { return m_AggressorOf; } }
-    public int CountAggressorOf { get { return m_AggressorOf?.Count ?? 0; } }
-    public IEnumerable<Actor> SelfDefenceFrom { get { return m_SelfDefenceFrom; } }
-    public int CountSelfDefenceFrom { get { return m_SelfDefenceFrom?.Count ?? 0; } }
-#endif
-
 #nullable enable
     public int MurdererSpottedByChance(Actor spotter)
     {
@@ -991,27 +984,6 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCouldntFireAt(target));
     }
-
-#if DEAD_FUNC
-    // this one is very hypothetical -- note absence of ranged weapon validity checks
-    private string ReasonCouldntFireAt(Actor target, int range)
-    {
-      if (range+1 < Rules.InteractionDistance(Location, target.Location)) return "out of range";
-      if (target.IsDead) return "already dead!";
-      return "";
-    }
-
-    public bool CouldFireAt(Actor target, int range, out string reason)
-    {
-      reason = ReasonCouldntFireAt(target,range);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CouldFireAt(Actor target, int range)
-    {
-      return string.IsNullOrEmpty(ReasonCouldntFireAt(target,range));
-    }
-#endif
 
     private string ReasonCantFireAt(Actor target, List<Point> LoF)
     {
@@ -1464,41 +1436,6 @@ namespace djack.RogueSurvivor.Data
     }
 #endregion
 
-#if PROTOTYPE
-    public List<Actor>? grepAllInRadioRange(Func<Actor, bool> ok, Location? origin = null)
-    {
-      bool police_radio = HasActivePoliceRadio;
-      bool army_radio = HasActiveArmyRadio;
-      if (!police_radio && !army_radio) return null;
-#if DEBUG
-      if (police_radio && army_radio) throw new InvalidOperationException("need to implement dual police and army radio case");
-#endif
-      if (null == origin) origin = Location;
-      var radio_location = Rules.PoliceRadioLocation(origin.Value);
-      var radio_range = radio_location.RadioDistricts;
-
-      List<Actor> ret = new();
-
-      Session.Get.World.DoForAllMaps(map => {
-        foreach (Actor actor in map.Actors.ToList()) {   // subject to multi-threading race
-          if (this == actor) continue;
-          // XXX defer implementing dual radios
-          if (police_radio) {
-            if (!actor.HasActivePoliceRadio) continue;
-          } else {
-            if (!actor.HasActiveArmyRadio) continue;
-          }
-          var dest_radio_location = Rules.PoliceRadioLocation(actor.Location);
-          if (RogueGame.POLICE_RADIO_RANGE < Rules.GridDistance(radio_location, in dest_radio_location)) continue;
-
-          if (ok(actor)) ret.Add(actor);
-        }
-        },d => radio_range.Contains(d.WorldPosition));
-
-      return 0<ret.Count ? ret : null;
-    }
-#endif
-
     public void MessageAllInDistrictByRadio(Action<Actor> op, Func<Actor, bool> test, Action<PlayerController> msg_player, Action<PlayerController> defer_msg_player, Func<Actor, bool> msg_player_test, Location? origin=null)
     {
       bool player_initiated = RogueGame.IsPlayer(this);
@@ -1591,10 +1528,6 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveAllFollowers()
     {
-#if OBSOLETE
-      while (m_Followers != null && m_Followers.Count > 0)
-        RemoveFollower(m_Followers[0]);
-#endif
       var followers = m_Followers;
       if (null != followers) {
         foreach(var fo in followers) fo._NoLongerFollower();
@@ -3451,11 +3384,7 @@ final_exit:
 
     private string ReasonCantTradeWith(Actor target)
     {
-#if OBSOLETE
-      if (target.IsPlayer) return "target is player";
-#else
       if (!IsPlayer && target.IsPlayer) return "target is player";
-#endif
       if (!Model.Abilities.CanTrade && target.Leader != this) return "can't trade";
       if (!target.Model.Abilities.CanTrade && target.Leader != this) return "target can't trade";
       if (IsEnemyOf(target)) return "is an enemy";
@@ -3485,11 +3414,7 @@ final_exit:
         break;
       }
 
-#if OBSOLETE
-      if (!IsPlayer) {
-#else
       if (!IsPlayer && !target.IsPlayer) {
-#endif
         var theirs = target.GetRationalTradeableItems(this.Controller as Gameplay.AI.OrderableAI);
         if (null == theirs) return "target unwilling to trade";
         var mine = GetRationalTradeableItems(target.Controller as Gameplay.AI.OrderableAI);
