@@ -2936,7 +2936,7 @@ namespace djack.RogueSurvivor.Engine
       var loc = new Location(dest.m, Rules.Get.DiceRoller.Choose(tmp));
       if (!Map.Canonical(ref loc)) return false; // invariant failure
       loc.Place(toSpawn);
-      OnActorEnterTile(toSpawn);
+      toSpawn.OnEnterTile();
       return true;
     }
 
@@ -2951,7 +2951,7 @@ namespace djack.RogueSurvivor.Engine
       });
       if (0 >= tmp.Count) return false;
       map.PlaceAt(actorToSpawn, Rules.Get.DiceRoller.Choose(tmp));
-      OnActorEnterTile(actorToSpawn);
+      actorToSpawn.OnEnterTile();
       return true;
     }
 
@@ -8556,23 +8556,9 @@ namespace djack.RogueSurvivor.Engine
         if (!dest_seen && Rules.Get.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
           AddMessageIfAudibleForPlayer(actor.Location, "You hear screams of terror");
       }
-      OnActorEnterTile(actor);
+      actor.OnEnterTile();
       if (dest_seen || actor.IsPlayer) RedrawPlayScreen();
     }
-
-#nullable enable
-    public void OnActorEnterTile(Actor actor)
-    {
-	  Session.Get.Police.TrackThroughExitSpawn(actor);
-      (actor.Controller as ObjectiveAI)?.OnMove();  // 2019-08-24: both calls required to pass regression test
-      Map map = actor.Location.Map;
-      Point pos = actor.Location.Position;
-      if (!map.IsTrapCoveringMapObjectAt(pos)) {
-        if (0 == actor.Location.OnReachInto(actor)) return; // no further processing if dead
-      }
-      map.OnEnterTile(actor);
-    }
-#nullable restore
 
     public bool TryActorLeaveTile(Actor actor)
     {
@@ -8781,7 +8767,7 @@ namespace djack.RogueSurvivor.Engine
       if (is_cross_district)
         actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exit_map.District.Name));
       if (need_stamina_regen) actor.PreTurnStart();
-      OnActorEnterTile(actor);
+      actor.OnEnterTile();
       actor.Followers?.DoTheyEnterMap(exitAt.Location, in origin);
       if (   actor.Controller is OrderableAI ai && !is_cross_district
           && exitAt.Location.Map == exitAt.Location.Map.District.EntryMap) {
@@ -10673,7 +10659,7 @@ restart:
         if (TryActorLeaveTile(actor)) { // RS alpha 10
           actor.Location.Map.Remove(actor);
           actor_dest.Place(actor);  // assumed to be walkable, checked by rules
-          OnActorEnterTile(actor);  // RS alpha 10
+          actor.OnEnterTile();  // RS alpha 10
         }
       }
       if (flag) RedrawPlayScreen(MakeMessage(actor, VERB_PUSH.Conjugate(actor), mapObj));
@@ -10719,14 +10705,14 @@ restart:
         if (non_adjacent) {
           if (TryActorLeaveTile(actor)) {
             t_loc.Place(actor);
-            OnActorEnterTile(actor);
+            actor.OnEnterTile();
           }
         }
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(in new_t_loc)) {
           RedrawPlayScreen(MakeMessage(actor, VERB_SHOVE.Conjugate(actor), target));
         }
         if (target.IsSleeping) DoWakeUp(target);
-        OnActorEnterTile(target);
+        target.OnEnterTile();
       }
     }
 
@@ -10806,7 +10792,7 @@ restart:
       PropagateSound(mapObj.Location, "You hear something being pushed",react,player_knows);
 
       // check triggers
-      OnActorEnterTile(actor);
+      actor.OnEnterTile();
       CheckMapObjectTriggersTraps(map, mapObj.Location.Position);
     }
 
@@ -10841,8 +10827,8 @@ restart:
       if (isVisible) RedrawPlayScreen(MakeMessage(actor, VERB_PULL.Conjugate(actor), target));
 
       // Trigger stuff.
-      OnActorEnterTile(actor);
-      OnActorEnterTile(target);
+      actor.OnEnterTile();
+      target.OnEnterTile();
     }
 
     public void DoWakeUp(Actor actor)
@@ -15143,7 +15129,7 @@ retry:
         if (null != pointList && 0 < pointList.Count && game.TryActorLeaveTile(fo)) {
           map.PlaceAt(fo, Rules.Get.DiceRoller.Choose(pointList));
           map.MoveActorToFirstPosition(fo);
-          game.OnActorEnterTile(fo);
+          fo.OnEnterTile();
         }
       }
     }

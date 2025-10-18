@@ -1916,6 +1916,18 @@ namespace djack.RogueSurvivor.Data
       m_TargetActor = whom;
     }
 
+    public void OnEnterTile()
+    {
+	  Session.Get.Police.TrackThroughExitSpawn(this);
+      (Controller as Gameplay.AI.ObjectiveAI)?.OnMove();  // 2019-08-24: both calls required to pass regression test
+      // inline Map::IsTrapCoveringMapObjectAt
+      var obj = Location.MapObject;
+      if (null == obj || obj.CoversTraps) {
+        if (0 == Location.OnReachInto(this)) return; // no further processing if dead
+      }
+      Location.Map.OnEnterTile(this);
+    }
+
     private List<Point>? FastestStepTo(Map m,Point src,Point dest)
     {
       int dist = Rules.GridDistance(in src,in dest);
