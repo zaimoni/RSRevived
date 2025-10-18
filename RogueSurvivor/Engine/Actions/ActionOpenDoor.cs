@@ -29,7 +29,11 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueGame.Game.DoOpenDoor(m_Actor, m_Door);
+      bool was_opaque = !m_Door.IsTransparent;
+      m_Door.SetState(DoorWindow.STATE_OPEN);
+      m_Actor.SpendActionPoints();
+      if (was_opaque) m_Actor.Controller.UpdateSensors();
+      RogueGame.Game.UI_OpenDoor(m_Actor, m_Door);
     }
   }
 }
