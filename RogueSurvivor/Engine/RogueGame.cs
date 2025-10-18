@@ -3943,6 +3943,16 @@ namespace djack.RogueSurvivor.Engine
     }
     public void ErrorPopup(string msg) { ErrorPopup(new string[] { msg }); }
 
+    private bool InterpretForPC(ActorAction? act) {
+      if (null == act) return false;
+      if (act.IsPerformable()) {
+        act.Perform();
+        return true;
+      }
+      ErrorPopup("Can't " + act.ToString() + " : " + act.FailReason);
+      return false;
+    }
+
     private void InfoPopup(string[] msg)
     {
       var staging_size = RogueForm.Get.Measure(msg);
@@ -5240,34 +5250,17 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      string err = "Nothing to close there.";
-
-      DoorWindow? close_where(Direction dir) {
-        err = "Nothing to close there.";
+      ActionCloseDoor? close_where(Direction dir) {
         if (dir == Direction.NEUTRAL) return null;
         var pos = player.Location.Position + dir;
         if (!player.Location.Map.IsInBounds(pos)) return null;  // doors never generate on map edges so IsInBounds ok
 
         var door = player.Location.Map.GetMapObjectAt(pos) as DoorWindow;
         if (null == door) return null;
-
-        if (!player.CanClose(door, out string reason)) {
-          err = string.Format("Can't close {0} : {1}.", door.TheName, reason);
-          return null;
-        }
-        return door;
+        return new ActionCloseDoor(player, door, player.Location == (player.Controller as BaseAI).PrevLocation);
       }
 
-      bool close(DoorWindow? door) {
-        if (null != door) {
-          DoCloseDoor(player, door, player.Location==(player.Controller as BaseAI).PrevLocation);
-          return true;
-        }
-        ErrorPopup(err);
-        return false;
-      }
-
-      bool actionDone = DirectionCommandFiltered(close_where, close, "Nothing to close here.");
+      bool actionDone = DirectionCommandFiltered(close_where, InterpretForPC, "Nothing to close here.");
 
       ClearOverlays();
       return actionDone;

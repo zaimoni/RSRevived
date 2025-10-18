@@ -40,5 +40,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       RogueGame.Game.DoCloseDoor(m_Actor, m_Door, m_IsFreeAction);
     }
+
+    public override string? ToString() => "close "+m_Door.TheName;
   }
 }
