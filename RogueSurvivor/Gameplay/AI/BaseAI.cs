@@ -797,23 +797,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected virtual ActorAction BehaviorExplore(ExplorationData exploration)
     {
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position - m_prevLocation.Position);
-      var choiceEval = Choose(Direction.COMPASS, dir => {
-        Location loc = m_Actor.Location + dir;
-        var bump = Rules.IsBumpableFor(m_Actor, in loc);
-        if (!IsValidMoveTowardGoalAction(bump)) return float.NaN;
-        if (!Map.Canonical(ref loc)) return float.NaN;
-#if DEBUG
-        if (!bump.IsPerformable()) throw new InvalidOperationException("non-null non-performable bump");
-#else
-        if (!bump.IsPerformable()) return float.NaN;
-#endif
 
+      int ranking(Location loc) {
         const int EXPLORE_ZONES = 1000;
         const int EXPLORE_LOCS = 500;
         const int EXPLORE_BARRICADES = 100;
         const int EXPLORE_INOUT = 50;
         const int EXPLORE_DIRECTION = 25;
-        const int EXPLORE_RANDOM = 10;
 
 //      if (exploration.HasExplored(loc)) return float.NaN;
         Map map = loc.Map;
@@ -830,11 +820,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (map.LocalTime.IsNight) num += EXPLORE_INOUT;
         }
         else if (!map.LocalTime.IsNight) num += EXPLORE_INOUT;
+        Direction dir = Direction.FromVector(loc.Position - m_Actor.Location.Position);
         if (dir == prevDirection) num += EXPLORE_DIRECTION;
-        return (float) (num + Rules.Get.Roll(0, EXPLORE_RANDOM));
-      }, (a, b) => a > b);
-      if (choiceEval != null) return new ActionBump(m_Actor, choiceEval.Choice);
-      return null;
+        return num;
+      }
+
+      var opts = Direction.COMPASS.Candidates(dir => {
+          var act = new ActionBump(m_Actor, dir);
+          var next = act.dest;
+          if (!Map.Canonical(ref next)) return null;
+          if (!IsValidMoveTowardGoalAction(act.ConcreteAction)) return null;
+
+          return act;
+      });
+      if (null == opts) return null;
+
+      var best = opts.KeepMaximal(act => ranking(act.dest));
+      if (1 == best.Count) return best[0].Key;
+
+      // \todo --faust option effects
+
+      return Rules.Get.DiceRoller.Choose(best).Key;
     }
 
 #nullable enable

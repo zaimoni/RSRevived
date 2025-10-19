@@ -3030,31 +3030,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorCourage courage = Directives_nocreate?.Courage ?? ActorDirective.Courage_default;
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position - PrevLocation.Position);
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
-      var choiceEval = Choose(Direction.COMPASS, dir => {
-        Location loc = m_Actor.Location + dir;
-        var bump = Rules.IsBumpableFor(m_Actor, in loc);
-        if (!IsValidMoveTowardGoalAction(bump)) return float.NaN;
-        if (!Map.Canonical(ref loc)) return float.NaN;
-#if DEBUG
-        if (!bump.IsPerformable()) throw new InvalidOperationException("non-null non-performable bump");
-#else
-        if (!bump.IsPerformable()) return float.NaN;
-#endif
 
+      int ranking(Location loc) {
         const int EXPLORE_ZONES = 1000;
         const int EXPLORE_LOCS = 500;
         const int EXPLORE_BARRICADES = 100;
         const int AVOID_TRAPS = -1000; // alpha10 greatly increase penalty and x by potential damage; was -50
         const int EXPLORE_INOUT = 50;
         const int EXPLORE_DIRECTION = 25;
-        const int EXPLORE_RANDOM = 10;
 
-//      if (exploration.HasExplored(loc)) return float.NaN;
         Map map = loc.Map;
         Point position = loc.Position;
         int trap_max_damage = m_Actor.Model.Abilities.IsIntelligent ? map.TrapsUnavoidableMaxDamageAtFor(position,m_Actor) : 0;
-        if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && trap_max_damage >= m_Actor.HitPoints)
-          return float.NaN;
+//        if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && trap_max_damage >= m_Actor.HitPoints)
+//          return float.NaN;
         int num = 0;
         if (!exploration.HasExplored(map.GetZonesAt(position))) num += EXPLORE_ZONES;
         if (!exploration.HasExplored(in loc)) num += EXPLORE_LOCS;
@@ -3068,11 +3057,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (map.LocalTime.IsNight) num += EXPLORE_INOUT;
         }
         else if (!map.LocalTime.IsNight) num += EXPLORE_INOUT;
+        Direction dir = Direction.FromVector(loc.Position - m_Actor.Location.Position);
         if (dir == prevDirection) num += EXPLORE_DIRECTION;
-        return (float) (num + Rules.Get.Roll(0, EXPLORE_RANDOM));
-      }, (a, b) => a > b);
-      if (choiceEval != null) return new ActionBump(m_Actor, choiceEval.Choice);
-      return null;
+        return num;
+      }
+
+      var opts = Direction.COMPASS.Candidates(dir => {
+          var act = new ActionBump(m_Actor, dir);
+          var next = act.dest;
+          if (!Map.Canonical(ref next)) return null;
+          if (!IsValidMoveTowardGoalAction(act.ConcreteAction)) return null;
+          Map map = next.Map;
+          Point position = next.Position;
+          int trap_max_damage = m_Actor.Model.Abilities.IsIntelligent ? map.TrapsUnavoidableMaxDamageAtFor(position, m_Actor) : 0;
+          if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && trap_max_damage >= m_Actor.HitPoints) return null;
+
+          return act;
+      });
+      if (null == opts) return null;
+
+
+      var best = opts.KeepMaximal(act => ranking(act.dest));
+      if (1 == best.Count) return best[0].Key;
+
+      // \todo --faust option effects
+
+      return Rules.Get.DiceRoller.Choose(best).Key;
     }
 
     public bool HasAnyInterestingItem(IEnumerable<Item> Items)
