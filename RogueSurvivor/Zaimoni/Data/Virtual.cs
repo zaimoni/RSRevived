@@ -78,6 +78,21 @@ namespace Zaimoni.Data
             return string.Join(",\n", tmp);
         }
 
+        public static string to_s<K,V>(this List<KeyValuePair<K,V>> x)
+        {
+            if (null == x) return "null";
+            var ub = x.Count;
+            if (0 >= ub) return "[]";
+            var tmp = new List<string>(ub);
+            foreach (var iter in x) {
+                tmp.Add("["+iter.Key.to_s()+", "+iter.Value.to_s()+"]");
+            }
+            tmp[0] = "[" + tmp[0];
+            ub = tmp.Count;
+            tmp[ub - 1] += "] (" + ub.ToString() + ")";
+            return string.Join(",\n", tmp);
+        }
+
         public static string to_s<T, U>(this Dictionary<T, U> x)
         {
             if (null == x) return "null";

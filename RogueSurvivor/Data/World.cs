@@ -273,10 +273,6 @@ namespace djack.RogueSurvivor.Data
       }
 
       s_turn_order = stage.ToArray();
-#if DEBUG
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::initTurnOrder");
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "s_turn_order: " + s_turn_order.to_s());
-#endif
     }
 
     private World()
