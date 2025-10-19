@@ -189,30 +189,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
     /// <param name="exploration">can be null for ais with no exploration</param>
     protected ActorAction? BehaviorWander(ExplorationData? exploration=null, Predicate<Location>? goodWanderLocFn=null)
     {
-      var choiceEval = Choose(Direction.COMPASS, dir => {
-        Location next = m_Actor.Location + dir;
-        if (null != goodWanderLocFn && !goodWanderLocFn(next)) return float.NaN;
-        var bump = Rules.IsBumpableFor(m_Actor, in next);
-        if (!IsValidWanderAction(bump)) return float.NaN;
-        if (!Map.Canonical(ref next)) return float.NaN;
-#if DEBUG
-        if (!bump.IsPerformable()) throw new InvalidOperationException("non-null non-performable bump"); 
-#else
-        if (!bump.IsPerformable()) return float.NaN;
-#endif
-
+      int ranking(Location next) {
         int score = 0;
 
         // alpha10.1
-        const int BREAKING_OBJ = -50000;
         const int BACKTRACKING = -10000;
-        const int BREAKING_BARRICADES = -1000;
         const int AVOID_TRAPS = -1000;
         const int UNEXPLORED_LOC = 1000;  // should not happen, see below
         const int DOORWINDOWS = 100;
         const int EXITS = 50;
         const int INSIDE_WHEN_ALMOST_SLEEPY = 100;
-        const int WANDER_RANDOM = 10;  // alpha10.1 much smaller random factor
 
         if (next == m_prevLocation) score += BACKTRACKING;
         if (m_Actor.Model.Abilities.IsIntelligent && 0 < next.Map.TrapsUnavoidableMaxDamageAtFor(next.Position,m_Actor)) score += AVOID_TRAPS;
@@ -234,13 +220,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // alpha10.1 prefer inside when almost sleepy
         if (m_Actor.IsAlmostSleepy && next.Map.IsInsideAt(next.Position)) score += INSIDE_WHEN_ALMOST_SLEEPY;
 
-        // alpha10.1 add random factor
-        score += Rules.Get.Roll(0, WANDER_RANDOM);
+        return score;
+      }
 
-        return (float) score;
-      }, (a, b) => a > b);
-      m_Actor.Activity = Activity.IDLE;
-      return (choiceEval != null ? new ActionBump(m_Actor, choiceEval.Choice) : null);
+      var opts = Direction.COMPASS.Candidates(dir => {
+          var act = new ActionBump(m_Actor, dir);
+          var next = act.dest;
+          if (null != goodWanderLocFn && !goodWanderLocFn(next)) return null;
+          if (!Map.Canonical(ref next)) return null;
+          if (!IsValidWanderAction(act.ConcreteAction)) return null;
+
+          return act;
+      });
+      if (null == opts) return null;
+
+      var best = opts.KeepMaximal(act => ranking(act.dest));
+      if (1 == best.Count) return best[0].Key;
+
+      // \todo --faust option effects
+
+      return Rules.Get.DiceRoller.Choose(best).Key;
     }
 
         // alpha10
@@ -1218,6 +1217,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
   internal static class ext_BaseAI
   {
+#nullable enable
+    public static List<A>? Candidates<_T_, A>(this IEnumerable<_T_> choices, Func<_T_,A?> interpret) where A:ActorAction
+    {
+      List<A> ret = new();
+      foreach(var choice in choices) {
+        var test = interpret(choice);
+        if (null == test) continue;
+        if (!test.IsPerformable()) continue;
+        ret.Add(test);
+      }
+      return 0<ret.Count ? ret : null;
+    }
+#nullable restore
+
     public static Func<Point, Point, float> Postprocess(this Func<Point, Point, float> src, Func<Point, Point, float, float> post)
     {
       if (null == post) {

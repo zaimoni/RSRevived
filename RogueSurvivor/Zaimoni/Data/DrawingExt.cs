@@ -532,6 +532,23 @@ namespace Zaimoni.Data
       return ret;
     }
 
+    public static List<KeyValuePair<K,V>> KeepMaximal<K,V>(this IEnumerable<K> src, Func<K,V> rate) where V : IComparable<V>
+    {
+      List<KeyValuePair<K,V>> ret = new();
+
+      foreach(var x in src) {
+        KeyValuePair<K,V> test = new(x, rate(x));
+        if (0 < ret.Count) {
+          var comp = ret[0].Value.CompareTo(test.Value);
+          if (0 > comp) continue;
+          if (0 < comp) ret.Clear();
+        }
+        ret.Add(test);
+      }
+
+      return ret;
+    }
+
     public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<U,R> metric) where R:IComparable<R>
     {
 #if DEBUG
