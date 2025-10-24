@@ -19,6 +19,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
     private const int EXPLORATION_ZONES = 3;    // unsure whether this space-time scales or not; WorldTime.TURNS_PER_HOUR/10 if it scales
 
+    // for BaseAI/OrderableAI::BehaviorExplore
+    private const int SCORE_LOCS = 500;
+    public const int SCORE_BARRICADES = 100;
+    public const int SCORE_INOUT = 50;
+    private const int SCORE_DELTA = ((SCORE_LOCS + SCORE_BARRICADES + SCORE_INOUT) / (EXPLORATION_LOCATIONS - 4)) + 1;
+
     // alpha 10.1: Queue -> List
     private readonly List<Location> m_LocationsQueue = new(EXPLORATION_LOCATIONS);
     private readonly List<Zone> m_ZonesQueue = new(EXPLORATION_ZONES);
@@ -45,6 +51,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_LocationsQueue.Add(loc);
     }
 
+#if DEAD_FUNC
     // alpha10.1
     /// <param name="loc"></param>
     /// <returns>0 for locs not explored</returns>
@@ -52,6 +59,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       int i = m_LocationsQueue.LastIndexOf(loc);    // Irrational caution (in case deduplication fails); IndexOf should be fine
       return (-1 < i) ? m_LocationsQueue.Count-i : 0;
+    }
+#endif
+    public int AgeScore(in Location loc) {
+      int i = m_LocationsQueue.LastIndexOf(loc);    // Irrational caution (in case deduplication fails); IndexOf should be fine
+      if (0 > i) return SCORE_LOCS;
+      return (m_LocationsQueue.Count - i)*SCORE_DELTA - SCORE_BARRICADES - SCORE_INOUT;
     }
 
     public bool HasExplored(List<Zone> zones)
@@ -80,6 +93,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       new_zone_handler(zone);
     }
 
+#if DEAD_FUNC
     // alpha10.1
     /// <param name="zone"></param>
     /// <returns>0 for zones not explored</returns>
@@ -105,8 +119,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return youngestAge;
     }
+#endif
 
-    public void Update(Location location)
+        public void Update(Location location)
     {
       AddExplored(in location);
       var zonesAt = location.Map.GetZonesAt(location.Position);

@@ -3033,10 +3033,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       int ranking(Location loc) {
         const int EXPLORE_ZONES = 1000;
-        const int EXPLORE_LOCS = 500;
-        const int EXPLORE_BARRICADES = 100;
         const int AVOID_TRAPS = -1000; // alpha10 greatly increase penalty and x by potential damage; was -50
-        const int EXPLORE_INOUT = 50;
+        const int EXPLORE_BARRICADES = ExplorationData.SCORE_BARRICADES;
+        const int EXPLORE_INOUT = ExplorationData.SCORE_INOUT;
         const int EXPLORE_DIRECTION = 25;
 
         Map map = loc.Map;
@@ -3045,8 +3044,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //        if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && trap_max_damage >= m_Actor.HitPoints)
 //          return float.NaN;
         int num = 0;
+
+        // need to make exploration data sufficient to prevent back-tracking onto doors
+        // that is: unexplored 500, door+in/out 150, so need 0..3 entries to be < -150
+
         if (!exploration.HasExplored(map.GetZonesAt(position))) num += EXPLORE_ZONES;
-        if (!exploration.HasExplored(in loc)) num += EXPLORE_LOCS;
+        num += exploration.AgeScore(in loc);
         var mapObjectAt = map.GetMapObjectAt(position);
         // this is problematic when the door is the previous location.  Do not overwhelm in/out
         if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) {
@@ -3067,6 +3070,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var next = act.dest;
           if (!Map.Canonical(ref next)) return null;
           if (!IsValidMoveTowardGoalAction(act.ConcreteAction)) return null;
+          if (!act.IsPerformable()) return null;
           Map map = next.Map;
           Point position = next.Position;
           int trap_max_damage = m_Actor.Model.Abilities.IsIntelligent ? map.TrapsUnavoidableMaxDamageAtFor(position, m_Actor) : 0;
@@ -3076,11 +3080,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
       if (null == opts) return null;
 
-
       var best = opts.KeepMaximal(act => ranking(act.dest));
       if (1 == best.Count) return best[0].Key;
 
       // \todo --faust option effects
+      if (Engine.Session.Get.CMDoptionExists("faust")) {
+        var PCs = RogueGame.PCsNearby(m_Actor.Location, RogueGame.VIEW_RADIUS, TRUE);
+        if (null != PCs) {
+          var act = RogueGame.Game.AI_prayer(m_Actor, best.Keys());
+          if (null != act) return act;
+        }
+      }
 
       return Rules.Get.DiceRoller.Choose(best).Key;
     }

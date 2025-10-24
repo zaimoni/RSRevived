@@ -16,11 +16,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Numerics;
 using Zaimoni.Data;
-
+using static Zaimoni.Data.Functor;
+using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
-using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -195,7 +196,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // alpha10.1
         const int BACKTRACKING = -10000;
         const int AVOID_TRAPS = -1000;
+#if OBSOLETE
         const int UNEXPLORED_LOC = 1000;  // should not happen, see below
+#endif
         const int DOORWINDOWS = 100;
         const int EXITS = 50;
         const int INSIDE_WHEN_ALMOST_SLEEPY = 100;
@@ -203,12 +206,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (next == m_prevLocation) score += BACKTRACKING;
         if (m_Actor.Model.Abilities.IsIntelligent && 0 < next.Map.TrapsUnavoidableMaxDamageAtFor(next.Position,m_Actor)) score += AVOID_TRAPS;
 
+#if OBSOLETE
         // alpha10.1 prefer unexplored/oldest
         // unexplored should not happen because exploration rule is tested before wander rule but just to be more robust...
         if (exploration != null) {
           int locAge = exploration.GetExploredAge(in next);
           score += (0 == locAge) ? UNEXPLORED_LOC : locAge;
         }
+#endif
 
         // alpha10.1 prefer wandering to doorwindows and exits. 
         // helps civs ai getting stuck in semi-infinite loop when running out of new exploration to do.
@@ -229,6 +234,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != goodWanderLocFn && !goodWanderLocFn(next)) return null;
           if (!Map.Canonical(ref next)) return null;
           if (!IsValidWanderAction(act.ConcreteAction)) return null;
+          if (!act.IsPerformable()) return null;
 
           return act;
       });
@@ -238,6 +244,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (1 == best.Count) return best[0].Key;
 
       // \todo --faust option effects
+      if (Engine.Session.Get.CMDoptionExists("faust")) {
+        var PCs = RogueGame.PCsNearby(m_Actor.Location, RogueGame.VIEW_RADIUS, TRUE);
+        if (null != PCs) {
+          var act = RogueGame.Game.AI_prayer(m_Actor, best.Keys());
+          if (null != act) return act;
+        }
+      }
 
       return Rules.Get.DiceRoller.Choose(best).Key;
     }
@@ -800,9 +813,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       int ranking(Location loc) {
         const int EXPLORE_ZONES = 1000;
-        const int EXPLORE_LOCS = 500;
-        const int EXPLORE_BARRICADES = 100;
-        const int EXPLORE_INOUT = 50;
+        const int EXPLORE_BARRICADES = ExplorationData.SCORE_BARRICADES;
+        const int EXPLORE_INOUT = ExplorationData.SCORE_INOUT;
         const int EXPLORE_DIRECTION = 25;
 
 //      if (exploration.HasExplored(loc)) return float.NaN;
@@ -810,7 +822,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Point position = loc.Position;
         int num = 0;
         if (!exploration.HasExplored(map.GetZonesAt(position))) num += EXPLORE_ZONES;
-        if (!exploration.HasExplored(in loc)) num += EXPLORE_LOCS;
+        num += exploration.AgeScore(in loc);
         var mapObjectAt = map.GetMapObjectAt(position);
         // this is problematic when the door is the previous location.  Do not overwhelm in/out
         if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) {
@@ -830,6 +842,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var next = act.dest;
           if (!Map.Canonical(ref next)) return null;
           if (!IsValidMoveTowardGoalAction(act.ConcreteAction)) return null;
+          if (!act.IsPerformable()) return null;
 
           return act;
       });
@@ -839,6 +852,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (1 == best.Count) return best[0].Key;
 
       // \todo --faust option effects
+      if (Engine.Session.Get.CMDoptionExists("faust")) {
+        var PCs = RogueGame.PCsNearby(m_Actor.Location, RogueGame.VIEW_RADIUS, TRUE);
+        if (null != PCs) {
+          var act = RogueGame.Game.AI_prayer(m_Actor, best.Keys());
+          if (null != act) return act;
+        }
+      }
 
       return Rules.Get.DiceRoller.Choose(best).Key;
     }

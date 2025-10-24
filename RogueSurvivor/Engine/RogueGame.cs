@@ -6816,6 +6816,7 @@ namespace djack.RogueSurvivor.Engine
         if (0 < errors.Count) throw new InvalidOperationException(aiActor.Name + " action " + actorAction + " triggered:\n" + string.Join("\n", errors));
       }
       if (actorAction is ActorDest && null != aiActor.Threats) ai.UpdateSensors(); // to trigger fast threat/tourism update
+      if (IsPlayer(aiActor)) RedrawPlayScreen(); // can happen from AI prayer
     }
 
     private void HandleAdvisor(PlayerController pc)
@@ -9623,7 +9624,7 @@ namespace djack.RogueSurvivor.Engine
 
     // the two lists are disjoint by construction.
     // This excludes NPCS, who do not get UI messages
-    static private List<PlayerController>? PCsNearby(Location loc, int radius, Func<Actor,bool> ok) {
+    static public List<PlayerController>? PCsNearby(Location loc, int radius, Func<Actor,bool> ok) {
         List<PlayerController> ret = new();
 
         void classify(Actor? actor) {
@@ -13073,7 +13074,7 @@ restart:
     }
 
     /// Debugging tool: allows AI to pray for advice to player
-    public ActorAction? AI_prayer(Actor actor, List<ActorAction> considering)
+    public A? AI_prayer<A>(Actor actor, List<A> considering) where A:ActorAction
     {
         if (null == considering) return null;
         if (null == actor) return null;
@@ -13081,7 +13082,7 @@ restart:
         if (IsSimulating) return null;
         PanViewportTo(actor);
 
-        ActorAction? ret = null;
+        A? ret = null;
 
         string label(int index) { return string.Format("{0} {1}.", index + 1, considering[index].ToString()); }
         bool details(int index) {
@@ -13089,7 +13090,7 @@ restart:
             return true;
         }
 
-        PagedPopup("Advising...", considering.Count, label, details);
+        PagedPopup("Advising...", considering.Count, label, details, false);
         return ret;
     }
 #nullable restore

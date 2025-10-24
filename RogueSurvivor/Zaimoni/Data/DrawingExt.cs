@@ -80,6 +80,12 @@ namespace Zaimoni.Data
       }
     }
 
+    public static List<K> Keys<K,V>(this IEnumerable<KeyValuePair<K,V>> src) {
+      List<K> ret = new();
+      foreach(var x in src) ret.Add(x.Key);
+      return ret;
+    }
+
     // imitate Enumerable interface here
     public static List<Point> Where(this Rectangle rect, Predicate<Point> testFn)
     {
