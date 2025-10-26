@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             if (null != seen) {
                 foreach (var x in seen) {
                     foreach (var it in critical) {
-                        if (x.Value.Has(it)) return true;
+                        if (x.Value.Inventory.Has(it)) return true;
                     }
                 }
             }

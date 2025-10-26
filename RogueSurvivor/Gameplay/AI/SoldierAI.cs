@@ -53,11 +53,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_MemLOSSensor.Sense();
     }
 
-    public override HashSet<Point> FOV { get { return m_MemLOSSensor.Sensor.FOV; } }
-    public override Location[] FOVloc { get { return m_MemLOSSensor.Sensor.FOVloc; } }
-    public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_MemLOSSensor.Sensor.friends; } }
-    public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_MemLOSSensor.Sensor.enemies; } }
-    public override Dictionary<Location, Inventory>? items_in_FOV { get { return m_MemLOSSensor.Sensor.items; } }
+    public override HashSet<Point> FOV { get => m_MemLOSSensor.Sensor.FOV; }
+    public override Location[] FOVloc { get => m_MemLOSSensor.Sensor.FOVloc; }
+    public override Dictionary<Location, Actor>? friends_in_FOV { get => m_MemLOSSensor.Sensor.friends; }
+    public override Dictionary<Location, Actor>? enemies_in_FOV { get => m_MemLOSSensor.Sensor.enemies; }
+    public override Dictionary<Location, Data.Model.InvOrigin>? items_in_FOV { get => m_MemLOSSensor.Sensor.items; }
 #nullable restore
 
     // return value must contain a {0} placeholder for the target name

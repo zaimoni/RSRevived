@@ -1224,10 +1224,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var items = items_in_FOV;
           if (null != items) {
             foreach(var x in items) {
-             if (x.Value.IsEmpty) continue;
              if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
-             var inv = x.Key.Items;
-             if (null!=inv && !inv.IsEmpty && (BehaviorWouldGrabFrom(x.Key)?.IsLegal() ?? false)) {    // items seen cache can be obsolete
+             if (BehaviorWouldGrabFrom(x.Value)?.IsLegal() ?? false) {
                ret |= ReactionCode.ITEM;
                break;
              }
@@ -5636,7 +5634,7 @@ restart_chokepoints:
       }
     }
 
-    protected void AdviseCellOfInventoryStacks(List<Percept> stacks)
+    protected void AdviseCellOfInventoryStacks(List<Data.Model.InvOrigin> stacks)
     {
 #if DEBUG
       if (0 >= (stacks?.Count ?? 0)) throw new ArgumentNullException(nameof(stacks));
@@ -5649,20 +5647,23 @@ restart_chokepoints:
         var ai_items = ai.ItemMemory;
         if (null != ai_items) {
           if (null!= ItemMemory && ItemMemory == ai_items) continue; // already updated
-          foreach (Percept p in stacks) {
-            ai_items.Set(p.Location, new HashSet<Gameplay.Item_IDs>((p.Percepted as Inventory).Select(x => x.InventoryMemoryID)), p.Location.Map.LocalTime.TurnCounter);
+          foreach (var invsrc in stacks) {
+            var inv_loc = invsrc.Location;
+            // XXX fails if both ground and shelflike inventories
+            ai_items.Set(inv_loc, new HashSet<Gameplay.Item_IDs>(invsrc.Inventory.Select(x => x.InventoryMemoryID)), inv_loc.Map.LocalTime.TurnCounter);
           }
           continue; // followers with item memory can decide on their own what to do
         }
         var track_inv = ai.Goal<Goal_PathToStack>();
-        foreach(Percept p in stacks) {
-          if (m_Actor.Location != p.Location && ai.CanSee(p.Location)) continue;
-          if (!ai.WouldGrabFromStack(p.Location, p.Percepted as Inventory)) continue;
+        foreach(var invsrc in stacks) {
+          var inv_loc = invsrc.Location;
+          if (m_Actor.Location != inv_loc && ai.CanSee(inv_loc)) continue;
+          if (!ai.WouldGrabFromStack(invsrc)) continue;
 
           if (null == track_inv) {
-            track_inv = new Goal_PathToStack(ally.Location.Map.LocalTime.TurnCounter,ally,p.Location);
+            track_inv = new Goal_PathToStack(ally, in invsrc);
             ai.Objectives.Add(track_inv);
-          } else track_inv.newStack(p.Location);
+          } else track_inv.newStack(in invsrc);
         }
       }
     }
@@ -5670,6 +5671,11 @@ restart_chokepoints:
 #nullable enable
     abstract protected ActorAction? BehaviorWouldGrabFrom(in Location loc);
     abstract protected ActorAction? BehaviorWouldGrabFrom(ShelfLike obj);
+    public ActorAction? BehaviorWouldGrabFrom(in Data.Model.InvOrigin stack) {
+      if (null != stack.obj_owner) return BehaviorWouldGrabFrom(stack.obj_owner);
+      if (null != stack.loc) return BehaviorWouldGrabFrom(stack.loc.Value);
+      return null;
+    }
 
     public ActorAction? WouldGetFrom(ShelfLike? obj)
     {
@@ -5687,7 +5693,7 @@ restart_chokepoints:
 
 #nullable restore
 
-    protected Dictionary<Location, Inventory> GetInterestingInventoryStacks(Predicate<Inventory> want_now)   // technically could be ActorController
+    protected List<Data.Model.InvOrigin> GetInterestingInventoryStacks(Predicate<Inventory> want_now)   // technically could be ActorController
     {
       var items = items_in_FOV;
       if (null == items) return null;
@@ -5697,20 +5703,19 @@ restart_chokepoints:
       // 2) categorize stacks by whether they are personally interesting or not.
       // 3) in-communication followers will be consulted regarding the not-interesting stacks
       Map map = m_Actor.Location.Map;
-      var examineStacks = new Dictionary<Location,Inventory>(items.Count);
+      List<Data.Model.InvOrigin> examineStacks = new(items.Count);
       { // scoping brace
-      var boringStacks = new List<Percept>(items.Count);
+      List<Data.Model.InvOrigin> boringStacks = new(items.Count);
       int t0 = map.LocalTime.TurnCounter;
       foreach(var x in items) {
-        if (!want_now(x.Value)) continue;   // not immediately relevant
+        if (!want_now(x.Value.Inventory)) continue;   // not immediately relevant
         if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
-        if (!m_Actor.CanEnter(x.Key)) continue;    // XXX ignore buggy stack placement
-        if (x.Value.IsEmpty) continue;  // got changed on us?
-        if (!BehaviorWouldGrabFrom(x.Key)?.IsLegal() ?? true) {
-          boringStacks.Add(new Percept(x.Value, t0, x.Key));
+        if (!m_Actor.CanEnter(x.Key)) continue;    // XXX ignore buggy stack placement (works because all Shelf-like mapobjects are pushable)
+        if (!BehaviorWouldGrabFrom(x.Value)?.IsLegal() ?? true) {
+          boringStacks.Add(x.Value);
           continue;
         }
-        examineStacks.Add(x.Key,x.Value);
+        examineStacks.Add(x.Value);
       }
       if (0 < boringStacks.Count) AdviseCellOfInventoryStacks(boringStacks);    // XXX \todo PC leader should do the same
       } // end scoping brace
@@ -5718,17 +5723,18 @@ restart_chokepoints:
 
       bool imStarvingOrCourageous = m_Actor.IsStarving;
       if ((this is OrderableAI ai) && ActorCourage.COURAGEOUS == (ai.Directives_nocreate?.Courage ?? ActorDirective.Courage_default)) imStarvingOrCourageous = true;
-      var ret = new Dictionary<Location,Inventory>(examineStacks.Count);
+      List<Data.Model.InvOrigin> ret = new(examineStacks.Count);
       foreach(var x in examineStacks) {
-        if (IsOccupiedByOther(x.Key)) continue; // blocked
-        if (!m_Actor.MayTakeFromStackAt(x.Key)) {
-            if (!imStarvingOrCourageous && 1>=m_Actor.Controller.FastestTrapKill(x.Key)) continue;  // destination deathtrapped
+        var loc = x.Location;
+        if (IsOccupiedByOther(loc)) continue; // blocked
+        if (!m_Actor.MayTakeFrom(x)) {
+            if (!imStarvingOrCourageous && 1>=m_Actor.Controller.FastestTrapKill(loc)) continue;  // destination deathtrapped
             // check for iron gates, etc in way
-            var path = m_Actor.MinStepPathTo(m_Actor.Location, x.Key);
+            var path = m_Actor.MinStepPathTo(m_Actor.Location, loc);
             if (null == path) continue;
             if (!path[0].Any(pt => null != Rules.IsBumpableFor(m_Actor, new Location(map, pt)))) continue;
         }
-        ret.Add(x.Key,x.Value);
+        ret.Add(x);
       }
       return 0<ret.Count ? ret : null;
     }

@@ -204,7 +204,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         // expire if the offending item is not in LoS
         var stacks = m_Actor.Controller.items_in_FOV;
-        if (null != stacks) foreach(var inv in stacks.Values) if (inv.Has(Avoid)) return false;
+        if (null != stacks) foreach(var inv in stacks.Values) if (inv.Inventory.Has(Avoid)) return false;
 //      if (m_Actor.Inventory.Has(Avoid)) return false; // checking whether this is actually needed
         _isExpired = true;  // but expire if the offending item is not in LOS or inventory
         return false;
@@ -404,19 +404,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [Serializable]
     internal class Goal_PathToStack : Objective,LatePathable
     {
-      private readonly List<Percept_<Inventory>> _stacks = new List<Percept_<Inventory>>(1);
+      private readonly List<Data.Model.InvOrigin> _stacks = new(1);
       [NonSerialized] private OrderableAI ordai;
-      [NonSerialized] private List<KeyValuePair<Location, ActorAction>>? _inventory_actions = null;
+      [NonSerialized] private List<KeyValuePair<Data.Model.InvOrigin, ActorAction>>? _inventory_actions = null;
 
-      public IEnumerable<Inventory> Inventories { get { return _stacks.Select(p => p.Percepted); } }
-      public IEnumerable<Location> Destinations { get { return _stacks.Select(p => p.Location); } }
+      public IEnumerable<Inventory> Inventories { get => _stacks.Select(p => p.Inventory); }
+      public IEnumerable<Location> Destinations { get => _stacks.Select(p => p.Location); }
 
-      public Goal_PathToStack(int t0, Actor who, Location loc) : base(t0,who)
+      public Goal_PathToStack(Actor who, in Data.Model.InvOrigin src) : base(who.Location.Map.LocalTime.TurnCounter, who)
       {
-        if (!(who.Controller is OrderableAI ai)) throw new InvalidOperationException("need an ai with inventory");
+        if (who.Controller is not OrderableAI ai) throw new InvalidOperationException("need an ai with inventory");
         ordai = ai;
-        if (!Map.Canonical(ref loc)) return;
-        newStack(in loc);
+        newStack(in src);
       }
 
       [OnDeserialized] void OnDeserialized(StreamingContext context) {
@@ -433,36 +432,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         int i = _stacks.Count;
         while(0 < i--) {
-          Inventory? inv;
-          { // scope var p
-          var p = _stacks[i];
-          inv = exemplarStack(p.Location);
-          if (    null == inv    // can crash otherwise in presence of bugs
-               || !m_Actor.CanEnter(p.Location)
-               || (m_Actor.Controller.CanSee(p.Location) && m_Actor.StackIsBlocked(p.Location))) {
-              if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("removing (blocked) "+p.to_s());
+          // XXX telepathy
+          if (null == ordai.BehaviorWouldGrabFrom(_stacks[i])) {
+            _stacks.RemoveAt(i);
+            ordai.ClearLastMove();
+            continue;
+          }
+          var loc = _stacks[i].Location;
+          if (!m_Actor.CanEnter(loc)) {
+            _stacks.RemoveAt(i);
+            ordai.ClearLastMove();
+            continue;
+          }
+          if (m_Actor.Controller.CanSee(loc) && m_Actor.StackIsBlocked(loc)) {
               _stacks.RemoveAt(i);
               ordai.ClearLastMove();
               continue;
           }
-          _stacks[i] = new Percept_<Inventory>(inv, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
-          } // end scope var p
 
-          if (inv.IsEmpty || !ordai.WouldGrabFromStack(_stacks[i].Location, inv)) {
-              if (tracing && !Engine.RogueGame.IsSimulating) RogueGame.Game.InfoPopup("removing (boring) "+ _stacks[i].to_s());
-            _stacks.RemoveAt(i);
-            continue;
-          } else {
-            var act = ordai.WouldGrabFromAccessibleStack(_stacks[i].Location, inv);
+          {
+            var act = ordai.WouldGrabFromAccessibleStack(_stacks[i]);
             if (null == act || !act.IsLegal()) {
               if (tracing && !Engine.RogueGame.IsSimulating) RogueGame.Game.InfoPopup("removing (illegal) "+ _stacks[i].to_s());
               _stacks.RemoveAt(i);
               continue;
             }
-            if (tracing && !Engine.RogueGame.IsSimulating) RogueGame.Game.InfoPopup(_stacks[i].Location.ToString() + "(may, doable) " + (m_Actor.MayTakeFromStackAt(_stacks[i].Location) ? "true" : "false")+" "+(act.IsPerformable() ? "true" : "false")+" "+act.ToString());
-            if (m_Actor.MayTakeFromStackAt(_stacks[i].Location) && act.IsPerformable()) {
+            if (m_Actor.MayTakeFrom(_stacks[i]) && act.IsPerformable()) {
               if (tracing && !Engine.RogueGame.IsSimulating) RogueGame.Game.InfoPopup("want to do "+ act.ToString());
-              (_inventory_actions ??= new()).Add(new(_stacks[i].Location, act));
+              (_inventory_actions ??= new()).Add(new(_stacks[i], act));
             }
           }
         }
@@ -521,33 +518,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }
 
-      private Inventory? exemplarStack(in Location loc) // XXX causes telepathic leakage
-      {
-        var allItems = Map.AllItemsAt(loc, m_Actor);
-        if (null == allItems) return null;
-        foreach(var inv in allItems) if (ordai.WouldGrabFromStack(in loc, inv.Inventory)) return inv.Inventory;
-        return null;
-      }
-
-      public void newStack(in Location loc) {
-#if DEBUG
-        // containers can only exist on enterable squares
-        if (!m_Actor.CanEnter(loc)) throw new InvalidOperationException(m_Actor.Name+" wants inaccessible ground inventory at "+loc);
-#endif
-        var relay = exemplarStack(in loc);
-        if (null == relay) return;
-
-        int i = _stacks.Count;
-        // update if stack is present // \todo
-        while(0 < i--) {
-          var p = _stacks[i];
-          if (p.Location==loc) {
-            _stacks[i] = new Percept_<Inventory>(relay, m_Actor.Location.Map.LocalTime.TurnCounter, p.Location);
-            return;
-          }
+      public void newStack(in Data.Model.InvOrigin src) {
+        foreach(var stack in _stacks) {
+          if (stack == src) return; // no-op
         }
-
-        _stacks.Add(new Percept_<Inventory>(relay, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));   // otherwise, add
+        _stacks.Add(src);
       }
 
       public ActorAction Pathing()
@@ -3283,14 +3258,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorGrabFromStack(obj.Location, inv, false);
     }
 
-
-    public bool WouldGrabFromStack(in Location loc, Inventory? stack)
+    public bool WouldGrabFromStack(in Data.Model.InvOrigin src)
     {
+      var inv = src.Inventory;
 #if DEBUG
-      if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
+      if (null == inv || inv.IsEmpty) new ArgumentNullException(nameof(inv));
 #endif
+      var loc = src.Location;
       if (m_Actor.StackIsBlocked(in loc)) return false;
-      return WouldGrabFromAccessibleStack(in loc,stack)?.IsLegal() ?? false;
+      return WouldGrabFromAccessibleStack(in loc, inv)?.IsLegal() ?? false;
     }
 #nullable restore
 
@@ -3422,9 +3398,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 #nullable enable
-    public ActorAction? BehaviorGrabFromAccessibleStack(Location loc, Inventory stack)
+    public ActorAction? BehaviorGrabFromAccessibleStack(in Data.Model.InvOrigin stack)
     {
-      return WouldGrabFromAccessibleStack(in loc, stack, true);
+      return WouldGrabFromAccessibleStack(in stack, true);
     }
 #nullable restore
 
@@ -3539,25 +3515,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorHeadForBestStack(Dictionary<Location,Inventory> stacks)
+    protected ActorAction BehaviorHeadForBestStack(List<Data.Model.InvOrigin> stacks)
     {
 #if DEBUG
         if (null == stacks) throw new ArgumentNullException(nameof(stacks));
 #endif
         ActorAction tmpAction = null;
           {
-          var get_item = new Dictionary<Location, ActorAction>();
+          List<KeyValuePair<Data.Model.InvOrigin, ActorAction>> get_item = new();
           foreach(var x in stacks) {
-            if (!m_Actor.MayTakeFromStackAt(x.Key)) continue;
-            tmpAction = BehaviorGrabFromAccessibleStack(x.Key, x.Value);
-            if (tmpAction?.IsPerformable() ?? false) get_item[x.Key] = tmpAction;
+            if (!m_Actor.MayTakeFrom(in x)) continue;
+            tmpAction = BehaviorGrabFromAccessibleStack(in x);
+            if (tmpAction?.IsPerformable() ?? false) get_item.Add(new(x, tmpAction));
           }
           if (1<get_item.Count) {
-            var considering = new List<Location>(get_item.Count);
-            var dominated = new List<Location>(get_item.Count);
+            List<KeyValuePair<Data.Model.InvOrigin, ActorAction>> considering = new(get_item.Count);
+            List<KeyValuePair<Data.Model.InvOrigin, ActorAction>> dominated = new(get_item.Count);
             foreach(var x in get_item) {
               if (0 >= considering.Count) {
-                considering.Add(x.Key);
+                considering.Add(x);
                 continue;
               }
               int item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
@@ -3566,8 +3542,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
               switch(x.Value) {
               case Use<Item> new_use:
                 item_compare = 0;   // new item.CompareTo(any old item) i.e. new item <=> any old item
-                foreach(var old_loc in considering) {
-                  switch(get_item[old_loc]) {
+                foreach(var old in considering) {
+                  switch(old.Value) {
                     case Use<Item> old_use:
                       if (old_use.Use.ModelID==new_use.Use.ModelID) { // duplicate
                         item_compare = -1;
@@ -3575,7 +3551,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                       }
                       break;
                     case ActorTake old_take:
-                      if (get_item[old_loc] is not ActorGive) { // not a trade
+                      if (old.Value is not ActorGive) { // not a trade
                         if (old_take.Take.ModelID!=new_use.Use.ModelID) { // generally better to take than use
                           item_compare = -1;
                           break;
@@ -3589,16 +3565,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
               case ActorTake new_take:
                 if (x.Value is ActorGive) { // trade
                   item_compare = 1;
-                  foreach (var old_loc in considering) {
-                    switch (get_item[old_loc])
+                  foreach (var old in considering) {
+                    switch (old.Value)
                     {
                     case Use<Item> old_use:
                       // generally better to take than use
-                      if (old_use.Use.ModelID != new_take.Take.ModelID) dominated.Add(old_loc);
+                      if (old_use.Use.ModelID != new_take.Take.ModelID) dominated.Add(old);
                       else item_compare = 0;
                       break;
                     case ActorTake old_take:
-                      if (get_item[old_loc] is ActorGive) { // trade
+                      if (old.Value is ActorGive) { // trade
                         if (new_take.Take.ModelID == old_take.Take.ModelID)
                         { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
                           item_compare = -1;
@@ -3609,7 +3585,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                         item_compare = -1;
                         break;
                       }
-                      if (RHSMoreInteresting(old_take.Take, new_take.Take)) dominated.Add(old_loc);
+                      if (RHSMoreInteresting(old_take.Take, new_take.Take)) dominated.Add(old);
                       else item_compare = 0;
                       break;
                     }
@@ -3617,16 +3593,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   }
                 } else { // take
                   item_compare = 1;
-                  foreach (var old_loc in considering) {
-                    switch (get_item[old_loc])
+                  foreach (var old in considering) {
+                    switch (old.Value)
                     {
                     case Use<Item> old_use:
                       // generally better to take than use
-                      if (old_use.Use.ModelID != new_take.Take.ModelID) dominated.Add(old_loc);
+                      if (old_use.Use.ModelID != new_take.Take.ModelID) dominated.Add(old);
                       else item_compare = 0;
                       break;
                     case ActorTake old_take:
-                      if (get_item[old_loc] is not ActorGive) { // take
+                      if (old.Value is not ActorGive) { // take
                         if (new_take.Take.ModelID == old_take.Take.ModelID)
                         { // \todo take from "endangered stack" if quantity-sensitive, otherwise not-endangered stack
                           item_compare = -1;
@@ -3637,7 +3613,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                         item_compare = -1;
                         break;
                       }
-                      if (RHSMoreInteresting(old_take.Take, new_take.Take)) dominated.Add(old_loc);
+                      if (RHSMoreInteresting(old_take.Take, new_take.Take)) dominated.Add(old);
                       else item_compare = 0;
                       break;
                     }
@@ -3655,7 +3631,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 dominated.Clear();
               }
               if (-1 == item_compare) continue;
-              considering.Add(x.Key);
+              considering.Add(x);
             }
             get_item.OnlyIf(loc => considering.Contains(loc));
           }
@@ -3674,16 +3650,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var track_inv = Goal<Goal_PathToStack>();
           foreach(var x in stacks) {
             if (null == track_inv) {
-              track_inv = new Goal_PathToStack(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,x.Key);
+              track_inv = new Goal_PathToStack(m_Actor, x);
               Objectives.Add(track_inv);
-            } else track_inv.newStack(x.Key);
+            } else track_inv.newStack(x);
           }
           }
 
-          var percept = FilterNearest(stacks);
-          while(null != percept.Value) {
-            m_LastItemsSaw = new Percept(percept.Value,m_Actor.Location.Map.LocalTime.TurnCounter,percept.Key);
-            tmpAction = BehaviorGrabFromStack(percept.Key, percept.Value);
+          stacks.SortIncreasing(stack => Rules.InteractionStdDistance(m_Actor.Location, stack.Location));
+          while(0 < stacks.Count) {
+            m_LastItemsSaw = new Percept(stacks[0].Inventory, m_Actor.Location.Map.LocalTime.TurnCounter, stacks[0].Location);
+            tmpAction = BehaviorGrabFromStack(stacks[0].Location, stacks[0].Inventory);
             if (tmpAction?.IsPerformable() ?? false) {
 #if TRACE_SELECTACTION
               if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking from stack");
@@ -3694,11 +3670,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             // XXX the main valid way this could fail, is a stack behind a non-walkable, etc., object that isn't a container
             // could happen in normal play in the sewers
             // under is handled within the Behavior functions
-#if TRACE_SELECTACTION
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+" has abandoned getting the items at "+ percept.Key);
-#endif
-            stacks.Remove(percept.Key);
-            percept = FilterNearest(stacks);
+            stacks.RemoveAt(0);
           }
         return null;
     }

@@ -413,7 +413,7 @@ namespace djack.RogueSurvivor.Data
 
     public override Dictionary<Location, Actor>? friends_in_FOV { get => m_LOSSensor.friends; }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get => m_LOSSensor.enemies; }
-    public override Dictionary<Location, Inventory>? items_in_FOV { get => m_LOSSensor.items; }
+    public override Dictionary<Location, Data.Model.InvOrigin>? items_in_FOV { get => m_LOSSensor.items; }
 #nullable restore
 
     // if the underlying controller has a non-default behavior we do want that here

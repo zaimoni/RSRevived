@@ -27,16 +27,16 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     // Actor caches for AI purposes
     private Dictionary<Location, Actor>? _friends;
     private Dictionary<Location, Actor>? _enemies;
-    private Dictionary<Location,Inventory>? _items;
+    private Dictionary<Location, Data.Model.InvOrigin>? _items;
     [NonSerialized] private Action<List<Percept>, Location[]>? _sense;
     [NonSerialized] private Location[]? _normalized_FOV;
 
-    public Actor Viewpoint { get { return m_Actor; } }
-    public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
-    public Location[] FOVloc { get { return _normalized_FOV ??= _buildNormalizedFOV(); } }
-    public Dictionary<Location,Actor>? friends { get { return _friends; } } // reference-return
-    public Dictionary<Location, Actor>? enemies { get { return _enemies; } } // reference-return
-    public Dictionary<Location, Inventory>? items { get { return _items; } } // reference-return
+    public Actor Viewpoint { get => m_Actor; }
+    public HashSet<Point> FOV { get => LOS.ComputeFOVFor(m_Actor); }
+    public Location[] FOVloc { get => _normalized_FOV ??= _buildNormalizedFOV(); }
+    public Dictionary<Location,Actor>? friends { get => _friends; } // reference-return
+    public Dictionary<Location, Actor>? enemies { get => _enemies; } // reference-return
+    public Dictionary<Location, Data.Model.InvOrigin>? items { get => _items; } // reference-return
 
     public LOSSensor(SensingFilter filters, Actor actor)
     {
@@ -81,7 +81,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         if (null == allItems) continue;
         foreach(var inv in allItems) {
           perceptList.Add(new Percept(inv.Inventory, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));
-          (_items ??= new Dictionary<Location, Inventory>())[loc] = inv.Inventory; // \todo may have to retype this
+          (_items ??= new())[loc] = inv;
         }
       }
     }
@@ -99,7 +99,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         foreach(var inv in allItems) {
           staging.UnionWith(inv.Inventory.Select(x => x.InventoryMemoryID));
           perceptList.Add(new Percept(inv, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));
-          (_items ??= new())[loc] = inv.Inventory; // \todo may have to retype this
+          (_items ??= new())[loc] = inv;
         }
         items.Set(loc, staging, loc.Map.LocalTime.TurnCounter);
       }
