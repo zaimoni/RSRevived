@@ -33,6 +33,7 @@ namespace Zaimoni.Data
             INIT_SOUND,
             RUN_SOUND,
             CLEAN_SOUND,
+            RUN_DEBUG,
         }
 
         static private partial string toString(Stage s)

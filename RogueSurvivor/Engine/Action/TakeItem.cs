@@ -51,7 +51,10 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public override bool IsLegal()
         {
-            if (!m_src.IsCarrying(m_Item)) return false;
+            if (!m_src.IsCarrying(m_Item)) {
+                m_FailReason = "does not contain";
+                return false;
+            }
             m_Actor.Inventory!.RejectContains(m_Item, "have already taken ");
             return m_Actor.CanGet(m_Item, out m_FailReason);
         }
@@ -92,5 +95,7 @@ namespace djack.RogueSurvivor.Engine._Action
 
           RogueGame.Game.UI_TakeItem(m_Actor, m_src.Location, m_Item);
         }
+
+        public override string? ToString() => m_Actor.ToString() +": taking "+ m_Item.ToString() +" from " + m_src.ToString();
     }
 }

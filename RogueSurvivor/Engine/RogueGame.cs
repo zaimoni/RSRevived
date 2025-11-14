@@ -306,6 +306,12 @@ namespace djack.RogueSurvivor.Engine
     private static ZoneLoc m_MapView;
 
 #nullable enable
+    private static bool m_HaveDebugLogged = false;
+    public static void DebugLog(string msg) {
+      m_HaveDebugLogged = true;
+      Logger.WriteLine(Logger.Stage.RUN_DEBUG, msg);
+    }
+
     private static GameOptions s_Options = new GameOptions();
     private static Keybindings s_KeyBindings = new Keybindings();
     private static GameHintsStatus s_Hints = new GameHintsStatus();
@@ -3173,6 +3179,10 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 
         if (2 <= hotkey_turns) m_Status2 = hotkey_turns.ToString();
+        else if (m_HaveDebugLogged) {
+          m_Status2 = "DEBUG LOG";
+          m_HaveDebugLogged = false;
+        }
         else m_Status2 = null;
         RedrawPlayScreen();
 

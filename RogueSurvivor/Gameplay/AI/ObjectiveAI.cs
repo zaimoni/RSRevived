@@ -5698,6 +5698,8 @@ restart_chokepoints:
       var items = items_in_FOV;
       if (null == items) return null;
 
+      const bool tracing = false;
+
       // following needs to be more sophisticated.
       // 1) identify all stacks, period.
       // 2) categorize stacks by whether they are personally interesting or not.
@@ -5706,12 +5708,21 @@ restart_chokepoints:
       List<Data.Model.InvOrigin> examineStacks = new(items.Count);
       { // scoping brace
       List<Data.Model.InvOrigin> boringStacks = new(items.Count);
-      int t0 = map.LocalTime.TurnCounter;
       foreach(var x in items) {
-        if (!want_now(x.Value.Inventory)) continue;   // not immediately relevant
+        if (!want_now(x.Value.Inventory)) {
+          boringStacks.Add(x.Value);
+          if (tracing) {
+            RogueGame.DebugLog(m_Actor.UnmodifiedName + ": is unwanted " + x.Value.Inventory.to_s());
+          }
+          continue;
+        }
         if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
         if (!m_Actor.CanEnter(x.Key)) continue;    // XXX ignore buggy stack placement (works because all Shelf-like mapobjects are pushable)
-        if (!BehaviorWouldGrabFrom(x.Value)?.IsLegal() ?? true) {
+        var act = BehaviorWouldGrabFrom(x.Value);
+        if (!act?.IsLegal() ?? true) {
+          if (tracing) {
+            RogueGame.DebugLog(m_Actor.UnmodifiedName+": appears inaccessible "+ x.Value.Inventory.to_s()+" "+(null == act ? "null" : act.ToString()));
+          }
           boringStacks.Add(x.Value);
           continue;
         }

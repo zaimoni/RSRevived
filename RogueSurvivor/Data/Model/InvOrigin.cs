@@ -43,6 +43,26 @@ namespace djack.RogueSurvivor.Data.Model
 
         public InvOrigin(Location src) => loc = src;
 
+        public InvOrigin(Location src, Data.Item it) {
+            var shelf = src.MapObject as ShelfLike;
+            var ginv = src.Items;
+            if (null == shelf) {
+                loc = src;
+                return;
+            }
+            if (null != ginv && ginv.Contains(it)) {
+                loc = src;
+                return;
+            }
+            // we prefer to stage to containers
+            if (shelf.Inventory.Contains(it) || !shelf.Inventory.IsFull) {
+                obj_owner = shelf;
+                return;
+            }
+            loc = src;
+            return;
+        }
+
         public InvOrigin(Actor? _a_owner, ShelfLike? _obj_owner, Location? _loc)
         {
             a_owner = _a_owner;

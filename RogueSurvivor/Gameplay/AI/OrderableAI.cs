@@ -3299,19 +3299,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction? _takeThis(in Location loc, Item obj, ActorAction recover, bool is_real)
     {
+        const bool tracing = false;
+        Data.Model.InvOrigin invsrc = new(loc, obj);
+
         // XXX \todo this has to be able to upgrade to swap in some cases (e.g. if armor is better than best armor)
         if (obj is ItemBodyArmor armor) {
           var best_armor = m_Actor.GetEquippedArmor();
           if (null != best_armor && armor.Rating > best_armor.Rating) {
             // we actually want to wear this (second test redundant now, but not once stockpiling goes in)
-            return TradeItem.Cast(loc, m_Actor, best_armor, obj);
+            return TradeItem.Cast(in invsrc, m_Actor, best_armor, obj);
           }
         }
 #if DEBUG
         if (is_real && !m_Actor.MayTakeFromStackAt(in loc)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + loc + " at " + m_Actor.Location);
 #endif
-        var tmp = new Engine._Action.TakeItem(m_Actor, in loc, obj);
+        var tmp = new Engine._Action.TakeItem(m_Actor, in invsrc, obj);
         if (tmp.IsLegal()) return tmp; // in case this is the biker/trap pickup crash [cairo123]
+        else if (tracing) {
+          RogueGame.DebugLog(m_Actor.UnmodifiedName+ ": illegal recovery action "+tmp.ToString()+(string.IsNullOrEmpty(tmp.FailReason) ? "" : ": "+ tmp.FailReason));
+        }
         if (m_Actor.Inventory.IsFull && null != recover && recover.IsLegal()) {
           if (recover is ActorGive drop) {
             if (obj.ModelID == drop.Give.ModelID) return null;
@@ -3409,6 +3415,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
+
+      const bool tracing = false;
+
+      // XXX \todo strictly speaking we should build out cross-map here
       if (m_Actor.StackIsBlocked(in loc) || m_Actor.Location.Map != loc.Map) return null;
 
       Item obj = MostInterestingItemInStack(stack);
@@ -3426,6 +3436,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int it_code = ItemRatingCode(it);
           if (obj_code > it_code) throw new InvalidOperationException("passing up more important item than what is in inventory");
         }
+        if (tracing) {
+          RogueGame.DebugLog(m_Actor.UnmodifiedName+ ": bypassing unrecoverable stack");
+        }
         return null;
       }
 #else
@@ -3442,77 +3455,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (may_take) {
         tmp = _takeThis(in loc, obj, recover, is_real);
-        if (null == tmp) return null;
+        if (null == tmp) {
+          if (tracing) {
+            RogueGame.DebugLog(m_Actor.UnmodifiedName+ ": bypassing _takeThis failure");
+          }
+          return null;
+        }
         if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
           RogueGame.Game.DoEmote(m_Actor, string.Format("{0}! Great!", obj.AName));
         return tmp;
       }
-      { // scoping brace
       if (null == _legal_steps) return null;
-      var tmpAction = BehaviorPathTo(in loc);
-      if (null != tmpAction) return tmpAction;
-
-#if OBSOLETE
-      // following prone to stepping into traps
-      int current_distance = Rules.GridDistance(m_Actor.Location, in loc);
-      Location? denorm = m_Actor.Location.Map.Denormalize(in loc);
-      var costs = new Dictionary<Point,int>();
-      var vis_costs = new Dictionary<Point,int>();
-      if (_legal_steps.Contains(denorm.Value.Position)) {
-        Point pt = denorm.Value.Position;
-        Location test = new Location(m_Actor.Location.Map,pt);
-        costs[pt] = 1;
-        // this particular heuristic breaks badly if it loses sight of its target
-        if (LOS.ComputeFOVFor(m_Actor, in test).Contains(denorm.Value.Position)) vis_costs[pt] = 1;
-      } else {
-        foreach(Point pt in _legal_steps) {
-          Location test = new Location(m_Actor.Location.Map,pt);
-          int dist = Rules.GridDistance(in test, in loc);
-          if (dist >= current_distance) continue;
-          costs[pt] = dist;
-          // this particular heuristic breaks badly if it loses sight of its target
-          if (!LOS.ComputeFOVFor(m_Actor, in test).Contains(denorm.Value.Position)) continue;
-          vis_costs[pt] = dist;
-        }
-        // above fails if a direct diagonal path is blocked.
-        if (0 >= costs.Count) {
-          foreach(Point pt in _legal_steps) {
-            Location test = new Location(m_Actor.Location.Map,pt);
-            int dist = Rules.GridDistance(in test, in loc);
-            if (dist == current_distance) continue;
-            costs[pt] = dist;
-            // this particular heuristic breaks badly if it loses sight of its target
-            if (!LOS.ComputeFOVFor(m_Actor, in test).Contains(denorm.Value.Position)) continue;
-            vis_costs[pt] = dist;
-          }
-        }
-      }
-
-      tmpAction = DecideMove(vis_costs.Keys);
-      if (null != tmpAction) {
-#if DEBUG
-        throw new InvalidOperationException("test case?");
-#endif
-        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
-        m_Actor.Activity = Activity.IDLE;
-        if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-          RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
-        return tmpAction;
-      }
-      tmpAction = DecideMove(costs.Keys);
-      if (null != tmpAction) {
-#if DEBUG
-        throw new InvalidOperationException("test case?");
-#endif
-        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
-        m_Actor.Activity = Activity.IDLE;
-        if (is_real && Rules.Get.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-          RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
-        return tmpAction;
-      }
-#endif
-      } // end scoping brace
-      return null;
+      return BehaviorPathTo(in loc);
     }
 
     protected ActorAction BehaviorHeadForBestStack(List<Data.Model.InvOrigin> stacks)
@@ -3678,9 +3632,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable enable
     private ActorAction? BehaviorFindStack(Predicate<Inventory> want_now) {
         if (null != Goal<PathToStack>()) return null; // direct-order to pick up pre-empts
+        const bool tracing = false;
         var stacks = GetInterestingInventoryStacks(want_now);
-        if (null != stacks) return BehaviorHeadForBestStack(stacks);
-        return null;
+
+        if (tracing) {
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.UnmodifiedName + ": GetInterestingInventoryStacks(want_now) " + (null == stacks ? "null" : stacks.Count.ToString()));
+          if (!RogueGame.IsSimulating) {
+            RogueGame.Game.InfoPopup(m_Actor.UnmodifiedName + ": GetInterestingInventoryStacks(want_now)");
+            RogueGame.Game.InfoPopup(null == stacks ? "null" : stacks.Count.ToString());
+          }
+          var act = null != stacks ? BehaviorHeadForBestStack(stacks) : null;
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, null == act ? "null" : act.ToString());
+          if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == act ? "null" : act.ToString());
+          return act;
+        } else {
+          if (null != stacks) return BehaviorHeadForBestStack(stacks);
+          return null;
+        }
     }
 #nullable restore
 
@@ -3916,10 +3884,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorRangedInventory()
     {
       if (null != _enemies) return null;
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");
-#endif
+      const bool tracing = false;
       var tmp = BehaviorFindStack(TRUE);
+
+      if (tracing) {
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.UnmodifiedName + ": BehaviorFindStack(TRUE) " + (null == tmp ? "null" : tmp.ToString()));
+        if (!RogueGame.IsSimulating) {
+          RogueGame.Game.InfoPopup(m_Actor.UnmodifiedName + ": BehaviorFindStack(TRUE)");
+          RogueGame.Game.InfoPopup((null == tmp ? "null" : tmp.ToString()));
+        } 
+      }
+
       if (null != tmp) return tmp;
       tmp = Pathing<Goal_HintPathToActor>();    // leadership or trading requests
       if (null != tmp) return tmp;
