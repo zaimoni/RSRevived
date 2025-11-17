@@ -243,15 +243,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var best = opts.KeepMaximal(act => ranking(act.dest));
       if (1 == best.Count) return best[0].Key;
 
-      // \todo --faust option effects
-      if (Engine.Session.Get.CMDoptionExists("faust")) {
-        var PCs = RogueGame.PCsNearby(m_Actor.Location, RogueGame.VIEW_RADIUS, TRUE);
-        if (null != PCs) {
-          var act = RogueGame.Game.AI_prayer(m_Actor, best.Keys());
-          if (null != act) return act;
-        }
-      }
-
       return Rules.Get.DiceRoller.Choose(best).Key;
     }
 
