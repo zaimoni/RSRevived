@@ -102,6 +102,7 @@ namespace djack.RogueSurvivor.Engine._Action
 #endif
             return null;
         }
+
         static public TradeItem? ScheduleCast(in Data.Model.InvOrigin dest, Actor actor, Item give, Item take)
         {
             var stage = new TradeItem(actor, give, take, in dest);
@@ -109,22 +110,10 @@ namespace djack.RogueSurvivor.Engine._Action
             return stage;
         }
 
+#if PROTOTYPE
         static public TradeItem? ScheduleCast(Location loc, Actor actor, Item give, Item take)
-        {
-            if (loc.MapObject is ShelfLike obj) {
-                if (obj.IsCarrying(take)) return Cast(new Data.Model.InvOrigin(obj), actor, give, take);
-            }
-            var a = loc.Actor;
-            if (!a?.IsPlayer ?? false) {
-                if (a.IsCarrying(take)) return Cast(new Data.Model.InvOrigin(a), actor, give, take);
-            }
-
-            var g_inv = loc.Items;
-            if (g_inv?.Contains(take) ?? false) return Cast(new Data.Model.InvOrigin(loc), actor, give, take);
-#if DEBUG
-            throw new InvalidOperationException("tracing"); // need to verify null return
-#endif
-            return null;
+        {   // if we need this, adapt implementation of Cast
         }
+#endif
     }
 }
