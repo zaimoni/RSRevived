@@ -3477,8 +3477,8 @@ final_exit:
     {
       if (!CanGetItems()) return "no inventory";
       if (!CanTake(it)) {
-        if (m_Inventory.IsFull && !m_Inventory.CanAddAtLeastOne(it)) return "inventory is full";
         if (it is ItemTrap trap && trap.IsTriggered) return "triggered trap";
+        if (m_Inventory.IsFull && !m_Inventory.CanAddAtLeastOne(it)) return "inventory is full";
       }
       return "";
     }

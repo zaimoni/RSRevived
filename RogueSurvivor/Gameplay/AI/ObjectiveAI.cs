@@ -7441,8 +7441,8 @@ restart_chokepoints:
 #nullable enable
     private bool _InterestingItemPostprocess(Item it)
     {
-      if (!m_Actor.CanGet(it)) {
-        if (m_Actor.Inventory.IsFull) return null != BehaviorMakeRoomFor(it);
+      if (!m_Actor.CanGet(it, out var err)) {
+        if ("inventory is full" == err) return null != BehaviorMakeRoomFor(it);
         return false;
       }
       return true;
