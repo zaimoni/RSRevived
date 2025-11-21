@@ -324,6 +324,7 @@
     <Compile Include="Zaimoni\Serialization\LoadManager.cs" />
     <Compile Include="Zaimoni\Serialization\SaveManager.cs" />
     <Compile Include="Zaimoni\Serialization\StreamingContext.cs" />
+    <Compile Include="Zaimoni\SetTheory\Relation.cs" />
   </ItemGroup>
 <!--  <ItemGroup>
     <EmbeddedResource Include="Bugreport.resx" />
