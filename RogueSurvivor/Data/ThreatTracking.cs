@@ -715,8 +715,7 @@ namespace djack.RogueSurvivor.Data
       public bool ContainsAny(ZoneLoc loc)
       {
         Func<Point,bool> ok = pt => loc.Rect.Contains(pt);
-        var test = Range(loc.m);
-        return null == test ? test.Any(ok) : false;
+        return Range(loc.m)?.Any(ok) ?? false;
 	  }
 
 //    public IEnumerable<Point>? In(Map map) => Range(map);

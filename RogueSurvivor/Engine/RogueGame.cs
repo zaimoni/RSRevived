@@ -11923,8 +11923,8 @@ restart:
           _ => null
       };
 
-	  ThreatTracking threats = Player.Threats;    // these two should agree on whether they're null or not
-      LocationSet sights_to_see = Player.InterestingLocs;
+      var threats = Player.Threats;    // these two should agree on whether they're null or not
+      var sights_to_see = Player.InterestingLocs;
       var items = Player.Controller.ItemMemory;
 
       Point point = new Point();
@@ -12505,8 +12505,8 @@ restart:
     {
       if (null == m_Player) return;   // fail-safe.
       Map map = CurrentMap;
-	  ThreatTracking threats = Player.Threats;    // these two should agree on whether they're null or not
-      LocationSet sights_to_see = Player.InterestingLocs;
+      var threats = Player.Threats;    // these two should agree on whether they're null or not
+      var sights_to_see = Player.InterestingLocs;
 
 	  if (s_Options.IsMinimapOn) {
         m_UI.UI_ClearMinimap(Color.Black);

@@ -568,7 +568,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         if (!combat_unready.Value && null != threats && threats.Any()) pathing_targets = hunt_threat;
 
-        LocationSet sights_to_see = m_Actor.InterestingLocs;
+        var sights_to_see = m_Actor.InterestingLocs;
         HashSet<Point> tourism(Map m) {
           var ret = sights_to_see.In(m);
           if (0<ret.Count) {

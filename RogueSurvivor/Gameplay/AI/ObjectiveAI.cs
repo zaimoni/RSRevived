@@ -2196,8 +2196,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  ThreatTracking threats = m_Actor.Threats;
-	  LocationSet sights_to_see = m_Actor.InterestingLocs;
+	  var threats = m_Actor.Threats;
+	  var sights_to_see = m_Actor.InterestingLocs;
       Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
       HashSet<Point>? new_los = null;
 
@@ -2628,8 +2628,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  ThreatTracking threats = m_Actor.Threats;
-	  LocationSet sights_to_see = m_Actor.InterestingLocs;
+	  var threats = m_Actor.Threats;
+	  var sights_to_see = m_Actor.InterestingLocs;
 	  Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
       HashSet<Point>? new_los = null;
 
@@ -2884,8 +2884,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  ThreatTracking threats = m_Actor.Threats;
-	  LocationSet sights_to_see = m_Actor.InterestingLocs;
+	  var threats = m_Actor.Threats;
+	  var sights_to_see = m_Actor.InterestingLocs;
 	  Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
       HashSet<Point>? new_los = null;
 
@@ -7932,8 +7932,8 @@ restart_chokepoints:
       }
 
           // use threat tracking/tourism when available
-          ThreatTracking threats = m_Actor.Threats;
-          LocationSet sights_to_see = m_Actor.InterestingLocs;
+          var threats = m_Actor.Threats;
+          var sights_to_see = m_Actor.InterestingLocs;
           if (null != threats || null != sights_to_see) {
             var no_light_range = m_Actor.FOVrangeNoFlashlight(m_Actor.Location.Map.LocalTime, World.Get.Weather);
             HashSet<Point> no_light_FOV = LOS.ComputeFOVFor(m_Actor.Location, no_light_range);
