@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using Zaimoni.Data;
+using Zaimoni.Lazy;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 
@@ -585,6 +586,7 @@ namespace djack.RogueSurvivor.Data
 
       public HashSet<Point> In(Map map)
 	  {
+
 		lock(_locs) {
           return _locs.TryGetValue(map, out var src) ? new HashSet<Point>(src) : new HashSet<Point>();
 		}
@@ -633,15 +635,7 @@ namespace djack.RogueSurvivor.Data
 		  lock(_locs) {
             if (!_locs.TryGetValue(map,out HashSet<Point> tmp2)) return ret;
             var tmp = new HashSet<Point>(tmp2); // want a value copy here
-#if PROTOTYPE
-            tmp.RemoveWhere(pt => !view.Contains(pt));
-            if (tmp.Any(pt => !view.Contains(pt))) throw new InvalidOperationException("trace");
-#endif
 
-//            if (0<view.Left) tmp.RemoveWhere(pt => pt.X<view.Left);
-//            if (0<view.Top) tmp.RemoveWhere(pt => pt.Y<view.Top);
-//            if (map.Width>view.Right) tmp.RemoveWhere(pt => pt.X >= view.Right);
-//            if (map.Height>view.Bottom) tmp.RemoveWhere(pt => pt.Y >= view.Bottom);
             if (0 >= ret.Count) ret = tmp;
             else ret.UnionWith(tmp);
 		  }
@@ -712,6 +706,106 @@ namespace djack.RogueSurvivor.Data
 		  if (_locs.TryGetValue(loc.Map, out var target) && target.Remove(loc.Position) && 0 >= target.Count) _locs.Remove(loc.Map);
 		}
       }
+    }
+
+    public sealed class LocationSet2 : Zaimoni.SetTheory.RelationC<Map, Point>
+    {
+
+      public bool Contains(in Location loc) => Contains(loc.Map, loc.Position);
+      public bool ContainsAny(ZoneLoc loc)
+      {
+        Func<Point,bool> ok = pt => loc.Rect.Contains(pt);
+        var test = Range(loc.m);
+        return null == test ? test.Any(ok) : false;
+	  }
+
+//    public IEnumerable<Point>? In(Map map) => Range(map);
+      public HashSet<Point> In(Map map) {
+        var stage = Range(map);
+        return null != stage ? new(stage) : new();
+      }
+
+      public HashSet<Point> In(Map map, Rectangle view)
+	  {
+          var ret = new HashSet<Point>();
+          if (null == map) return ret;
+          var crossdistrict_ok = District.UsesCrossDistrictView(map);
+          Point pos = map.DistrictPos;   // only used in denormalized cases
+          if (0> view.Left) {
+            if (0<pos.X && 0<crossdistrict_ok) {
+              HashSet<Point> tmp = In(World.Get[pos + Direction.W].CrossDistrictViewing(crossdistrict_ok),new Rectangle((short)(map.Width+view.Left),view.Top, (short)(-view.Left),view.Height));
+              foreach(Point pt in tmp) ret.Add(new Point((short)(pt.X-map.Width),pt.Y));
+            }
+            view.Width += view.Left;
+            view.X = 0;
+          }
+          if (map.Width < view.Right) {
+            var new_width = map.Width;
+            new_width -= view.Left;
+            if (World.Get.Size>pos.X+1 && 0<crossdistrict_ok) {
+              HashSet<Point> tmp = In(World.Get[pos + Direction.E].CrossDistrictViewing(crossdistrict_ok),new Rectangle(0,view.Top, (short)(view.Width-new_width),view.Height));
+              foreach(Point pt in tmp) ret.Add(new Point((short)(pt.X+map.Width),pt.Y));
+            }
+            view.Width = new_width;
+          }
+          if (0 > view.Top) {
+            if (0<pos.Y && 0<crossdistrict_ok && 3!= crossdistrict_ok) {
+              HashSet<Point> tmp = In(World.Get[pos + Direction.N].CrossDistrictViewing(crossdistrict_ok),new Rectangle(view.Left, (short)(map.Height+view.Top),view.Width, (short)(-view.Top)));
+              foreach(Point pt in tmp) ret.Add(new Point(pt.X, (short)(pt.Y-map.Height)));
+            }
+            view.Height += view.Top;
+            view.Y = 0;
+          }
+          if (map.Height < view.Bottom) {
+            var new_height = map.Height;
+            new_height -= view.Top;
+            if (World.Get.Size>pos.Y+1 && 0<crossdistrict_ok && 3 != crossdistrict_ok) {
+              HashSet<Point> tmp = In(World.Get[pos + Direction.S].CrossDistrictViewing(crossdistrict_ok),new Rectangle(view.Left,0,view.Width, (short)(view.Height-new_height)));
+              foreach(Point pt in tmp) ret.Add(new Point(pt.X, (short)(pt.Y+map.Height)));
+            }
+            view.Height = new_height;
+          }
+
+          var tmp2 = Range(map);
+          if (null == tmp2) return ret;
+          HashSet<Point> stage = new(tmp2);
+          if (0 >= ret.Count) ret = stage;
+          else ret.UnionWith(stage);
+		  return ret;
+      }
+
+      public List<Location>? All() {
+        List<Location> ret = new();
+        void encode(Map m, Point pt) {
+            Location loc = new(m,pt);
+            if (Map.Canonical(ref loc) && !ret.Contains(loc)) ret.Add(loc);
+        };
+        ForAll(encode);
+        return 0 < ret.Count ? ret : null;
+      }
+
+
+      public void Record(Map m, in Point pt)
+      {
+        if (!m.GetTileModelAt(pt).IsWalkable) return; // reject unwalkable tiles
+        Add(m, pt);
+      }
+      public void Record(in Location loc) => Record(loc.Map, loc.Position);
+
+      // assume loc is in canonical form
+      public void Seen(in Location loc) => Remove(loc.Map, loc.Position);
+
+      public void Seen(Location[] locs) {
+        // assume all of these are in canonical form
+        foreach(var loc in locs) Remove(loc.Map, loc.Position);
+      }
+
+      // duplicate signature rather than risk indirection through IEnumerable; the Location[] signature is on a profile-hot path 2020-09-27 zaimoni
+      public void Seen(List<Location> locs) {
+        // assume all of these are in canonical form
+        foreach(var loc in locs) Remove(loc.Map, loc.Position);
+      }
+
     }
 
     [Serializable]

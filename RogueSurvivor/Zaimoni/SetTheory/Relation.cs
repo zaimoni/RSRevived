@@ -12,6 +12,7 @@ namespace Zaimoni.SetTheory
 
     // unfortunately, C# does not have C++ concept testing so we cannot compile-time test for an appropriate implementation.
     // use C-suffix naming scheme to compensate
+    [Serializable]
     public class RelationC<K,V> where K:class
     {
         // lock(_rel) for read lock
@@ -34,6 +35,23 @@ namespace Zaimoni.SetTheory
                         }
                     }
                     _rel.Add(new(key, [val]));
+                }
+            }
+        }
+
+        public void Add(K key, IEnumerable<V> vals)
+        {
+            lock (this) {
+                lock (_rel) {
+                    foreach (var xy in _rel) {
+                        if (xy.Key == key) {
+                            foreach (var val in vals) {
+                                if (!xy.Value.Contains(val)) xy.Value.Add(val);
+                            }
+                            return;
+                        }
+                    }
+                    _rel.Add(new(key, new(vals)));
                 }
             }
         }
@@ -89,6 +107,32 @@ namespace Zaimoni.SetTheory
             return false;
         }
 
+        public bool Contains(K key) => null != Range(key);
+
+        public bool Contains(V val) {
+            lock (_rel) {
+                var n = _rel.Count;
+                while (0 <= --n) {
+                    var xy = _rel[n];
+                    if (xy.Value.Contains(val)) return true;
+                }
+            }
+            return false;
+        }
+
+        public bool Contains(K key, V val)
+        {
+            lock (_rel) {
+                var n = _rel.Count;
+                while (0 <= --n) {
+                    var xy = _rel[n];
+                    if (xy.Key != key) continue;
+                    return xy.Value.Contains(val);
+                }
+            }
+            return false;
+        }
+
         public IEnumerable<V>? Range(K key) {
             lock (_rel) {
                 var n = _rel.Count;
@@ -112,7 +156,17 @@ namespace Zaimoni.SetTheory
             }
             return 0<ret.Count ? ret : default;
         }
+
+        public void ForAll(Action<K, V> op) {
+            lock (_rel) {
+                foreach (var xy in _rel) {
+                    foreach(var y in xy.Value) op(xy.Key, y);
+                }
+            }
+        }
     }
+
+    [Serializable]
 
     public class RelationS<K,V> where K:IEquatable<K>
     {
@@ -133,6 +187,23 @@ namespace Zaimoni.SetTheory
                         }
                     }
                     _rel.Add(new(key, [val]));
+                }
+            }
+        }
+
+        public void Add(K key, IEnumerable<V> vals)
+        {
+            lock (this) {
+                lock (_rel) {
+                    foreach (var xy in _rel) {
+                        if (xy.Key.Equals(key)) {
+                            foreach (var val in vals) {
+                                if (!xy.Value.Contains(val)) xy.Value.Add(val);
+                            }
+                            return;
+                        }
+                    }
+                    _rel.Add(new(key, new(vals)));
                 }
             }
         }
@@ -198,6 +269,32 @@ namespace Zaimoni.SetTheory
                 }
             }
             return default;
+        }
+
+        public bool Contains(K key) => null != Range(key);
+
+        public bool Contains(V val) {
+            lock (_rel) {
+                var n = _rel.Count;
+                while (0 <= --n) {
+                    var xy = _rel[n];
+                    if (xy.Value.Contains(val)) return true;
+                }
+            }
+            return false;
+        }
+
+        public bool Contains(K key, V val)
+        {
+            lock (_rel) {
+                var n = _rel.Count;
+                while (0 <= --n) {
+                    var xy = _rel[n];
+                    if (!xy.Key.Equals(key)) continue;
+                    return xy.Value.Contains(val);
+                }
+            }
+            return false;
         }
 
         public List<K>? Domain(V val) {
