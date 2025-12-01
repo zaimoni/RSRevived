@@ -141,6 +141,7 @@ namespace djack.RogueSurvivor.Engine
       if (_CheckForAnchorHardCodedConflict(RogueGame.KeyBindings.Get(PlayerCommand.CITY_INFO))) return true;
       if (_CheckForAnchorHardCodedConflict(RogueGame.KeyBindings.Get(PlayerCommand.ORDER_MODE))) return true;
       if (_CheckForAnchorHardCodedConflict(RogueGame.KeyBindings.Get(PlayerCommand.LEAD_MODE))) return true;
+      if (_CheckForAnchorHardCodedConflict(RogueGame.KeyBindings.Get(PlayerCommand.FIRE_MODE))) return true;
 
       return false;
     }

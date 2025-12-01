@@ -73,6 +73,7 @@ namespace djack.RogueSurvivor.Engine
     COUNTERMAND_PC,
     UNLOAD,
     TRANSFER_ITEM,
-    AS_AI
+    AS_AI,
+    FAUST
     }
 }

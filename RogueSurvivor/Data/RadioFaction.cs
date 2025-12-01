@@ -210,6 +210,10 @@ namespace djack.RogueSurvivor.Data
         public readonly LocationSet Investigate = new();
         [NonSerialized] private ImplicitRadio? m_implicitRadio = null; // probably will be non-static on second radio faction buildout
 
+        // rethinking investigation causes:
+        // * unknown ground/shelf inventories
+        // * does the ever-seen map need to be disentangled from item memory?
+
         public readonly GameFactions.IDs FactionID;
         public readonly Gameplay.Item_IDs RadioID;
 

@@ -846,6 +846,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (Engine.Session.Get.CMDoptionExists("faust")) {
         var PCs = RogueGame.PCsNearby(m_Actor.Location, RogueGame.VIEW_RADIUS, TRUE);
         if (null != PCs) {
+          RogueGame.FaustClairvoyance(m_Actor, PCs.Select(pc => pc.ControlledActor.Location));
           var act = RogueGame.Game.AI_prayer(m_Actor, best.Keys());
           if (null != act) return act;
         }

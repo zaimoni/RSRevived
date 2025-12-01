@@ -1521,6 +1521,12 @@ namespace djack.RogueSurvivor.Engine
       m_UI.WaitEnter();
       ClearMessages();
       RedrawPlayScreen(new UI.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", Player.Name), 0, Color.White));
+
+      HandleFaust();
+      if (FaustExamineNewLivings) {
+        World.Get.DoForAllActors(FaustExamineLiving);
+      }
+
       play_timer.Start();
       StopSimThread(false);  // alpha10 stop-start
       StartSimThread();
@@ -1974,6 +1980,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       else if (nextActorToAct.Controller is PlayerController pc) {
         HandlePlayerActor(pc);
+        CancelFaustClairvoyance(nextActorToAct);
         if (!m_IsGameRunning || m_HasLoadedGame || 0>= World.Get.PlayerCount) return;
         if (!nextActorToAct.IsDead) CheckSpecialPlayerEventsAfterAction(nextActorToAct);
       } else {
@@ -1998,6 +2005,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
 
         HandleAiActor(nextActorToAct.Controller);
+        CancelFaustClairvoyance(nextActorToAct);
       }
       if (nextActorToAct.AfterAction()) map.AfterAction();
     }
@@ -3476,6 +3484,9 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.DAIMON_MAP:    // cheat command
                 HandleDaimonMap();
                 break;
+              case PlayerCommand.FAUST:    // cheat command
+                HandleFaust();
+                break;
               case PlayerCommand.MESSAGE_LOG:
                 HandleMessageLog();
                 break;
@@ -4566,6 +4577,98 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new("You pray for wisdom.", turn, Color.Green));
       World.Get.DaimonMap();
       AddMessage(new("Your prayers are unclearly answered.", turn, Color.Yellow));
+    }
+
+    private static bool s_FaustPC = false;
+    private static Action ToggleFaust = () => s_FaustPC = !s_FaustPC;
+    public static bool FaustExamineNewLivings { get => s_FaustPC; }
+
+    private static Zaimoni.SetTheory.RelationC<Actor, Location> s_FaustClairvoyance = null;
+    public static void FaustClairvoyance(Actor a, IEnumerable<Location> locs) {
+      foreach(var loc in locs) (s_FaustClairvoyance ?? (s_FaustClairvoyance = new())).Add(a, loc);
+    }
+    private static void CancelFaustClairvoyance(Actor a) {
+      if (null != s_FaustClairvoyance) {
+        if (s_FaustClairvoyance.Remove(a) && s_FaustClairvoyance.EmptyDomain()) s_FaustClairvoyance = null;
+      }
+    }
+
+    private bool HandleFaust()
+    {
+      var sess = Session.Get;
+      if (!sess.CMDoptionExists("faust")) return false;
+
+      List<KeyValuePair<string, Action>> orders = new();
+      orders.Add(new(s_FaustPC ? "Ignore new livings" : "Examine new livings", ToggleFaust));
+
+      string label(int index) { return orders[index].Key; }
+      bool details(int index) { orders[index].Value(); return true; }
+
+      return PagedPopup("Ask the spirits for:", orders.Count, label, details);
+    }
+
+    private void FaustMC(Actor a) {
+        a.MakePC();
+        a.Controller.UpdateSensors();
+        Session.Get.Scoring.UseReincarnation(); // intentionally unconditional
+        var followers = a.Followers;
+        if (null != followers) foreach(var fo in followers) FaustMC(fo);
+    }
+    private void FaustExamineLiving(Actor a) {
+      if (a.Controller is not OrderableAI ordai) return;
+      if (null != a.LiveLeader) return;
+
+      if (a.Model.Abilities.IsLawEnforcer) {
+        FaustMC(a);
+        return;
+      }
+      if (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {
+        FaustMC(a);
+        return;
+      }
+      if (a.IsSleeping) return;
+      if (a.Location.Map.HasZonePrefixNamedAt(a.Location.Position, "Shed")) return;
+
+      var in_store = BaseTownGenerator.InStore(a.Location);
+      if (null != in_store) {
+        if ("Grocery" == in_store) return;
+        FaustMC(a);
+        return;
+      }
+
+      if (a.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap) return;
+      if (a.Location.Map == Session.Get.UniqueMaps.Hospital_Admissions.TheMap) return;
+      if (a.Location.Map == Session.Get.UniqueMaps.Hospital_Offices.TheMap) return;
+      if (a.Location.Map == Session.Get.UniqueMaps.Hospital_Patients.TheMap) return;
+      if (a.Location.Map == a.Location.Map.District.SewersMap) {
+        FaustMC(a);
+        return;
+      }
+      a.Controller.UpdateSensors();
+      if (null == a.Controller.items_in_FOV) return;
+      if (null != a.Controller.friends_in_FOV) return;
+
+      foreach(var x in a.Controller.items_in_FOV) {
+        if (x.Value.IsCarrying(GameItems.melee)) {
+          FaustMC(a);
+          return;
+        }
+        if (x.Value.IsCarrying(GameItems.ranged)) {
+          FaustMC(a);
+          return;
+        }
+        if (x.Value.IsCarrying(GameItems.ammo)) {
+          FaustMC(a);
+          return;
+        }
+      }
+
+#if PROTOTYPE
+      PanViewportTo(a);
+      if (YesNoPopup("Make a PC")) {
+        FaustMC(a);
+      }
+#endif
     }
 
     /// not really; just need to block the other manual handlers from triggering
@@ -11948,7 +12051,10 @@ restart:
       int i = view_squares;
       while(0 < i--) {
         point = MapViewRect.convert(i);
-        is_visible[i] = IsVisibleToPlayer(map, in point);
+        var test = new Location(map,point);
+        if (!Map.Canonical(ref test)) continue;
+        bool clairsight = null != s_FaustClairvoyance && s_FaustClairvoyance.Contains(Player, test);
+        is_visible[i] = clairsight || IsVisibleToPlayer(map, in point);
         if (is_visible[i]) {
           var actorAt = map.GetActorAtExt(point);
           if (null == actorAt) continue;
@@ -13725,6 +13831,9 @@ restart:
       World world = World.Get;
       var zoning = world.PreliminaryZoning;
       BaseTownGenerator.WorldGenInit(zoning);
+
+//    HandleFaust(); // too early
+
       for (short index1 = 0; index1 < world.Size; ++index1) {
         for (short index2 = 0; index2 < world.Size; ++index2) {
           if (isVerbose) m_UI.DrawHeadNote(string.Format("Creating District@{0}...", World.CoordToString(index1, index2)));

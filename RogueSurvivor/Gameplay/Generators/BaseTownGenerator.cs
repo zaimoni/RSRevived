@@ -1327,6 +1327,12 @@ restart:
       new KeyValuePair<string,string>("Hunting Shop", GameImages.DECO_SHOP_HUNTING)
     };
 
+    public static string? InStore(Location loc) {
+      foreach(var x in shop_name_images) {
+        if (loc.Map.HasZonePrefixNamedAt(loc.Position, x.Key)) return x.Key;
+      }
+      return null;
+    }
     protected virtual bool MakeShopBuilding(Map map, Block b)
     {
       if (b.InsideRect.Width < 5 || b.InsideRect.Height < 5) return false;

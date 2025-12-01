@@ -560,6 +560,7 @@ namespace djack.RogueSurvivor.Data
         }
     }   // end ThreatTracking definition
 
+    [Serializable]
     public sealed class LocationSet : Zaimoni.SetTheory.RelationC<Map, Point>
     {
 

@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
+using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
 
@@ -166,6 +167,12 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 
 #region Placing actors
+    private static void _actorPlace(Actor actor, in Location dest)
+    {
+      dest.Place(actor);
+      if (Session.Get.Police.IsEnemy(actor)) Session.Get.Police.Threats.RecordTaint(actor, dest);
+    }
+
     public static bool ActorPlace(DiceRoller roller, Map map, Actor actor, Predicate<Point> goodPositionFn=null)
     {
       return ActorPlace(roller, map, actor, map.Rect, goodPositionFn);
@@ -180,8 +187,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       List<Point> valid_spawn = rect.Where(pt => map.IsWalkableFor(pt, actor) && (goodPositionFn == null || goodPositionFn(pt)));
       if (0>=valid_spawn.Count) return false;
-      map.PlaceAt(actor, roller.Choose(valid_spawn));
-      if (Session.Get.Police.IsEnemy(actor)) Session.Get.Police.Threats.RecordSpawn(actor, map, valid_spawn);
+      _actorPlace(actor, new(map, roller.Choose(valid_spawn)));
       return true;
     }
 
@@ -192,8 +198,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == actor) throw new ArgumentNullException(nameof(actor));
       if (!Map.Canonical(ref dest)) throw new InvalidOperationException("location cannot be made canonical");
 #endif
-      dest.Map.PlaceAt(actor, dest.Position);
-      if (Session.Get.Police.IsEnemy(actor)) Session.Get.Police.Threats.RecordTaint(actor, dest);
+      _actorPlace(actor, in dest);
       return true;
     }
 #endregion

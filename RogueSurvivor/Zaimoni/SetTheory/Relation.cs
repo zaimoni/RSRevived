@@ -157,6 +157,8 @@ namespace Zaimoni.SetTheory
             return 0<ret.Count ? ret : default;
         }
 
+        public bool EmptyDomain() => 0 >= _rel.Count;
+
         public void ForAll(Action<K, V> op) {
             lock (_rel) {
                 foreach (var xy in _rel) {
@@ -308,5 +310,7 @@ namespace Zaimoni.SetTheory
             }
             return 0<ret.Count ? ret : default;
         }
+
+        public bool EmptyDomain() => 0 >= _rel.Count;
     }
 }

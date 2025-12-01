@@ -32,6 +32,9 @@ namespace djack.RogueSurvivor.Engine
       if (key.KeyData == (take_charge | Keys.Control)) return PlayerCommand.TRANSFER_ITEM;
       if (key.KeyData == (take_charge | Keys.Alt | Keys.Control)) return PlayerCommand.AS_AI;
 
+      Keys fire = RogueGame.KeyBindings.Get(PlayerCommand.FIRE_MODE);
+      if (key.KeyData == (fire | Keys.Control)) return PlayerCommand.FAUST;
+
       if (key.KeyData == (Keys.A | Keys.Control)) return PlayerCommand.ABANDON_PC;  // debugging/cheat command
 
       PlayerCommand playerCommand = RogueGame.KeyBindings.Get(key.KeyData);
