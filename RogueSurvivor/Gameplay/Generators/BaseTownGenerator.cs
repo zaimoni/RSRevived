@@ -4296,6 +4296,14 @@ restart:
       return numberedName;
     }
 
+    private void CreatePrimaryRanged(Actor a, ItemRangedWeapon rw) {
+      // While auto-equip here would be nice, it is unclear that RogueForm.Game.DoEquipItem is safe to call here.
+      // Inline the functional part instead.
+      a.Take(rw);
+      a.Take(ItemAmmo.make(rw.ModelID));
+      a.Equip(rw);
+    }
+
     public Actor CreateNewPoliceman(int spawnTime)
     {
       Actor numberedName = GameActors.Policeman.CreateNumberedName(GameFactions.ThePolice, spawnTime);
@@ -4307,14 +4315,7 @@ restart:
       GiveRandomSkillsToActor(numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.FIREARMS);
       numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
-      // While auto-equip here would be nice, it is unclear that RogueForm.Game.DoEquipItem is safe to call here.
-      // Inline the functional part instead.
-      {
-      var rw = (m_DiceRoller.RollChance(50) ? GameItems.PISTOL : GameItems.SHOTGUN).create();
-      numberedName.Take(rw);
-      numberedName.Take(ItemAmmo.make(rw.ModelID));
-      numberedName.Equip(rw);
-      }
+      CreatePrimaryRanged(numberedName, (m_DiceRoller.RollChance(50) ? GameItems.PISTOL : GameItems.SHOTGUN).create());
       // do not issue truncheon if martial arts would nerf it
       if (0 >= numberedName.MySkills.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Take(GameItems.TRUNCHEON.create());
       numberedName.Take(GameItems.FLASHLIGHT.create());
@@ -4381,9 +4382,8 @@ restart:
       Actor numberedName = GameActors.CHARGuard.CreateNumberedName(GameFactions.TheCHARCorporation, spawnTime);
       DressCHARGuard(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, "Gd.");
-
-      Data.Model.Item[] default_inv = { GameItems.SHOTGUN, GameItems.AMMO_SHOTGUN, GameItems.CHAR_LT_BODYARMOR };
-      foreach(var x in default_inv) numberedName.Take(x.create());
+      CreatePrimaryRanged(numberedName, GameItems.SHOTGUN.create());
+      numberedName.Take(GameItems.CHAR_LT_BODYARMOR.create());
 
       return numberedName;
     }
@@ -4393,8 +4393,9 @@ restart:
       Actor numberedName = GameActors.NationalGuard.CreateNumberedName(GameFactions.TheArmy, spawnTime);
       DressArmy(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
+      CreatePrimaryRanged(numberedName, GameItems.ARMY_RIFLE.create());
 
-      Data.Model.Item[] default_inv = { GameItems.ARMY_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.ARMY_BODYARMOR };
+      Data.Model.Item[] default_inv = { GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.ARMY_BODYARMOR };
       foreach(var x in default_inv) numberedName.Take(x.create());
       numberedName.Take(GameItems.WOODENPLANK.instantiate(GameItems.WOODENPLANK.StackingLimit));
 
@@ -4458,8 +4459,9 @@ restart:
       Actor numberedName = GameActors.BlackOps.CreateNumberedName(GameFactions.TheBlackOps, spawnTime);
       DressBlackOps(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
+      CreatePrimaryRanged(numberedName, GameItems.PRECISION_RIFLE.create());
 
-      Data.Model.Item[] default_inv = { GameItems.PRECISION_RIFLE, GameItems.AMMO_HEAVY_RIFLE, GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.BLACKOPS_GPS };
+      Data.Model.Item[] default_inv = { GameItems.ARMY_PISTOL, GameItems.AMMO_HEAVY_PISTOL, GameItems.BLACKOPS_GPS };
       foreach(var x in default_inv) numberedName.Take(x.create());
 
       return numberedName;
