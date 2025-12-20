@@ -5439,7 +5439,6 @@ restart_chokepoints:
       var track_inv = Goal<Goal_PathToStack>();
       if (null != track_inv) {
         foreach(Inventory inv in track_inv.Inventories) {
-          if (inv.IsEmpty) continue;
           if (null != inv.GetCompatibleRangedWeapon(am)) return true;
         }
       }

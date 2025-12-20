@@ -408,7 +408,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       [NonSerialized] private OrderableAI ordai;
       [NonSerialized] private List<KeyValuePair<Data.Model.InvOrigin, ActorAction>>? _inventory_actions = null;
 
-      public IEnumerable<Inventory> Inventories { get => _stacks.Select(p => p.Inventory); }
+      public IEnumerable<Inventory> Inventories { get {
+        // our sole caller crashes if the inventory is null, and wants to bypass empty inventories as well
+        // XXX telepathy
+        int i = _stacks.Count;
+        while (0 < i--) {
+          var inv = _stacks[i].Inventory;
+          if (null == inv || inv.IsEmpty) {
+            _stacks.RemoveAt(i);
+            continue;
+          }
+        }
+
+        return _stacks.Select(p => p.Inventory);
+      } }
       public IEnumerable<Location> Destinations { get => _stacks.Select(p => p.Location); }
 
       public Goal_PathToStack(Actor who, in Data.Model.InvOrigin src) : base(who.Location.Map.LocalTime.TurnCounter, who)
