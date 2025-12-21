@@ -18,6 +18,13 @@ namespace djack.RogueSurvivor.Data._Item
         }
         public PrimedExplosive(Data.Model.Explosive model) : this(model, model.FuseDelay) { }
 
+        public override string ImageID {
+          get {
+            return base.Model.Primed.ImageID;
+          }
+        }
+
+
         public void Cook() { Interlocked.Exchange(ref m_FuseTimeLeft, 0); }    // detonate immediately
         public bool Expire() { return 0 >= Interlocked.Decrement(ref m_FuseTimeLeft); }
         static public bool IsExpired(PrimedExplosive e) { return 0 >= e.m_FuseTimeLeft; }
