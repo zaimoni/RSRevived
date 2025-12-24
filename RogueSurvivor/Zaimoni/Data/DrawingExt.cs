@@ -86,6 +86,12 @@ namespace Zaimoni.Data
       return ret;
     }
 
+    public static List<V> Values<K,V>(this IEnumerable<KeyValuePair<K,V>> src) {
+      List<V> ret = new();
+      foreach(var x in src) ret.Add(x.Value);
+      return ret;
+    }
+
     // imitate Enumerable interface here
     public static List<Point> Where(this Rectangle rect, Predicate<Point> testFn)
     {
@@ -545,7 +551,7 @@ namespace Zaimoni.Data
       foreach(var x in src) {
         KeyValuePair<K,V> test = new(x, rate(x));
         if (0 < ret.Count) {
-          var comp = ret[0].Value.CompareTo(test.Value);
+          var comp = test.Value.CompareTo(ret[0].Value);
           if (0 > comp) continue;
           if (0 < comp) ret.Clear();
         }

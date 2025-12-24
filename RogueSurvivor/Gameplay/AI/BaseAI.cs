@@ -240,10 +240,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
       if (null == opts) return null;
 
-      var best = opts.KeepMaximal(act => ranking(act.dest));
-      if (1 == best.Count) return best[0].Key;
+      var best = opts.KeepMaximal(kv => ranking(kv.Value.dest));
+      if (1 == best.Count) return best[0].Key.Value;
 
-      return Rules.Get.DiceRoller.Choose(best).Key;
+      return Rules.Get.DiceRoller.Choose(best).Key.Value;
     }
 
         // alpha10
@@ -802,7 +802,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position - m_prevLocation.Position);
 
-      int ranking(Location loc) {
+      int ranking(Direction dir, Location loc) {
         const int EXPLORE_ZONES = 1000;
         const int EXPLORE_BARRICADES = ExplorationData.SCORE_BARRICADES;
         const int EXPLORE_INOUT = ExplorationData.SCORE_INOUT;
@@ -823,7 +823,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (map.LocalTime.IsNight) num += EXPLORE_INOUT;
         }
         else if (!map.LocalTime.IsNight) num += EXPLORE_INOUT;
-        Direction dir = Direction.FromVector(loc.Position - m_Actor.Location.Position);
         if (dir == prevDirection) num += EXPLORE_DIRECTION;
         return num;
       }
@@ -839,20 +838,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
       if (null == opts) return null;
 
-      var best = opts.KeepMaximal(act => ranking(act.dest));
-      if (1 == best.Count) return best[0].Key;
+      var best = opts.KeepMaximal(kv => ranking(kv.Key, kv.Value.dest));
+      if (1 == best.Count) return best[0].Key.Value;
 
       // \todo --faust option effects
       if (Engine.Session.Get.CMDoptionExists("faust")) {
         var PCs = RogueGame.PCsNearby(m_Actor.Location, RogueGame.VIEW_RADIUS, TRUE);
         if (null != PCs) {
           RogueGame.FaustClairvoyance(m_Actor, PCs.Select(pc => pc.ControlledActor.Location));
-          var act = RogueGame.Game.AI_prayer(m_Actor, best.Keys());
+          var act = RogueGame.Game.AI_prayer(m_Actor, best.Keys().Values());
           if (null != act) return act;
         }
       }
 
-      return Rules.Get.DiceRoller.Choose(best).Key;
+      return Rules.Get.DiceRoller.Choose(best).Key.Value;
     }
 
 #nullable enable
@@ -1236,14 +1235,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
   internal static class ext_BaseAI
   {
 #nullable enable
-    public static List<A>? Candidates<_T_, A>(this IEnumerable<_T_> choices, Func<_T_,A?> interpret) where A:ActorAction
+    public static List<KeyValuePair<_T_, A>>? Candidates<_T_, A>(this IEnumerable<_T_> choices, Func<_T_,A?> interpret) where A:ActorAction
     {
-      List<A> ret = new();
+      List<KeyValuePair<_T_, A>> ret = new();
       foreach(var choice in choices) {
         var test = interpret(choice);
         if (null == test) continue;
         if (!test.IsPerformable()) continue;
-        ret.Add(test);
+        ret.Add(new(choice, test));
       }
       return 0<ret.Count ? ret : null;
     }

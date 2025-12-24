@@ -3019,7 +3019,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position - PrevLocation.Position);
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
 
-      int ranking(Location loc) {
+      int ranking(Direction dir, Location loc) {
         const int EXPLORE_ZONES = 1000;
         const int AVOID_TRAPS = -1000; // alpha10 greatly increase penalty and x by potential damage; was -50
         const int EXPLORE_BARRICADES = ExplorationData.SCORE_BARRICADES;
@@ -3048,7 +3048,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (map.LocalTime.IsNight) num += EXPLORE_INOUT;
         }
         else if (!map.LocalTime.IsNight) num += EXPLORE_INOUT;
-        Direction dir = Direction.FromVector(loc.Position - m_Actor.Location.Position);
         if (dir == prevDirection) num += EXPLORE_DIRECTION;
         return num;
       }
@@ -3068,10 +3067,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
       if (null == opts) return null;
 
-      var best = opts.KeepMaximal(act => ranking(act.dest));
-      if (1 == best.Count) return best[0].Key;
+      var best = opts.KeepMaximal(kv => ranking(kv.Key, kv.Value.dest));
+      if (1 == best.Count) return best[0].Key.Value;
 
-      return Rules.Get.DiceRoller.Choose(best).Key;
+      return Rules.Get.DiceRoller.Choose(best).Key.Value;
     }
 
     public bool HasAnyInterestingItem(IEnumerable<Item> Items)
