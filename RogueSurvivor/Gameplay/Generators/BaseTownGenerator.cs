@@ -55,14 +55,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       MapWidth = RogueGame.MAP_MAX_WIDTH,
       MapHeight = RogueGame.MAP_MAX_HEIGHT,
       MinBlockSize = 11,
-      WreckedCarChance = 10,
       ShopBuildingChance = 10,
       ParkBuildingChance = 10,
       CHARBuildingChance = 10,
-      PostersChance = 2,
-      TagsChance = 2,
-      ItemInShopShelfChance = 100,
-      PolicemanChance = 15
     };
     private readonly Parameters[] district_config;
 
@@ -313,7 +308,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     protected void AddWreckedCarsOutside(Map map)
     {
       MapObjectFill(map, map.Rect, pt => {
-        if (m_DiceRoller.RollChance(m_Params.WreckedCarChance)) {
+        if (m_DiceRoller.RollChance(Parameters.WreckedCarChance)) {
           Tile tileAt = map.GetTileAt(pt);
           if (!tileAt.IsInside && tileAt.Model.IsWalkable && tileAt.Model != GameTiles.FLOOR_GRASS) {
             MapObject mapObj = MakeObjWreckedCar(m_DiceRoller);
@@ -641,8 +636,8 @@ restart:
       foreach (var x in doomed) blockList1.Remove(x);
 
       AddWreckedCarsOutside(map);
-      DecorateOutsideWallsWithPosters(map, m_Params.PostersChance);
-      DecorateOutsideWallsWithTags(map, m_Params.TagsChance);
+      DecorateOutsideWallsWithPosters(map, Parameters.PostersChance);
+      DecorateOutsideWallsWithTags(map, Parameters.TagsChance);
       return map;
     }
 
@@ -1379,7 +1374,7 @@ restart:
       ItemsDrop(map, b.InsideRect, pt => {
         var mapObjectAt = map.GetMapObjectAt(pt);
         if (mapObjectAt == null || MapObject.IDs.SHOP_SHELF != mapObjectAt.ID) return false;
-        return m_DiceRoller.RollChance(m_Params.ItemInShopShelfChance);
+        return m_DiceRoller.RollChance(Parameters.ItemInShopShelfChance);
       }, pt => MakeRandomShopItem(shopType));
       map.AddZone(MakeUniqueZone(shop_name_image.Key, b.BuildingRect));
       MakeWalkwayZones(map, b);
@@ -3284,6 +3279,12 @@ restart:
 
     private Map GeneratePoliceStation_OfficesLevel(Map surfaceMap)
     {
+      // RS10- doesn't know how many police are hired until fairly late in world generation.
+      // that is, the legacy armory is too small for the *default* start-of-game stock
+      // standard police kit: uniform, radio, flashlight, baton, pistol, 1 clip
+      // 50% of start of game police have shotguns (first step to SWAT layout)
+      // 25% have police jackets
+      // 25% have police riot armors
       const int OFFICES_WIDTH = 20; // these do not space-time scale
       const int OFFICES_HEIGHT = 20;
       Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Offices", surfaceMap.District, OFFICES_WIDTH, OFFICES_HEIGHT, GameMusics.SURFACE, Lighting.LIT);
@@ -3293,7 +3294,7 @@ restart:
       var rect1 = ext_Vector.FromLTRB_short(3, 0, OFFICES_WIDTH, OFFICES_HEIGHT);
       // XXX while this permits 4 rooms vertically, access will be flaky...probably better to have 3
       force_QuadSplit_width = OFFICES_WIDTH - 3 - 8; // Police building codes maximize supplies: width 9, including walls
-      var list = MakeRoomsPlan(map, rect1, 5);
+      var list = MakeRoomsPlan(map, rect1, 6);
 
       KeyValuePair<Data.Model.Item, int>[] stock = {
         new(GameItems.POLICE_JACKET,10),
@@ -4250,7 +4251,7 @@ restart:
     public Actor CreateNewRefugee(int spawnTime, int itemsToCarry)
     {
       Actor actor;
-      if (m_DiceRoller.RollChance(m_Params.PolicemanChance)) {
+      if (m_DiceRoller.RollChance(Parameters.PolicemanChance)) {
         actor = CreateNewPoliceman(spawnTime);
         for (int index = 0; index < itemsToCarry && !actor.Inventory.IsFull; ++index)
           GiveRandomItemToActor(m_DiceRoller, actor, spawnTime);
@@ -4505,14 +4506,14 @@ restart:
       private short m_MapWidth;
       private short m_MapHeight;
       private int m_MinBlockSize;
-      private int m_WreckedCarChance;
+      public const int WreckedCarChance = 10;
       private int m_CHARBuildingChance;
       private int m_ShopBuildingChance;
       private int m_ParkBuildingChance;
-      private int m_PostersChance;
-      private int m_TagsChance;
-      private int m_ItemInShopShelfChance;
-      private int m_PolicemanChance;
+      public const int PostersChance = 2;
+      public const int TagsChance = 2;
+      public const int ItemInShopShelfChance = 100;
+      public const int PolicemanChance = 15;
 
       // map generation is naturally slow, so we can afford to hard-validate even in release mode
       public short MapWidth {
@@ -4541,17 +4542,6 @@ restart:
           if (value < 4 || value > 32)
             throw new ArgumentOutOfRangeException(nameof(MinBlockSize),value,"must be in 4..32");
           m_MinBlockSize = value;
-        }
-      }
-
-      public int WreckedCarChance {
-        get {
-          return m_WreckedCarChance;
-        }
-        set {
-          if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException(nameof(WreckedCarChance),value,"must be in 0..100");
-          m_WreckedCarChance = value;
         }
       }
 
@@ -4585,50 +4575,6 @@ restart:
           if (value < 0 || value > 100)
             throw new ArgumentOutOfRangeException(nameof(CHARBuildingChance),value,"must be in 0..100");
           m_CHARBuildingChance = value;
-        }
-      }
-
-      public int PostersChance {
-        get {
-          return m_PostersChance;
-        }
-        set {
-          if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException(nameof(PostersChance),value,"must be in 0..100");
-          m_PostersChance = value;
-        }
-      }
-
-      public int TagsChance {
-        get {
-          return m_TagsChance;
-        }
-        set {
-          if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException(nameof(TagsChance),value,"must be in 0..100");
-          m_TagsChance = value;
-        }
-      }
-
-      public int ItemInShopShelfChance {
-        get {
-          return m_ItemInShopShelfChance;
-        }
-        set {
-          if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException(nameof(ItemInShopShelfChance),value,"must be in 0..100");
-          m_ItemInShopShelfChance = value;
-        }
-      }
-
-      public int PolicemanChance {
-        get {
-          return m_PolicemanChance;
-        }
-        set {
-          if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException(nameof(PolicemanChance),value,"must be in 0..100");
-          m_PolicemanChance = value;
         }
       }
     }

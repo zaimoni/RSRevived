@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       List<Zone>? full_sheds = null;
 
       for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index) {
-        if (m_DiceRoller.RollChance(m_Params.PolicemanChance)) {
+        if (m_DiceRoller.RollChance(Parameters.PolicemanChance)) {
           Predicate<Point> ok = outside_test;
           // 2022-02-17: Require starting next to a wrecked car.  We'd prefer that it be a police car, but the data
           // for that isn't (yet) in-game.
