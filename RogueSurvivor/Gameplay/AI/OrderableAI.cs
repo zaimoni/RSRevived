@@ -451,6 +451,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             ordai.ClearLastMove();
             continue;
           }
+        }
+        i = _stacks.Count;
+        while(0 < i--) {
           var loc = _stacks[i].Location;
           if (!m_Actor.CanEnter(loc)) {
             _stacks.RemoveAt(i);
