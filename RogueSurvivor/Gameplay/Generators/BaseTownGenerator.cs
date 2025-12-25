@@ -2330,7 +2330,8 @@ restart:
         }
       }
       if (isSurface) {
-        Actor newPoliceman = CreateNewPoliceman(0);
+        // subway cop should have jacket, pistol
+        Actor newPoliceman = CreateNewPoliceman(0, GameItems.POLICE_JACKET, GameItems.PISTOL);
         if (Session.Get.CMDoptionExists("subway-cop")) {
           var home_district_xy = World.Get.Size;
           home_district_xy /= 2;
@@ -3283,8 +3284,10 @@ restart:
       // that is, the legacy armory is too small for the *default* start-of-game stock
       // standard police kit: uniform, radio, flashlight, baton, pistol, 1 clip
       // 50% of start of game police have shotguns (first step to SWAT layout)
-      // 25% have police jackets
-      // 25% have police riot armors
+      // 40% have police jackets
+      // 10% have police riot armors
+      // but the average expected number of patrol police is large (183 for the reference game)
+      // likely want an armory level as this level is not nearly large enough
       const int OFFICES_WIDTH = 20; // these do not space-time scale
       const int OFFICES_HEIGHT = 20;
       Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Offices", surfaceMap.District, OFFICES_WIDTH, OFFICES_HEIGHT, GameMusics.SURFACE, Lighting.LIT);
@@ -3325,7 +3328,16 @@ restart:
             if (!map.IsWalkable(pt) || CountAdjWalls(map, pt) == 0 || map.AnyAdjacent<DoorWindow>(pt)) return;
             var shelf = MakeObjShelf();
             map.PlaceAt(shelf, pt);
-            shelf.Inventory.AddAll(stock_armory());
+            if (new Point(18,18) == pt || new Point(17,18) == pt) {
+              // starter kit
+              shelf.Inventory.AddAll(GameItems.POLICE_RADIO.create());
+              shelf.Inventory.AddAll(GameItems.FLASHLIGHT.create());
+              shelf.Inventory.AddAll(GameItems.TRUNCHEON.create());
+              shelf.Inventory.AddAll(GameItems.POLICE_JACKET.create());
+              shelf.Inventory.AddAll(GameItems.PISTOL.create());
+              shelf.Inventory.AddAll(GameItems.AMMO_LIGHT_PISTOL.create());
+            }
+            else shelf.Inventory.AddAll(stock_armory());
           });
           map.AddZone(MakeUniqueZone("security", rect3));
           if (rect3.Contains(new Point(18,18))) plot_anchor = rect3;
@@ -3364,7 +3376,10 @@ restart:
       Point[] ideal = new Point[5] { new Point(17, 2), new Point(16, 2), new Point(15, 2), new Point(14, 2), new Point(13, 2) };
 
       for (int index = 0; index < 5; ++index) {
-        map.PlaceAt(CreateNewPoliceman(0), in ideal[index]);
+        var newPoliceman = CreateNewPoliceman(0, GameItems.POLICE_RIOT, GameItems.PISTOL);
+        newPoliceman.Take(GameItems.SHOTGUN.create());
+        newPoliceman.Take(GameItems.AMMO_SHOTGUN.create());
+        map.PlaceAt(newPoliceman, in ideal[index]);
       }
 
       // XXX AI by default would "stock up" before charging out to the surface.
@@ -3376,378 +3391,6 @@ restart:
       if (0<impressive_cops.Count) {
         foreach(Actor cop in impressive_cops) map.MoveActorToFirstPosition(cop);
       }
-
-      // if we have a truncheon, we can use it -- get a second one
-      foreach(Actor cop in map.Police.Get) {
-        if (!cop.Inventory.Has(Item_IDs.MELEE_TRUNCHEON)) continue;
-        map.TakeItemType(Item_IDs.MELEE_TRUNCHEON, new(cop));
-      }
-
-      // this is not correct in general; it relies on all game-start inventories having exactly one item and being mapobject
-      bool reserve_uniform(Map m) {
-        var overview = m.ItemOverview();
-        Span<int> counts = stackalloc int[(int)Item_IDs._COUNT];
-        Map.InventoryCounts(overview, counts);
-
-        // these two will not be taken by the SWAT team
-        var radios = counts[(int)Item_IDs.TRACKER_POLICE_RADIO];
-
-        static void transmutate(Inventory inv, Data.Model.Item dest) {
-          inv.RemoveAllQuantity(inv[0]);
-          inv.AddAll(dest.create());
-        }
-
-        bool transmutate_from_radio(Data.Model.Item dest) {
-          if (2 <= radios) {
-            transmutate(overview[Item_IDs.TRACKER_POLICE_RADIO].Last().Value[0], dest);
-            return true;
-          }
-          return false;
-        }
-
-        var light = counts[(int)Item_IDs.LIGHT_FLASHLIGHT];
-        var big_light = counts[(int)Item_IDs.LIGHT_BIG_FLASHLIGHT];
-        var lights = light + big_light;
-
-        bool transmutate_from_light(Data.Model.Item dest) {
-          if (2 <= lights) {
-            if (1 <= light) {
-              transmutate(overview[Item_IDs.LIGHT_FLASHLIGHT].Last().Value[0], dest);
-              return true;
-            }
-//          if (2 <= big_light) {
-              transmutate(overview[Item_IDs.LIGHT_BIG_FLASHLIGHT].Last().Value[0], dest);
-              return true;
-//          }
-          }
-          return false;
-        }
-
-        // we don't care about truncheons, but can transmutate from them
-        var truncheon = counts[(int)Item_IDs.MELEE_TRUNCHEON];
-
-        bool transmutate_from_truncheon(Data.Model.Item dest) {
-          if (3 <= truncheon) {
-            transmutate(overview[Item_IDs.MELEE_TRUNCHEON].Last().Value[0], dest);
-            return true;
-          }
-          return false;
-        }
-
-        var jacket = counts[(int)Item_IDs.ARMOR_POLICE_JACKET];
-        var riot = counts[(int)Item_IDs.ARMOR_POLICE_RIOT];
-        var armors = jacket + riot;
-
-        bool transmutate_from_armor(Data.Model.Item dest) {
-          if (2 <= armors) {
-            if (1 <= jacket) {
-              transmutate(overview[Item_IDs.ARMOR_POLICE_JACKET].Last().Value[0], dest);
-              return true;
-            }
-            if (2 <= riot) {
-              transmutate(overview[Item_IDs.ARMOR_POLICE_RIOT].Last().Value[0], dest);
-              return true;
-            }
-          }
-          return false;
-        }
-
-        var pistol = counts[(int)Item_IDs.RANGED_PISTOL];
-        var pistol_ammo = counts[(int)Item_IDs.AMMO_LIGHT_PISTOL];
-        var pistol_ok = 1 <= pistol && 1 <= pistol_ammo;
-
-        bool transmutate_from_pistol(Data.Model.Item dest) {
-          if (!pistol_ok) return false;
-          if (2 <= pistol && pistol >= pistol_ammo) {
-            transmutate(overview[Item_IDs.RANGED_PISTOL].Last().Value[0], dest);
-            return true;
-          }
-          if (2 <= pistol_ammo && pistol_ammo > pistol) {
-            transmutate(overview[Item_IDs.AMMO_LIGHT_PISTOL].Last().Value[0], dest);
-            return true;
-          }
-          return false;
-        }
-
-        var shotgun = counts[(int)Item_IDs.RANGED_SHOTGUN];
-        var shotgun_ammo = counts[(int)Item_IDs.AMMO_SHOTGUN];
-        var shotgun_ok = 1 <= shotgun && 1 <= shotgun_ammo;
-
-        bool transmutate_from_shotgun(Data.Model.Item dest) {
-          if (!shotgun_ok) return false;
-          if (2 <= shotgun && shotgun >= shotgun_ammo) {
-            transmutate(overview[Item_IDs.RANGED_SHOTGUN].Last().Value[0], dest);
-            return true;
-          }
-          if (2 <= shotgun_ammo && shotgun_ammo > shotgun) {
-            transmutate(overview[Item_IDs.AMMO_SHOTGUN].Last().Value[0], dest);
-            return true;
-          }
-          return false;
-        }
-
-        if (!pistol_ok && !shotgun_ok) {
-          if (1 <= shotgun_ammo) {
-            if (transmutate_from_truncheon(GameItems.SHOTGUN)) return true;
-            if (transmutate_from_radio(GameItems.SHOTGUN)) return true;
-            if (transmutate_from_light(GameItems.SHOTGUN)) return true;
-            if (transmutate_from_armor(GameItems.SHOTGUN)) return true;
-          }
-          if (1 <= pistol_ammo) {
-            if (transmutate_from_truncheon(GameItems.PISTOL)) return true;
-            if (transmutate_from_radio(GameItems.PISTOL)) return true;
-            if (transmutate_from_light(GameItems.PISTOL)) return true;
-            if (transmutate_from_armor(GameItems.PISTOL)) return true;
-          }
-          if (1 <= shotgun) {
-            if (transmutate_from_truncheon(GameItems.AMMO_SHOTGUN)) return true;
-            if (transmutate_from_radio(GameItems.AMMO_SHOTGUN)) return true;
-            if (transmutate_from_light(GameItems.AMMO_SHOTGUN)) return true;
-            if (transmutate_from_armor(GameItems.AMMO_SHOTGUN)) return true;
-          }
-          if (1 <= pistol) {
-            if (transmutate_from_truncheon(GameItems.AMMO_LIGHT_PISTOL)) return true;
-            if (transmutate_from_radio(GameItems.AMMO_LIGHT_PISTOL)) return true;
-            if (transmutate_from_light(GameItems.AMMO_LIGHT_PISTOL)) return true;
-            if (transmutate_from_armor(GameItems.AMMO_LIGHT_PISTOL)) return true;
-          }
-        }
-        if (0 >= armors) {
-            if (transmutate_from_truncheon(GameItems.POLICE_JACKET)) return true;
-            if (transmutate_from_radio(GameItems.POLICE_JACKET)) return true;
-            if (transmutate_from_light(GameItems.POLICE_JACKET)) return true;
-            if (transmutate_from_pistol(GameItems.POLICE_JACKET)) return true;
-            if (transmutate_from_shotgun(GameItems.POLICE_JACKET)) return true;
-        }
-        if (0 >= radios) {
-            if (transmutate_from_truncheon(GameItems.POLICE_RADIO)) return true;
-            if (transmutate_from_light(GameItems.POLICE_RADIO)) return true;
-            if (transmutate_from_armor(GameItems.POLICE_RADIO)) return true;
-            if (transmutate_from_pistol(GameItems.POLICE_RADIO)) return true;
-            if (transmutate_from_shotgun(GameItems.POLICE_RADIO)) return true;
-        }
-        if (0 >= lights) { // might be able to get this en-route
-            if (transmutate_from_truncheon(GameItems.BIG_FLASHLIGHT)) return true;
-            if (transmutate_from_radio(GameItems.BIG_FLASHLIGHT)) return true;
-            if (transmutate_from_armor(GameItems.BIG_FLASHLIGHT)) return true;
-            if (transmutate_from_pistol(GameItems.BIG_FLASHLIGHT)) return true;
-            if (transmutate_from_shotgun(GameItems.BIG_FLASHLIGHT)) return true;
-        }
-
-        return false;
-      }
-
-      while(reserve_uniform(map));
-
-      // armor tuneup
-      foreach(Actor cop in map.Police.Get) {
-        if (cop.IsCarrying(Item_IDs.ARMOR_POLICE_RIOT)) continue;
-        Data.Model.InvOrigin cop_inv = new(cop);
-        if (map.SwapItemTypes(Item_IDs.ARMOR_POLICE_RIOT, Item_IDs.ARMOR_POLICE_JACKET, cop_inv)) continue;
-        if (cop.IsCarrying(Item_IDs.ARMOR_POLICE_JACKET)) continue;
-        map.TakeItemType(Item_IDs.ARMOR_POLICE_JACKET, cop_inv);
-        while(reserve_uniform(map));
-      }
-
-      // should be at inventory 4 (martial arts) or 5 (normal) now
-      // arm for bear
-      // first, try to get a backup gun and clip
-      foreach(Actor cop in map.Police.Get) {
-        if (cop.Inventory.Has(Item_IDs.RANGED_PISTOL)) {
-          if (!map.TakeItemType(Item_IDs.RANGED_SHOTGUN, new(cop))) continue;
-          while(reserve_uniform(map));
-          map.TakeItemType(Item_IDs.AMMO_SHOTGUN, new(cop));
-          while(reserve_uniform(map));
-        } else /* if (a.Inventory.Has(Item_IDs.RANGED_SHOTGUN)) */ {
-          if (!map.TakeItemType(Item_IDs.RANGED_PISTOL, new(cop))) continue;
-          while(reserve_uniform(map));
-          map.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, new(cop));
-          while(reserve_uniform(map));
-        }
-      }
-
-      // then try to top off ammo
-      foreach(Actor cop in map.Police.Get) {
-        if (cop.Inventory.IsFull) continue;
-        if (!cop.Inventory.Has(Item_IDs.AMMO_LIGHT_PISTOL)) {
-          // shotgunner, failed to get full backup
-          map.TakeItemType(Item_IDs.AMMO_SHOTGUN, new(cop));
-          while(reserve_uniform(map));
-          continue;
-        } else if (!cop.Inventory.Has(Item_IDs.AMMO_SHOTGUN)) {
-          // pistol; failed to get full backup
-          map.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, new(cop));
-          while(reserve_uniform(map));
-          continue;
-        } else {
-          // full kit and still has a slot open.  Prefer pistol ammo
-          map.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, new(cop));
-          while(reserve_uniform(map));
-          if (cop.Inventory.IsFull) continue;
-          map.TakeItemType(Item_IDs.AMMO_SHOTGUN, new(cop));
-          while(reserve_uniform(map));
-          continue;
-        }
-      }
-
-      void gather_uniform(Map m) {
-        var overview = m.ItemOverview();
-
-        Dictionary<Item_IDs, Dictionary<Point, List<Inventory> > > already_here = new();
-        Dictionary<Item_IDs, Dictionary<Point, List<Inventory> > > outside = new();
-        foreach(var x in overview) {
-          if (Item_IDs.MELEE_TRUNCHEON == x.Key) continue;
-          foreach(var y in x.Value) {
-            if (plot_anchor.Contains(y.Key)) {
-              if (!already_here.TryGetValue(x.Key, out var cache)) already_here.Add(x.Key, cache = new());
-              cache.Add(y.Key, y.Value);
-            } else {
-              if (!outside.TryGetValue(x.Key, out var cache)) outside.Add(x.Key, cache = new());
-              cache.Add(y.Key, y.Value);
-            }
-          }
-        }
-
-        uint missing_flags = 0;
-        Span<int> counts = stackalloc int[(int)Item_IDs._COUNT];
-        Map.InventoryCounts(already_here, counts);
-
-        // C-style bitflag recording
-        if (0 >= counts[(int)Item_IDs.TRACKER_POLICE_RADIO]) missing_flags += 1;
-        if (0 >= counts[(int)Item_IDs.LIGHT_FLASHLIGHT] + counts[(int)Item_IDs.LIGHT_BIG_FLASHLIGHT]) missing_flags += 2;
-        if (0 >= counts[(int)Item_IDs.ARMOR_POLICE_JACKET] + counts[(int)Item_IDs.ARMOR_POLICE_RIOT]) missing_flags += 4;
-        if (0 >= counts[(int)Item_IDs.RANGED_PISTOL]) missing_flags += 8;
-        if (0 >= counts[(int)Item_IDs.AMMO_LIGHT_PISTOL]) missing_flags += 16;
-        if (0 >= counts[(int)Item_IDs.RANGED_SHOTGUN]) missing_flags += 32;
-        if (0 >= counts[(int)Item_IDs.AMMO_SHOTGUN]) missing_flags += 64;
-        if (0 == (missing_flags & (32 | 64))) {
-            switch(missing_flags & (8 | 16)) {
-            case 8:
-                missing_flags -= 8;
-                break;
-            case 16:
-                missing_flags -= 16;
-                break;
-            }
-        } else if (0 == (missing_flags & (8 | 16))) {
-            switch(missing_flags & (32 | 64)) {
-            case 32:
-                missing_flags -= 32;
-                break;
-            case 64:
-                missing_flags -= 64;
-                break;
-            }
-        }
-        if (0 == missing_flags) return;
-        Map.InventoryCounts(outside, counts);
-
-        // if we do not have a firearm anywhere, ignore its ammo (and vice versa)
-        if (0 >= counts[(int)Item_IDs.RANGED_SHOTGUN] && 32 == (missing_flags & 32)) missing_flags -= (missing_flags & (32 | 64));
-        else if (0 >= counts[(int)Item_IDs.AMMO_SHOTGUN] && 64 == (missing_flags & 64)) missing_flags -= (missing_flags & (32 | 64));
-
-        if (0 >= counts[(int)Item_IDs.RANGED_PISTOL] && 8 == (missing_flags & 32)) missing_flags -= (missing_flags & (8 | 16));
-        else if (0 >= counts[(int)Item_IDs.AMMO_LIGHT_PISTOL] && 16 == (missing_flags & 64)) missing_flags -= (missing_flags & (8 | 16));
-        if (0 == missing_flags) return;
-
-        var containers = m.EmptyContainerInventories(plot_anchor);
-
-        // \todo? transpose logic similar to the transmutate logic, above
-        if (0 != (missing_flags & 1) && 0 < counts[(int)Item_IDs.TRACKER_POLICE_RADIO]) {
-            if (0 < containers.Count) {
-                var last = containers.Count-1;
-                m.TakeItemType(Item_IDs.TRACKER_POLICE_RADIO, containers[last]);
-                containers.RemoveAt(last);
-                missing_flags -= 1;
-                if (0 == missing_flags) return;
-            }
-        }
-
-        if (0 != (missing_flags & 2) && 0 < counts[(int)Item_IDs.LIGHT_BIG_FLASHLIGHT]) {
-            if (0 < containers.Count) {
-                var last = containers.Count-1;
-                m.TakeItemType(Item_IDs.LIGHT_BIG_FLASHLIGHT, containers[last]);
-                containers.RemoveAt(last);
-                missing_flags -= 2;
-                if (0 == missing_flags) return;
-            }
-        }
-
-        if (0 != (missing_flags & 2) && 0 < counts[(int)Item_IDs.LIGHT_FLASHLIGHT]) {
-            if (0 < containers.Count) {
-                var last = containers.Count-1;
-                m.TakeItemType(Item_IDs.LIGHT_FLASHLIGHT, containers[last]);
-                containers.RemoveAt(last);
-                missing_flags -= 2;
-                if (0 == missing_flags) return;
-            }
-        }
-
-        if (0 != (missing_flags & 4) && 0 < counts[(int)Item_IDs.ARMOR_POLICE_RIOT]) {
-            if (0 < containers.Count) {
-                var last = containers.Count-1;
-                m.TakeItemType(Item_IDs.ARMOR_POLICE_RIOT, containers[last]);
-                containers.RemoveAt(last);
-                missing_flags -= 4;
-                if (0 == missing_flags) return;
-            }
-        }
-
-        if (0 != (missing_flags & 4) && 0 < counts[(int)Item_IDs.ARMOR_POLICE_JACKET]) {
-            if (0 < containers.Count) {
-                var last = containers.Count-1;
-                m.TakeItemType(Item_IDs.ARMOR_POLICE_JACKET, containers[last]);
-                containers.RemoveAt(last);
-                missing_flags -= 4;
-                if (0 == missing_flags) return;
-            }
-        }
-
-        if (0 != (missing_flags & 8) && 0 < counts[(int)Item_IDs.RANGED_PISTOL]) {
-            if (0 < containers.Count) {
-                var last = containers.Count-1;
-                m.TakeItemType(Item_IDs.RANGED_PISTOL, containers[last]);
-                containers.RemoveAt(last);
-                missing_flags -= 8;
-                if (0 == missing_flags) return;
-            }
-        }
-
-        if (0 != (missing_flags & 16) && 0 < counts[(int)Item_IDs.AMMO_LIGHT_PISTOL]) {
-            if (0 < containers.Count) {
-                var last = containers.Count-1;
-                m.TakeItemType(Item_IDs.AMMO_LIGHT_PISTOL, containers[last]);
-                containers.RemoveAt(last);
-                missing_flags -= 16;
-                if (0 == missing_flags) return;
-            }
-        }
-
-
-        if (0 != (missing_flags & 32) && 0 < counts[(int)Item_IDs.RANGED_SHOTGUN]) {
-            if (0 < containers.Count) {
-                var last = containers.Count-1;
-                m.TakeItemType(Item_IDs.RANGED_SHOTGUN, containers[last]);
-                containers.RemoveAt(last);
-                missing_flags -= 32;
-                if (0 == missing_flags) return;
-            }
-        }
-
-        if (0 != (missing_flags & 64) && 0 < counts[(int)Item_IDs.AMMO_SHOTGUN]) {
-            if (0 < containers.Count) {
-                var last = containers.Count-1;
-                m.TakeItemType(Item_IDs.AMMO_SHOTGUN, containers[last]);
-                containers.RemoveAt(last);
-                missing_flags -= 64;
-                if (0 == missing_flags) return;
-            }
-        }
-
-        return;
-      }
-
-      gather_uniform(map);
 
       // now, to set up the marching order
       List<Actor> leaders = new();
@@ -4305,7 +3948,7 @@ restart:
       a.Equip(rw);
     }
 
-    public Actor CreateNewPoliceman(int spawnTime)
+    public Actor CreateNewPoliceman(int spawnTime, Data.Model.BodyArmor? armor = null, ItemRangedWeaponModel? rw = null)
     {
       Actor numberedName = GameActors.Policeman.CreateNumberedName(GameFactions.ThePolice, spawnTime);
       DressPolice(m_DiceRoller, numberedName);
@@ -4316,15 +3959,17 @@ restart:
       GiveRandomSkillsToActor(numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.FIREARMS);
       numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
-      CreatePrimaryRanged(numberedName, (m_DiceRoller.RollChance(50) ? GameItems.PISTOL : GameItems.SHOTGUN).create());
+      CreatePrimaryRanged(numberedName, (rw ?? (m_DiceRoller.RollChance(50) ? GameItems.PISTOL : GameItems.SHOTGUN)).create());
       // do not issue truncheon if martial arts would nerf it
       if (0 >= numberedName.MySkills.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Take(GameItems.TRUNCHEON.create());
       numberedName.Take(GameItems.FLASHLIGHT.create());
 //    numberedName.Take(MakeItemPoliceRadio()); // class prop, implicit for police
-      if (m_DiceRoller.RollChance(50)) {
-        var armor = (m_DiceRoller.RollChance(80) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT).create();
-        numberedName.Take(armor);
+      if (null == armor) {
+        if (m_DiceRoller.RollChance(50)) {
+          armor = m_DiceRoller.RollChance(80) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT;
+        }
       }
+      if (null != armor) numberedName.Take(armor.create());
       return numberedName;
     }
 
