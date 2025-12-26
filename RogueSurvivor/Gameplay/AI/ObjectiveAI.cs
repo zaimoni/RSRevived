@@ -758,6 +758,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == act || !act.PerformedBy(m_Actor)) return; // not ours, reject
       if (act is ActionRangedAttack ra && FireMode.RAPID == ra.FMode) {
         _recoil = 1;
+      } else if (act is Engine._Action.RangedAttack ra2 && FireMode.RAPID == ra2.FMode) {
+        _recoil = 1;
       } else {
         _recoil = 0;
       }

@@ -1069,10 +1069,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       dests.RemoveAll(pt => max_LoF>targets[pt]);
     }
 
-    protected List<ItemRangedWeapon> GetAvailableRangedWeapons()
+    protected List<ItemRangedWeapon>? GetAvailableRangedWeapons()
     {
-      IEnumerable<ItemRangedWeapon> tmp_rw = ((!(Directives_nocreate?.CanFireWeapons ?? ActorDirective.CanFireWeapons_default) || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)));
-      return (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
+      if (Directives_nocreate?.CanFireWeapons ?? ActorDirective.CanFireWeapons_default) {
+        return m_Actor.GetAvailableRangedWeapons();
+      }
+      return null;
     }
 
 #nullable enable
@@ -1117,7 +1119,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // Behaviors and support functions
     protected ActorAction ManageMeleeRisk(List<ItemRangedWeapon> available_ranged_weapons)
     {
-        const bool tracing = false; // debugging hook
+//      const bool tracing = false; // debugging hook
+        bool tracing = "Gd. Joseph Thomas" == m_Actor.TheName; // debugging hook
 
         ActorAction tmpAction = null;
         if ((null != _retreat || null != _run_retreat) && null != available_ranged_weapons && null!=_enemies) {
@@ -2153,7 +2156,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         Predicate<Location> closing_in = loc => current_distance > Rules.GridDistance(in loc, in e_loc);
 
-        var first = Engine.Op.MoveStep.outbound(m_Actor.Location, m_Actor, closing_in, false);
+        var first = Engine.Op.MoveStep.outbound(m_Actor.Location, m_Actor, closing_in, true);
         if (null == first) return null;
 
         var last = e_loc.Adjacent(loc => m_Actor.CanEnter(loc));
@@ -2165,12 +2168,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int best_STA = int.MaxValue;
         var STA_cost = STA_delta(0, 1, 0, 0); // one melee attack
         List<Engine._Action.MoveStep> routes = new();
-        foreach(var move in first.Value.Key) {
+        foreach(var move in first.Values()) {
           if (!last.Contains(move.dest)) continue;
           var test_STA = m_Actor.RunningStaminaCost(move.dest);
           if (best_STA < test_STA) continue;
           var act = move.Bind(m_Actor);
-          if (!(act is Engine._Action.MoveStep step)) continue;
+          if (null == act) continue;
           if (best_STA > test_STA) {
             best_STA = test_STA;
             routes.Clear();
@@ -2178,7 +2181,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var dest = move.dest;
           if (!will_tire_after_run) {
             if (!m_Actor.WillTireAfter(STA_cost + m_Actor.RunningStaminaCost(dest))) {
-              routes.Add(new Engine._Action.MoveStep(m_Actor.Location, move.dest, true, m_Actor));
+              routes.Add(act);
               continue;
             }
           }
@@ -2208,10 +2211,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == last) return null;
 
         --current_distance;
-        Dictionary<Location, KeyValuePair<List<Engine.Op.MoveStep>, HashSet<Location>>> intermediate = new();
-        foreach(var origin in first.Value.Value) {
-          var test = Engine.Op.MoveStep.outbound(origin, m_Actor, closing_in, true);
-          if (null != test) intermediate.Add(origin, test.Value);
+        Dictionary<Location, List<KeyValuePair<Location, Engine.Op.MoveStep>>> intermediate = new();
+        foreach(var loc_moves in first) {
+          var test = Engine.Op.MoveStep.outbound(loc_moves.Key, m_Actor, closing_in, true);
+          if (null != test) intermediate.Add(loc_moves.Key, test);
         }
         if (0 >= intermediate.Count) return null;
 
@@ -2220,13 +2223,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Dictionary<Location, int> STA_costs = new();
         Dictionary<Location, ActorAction> steps = new();
         List<KeyValuePair<List<Engine.Op.MoveStep>, ActorAction>> routes = new();
-        foreach(var move in first.Value.Key) {
+        foreach(var move in first.Values()) {
           var act = move.Bind(m_Actor);
           if (null == act) continue;
           var stage = move.dest;
           if (!intermediate.TryGetValue(stage, out var cache)) continue;
           var stage_STA = m_Actor.RunningStaminaCost(stage);
-          foreach(var next_move in cache.Key) {
+          foreach(var next_move in cache.Values()) {
             var dest = next_move.dest;
             if (!STA_costs.TryGetValue(dest, out var dest_cost)) STA_costs.Add(dest, dest_cost = m_Actor.RunningStaminaCost(dest));
             var test_STA = STA_cost + stage_STA + dest_cost + (Rules.STAMINA_COST_RUNNING + m_Actor.NightSTApenalty) - Rules.STAMINA_REGEN_PER_TURN;
@@ -3004,11 +3007,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != _damage_field && _damage_field.ContainsKey(m_Actor.Location.Position)) {
         var steps = Engine.Op.MoveStep.outbound(m_Actor.Location, m_Actor, loc => !_damage_field.ContainsKey(loc.Position), false);
         if (null != steps) {
-            while(0<steps.Value.Key.Count) {
-              var n = Rules.Get.DiceRoller.Roll(0, steps.Value.Key.Count);
-              var act = steps.Value.Key[n].Bind(m_Actor);
+            while(0<steps.Count) {
+              var stage = Rules.Get.DiceRoller.ChooseWithoutReplacement(steps);
+              var act = stage.Value.Bind(m_Actor);
               if (null != act) return act;
-              steps.Value.Key.RemoveAt(n);
             }
         }
       }

@@ -3818,6 +3818,16 @@ final_exit:
       m_Inventory?.RemoveAllQuantity(it);
     }
 
+    public List<ItemRangedWeapon>? GetAvailableRangedWeapons()
+    {
+      if (null == m_Inventory) return null;
+      if (Model.Abilities.AI_NotInterestedInRangedWeapons) return null;
+
+      IEnumerable<ItemRangedWeapon> tmp_rw = m_Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != m_Inventory.GetCompatibleAmmoItem(rw));
+      return (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
+    }
+
+
     // Note that an event-based Sees implementation (anchored in RogueGame) cannot avoid constructing messages
     // even when no players would recieve them.
 #region Event-based Say implementation

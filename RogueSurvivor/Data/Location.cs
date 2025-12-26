@@ -201,6 +201,12 @@ namespace djack.RogueSurvivor.Data
         return (0 < dest.Count) ? dest.ToArray() : null;
      } }
 
+    public bool CurrentlyBlocksRangedAttacks { get {
+        if (StrictHasActorAt) return true;
+        return !MapObject?.IsTransparent ?? false;
+      }
+    }
+
     public bool BlocksLivingPathfinding { get {
         if (!TileModel.IsWalkable) return true;
         var obj = MapObject;

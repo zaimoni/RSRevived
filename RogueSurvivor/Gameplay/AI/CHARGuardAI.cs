@@ -15,6 +15,7 @@ using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -94,11 +95,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _enemies = SortByGridDistance(FilterCurrent(old_enemies));
       if (null == _enemies) AdviseFriendsOfSafety();
 
-      const bool tracing = false; // debugging hook
+//    const bool tracing = false; // debugging hook
+      bool tracing = "Gd. Joseph Thomas" == m_Actor.TheName; // debugging hook
 
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
-#endif
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
       // New objectives system
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
@@ -132,9 +132,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ActorAction tmpAction = null;
 
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == _enemies ? "null == _enemies" : _enemies.Count.ToString()+" enemies"));
-#endif
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == _enemies ? "null == _enemies" : _enemies.Count.ToString()+" enemies"));
 
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
@@ -150,24 +148,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk: "+tmpAction);
-#endif
       if (tracing && null != tmpAction) RogueGame.Game.InfoPopup("ManageMeleeRisk: "+tmpAction.ToString());
       if (null != tmpAction) return tmpAction;
 
       tmpAction = BehaviorEquipWeapon(available_ranged_weapons);
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading: " + tmpAction);
-#endif
       if (tracing && null != tmpAction) RogueGame.Game.InfoPopup("BehaviorEquipWeapon: "+tmpAction.ToString());
       if (null != tmpAction) return tmpAction;
 
       if (null != _enemies) {
         tmpAction = BehaviorFightOrFlee(ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons: " + tmpAction);
-#endif
         if (tracing && null != tmpAction) RogueGame.Game.InfoPopup("BehaviorFightOrFlee: "+tmpAction.ToString());
         if (null != tmpAction) return tmpAction;
       }

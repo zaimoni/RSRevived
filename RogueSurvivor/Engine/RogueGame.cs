@@ -9443,6 +9443,131 @@ namespace djack.RogueSurvivor.Engine
         if (see_attacker || see_defender) ClearOverlays();  // alpha10: if-clause bugfix
     }
 
+    public void DoSingleRangedAttack(Actor attacker, Actor defender, Location[] LoF, int shotCounter)
+    {
+      // stamina penalty is simply copied through from the base ranged attack (calculated below)
+      ref var r_attack = ref attacker.CurrentRangedAttack;
+      attacker.SpendStaminaPoints(r_attack.StaminaPenalty);
+      var rules = Rules.Get;
+
+      if (   r_attack.Kind == AttackKind.FIREARM
+          && (rules.RollChance(World.Get.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN))) {
+        _ForceVisibleToPlayer(attacker, defender)?.RedrawPlayScreen(MakePanopticMessage(attacker, " : weapon jam!"));
+        return;
+      }
+
+        int distance = Rules.InteractionDistance(attacker.Location, defender.Location);
+        if (!(attacker.GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) throw new InvalidOperationException("DoSingleRangedAttack but no equipped ranged weapon");
+        --itemRangedWeapon.Ammo;
+        // RS Alpha 9 considered glass objects perfect ablative armor for the target, but didn't inform the AI accordingly
+        if (DoCheckFireThrough(attacker, LoF)) ++distance;  // XXX \todo distance penalty should be worse the further the object is from the target
+
+        Attack attack = attacker.RangedAttack(distance, defender);
+        Defence defence = defender.Defence;
+        // resolve attack: alpha10
+        int hitValue = (shotCounter == 0 ? attack.HitValue : shotCounter == 1 ? attack.Hit2Value : attack.Hit3Value);
+        int hitRoll = rules.RollSkill(hitValue);
+        int defRoll = rules.RollSkill(defence.Value);
+
+        var a_witness = attacker.PlayersInLOS();
+        var d_witness = defender.PlayersInLOS();
+        var ad_witness = a_witness?.Intersect(d_witness);
+        var a_only_witness = a_witness?.SetDifference(ad_witness);
+        var d_only_witness = d_witness?.SetDifference(ad_witness);
+        KeyValuePair<bool,bool> sees = ForceVisibleToPlayer(attacker, defender, a_only_witness, ad_witness, d_only_witness);
+        PlayerController? a_pc = IsPlayer(attacker) ? attacker.Controller as PlayerController : null;
+        PlayerController? d_pc = IsPlayer(defender) ? defender.Controller as PlayerController : null;
+
+        // backward compatibility
+        bool see_defender = sees.Value;
+        bool see_attacker = sees.Key;
+        bool player_involved = attacker.IsPlayer || defender.IsPlayer;
+        bool display_defender = see_defender || m_MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
+
+        bool player_knows(Actor a) {
+          return     a.Controller.CanSee(defender.Location) // we already checked the attacker visibility, he's the sound origin
+                 && !rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE);  // not clear enough; no message
+        }
+        void react(Actor a) {
+          if (!(a.Controller is OrderableAI ai)) return;  // not that smart (ultimately would want to extend to handler FeralDogAI
+          bool attacker_relevant = a.IsEnemyOf(attacker);
+          bool defender_relevant = a.IsEnemyOf(defender);
+          if (a.Controller is CHARGuardAI) {
+            // CHAR guards generally ignore enemies not within a CHAR office. \todo should not be ignoring threats just outside of the doors
+            // \todo should be much more concerned about threats in *our* CHAR office
+            if (!IsInCHARProperty(attacker.Location)) attacker_relevant = false;
+            if (!IsInCHARProperty(defender.Location)) defender_relevant = false;
+          }
+
+          if (!attacker_relevant && !defender_relevant) return;   // not relevant
+          if (    ai.IsDistracted(ObjectiveAI.ReactionCode.NONE)
+              || !rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE))
+            return;
+          if (!ai.CombatUnready()) {  // \todo should discriminate between cops/soldiers/CHAR guards and civilians here; civilians may avoid even if combat-ready
+            if (a.IsEnemyOf(attacker)) ai.Terminate(attacker);
+            if (a.IsEnemyOf(defender)) ai.Terminate(defender);
+            return;
+          }
+          // \todo: get away from the fighting
+        }
+
+        PropagateSound(attacker.Location, "You hear firing",react,player_knows);
+        if (see_attacker) {
+          AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
+          if (display_defender) AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
+          AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
+        }
+        if (hitRoll > defRoll) {
+          int dmg = rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Shot;
+          if (dmg > 0) {
+            if (defender.TakeDamage(dmg)) {
+              if (see_defender) {
+                AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
+              } else if (see_attacker) {
+                if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
+              }
+              ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              KillActor(attacker, defender, "shot");
+            } else {
+              if (see_defender) {
+                DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, dmg.ToString());
+              } else if (see_attacker) { // yes, no difference between destroying and merely attacking if defender isn't seen
+                if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
+              }
+              ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, attack.Verb.Conjugate(attacker), defender, string.Format(" for {0} damage.", dmg)), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender, string.Format(" for {0} damage.", dmg)), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+              a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            }
+          } else {
+            if (see_defender) {
+              AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+            } else if (see_attacker) {
+              if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
+            }
+            ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+            a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+          }
+        } else {
+          bool are_adjacent = Rules.IsAdjacent(attacker.Location, defender.Location);
+          if (see_defender) {
+            AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+          } else if (see_attacker) {
+            if (are_adjacent) {  // difference between melee range miss and hit is visible, even with firearms
+              if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+            } else {  // otherwise, not visible
+              if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
+            }
+          }
+          ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, (are_adjacent ? VERB_MISS : attack.Verb).Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+          d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, (are_adjacent ? VERB_MISS : attack.Verb).Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+          a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, (are_adjacent ? VERB_MISS : attack.Verb).Conjugate(attacker), defender), player_involved ? DELAY_NORMAL : DELAY_SHORT);
+        }
+        if (see_attacker || see_defender) ClearOverlays();  // alpha10: if-clause bugfix
+    }
+
     private bool DoCheckFireThrough(Actor attacker, List<Point> LoF)
     {
       foreach (Point point in LoF) {
@@ -9457,6 +9582,29 @@ namespace djack.RogueSurvivor.Engine
             }
             if (player2)
               AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(point), SIZE_OF_TILE)));
+            AnimDelay(attacker.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
+          }
+          mapObjectAt.Destroy();
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private bool DoCheckFireThrough(Actor attacker, Location[] LoF)
+    {
+      foreach (var loc in LoF) {
+        var mapObjectAt = loc.MapObject;
+        if (mapObjectAt != null && mapObjectAt.BreaksWhenFiredThrough && (mapObjectAt.BreakState != MapObject.Break.BROKEN && !mapObjectAt.IsWalkable)) {
+          bool player1 = ForceVisibleToPlayer(attacker);
+          bool player2 = player1 ? IsVisibleToPlayer(mapObjectAt) : ForceVisibleToPlayer(mapObjectAt);
+          if (player1 || player2) {
+            if (player1) {
+              AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
+              AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
+            }
+            if (player2)
+              AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(loc), SIZE_OF_TILE)));
             AnimDelay(attacker.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
           mapObjectAt.Destroy();

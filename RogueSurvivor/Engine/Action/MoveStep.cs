@@ -38,10 +38,8 @@ namespace djack.RogueSurvivor.Engine.Op
         public override bool IsSuppressed(Actor a) { return false; }
 
         /// <returns>null, or a Performable action</returns>
-        public override ActorAction? Bind(Actor src) {
-            if (!_Action.MoveStep._CanConstruct(m_Origin, m_NewLocation, is_running, src)) return null;
-            _Action.MoveStep ret = new(m_Origin, m_NewLocation, is_running, src);
-            return ret.IsPerformable() ? ret : null;
+        public override _Action.MoveStep? Bind(Actor src) {
+            return _Action.MoveStep.Cast(m_Origin, m_NewLocation, is_running, src);
         }
 
         public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
@@ -54,43 +52,36 @@ namespace djack.RogueSurvivor.Engine.Op
         public override void Blacklist(HashSet<Location> goals) { }
         public override void Goals(HashSet<Location> goals) { goals.Add(m_Origin); }
 
-        public static KeyValuePair<List<MoveStep>, HashSet<Location>>? outbound(Location origin, Actor who, Predicate<Location> ok, bool run)
+        public static List<KeyValuePair<Location, MoveStep>>? outbound(Location origin, Actor who, Predicate<Location> ok, bool run)
         {
-            List<MoveStep> ret = new();
-            HashSet<Location> next = new();
+            List<KeyValuePair<Location, MoveStep>> ret = new();
 
             origin.ForEachAdjacent(dest => {
-                if (ok(dest) && _Action.MoveStep._CanConstruct(origin, dest, true, who)) {
-                    next.Add(dest);
-                    ret.Add(new MoveStep(origin, dest, run));
+                if (ok(dest)) {
+                    var move = ScheduleCast(origin, dest, run, who);
+                    if (null != move) ret.Add(new(dest, move));
                 }
             });
 
-            return (0 < ret.Count) ? new(ret, next) : null;
+            return (0 < ret.Count) ? ret : null;
         }
 
-        public static KeyValuePair<List<MoveStep>, HashSet<Location>>? inbound(Actor who, Location dest, Predicate<Location> ok, bool run)
-        {
-            List<MoveStep> ret = new();
-            HashSet<Location> next = new();
-
-            dest.ForEachAdjacent(origin => {
-                if (ok(origin) && _Action.MoveStep._CanConstruct(origin, dest, true, who))
-                {
-                    next.Add(origin);
-                    ret.Add(new MoveStep(origin, dest, run));
-                }
-            });
-
-            return (0 < ret.Count) ? new(ret, next) : null;
+        static public MoveStep? ScheduleCast(Location from, Location to, bool run, Actor actor) {
+            if (1 != Rules.InteractionDistance(in from, in to)) return null;
+            if (!actor.CanEnter(from)) return null;
+            if (!actor.CanEnter(to)) return null;
+            if (run && !actor.Model.Abilities.CanRun) return null;
+            return new MoveStep(from, to, run);
         }
+
+
     }
 }
 
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    internal class MoveStep : ActorAction, ActorDest, ActorOrigin
+    public class MoveStep : ActorAction, ActorDest, ActorOrigin
     {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
@@ -105,19 +96,8 @@ namespace djack.RogueSurvivor.Engine._Action
             if (!actor.CanEnter(dest)) throw new InvalidOperationException("must be able to exist at the destination");
         }
 
-        static public bool _CanConstruct(Location from, Location to, bool run, Actor actor) {
-#if DEBUG
-            if (1 != Rules.InteractionDistance(to, from)) return false;
-#endif
-            if (!actor.CanEnter(from)) return false;
-            if (!actor.CanEnter(to)) return false;
-            if (run && !actor.Model.Abilities.CanRun) return false;
-            return true;
-        }
-
-        public MoveStep(Location from, Location to, bool run, Actor actor) : base(actor)
+        private MoveStep(Location from, Location to, bool run, Actor actor) : base(actor)
         {
-            _Ok(in from, in to, actor);
             m_NewLocation = to;
             m_Origin = from;
             is_running = run;
@@ -143,6 +123,21 @@ namespace djack.RogueSurvivor.Engine._Action
                 var test = m_Actor.Location.Map.Denormalize(in m_NewLocation);
                 RogueGame.Game.DoLeaveMap(m_Actor, test.Value.Position);
             } else RogueGame.Game.DoLeaveMap(m_Actor, m_Actor.Location.Position);
+        }
+
+        static public MoveStep? ScheduleCast(Location from, Location to, bool run, Actor actor) {
+            if (1 != Rules.InteractionDistance(in from, in to)) return null;
+            if (!actor.CanEnter(to)) return null;
+            if (!actor.CanEnter(from)) return null;
+            if (run && !actor.Model.Abilities.CanRun) return null;
+            return new MoveStep(from, to, run, actor);
+        }
+
+        static public MoveStep? Cast(Location from, Location to, bool run, Actor actor)
+        {
+            var ret = ScheduleCast(from, to, run, actor);
+            if (null != ret && ret.IsPerformable()) return ret;
+            return null;
         }
     }
 }
