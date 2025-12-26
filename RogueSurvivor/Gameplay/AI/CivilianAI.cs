@@ -222,7 +222,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // \todo change target for using Goal_NextCombatAction to short-circuit unhealthy cowardice (or not, main objective processing is above)
       // this action tests whether enemies are in sight and chooses which action to take based on this
       // useful for assault running, dash-and-shoot, take cover and prepare for dash-and-shoot
-      List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
+      var available_ranged_weapons = m_Actor.GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
       if (null != tmpAction) {

@@ -143,7 +143,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         RogueGame.Game.InfoPopup(m_Actor.Name + "\n" + _enemies[0].Percepted.Name);
       }
 
-      List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
+      var available_ranged_weapons = m_Actor.GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
 #if TRACE_SELECTACTION

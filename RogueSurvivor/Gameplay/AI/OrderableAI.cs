@@ -1069,14 +1069,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       dests.RemoveAll(pt => max_LoF>targets[pt]);
     }
 
-    protected List<ItemRangedWeapon>? GetAvailableRangedWeapons()
-    {
-      if (Directives_nocreate?.CanFireWeapons ?? ActorDirective.CanFireWeapons_default) {
-        return m_Actor.GetAvailableRangedWeapons();
-      }
-      return null;
-    }
-
 #nullable enable
     protected bool HasBehaviorThatRecallsToSurface {
       get {
@@ -1280,7 +1272,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public ActorAction? NoncombatEquipWeapon()
     {
       if (null != _enemies) return null;
-      var available_ranged_weapons = GetAvailableRangedWeapons();
+      var available_ranged_weapons = m_Actor.GetAvailableRangedWeapons();
 #if DEBUG
       if ((null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
 #endif
@@ -1525,7 +1517,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (null != tmpAction) return tmpAction;
         }
 
-        var available_ranged_weapons = GetAvailableRangedWeapons();
+        var available_ranged_weapons = m_Actor.GetAvailableRangedWeapons();
         if (null == available_ranged_weapons) return null;
         if (null == _enemies) return null;
         available_ranged_weapons.OnlyIf(rw => 0<rw.Ammo);   // no reloading (may profile as needing micro-optimization)

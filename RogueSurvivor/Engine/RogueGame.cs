@@ -6393,11 +6393,10 @@ namespace djack.RogueSurvivor.Engine
         ActorDirective directives = ordai.Directives_nocreate ?? new(); // UI, so not as big a deal to thrash GC
         ClearMessages();
         AddMessage(new(string.Format("{0} directives...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        AddMessage(new(string.Format("1. {0} weapons.", directives.CanFireWeapons ? "Fire" : "Don't fire"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new(string.Format("2. {0} grenades.", directives.CanThrowGrenades ? "Throw" : "Don't throw"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new(string.Format("3. {0}.", directives.CanSleep ? "Sleep" : "Don't sleep"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(new(string.Format("4. {0}.", directives.CanTrade ? "Trade" : "Don't trade"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        RedrawPlayScreen(new UI.Message(string.Format("5. {0}.", directives.Courage.to_s()), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new(string.Format("1. {0} grenades.", directives.CanThrowGrenades ? "Throw" : "Don't throw"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new(string.Format("2. {0}.", directives.CanSleep ? "Sleep" : "Don't sleep"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new(string.Format("3. {0}.", directives.CanTrade ? "Trade" : "Don't trade"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        RedrawPlayScreen(new UI.Message(string.Format("4. {0}.", directives.Courage.to_s()), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
         int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
         if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
@@ -6405,18 +6404,15 @@ namespace djack.RogueSurvivor.Engine
           directives = ordai.Directives;    // force live copy
           switch (choiceNumber) {
             case 1:
-              directives.CanFireWeapons = !directives.CanFireWeapons;
-              break;
-            case 2:
               directives.CanThrowGrenades = !directives.CanThrowGrenades;
               break;
-            case 3:
+            case 2:
               directives.CanSleep = !directives.CanSleep;
               break;
-            case 4:
+            case 3:
               directives.CanTrade = !directives.CanTrade;
               break;
-            case 5:
+            case 4:
               switch (directives.Courage) {
                 case ActorCourage.COWARD:
                   directives.Courage = ActorCourage.CAUTIOUS;

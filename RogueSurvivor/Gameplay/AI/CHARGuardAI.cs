@@ -145,7 +145,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
-      var available_ranged_weapons = GetAvailableRangedWeapons();
+      var available_ranged_weapons = m_Actor.GetAvailableRangedWeapons();
 
       tmpAction = CombinatoricCombat();
       if (tracing && null != tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ManageMeleeRisk: "+tmpAction.ToString());

@@ -12,13 +12,11 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   public class ActorDirective
   {
-    public const bool CanFireWeapons_default = true;
     public const bool CanThrowGrenades_default = true;
     public const bool CanSleep_default = true;
     public const bool CanTrade_default = true;
     public const ActorCourage Courage_default = ActorCourage.CAUTIOUS;
 
-    public bool CanFireWeapons = CanFireWeapons_default;
     public bool CanThrowGrenades = CanThrowGrenades_default;
     public bool CanSleep = CanSleep_default;    // may want this indefinitely (useful to disable when appointing guards)
     public bool CanTrade = CanTrade_default;
