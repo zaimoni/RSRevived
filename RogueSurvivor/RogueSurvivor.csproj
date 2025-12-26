@@ -60,6 +60,7 @@
     <Compile Include="Data\IInventory.cs" />
     <Compile Include="Data\Item\PrimedExplosive.cs" />
     <Compile Include="Data\Model\BodyArmor.cs" />
+    <Compile Include="Data\Model\CombatActor.cs" />
     <Compile Include="Data\Model\PrimedExplosive.cs" />
     <Compile Include="Data\Model\Explosive.cs" />
     <Compile Include="Data\Model\InvOrigin.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="Engine\Action\BehavioristABC.cs" />
     <Compile Include="Engine\Action\Chain.cs" />
     <Compile Include="Engine\Action\Choice.cs" />
+    <Compile Include="Engine\Action\MeleeAttack.cs" />
     <Compile Include="Engine\Action\RangedAttack.cs" />
     <Compile Include="Engine\Action\TakeItem.cs" />
     <Compile Include="Engine\Action\TradeItem.cs" />

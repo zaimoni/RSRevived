@@ -10,13 +10,13 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.AI;
+using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Zaimoni.Data;
-
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -145,7 +145,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
-      List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
+      var available_ranged_weapons = GetAvailableRangedWeapons();
+
+      tmpAction = CombinatoricCombat();
+      if (tracing && null != tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ManageMeleeRisk: "+tmpAction.ToString());
+      if (null != tmpAction) return tmpAction;
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
       if (tracing && null != tmpAction) RogueGame.Game.InfoPopup("ManageMeleeRisk: "+tmpAction.ToString());

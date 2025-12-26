@@ -49,6 +49,7 @@ namespace Zaimoni.Data
             case Stage.INIT_SOUND: return "init sound";
             case Stage.RUN_SOUND: return "run sound";
             case Stage.CLEAN_SOUND: return "clean sound";
+            case Stage.RUN_DEBUG: return "run debug";
             default: return "misc";
             }
         }

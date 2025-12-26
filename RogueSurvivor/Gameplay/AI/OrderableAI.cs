@@ -1114,9 +1114,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     static public void AfterRaid() { _lastRaidHeard = null; }
-#nullable restore
 
     // Behaviors and support functions
+    protected ActorAction? CombinatoricCombat() {
+      if (null == enemies_in_FOV) return null;
+
+      var kripke_world_origin = model_now; // starts at one entry; we will be first
+
+//    const bool tracing = false; // debugging hook
+      bool tracing = "Gd. Joseph Thomas" == m_Actor.TheName; // debugging hook
+
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, kripke_world_origin.to_s());
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "run is free move: "+(m_Actor.RunIsFreeMove ? "true" : "false")+" "+m_Actor.ActionPoints.ToString());
+
+      List<KeyValuePair<Actor, KeyValuePair<ItemMeleeWeapon?, List<ItemRangedWeapon>?>>> weapons = new();
+
+      return null;
+    }
+#nullable restore
+
     protected ActorAction ManageMeleeRisk(List<ItemRangedWeapon> available_ranged_weapons)
     {
 //      const bool tracing = false; // debugging hook

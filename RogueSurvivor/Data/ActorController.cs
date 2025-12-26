@@ -162,6 +162,25 @@ namespace djack.RogueSurvivor.Data
     public abstract Dictionary<Location, Actor>? enemies_in_FOV { get; }
     public virtual Dictionary<Location, Data.Model.InvOrigin>? items_in_FOV { get => null; }
 
+    public List<KeyValuePair<double, List<Data.Model.CombatActor>>>? model_now { get {
+      List<Data.Model.CombatActor> stage = new();
+
+      var who = friends_in_FOV;
+      if (null != who) foreach(var a in who) stage.Add(new(a.Value));
+
+      who = enemies_in_FOV;
+      if (null != who) foreach(var a in who) stage.Add(new(a.Value));
+
+      if (0 >= stage.Count) return null;
+
+      stage.Sort(Data.Model.CombatActor.CompareAP);
+      stage.Insert(0, new(m_Actor));
+
+      List<KeyValuePair<double, List<Data.Model.CombatActor>>> ret = new();
+      ret.Add(new(1, stage));
+      return ret;
+    } }
+
     public virtual bool IsEngaged { get => null!=enemies_in_FOV; }
     public virtual bool InCombat { get => IsEngaged; }
 
