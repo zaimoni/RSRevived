@@ -79,9 +79,9 @@ namespace djack.RogueSurvivor.Data.Model
                     if (en.NextMoveLostWithoutRunOrWait) {
                         Engine._Action.RangedAttack.Coverage(en, domain, Engine.Actions.FireMode.RAPID, ready_rw, direct);
                     } else if (en.RunIsFreeMove) {
-                        Engine._Action.RangedAttack.Coverage(en, domain, ready_rw, direct, double_attack, dash_attack);
+                        Engine._Action.RangedAttack.Coverage(en, domain, en.ready_rw, direct, double_attack, dash_attack);
                     } else {
-                        Engine._Action.RangedAttack.Coverage(en, domain, (0==en.Recoil ? Engine.Actions.FireMode.RAPID : Engine.Actions.FireMode.AIMED), ready_rw, direct);
+                        Engine._Action.RangedAttack.Coverage(en, domain, (0==en.Recoil ? Engine.Actions.FireMode.RAPID : Engine.Actions.FireMode.AIMED), en.ready_rw, direct);
                     }
                 }
             }

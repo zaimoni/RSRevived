@@ -12,7 +12,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using Zaimoni.Data;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -142,6 +142,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         RogueGame.Game.PanViewportTo(m_Actor);
         RogueGame.Game.InfoPopup(m_Actor.Name + "\n" + _enemies[0].Percepted.Name);
       }
+
+      tmpAction = CombinatoricCombat();
+      if (tracing && null != tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "CombinatoricCombat: " + tmpAction.ToString());
+      if (null != tmpAction) return tmpAction;
 
       var available_ranged_weapons = m_Actor.GetAvailableRangedWeapons();
 
