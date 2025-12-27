@@ -25,6 +25,7 @@ namespace djack.RogueSurvivor.Data
     AFTERNOON,
   }
 
+// 2025-12-27: won't build if this is a struct
   [Serializable]
   public class WorldTime : ISerializable
     {

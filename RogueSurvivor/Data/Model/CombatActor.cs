@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Data.Model
             m_StaminaPoints = src.StaminaPoints;
             m_Location = src.Location;
             m_ActionPoints = src.ActionPoints;
-            time = src.Location.Map.LocalTime;
+            time = new(src.Location.Map.LocalTime); // must be value copy
             _recoil = (who.Controller as Gameplay.AI.ObjectiveAI)?.Recoil ?? 0;
 
             normalizeAP();
