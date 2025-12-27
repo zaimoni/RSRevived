@@ -14,8 +14,8 @@ namespace djack.RogueSurvivor.Engine._Action
 {
     public class RangedAttack : ActorAction, CombatAction
     {
-        private Location src;
-        private Location dest;
+        public readonly Location src;
+        public readonly Location dest;
         private Location[] LoF;
         private ItemRangedWeapon rw;
         public readonly FireMode FMode;
@@ -95,6 +95,8 @@ namespace djack.RogueSurvivor.Engine._Action
 
         static public RangedAttack? ScheduleCast(Actor actor, Location dest, FireMode mode, ItemRangedWeapon? rw = null, Location? origin = null) {
             Location src = null == origin ? actor.Location : origin.Value;
+            if (null == rw) rw = actor.GetEquippedWeapon() as ItemRangedWeapon;
+            if (null == rw) return null;
             var test = LOS.AbstractFireLine(src, dest);
             if (null == test) return null;
             return new RangedAttack(actor, rw, src, dest, mode, test);
@@ -109,6 +111,47 @@ namespace djack.RogueSurvivor.Engine._Action
             if (null == test) return null;
             var ret = new RangedAttack(actor, rw, src, dest, mode, test);
             return ret.IsPerformable() ? ret : null;
+        }
+
+        static public void Coverage(Data.Model.CombatActor en, List<Location> dests, FireMode mode, List<ItemRangedWeapon> rws, List<Engine.Actions.CombatAction> catalog)
+        {
+            Location src = en.Location;
+            foreach (var dest in dests) {
+                var test = LOS.AbstractFireLine(src, dest);
+                if (null == test) continue;
+                foreach (var rw in rws) {
+                    if (test.Length > rw.Model.Attack.Range) continue;
+                    catalog.Add(new RangedAttack(en.who, rw, src, dest, mode, test));
+                }
+            }
+        }
+
+        static public void Coverage(Data.Model.CombatActor en, List<Location> dests, List<ItemRangedWeapon> rws, List<Engine.Actions.CombatAction> catalog, List<KeyValuePair<Engine.Actions.CombatAction, Engine.Actions.CombatAction>> double_attack, List<KeyValuePair<Engine._Action.MoveStep, Engine.Actions.CombatAction>> dash_attack)
+        {
+            Location src = en.Location;
+            foreach (var dest in dests) {
+                var test = LOS.AbstractFireLine(src, dest);
+                if (null == test) continue;
+                foreach (var rw in rws) {
+                    if (test.Length > rw.Model.Attack.Range) continue;
+                    var aimed = new RangedAttack(en.who, rw, src, dest, FireMode.AIMED, test);
+                    catalog.Add(aimed);
+                    var rapid = new RangedAttack(en.who, rw, src, dest, FireMode.RAPID, test);
+                    double_attack.Add(new(rapid, rapid));
+                    double_attack.Add(new(rapid, aimed));
+                    var dash = en.RunSteps;
+                    if (null == dash) continue;
+                    foreach (var move in dash) {
+                        var snipe = ScheduleCast(en.who, dest, FireMode.RAPID, rw, move.dest);
+                        if (null == snipe) continue;
+                        dash_attack.Add(new(move, snipe));
+                    }
+                }
+            }
+        }
+
+        public override string ToString() {
+            return m_Actor.Name+": "+FMode.ToString()+" "+rw.ToString() +" from "+src.ToString()+" to "+dest.ToString();
         }
     }
 }

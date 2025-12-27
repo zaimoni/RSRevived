@@ -1111,24 +1111,78 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? CombinatoricCombat() {
       if (null == enemies_in_FOV) return null;
 
+      const bool tracing = false; // debugging hook
+
       var kripke_world_origin = model_now; // starts at one entry; we will be first
-
-//    const bool tracing = false; // debugging hook
-      bool tracing = "Gd. Joseph Thomas" == m_Actor.TheName; // debugging hook
-
       if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, kripke_world_origin.to_s());
-      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "run is free move: "+(m_Actor.RunIsFreeMove ? "true" : "false")+" "+m_Actor.ActionPoints.ToString());
 
-      List<KeyValuePair<Actor, KeyValuePair<ItemMeleeWeapon?, List<ItemRangedWeapon>?>>> weapons = new();
+      var self = kripke_world_origin![0].Value[0];
+      List<Data.Model.CombatActor> others = new(kripke_world_origin![0].Value); // intentional value copy
+      others.RemoveAt(0);
 
+      var damage_field = self.DamageField(others);
+      if (tracing) {
+        Logger.WriteLine(Logger.Stage.RUN_DEBUG, "direct attacks: " + damage_field.Key.Count.ToString());
+        Logger.WriteLine(Logger.Stage.RUN_DEBUG, "double attacks: " + damage_field.Value.Key.Count.ToString());
+        Logger.WriteLine(Logger.Stage.RUN_DEBUG, "dash attacks: " + damage_field.Value.Value.Count.ToString());
+      }
+
+      List<Location> safe = new();
+      var steps = self.RunSteps;
+      if (null != steps) {
+        foreach(var step in steps) {
+          bool fail = false;
+          foreach(var x in damage_field.Key) {
+            if (x is RangedAttack ra) {
+              if (ra.dest == step.dest) {
+                fail = true;
+                break;
+              }
+            }
+          }
+          if (fail) continue;
+          foreach(var x in damage_field.Value.Value) {
+            if (x.Value is RangedAttack ra) {
+              if (ra.dest == step.dest) {
+                fail = true;
+                break;
+              }
+            }
+          }
+          if (fail) continue;
+          safe.Add(step.dest);
+        }
+        if (0<safe.Count) Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name+": safe: " + safe.to_s());
+      }
+
+      var attack_field = self.AttackField(others);
+      int i = attack_field.Key.Count;
+      while(0 <= --i) {
+        if (!(attack_field.Key[i] as ActorAction)!.IsPerformable()) attack_field.Key.RemoveAt(i);
+      }
+      i = attack_field.Value.Key.Count;
+      while(0 <= --i) {
+        if (!(attack_field.Value.Key[i].Key as ActorAction)!.IsPerformable()) attack_field.Value.Key.RemoveAt(i);
+      }
+      if (0 == safe.Count && 0 == attack_field.Value.Key.Count && 0 == attack_field.Value.Value.Count) {
+        if (1==attack_field.Key.Count) return attack_field.Key[0] as ActorAction;
+      }
+      if (tracing) {
+        Logger.WriteLine(Logger.Stage.RUN_DEBUG, "direct attacks: " + attack_field.Key.Count.ToString());
+        Logger.WriteLine(Logger.Stage.RUN_DEBUG, "double attacks: " + attack_field.Value.Key.Count.ToString());
+        Logger.WriteLine(Logger.Stage.RUN_DEBUG, "dash attacks: " + attack_field.Value.Value.Count.ToString());
+        if (0<attack_field.Key.Count) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "direct attacks: " + attack_field.Key.to_s());
+      }
+#if DEBUG
+      Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name+ " fell through CombinatoricCombat: "+safe.Count.ToString()+"/" + attack_field.Key.Count.ToString() + "/" + attack_field.Value.Key.Count.ToString() + "/" + attack_field.Value.Value.Count.ToString());
+#endif
       return null;
     }
 #nullable restore
 
     protected ActorAction ManageMeleeRisk(List<ItemRangedWeapon> available_ranged_weapons)
     {
-//      const bool tracing = false; // debugging hook
-        bool tracing = "Gd. Joseph Thomas" == m_Actor.TheName; // debugging hook
+        const bool tracing = false; // debugging hook
 
         ActorAction tmpAction = null;
         if ((null != _retreat || null != _run_retreat) && null != available_ranged_weapons && null!=_enemies) {

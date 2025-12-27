@@ -76,9 +76,9 @@ namespace djack.RogueSurvivor.Data
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
     public const int ROT_HUNGRY_LEVEL = 2*WorldTime.TURNS_PER_DAY;
     public const int SLEEP_SLEEPY_LEVEL = 30*WorldTime.TURNS_PER_HOUR;
-    private const int STAMINA_INFINITE = 99; // Marker.  !Abilities.CanTire typically is checked, so value is almost immaterial.
+    public const int STAMINA_INFINITE = 99; // Marker.  !Abilities.CanTire typically is checked, so value is almost immaterial.
     public const int STAMINA_MIN_FOR_ACTIVITY = 10; // would space-time scale if stamina itself space-time scaled
-    private const int NIGHT_STA_PENALTY = 2;
+    public const int NIGHT_STA_PENALTY = 2;
     public const int STAMINA_REGEN_WAIT = 2;
     public const int TRUST_BOND_THRESHOLD = Rules.TRUST_MAX;
     public const int TRUST_TRUSTING_THRESHOLD = 0 /* RS: 12*WorldTime.TURNS_PER_HOUR */;
@@ -3823,10 +3823,16 @@ final_exit:
       if (null == m_Inventory) return null;
       if (Model.Abilities.AI_NotInterestedInRangedWeapons) return null;
 
-      IEnumerable<ItemRangedWeapon> tmp_rw = m_Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != m_Inventory.GetCompatibleAmmoItem(rw));
-      return (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
+      return m_Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != m_Inventory.GetCompatibleAmmoItem(rw));
     }
 
+    public List<ItemRangedWeapon>? ReadyRangedWeapons()
+    {
+      if (null == m_Inventory) return null;
+      if (Model.Abilities.AI_NotInterestedInRangedWeapons) return null;
+
+      return m_Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo);
+    }
 
     // Note that an event-based Sees implementation (anchored in RogueGame) cannot avoid constructing messages
     // even when no players would recieve them.

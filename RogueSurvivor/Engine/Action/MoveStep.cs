@@ -139,5 +139,20 @@ namespace djack.RogueSurvivor.Engine._Action
             if (null != ret && ret.IsPerformable()) return ret;
             return null;
         }
+
+        static public List<MoveStep>? RunFrom(Location from, Actor actor) {
+            if (!actor.CanEnter(from)) return null;
+            if (!actor.Model.Abilities.CanRun) return null;
+
+            List<MoveStep> ret = new();
+            foreach (var dir in Direction.COMPASS) {
+                var to = from + dir;
+                if (!actor.CanEnter(ref to)) continue;
+                var move = new MoveStep(from, to, true, actor);
+                if (!move.IsPerformable()) continue;
+                ret.Add(move);
+            }
+            return 0<ret.Count ? ret : null;
+        }
     }
 }

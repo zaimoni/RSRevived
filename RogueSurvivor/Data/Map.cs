@@ -3406,7 +3406,7 @@ retry:
 
     public override string ToString()
     {
-      return Name+" ("+Width.ToString()+","+Height.ToString()+") in "+District.Name;
+      return Name+" ("+Width.ToString()+","+Height.ToString()+")"+(this == District.EntryMap ? "" : " in "+District.Name);
     }
   }
 }

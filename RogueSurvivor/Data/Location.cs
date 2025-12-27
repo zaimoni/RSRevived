@@ -161,10 +161,12 @@ namespace djack.RogueSurvivor.Data
     } }
 #nullable restore
 
+    public ZoneLoc LinfCircle(int radius) => new(Map, Position.LinfCircle(radius));
+
     // AI should have similar UI to player
     // analogs of various viewing rectangles for AI use
-    public Rectangle ViewRect { get { return new Rectangle(Position - (Point)Engine.RogueGame.VIEW_RADIUS, (Point)(1 + 2 * Engine.RogueGame.VIEW_RADIUS)); } }
-    public ZoneLoc View { get { return new ZoneLoc(Map,new Rectangle(Position - (Point)Engine.RogueGame.VIEW_RADIUS, (Point)(1 + 2 * Engine.RogueGame.VIEW_RADIUS))); } }
+    public Rectangle ViewRect { get => Position.LinfCircle(Engine.RogueGame.VIEW_RADIUS); }
+    public ZoneLoc View { get => LinfCircle(Engine.RogueGame.VIEW_RADIUS); }
 
     public ZoneLoc MiniMapView { get {
       if (0 >= District.UsesCrossDistrictView(Map)) {

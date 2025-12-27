@@ -26,9 +26,9 @@ namespace Zaimoni.Data
         IMultiplyOperators<Vector2D<T>, T, Vector2D<T>>,
         ISubtractionOperators<Vector2D<T>, Vector2D<T>, Vector2D<T>>,
         IUnaryNegationOperators<Vector2D<T>, Vector2D<T>>
-        where T :INumberBase<T>,
-                IMinMaxValue<T>,
-                IConvertible
+        where T : INumberBase<T>,
+                  IMinMaxValue<T>,
+                  IConvertible
     {
         public T X;
         public T Y;
@@ -263,10 +263,10 @@ namespace Zaimoni.Data
 
     [Serializable]
     public record struct Box2D<T> : Fn_to_s
-        where T:IConvertible,
-                IComparable<T>,
-                System.Numerics.INumberBase<T>,
-                System.Numerics.IMinMaxValue<T>
+        where T : IConvertible,
+                  IComparable<T>,
+                  System.Numerics.INumberBase<T>,
+                  System.Numerics.IMinMaxValue<T>
     {
         private Vector2D<T> _anchor;
         private Vector2D<T> _dim;
@@ -377,7 +377,7 @@ namespace Zaimoni.Data
         public bool Contains(Vector2D<T> src) => ContainsX(src.X) && ContainsY(src.Y);
 
         public bool Contains(Box2D<T> src) {
-            return 0 >= Left.CompareTo(src.Left) && 0 >= src.Right.CompareTo(Right) && 0>= Top.CompareTo(src.Top)
+            return 0 >= Left.CompareTo(src.Left) && 0 >= src.Right.CompareTo(Right) && 0 >= Top.CompareTo(src.Top)
                 && 0 >= src.Bottom.CompareTo(Bottom);
         }
 
@@ -446,7 +446,7 @@ namespace Zaimoni.Data
                 pt.Y = Bottom - T.One;
                 doFn(pt);
             }
-            if (0 <= (T.One+T.One).CompareTo(Height)) return;
+            if (0 <= (T.One + T.One).CompareTo(Height)) return;
             for (pt.Y = Top + T.One; 0 > pt.Y.CompareTo(Bottom - T.One); ++pt.Y) {
                 pt.X = Left;
                 doFn(pt);
@@ -519,9 +519,9 @@ namespace Zaimoni.Data
             throw new InvalidOperationException("unimplemented");
         }
 
-        static public Box2D<short> FromLTRB_short<U>(U left, U top, U right, U bottom) where U:IConvertible, ISubtractionOperators<U,U,U>
+        static public Box2D<short> FromLTRB_short<U>(U left, U top, U right, U bottom) where U : IConvertible, ISubtractionOperators<U, U, U>
         {
-            return new Box2D<short>(left.To<U,short>(), top.To<U, short>(), (right - left).To<U, short>(), (bottom - top).To<U, short>());
+            return new Box2D<short>(left.To<U, short>(), top.To<U, short>(), (right - left).To<U, short>(), (bottom - top).To<U, short>());
         }
 
         public static void Normalize(ref this Vector2D<float> src) {
@@ -539,7 +539,7 @@ namespace Zaimoni.Data
             hull[0] = Vector2D<short>.MaxValue;
             hull[1] = Vector2D<short>.MinValue;
             short tmp;
-            foreach(var pt in src) {
+            foreach (var pt in src) {
                 if ((tmp = pt.X) < hull[0].X) hull[0].X = tmp;
                 if (tmp > hull[1].X) hull[1].X = tmp;
                 if ((tmp = pt.Y) < hull[0].Y) hull[0].Y = tmp;
@@ -550,6 +550,12 @@ namespace Zaimoni.Data
                 return true;
             }
             return false;
+        }
+
+        // Lesbegue-infinity circle, is a Euclidean square
+        public static Box2D<short> LinfCircle(this Vector2D<short> origin, int radius)
+        {
+            return new(origin - (Vector2D<short>)radius, (Vector2D<short>)(1 + 2 * radius));
         }
     }
 }

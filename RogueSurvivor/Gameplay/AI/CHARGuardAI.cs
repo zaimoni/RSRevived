@@ -95,8 +95,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _enemies = SortByGridDistance(FilterCurrent(old_enemies));
       if (null == _enemies) AdviseFriendsOfSafety();
 
-//    const bool tracing = false; // debugging hook
-      bool tracing = "Gd. Joseph Thomas" == m_Actor.TheName; // debugging hook
+      const bool tracing = false; // debugging hook
 
       if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
       // New objectives system
