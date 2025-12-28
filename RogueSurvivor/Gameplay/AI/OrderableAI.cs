@@ -1128,53 +1128,71 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       List<Location> safe = new();
-      var steps = self.RunSteps;
-      if (null != steps) {
-        foreach(var step in steps) {
+
+      static bool looks_risky(CombatAction x, Location loc) {
+          if (x is RangedAttack ra) {
+              if (ra.dest == loc) return true;
+          } else if (x is MeleeAttack ma) {
+              if (ma.dest == loc) return true;
+          }
+          return false;
+      }
+
+      void looks_safe(Location loc) {
           bool fail = false;
           foreach(var x in damage_field.Key) {
-            if (x is RangedAttack ra) {
-              if (ra.dest == step.dest) {
-                fail = true;
-                break;
-              }
-            }
+            if (looks_risky(x, loc)) return;
           }
-          if (fail) continue;
           foreach(var x in damage_field.Value.Value) {
-            if (x.Value is RangedAttack ra) {
-              if (ra.dest == step.dest) {
-                fail = true;
-                break;
-              }
-            }
+            if (looks_risky(x.Value, loc)) return;
           }
-          if (fail) continue;
-          safe.Add(step.dest);
-        }
-        if (0<safe.Count) Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name+": safe: " + safe.to_s());
+          safe.Add(loc);
+      }
+      looks_safe(m_Actor.Location);
+
+      var steps = self.RunSteps;
+      if (null != steps) {
+        foreach(var step in steps) looks_safe(step.dest);
+      }
+      if (0<safe.Count) {
+        Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name+": safe: " + safe.to_s());
+        if (safe.Contains(m_Actor.Location)) Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name + " can go all-out");
+        else Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name + " should dash");
       }
 
       var attack_field = self.AttackField(others);
-      int i = attack_field.Key.Count;
+      // unpack attack field, likely helps bytecode size
+      var attacks = attack_field.Key;
+      var double_attacks = attack_field.Value.Key;
+      var dash_attacks = attack_field.Value.Value.Key;
+      var potshots = attack_field.Value.Value.Value;
+
+      bool is_safe = safe.Contains(m_Actor.Location);
+
+      int i = attacks.Count;
       while(0 <= --i) {
-        if (!(attack_field.Key[i] as ActorAction)!.IsPerformable()) attack_field.Key.RemoveAt(i);
+        if (!(attacks[i] as ActorAction)!.IsPerformable()) attacks.RemoveAt(i);
       }
-      i = attack_field.Value.Key.Count;
+      i = double_attacks.Count;
       while(0 <= --i) {
-        if (!(attack_field.Value.Key[i].Key as ActorAction)!.IsPerformable()) attack_field.Value.Key.RemoveAt(i);
+        if (!(double_attacks[i].Key as ActorAction)!.IsPerformable()) double_attacks.RemoveAt(i);
       }
-      if (0 == safe.Count && 0 == attack_field.Value.Key.Count && 0 == attack_field.Value.Value.Count) {
-        if (1==attack_field.Key.Count) return attack_field.Key[0] as ActorAction;
+
+      if (0 == attack_field.Value.Key.Count && 0 == attack_field.Value.Value.Key.Count && 0 == attack_field.Value.Value.Value.Count) {
+           if (is_safe || 0 == safe.Count) {
+               if (1==attack_field.Key.Count) return attack_field.Key[0] as ActorAction;
+           }
       }
       if (tracing) {
         Logger.WriteLine(Logger.Stage.RUN_DEBUG, "direct attacks: " + attack_field.Key.Count.ToString());
         Logger.WriteLine(Logger.Stage.RUN_DEBUG, "double attacks: " + attack_field.Value.Key.Count.ToString());
-        Logger.WriteLine(Logger.Stage.RUN_DEBUG, "dash attacks: " + attack_field.Value.Value.Count.ToString());
+        Logger.WriteLine(Logger.Stage.RUN_DEBUG, "dash attacks: " + attack_field.Value.Value.Key.Count.ToString());
+        Logger.WriteLine(Logger.Stage.RUN_DEBUG, "potshots: " + attack_field.Value.Value.Value.Count.ToString());
         if (0<attack_field.Key.Count) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "direct attacks: " + attack_field.Key.to_s());
       }
-#if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name+ " fell through CombinatoricCombat: "+safe.Count.ToString()+"/" + attack_field.Key.Count.ToString() + "/" + attack_field.Value.Key.Count.ToString() + "/" + attack_field.Value.Value.Count.ToString());
+#if PROTOTYPE
+      Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name+ " fell through CombinatoricCombat: "+safe.Count.ToString()+"/" + attack_field.Key.Count.ToString() + "/" + attack_field.Value.Key.Count.ToString() + "/" + attack_field.Value.Value.Key.Count.ToString() + "/" + attack_field.Value.Value.Value.Count.ToString());
+      throw new InvalidOperationException("tracing");
 #endif
       return null;
     }

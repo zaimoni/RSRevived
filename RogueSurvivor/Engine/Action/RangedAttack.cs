@@ -2,7 +2,6 @@
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Gameplay.AI;
-using Microsoft.VisualBasic.Logging;
 using System;
 using System.Collections.Generic;
 
@@ -17,7 +16,7 @@ namespace djack.RogueSurvivor.Engine._Action
         public readonly Location src;
         public readonly Location dest;
         private Location[] LoF;
-        private ItemRangedWeapon rw;
+        public readonly ItemRangedWeapon rw;
         public readonly FireMode FMode;
 
         private RangedAttack(Actor actor, ItemRangedWeapon _rw, Location origin, Location target, FireMode mode, Location[] line) : base(actor)
@@ -99,6 +98,7 @@ namespace djack.RogueSurvivor.Engine._Action
             if (null == rw) return null;
             var test = LOS.AbstractFireLine(src, dest);
             if (null == test) return null;
+            if (rw.Model.Attack.Range < test.Length) return null;
             return new RangedAttack(actor, rw, src, dest, mode, test);
         }
 
@@ -109,6 +109,7 @@ namespace djack.RogueSurvivor.Engine._Action
             if (null == rw) return null;
             var test = LOS.AbstractFireLine(src, dest);
             if (null == test) return null;
+            if (rw.Model.Attack.Range < test.Length) return null;
             var ret = new RangedAttack(actor, rw, src, dest, mode, test);
             return ret.IsPerformable() ? ret : null;
         }
@@ -126,7 +127,7 @@ namespace djack.RogueSurvivor.Engine._Action
             }
         }
 
-        static public void Coverage(Data.Model.CombatActor en, List<Location> dests, List<ItemRangedWeapon> rws, List<Engine.Actions.CombatAction> catalog, List<KeyValuePair<Engine.Actions.CombatAction, Engine.Actions.CombatAction>> double_attack, List<KeyValuePair<Engine._Action.MoveStep, Engine.Actions.CombatAction>> dash_attack)
+        static public void Coverage(Data.Model.CombatActor en, List<Location> dests, List<ItemRangedWeapon> rws, List<Engine.Actions.CombatAction> catalog, List<KeyValuePair<Engine.Actions.CombatAction, Engine.Actions.CombatAction>> double_attack, List<KeyValuePair<Engine._Action.MoveStep, Engine.Actions.CombatAction>> dash_attack, List<KeyValuePair<Engine.Actions.CombatAction, Engine._Action.MoveStep>> potshot)
         {
             Location src = en.Location;
             foreach (var dest in dests) {
@@ -142,6 +143,7 @@ namespace djack.RogueSurvivor.Engine._Action
                     var dash = en.RunSteps;
                     if (null == dash) continue;
                     foreach (var move in dash) {
+                        potshot.Add(new(rapid, move));
                         var snipe = ScheduleCast(en.who, dest, FireMode.RAPID, rw, move.dest);
                         if (null == snipe) continue;
                         dash_attack.Add(new(move, snipe));
@@ -151,7 +153,7 @@ namespace djack.RogueSurvivor.Engine._Action
         }
 
         public override string ToString() {
-            return m_Actor.Name+": "+FMode.ToString()+" "+rw.ToString() +" from "+src.ToString()+" to "+dest.ToString();
+            return FMode.ToString()+" "+rw.ToString() +" from "+src.ToString()+" to "+dest.ToString();
         }
     }
 }

@@ -4,6 +4,7 @@ using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Intrinsics.Arm;
@@ -30,6 +31,11 @@ namespace djack.RogueSurvivor.Data.Model
         private readonly List<Engine._Action.MoveStep>? run_steps;
         private readonly ZoneLoc runaway;
         private readonly List<Engine.Items.ItemRangedWeapon>? ready_rw;
+#if PROTOTYPE
+        private readonly DenormalizedProbability<int> defense_dist;
+        private readonly KeyValuePair<DenormalizedProbability<int>,
+                         KeyValuePair<DenormalizedProbability<int>, DenormalizedProbability<int>?>> melee_dist;
+#endif
 
         public sbyte Recoil { get => _recoil; }
         public IEnumerable<Engine._Action.MoveStep> RunSteps => run_steps;
@@ -48,6 +54,15 @@ namespace djack.RogueSurvivor.Data.Model
             run_steps = Engine._Action.MoveStep.RunFrom(src.Location, src);
             runaway = m_Location.LinfCircle(RunIsFreeMove ? 2 : 1);
             ready_rw = who.ReadyRangedWeapons();
+#if PROTOTYPE
+            defense_dist = Rules.SkillProbabilityDistribution(who.Defence.Value);
+            var melee_attack = who.BestMeleeAttack();
+            var m_a_dist = Rules.SkillProbabilityDistribution(melee_attack.HitValue);
+            var m_dam_dist = Rules.SkillProbabilityDistribution(melee_attack.DamageValue);
+            var necro_dam = who.DamageBonusVsUndeads;
+            var m_dam_undead_dist = (0!=necro_dam ? Rules.SkillProbabilityDistribution(melee_attack.DamageValue+ necro_dam) : m_dam_dist);
+            melee_dist = new(m_a_dist, new(m_dam_dist, m_dam_undead_dist));
+#endif
         }
 
         public Location Location
@@ -66,10 +81,18 @@ namespace djack.RogueSurvivor.Data.Model
             }
         }
 
-        public KeyValuePair<List<Engine.Actions.CombatAction>, KeyValuePair<List<KeyValuePair<Engine.Actions.CombatAction, Engine.Actions.CombatAction>>, List<KeyValuePair<Engine._Action.MoveStep, Engine.Actions.CombatAction>>>> DamageField(List<Data.Model.CombatActor> others) {
+        private bool RapidRecoilOk(Engine.Items.ItemRangedWeapon rw) {
+            var test = rw.Model.Attack;
+            return 4 >= test.HitValue - test.Hit3Value;
+        }
+
+        public KeyValuePair<List<Engine.Actions.CombatAction>,
+               KeyValuePair<List<KeyValuePair<Engine.Actions.CombatAction, Engine.Actions.CombatAction>>,
+                            List<KeyValuePair<Engine._Action.MoveStep, Engine.Actions.CombatAction>>>> DamageField(List<Data.Model.CombatActor> others) {
             List<Engine.Actions.CombatAction> direct = new();
             List<KeyValuePair<Engine.Actions.CombatAction, Engine.Actions.CombatAction>> double_attack = new();
             List<KeyValuePair<Engine._Action.MoveStep, Engine.Actions.CombatAction>> dash_attack = new();
+            List<KeyValuePair<Engine.Actions.CombatAction, Engine._Action.MoveStep>> potshot = new();
 
             var domain = runaway.Listing;
 
@@ -79,19 +102,28 @@ namespace djack.RogueSurvivor.Data.Model
                     if (en.NextMoveLostWithoutRunOrWait) {
                         Engine._Action.RangedAttack.Coverage(en, domain, Engine.Actions.FireMode.RAPID, ready_rw, direct);
                     } else if (en.RunIsFreeMove) {
-                        Engine._Action.RangedAttack.Coverage(en, domain, en.ready_rw, direct, double_attack, dash_attack);
+                        Engine._Action.RangedAttack.Coverage(en, domain, en.ready_rw, direct, double_attack, dash_attack, potshot);
                     } else {
                         Engine._Action.RangedAttack.Coverage(en, domain, (0==en.Recoil ? Engine.Actions.FireMode.RAPID : Engine.Actions.FireMode.AIMED), en.ready_rw, direct);
                     }
                 }
+                Engine._Action.MeleeAttack.Coverage(en, domain, direct);
+                if (en.RunIsFreeMove) {
+                    Engine._Action.MeleeAttack.Coverage(en, domain, dash_attack);
+                }
             }
+            // potshot does not actually add to the damage field
             return new(direct, new(double_attack, dash_attack));
         }
 
-        public KeyValuePair<List<Engine.Actions.CombatAction>, KeyValuePair<List<KeyValuePair<Engine.Actions.CombatAction, Engine.Actions.CombatAction>>, List<KeyValuePair<Engine._Action.MoveStep, Engine.Actions.CombatAction>>>> AttackField(List<Data.Model.CombatActor> others) {
+        public KeyValuePair<List<Engine.Actions.CombatAction>,
+               KeyValuePair<List<KeyValuePair<Engine.Actions.CombatAction, Engine.Actions.CombatAction>>,
+               KeyValuePair<List<KeyValuePair<Engine._Action.MoveStep, Engine.Actions.CombatAction>>,
+                            List<KeyValuePair<Engine.Actions.CombatAction, Engine._Action.MoveStep>>>>> AttackField(List<Data.Model.CombatActor> others) {
             List<Engine.Actions.CombatAction> direct = new();
             List<KeyValuePair<Engine.Actions.CombatAction, Engine.Actions.CombatAction>> double_attack = new();
             List<KeyValuePair<Engine._Action.MoveStep, Engine.Actions.CombatAction>> dash_attack = new();
+            List<KeyValuePair<Engine.Actions.CombatAction, Engine._Action.MoveStep>> potshot = new();
 
             List<Location> domain = new();
             foreach (var en in others) {
@@ -103,12 +135,29 @@ namespace djack.RogueSurvivor.Data.Model
                if (NextMoveLostWithoutRunOrWait) {
                  Engine._Action.RangedAttack.Coverage(this, domain, Engine.Actions.FireMode.RAPID, ready_rw, direct);
                } else if (RunIsFreeMove) {
-                 Engine._Action.RangedAttack.Coverage(this, domain, ready_rw, direct, double_attack, dash_attack);
+                 Engine._Action.RangedAttack.Coverage(this, domain, ready_rw, direct, double_attack, dash_attack, potshot);
                } else {
                  Engine._Action.RangedAttack.Coverage(this, domain, (0==Recoil ? Engine.Actions.FireMode.RAPID : Engine.Actions.FireMode.AIMED), ready_rw, direct);
                }
             }
-            return new(direct, new(double_attack, dash_attack));
+
+            int i = double_attack.Count;
+            while (0 <= --i) {
+                var x = double_attack[i];
+                var rw = (x.Key as Engine._Action.RangedAttack)?.rw;
+                if (null == rw) continue;
+                if (RapidRecoilOk(rw)) continue;
+                if (1<Recoil || FireMode.RAPID == (x.Value as Engine._Action.RangedAttack)!.FMode) {
+                    double_attack.RemoveAt(i);
+                }
+            }
+
+            Engine._Action.MeleeAttack.Coverage(this, domain, direct);
+            if (RunIsFreeMove) {
+                Engine._Action.MeleeAttack.Coverage(this, domain, dash_attack);
+            }
+
+            return new(direct, new(double_attack, new(dash_attack, potshot)));
         }
 
         private void Drowse(int s) => m_SleepPoints = Math.Max(0, m_SleepPoints - s);

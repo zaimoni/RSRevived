@@ -13,8 +13,8 @@ namespace djack.RogueSurvivor.Engine._Action
 {
     public class MeleeAttack : ActorAction, CombatAction
     {
-        private Location src;
-        private Location dest;
+        public Location src;
+        public Location dest;
 
         private MeleeAttack(Actor actor, Location origin, Location target) : base(actor)
         {
@@ -67,7 +67,7 @@ namespace djack.RogueSurvivor.Engine._Action
             return string.IsNullOrEmpty(ReasonCantMeleeAttack(target));
         }
 
-        static public MeleeAttack? ScheduleCast(Actor actor, Location dest, FireMode mode, ItemMeleeWeapon? melee = null, Location? origin = null)
+        static public MeleeAttack? ScheduleCast(Actor actor, Location dest, Location? origin = null)
         {
             Location src = null == origin ? actor.Location : origin.Value;
 
@@ -88,6 +88,30 @@ namespace djack.RogueSurvivor.Engine._Action
             Location src = null == origin ? actor.Location : origin.Value;
             var ret = new MeleeAttack(actor, src, dest);
             return ret.IsPerformable() ? ret : null;
+        }
+
+        static public void Coverage(Data.Model.CombatActor en, List<Location> dests, List<Engine.Actions.CombatAction> catalog)
+        {
+            Location src = en.Location;
+            foreach (var dest in dests) {
+                var melee = ScheduleCast(en.who, dest);
+                if (null == melee) continue;
+                catalog.Add(melee);
+            }
+        }
+
+        static public void Coverage(Data.Model.CombatActor en, List<Location> dests, List<KeyValuePair<Engine._Action.MoveStep, Engine.Actions.CombatAction>> dash_attack)
+        {
+            Location src = en.Location;
+            var dash = en.RunSteps;
+            if (null == dash) return;
+            foreach (var dest in dests) {
+                foreach (var move in dash) {
+                    var snipe = ScheduleCast(en.who, dest, move.dest);
+                    if (null == snipe) continue;
+                    dash_attack.Add(new(move, snipe));
+                }
+            }
         }
     }
 }

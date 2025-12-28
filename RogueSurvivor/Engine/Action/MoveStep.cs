@@ -154,5 +154,11 @@ namespace djack.RogueSurvivor.Engine._Action
             }
             return 0<ret.Count ? ret : null;
         }
+
+        public override string ToString()
+        {
+            return (is_running ? "run" : "walk")+" from " + origin.ToString() + " to " + dest.ToString();
+        }
     }
 }
+    
