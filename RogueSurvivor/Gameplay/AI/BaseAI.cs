@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
       m_Actor.TargetActor = null;
       var actorAction = SelectAction();
-      const bool tracing = false; // debugging hook
+      const bool tracing = false;
 #if DEBUG
       if (null != actorAction && !actorAction.IsPerformable()) throw new InvalidOperationException("illegal action returned from SelectAction");
 #endif
