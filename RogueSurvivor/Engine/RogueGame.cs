@@ -5370,6 +5370,7 @@ namespace djack.RogueSurvivor.Engine
 
         var door = player.Location.Map.GetMapObjectAt(pos) as DoorWindow;
         if (null == door) return null;
+        if (door.IsClosed) return null;
         return new ActionCloseDoor(player, door, player.Location == (player.Controller as BaseAI).PrevLocation);
       }
 
