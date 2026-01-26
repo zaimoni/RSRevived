@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
 #nullable enable
@@ -12,7 +9,7 @@ namespace Zaimoni.Data
     static public partial class Logger
     {
         readonly private static object s_Mutex = new object();
-        private static string s_LogCreated = null;
+        private static string? s_LogCreated = null;
         private static int s_LineCount = 0; // don't worry about rollover
 
 #region Implement to complete class
