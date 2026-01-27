@@ -703,12 +703,7 @@ namespace djack.RogueSurvivor.Engine
       // If your leader is a cop i.e. First Class Citizen, killing his enemies should not trigger murder charges.
       var killer_leader = killer.LiveLeader;
       if (!k_first_class) {
-        if (null != killer_leader && killer_leader.IsFirstClassCitizen()) {
-          if (Session.Get.Police.IsTargeted(victim)) return false;
-          if (victim.MurdersOnRecord(killer_leader) > 0) return false;
-          if (killer_leader.IsEnemyOf(victim)) return false;
-          if (victim.IsSelfDefenceFrom(killer_leader)) return false;  // XXX redundant?
-        }
+        if (null != killer_leader && killer_leader.IsFirstClassCitizen()) return IsMurder(killer_leader, victim);
       }
 
       // Framed for murder.  Since this is an apocalypse, self-defence doesn't count no matter what the law was pre-apocalypse
