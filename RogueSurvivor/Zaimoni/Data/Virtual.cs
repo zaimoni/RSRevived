@@ -146,7 +146,7 @@ namespace Zaimoni.Data
                 var t_name = t_info.FullName;
                 var method_name = string.Empty;
                 var t_args = t_info.GetGenericArguments();
-                if (1 == t_args.Length) {
+                if (1 == t_args.Length && null != t_name) {
                     t_name = t_name.Substring(0, t_name.IndexOf('['));
                     method_name = "System.String to_s[T]("+t_name+"[T])";
                 }

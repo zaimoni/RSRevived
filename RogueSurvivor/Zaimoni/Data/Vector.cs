@@ -514,8 +514,8 @@ namespace Zaimoni.Data
     public static class ext_Vector {
         public static T To<U, T>(this U src) where U : IConvertible
         {
-            var method = typeof(IConvertible).GetMethod("ToInt16");
-            if (typeof(T) == method.ReturnType) return (T)method.Invoke(src, new object[1]);
+            var method = typeof(IConvertible).GetMethod("ToInt16")!;
+            if (typeof(T) == method.ReturnType) return (T)method.Invoke(src, new object[1])!;
             throw new InvalidOperationException("unimplemented");
         }
 
