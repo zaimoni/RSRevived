@@ -9654,7 +9654,7 @@ namespace djack.RogueSurvivor.Engine
     {
       float alpha = (float) (0.1 + damage / (double)attack.Damage[0]);
       if (alpha > 1.0) alpha = 1f;
-      AddOverlay(new OverlayTransparentImage(alpha, screenPos, GameImages.ICON_BLAST));
+      AddOverlay(new UI.OverlayTransparentImage(alpha, screenPos, GameImages.ICON_BLAST));
       AddOverlay(new OverlayText(screenPos, Color.Red, damage.ToString(), Color.Black));
     }
 
@@ -15034,24 +15034,6 @@ retry:
        if (!string.IsNullOrEmpty(mapMusic))m_MusicManager.Play(mapMusic, MusicPriority.PRIORITY_BGM);
      }
 #endregion
-
-    private class OverlayTransparentImage : UI.Overlay
-    {
-      public readonly float Alpha;
-      public readonly string ImageID;
-
-      public OverlayTransparentImage(float alpha, GDI_Point screenPosition, string imageID) : base(screenPosition)
-      {
-        Alpha = alpha;
-        ImageID = imageID;
-      }
-
-      public override void Draw()
-      {
-        var ui = IRogueUI.UI;
-        ui.UI_DrawTransparentImage(Alpha, ImageID, ScreenPosition.X, ScreenPosition.Y);
-      }
-    }
 
     private class OverlayText : UI.Overlay
     {

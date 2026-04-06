@@ -27,4 +27,21 @@ namespace djack.RogueSurvivor.UI
         }
     }
 
+    public sealed class OverlayTransparentImage : Overlay
+    {
+        public readonly float Alpha;
+        public readonly string ImageID;
+
+        public OverlayTransparentImage(float alpha, GDI_Point screenPosition, string imageID) : base(screenPosition)
+        {
+            Alpha = alpha;
+            ImageID = imageID;
+        }
+
+        public override void Draw()
+        {
+            var ui = IRogueUI.UI;
+            ui.UI_DrawTransparentImage(Alpha, ImageID, ScreenPosition.X, ScreenPosition.Y);
+        }
+    }
 }
