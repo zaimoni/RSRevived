@@ -7,10 +7,11 @@
 using System;
 using System.Collections.Generic;
 
+using Rectangle = Zaimoni.Data.Box2D<int>;
+
 // type leakage from System.Drawing, System.Windows.Forms
 using Color = System.Drawing.Color;
 using Font = System.Drawing.Font;
-using Rectangle = System.Drawing.Rectangle;
 using Cursor = System.Windows.Forms.Cursor;
 using KeyEventArgs = System.Windows.Forms.KeyEventArgs;
 using MouseButtons = System.Windows.Forms.MouseButtons;

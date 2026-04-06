@@ -16,6 +16,10 @@ using System.Threading;
 using System.Windows.Forms; // causes lock-in to System.Drawing
 using Zaimoni.Data;
 
+using GDI_Point = Zaimoni.Data.Vector2D<int>;
+using Rectangle = Zaimoni.Data.Box2D<int>;
+using GDI_Size = Zaimoni.Data.Vector2D<int>;
+
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 
 namespace djack.RogueSurvivor
@@ -441,8 +445,8 @@ namespace djack.RogueSurvivor
     {
       Size[] sizeArray = Measure(lines, m_BoldFont);
 
-      Point location = new Point(gx, gy);
-      Size size = new Size(sizeArray[^1].Width + 4, sizeArray[^1].Height + 4);
+      GDI_Point location = new(gx, gy);
+      GDI_Size size = new(sizeArray[^1].Width + 4, sizeArray[^1].Height + 4);
       Rectangle rect = new Rectangle(location, size);
       const int x_margin = 10;
       if (IRogueUI.CANVAS_WIDTH - x_margin <= rect.Right) {
@@ -525,8 +529,8 @@ namespace djack.RogueSurvivor
             // Setup popup box
             ///////////////////
             const int BOX_MARGIN = 2;
-            Point boxPos = new Point(gx, gy);
-            Size boxSize = new Size(linesSize[^1].Width + 2 * BOX_MARGIN, linesSize[^1].Height + 2 * BOX_MARGIN);
+            GDI_Point boxPos = new(gx, gy);
+            GDI_Size boxSize = new(linesSize[^1].Width + 2 * BOX_MARGIN, linesSize[^1].Height + 2 * BOX_MARGIN);
             Rectangle boxRect = new Rectangle(boxPos, boxSize);
 
             //////////////////
@@ -575,8 +579,8 @@ namespace djack.RogueSurvivor
             // Setup popup box
             ///////////////////
             const int BOX_MARGIN = 2;
-            Point boxPos = new Point(gx, gy);
-            Size boxSize = new Size(linesSize[^1].Width + 2 * BOX_MARGIN, linesSize[^1].Height + 2 * BOX_MARGIN);
+            GDI_Point boxPos = new(gx, gy);
+            GDI_Size boxSize = new(linesSize[^1].Width + 2 * BOX_MARGIN, linesSize[^1].Height + 2 * BOX_MARGIN);
             Rectangle boxRect = new Rectangle(boxPos, boxSize);
 
             //////////////////

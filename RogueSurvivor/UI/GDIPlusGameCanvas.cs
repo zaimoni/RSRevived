@@ -17,6 +17,8 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Zaimoni.Data;
 
+using GDI_Rectangle = Zaimoni.Data.Box2D<int>;
+
 namespace djack.RogueSurvivor.UI
 {
   public class GDIPlusGameCanvas : UserControl, IGameCanvas
@@ -259,7 +261,7 @@ namespace djack.RogueSurvivor.UI
 
     public void AddPoint(Color color, int x, int y)
     {
-      m_Gfxs.Add(new GfxRect(GetPen(color), new Rectangle(x, y, 1, 1)));
+      m_Gfxs.Add(new GfxRect(GetPen(color), new(x, y, 1, 1)));
       NeedRedraw = true;
     }
 
@@ -275,7 +277,7 @@ namespace djack.RogueSurvivor.UI
       NeedRedraw = true;
     }
 
-    public void AddRect(Color color, Rectangle rect)
+    public void AddRect(Color color, GDI_Rectangle rect)
     {
       m_Gfxs.Add(new GfxRect(GetPen(color), rect));
       NeedRedraw = true;
@@ -299,7 +301,7 @@ namespace djack.RogueSurvivor.UI
       return brush;
     }
 
-    public void AddFilledRect(Color color, Rectangle rect)
+    public void AddFilledRect(Color color, GDI_Rectangle rect)
     {
       Brush brush = GetColorBrush(color);
       m_Gfxs.Add(new GfxFilledRect(brush, rect));
@@ -605,10 +607,10 @@ namespace djack.RogueSurvivor.UI
       private readonly Brush m_Brush;
       private readonly Rectangle m_Rect;
 
-      public GfxFilledRect(Brush brush, Rectangle rect)
+      public GfxFilledRect(Brush brush, GDI_Rectangle rect)
       {
         m_Brush = brush;
-        m_Rect = rect;
+        m_Rect = new(new(rect.X, rect.Y), new(rect.Width, rect.Height));
       }
 
       public void Draw(Graphics g)
@@ -622,10 +624,10 @@ namespace djack.RogueSurvivor.UI
       private readonly Pen m_Pen;
       private readonly Rectangle m_Rect;
 
-      public GfxRect(Pen pen, Rectangle rect)
+      public GfxRect(Pen pen, GDI_Rectangle rect)
       {
         m_Pen = pen;
-        m_Rect = rect;
+        m_Rect = new(new(rect.X, rect.Y),new(rect.Width, rect.Height));
       }
 
       public void Draw(Graphics g)

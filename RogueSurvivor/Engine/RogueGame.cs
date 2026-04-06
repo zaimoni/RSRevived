@@ -32,9 +32,9 @@ using static Zaimoni.Data.Functor;
 // GDI+ types
 using Color = System.Drawing.Color;
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
-using GDI_Point = System.Drawing.Point;
-using GDI_Rectangle = System.Drawing.Rectangle;
-using GDI_Size = System.Drawing.Size;
+using GDI_Point = Zaimoni.Data.Vector2D<int>;
+using GDI_Rectangle = Zaimoni.Data.Box2D<int>;
+using GDI_Size = Zaimoni.Data.Vector2D<int>;
 // game coordinate types
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
@@ -149,7 +149,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_WAIT = new Verb("wait");
     private readonly Verb VERB_WAKE_UP = new Verb("wake up", "wakes up");
     private bool m_IsGameRunning = true;
-    private readonly List<Overlay> m_Overlays = new List<Overlay>();
+    private readonly List<UI.Overlay> m_Overlays = new();
     private readonly object m_SimMutex = new object();  // 2018-08-20: almost dead
     private readonly object m_SimStateLock = new object(); // alpha10 lock when reading sim thread state flags
     private CancellationTokenSource? m_CancelSource = null; // migration of alpha10 sim thread state to .NET 5.0
@@ -4683,7 +4683,7 @@ namespace djack.RogueSurvivor.Engine
       var loc = examine.Value; // backward compatibility
       if (loc == m_LiveLook) return;
       if (IsVisibleToPlayer(in loc)) {
-        List<Overlay> overlays = new();
+        List<UI.Overlay> overlays = new();
         string[] lines = DescribeStuffAt(loc);
         if (lines != null) {
           var screen = MapToScreen(loc);
@@ -8732,7 +8732,7 @@ namespace djack.RogueSurvivor.Engine
       if (IsInViewRect(defender.Location)) {
         var screenPos = MapToScreen(defender.Location);
         AddOverlay(new OverlayImage(screenPos, icon));
-        AddOverlay(new OverlayText(screenPos.Add(DAMAGE_DX, DAMAGE_DY), Color.White, damage, Color.Black));
+        AddOverlay(new OverlayText(screenPos + new GDI_Point(DAMAGE_DX, DAMAGE_DY), Color.White, damage, Color.Black));
       }
     }
 
@@ -12110,8 +12110,7 @@ restart:
                     DrawActorSkillTable(Player, SKILLTABLE_X, SKILLTABLE_Y_ALT);
                 }
                 lock (m_Overlays) {
-                  foreach (Overlay mOverlay in m_Overlays)
-                    mOverlay.Draw();
+                  foreach (var mOverlay in m_Overlays) mOverlay.Draw();
                 }
                 m_UI.UI_Repaint();
             }  // lock (m_UI)
@@ -12618,7 +12617,7 @@ restart:
     /// - targeting this actor
     /// - in group with this actor
     /// </summary>
-    private void DrawActorRelations(Actor actor, List<Overlay> overlays)
+    private void DrawActorRelations(Actor actor, List<UI.Overlay> overlays)
     {
       // target of this actor
       var a_target = actor.TargetActor;
@@ -13158,7 +13157,7 @@ restart:
       }
     }
 
-    public void AddOverlay(Overlay o)
+    public void AddOverlay(UI.Overlay o)
     {
 #if DEBUG
       if (IsSimulating) throw new InvalidOperationException("simulation manipulating overlays");
@@ -13175,7 +13174,7 @@ restart:
       lock (m_Overlays) { m_Overlays.Clear(); }
     }
 
-    bool RemoveOverlay(Overlay o)   // alpha10
+    bool RemoveOverlay(UI.Overlay o)   // alpha10
     {
 #if DEBUG
       if (IsSimulating) throw new InvalidOperationException("simulation manipulating overlays");
@@ -13184,14 +13183,14 @@ restart:
       lock (m_Overlays) { return m_Overlays.Remove(o); }
     }
 
-    bool HasOverlay(Overlay o) // alpha10
+    bool HasOverlay(UI.Overlay o) // alpha10
     {
       lock (m_Overlays) { return m_Overlays.Contains(o); }
     }
 
-    private static Overlay? s_infoOverlay = null;
+    private static UI.Overlay? s_infoOverlay = null;
 
-    Overlay SetInfoOverlay(Overlay src) {
+    UI.Overlay SetInfoOverlay(UI.Overlay src) {
       // Create Read Update Delete would indicate a ClearInfoOverlay, but that is handled as formally required
       var expired = Interlocked.Exchange(ref s_infoOverlay, src);
       if (null != expired) RemoveOverlay(expired);
@@ -15039,16 +15038,7 @@ retry:
      }
 #endregion
 
-    public abstract class Overlay
-    {
-      public readonly GDI_Point ScreenPosition;
-
-      protected Overlay(GDI_Point screenPosition) { ScreenPosition = screenPosition; }
-
-      public abstract void Draw();
-    }
-
-    private class OverlayImage : Overlay
+    private class OverlayImage : UI.Overlay
     {
       public readonly string ImageID;
 
@@ -15064,7 +15054,7 @@ retry:
       }
     }
 
-    private class OverlayTransparentImage : Overlay
+    private class OverlayTransparentImage : UI.Overlay
     {
       public readonly float Alpha;
       public readonly string ImageID;
@@ -15082,7 +15072,7 @@ retry:
       }
     }
 
-    private class OverlayText : Overlay
+    private class OverlayText : UI.Overlay
     {
       public readonly string Text;
       public readonly Color Color;
@@ -15105,7 +15095,7 @@ retry:
     }
 
     // cf competing implementation : GameImages::MonochromeBorderTile class and image caching
-    public class OverlayRect : Overlay
+    public class OverlayRect : UI.Overlay
     {
       public readonly GDI_Rectangle Rectangle;
       public readonly Color Color;
@@ -15123,7 +15113,7 @@ retry:
       }
     }
 
-    private class OverlayPopup : Overlay
+    private class OverlayPopup : UI.Overlay
     {
       public readonly Color TextColor;
       public readonly Color BoxBorderColor;
@@ -15154,7 +15144,7 @@ retry:
     }
 
     // alpha10
-    private class OverlayPopupTitle : Overlay
+    private class OverlayPopupTitle : UI.Overlay
     {
       public readonly string Title;
       public readonly Color TitleColor;
