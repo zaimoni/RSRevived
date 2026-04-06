@@ -8729,7 +8729,7 @@ namespace djack.RogueSurvivor.Engine
       if (IsInViewRect(defender.Location)) {
         var screenPos = MapToScreen(defender.Location);
         AddOverlay(new UI.OverlayImage(screenPos, icon));
-        AddOverlay(new OverlayText(screenPos + new GDI_Point(DAMAGE_DX, DAMAGE_DY), Color.White, damage, Color.Black));
+        AddOverlay(new UI.OverlayText(screenPos + new GDI_Point(DAMAGE_DX, DAMAGE_DY), Color.White, damage, Color.Black));
       }
     }
 
@@ -9655,7 +9655,7 @@ namespace djack.RogueSurvivor.Engine
       float alpha = (float) (0.1 + damage / (double)attack.Damage[0]);
       if (alpha > 1.0) alpha = 1f;
       AddOverlay(new UI.OverlayTransparentImage(alpha, screenPos, GameImages.ICON_BLAST));
-      AddOverlay(new OverlayText(screenPos, Color.Red, damage.ToString(), Color.Black));
+      AddOverlay(new UI.OverlayText(screenPos, Color.Red, damage.ToString(), Color.Black));
     }
 
     private void DoBlast(Location location, BlastAttack blastAttack)
@@ -15034,28 +15034,6 @@ retry:
        if (!string.IsNullOrEmpty(mapMusic))m_MusicManager.Play(mapMusic, MusicPriority.PRIORITY_BGM);
      }
 #endregion
-
-    private class OverlayText : UI.Overlay
-    {
-      public readonly string Text;
-      public readonly Color Color;
-      public readonly Color? ShadowColor;
-
-      public OverlayText(GDI_Point screenPosition, Color color, string text, Color? shadowColor = null) : base(screenPosition)
-      {
-        Color = color;
-        ShadowColor = shadowColor;
-        Text = text;
-      }
-
-      public override void Draw()
-      {
-        var ui = IRogueUI.UI;
-        if (ShadowColor.HasValue)
-          ui.UI_DrawString(ShadowColor.Value, Text, ScreenPosition.X + 1, ScreenPosition.Y + 1, new Color?());
-        ui.UI_DrawString(Color, Text, ScreenPosition.X, ScreenPosition.Y, new Color?());
-      }
-    }
 
     // cf competing implementation : GameImages::MonochromeBorderTile class and image caching
     public class OverlayRect : UI.Overlay

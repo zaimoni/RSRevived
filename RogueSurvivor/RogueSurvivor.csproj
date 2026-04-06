@@ -296,6 +296,7 @@
     <Compile Include="UI\Message.cs" />
     <Compile Include="UI\MessageManager.cs" />
     <Compile Include="UI\Overlay.cs" />
+    <Compile Include="UI\WinForm\Overlay.cs" />
     <Compile Include="Zaimoni\Collections\Dictionary.cs" />
     <Compile Include="Zaimoni\Collections\Enumerator.cs" />
     <Compile Include="Zaimoni\Data\Ary2Dictionary.cs" />
