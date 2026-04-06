@@ -12111,7 +12111,7 @@ restart:
                 }
                 lock (m_Overlays) {
                   foreach (Overlay mOverlay in m_Overlays)
-                    mOverlay.Draw(m_UI);
+                    mOverlay.Draw();
                 }
                 m_UI.UI_Repaint();
             }  // lock (m_UI)
@@ -15041,22 +15041,26 @@ retry:
 
     public abstract class Overlay   // could be an interface instead
     {
-      public abstract void Draw(IRogueUI ui);
+      public readonly GDI_Point ScreenPosition;
+
+      protected Overlay(GDI_Point screenPosition) { ScreenPosition = screenPosition; }
+      protected Overlay() { }
+
+      public abstract void Draw();
     }
 
     private class OverlayImage : Overlay
     {
-      public readonly GDI_Point ScreenPosition;
       public readonly string ImageID;
 
-      public OverlayImage(GDI_Point screenPosition, string imageID)
+      public OverlayImage(GDI_Point screenPosition, string imageID) : base(screenPosition)
       {
-        ScreenPosition = screenPosition;
         ImageID = imageID;
       }
 
-      public override void Draw(IRogueUI ui)
+      public override void Draw()
       {
+        var ui = IRogueUI.UI;
         ui.UI_DrawImage(ImageID, ScreenPosition.X, ScreenPosition.Y);
       }
     }
@@ -15064,39 +15068,37 @@ retry:
     private class OverlayTransparentImage : Overlay
     {
       public readonly float Alpha;
-      public readonly GDI_Point ScreenPosition;
       public readonly string ImageID;
 
-      public OverlayTransparentImage(float alpha, GDI_Point screenPosition, string imageID)
+      public OverlayTransparentImage(float alpha, GDI_Point screenPosition, string imageID) : base(screenPosition)
       {
         Alpha = alpha;
-        ScreenPosition = screenPosition;
         ImageID = imageID;
       }
 
-      public override void Draw(IRogueUI ui)
+      public override void Draw()
       {
+        var ui = IRogueUI.UI;
         ui.UI_DrawTransparentImage(Alpha, ImageID, ScreenPosition.X, ScreenPosition.Y);
       }
     }
 
     private class OverlayText : Overlay
     {
-      public readonly GDI_Point ScreenPosition;
       public readonly string Text;
       public readonly Color Color;
       public readonly Color? ShadowColor;
 
-      public OverlayText(GDI_Point screenPosition, Color color, string text, Color? shadowColor = null)
+      public OverlayText(GDI_Point screenPosition, Color color, string text, Color? shadowColor = null) : base(screenPosition)
       {
-        ScreenPosition = screenPosition;
         Color = color;
         ShadowColor = shadowColor;
         Text = text;
       }
 
-      public override void Draw(IRogueUI ui)
+      public override void Draw()
       {
+        var ui = IRogueUI.UI;
         if (ShadowColor.HasValue)
           ui.UI_DrawString(ShadowColor.Value, Text, ScreenPosition.X + 1, ScreenPosition.Y + 1, new Color?());
         ui.UI_DrawString(Color, Text, ScreenPosition.X, ScreenPosition.Y, new Color?());
@@ -15115,40 +15117,39 @@ retry:
         Color = color;
       }
 
-      public override void Draw(IRogueUI ui)
+      public override void Draw()
       {
+        var ui = IRogueUI.UI;
         ui.UI_DrawRect(Color, Rectangle);
       }
     }
 
     private class OverlayPopup : Overlay
     {
-      public GDI_Point ScreenPosition;
       public readonly Color TextColor;
       public readonly Color BoxBorderColor;
       public readonly Color BoxFillColor;
       public readonly string[] Lines;  // Cf. Advisor: need array entries to be writeable
 
-      public OverlayPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, GDI_Point screenPos)
+      public OverlayPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, GDI_Point screenPos) : base(screenPos)
       {
-        ScreenPosition = screenPos;
         TextColor = textColor;
         BoxBorderColor = boxBorderColor;
         BoxFillColor = boxFillColor;
         Lines = lines;
       }
 
-      public OverlayPopup(string line, Color textColor, Color boxBorderColor, Color boxFillColor, GDI_Point screenPos)
+      public OverlayPopup(string line, Color textColor, Color boxBorderColor, Color boxFillColor, GDI_Point screenPos) : base(screenPos)
       {
-        ScreenPosition = screenPos;
         TextColor = textColor;
         BoxBorderColor = boxBorderColor;
         BoxFillColor = boxFillColor;
         Lines = new string[] { line };
       }
 
-      public override void Draw(IRogueUI ui)
+      public override void Draw()
       {
+        var ui = IRogueUI.UI;
         ui.UI_DrawPopup(Lines, TextColor, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
       }
     }
@@ -15156,7 +15157,6 @@ retry:
     // alpha10
     private class OverlayPopupTitle : Overlay
     {
-      public readonly Point ScreenPosition;
       public readonly string Title;
       public readonly Color TitleColor;
       public readonly string[] Lines;
@@ -15164,9 +15164,8 @@ retry:
       public readonly Color BoxBorderColor;
       public readonly Color BoxFillColor;
 
-      public OverlayPopupTitle(string title, Color titleColor, string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, Point screenPos)
+      public OverlayPopupTitle(string title, Color titleColor, string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, Point screenPos) : base(new GDI_Point(screenPos.X, screenPos.Y))
       {
-        ScreenPosition = screenPos;
         Title = title;
         TitleColor = titleColor;
         TextColor = textColor;
@@ -15175,8 +15174,9 @@ retry:
         Lines = lines;
       }
 
-      public override void Draw(IRogueUI ui)
+      public override void Draw()
       {
+        var ui = IRogueUI.UI;
         ui.UI_DrawPopupTitle(Title, TitleColor, Lines, TextColor, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
       }
     }
@@ -15184,7 +15184,6 @@ retry:
 #if PROTOTYPE
     class OverlayPopupTitleColors : Overlay
     {
-            public Point ScreenPosition { get; set; }
             public string Title { get; set; }
             public Color TitleColor { get; set; }
             public string[] Lines { get; set; }
@@ -15192,9 +15191,8 @@ retry:
             public Color BoxBorderColor { get; set; }
             public Color BoxFillColor { get; set; }
 
-            public OverlayPopupTitleColors(string title, Color titleColor, string[] lines, Color[] colors, Color boxBorderColor, Color boxFillColor, Point screenPos)
+            public OverlayPopupTitleColors(string title, Color titleColor, string[] lines, Color[] colors, Color boxBorderColor, Color boxFillColor, Point screenPos) : base(new GDI_Point(screenPos.X, screenPos.Y))
             {
-                this.ScreenPosition = screenPos;
                 this.Title = title;
                 this.TitleColor = titleColor;
                 this.Colors = colors;
@@ -15203,8 +15201,9 @@ retry:
                 this.Lines = lines;
             }
 
-            public override void Draw(IRogueUI ui)
+            public override void Draw()
             {
+                var ui = IRogueUI.UI;
                 ui.UI_DrawPopupTitleColors(Title, TitleColor, Lines, Colors, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
             }
     }
