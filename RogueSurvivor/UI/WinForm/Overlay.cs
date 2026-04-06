@@ -48,4 +48,33 @@ namespace djack.RogueSurvivor.UI
         }
     }
 
+    public class OverlayPopup : Overlay
+    {
+        public readonly Color TextColor;
+        public readonly Color BoxBorderColor;
+        public readonly Color BoxFillColor;
+        public readonly string[] Lines;  // Cf. Advisor: need array entries to be writeable
+
+        public OverlayPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, GDI_Point screenPos) : base(screenPos)
+        {
+            TextColor = textColor;
+            BoxBorderColor = boxBorderColor;
+            BoxFillColor = boxFillColor;
+            Lines = lines;
+        }
+
+        public OverlayPopup(string line, Color textColor, Color boxBorderColor, Color boxFillColor, GDI_Point screenPos) : base(screenPos)
+        {
+            TextColor = textColor;
+            BoxBorderColor = boxBorderColor;
+            BoxFillColor = boxFillColor;
+            Lines = new string[] { line };
+        }
+
+        public override void Draw()
+        {
+            var ui = IRogueUI.UI;
+            ui.UI_DrawPopup(Lines, TextColor, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
+        }
+    }
 }
