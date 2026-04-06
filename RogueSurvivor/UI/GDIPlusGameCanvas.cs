@@ -356,10 +356,7 @@ namespace djack.RogueSurvivor.UI
       return filePath + ".png";
     }
 
-    public string ScreenshotExtension()
-    {
-      return "png";
-    }
+    public string ScreenshotExtension() => "png";
 
     public void DisposeUnmanagedResources()
     {
@@ -418,10 +415,7 @@ namespace djack.RogueSurvivor.UI
         m_Y = y;
       }
 
-      public void Draw(Graphics g)
-      {
-        g.DrawImageUnscaled(m_Img, m_X, m_Y);
-      }
+      public void Draw(Graphics g) => g.DrawImageUnscaled(m_Img, m_X, m_Y);
     }
 
     private class GfxImageCopy : IGfx, IDisposable
@@ -573,10 +567,7 @@ namespace djack.RogueSurvivor.UI
         m_yTo = yTo;
       }
 
-      public void Draw(Graphics g)
-      {
-        g.DrawLine(m_Pen, m_xFrom, m_yFrom, m_xTo, m_yTo);
-      }
+      public void Draw(Graphics g) => g.DrawLine(m_Pen, m_xFrom, m_yFrom, m_xTo, m_yTo);
     }
 
     private class GfxString : IGfx
@@ -596,10 +587,7 @@ namespace djack.RogueSurvivor.UI
         m_Brush = GetColorBrush(color);
       }
 
-      public void Draw(Graphics g)
-      {
-        g.DrawString(m_Text, m_Font, m_Brush, m_X, m_Y);
-      }
+      public void Draw(Graphics g) => g.DrawString(m_Text, m_Font, m_Brush, m_X, m_Y);
     }
 
     private class GfxFilledRect : IGfx
@@ -613,10 +601,7 @@ namespace djack.RogueSurvivor.UI
         m_Rect = new(new(rect.X, rect.Y), new(rect.Width, rect.Height));
       }
 
-      public void Draw(Graphics g)
-      {
-        g.FillRectangle(m_Brush, m_Rect);
-      }
+      public void Draw(Graphics g) => g.FillRectangle(m_Brush, m_Rect);
     }
 
     private class GfxRect : IGfx
@@ -630,10 +615,7 @@ namespace djack.RogueSurvivor.UI
         m_Rect = new(new(rect.X, rect.Y),new(rect.Width, rect.Height));
       }
 
-      public void Draw(Graphics g)
-      {
-        g.DrawRectangle(m_Pen, m_Rect);
-      }
+      public void Draw(Graphics g) => g.DrawRectangle(m_Pen, m_Rect);
     }
   }
 }
