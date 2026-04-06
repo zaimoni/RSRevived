@@ -15039,12 +15039,11 @@ retry:
      }
 #endregion
 
-    public abstract class Overlay   // could be an interface instead
+    public abstract class Overlay
     {
       public readonly GDI_Point ScreenPosition;
 
       protected Overlay(GDI_Point screenPosition) { ScreenPosition = screenPosition; }
-      protected Overlay() { }
 
       public abstract void Draw();
     }
@@ -15111,7 +15110,7 @@ retry:
       public readonly GDI_Rectangle Rectangle;
       public readonly Color Color;
 
-      public OverlayRect(Color color, GDI_Rectangle rect)
+      public OverlayRect(Color color, GDI_Rectangle rect) : base(rect.Location)
       {
         Rectangle = rect;
         Color = color;
