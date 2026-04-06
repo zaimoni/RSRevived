@@ -10,4 +10,21 @@ namespace djack.RogueSurvivor.UI
 
         public abstract void Draw();
     }
+
+    public sealed class OverlayImage : Overlay
+    {
+        public readonly string ImageID;
+
+        public OverlayImage(GDI_Point screenPosition, string imageID) : base(screenPosition)
+        {
+            ImageID = imageID;
+        }
+
+        public override void Draw()
+        {
+            var ui = IRogueUI.UI;
+            ui.UI_DrawImage(ImageID, ScreenPosition.X, ScreenPosition.Y);
+        }
+    }
+
 }

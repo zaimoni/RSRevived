@@ -5287,7 +5287,7 @@ namespace djack.RogueSurvivor.Engine
         Actor target = actorList[index];
         ClearOverlays();
         AddOverlay(new OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-        AddOverlay(new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET));
+        AddOverlay(new UI.OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET));
         RedrawPlayScreen();
         KeyEventArgs key = m_UI.UI_WaitKey();
         if (key.KeyCode == Keys.Escape) break;
@@ -5575,19 +5575,19 @@ namespace djack.RogueSurvivor.Engine
       overlayPopupText[1] = desc(mode, currentTarget);
 
       var modeDesc = new OverlayPopup(overlayPopupText, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
-      var target = new OverlayImage(MapToScreen(currentTarget.Location), GameImages.ICON_TARGET);
+      UI.OverlayImage target = new(MapToScreen(currentTarget.Location), GameImages.ICON_TARGET);
       bool flag3 = player.CanFireAt(currentTarget, LoF, out string reason);
 
-      List<OverlayImage> display_path(List<Point> los) {
-        List<OverlayImage> ret = new();
+      List<UI.OverlayImage> display_path(List<Point> los) {
+        List<UI.OverlayImage> ret = new();
         int num1 = Rules.InteractionDistance(player.Location, currentTarget.Location);
         string imageID = flag3 ? (num1 <= attack.EfficientRange ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BAD) : GameImages.ICON_LINE_BLOCKED;
         foreach (Point mapPosition in los)
-          ret.Add(new OverlayImage(MapToScreen(mapPosition), imageID));
+          ret.Add(new(MapToScreen(mapPosition), imageID));
         return ret;
       }
 
-      List<OverlayImage> LoS = display_path(LoF);
+      var LoS = display_path(LoF);
 
       ClearOverlays();
 
@@ -5607,7 +5607,7 @@ namespace djack.RogueSurvivor.Engine
               RemoveOverlay(modeDesc);
               AddOverlay(modeDesc = new OverlayPopup(overlayPopupText, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
               RemoveOverlay(target);
-              AddOverlay(target = new OverlayImage(MapToScreen(currentTarget.Location), GameImages.ICON_TARGET));
+              AddOverlay(target = new(MapToScreen(currentTarget.Location), GameImages.ICON_TARGET));
               flag3 = player.CanFireAt(currentTarget, LoF, out reason);
               foreach(var o in LoS) RemoveOverlay(o);
               LoS = display_path(LoF);
@@ -5664,10 +5664,9 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      OverlayImage? nominate;
       do {
         Actor target = actorList[index];
-        nominate = new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET);
+        UI.OverlayImage nominate = new(MapToScreen(target.Location), GameImages.ICON_TARGET);
         AddOverlay(nominate);
         RedrawPlayScreen();
         if (!m_UI.Modal(handler)) break;
@@ -5701,10 +5700,9 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      OverlayImage? nominate;
       do {
         Actor target = actorList[index];
-        nominate = new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET);
+        UI.OverlayImage nominate = new(MapToScreen(target.Location), GameImages.ICON_TARGET);
         AddOverlay(nominate);
         PanViewportTo(target);
         if (!m_UI.Modal(handler)) break;
@@ -5771,10 +5769,9 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      OverlayImage? nominate;
       do {
         Actor target = actorList[index];
-        nominate = new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET);
+        UI.OverlayImage nominate = new(MapToScreen(target.Location), GameImages.ICON_TARGET);
         AddOverlay(nominate);
         RedrawPlayScreen();
         if (!m_UI.Modal(handler)) break;
@@ -5796,7 +5793,7 @@ namespace djack.RogueSurvivor.Engine
                                                      : new ActionThrowGrenade(player, player.Location.Position, itemGrenadePrimed);
 
       var mode = new OverlayPopup(THROW_GRENADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
-      List<OverlayImage> path = new();
+      List<UI.OverlayImage> path = new();
 
       string? display() {
         bool can_throw = act.IsLegal();
@@ -5804,8 +5801,8 @@ namespace djack.RogueSurvivor.Engine
         AddOverlay(mode);
         string imageID = can_throw ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BLOCKED;
         path.Clear();
-        foreach (Point mapPosition in act.LoF) {
-          var o = new OverlayImage(MapToScreen(mapPosition), imageID);
+        foreach (var mapPosition in act.LoF) {
+          UI.OverlayImage o = new(MapToScreen(mapPosition), imageID);
           path.Add(o);
           AddOverlay(o);
         }
@@ -8731,7 +8728,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (IsInViewRect(defender.Location)) {
         var screenPos = MapToScreen(defender.Location);
-        AddOverlay(new OverlayImage(screenPos, icon));
+        AddOverlay(new UI.OverlayImage(screenPos, icon));
         AddOverlay(new OverlayText(screenPos + new GDI_Point(DAMAGE_DX, DAMAGE_DY), Color.White, damage, Color.Black));
       }
     }
@@ -9227,7 +9224,7 @@ namespace djack.RogueSurvivor.Engine
       if (isAttVisible) {
         AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
         if (display_defender) AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
-        AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_MELEE_ATTACK));
+        AddOverlay(new UI.OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_MELEE_ATTACK));
       }
       if (hitRoll > defRoll) {
         // alpha10
@@ -9263,7 +9260,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (fatal) {
             if (isVisible) {
-              if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
+              if (display_defender) AddOverlay(new UI.OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
               ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, (defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)).Conjugate(attacker), defender, " !"), DELAY_LONG);
               a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, (defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)).Conjugate(attacker), defender, " !"), DELAY_LONG);
               d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, (defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)).Conjugate(attacker), defender, " !"), DELAY_LONG);
@@ -9292,14 +9289,14 @@ namespace djack.RogueSurvivor.Engine
             d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender, string.Format(" for {0} damage.", dmg)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
         } else if (isVisible) {
-          if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
+          if (display_defender) AddOverlay(new UI.OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
           ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, attack.Verb.Conjugate(attacker), defender, " for no effect."), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender, " for no effect."), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, attack.Verb.Conjugate(attacker), defender, " for no effect."), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       else if (isVisible) {
-        if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
+        if (display_defender) AddOverlay(new UI.OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
         ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, VERB_MISS.Conjugate(attacker), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, VERB_MISS.Conjugate(attacker), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, VERB_MISS.Conjugate(attacker), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
@@ -9387,14 +9384,14 @@ namespace djack.RogueSurvivor.Engine
         if (see_attacker) {
           AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
           if (display_defender) AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
-          AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
+          AddOverlay(new UI.OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
         }
         if (hitRoll > defRoll) {
           int dmg = rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Shot;
           if (dmg > 0) {
             if (defender.TakeDamage(dmg)) {
               if (see_defender) {
-                AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
+                AddOverlay(new UI.OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
               } else if (see_attacker) {
                 if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
               }
@@ -9414,7 +9411,7 @@ namespace djack.RogueSurvivor.Engine
             }
           } else {
             if (see_defender) {
-              AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+              AddOverlay(new UI.OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
             } else if (see_attacker) {
               if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
             }
@@ -9425,10 +9422,10 @@ namespace djack.RogueSurvivor.Engine
         } else {
           bool are_adjacent = Rules.IsAdjacent(attacker.Location, defender.Location);
           if (see_defender) {
-            AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+            AddOverlay(new UI.OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
           } else if (see_attacker) {
             if (are_adjacent) {  // difference between melee range miss and hit is visible, even with firearms
-              if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+              if (display_defender) AddOverlay(new UI.OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
             } else {  // otherwise, not visible
               if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
             }
@@ -9512,14 +9509,14 @@ namespace djack.RogueSurvivor.Engine
         if (see_attacker) {
           AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
           if (display_defender) AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
-          AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
+          AddOverlay(new UI.OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
         }
         if (hitRoll > defRoll) {
           int dmg = rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Shot;
           if (dmg > 0) {
             if (defender.TakeDamage(dmg)) {
               if (see_defender) {
-                AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
+                AddOverlay(new UI.OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
               } else if (see_attacker) {
                 if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
               }
@@ -9539,7 +9536,7 @@ namespace djack.RogueSurvivor.Engine
             }
           } else {
             if (see_defender) {
-              AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+              AddOverlay(new UI.OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
             } else if (see_attacker) {
               if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
             }
@@ -9550,10 +9547,10 @@ namespace djack.RogueSurvivor.Engine
         } else {
           bool are_adjacent = Rules.IsAdjacent(attacker.Location, defender.Location);
           if (see_defender) {
-            AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+            AddOverlay(new UI.OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
           } else if (see_attacker) {
             if (are_adjacent) {  // difference between melee range miss and hit is visible, even with firearms
-              if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
+              if (display_defender) AddOverlay(new UI.OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
             } else {  // otherwise, not visible
               if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_RANGED_DAMAGE, "?");
             }
@@ -9575,7 +9572,7 @@ namespace djack.RogueSurvivor.Engine
           if (player1 || player2) {
             if (player1) {
               AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
-              AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
+              AddOverlay(new UI.OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
             }
             if (player2)
               AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(point), SIZE_OF_TILE)));
@@ -9598,7 +9595,7 @@ namespace djack.RogueSurvivor.Engine
           if (player1 || player2) {
             if (player1) {
               AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
-              AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
+              AddOverlay(new UI.OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
             }
             if (player2)
               AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(loc), SIZE_OF_TILE)));
@@ -10810,14 +10807,14 @@ restart:
           if (player1) AddOverlay(new OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
           if (player2) AddOverlay(new OverlayRect(Color.Red, new GDI_Rectangle(MapToScreen(mapObj.Location), SIZE_OF_TILE)));
           if (flag) {
-            if (player1) AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
-            if (player2) AddOverlay(new OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_KILLED));
+            if (player1) AddOverlay(new UI.OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
+            if (player2) AddOverlay(new UI.OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_KILLED));
             ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], actor, VERB_BREAK.Conjugate(actor), mapObj), DELAY_LONG);
             a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], actor, VERB_BREAK.Conjugate(actor), mapObj), DELAY_LONG);
             d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], actor, VERB_BREAK.Conjugate(actor), mapObj), DELAY_LONG);
           } else {
-            if (player1) AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
-            if (player2) AddOverlay(new OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_MELEE_DAMAGE));
+            if (player1) AddOverlay(new UI.OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
+            if (player2) AddOverlay(new UI.OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_MELEE_DAMAGE));
             ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], actor, VERB_BASH.Conjugate(actor), mapObj), actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
             a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], actor, VERB_BASH.Conjugate(actor), mapObj), actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
             d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], actor, VERB_BASH.Conjugate(actor), mapObj), actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
@@ -12622,7 +12619,7 @@ restart:
       // target of this actor
       var a_target = actor.TargetActor;
       if (null != a_target && !a_target.IsDead && IsVisibleToPlayer(a_target))
-        overlays.Add(new OverlayImage(MapToScreen(a_target.Location.Position), GameImages.ICON_IS_TARGET));
+        overlays.Add(new UI.OverlayImage(MapToScreen(a_target.Location.Position), GameImages.ICON_IS_TARGET));
 
       // actors targeting this actor or in same group
       bool isTargettedHighlighted = false;
@@ -12632,14 +12629,14 @@ restart:
         // targetting this actor
         if (other.TargetActor == actor && other.IsEngaged) {
           if (!isTargettedHighlighted) {
-            overlays.Add(new OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_IS_TARGETTED));
+            overlays.Add(new UI.OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_IS_TARGETTED));
             isTargettedHighlighted = true;
           }
-          overlays.Add(new OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_TARGETING));
+          overlays.Add(new UI.OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_TARGETING));
         }
 
         // in group with actor
-        if (other.IsInGroupWith(actor)) overlays.Add(new OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_IN_GROUP));
+        if (other.IsInGroupWith(actor)) overlays.Add(new UI.OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_IN_GROUP));
       }
 
       if (actor.Controller is ObjectiveAI ai) {
@@ -15037,22 +15034,6 @@ retry:
        if (!string.IsNullOrEmpty(mapMusic))m_MusicManager.Play(mapMusic, MusicPriority.PRIORITY_BGM);
      }
 #endregion
-
-    private class OverlayImage : UI.Overlay
-    {
-      public readonly string ImageID;
-
-      public OverlayImage(GDI_Point screenPosition, string imageID) : base(screenPosition)
-      {
-        ImageID = imageID;
-      }
-
-      public override void Draw()
-      {
-        var ui = IRogueUI.UI;
-        ui.UI_DrawImage(ImageID, ScreenPosition.X, ScreenPosition.Y);
-      }
-    }
 
     private class OverlayTransparentImage : UI.Overlay
     {
