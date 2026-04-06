@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 
 using GDI_Point = Zaimoni.Data.Vector2D<int>;
+using GDI_Rectangle = Zaimoni.Data.Box2D<int>;
 
 // these classes should be partial classes with the GUI-independent parts one level up
 
@@ -23,8 +24,28 @@ namespace djack.RogueSurvivor.UI
         {
             var ui = IRogueUI.UI;
             if (ShadowColor.HasValue)
-                ui.UI_DrawString(ShadowColor.Value, Text, ScreenPosition.X + 1, ScreenPosition.Y + 1, new Color?());
-            ui.UI_DrawString(Color, Text, ScreenPosition.X, ScreenPosition.Y, new Color?());
+                ui.UI_DrawString(ShadowColor.Value, Text, ScreenPosition.X + 1, ScreenPosition.Y + 1);
+            ui.UI_DrawString(Color, Text, ScreenPosition.X, ScreenPosition.Y);
         }
     }
+
+    // cf competing implementation : GameImages::MonochromeBorderTile class and image caching
+    public sealed class OverlayRect : Overlay
+    {
+        public readonly GDI_Rectangle Rectangle;
+        public readonly Color Color;
+
+        public OverlayRect(Color color, GDI_Rectangle rect) : base(rect.Location)
+        {
+            Rectangle = rect;
+            Color = color;
+        }
+
+        public override void Draw()
+        {
+            var ui = IRogueUI.UI;
+            ui.UI_DrawRect(Color, Rectangle);
+        }
+    }
+
 }
