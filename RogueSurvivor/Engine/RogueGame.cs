@@ -4014,8 +4014,8 @@ namespace djack.RogueSurvivor.Engine
       int i = 0;
       while(i < strict_ub) all_labels.Add(label(i++));
 
-      OverlayPopupTitle? working = null;
-      var staging = new List<string>();
+      UI.OverlayPopupTitle? working = null;
+      List<string> staging = new();
       var header_size = RogueForm.Get.Measure(header);
       header_size.Height += 1;
 
@@ -4042,8 +4042,8 @@ namespace djack.RogueSurvivor.Engine
             throw new InvalidOperationException("test case");
 #endif
           short working_y = (short)((CANVAS_HEIGHT - 4 - staging_size[^1].Height) / 2);
-          if (centered) working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((short)((CANVAS_WIDTH - 4 - staging_size[^1].Width) /2), working_y));
-          else working = new OverlayPopupTitle(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new Point((short)(CANVAS_WIDTH - 4 - staging_size[^1].Width), working_y));
+          if (centered) working = new(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new((short)((CANVAS_WIDTH - 4 - staging_size[^1].Width) /2), working_y));
+          else working = new(header, MODE_TEXTCOLOR, staging.ToArray(), Color.White, MODE_BORDERCOLOR, Color.Black, new((short)(CANVAS_WIDTH - 4 - staging_size[^1].Width), working_y));
           AddOverlay(working);
         }
         RedrawPlayScreen();
@@ -11742,7 +11742,7 @@ restart:
 
       PanViewportTo(upgradeActor);
       var skills = upgradeActor.MySkills;
-      OverlayPopupTitle? popup = null;
+      UI.OverlayPopupTitle? popup = null;
 
       void display() {
           var popupLines = new List<string> { "" };
@@ -11770,7 +11770,7 @@ restart:
             }
           }
 
-          AddOverlay(popup = new OverlayPopupTitle(upgradeActor == Player ? "Select skill to upgrade" : "Select skill to upgrade for " + upgradeActor.Name, Color.White, popupLines.ToArray(), Color.White, Color.White, Color.Black, new Point(64, 64)));
+          AddOverlay(popup = new(upgradeActor == Player ? "Select skill to upgrade" : "Select skill to upgrade for " + upgradeActor.Name, Color.White, popupLines.ToArray(), Color.White, Color.White, Color.Black, new(64, 64)));
           RedrawPlayScreen();
       }
 
@@ -15034,61 +15034,6 @@ retry:
        if (!string.IsNullOrEmpty(mapMusic))m_MusicManager.Play(mapMusic, MusicPriority.PRIORITY_BGM);
      }
 #endregion
-
-    // alpha10
-    private class OverlayPopupTitle : UI.Overlay
-    {
-      public readonly string Title;
-      public readonly Color TitleColor;
-      public readonly string[] Lines;
-      public readonly Color TextColor;
-      public readonly Color BoxBorderColor;
-      public readonly Color BoxFillColor;
-
-      public OverlayPopupTitle(string title, Color titleColor, string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, Point screenPos) : base(new GDI_Point(screenPos.X, screenPos.Y))
-      {
-        Title = title;
-        TitleColor = titleColor;
-        TextColor = textColor;
-        BoxBorderColor = boxBorderColor;
-        BoxFillColor = boxFillColor;
-        Lines = lines;
-      }
-
-      public override void Draw()
-      {
-        var ui = IRogueUI.UI;
-        ui.UI_DrawPopupTitle(Title, TitleColor, Lines, TextColor, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
-      }
-    }
-
-#if PROTOTYPE
-    class OverlayPopupTitleColors : Overlay
-    {
-            public string Title { get; set; }
-            public Color TitleColor { get; set; }
-            public string[] Lines { get; set; }
-            public Color[] Colors { get; set; }
-            public Color BoxBorderColor { get; set; }
-            public Color BoxFillColor { get; set; }
-
-            public OverlayPopupTitleColors(string title, Color titleColor, string[] lines, Color[] colors, Color boxBorderColor, Color boxFillColor, Point screenPos) : base(new GDI_Point(screenPos.X, screenPos.Y))
-            {
-                this.Title = title;
-                this.TitleColor = titleColor;
-                this.Colors = colors;
-                this.BoxBorderColor = boxBorderColor;
-                this.BoxFillColor = boxFillColor;
-                this.Lines = lines;
-            }
-
-            public override void Draw()
-            {
-                var ui = IRogueUI.UI;
-                ui.UI_DrawPopupTitleColors(Title, TitleColor, Lines, Colors, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
-            }
-    }
-#endif
 
     private struct CharGen
     {
