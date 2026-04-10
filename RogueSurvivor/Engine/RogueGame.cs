@@ -14885,8 +14885,9 @@ retry:
       // by a policeman sighting this.
       if (3>Session.Get.ScriptStage_HospitalPowerup) {
         Session.Get.ScriptStage_HospitalPowerup = 3;    // hospital has regained power
+        int storage_len = "storage@".Length;
         foreach(var z in storage.Zones) {
-          if ("storage@" != z.Name.Substring(0, "storage@".Length)) continue;
+          if (z.Name.Length < storage_len || "storage@" != z.Name.Substring(0, storage_len)) continue;
           z.Bounds.DoForEach(pt => {
             if (!storage.GetTileModelAt(pt).IsWalkable) return;  // storage.IsWalkable(pt) fails for intact containers
             if (storage.AnyAdjacent<DoorWindow>(pt)) return;
