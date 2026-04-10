@@ -998,13 +998,6 @@ namespace djack.RogueSurvivor.Data
           else future.Add(d.WorldPosition);
         }
 
-#if AUDIT
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::bootstrap_districts");
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "past: " + past.Count.ToString()+" "+past.to_s());
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "now: " + now.Count.ToString()+" "+now.to_s());
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "future: " + future.Count.ToString()+" "+future.to_s());
-#endif
-
         if (m_Size*m_Size == now.Count) {
           // Rogue Survivor 10- did not run events on the first turn of the game
           if (0 < Session.Get.WorldTime.TurnCounter) onBeforeTurn();
@@ -1018,14 +1011,20 @@ namespace djack.RogueSurvivor.Data
           m_Ready.Add(At(Point.Empty)!);
           return;
         }
-        if (0 < past.Count && 0 >= future.Count) {
-          m_Ready.Add(At(past[0])!);
-          return;
-        }
         if (0 >= past.Count && 0<now.Count) {
           m_Ready.Add(At(now[0])!);
           return;
         }
+#endif
+        if (0 < past.Count && 0 >= future.Count) {
+          m_Ready.Add(At(past[0])!);
+          return;
+        }
+#if DEBUG
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::bootstrap_districts");
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "past: " + past.Count.ToString()+" "+past.to_s());
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "now: " + now.Count.ToString()+" "+now.to_s());
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "future: " + future.Count.ToString()+" "+future.to_s());
 #endif
         throw new InvalidOperationException("unimplemented");
       }
