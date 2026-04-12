@@ -1910,7 +1910,6 @@ namespace djack.RogueSurvivor.Data
 
     public List<Location>? OneStepRange(Location loc)
     {
-      var no_path = (Controller as Gameplay.AI.ObjectiveAI)?.Goal<Engine.Goal.DeathTrapped>();
       var ret = new List<Location>();
       foreach(Direction dir in Direction.COMPASS) {
         Location test = loc+dir;
@@ -2007,6 +2006,7 @@ namespace djack.RogueSurvivor.Data
 
     public Dictionary<Location,ActorAction>? OnePathRange(in Location loc)
     {
+      var no_path = (Controller as Gameplay.AI.ObjectiveAI)?.Goal<Engine.Goal.DeathTrapped>();
       var ret = new Dictionary<Location,ActorAction>();
       foreach(Direction dir in Direction.COMPASS) {
         Location test = loc+dir;
@@ -2017,11 +2017,11 @@ namespace djack.RogueSurvivor.Data
 #else
         if (!Map.Canonical(ref test)) continue;
 #endif
+        if (null != no_path && no_path.IsBanned(test)) continue;
         ret.Add(test, tmp);
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) { // the pathable check also handles death-trapping, but exits don't check for that
-        var no_path = (Controller as Gameplay.AI.ObjectiveAI)?.Goal<Engine.Goal.DeathTrapped>();
         if (null != no_path && no_path.IsBanned(exit.Location)) exit = null;
       }
       if (null != exit) {
@@ -2045,6 +2045,7 @@ namespace djack.RogueSurvivor.Data
 
     public Dictionary<Location,ActorAction> OnePath(in Location loc, Dictionary<Location, ActorAction> already)
     {
+      var no_path = (Controller as Gameplay.AI.ObjectiveAI)?.Goal<Engine.Goal.DeathTrapped>();
       var ret = new Dictionary<Location, ActorAction>(9);
       foreach(Direction dir in Direction.COMPASS) {
         Location dest = loc+dir;
@@ -2057,13 +2058,13 @@ namespace djack.RogueSurvivor.Data
           ret.Add(dest, new ActionMoveStep(this, dest.Position));
           continue;
         }
+        if (null != no_path && no_path.IsBanned(dest)) continue;
         // 2020-03-19 This is multi-threading sensitive -- the Sokoban preventer may have to reach across threads
         // generators fail CanEnter but can be pathable so that would have to be accounted for
         if (null != (relay = Rules.IsPathableFor(this, in dest) ?? (CanEnter(dest) ? new ActionMoveDelta(this, in dest, in loc) : null))) ret.Add(dest, relay);
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) { // the pathable check also handles death-trapping, but exits don't check for that
-        var no_path = (Controller as Gameplay.AI.ObjectiveAI)?.Goal<Engine.Goal.DeathTrapped>();
         if (null != no_path && no_path.IsBanned(exit.Location)) exit = null;
       }
       if (null != exit) {
