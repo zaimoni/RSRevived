@@ -93,7 +93,7 @@ Recorded 2026-10-01.
 - [x] **Tile IDs**: `Map` writes `Tiles` row-major, one row of numbers per line, after `Extent`.
   - `Session` writes one `TileLegend` before `World`: the tile name for each number. On load the numbers are translated through it, so a save survives the tile IDs being renumbered or extended. A used tile whose legend name is unknown is rejected.
   - Deliberately not a Base64 blob: that would interfere with extending configuration files.
-- [ ] Remaining exits: regenerate with `District.InterpolateExits` after all districts load (the `#if PROTOTYPE` call in the JSON `World` constructor). Not in the file, so the round-trip test cannot see them: check exit sets in the headless harness. Confirm no other source of out-of-bounds exits.
+- [x] **Remaining exits**: not saved. The JSON `World` constructor regenerates them with `District.InterpolateExits` once all districts are loaded; that is the only source of exits leaving a map's bounds. The round-trip test cannot see them, so they are checked in the headless harness only.
 - [ ] Decorations
 - [ ] Scents (none expected at turn zero)
 

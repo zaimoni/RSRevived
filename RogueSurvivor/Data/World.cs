@@ -469,10 +469,8 @@ namespace djack.RogueSurvivor.Data
       foreach(var d in relay_districts) m_DistrictsGrid[d.WorldPosition.X, d.WorldPosition.Y] = d;
       relay_districts = null; // allow early garbage collection
 
-#if PROTOTYPE
-      // needs tile ids to save/load first
+      // Exits leaving a map's bounds are not saved: this is their only source.  Requires the maps' tiles.
       DoForAllDistricts(District.InterpolateExits);
-#endif
 
       // from OnDeserialized
       m_Extent = new Rectangle(Point.Empty, new Point(m_Size, m_Size));
