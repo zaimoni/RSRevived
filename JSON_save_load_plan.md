@@ -39,9 +39,11 @@ Recorded 2026-10-01.
 
 - **`JsonElement` staging** for polymorphic objects, not pure streaming (2026-10-01). It costs an allocation per object, but gives order-independence and lets `$id` register before children load.
 
+- **Controller amnesia is acceptable as an intermediate state** (2026-10-01): AIs may reload with no memory until phase 3.
+
 ## Open decisions
 
-- **Is controller amnesia acceptable in November?** If not, phase 3 has to start in parallel and is unlikely to finish in time.
+See "Not yet decided" under Phase 2.
 
 ## Phases
 
@@ -110,12 +112,44 @@ Readability rule: the JSON is meant to be read, so no packing of the `Item_s` ki
 
 ### Phase 2: actors (weeks 3-5)
 
-`Actor`, `Corpse`, `UniqueActors`, the player reference, `RadioFaction`/`ThreatTracking`.
 Controllers are saved as `$type` only, so AIs reload with amnesia. This is the November milestone.
+
+Design:
+
+- **Owners define, cross-links only reference.** An actor is written in full where it lives: a map's actor list, a corpse (its dead actor), `UniqueActors` (not yet spawned), the refugee pool. Everything else writes a bare `$ref`.
+- The actor writes its `Position`; the owning map supplies the map on load.
+- Cross-link fixups run once, at the end of the load, in file order. Firing each when its target happens to load would reorder lists and dictionaries and fail the round-trip test.
+- A controller's constructor takes its actor, so `ActorController` gets the `s_LoadOwner` pattern `Map` uses for its district.
+- Recomputed on load, not saved: `m_Leader` (from the leader's followers), current attack and defence (from equipped items).
+- Implied when omitted: hit points, stamina, food, sleep and sanity equal to the model's base value; each "previous" value equal to the current one.
+
+Steps:
+
+- [ ] 1. Resolver: ordered end-of-load fixups; helpers for a single reference, a list of references, a dictionary keyed by reference.
+- [ ] 2. Actor core: `Sealed<Actor>` (model, faction, name, flags, spawn time, stats, skills, doll, inventory, inventory slots, controller type). `Map` writes `Actors` as a bare array in list order (turn order). `Session` writes the player as a `$ref`.
+- [ ] 3. Actor cross-links (target, followers, trust, aggressor and self-defence lists) and `ActorScoring`.
+- [ ] 4. Corpses: `Sealed<Corpse>`, `Corpses` on `Map`, the dragged-corpse link.
+- [ ] 5. `UniqueActors` and the refugee pool. `ItemTrap` and `TaskEscapeNanny` become complete.
+- [ ] 6. Police `RadioFaction`: item memory, `ThreatTracking`, the investigate set, event log, rankings.
+- [ ] 7. Post-load stage for a JSON-loaded session: derived caches and `RepairLoad`. Installing the loaded world and player, and JSON as a real save format, wait until after phase 3.
+
+Not yet decided:
+
+- Whether `Controller` is omitted when it is the model's default controller (implied while controllers carry no state).
+- References to actors nobody owns (a dead actor with no corpse, still in a trust or aggressor list). The save-side check will throw and name the field; decide the rule from what a real save shows.
 
 ### Phase 3: AI state (after November)
 
 Objectives, actions, sensors and percepts. Each needs a decision: persist, or rebuild after load.
+
+Data design notes that bear on the format:
+
+- **`ActorController` vs. `BaseAI` is a historical accident.** `PlayerController` now derives from `ObjectiveAI`, so the whole `BaseAI` API could be lifted into `ActorController`. The format must not encode that layering: one `ActorController` root, tags are the concrete class names, and base-class fields are written flat in the one object (which the constructor chain already does). Merging the two classes then changes no file.
+- **Counted commands belong with `PlayerController`.** They live in `RogueGame` as technical debt (`s_CountedCommands` is already keyed by `PlayerController`). Save them inside the owning player's controller object, not as a `Session`-level field, so paying the debt changes no file.
+- The underlying problem: command translation is front-end dependent and has to be isolated from game code. `HandlePlayerActor` inlines what would be `PlayerController.GetAction` and `PlayerController.SelectAction`.
+- Also here: the `PlayerController` event handlers and the message log.
+
+After phase 3: install the loaded world and player (take a JSON-loaded session live), and offer JSON as a save format behind a test define.
 
 ### Phase 4: retire BinaryFormatter
 
