@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using static System.Windows.Forms.Design.AxImporter;
 
 #nullable enable
 
@@ -49,6 +48,35 @@ namespace Zaimoni.JSON
                 throw new JsonException("type mismatch: " + id + " is not "+typeof(T).FullName);
             }
             return null;
+        }
+
+        /// <summary>Starts the definition of an object.  Caller writes the fields, then WriteEndObject.</summary>
+        /// <param name="id">from TrySaveAsRef</param>
+        static public void WriteStartDefinition(this Utf8JsonWriter writer, string id, string? type = null)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("$id", id);
+            if (null != type) writer.WriteString("$type", type);
+        }
+
+        /// <summary>Consumes the leading $id and $type properties, in either order.</summary>
+        /// <param name="reader">Precondition: on the first token after StartObject.  Postcondition: on the first non-metadata property, or EndObject</param>
+        public static void ReadMetadata(this ref Utf8JsonReader reader, out string? id, out string? type)
+        {
+            id = null;
+            type = null;
+            while (JsonTokenType.PropertyName == reader.TokenType) {
+                if (reader.ValueTextEquals("$id")) {
+                    if (null != id) throw new JsonException("duplicate $id");
+                    reader.Read();
+                    id = reader.GetString();
+                } else if (reader.ValueTextEquals("$type")) {
+                    if (null != type) throw new JsonException("duplicate $type");
+                    reader.Read();
+                    type = reader.GetString();
+                } else return;
+                reader.Read();
+            }
         }
 
         public static void RecordRef<T>(this string relay_id, T src) where T : class {

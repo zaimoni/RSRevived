@@ -49,9 +49,9 @@ Recorded 2026-10-01.
   - Read side: `TryResolve`, and `Defer(id, fixup)`, which runs at once if the id is known and otherwise when `AddReference` sees it.
   - `PreserveReferenceHandler.Finish()` replaces the manual `Reset()` calls: it throws if an id was referenced but never defined (save) or a fixup is still waiting (load), and resets either way.
   - The deferral half has no consumer until Actors.
-- [ ] **Factor out the `$id` handling** marked `\todo` in `District` and `Map`
+- [x] **Factor out the `$id` handling** marked `\todo` in `District` and `Map`
   - Read: `reader.ReadMetadata(out string? id, out string? type)` consumes `$id`/`$type` in either order and leaves the reader on the first real property.
-  - Write: the converter writes the object start and metadata, then calls a fields-only `toJsonFields(writer, options)`.
+  - Write: the converter calls `writer.WriteStartDefinition(id, type)`, then a fields-only `toJsonFields(writer, options)`, then `WriteEndObject`. (Not named `WriteStartObject`: `Utf8JsonWriter.WriteStartObject(string propertyName)` would win overload resolution.)
   - The constructor registers `this` immediately after reading the metadata, not at the end. A `Location` inside a map's own contents cannot resolve its map otherwise.
 - [ ] **Dispatcher**: `Zaimoni.JSON.Polymorphic<TBase> : JsonConverter<TBase>`
   - `CanConvert` accepts any type assignable to `TBase`, so fields declared as a derived type still dispatch.
@@ -80,6 +80,10 @@ Objectives, actions, sensors and percepts. Each needs a decision: persist, or re
 ### Phase 4: retire BinaryFormatter
 
 Move `GameOptions`, `Keybindings`, `HiScoreTable` and `GameHintsStatus` to attribute-driven JSON, then drop the `System.Runtime.Serialization.Formatters` package.
+
+## Ordering constraints in the JSON format
+
+- In a `District`, `WorldPos` must precede `Maps`: the `Map` constructor copies `m_District.WorldPosition` into `DistrictPos` and hashes it. The reader throws otherwise.
 
 ## Known costs
 

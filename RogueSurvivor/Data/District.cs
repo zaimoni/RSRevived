@@ -212,8 +212,6 @@ namespace djack.RogueSurvivor.Data
         else if (reader.ValueTextEquals("EntryMap")) return 6;
         else if (reader.ValueTextEquals("SewersMap")) return 7;
         else if (reader.ValueTextEquals("SubwayMap")) return 8;
-        // \todo factor this out
-        else if (reader.ValueTextEquals("$id")) return -1;
 
         Engine.RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -224,18 +222,18 @@ namespace djack.RogueSurvivor.Data
       int origin_depth = reader.CurrentDepth;
       reader.Read();
 
-      string? relay_id = null;
+      reader.ReadMetadata(out var relay_id, out _);
+      relay_id?.RecordRef(this);    // before loading anything that could refer to us
+
       Point relay_WorldPos = default;
       DistrictKind relay_kind = default;
+      bool have_WorldPos = false;
 
-      void read(ref Utf8JsonReader reader) {
+      int read(ref Utf8JsonReader reader) {
           int code = field_code(ref reader);
           reader.Read();
 
           switch (code) {
-          case -1:
-              relay_id = reader.GetString();
-              break;
           case 1:
               m_Name = reader.GetString();
               break;
@@ -245,7 +243,7 @@ namespace djack.RogueSurvivor.Data
           case 3:
               {
               string stage = reader.GetString();
-              if (Enum.TryParse(stage, out relay_kind)) return;
+              if (Enum.TryParse(stage, out relay_kind)) return code;
               Engine.RogueGame.Game.ErrorPopup("unrecognized district kind " + stage);
               }
               throw new JsonException();
@@ -258,6 +256,7 @@ namespace djack.RogueSurvivor.Data
               break;
           case 5:
               {
+              if (!have_WorldPos) throw new JsonException("District: WorldPos must precede Maps");  // Map constructor copies it
               Map.s_LoadOwner = this;
               var stage = JsonSerializer.Deserialize<Map[]>(ref reader, options) ?? throw new JsonException();
               Map.s_LoadOwner = null;
@@ -274,31 +273,34 @@ namespace djack.RogueSurvivor.Data
               m_SubwayMap = JsonSerializer.Deserialize<Map>(ref reader, options) ?? throw new JsonException();
               break;
           }
+          return code;
       }
 
       while (reader.CurrentDepth != origin_depth || JsonTokenType.EndObject != reader.TokenType) {
           if (JsonTokenType.PropertyName != reader.TokenType) throw new JsonException();
 
-          read(ref reader);
+          // readonly fields cannot be assigned from the local function
+          switch (read(ref reader)) {
+          case 2:
+              WorldPosition = relay_WorldPos;
+              have_WorldPos = true;
+              break;
+          case 3:
+              Kind = relay_kind;
+              break;
+          }
 
           reader.Read();
       }
 
       if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
-
-      WorldPosition = relay_WorldPos;
-      Kind = relay_kind;
-
-      relay_id?.RecordRef(this);
     }
 
     public static District fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
         return reader.TryReadRef<District>() ?? new District(ref reader, options);
     }
 
-    public void toJson(string id, Utf8JsonWriter writer, JsonSerializerOptions options) {
-      writer.WriteStartObject();
-      writer.WriteString("$id", id);
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
       writer.WriteString("Name", m_Name);
       writer.WritePropertyName("WorldPos");
       JsonSerializer.Serialize(writer, WorldPosition, options);
@@ -317,7 +319,6 @@ namespace djack.RogueSurvivor.Data
         writer.WritePropertyName("SubwayMap");
         JsonSerializer.Serialize(writer, m_SubwayMap, options);
       }
-      writer.WriteEndObject();
     }
 
     // map manipulation
@@ -738,7 +739,10 @@ namespace Zaimoni.JsonConvert
         public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.District src, JsonSerializerOptions options)
         {
             var id = src.TrySaveAsRef(writer);
-            if (null != id) src.toJson(id, writer, options);
+            if (null == id) return;
+            writer.WriteStartDefinition(id);
+            src.toJsonFields(writer, options);
+            writer.WriteEndObject();
         }
     }
 }
