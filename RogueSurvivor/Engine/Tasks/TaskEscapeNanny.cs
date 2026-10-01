@@ -1,6 +1,8 @@
 ﻿using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
@@ -9,7 +11,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Engine.Tasks
 {
     [Serializable]
-    class TaskEscapeNanny : TimedTask, Zaimoni.Serialization.ISerialize
+    class TaskEscapeNanny : TimedTask, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<TaskEscapeNanny>
     {
         private readonly List<Actor> _escapees;
         private readonly HashSet<Point> _safe_zone;
@@ -34,6 +36,22 @@ namespace djack.RogueSurvivor.Engine.Tasks
         base.save(encode);
     }
 #endregion
+
+        // incomplete: _escapees needs Actor save/load.  Without them, Trigger does nothing.
+        private TaskEscapeNanny(JsonElement src, JsonSerializerOptions options) : base(src, options)
+        {
+            _escapees = new();
+            _safe_zone = src.Require("SafeZone").Deserialize<HashSet<Point>>(options) ?? throw new JsonException();
+        }
+
+        static TaskEscapeNanny IJsonPolymorphic<TaskEscapeNanny>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+        public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            base.toJsonFields(writer, options);
+            writer.WritePropertyName("SafeZone");
+            JsonSerializer.Serialize(writer, _safe_zone, options);
+        }
 
         public override void Trigger(Map m)
         {

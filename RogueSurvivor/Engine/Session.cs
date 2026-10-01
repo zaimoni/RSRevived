@@ -474,6 +474,12 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Box2D_short());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Location());
 
+          var tasks = new Zaimoni.JSON.Polymorphic<TimedTask>();
+          tasks.Add(new Zaimoni.JsonConvert.Via<TimedTask, djack.RogueSurvivor.Engine.Tasks.TaskRemoveDecoration>("TaskRemoveDecoration"));
+          tasks.Add(new Zaimoni.JsonConvertIncomplete.Via<TimedTask, djack.RogueSurvivor.Engine.Tasks.TaskEscapeNanny>("TaskEscapeNanny"));
+          tasks.RequireAllSubtypes();
+          s_j_opts.Converters.Add(tasks);
+
           s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Map());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Session());
         }

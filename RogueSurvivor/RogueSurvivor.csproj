@@ -302,6 +302,7 @@
     <Compile Include="Zaimoni\Data\Ary2Dictionary.cs" />
     <Compile Include="Zaimoni\Data\Cache.cs" />
     <Compile Include="Zaimoni\Data\JSON.cs" />
+    <Compile Include="Zaimoni\Data\JsonPolymorphic.cs" />
     <Compile Include="Zaimoni\Data\KVpair.cs" />
     <Compile Include="Zaimoni\Data\Compass.cs" />
     <Compile Include="Zaimoni\Data\DrawingExt.cs" />

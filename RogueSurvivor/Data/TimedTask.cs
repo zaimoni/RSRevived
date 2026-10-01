@@ -5,6 +5,8 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -35,6 +37,15 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, TurnsLeft);
     }
 #endregion
+
+    protected TimedTask(JsonElement src, JsonSerializerOptions options) {
+        src.RecordRef(this);
+        TurnsLeft = src.Require("TurnsLeft").GetInt32();
+    }
+
+    public virtual void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        writer.WriteNumber("TurnsLeft", TurnsLeft);
+    }
 
     public void Tick(Map m)
     {

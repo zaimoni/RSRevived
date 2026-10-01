@@ -79,6 +79,19 @@ namespace Zaimoni.JSON
             }
         }
 
+        /// <summary>Registers obj under src's $id, if it has one.</summary>
+        public static void RecordRef<T>(this JsonElement src, T obj) where T : class
+        {
+            if (src.TryGetProperty("$id", out var relay_id)) (relay_id.GetString() ?? throw new JsonException("null $id")).RecordRef(obj);
+        }
+
+        /// <summary>like JsonElement.GetProperty, but reports a missing field as a JsonException</summary>
+        public static JsonElement Require(this JsonElement src, string name)
+        {
+            if (src.TryGetProperty(name, out var ret)) return ret;
+            throw new JsonException("missing field: " + name);
+        }
+
         public static void RecordRef<T>(this string relay_id, T src) where T : class {
             var resolve = PreserveReferenceHandler.Resolver;
             resolve.AddReference(relay_id, src);

@@ -7,6 +7,8 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
@@ -15,7 +17,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Engine.Tasks
 {
   [Serializable]
-  internal class TaskRemoveDecoration : TimedTask, Zaimoni.Serialization.ISerialize
+  internal class TaskRemoveDecoration : TimedTask, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<TaskRemoveDecoration>
     {
     private readonly List<Point> m_pt;  // or HashSet<Point>
     private readonly string m_imageID;
@@ -40,6 +42,19 @@ namespace djack.RogueSurvivor.Engine.Tasks
     }
 #endregion
 
+    private TaskRemoveDecoration(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        m_pt = src.Require("Points").Deserialize<List<Point>>(options) ?? throw new JsonException();
+        m_imageID = src.Require("Image").GetString() ?? throw new JsonException();
+    }
+
+    static TaskRemoveDecoration IJsonPolymorphic<TaskRemoveDecoration>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        base.toJsonFields(writer, options);
+        writer.WritePropertyName("Points");
+        JsonSerializer.Serialize(writer, m_pt, options);
+        writer.WriteString("Image", m_imageID);
+    }
 
     public override void Trigger(Map m) {
       foreach(var pt in m_pt) m.RemoveDecorationAt(m_imageID, in pt);

@@ -35,9 +35,12 @@ Recorded 2026-10-01.
 5. **Ownership and references.** Owned objects get context from their container, as `Map.s_LoadOwner` does now. Only true cross-links use `$ref`.
 6. **Forward references.** A cross-link may point at an object not yet loaded (an Actor's leader in a later map). The resolver separates "id assigned" from "definition written"; loading keeps a fixup list. Fields set by fixup cannot be `readonly`.
 
+## Decisions made
+
+- **`JsonElement` staging** for polymorphic objects, not pure streaming (2026-10-01). It costs an allocation per object, but gives order-independence and lets `$id` register before children load.
+
 ## Open decisions
 
-- **`JsonElement` staging vs. pure streaming** for polymorphic objects. Recommended: staging. It costs an allocation per object, but gives order-independence and lets `$id` register before children load. Pure streaming needs a per-type relay struct and a virtual field hook, and fights `readonly`.
 - **Is controller amnesia acceptable in November?** If not, phase 3 has to start in parallel and is unlikely to finish in time.
 
 ## Phases
@@ -53,14 +56,15 @@ Recorded 2026-10-01.
   - Read: `reader.ReadMetadata(out string? id, out string? type)` consumes `$id`/`$type` in either order and leaves the reader on the first real property.
   - Write: the converter calls `writer.WriteStartDefinition(id, type)`, then a fields-only `toJsonFields(writer, options)`, then `WriteEndObject`. (Not named `WriteStartObject`: `Utf8JsonWriter.WriteStartObject(string propertyName)` would win overload resolution.)
   - The constructor registers `this` immediately after reading the metadata, not at the end. A `Location` inside a map's own contents cannot resolve its map otherwise.
-- [ ] **Dispatcher**: `Zaimoni.JSON.Polymorphic<TBase> : JsonConverter<TBase>`
+- [x] **Dispatcher**: `Zaimoni.JSON.Polymorphic<TBase> : JsonConverter<TBase>` (`Zaimoni/Data/JsonPolymorphic.cs`)
   - `CanConvert` accepts any type assignable to `TBase`, so fields declared as a derived type still dispatch.
   - Interface-typed fields (`Observer<Location[]>`, `UsableItem`) get their own instance listing the implementers.
-- [ ] **Registry and completeness wrapper**
+- [x] **Registry and completeness wrapper**
   - Contract: `IJsonPolymorphic<TSelf>` with `static abstract TSelf fromJson(JsonElement, JsonSerializerOptions)` and `void toJsonFields(Utf8JsonWriter, JsonSerializerOptions)`.
   - Entry: abstract `Subtype<TBase>` (tag, CLR type, `Load`, `Save`), implemented identically by `Zaimoni.JsonConvert.Via<TBase,T>` and `Zaimoni.JsonConvertIncomplete.Via<TBase,T>`.
-  - DEBUG: building the options throws if any non-abstract subtype of a root is unregistered.
-  - Prove on `TimedTask` first, then `Item`.
+  - DEBUG: `RequireAllSubtypes()` throws while building the options if any non-abstract subtype of a root is unregistered. Open generic definitions are skipped; their closed instantiations are registered one by one.
+  - Type-side pattern: a `(JsonElement src, JsonSerializerOptions options)` constructor chained through the base class, which calls `src.RecordRef(this)` first; a `public virtual toJsonFields` that calls `base.toJsonFields` first; an explicit `static T IJsonPolymorphic<T>.fromJson`.
+  - Proved on `TimedTask`: `TaskRemoveDecoration` complete; `TaskEscapeNanny` incomplete (its escapee list needs Actor). `Map` does not write its timers yet (phase 1).
 - [ ] **Round-trip test**: save, load, save again, compare the two JSON texts.
 - [ ] **DEBUG audit** listing every `Incomplete` converter and registry entry. JSON becomes a real `SaveFormat` only when the list is empty.
 
