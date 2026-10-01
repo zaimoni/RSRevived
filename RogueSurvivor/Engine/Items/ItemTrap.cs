@@ -15,7 +15,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemTrap : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemTrap>
+  public sealed class ItemTrap : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemTrap>
     {
 #nullable enable
     new public ItemTrapModel Model { get { return (base.Model as ItemTrapModel)!; } }
@@ -86,7 +86,7 @@ namespace djack.RogueSurvivor.Engine.Items
         m_IsTriggered = src.TryGetProperty("Triggered", out relay) && relay.GetBoolean();
     }
 
-    static ItemTrap IJsonPolymorphic<ItemTrap>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+    static ItemTrap IJsonStaged<ItemTrap>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
         base.toJsonFields(writer, options);

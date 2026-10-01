@@ -13,7 +13,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemMeleeWeapon : ItemWeapon, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemMeleeWeapon>
+  public sealed class ItemMeleeWeapon : ItemWeapon, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemMeleeWeapon>
     {
     new public ItemMeleeWeaponModel Model { get {return (base.Model as ItemMeleeWeaponModel)!; } }
     public bool IsFragile { get { return Model.IsFragile; } }
@@ -30,6 +30,6 @@ namespace djack.RogueSurvivor.Engine.Items
         RequireModel<ItemMeleeWeaponModel>();
     }
 
-    static ItemMeleeWeapon IJsonPolymorphic<ItemMeleeWeapon>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+    static ItemMeleeWeapon IJsonStaged<ItemMeleeWeapon>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
   }
 }

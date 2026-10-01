@@ -17,7 +17,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Engine.Tasks
 {
   [Serializable]
-  internal class TaskRemoveDecoration : TimedTask, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<TaskRemoveDecoration>
+  internal class TaskRemoveDecoration : TimedTask, Zaimoni.Serialization.ISerialize, IJsonStaged<TaskRemoveDecoration>
     {
     private readonly List<Point> m_pt;  // or HashSet<Point>
     private readonly string m_imageID;
@@ -47,7 +47,7 @@ namespace djack.RogueSurvivor.Engine.Tasks
         m_imageID = src.Require("Image").GetString() ?? throw new JsonException();
     }
 
-    static TaskRemoveDecoration IJsonPolymorphic<TaskRemoveDecoration>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+    static TaskRemoveDecoration IJsonStaged<TaskRemoveDecoration>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
         base.toJsonFields(writer, options);

@@ -14,7 +14,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemRangedWeapon : ItemWeapon, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemRangedWeapon>
+  public sealed class ItemRangedWeapon : ItemWeapon, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemRangedWeapon>
     {
     new public ItemRangedWeaponModel Model { get {return (base.Model as ItemRangedWeaponModel)!; } }
     public AmmoType AmmoType { get { return Model.AmmoType; } }
@@ -39,7 +39,7 @@ namespace djack.RogueSurvivor.Engine.Items
         Ammo = src.Require("Ammo").GetInt32();
     }
 
-    static ItemRangedWeapon IJsonPolymorphic<ItemRangedWeapon>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+    static ItemRangedWeapon IJsonStaged<ItemRangedWeapon>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
         base.toJsonFields(writer, options);

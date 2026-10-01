@@ -9,7 +9,7 @@ using System.Text.Json.Serialization;
 // A custom JsonConverter<Base> bypasses [JsonDerivedType] the same way it bypasses ReferenceHandler,
 // so we write the $type discriminator ourselves.
 //
-// Usage: each concrete type T in the hierarchy implements IJsonPolymorphic<T>.  Then
+// Usage: each concrete type T in the hierarchy implements IJsonStaged<T>.  Then
 //   var items = new Zaimoni.JSON.Polymorphic<Item>();
 //   items.Add(new Zaimoni.JsonConvert.Via<Item, ItemFood>("ItemFood"));               // save/load believed complete
 //   items.Add(new Zaimoni.JsonConvertIncomplete.Via<Item, ItemTracker>("ItemTracker"));  // not yet
@@ -17,7 +17,7 @@ using System.Text.Json.Serialization;
 
 namespace Zaimoni.JSON
 {
-    public interface IJsonPolymorphic<TSelf> where TSelf : class, IJsonPolymorphic<TSelf>
+    public interface IJsonStaged<TSelf> where TSelf : class, IJsonStaged<TSelf>
     {
         /// <param name="src">the whole JSON object, including $id and $type.  Implementations should src.RecordRef(this) before loading anything that could refer back.</param>
         static abstract TSelf fromJson(JsonElement src, JsonSerializerOptions options);
@@ -76,7 +76,7 @@ namespace Zaimoni.JSON
     }
 
     /// <summary>Shared implementation of Zaimoni.JsonConvert.Sealed and Zaimoni.JsonConvertIncomplete.Sealed</summary>
-    public abstract class SealedBase<T> : JsonConverter<T> where T : class, IJsonPolymorphic<T>
+    public abstract class SealedBase<T> : JsonConverter<T> where T : class, IJsonStaged<T>
     {
         public override void Write(Utf8JsonWriter writer, T src, JsonSerializerOptions options)
         {
@@ -179,9 +179,9 @@ namespace Zaimoni.JSON
 namespace Zaimoni.JsonConvert
 {
     /// <summary>For a class with identity ($id/$ref) but no subclasses: no $type is written.</summary>
-    public sealed class Sealed<T> : Zaimoni.JSON.SealedBase<T> where T : class, Zaimoni.JSON.IJsonPolymorphic<T> { }
+    public sealed class Sealed<T> : Zaimoni.JSON.SealedBase<T> where T : class, Zaimoni.JSON.IJsonStaged<T> { }
 
-    public sealed class Via<TBase, T> : Zaimoni.JSON.Subtype<TBase> where TBase : class where T : class, TBase, Zaimoni.JSON.IJsonPolymorphic<T>
+    public sealed class Via<TBase, T> : Zaimoni.JSON.Subtype<TBase> where TBase : class where T : class, TBase, Zaimoni.JSON.IJsonStaged<T>
     {
         public Via(string tag) : base(tag) { }
 
@@ -194,9 +194,9 @@ namespace Zaimoni.JsonConvert
 namespace Zaimoni.JsonConvertIncomplete
 {
     /// <summary>For a class with identity ($id/$ref) but no subclasses: no $type is written.</summary>
-    public sealed class Sealed<T> : Zaimoni.JSON.SealedBase<T> where T : class, Zaimoni.JSON.IJsonPolymorphic<T> { }
+    public sealed class Sealed<T> : Zaimoni.JSON.SealedBase<T> where T : class, Zaimoni.JSON.IJsonStaged<T> { }
 
-    public sealed class Via<TBase, T> : Zaimoni.JSON.Subtype<TBase> where TBase : class where T : class, TBase, Zaimoni.JSON.IJsonPolymorphic<T>
+    public sealed class Via<TBase, T> : Zaimoni.JSON.Subtype<TBase> where TBase : class where T : class, TBase, Zaimoni.JSON.IJsonStaged<T>
     {
         public Via(string tag) : base(tag) { }
 

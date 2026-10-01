@@ -15,7 +15,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemBodyArmor : Item, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemBodyArmor>
+  public sealed class ItemBodyArmor : Item, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemBodyArmor>
     {
     private static readonly Item_IDs[] BAD_POLICE_OUTFITS = new[]{
       Item_IDs.ARMOR_HELLS_SOULS_JACKET,
@@ -48,7 +48,7 @@ namespace djack.RogueSurvivor.Engine.Items
         RequireModel<Data.Model.BodyArmor>();
     }
 
-    static ItemBodyArmor IJsonPolymorphic<ItemBodyArmor>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+    static ItemBodyArmor IJsonStaged<ItemBodyArmor>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     // these five functions are actually functions of the body armor model.
     // Callers should not assume the current overoptimization from C-level converisons will hold indefinitely.

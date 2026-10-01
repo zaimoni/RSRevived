@@ -15,7 +15,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemFood : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemFood>
+  public sealed class ItemFood : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemFood>
     {
     public readonly WorldTime? BestBefore;
 
@@ -83,7 +83,7 @@ namespace djack.RogueSurvivor.Engine.Items
         if (IsPerishable && null == BestBefore) throw new JsonException("perishable food without BestBefore: " + ModelID.ToString());
     }
 
-    static ItemFood IJsonPolymorphic<ItemFood>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+    static ItemFood IJsonStaged<ItemFood>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
         base.toJsonFields(writer, options);

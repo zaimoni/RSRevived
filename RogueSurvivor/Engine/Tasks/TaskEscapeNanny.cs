@@ -11,7 +11,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Engine.Tasks
 {
     [Serializable]
-    class TaskEscapeNanny : TimedTask, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<TaskEscapeNanny>
+    class TaskEscapeNanny : TimedTask, Zaimoni.Serialization.ISerialize, IJsonStaged<TaskEscapeNanny>
     {
         private readonly List<Actor> _escapees;
         private readonly HashSet<Point> _safe_zone;
@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Engine.Tasks
             _safe_zone = src.Require("SafeZone").Deserialize<HashSet<Point>>(options) ?? throw new JsonException();
         }
 
-        static TaskEscapeNanny IJsonPolymorphic<TaskEscapeNanny>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+        static TaskEscapeNanny IJsonStaged<TaskEscapeNanny>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
         public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
         {

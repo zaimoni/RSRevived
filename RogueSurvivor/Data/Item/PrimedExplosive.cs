@@ -6,7 +6,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Data._Item
 {
     [Serializable]
-    public sealed class PrimedExplosive : Engine.Items.ItemExplosive, IJsonPolymorphic<PrimedExplosive>
+    public sealed class PrimedExplosive : Engine.Items.ItemExplosive, IJsonStaged<PrimedExplosive>
     {
         private int m_FuseTimeLeft;
 
@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Data._Item
             m_FuseTimeLeft = src.Require("FuseTimeLeft").GetInt32();
         }
 
-        static PrimedExplosive IJsonPolymorphic<PrimedExplosive>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+        static PrimedExplosive IJsonStaged<PrimedExplosive>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
         public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
             base.toJsonFields(writer, options);

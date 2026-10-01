@@ -18,7 +18,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemEntertainment : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemEntertainment>
+  public sealed class ItemEntertainment : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemEntertainment>
     {
     List<ActorTag>? m_BoringFor = null; // alpha10 boring items moved out of Actor
 
@@ -45,7 +45,7 @@ namespace djack.RogueSurvivor.Engine.Items
         }
     }
 
-    static ItemEntertainment IJsonPolymorphic<ItemEntertainment>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+    static ItemEntertainment IJsonStaged<ItemEntertainment>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
         base.toJsonFields(writer, options);

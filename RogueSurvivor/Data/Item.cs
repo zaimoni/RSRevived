@@ -51,7 +51,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Serializable]
-  public class Item : INoun, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<Item>
+  public class Item : INoun, Zaimoni.Serialization.ISerialize, IJsonStaged<Item>
     {
     public readonly Gameplay.Item_IDs ModelID;
     private int m_Quantity;
@@ -151,7 +151,7 @@ namespace djack.RogueSurvivor.Data
         EquippedPart = src.TryGetProperty("Equipped", out _) ? src.RequireEnum<DollPart>("Equipped") : DollPart.NONE;
     }
 
-    static Item IJsonPolymorphic<Item>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+    static Item IJsonStaged<Item>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     // Qty is implied (1) when not stackable; Equipped is implied when not equipped
     public virtual void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {

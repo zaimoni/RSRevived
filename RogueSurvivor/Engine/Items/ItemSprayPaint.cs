@@ -18,7 +18,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemSprayPaint : Item, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemSprayPaint>
+  internal sealed class ItemSprayPaint : Item, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemSprayPaint>
     {
     new public ItemSprayPaintModel Model { get {return (base.Model as ItemSprayPaintModel)!; } }
     private int m_PaintQty;
@@ -60,7 +60,7 @@ namespace djack.RogueSurvivor.Engine.Items
         PaintQuantity = src.Require("PaintQuantity").GetInt32();
     }
 
-    static ItemSprayPaint IJsonPolymorphic<ItemSprayPaint>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+    static ItemSprayPaint IJsonStaged<ItemSprayPaint>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
         base.toJsonFields(writer, options);

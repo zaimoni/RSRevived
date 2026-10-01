@@ -14,7 +14,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemBarricadeMaterial : Item, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemBarricadeMaterial>
+  public sealed class ItemBarricadeMaterial : Item, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemBarricadeMaterial>
     {
     new public ItemBarricadeMaterialModel Model { get {return (base.Model as ItemBarricadeMaterialModel)!; } }
 
@@ -29,6 +29,6 @@ namespace djack.RogueSurvivor.Engine.Items
         RequireModel<ItemBarricadeMaterialModel>();
     }
 
-    static ItemBarricadeMaterial IJsonPolymorphic<ItemBarricadeMaterial>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+    static ItemBarricadeMaterial IJsonStaged<ItemBarricadeMaterial>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
   }
 }
