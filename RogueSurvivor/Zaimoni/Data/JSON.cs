@@ -27,7 +27,7 @@ namespace Zaimoni.JSON
         static public void SaveAsRef<T>(this T src, Utf8JsonWriter writer) where T : class
         {
             var resolve = PreserveReferenceHandler.Resolver;
-            var id = resolve.GetReference(src);
+            var id = resolve.Reference(src);
             writer.WriteStartObject();
             writer.WriteString("$ref", id);
             writer.WriteEndObject();

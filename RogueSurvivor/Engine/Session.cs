@@ -494,12 +494,12 @@ namespace djack.RogueSurvivor.Engine
       System.Text.Json.JsonSerializer.Serialize(stream, session, typeof(Session), JSON_opts);
 	  stream.Flush();
       }
+      Zaimoni.JSON.PreserveReferenceHandler.Finish();
       RogueGame.Game.ErrorPopup("JSON save ok");
-      Zaimoni.JSON.PreserveReferenceHandler.Reset();
       using var stream2 = (filepath+"json").CreateStream(false);
       var test2 = System.Text.Json.JsonSerializer.Deserialize<Session>(stream2, JSON_opts);
+      Zaimoni.JSON.PreserveReferenceHandler.Finish();
       RogueGame.Game.ErrorPopup("JSON load ok");
-      Zaimoni.JSON.PreserveReferenceHandler.Reset();
 #elif BOOTSTRAP_Z_SERIALIZATION
 	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
       RogueGame.Game.ErrorPopup("in-house save ok");
