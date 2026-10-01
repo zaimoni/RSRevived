@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Data._Item
 {
     [Serializable]
-    public sealed class PrimedExplosive : Engine.Items.ItemExplosive
+    public sealed class PrimedExplosive : Engine.Items.ItemExplosive, IJsonPolymorphic<PrimedExplosive>
     {
         private int m_FuseTimeLeft;
 
@@ -17,6 +19,17 @@ namespace djack.RogueSurvivor.Data._Item
             m_FuseTimeLeft = fuse_left;
         }
         public PrimedExplosive(Data.Model.Explosive model) : this(model, model.FuseDelay) { }
+
+        private PrimedExplosive(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+            m_FuseTimeLeft = src.Require("FuseTimeLeft").GetInt32();
+        }
+
+        static PrimedExplosive IJsonPolymorphic<PrimedExplosive>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+        public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+            base.toJsonFields(writer, options);
+            writer.WriteNumber("FuseTimeLeft", m_FuseTimeLeft);
+        }
 
         public override string ImageID {
           get {

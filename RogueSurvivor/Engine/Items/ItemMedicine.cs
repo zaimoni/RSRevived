@@ -6,13 +6,15 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemMedicine : Item,UsableItem, Zaimoni.Serialization.ISerialize
+  public sealed class ItemMedicine : Item,UsableItem, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemMedicine>
     {
     new public ItemMedicineModel Model { get {return (base.Model as ItemMedicineModel)!; } }
     public int Healing { get { return Model.Healing; } }
@@ -28,6 +30,12 @@ namespace djack.RogueSurvivor.Engine.Items
     protected ItemMedicine(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
 #endregion
+
+    private ItemMedicine(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        RequireModel<ItemMedicineModel>();
+    }
+
+    static ItemMedicine IJsonPolymorphic<ItemMedicine>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
 
 #region UsableItem implementation

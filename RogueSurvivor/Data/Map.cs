@@ -414,7 +414,7 @@ namespace djack.RogueSurvivor.Data
     }
         #endregion
 
-        private const int field_code_UB = 6;
+        private const int field_code_UB = 7;
         static private int field_code(ref Utf8JsonReader reader)
         {
             if (reader.ValueTextEquals("Name")) return 1;
@@ -422,7 +422,8 @@ namespace djack.RogueSurvivor.Data
             else if (reader.ValueTextEquals("LocalTime")) return 3;
             else if (reader.ValueTextEquals("Extent")) return 4;
             else if (reader.ValueTextEquals("NextActorIndex")) return 5;
-            else if (reader.ValueTextEquals("Zones")) return field_code_UB;
+            else if (reader.ValueTextEquals("Zones")) return 6;
+            else if (reader.ValueTextEquals("GroundItems")) return field_code_UB;
 
             Engine.RogueGame.Game.ErrorPopup(reader.GetString());
             throw new JsonException();
@@ -478,6 +479,14 @@ namespace djack.RogueSurvivor.Data
                         {
                         var stage = JsonSerializer.Deserialize<Zone[]>(ref reader, options) ?? throw new JsonException(); ;
                         m_Zones.AddRange(stage);
+                        }
+                        break;
+                    case 7:
+                        {
+                        var stage = JsonElement.ParseValue(ref reader);
+                        foreach (var x in stage.EnumerateArray()) {
+                            m_GroundItemsByPosition.Add(x[0].Deserialize<Point>(options), x[1].Deserialize<Inventory>(options) ?? throw new JsonException("null ground inventory"));
+                        }
                         }
                         break;
                 }
@@ -582,6 +591,18 @@ namespace djack.RogueSurvivor.Data
       if (0 != m_iCheckNextActorIndex) writer.WriteNumber("NextActorIndex", m_iCheckNextActorIndex);
       writer.WritePropertyName("Zones");
       JsonSerializer.Serialize(writer, m_Zones.ToArray(), options);
+      if (0 < m_GroundItemsByPosition.Count) {
+        // each entry is [position, inventory]
+        writer.WritePropertyName("GroundItems");
+        writer.WriteStartArray();
+        foreach (var x in m_GroundItemsByPosition) {
+          writer.WriteStartArray();
+          JsonSerializer.Serialize(writer, x.Key, options);
+          JsonSerializer.Serialize(writer, x.Value, options);
+          writer.WriteEndArray();
+        }
+        writer.WriteEndArray();
+      }
     }
 
     public string MapName { get { return Name; } }

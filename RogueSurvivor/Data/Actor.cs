@@ -4068,3 +4068,25 @@ namespace Zaimoni.Serialization
     }
 }
 
+
+namespace Zaimoni.JsonConvert
+{
+    public class ActorTag : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Data.ActorTag>
+    {
+        public override djack.RogueSurvivor.Data.ActorTag Read(ref System.Text.Json.Utf8JsonReader reader, Type src, System.Text.Json.JsonSerializerOptions options)
+        {
+            var stage = System.Text.Json.JsonElement.ParseValue(ref reader);
+            if (System.Text.Json.JsonValueKind.Object != stage.ValueKind) throw new System.Text.Json.JsonException("expected object for ActorTag");
+            return new(Zaimoni.JSON.JSON_ext.Require(stage, "Name").GetString() ?? throw new System.Text.Json.JsonException("null Name"),
+                       Zaimoni.JSON.JSON_ext.Require(stage, "SpawnTime").GetInt32());
+        }
+
+        public override void Write(System.Text.Json.Utf8JsonWriter writer, djack.RogueSurvivor.Data.ActorTag src, System.Text.Json.JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("Name", src.Name);
+            writer.WriteNumber("SpawnTime", src.SpawnTime);
+            writer.WriteEndObject();
+        }
+    }
+}

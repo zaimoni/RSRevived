@@ -5,13 +5,15 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemMeleeWeapon : ItemWeapon, Zaimoni.Serialization.ISerialize
+  public sealed class ItemMeleeWeapon : ItemWeapon, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemMeleeWeapon>
     {
     new public ItemMeleeWeaponModel Model { get {return (base.Model as ItemMeleeWeaponModel)!; } }
     public bool IsFragile { get { return Model.IsFragile; } }
@@ -23,5 +25,11 @@ namespace djack.RogueSurvivor.Engine.Items
     protected ItemMeleeWeapon(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
 #endregion
+
+    private ItemMeleeWeapon(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        RequireModel<ItemMeleeWeaponModel>();
+    }
+
+    static ItemMeleeWeapon IJsonPolymorphic<ItemMeleeWeapon>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
   }
 }

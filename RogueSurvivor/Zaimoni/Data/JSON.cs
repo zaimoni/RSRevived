@@ -105,6 +105,26 @@ namespace Zaimoni.JSON
             throw new JsonException("missing field: " + name);
         }
 
+        /// <summary>Reads an enum saved by name.  Numbers, and names that are not declared, are rejected.</summary>
+        public static T RequireEnum<T>(this JsonElement src, string name) where T : struct, Enum
+        {
+            var stage = src.Require(name);
+            if (JsonValueKind.String == stage.ValueKind) {
+                var text = stage.GetString()!;
+                if (0 < text.Length && !char.IsDigit(text[0]) && '-' != text[0] && Enum.TryParse<T>(text, out var ret)) return ret;
+            }
+            throw new JsonException("unrecognized " + typeof(T).Name + " for " + name + ": " + stage.GetRawText());
+        }
+
+        /// <summary>An owned collection, as a bare JSON array: no $id/$values wrapper, as it is never shared.</summary>
+        public static void WriteArray<T>(this Utf8JsonWriter writer, string name, IEnumerable<T> src, JsonSerializerOptions options)
+        {
+            writer.WritePropertyName(name);
+            writer.WriteStartArray();
+            foreach (var x in src) JsonSerializer.Serialize(writer, x, options);
+            writer.WriteEndArray();
+        }
+
         public static void RecordRef<T>(this string relay_id, T src) where T : class {
             var resolve = PreserveReferenceHandler.Resolver;
             resolve.AddReference(relay_id, src);

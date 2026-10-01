@@ -67,9 +67,33 @@ namespace Zaimoni.JSON
                     continue;
                 }
                 var t = x.GetType();
-                if ("Zaimoni.JsonConvert" != t.Namespace) ret.Add(t.Name);
+                if ("Zaimoni.JsonConvert" == t.Namespace) continue;
+                if (t.IsGenericType) ret.Add(t.GetGenericArguments()[0].Name);  // e.g. Sealed<T>
+                else ret.Add(t.Name);
             }
             return ret;
+        }
+    }
+
+    /// <summary>Shared implementation of Zaimoni.JsonConvert.Sealed and Zaimoni.JsonConvertIncomplete.Sealed</summary>
+    public abstract class SealedBase<T> : JsonConverter<T> where T : class, IJsonPolymorphic<T>
+    {
+        public override void Write(Utf8JsonWriter writer, T src, JsonSerializerOptions options)
+        {
+            var id = src.TrySaveAsRef(writer);
+            if (null == id) return;
+            writer.WriteStartDefinition(id);
+            src.toJsonFields(writer, options);
+            writer.WriteEndObject();
+        }
+
+        public override T Read(ref Utf8JsonReader reader, Type want, JsonSerializerOptions options)
+        {
+            var src = JsonElement.ParseValue(ref reader);
+            if (JsonValueKind.Object != src.ValueKind) throw new JsonException("expected object for " + typeof(T).FullName);
+            if (!src.TryGetProperty("$ref", out var relay_ref)) return T.fromJson(src, options);
+            var id = relay_ref.GetString() ?? throw new JsonException("null $ref");
+            return PreserveReferenceHandler.Resolver.ResolveReference(id) as T ?? throw new JsonException("type mismatch: " + id + " is not " + typeof(T).FullName);
         }
     }
 
@@ -154,6 +178,9 @@ namespace Zaimoni.JSON
 
 namespace Zaimoni.JsonConvert
 {
+    /// <summary>For a class with identity ($id/$ref) but no subclasses: no $type is written.</summary>
+    public sealed class Sealed<T> : Zaimoni.JSON.SealedBase<T> where T : class, Zaimoni.JSON.IJsonPolymorphic<T> { }
+
     public sealed class Via<TBase, T> : Zaimoni.JSON.Subtype<TBase> where TBase : class where T : class, TBase, Zaimoni.JSON.IJsonPolymorphic<T>
     {
         public Via(string tag) : base(tag) { }
@@ -166,6 +193,9 @@ namespace Zaimoni.JsonConvert
 
 namespace Zaimoni.JsonConvertIncomplete
 {
+    /// <summary>For a class with identity ($id/$ref) but no subclasses: no $type is written.</summary>
+    public sealed class Sealed<T> : Zaimoni.JSON.SealedBase<T> where T : class, Zaimoni.JSON.IJsonPolymorphic<T> { }
+
     public sealed class Via<TBase, T> : Zaimoni.JSON.Subtype<TBase> where TBase : class where T : class, TBase, Zaimoni.JSON.IJsonPolymorphic<T>
     {
         public Via(string tag) : base(tag) { }

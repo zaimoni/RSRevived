@@ -5,13 +5,15 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemGrenade : ItemExplosive, Zaimoni.Serialization.ISerialize
+  public sealed class ItemGrenade : ItemExplosive, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemGrenade>
     {
     new public Data.Model.Explosive Model { get {return (base.Model as Data.Model.Explosive)!; } }
     public ItemGrenade(Data.Model.Explosive model, int qty=1) : base(model, qty) {}
@@ -20,6 +22,11 @@ namespace djack.RogueSurvivor.Engine.Items
     protected ItemGrenade(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
 #endregion
+
+    private ItemGrenade(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+    }
+
+    static ItemGrenade IJsonPolymorphic<ItemGrenade>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
   }
 }

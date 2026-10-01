@@ -6,13 +6,15 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemTracker : Item, BatteryPowered, Zaimoni.Serialization.ISerialize
+  public sealed class ItemTracker : Item, BatteryPowered, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemTracker>
     {
     new public ItemTrackerModel Model { get {return (base.Model as ItemTrackerModel)!; } }
     private int m_Batteries;
@@ -74,6 +76,18 @@ namespace djack.RogueSurvivor.Engine.Items
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_Batteries);
     }
 #endregion
+
+    private ItemTracker(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        RequireModel<ItemTrackerModel>();
+        Batteries = src.Require("Batteries").GetInt32();
+    }
+
+    static ItemTracker IJsonPolymorphic<ItemTracker>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        base.toJsonFields(writer, options);
+        writer.WriteNumber("Batteries", m_Batteries);
+    }
 
     public override Item_s toStruct() { return new Item_s(ModelID, m_Batteries); }
     public override void toStruct(ref Item_s dest)

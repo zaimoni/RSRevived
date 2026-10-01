@@ -9,11 +9,13 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using djack.RogueSurvivor.Data;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemTrap : Item, UsableItem, Zaimoni.Serialization.ISerialize
+  public sealed class ItemTrap : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemTrap>
     {
 #nullable enable
     new public ItemTrapModel Model { get { return (base.Model as ItemTrapModel)!; } }
@@ -76,6 +78,21 @@ namespace djack.RogueSurvivor.Engine.Items
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)transcode);
     }
 #endregion
+
+    // incomplete: m_Owner and m_Known need Actor save/load
+    private ItemTrap(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        RequireModel<ItemTrapModel>();
+        m_IsActivated = src.TryGetProperty("Activated", out var relay) && relay.GetBoolean();
+        m_IsTriggered = src.TryGetProperty("Triggered", out relay) && relay.GetBoolean();
+    }
+
+    static ItemTrap IJsonPolymorphic<ItemTrap>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        base.toJsonFields(writer, options);
+        if (m_IsActivated) writer.WriteBoolean("Activated", true);
+        if (m_IsTriggered) writer.WriteBoolean("Triggered", true);
+    }
 
 #region UsableItem implementation
     public bool CouldUse() { return Model.UseToActivate; }

@@ -7,13 +7,15 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Xml.Linq;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemFood : Item, UsableItem, Zaimoni.Serialization.ISerialize
+  public sealed class ItemFood : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemFood>
     {
     public readonly WorldTime? BestBefore;
 
@@ -74,6 +76,22 @@ namespace djack.RogueSurvivor.Engine.Items
         if (IsPerishable) Zaimoni.Serialization.ISave.InlineSave(encode, in BestBefore);
     }
 #endregion
+
+    private ItemFood(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        RequireModel<ItemFoodModel>();
+        if (src.TryGetProperty("BestBefore", out var relay)) BestBefore = relay.Deserialize<WorldTime>(options);
+        if (IsPerishable && null == BestBefore) throw new JsonException("perishable food without BestBefore: " + ModelID.ToString());
+    }
+
+    static ItemFood IJsonPolymorphic<ItemFood>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        base.toJsonFields(writer, options);
+        if (null != BestBefore) {
+            writer.WritePropertyName("BestBefore");
+            JsonSerializer.Serialize(writer, BestBefore, options);
+        }
+    }
 
 #region UsableItem implementation
     public bool CouldUse() { return true; }

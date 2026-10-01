@@ -6,13 +6,15 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemBarricadeMaterial : Item, Zaimoni.Serialization.ISerialize
+  public sealed class ItemBarricadeMaterial : Item, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemBarricadeMaterial>
     {
     new public ItemBarricadeMaterialModel Model { get {return (base.Model as ItemBarricadeMaterialModel)!; } }
 
@@ -22,5 +24,11 @@ namespace djack.RogueSurvivor.Engine.Items
     protected ItemBarricadeMaterial(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
 #endregion
+
+    private ItemBarricadeMaterial(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        RequireModel<ItemBarricadeMaterialModel>();
+    }
+
+    static ItemBarricadeMaterial IJsonPolymorphic<ItemBarricadeMaterial>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
   }
 }

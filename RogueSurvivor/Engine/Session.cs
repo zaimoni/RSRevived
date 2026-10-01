@@ -271,6 +271,7 @@ namespace djack.RogueSurvivor.Engine
         else if (reader.ValueTextEquals("CreatedCounts")) return 11;
         else if (reader.ValueTextEquals("World")) return 12;
         else if (reader.ValueTextEquals("UniqueMaps")) return 13;
+        else if (reader.ValueTextEquals("UniqueItems")) return 14;
 
         RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -285,6 +286,7 @@ namespace djack.RogueSurvivor.Engine
       Dictionary<string, string> relay_commandline = null;
       UniqueMaps? relay_uniqueMaps = null;
       World? relay_world = null;
+      UniqueItems? relay_uniqueItems = null;
 
       void read(ref Utf8JsonReader reader) {
           int code = field_code(ref reader);
@@ -334,6 +336,9 @@ namespace djack.RogueSurvivor.Engine
           case 13:
               relay_uniqueMaps = JsonSerializer.Deserialize<UniqueMaps>(ref reader, options) ?? throw new JsonException();
               break;
+          case 14:
+              relay_uniqueItems = JsonSerializer.Deserialize<UniqueItems>(ref reader, options) ?? throw new JsonException();
+              break;
           }
       }
 
@@ -347,6 +352,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (null != relay_commandline) m_CommandLineOptions = new(relay_commandline);
       if (null != relay_uniqueMaps) UniqueMaps = relay_uniqueMaps;
+      if (null != relay_uniqueItems) UniqueItems = relay_uniqueItems;
       m_JsonLoadedWorld = relay_world;
 
       if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
@@ -401,6 +407,8 @@ namespace djack.RogueSurvivor.Engine
       JsonSerializer.Serialize(writer, m_JsonLoadedWorld ?? World.Get, options);
       writer.WritePropertyName("UniqueMaps");
       JsonSerializer.Serialize(writer, UniqueMaps, options);
+      writer.WritePropertyName("UniqueItems");
+      JsonSerializer.Serialize(writer, UniqueItems, options);
       writer.WriteEndObject();
     }
 
@@ -478,6 +486,30 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Vector2D_short());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Box2D_short());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Location());
+
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.ActorTag());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.UniqueItems());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Inventory>());
+
+          var items = new Zaimoni.JSON.Polymorphic<Item>();
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Item>("Item"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemAmmo>("ItemAmmo"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemBarricadeMaterial>("ItemBarricadeMaterial"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemBodyArmor>("ItemBodyArmor"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemEntertainment>("ItemEntertainment"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemFood>("ItemFood"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemGrenade>("ItemGrenade"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemLight>("ItemLight"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemMedicine>("ItemMedicine"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemMeleeWeapon>("ItemMeleeWeapon"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemRangedWeapon>("ItemRangedWeapon"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemSprayPaint>("ItemSprayPaint"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemSprayScent>("ItemSprayScent"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemTracker>("ItemTracker"));
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Data._Item.PrimedExplosive>("PrimedExplosive"));
+          items.Add(new Zaimoni.JsonConvertIncomplete.Via<Item, Items.ItemTrap>("ItemTrap"));   // owner and known-by need Actor
+          items.RequireAllSubtypes();
+          s_j_opts.Converters.Add(items);
 
           var tasks = new Zaimoni.JSON.Polymorphic<TimedTask>();
           tasks.Add(new Zaimoni.JsonConvert.Via<TimedTask, djack.RogueSurvivor.Engine.Tasks.TaskRemoveDecoration>("TaskRemoveDecoration"));

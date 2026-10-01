@@ -6,6 +6,8 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
@@ -16,7 +18,7 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal sealed class ItemSprayPaint : Item, Zaimoni.Serialization.ISerialize
+  internal sealed class ItemSprayPaint : Item, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemSprayPaint>
     {
     new public ItemSprayPaintModel Model { get {return (base.Model as ItemSprayPaintModel)!; } }
     private int m_PaintQty;
@@ -52,5 +54,17 @@ namespace djack.RogueSurvivor.Engine.Items
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_PaintQty);
     }
 #endregion
+
+    private ItemSprayPaint(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        RequireModel<ItemSprayPaintModel>();
+        PaintQuantity = src.Require("PaintQuantity").GetInt32();
+    }
+
+    static ItemSprayPaint IJsonPolymorphic<ItemSprayPaint>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        base.toJsonFields(writer, options);
+        writer.WriteNumber("PaintQuantity", m_PaintQty);
+    }
   }
 }

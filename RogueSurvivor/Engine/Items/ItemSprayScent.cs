@@ -6,13 +6,15 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemSprayScent : Item, Zaimoni.Serialization.ISerialize
+  public sealed class ItemSprayScent : Item, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemSprayScent>
     {
     new public ItemSprayScentModel Model { get {return (base.Model as ItemSprayScentModel)!; } }
     private int m_SprayQty;
@@ -49,5 +51,17 @@ namespace djack.RogueSurvivor.Engine.Items
         Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_SprayQty);
     }
 #endregion
+
+    private ItemSprayScent(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        RequireModel<ItemSprayScentModel>();
+        SprayQuantity = src.Require("SprayQuantity").GetInt32();
+    }
+
+    static ItemSprayScent IJsonPolymorphic<ItemSprayScent>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        base.toJsonFields(writer, options);
+        writer.WriteNumber("SprayQuantity", m_SprayQty);
+    }
   }
 }

@@ -6,6 +6,8 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
@@ -25,6 +27,8 @@ namespace djack.RogueSurvivor.Engine.Items
         base.save(encode);
     }
 #endregion
+
+    protected ItemExplosive(JsonElement src, JsonSerializerOptions options) : base(src, options) { RequireModel<Data.Model.Explosive>(); }
 
     }
 }

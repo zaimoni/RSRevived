@@ -10,6 +10,8 @@ using Zaimoni.Data;
 using djack.RogueSurvivor.Engine;
 
 using Point = Zaimoni.Data.Vector2D<short>;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
@@ -49,7 +51,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Serializable]
-  public class Item : INoun, Zaimoni.Serialization.ISerialize
+  public class Item : INoun, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<Item>
     {
     public readonly Gameplay.Item_IDs ModelID;
     private int m_Quantity;
@@ -140,6 +142,28 @@ namespace djack.RogueSurvivor.Data
 
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => save(encode);
 #endregion
+
+    protected Item(JsonElement src, JsonSerializerOptions options) {
+        src.RecordRef(this);
+        ModelID = src.RequireEnum<Gameplay.Item_IDs>("Model");
+        if (0 > (int)ModelID || (int)Gameplay.Item_IDs._COUNT <= (int)ModelID) throw new JsonException("not an item model: " + ModelID.ToString());
+        m_Quantity = src.TryGetProperty("Qty", out var relay) ? relay.GetInt32() : 1;
+        EquippedPart = src.TryGetProperty("Equipped", out _) ? src.RequireEnum<DollPart>("Equipped") : DollPart.NONE;
+    }
+
+    static Item IJsonPolymorphic<Item>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    // Qty is implied (1) when not stackable; Equipped is implied when not equipped
+    public virtual void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        writer.WriteString("Model", ModelID.ToString());
+        if (1 != m_Quantity || Model.IsStackable) writer.WriteNumber("Qty", m_Quantity);
+        if (DollPart.NONE != EquippedPart) writer.WriteString("Equipped", EquippedPart.ToString());
+    }
+
+    /// <summary>JSON load: a subclass was paired with a model of the wrong kind</summary>
+    protected void RequireModel<T>() where T : class {
+        if (Model is not T) throw new JsonException(ModelID.ToString() + " is not a " + typeof(T).Name);
+    }
 
     public void UnequippedBy(Actor actor, bool canMessage=true)
     {

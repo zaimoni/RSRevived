@@ -10,13 +10,15 @@ using System.Runtime.Serialization;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay.AI;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemEntertainment : Item, UsableItem, Zaimoni.Serialization.ISerialize
+  public sealed class ItemEntertainment : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonPolymorphic<ItemEntertainment>
     {
     List<ActorTag>? m_BoringFor = null; // alpha10 boring items moved out of Actor
 
@@ -34,6 +36,21 @@ namespace djack.RogueSurvivor.Engine.Items
       Zaimoni.Serialization.ISave.LinearSave(encode, m_BoringFor);
     }
 #endregion
+
+    private ItemEntertainment(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        RequireModel<ItemEntertainmentModel>();
+        if (src.TryGetProperty("BoringFor", out var relay)) {
+            m_BoringFor = new();
+            foreach (var x in relay.EnumerateArray()) m_BoringFor.Add(x.Deserialize<ActorTag>(options));
+        }
+    }
+
+    static ItemEntertainment IJsonPolymorphic<ItemEntertainment>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        base.toJsonFields(writer, options);
+        if (null != m_BoringFor) writer.WriteArray("BoringFor", m_BoringFor, options);
+    }
 
 
     public void AddBoringFor(in ActorTag a)

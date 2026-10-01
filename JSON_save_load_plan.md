@@ -76,7 +76,19 @@ Recorded 2026-10-01.
 
 ### Phase 1: map contents without actors (weeks 2-3)
 
-`Item` and `Inventory`, `MapObject`, `TimedTask`, scents, tile IDs, decorations, remaining exits, `UniqueItems`.
+- [x] **`Item`**: 16 concrete types under `Polymorphic<Item>`; tags are the class names.
+  - Base fields: `Model` (the `Item_IDs` name), `Qty` (omitted when it is 1 and the model is not stackable), `Equipped` (omitted when `NONE`).
+  - Each subclass checks its model is the right kind on load.
+  - `ItemTrap` is incomplete: owner and known-by are Actor references, reloaded empty.
+  - `Engine/Items/ItemGrenadePrimed.cs` and `ItemPrimedExplosive.cs` are not in the csproj and were left alone.
+- [x] **`Inventory`**: `Zaimoni.JsonConvert.Sealed<Inventory>` (`$id`, no `$type`); `MaxCapacity` and `Items`.
+- [x] **Owned collections are bare JSON arrays** (`writer.WriteArray`), with no `$id`/`$values` wrapper.
+- [x] **Wiring**: `Map` writes `GroundItems` as `[position, inventory]` pairs; `Session` writes `UniqueItems`.
+- [ ] `MapObject` (with shelf inventories)
+- [ ] `TimedTask` wired into `Map`
+- [ ] Scents, tile IDs, decorations, remaining exits
+
+Readability rule: the JSON is meant to be read, so no packing of the `Item_s` kind. Omitting a field whose value is implied is fine.
 
 ### Phase 2: actors (weeks 3-5)
 
