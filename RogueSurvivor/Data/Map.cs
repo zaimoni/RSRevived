@@ -2704,32 +2704,7 @@ retry:
       foreach (var odorScent in odorScentList) if (odorScent.Odor == odor) return odorScent;
       return null;
     }
-#nullable restore
 
-#if OBSOLETE
-    private void AddNewScent(OdorScent scent, Point position)
-    {
-      if (m_ScentsByPosition.TryGetValue(position, out List<OdorScent> odorScentList)) {
-        odorScentList.Add(scent);
-      } else {
-        m_ScentsByPosition.Add(position, new List<OdorScent>(2) { scent });
-      }
-    }
-
-    public void ModifyScentAt(Odor odor, int strengthChange, Point position)
-    {
-#if DEBUG
-      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
-#endif
-      OdorScent scentByOdor = GetScentByOdor(odor, position);
-      if (scentByOdor == null) {
-        if (0 < strengthChange) AddNewScent(new OdorScent(odor, strengthChange), position);
-      } else
-        scentByOdor.Strength += strengthChange;
-    }
-#endif
-
-#nullable enable
     public void RefreshScentAt(Odor odor, int freshStrength, Point position)
     {
 #if DEBUG
