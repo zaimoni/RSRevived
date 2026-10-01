@@ -414,7 +414,7 @@ namespace djack.RogueSurvivor.Data
     }
         #endregion
 
-        private const int field_code_UB = 11;
+        private const int field_code_UB = 12;
         static private int field_code(ref Utf8JsonReader reader)
         {
             if (reader.ValueTextEquals("Name")) return 1;
@@ -427,7 +427,8 @@ namespace djack.RogueSurvivor.Data
             else if (reader.ValueTextEquals("MapObjects")) return 8;
             else if (reader.ValueTextEquals("Timers")) return 9;
             else if (reader.ValueTextEquals("Tiles")) return 10;
-            else if (reader.ValueTextEquals("Decorations")) return field_code_UB;
+            else if (reader.ValueTextEquals("Decorations")) return 11;
+            else if (reader.ValueTextEquals("Scents")) return field_code_UB;
 
             Engine.RogueGame.Game.ErrorPopup(reader.GetString());
             throw new JsonException();
@@ -573,6 +574,25 @@ namespace djack.RogueSurvivor.Data
                         }
                         }
                         break;
+                    case 12:
+                        {
+                        // not RefreshScentAt: that is for a live map
+                        var stage = JsonElement.ParseValue(ref reader);
+                        foreach (var x in stage.EnumerateArray()) {
+                            var scents = new List<OdorScent>(2);
+                            foreach (var scent in x[1].EnumerateObject()) {
+                                if (char.IsDigit(scent.Name, 0) || !Enum.TryParse<Odor>(scent.Name, out var odor) || !Enum.IsDefined(odor)) throw new JsonException("Scents: unrecognized odor " + scent.Name);
+                                foreach (var prior in scents) if (prior.Odor == odor) throw new JsonException("Scents: " + scent.Name + " repeated at one position");
+                                var strength = scent.Value.GetInt32();
+                                // the Strength setter would clamp, i.e. load something other than what was saved
+                                if (OdorScent.MIN_STRENGTH > strength || OdorScent.MAX_STRENGTH < strength) throw new JsonException("Scents: strength out of range: " + strength.ToString());
+                                scents.Add(new OdorScent(odor, strength));
+                            }
+                            if (0 >= scents.Count) throw new JsonException("Scents: position without scents");
+                            m_ScentsByPosition.Add(x[0].Deserialize<Point>(options), scents);
+                        }
+                        }
+                        break;
                 }
                 return code;
             }
@@ -711,6 +731,32 @@ namespace djack.RogueSurvivor.Data
             stage.Append(JsonSerializer.Serialize(imageID, options));
           }
           stage.Append("]]");
+          rows.Add(stage.ToString());
+        }
+        writer.WriteArrayOfLines(rows);
+      }
+      if (0 < m_ScentsByPosition.Count) {
+        // each entry is [position, {odor: strength}], one entry per line.  At most one scent of each odor at a position.
+        writer.WritePropertyName("Scents");
+        var rows = new List<string>(m_ScentsByPosition.Count);
+        var stage = new System.Text.StringBuilder();
+        foreach (var x in m_ScentsByPosition) {
+          stage.Clear();
+          stage.Append("[[");
+          stage.Append(x.Key.X);
+          stage.Append(',');
+          stage.Append(x.Key.Y);
+          stage.Append("],{");
+          bool first = true;
+          foreach (var scent in x.Value) {
+            if (!first) stage.Append(',');
+            first = false;
+            stage.Append('"');
+            stage.Append(scent.Odor.ToString());
+            stage.Append("\":");
+            stage.Append(scent.Strength);
+          }
+          stage.Append("}]");
           rows.Add(stage.ToString());
         }
         writer.WriteArrayOfLines(rows);

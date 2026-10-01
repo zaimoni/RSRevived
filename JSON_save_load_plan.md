@@ -96,7 +96,15 @@ Recorded 2026-10-01.
 - [x] **Remaining exits**: not saved. The JSON `World` constructor regenerates them with `District.InterpolateExits` once all districts are loaded; that is the only source of exits leaving a map's bounds. The round-trip test cannot see them, so they are checked in the headless harness only.
 - [x] **Decorations**: `Map` writes `Decorations` as `[position, [image IDs]]` pairs, one per line (`writer.WriteArrayOfLines`, shared with `Tiles`). Image IDs are written verbatim; whether an image exists is not checked on load.
   - Deferred as micro-optimizations: grouping by image, and stripping the common path prefix from image IDs.
-- [ ] Scents (none expected at turn zero)
+- [x] **Scents**: `Map` writes `Scents` as `[position, {odor: strength}]` pairs, one per line. The object form relies on there being at most one scent of each odor at a position.
+  - Rejected on load: an unknown or numeric odor, an odor repeated at a position, a position with no scents, a strength outside `MIN_STRENGTH`..`MAX_STRENGTH` (the `Strength` setter would silently clamp it).
+  - None expected at turn zero: the first in-game exercise is a save a few turns in.
+
+Phase 1 is complete. What `Map` still does not save is everything involving actors: the actor list and corpses. Three other `Map` fields are deliberately not saved:
+
+- `Seed`: only used in map generation.
+- `BgMusic`: arguably recoverable from where the map is. Not saved; deriving it on load is still to do.
+- `IsSecret`: do not wire in. It waits for a feature redesign and a big-bang integration. The original intent was to keep the CHAR Underground Base out of [police] pathfinding and to put the map in stasis; the stasis effect is to be eliminated in a storyline revision. The legacy `GetObjectData` does not write it either, so it is already lost on a legacy load.
 
 Readability rule: the JSON is meant to be read, so no packing of the `Item_s` kind. Omitting a field whose value is implied is fine.
 
