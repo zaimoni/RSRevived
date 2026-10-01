@@ -90,7 +90,12 @@ Recorded 2026-10-01.
   - `Board` writes `Text`; `ShelfLike` writes its `Inventory` in full.
   - Location is not saved. `Map` writes `MapObjects` as `[position, object]` pairs and sets each location on load with `RepairLoad`, not `PlaceAt`.
 - [x] **`TimedTask` wired into `Map`** as a bare `Timers` array; the tasks' own point collections are bare arrays too.
-- [ ] Scents, tile IDs, decorations, remaining exits
+- [x] **Tile IDs**: `Map` writes `Tiles` row-major, one row of numbers per line, after `Extent`.
+  - `Session` writes one `TileLegend` before `World`: the tile name for each number. On load the numbers are translated through it, so a save survives the tile IDs being renumbered or extended. A used tile whose legend name is unknown is rejected.
+  - Deliberately not a Base64 blob: that would interfere with extending configuration files.
+- [ ] Remaining exits: regenerate with `District.InterpolateExits` after all districts load (the `#if PROTOTYPE` call in the JSON `World` constructor). Not in the file, so the round-trip test cannot see them: check exit sets in the headless harness. Confirm no other source of out-of-bounds exits.
+- [ ] Decorations
+- [ ] Scents (none expected at turn zero)
 
 Readability rule: the JSON is meant to be read, so no packing of the `Item_s` kind. Omitting a field whose value is implied is fine.
 
@@ -109,6 +114,7 @@ Move `GameOptions`, `Keybindings`, `HiScoreTable` and `GameHintsStatus` to attri
 
 ## Ordering constraints in the JSON format
 
+- In a `Session`, `TileLegend` must precede `World`; in a `Map`, `Extent` must precede `Tiles`. The reader throws otherwise.
 - In a `District`, `WorldPos` must precede `Maps`: the `Map` constructor copies `m_District.WorldPosition` into `DistrictPos` and hashes it. The reader throws otherwise.
 
 ## Before a JSON-loaded world can go live

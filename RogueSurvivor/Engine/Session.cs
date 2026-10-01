@@ -272,6 +272,7 @@ namespace djack.RogueSurvivor.Engine
         else if (reader.ValueTextEquals("World")) return 12;
         else if (reader.ValueTextEquals("UniqueMaps")) return 13;
         else if (reader.ValueTextEquals("UniqueItems")) return 14;
+        else if (reader.ValueTextEquals("TileLegend")) return 15;
 
         RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -333,6 +334,9 @@ namespace djack.RogueSurvivor.Engine
           case 12:
               relay_world = World.Load(ref reader);
               break;
+          case 15:
+              Map.LoadTileLegend(JsonElement.ParseValue(ref reader));
+              break;
           case 13:
               relay_uniqueMaps = JsonSerializer.Deserialize<UniqueMaps>(ref reader, options) ?? throw new JsonException();
               break;
@@ -354,6 +358,7 @@ namespace djack.RogueSurvivor.Engine
       if (null != relay_uniqueMaps) UniqueMaps = relay_uniqueMaps;
       if (null != relay_uniqueItems) UniqueItems = relay_uniqueItems;
       m_JsonLoadedWorld = relay_world;
+      Map.LoadTileLegend(null); // only meaningful for the save it came from
 
       if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
     }
@@ -403,6 +408,8 @@ namespace djack.RogueSurvivor.Engine
       JsonSerializer.Serialize(writer, Rules.Get, options);
       writer.WritePropertyName("CreatedCounts");
       ActorModel.Save(writer);
+      writer.WritePropertyName("TileLegend");   // must precede World: the maps' tiles are numbers into this
+      Map.SaveTileLegend(writer);
       writer.WritePropertyName("World");
       JsonSerializer.Serialize(writer, m_JsonLoadedWorld ?? World.Get, options);
       writer.WritePropertyName("UniqueMaps");

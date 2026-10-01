@@ -414,7 +414,7 @@ namespace djack.RogueSurvivor.Data
     }
         #endregion
 
-        private const int field_code_UB = 9;
+        private const int field_code_UB = 10;
         static private int field_code(ref Utf8JsonReader reader)
         {
             if (reader.ValueTextEquals("Name")) return 1;
@@ -425,10 +425,57 @@ namespace djack.RogueSurvivor.Data
             else if (reader.ValueTextEquals("Zones")) return 6;
             else if (reader.ValueTextEquals("GroundItems")) return 7;
             else if (reader.ValueTextEquals("MapObjects")) return 8;
-            else if (reader.ValueTextEquals("Timers")) return field_code_UB;
+            else if (reader.ValueTextEquals("Timers")) return 9;
+            else if (reader.ValueTextEquals("Tiles")) return field_code_UB;
 
             Engine.RogueGame.Game.ErrorPopup(reader.GetString());
             throw new JsonException();
+        }
+
+        // Tiles are saved as numbers, one row of the map per line.  The save has one legend naming each number,
+        // so that a save survives the tile IDs being renumbered or extended.
+        [NonSerialized] static private int[]? s_TileLegend = null; // JSON load: saved number -> current tile ID; -1 if the name is unknown
+
+        static public void SaveTileLegend(Utf8JsonWriter writer)
+        {
+            writer.WriteStartArray();
+            for (int id = 0; id < (int)GameTiles.IDs._COUNT; id++) writer.WriteStringValue(((GameTiles.IDs)id).ToString());
+            writer.WriteEndArray();
+        }
+
+        /// <param name="src">null to discard the legend, once the maps are loaded</param>
+        static public void LoadTileLegend(JsonElement? src)
+        {
+            if (null == src) {
+                s_TileLegend = null;
+                return;
+            }
+            var stage = new List<int>();
+            foreach (var x in src.Value.EnumerateArray()) {
+                var name = x.GetString();
+                stage.Add(Enum.TryParse<GameTiles.IDs>(name, out var id) && Enum.IsDefined(id) && GameTiles.IDs._COUNT != id ? (int)id : -1);
+            }
+            s_TileLegend = stage.ToArray();
+        }
+
+        static private byte[,] LoadTiles(JsonElement src, Size extent)
+        {
+            var legend = s_TileLegend ?? throw new JsonException("TileLegend must precede the maps");
+            if (extent.Y != src.GetArrayLength()) throw new JsonException("Tiles: " + src.GetArrayLength().ToString() + " rows, expected " + extent.Y.ToString());
+            var ret = new byte[extent.X, extent.Y];
+            int y = 0;
+            foreach (var row in src.EnumerateArray()) {
+                if (extent.X != row.GetArrayLength()) throw new JsonException("Tiles: row " + y.ToString() + " has " + row.GetArrayLength().ToString() + " tiles, expected " + extent.X.ToString());
+                int x = 0;
+                foreach (var tile in row.EnumerateArray()) {
+                    var code = tile.GetInt32();
+                    if (0 > code || legend.Length <= code) throw new JsonException("Tiles: " + code.ToString() + " is not in the legend");
+                    if (0 > legend[code]) throw new JsonException("Tiles: legend entry " + code.ToString() + " is not a known tile");
+                    ret[x++, y] = (byte)legend[code];
+                }
+                y++;
+            }
+            return ret;
         }
 
         [NonSerialized] public static District? s_LoadOwner = null;
@@ -448,6 +495,7 @@ namespace djack.RogueSurvivor.Data
             string? relay_name = null;
             WorldTime relay_localtime = default;
             Size relay_extent = default;
+            byte[,]? relay_tiles = null;
             Span<bool> seen = stackalloc bool[field_code_UB];   // default-initializes to constant false
 
 //          void read(ref Utf8JsonReader reader)
@@ -509,6 +557,10 @@ namespace djack.RogueSurvivor.Data
                         foreach (var x in stage.EnumerateArray()) m_Timers.Add(x.Deserialize<TimedTask>(options) ?? throw new JsonException("null timer"));
                         }
                         break;
+                    case 10:
+                        if (0 >= relay_extent.X || 0 >= relay_extent.Y) throw new JsonException("Map: Extent must precede Tiles");
+                        relay_tiles = LoadTiles(JsonElement.ParseValue(ref reader), relay_extent);
+                        break;
                 }
                 return code;
             }
@@ -530,6 +582,9 @@ namespace djack.RogueSurvivor.Data
                     case 4:
                         Extent = relay_extent;
                         Rect = new Rectangle(Point.Empty, Extent);
+                        break;
+                    case 10:
+                        m_TileIDs = relay_tiles!;
                         break;
                 }
 
@@ -608,6 +663,28 @@ namespace djack.RogueSurvivor.Data
       JsonSerializer.Serialize(writer, LocalTime, options);
       writer.WritePropertyName("Extent");
       JsonSerializer.Serialize(writer, Extent, options);
+      if (null != m_TileIDs) {
+        // row-major, one row per line: reads like the map
+        // The writer would put each tile on its own line, so we lay the whole array out ourselves.
+        writer.WritePropertyName("Tiles");
+        var w_opts = writer.Options;
+        var row_sep = w_opts.Indented ? w_opts.NewLine + new string(w_opts.IndentCharacter, w_opts.IndentSize * (writer.CurrentDepth + 1)) : string.Empty;
+        var stage = new System.Text.StringBuilder();
+        stage.Append('[');
+        for (int y = 0; y < Extent.Y; y++) {
+          if (0 < y) stage.Append(',');
+          stage.Append(row_sep);
+          stage.Append('[');
+          for (int x = 0; x < Extent.X; x++) {
+            if (0 < x) stage.Append(',');
+            stage.Append(m_TileIDs[x, y]);
+          }
+          stage.Append(']');
+        }
+        if (w_opts.Indented) stage.Append(w_opts.NewLine + new string(w_opts.IndentCharacter, w_opts.IndentSize * writer.CurrentDepth));
+        stage.Append(']');
+        writer.WriteRawValue(stage.ToString());
+      }
       if (0 != m_iCheckNextActorIndex) writer.WriteNumber("NextActorIndex", m_iCheckNextActorIndex);
       writer.WritePropertyName("Zones");
       JsonSerializer.Serialize(writer, m_Zones.ToArray(), options);
