@@ -284,6 +284,7 @@ namespace djack.RogueSurvivor.Engine
 
       Dictionary<string, string> relay_commandline = null;
       UniqueMaps? relay_uniqueMaps = null;
+      World? relay_world = null;
 
       void read(ref Utf8JsonReader reader) {
           int code = field_code(ref reader);
@@ -328,7 +329,7 @@ namespace djack.RogueSurvivor.Engine
               ActorModel.Load(ref reader);
               break;
           case 12:
-              World.Load(ref reader);
+              relay_world = World.Load(ref reader);
               break;
           case 13:
               relay_uniqueMaps = JsonSerializer.Deserialize<UniqueMaps>(ref reader, options) ?? throw new JsonException();
@@ -346,6 +347,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (null != relay_commandline) m_CommandLineOptions = new(relay_commandline);
       if (null != relay_uniqueMaps) UniqueMaps = relay_uniqueMaps;
+      m_JsonLoadedWorld = relay_world;
 
       if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
     }
@@ -371,6 +373,9 @@ namespace djack.RogueSurvivor.Engine
             info.read_s(ref s_Player, "s_Player");
  */
 
+    // JSON load does not take the World live yet.  We keep it, so that re-saving a JSON-loaded session saves what was loaded (round-trip test).
+    [NonSerialized] private readonly World? m_JsonLoadedWorld = null;
+
     public static Session fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new Session(ref reader, options);
 
     public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options) {
@@ -393,7 +398,7 @@ namespace djack.RogueSurvivor.Engine
       writer.WritePropertyName("CreatedCounts");
       ActorModel.Save(writer);
       writer.WritePropertyName("World");
-      JsonSerializer.Serialize(writer, World.Get, options);
+      JsonSerializer.Serialize(writer, m_JsonLoadedWorld ?? World.Get, options);
       writer.WritePropertyName("UniqueMaps");
       JsonSerializer.Serialize(writer, UniqueMaps, options);
       writer.WriteEndObject();
@@ -495,17 +500,33 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
 #if BOOTSTRAP_JSON_SERIALIZATION
+      var json_path = filepath+"json";
+      var json_path2 = json_path+"2";   // only survives a failed round-trip test
       {
-      using var stream = (filepath+"json").CreateStream(true);
+      using var stream = json_path.CreateStream(true);
       System.Text.Json.JsonSerializer.Serialize(stream, session, typeof(Session), JSON_opts);
 	  stream.Flush();
       }
       Zaimoni.JSON.PreserveReferenceHandler.Finish();
       RogueGame.Game.ErrorPopup("JSON save ok");
-      using var stream2 = (filepath+"json").CreateStream(false);
-      var test2 = System.Text.Json.JsonSerializer.Deserialize<Session>(stream2, JSON_opts);
+      Session test2;
+      {
+      using var stream2 = json_path.CreateStream(false);
+      test2 = System.Text.Json.JsonSerializer.Deserialize<Session>(stream2, JSON_opts) ?? throw new JsonException();
+      }
       Zaimoni.JSON.PreserveReferenceHandler.Finish();
       RogueGame.Game.ErrorPopup("JSON load ok");
+      // round-trip test: what we loaded must save as the same text.  Does not notice what is not saved at all.
+      {
+      using var stream3 = json_path2.CreateStream(true);
+      System.Text.Json.JsonSerializer.Serialize(stream3, test2, typeof(Session), JSON_opts);
+	  stream3.Flush();
+      }
+      Zaimoni.JSON.PreserveReferenceHandler.Finish();
+      var json_diff = Zaimoni.JSON.JSON_ext.FirstDifference(File.ReadAllLines(json_path), File.ReadAllLines(json_path2));
+      if (null != json_diff) throw new InvalidOperationException("JSON round trip: "+ json_path + " vs. "+ json_path2 + "\n" + json_diff);
+      File.Delete(json_path2);
+      RogueGame.Game.ErrorPopup("JSON round trip ok");
 #elif BOOTSTRAP_Z_SERIALIZATION
 	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
       RogueGame.Game.ErrorPopup("in-house save ok");

@@ -439,8 +439,9 @@ namespace djack.RogueSurvivor.Data
           case 8:
               {
               var stage = JsonSerializer.Deserialize<Location[]>(ref reader, options) ?? throw new JsonException();
-              var scan = stage.Length;
-              while (0 <= (scan -= 2)) {
+              // in save order, so that each map's exits iterate in the order they were saved in (round-trip test)
+              var ub = stage.Length - 1;
+              for (var scan = 0; scan < ub; scan += 2) {
                 stage[scan].SetExit(stage[scan + 1]);
                 stage[scan + 1].SetExit(stage[scan]);
               }
@@ -529,10 +530,11 @@ namespace djack.RogueSurvivor.Data
       writer.WriteEndObject();
     }
 
-    static public void Load(ref Utf8JsonReader reader)
+    static public World Load(ref Utf8JsonReader reader)
     {
       var stage = JsonSerializer.Deserialize<World>(ref reader, Engine.Session.JSON_opts) ?? throw new JsonException();
 //    s_Recent = stage; // when taking live
+      return stage;
     }
 
     static public void Load(Zaimoni.Serialization.DecodeObjects decode)

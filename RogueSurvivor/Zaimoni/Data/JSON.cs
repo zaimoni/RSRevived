@@ -79,6 +79,19 @@ namespace Zaimoni.JSON
             }
         }
 
+        /// <summary>For the save, load, save again round-trip test.</summary>
+        /// <returns>null if and only if the two texts agree; otherwise, where they first disagree</returns>
+        public static string? FirstDifference(string[] first, string[] second)
+        {
+            var ub = Math.Min(first.Length, second.Length);
+            for (var i = 0; i < ub; i++) {
+                if (first[i] == second[i]) continue;
+                return "line " + (i + 1).ToString() + "\nfirst save : " + first[i].Trim() + "\nsecond save: " + second[i].Trim();
+            }
+            if (first.Length == second.Length) return null;
+            return "agree for " + ub.ToString() + " lines; first save has " + first.Length.ToString() + " lines, second save has " + second.Length.ToString();
+        }
+
         /// <summary>Registers obj under src's $id, if it has one.</summary>
         public static void RecordRef<T>(this JsonElement src, T obj) where T : class
         {

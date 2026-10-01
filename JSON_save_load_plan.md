@@ -65,7 +65,11 @@ Recorded 2026-10-01.
   - DEBUG: `RequireAllSubtypes()` throws while building the options if any non-abstract subtype of a root is unregistered. Open generic definitions are skipped; their closed instantiations are registered one by one.
   - Type-side pattern: a `(JsonElement src, JsonSerializerOptions options)` constructor chained through the base class, which calls `src.RecordRef(this)` first; a `public virtual toJsonFields` that calls `base.toJsonFields` first; an explicit `static T IJsonPolymorphic<T>.fromJson`.
   - Proved on `TimedTask`: `TaskRemoveDecoration` complete; `TaskEscapeNanny` incomplete (its escapee list needs Actor). `Map` does not write its timers yet (phase 1).
-- [ ] **Round-trip test**: save, load, save again, compare the two JSON texts.
+- [x] **Round-trip test**: save, load, save again, compare the two JSON texts. Runs in `Session.SaveBin` under `BOOTSTRAP_JSON_SERIALIZATION`.
+  - A mismatch throws, naming the first differing line; the second text is left beside the save as `<save>json2`.
+  - It cannot notice a field that is not saved at all: both texts omit it.
+  - `Session` keeps the JSON-loaded `World` (`m_JsonLoadedWorld`), since it is not taken live; re-saving a loaded session writes that one.
+  - Writers must be deterministic given load order. First case: `Map_Links` is now loaded in save order, so each map's exits iterate as they were saved.
 - [ ] **DEBUG audit** listing every `Incomplete` converter and registry entry. JSON becomes a real `SaveFormat` only when the list is empty.
 
 ### Phase 1: map contents without actors (weeks 2-3)
