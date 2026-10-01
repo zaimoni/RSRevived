@@ -6,13 +6,15 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  internal sealed class Board : MapObject, Zaimoni.Serialization.ISerialize
+  internal sealed class Board : MapObject, Zaimoni.Serialization.ISerialize, IJsonStaged<Board>
     {
     public readonly string[] Text;
 
@@ -30,5 +32,18 @@ namespace djack.RogueSurvivor.Engine.MapObjects
         Zaimoni.Serialization.ISave.LinearSave(encode, Text);
     }
 #endregion
+
+    private Board(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        var stage = new System.Collections.Generic.List<string>();
+        foreach (var x in src.Require("Text").EnumerateArray()) stage.Add(x.GetString() ?? throw new JsonException("null line of text"));
+        Text = stage.ToArray();
+    }
+
+    static Board IJsonStaged<Board>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        base.toJsonFields(writer, options);
+        writer.WriteArray("Text", Text, options);
+    }
   }
 }

@@ -414,7 +414,7 @@ namespace djack.RogueSurvivor.Data
     }
         #endregion
 
-        private const int field_code_UB = 7;
+        private const int field_code_UB = 9;
         static private int field_code(ref Utf8JsonReader reader)
         {
             if (reader.ValueTextEquals("Name")) return 1;
@@ -423,7 +423,9 @@ namespace djack.RogueSurvivor.Data
             else if (reader.ValueTextEquals("Extent")) return 4;
             else if (reader.ValueTextEquals("NextActorIndex")) return 5;
             else if (reader.ValueTextEquals("Zones")) return 6;
-            else if (reader.ValueTextEquals("GroundItems")) return field_code_UB;
+            else if (reader.ValueTextEquals("GroundItems")) return 7;
+            else if (reader.ValueTextEquals("MapObjects")) return 8;
+            else if (reader.ValueTextEquals("Timers")) return field_code_UB;
 
             Engine.RogueGame.Game.ErrorPopup(reader.GetString());
             throw new JsonException();
@@ -487,6 +489,24 @@ namespace djack.RogueSurvivor.Data
                         foreach (var x in stage.EnumerateArray()) {
                             m_GroundItemsByPosition.Add(x[0].Deserialize<Point>(options), x[1].Deserialize<Inventory>(options) ?? throw new JsonException("null ground inventory"));
                         }
+                        }
+                        break;
+                    case 8:
+                        {
+                        // not PlaceAt: that is for a live map
+                        var stage = JsonElement.ParseValue(ref reader);
+                        foreach (var x in stage.EnumerateArray()) {
+                            var pos = x[0].Deserialize<Point>(options);
+                            var obj = x[1].Deserialize<MapObject>(options) ?? throw new JsonException("null map object");
+                            m_MapObjectsByPosition.Add(pos, obj);
+                            obj.RepairLoad(this, pos);
+                        }
+                        }
+                        break;
+                    case 9:
+                        {
+                        var stage = JsonElement.ParseValue(ref reader);
+                        foreach (var x in stage.EnumerateArray()) m_Timers.Add(x.Deserialize<TimedTask>(options) ?? throw new JsonException("null timer"));
                         }
                         break;
                 }
@@ -603,6 +623,19 @@ namespace djack.RogueSurvivor.Data
         }
         writer.WriteEndArray();
       }
+      if (0 < m_MapObjectsByPosition.Count) {
+        // each entry is [position, map object]
+        writer.WritePropertyName("MapObjects");
+        writer.WriteStartArray();
+        foreach (var x in m_MapObjectsByPosition) {
+          writer.WriteStartArray();
+          JsonSerializer.Serialize(writer, x.Key, options);
+          JsonSerializer.Serialize(writer, x.Value, options);
+          writer.WriteEndArray();
+        }
+        writer.WriteEndArray();
+      }
+      if (0 < m_Timers.Count) writer.WriteArray("Timers", m_Timers, options);
     }
 
     public string MapName { get { return Name; } }

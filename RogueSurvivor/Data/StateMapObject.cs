@@ -5,6 +5,8 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
@@ -39,6 +41,9 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, (sbyte)m_State);
     }
 #endregion
+
+    // State is saved by name, by the subclass that knows what it means
+    protected StateMapObject(JsonElement src, JsonSerializerOptions options) : base(src, options) {}
 
     // 2023-04-16: Conditional attributes don't work on override member functions in C#11 (hard syntax error)
     protected void _update(int newState) => m_State = newState;

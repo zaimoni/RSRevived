@@ -6,13 +6,15 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  public sealed class PowerGenerator : StateMapObject, Zaimoni.Serialization.ISerialize
+  public sealed class PowerGenerator : StateMapObject, Zaimoni.Serialization.ISerialize, IJsonStaged<PowerGenerator>
     {
     private const int STATE_OFF = 0;
     private const int STATE_ON = 1;
@@ -41,6 +43,20 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     protected PowerGenerator(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
 #endregion
+
+    private PowerGenerator(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        var stage = src.Require("State").GetString();
+        if ("ON" == stage) _update(STATE_ON);
+        else if ("OFF" == stage) _update(STATE_OFF);
+        else throw new JsonException("unrecognized power generator state: " + stage);
+    }
+
+    static PowerGenerator IJsonStaged<PowerGenerator>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        base.toJsonFields(writer, options);
+        writer.WriteString("State", IsOn ? "ON" : "OFF");
+    }
 
     override protected string StateToID(int x) => m_imageIDs[x];
 

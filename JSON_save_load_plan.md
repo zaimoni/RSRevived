@@ -84,8 +84,12 @@ Recorded 2026-10-01.
 - [x] **`Inventory`**: `Zaimoni.JsonConvert.Sealed<Inventory>` (`$id`, no `$type`); `MaxCapacity` and `Items`.
 - [x] **Owned collections are bare JSON arrays** (`writer.WriteArray`), with no `$id`/`$values` wrapper.
 - [x] **Wiring**: `Map` writes `GroundItems` as `[position, inventory]` pairs; `Session` writes `UniqueItems`.
-- [ ] `MapObject` (with shelf inventories)
-- [ ] `TimedTask` wired into `Map`
+- [x] **`MapObject`**: six concrete types under `Polymorphic<MapObject>`, all complete.
+  - Base fields: `ID` (the `IDs` name). Implied when omitted: `HitPoints` (the model's maximum), `Break` (what the constructor chooses for that `ID`), `Fire` (`UNINFLAMMABLE`).
+  - State is written by name by the subclass: `DoorWindow` `CLOSED`/`OPEN`/`BROKEN` plus `Barricade` (omitted when 0), with its door/window type implied by `ID`; `PowerGenerator` `ON`/`OFF`.
+  - `Board` writes `Text`; `ShelfLike` writes its `Inventory` in full.
+  - Location is not saved. `Map` writes `MapObjects` as `[position, object]` pairs and sets each location on load with `RepairLoad`, not `PlaceAt`.
+- [x] **`TimedTask` wired into `Map`** as a bare `Timers` array; the tasks' own point collections are bare arrays too.
 - [ ] Scents, tile IDs, decorations, remaining exits
 
 Readability rule: the JSON is meant to be read, so no packing of the `Item_s` kind. Omitting a field whose value is implied is fine.
@@ -106,6 +110,14 @@ Move `GameOptions`, `Keybindings`, `HiScoreTable` and `GameHintsStatus` to attri
 ## Ordering constraints in the JSON format
 
 - In a `District`, `WorldPos` must precede `Maps`: the `Map` constructor copies `m_District.WorldPosition` into `DistrictPos` and hashes it. The reader throws otherwise.
+
+## Before a JSON-loaded world can go live
+
+- The JSON `Map` constructor does not build the derived caches (`Players`, `PowerGenerators`, and the rest). That is deliberate: they belong to a postprocessing stage after load, as in the legacy format, and are not saved.
+
+## Parked
+
+- Every door and fortification writes `"Fire": "BURNABLE"`. Left as is until it is decided what to do with the inherited, unexercised fire feature.
 
 ## Known costs
 

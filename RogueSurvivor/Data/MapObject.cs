@@ -8,7 +8,9 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Linq;
+using System.Text.Json;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
@@ -21,7 +23,7 @@ namespace djack.RogueSurvivor.Data
  * we would like actors to have enough item memory to track seen *internal* inventory (not yet implemented)
  */
   [Serializable]
-  public class MapObject : ILocation, INoun, Zaimoni.Serialization.ISerialize
+  public class MapObject : ILocation, INoun, Zaimoni.Serialization.ISerialize, IJsonStaged<MapObject>
   {
     public const int CAR_WEIGHT = 100;
     public const int MAX_NORMAL_WEIGHT = 10;
@@ -230,6 +232,32 @@ namespace djack.RogueSurvivor.Data
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_HitPoints);
     }
 #endregion
+
+    // what the constructor would choose for our current ID
+    private Break DefaultBreakState { get => _ID_StartsBroken(m_ID) ? Break.BROKEN : (0 == Model.MaxHitPoints ? Break.UNBREAKABLE : Break.BREAKABLE); }
+
+    // Location is not saved: our Map knows where we are
+    protected MapObject(JsonElement src, JsonSerializerOptions options) {
+        src.RecordRef(this);
+        m_ID = src.RequireEnum<IDs>("ID");
+        m_BreakState = src.TryGetProperty("Break", out _) ? src.RequireEnum<Break>("Break") : DefaultBreakState;
+        m_FireState = src.TryGetProperty("Fire", out _) ? src.RequireEnum<Fire>("Fire") : Fire.UNINFLAMMABLE;
+        m_HitPoints = src.TryGetProperty("HitPoints", out var relay) ? relay.GetInt32() : MaxHitPoints;
+    }
+
+    static MapObject IJsonStaged<MapObject>.fromJson(JsonElement src, JsonSerializerOptions options) {
+        var ret = new MapObject(src, options);
+        if (ret.m_ID.HasShelf()) throw new JsonException(ret.m_ID.ToString() + " has a shelf: should be a ShelfLike");
+        return ret;
+    }
+
+    // implied when omitted: full hit points, the break state our ID starts with, not flammable
+    public virtual void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        writer.WriteString("ID", m_ID.ToString());
+        if (MaxHitPoints != m_HitPoints) writer.WriteNumber("HitPoints", m_HitPoints);
+        if (DefaultBreakState != m_BreakState) writer.WriteString("Break", m_BreakState.ToString());
+        if (Fire.UNINFLAMMABLE != m_FireState) writer.WriteString("Fire", m_FireState.ToString());
+    }
 
 
     static public MapObject create(string hiddenImageID, Fire burnable = Fire.UNINFLAMMABLE)
@@ -444,7 +472,7 @@ namespace djack.RogueSurvivor.Data
 
 #nullable enable
   [Serializable]
-  public sealed class ShelfLike : MapObject, IInventory, Zaimoni.Serialization.ISerialize
+  public sealed class ShelfLike : MapObject, IInventory, Zaimoni.Serialization.ISerialize, IJsonStaged<ShelfLike>
     {
     private readonly Inventory m_Inventory;
     public Inventory Inventory { get => m_Inventory; }
@@ -480,6 +508,19 @@ namespace djack.RogueSurvivor.Data
         else throw new ArgumentNullException(nameof(m_Inventory));
     }
 #endregion
+
+    private ShelfLike(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        if (!ID.HasShelf()) throw new JsonException(ID.ToString() + " does not have a shelf");
+        m_Inventory = src.Require("Inventory").Deserialize<Inventory>(options) ?? throw new JsonException("null shelf inventory");
+    }
+
+    static ShelfLike IJsonStaged<ShelfLike>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        base.toJsonFields(writer, options);
+        writer.WritePropertyName("Inventory");
+        JsonSerializer.Serialize(writer, m_Inventory, options);
+    }
 
     public void Remove(Item it, bool canMessage = true) => m_Inventory.RemoveAllQuantity(it);
     public bool IsCarrying(Item it) => m_Inventory.Contains(it);

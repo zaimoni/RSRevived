@@ -7,13 +7,15 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Threading;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  public sealed class DoorWindow : StateMapObject, Zaimoni.Serialization.ISerialize
+  public sealed class DoorWindow : StateMapObject, Zaimoni.Serialization.ISerialize, IJsonStaged<DoorWindow>
     {
     public const int BASE_HITPOINTS = 40;   // XXX spacetime scaling candidate
     public const int STATE_CLOSED = 0;
@@ -91,6 +93,29 @@ namespace djack.RogueSurvivor.Engine.MapObjects
         Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_BarricadePoints);
     }
 #endregion
+
+    static private readonly string[] state_names = new string[MAX_STATE] { "CLOSED", "OPEN", "BROKEN" };
+
+    private DoorWindow(JsonElement src, JsonSerializerOptions options) : base(src, options) {
+        // our type is not saved: it is a function of our ID
+        int relay_type = 0;
+        while ((int)DW_type.MAX > relay_type && ID != images[relay_type][STATE_CLOSED].MapObject_ID()) relay_type++;
+        if ((int)DW_type.MAX <= relay_type) throw new JsonException(ID.ToString() + " is not a door or window");
+        m_type = (byte)relay_type;
+        var stage = src.Require("State").GetString();
+        var state = Array.IndexOf(state_names, stage);
+        if (0 > state) throw new JsonException("unrecognized door/window state: " + stage);
+        _update(state);    // not SetState: break state and barricade are loaded, not inferred
+        if (src.TryGetProperty("Barricade", out var relay)) m_BarricadePoints = relay.GetInt32();
+    }
+
+    static DoorWindow IJsonStaged<DoorWindow>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        base.toJsonFields(writer, options);
+        writer.WriteString("State", state_names[State]);
+        if (0 != m_BarricadePoints) writer.WriteNumber("Barricade", m_BarricadePoints);
+    }
 
     public void Barricade(int delta)
     {

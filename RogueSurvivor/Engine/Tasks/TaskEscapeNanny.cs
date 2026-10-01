@@ -41,7 +41,8 @@ namespace djack.RogueSurvivor.Engine.Tasks
         private TaskEscapeNanny(JsonElement src, JsonSerializerOptions options) : base(src, options)
         {
             _escapees = new();
-            _safe_zone = src.Require("SafeZone").Deserialize<HashSet<Point>>(options) ?? throw new JsonException();
+            _safe_zone = new();
+            foreach (var x in src.Require("SafeZone").EnumerateArray()) _safe_zone.Add(x.Deserialize<Point>(options));
         }
 
         static TaskEscapeNanny IJsonStaged<TaskEscapeNanny>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
@@ -49,8 +50,7 @@ namespace djack.RogueSurvivor.Engine.Tasks
         public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
         {
             base.toJsonFields(writer, options);
-            writer.WritePropertyName("SafeZone");
-            JsonSerializer.Serialize(writer, _safe_zone, options);
+            writer.WriteArray("SafeZone", _safe_zone, options);
         }
 
         public override void Trigger(Map m)

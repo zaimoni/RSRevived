@@ -6,13 +6,15 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  public sealed class Fortification : MapObject, Zaimoni.Serialization.ISerialize
+  public sealed class Fortification : MapObject, Zaimoni.Serialization.ISerialize, IJsonStaged<Fortification>
     {
     public const int SMALL_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS/2;
     public const int LARGE_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS;
@@ -26,6 +28,9 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     protected Fortification(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
     void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
 #endregion
+
+    private Fortification(JsonElement src, JsonSerializerOptions options) : base(src, options) {}
+    static Fortification IJsonStaged<Fortification>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
   }
 }

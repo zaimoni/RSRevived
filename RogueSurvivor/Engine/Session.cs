@@ -511,6 +511,16 @@ namespace djack.RogueSurvivor.Engine
           items.RequireAllSubtypes();
           s_j_opts.Converters.Add(items);
 
+          var objs = new Zaimoni.JSON.Polymorphic<MapObject>();
+          objs.Add(new Zaimoni.JsonConvert.Via<MapObject, MapObject>("MapObject"));
+          objs.Add(new Zaimoni.JsonConvert.Via<MapObject, ShelfLike>("ShelfLike"));
+          objs.Add(new Zaimoni.JsonConvert.Via<MapObject, MapObjects.Board>("Board"));
+          objs.Add(new Zaimoni.JsonConvert.Via<MapObject, MapObjects.DoorWindow>("DoorWindow"));
+          objs.Add(new Zaimoni.JsonConvert.Via<MapObject, MapObjects.Fortification>("Fortification"));
+          objs.Add(new Zaimoni.JsonConvert.Via<MapObject, MapObjects.PowerGenerator>("PowerGenerator"));
+          objs.RequireAllSubtypes();
+          s_j_opts.Converters.Add(objs);
+
           var tasks = new Zaimoni.JSON.Polymorphic<TimedTask>();
           tasks.Add(new Zaimoni.JsonConvert.Via<TimedTask, djack.RogueSurvivor.Engine.Tasks.TaskRemoveDecoration>("TaskRemoveDecoration"));
           tasks.Add(new Zaimoni.JsonConvertIncomplete.Via<TimedTask, djack.RogueSurvivor.Engine.Tasks.TaskEscapeNanny>("TaskEscapeNanny"));

@@ -43,7 +43,8 @@ namespace djack.RogueSurvivor.Engine.Tasks
 #endregion
 
     private TaskRemoveDecoration(JsonElement src, JsonSerializerOptions options) : base(src, options) {
-        m_pt = src.Require("Points").Deserialize<List<Point>>(options) ?? throw new JsonException();
+        m_pt = new();
+        foreach (var x in src.Require("Points").EnumerateArray()) m_pt.Add(x.Deserialize<Point>(options));
         m_imageID = src.Require("Image").GetString() ?? throw new JsonException();
     }
 
@@ -51,8 +52,7 @@ namespace djack.RogueSurvivor.Engine.Tasks
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
         base.toJsonFields(writer, options);
-        writer.WritePropertyName("Points");
-        JsonSerializer.Serialize(writer, m_pt, options);
+        writer.WriteArray("Points", m_pt, options);
         writer.WriteString("Image", m_imageID);
     }
 
