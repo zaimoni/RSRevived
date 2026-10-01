@@ -70,7 +70,9 @@ Recorded 2026-10-01.
   - It cannot notice a field that is not saved at all: both texts omit it.
   - `Session` keeps the JSON-loaded `World` (`m_JsonLoadedWorld`), since it is not taken live; re-saving a loaded session writes that one.
   - Writers must be deterministic given load order. First case: `Map_Links` is now loaded in save order, so each map's exits iterate as they were saved.
-- [ ] **DEBUG audit** listing every `Incomplete` converter and registry entry. JSON becomes a real `SaveFormat` only when the list is empty.
+- [x] **Audit** listing every `Incomplete` converter and registry entry: `Zaimoni.JSON.Audit.IncompleteConverters(options)`. JSON becomes a real `SaveFormat` only when the list is empty.
+  - Controlled by `BOOTSTRAP_JSON_SERIALIZATION`, not `DEBUG`: the list is logged and shown in the "JSON round trip ok" popup. Ordinary DEBUG play never builds `JSON_opts`, so neither the audit nor `RequireAllSubtypes()` runs there.
+  - It only sees registered converters. A type with no converter at all (`Actor`, `Item`, ...) is not listed until something registers it.
 
 ### Phase 1: map contents without actors (weeks 2-3)
 

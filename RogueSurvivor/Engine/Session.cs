@@ -526,7 +526,11 @@ namespace djack.RogueSurvivor.Engine
       var json_diff = Zaimoni.JSON.JSON_ext.FirstDifference(File.ReadAllLines(json_path), File.ReadAllLines(json_path2));
       if (null != json_diff) throw new InvalidOperationException("JSON round trip: "+ json_path + " vs. "+ json_path2 + "\n" + json_diff);
       File.Delete(json_path2);
-      RogueGame.Game.ErrorPopup("JSON round trip ok");
+      // audit: JSON is not a real save format until nothing is listed here
+      var json_incomplete = Zaimoni.JSON.Audit.IncompleteConverters(JSON_opts);
+      var json_audit = 0 >= json_incomplete.Count ? "all JSON converters complete" : "incomplete JSON converters (" + json_incomplete.Count.ToString() + "): " + string.Join(", ", json_incomplete);
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, json_audit);
+      RogueGame.Game.ErrorPopup("JSON round trip ok; " + json_audit);
 #elif BOOTSTRAP_Z_SERIALIZATION
 	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
       RogueGame.Game.ErrorPopup("in-house save ok");

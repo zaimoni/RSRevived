@@ -45,8 +45,38 @@ namespace Zaimoni.JSON
         public bool IsComplete { get => "Zaimoni.JsonConvert" == GetType().Namespace; }
     }
 
-    public sealed class Polymorphic<TBase> : JsonConverter<TBase> where TBase : class
+    /// <summary>non-generic view of Polymorphic, for auditing</summary>
+    public interface IPolymorphic
     {
+        Type Root { get; }
+        bool IsComplete { get; }
+        /// <returns>the $type tags whose save/load is not yet complete</returns>
+        List<string> Incomplete { get; }
+    }
+
+    static public class Audit
+    {
+        /// <summary>What still blocks these options from being a real save format.
+        /// Only sees registered converters: a type with no converter at all is not listed.</summary>
+        static public List<string> IncompleteConverters(this JsonSerializerOptions options)
+        {
+            List<string> ret = new();
+            foreach (var x in options.Converters) {
+                if (x is IPolymorphic poly) {
+                    foreach (var tag in poly.Incomplete) ret.Add(poly.Root.Name + ": " + tag);
+                    continue;
+                }
+                var t = x.GetType();
+                if ("Zaimoni.JsonConvert" != t.Namespace) ret.Add(t.Name);
+            }
+            return ret;
+        }
+    }
+
+    public sealed class Polymorphic<TBase> : JsonConverter<TBase>, IPolymorphic where TBase : class
+    {
+        public Type Root { get => typeof(TBase); }
+
         private readonly Dictionary<string, Subtype<TBase>> m_ByTag = new();
         private readonly Dictionary<Type, Subtype<TBase>> m_ByType = new();
 
@@ -66,7 +96,6 @@ namespace Zaimoni.JSON
             }
         }
 
-        /// <returns>the $type tags whose save/load is not yet complete</returns>
         public List<string> Incomplete {
             get {
                 List<string> ret = new();
