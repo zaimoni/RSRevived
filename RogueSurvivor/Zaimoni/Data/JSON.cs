@@ -125,6 +125,28 @@ namespace Zaimoni.JSON
             writer.WriteEndArray();
         }
 
+        /// <summary>An array of already-rendered JSON values, one per line.
+        /// For bulk data, where the writer's own indenting would put every number on its own line.</summary>
+        public static void WriteArrayOfLines(this Utf8JsonWriter writer, IEnumerable<string> src)
+        {
+            var opts = writer.Options;
+            var depth = writer.CurrentDepth;
+            string indent(int n) => opts.Indented ? opts.NewLine + new string(opts.IndentCharacter, opts.IndentSize * n) : string.Empty;
+            var sep = indent(depth + 1);
+            var stage = new StringBuilder();
+            stage.Append('[');
+            bool empty = true;
+            foreach (var x in src) {
+                if (!empty) stage.Append(',');
+                empty = false;
+                stage.Append(sep);
+                stage.Append(x);
+            }
+            if (!empty) stage.Append(indent(depth));
+            stage.Append(']');
+            writer.WriteRawValue(stage.ToString());
+        }
+
         public static void RecordRef<T>(this string relay_id, T src) where T : class {
             var resolve = PreserveReferenceHandler.Resolver;
             resolve.AddReference(relay_id, src);

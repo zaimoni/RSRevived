@@ -94,7 +94,8 @@ Recorded 2026-10-01.
   - `Session` writes one `TileLegend` before `World`: the tile name for each number. On load the numbers are translated through it, so a save survives the tile IDs being renumbered or extended. A used tile whose legend name is unknown is rejected.
   - Deliberately not a Base64 blob: that would interfere with extending configuration files.
 - [x] **Remaining exits**: not saved. The JSON `World` constructor regenerates them with `District.InterpolateExits` once all districts are loaded; that is the only source of exits leaving a map's bounds. The round-trip test cannot see them, so they are checked in the headless harness only.
-- [ ] Decorations
+- [x] **Decorations**: `Map` writes `Decorations` as `[position, [image IDs]]` pairs, one per line (`writer.WriteArrayOfLines`, shared with `Tiles`). Image IDs are written verbatim; whether an image exists is not checked on load.
+  - Deferred as micro-optimizations: grouping by image, and stripping the common path prefix from image IDs.
 - [ ] Scents (none expected at turn zero)
 
 Readability rule: the JSON is meant to be read, so no packing of the `Item_s` kind. Omitting a field whose value is implied is fine.

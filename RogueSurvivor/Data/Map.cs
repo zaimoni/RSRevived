@@ -414,7 +414,7 @@ namespace djack.RogueSurvivor.Data
     }
         #endregion
 
-        private const int field_code_UB = 10;
+        private const int field_code_UB = 11;
         static private int field_code(ref Utf8JsonReader reader)
         {
             if (reader.ValueTextEquals("Name")) return 1;
@@ -426,7 +426,8 @@ namespace djack.RogueSurvivor.Data
             else if (reader.ValueTextEquals("GroundItems")) return 7;
             else if (reader.ValueTextEquals("MapObjects")) return 8;
             else if (reader.ValueTextEquals("Timers")) return 9;
-            else if (reader.ValueTextEquals("Tiles")) return field_code_UB;
+            else if (reader.ValueTextEquals("Tiles")) return 10;
+            else if (reader.ValueTextEquals("Decorations")) return field_code_UB;
 
             Engine.RogueGame.Game.ErrorPopup(reader.GetString());
             throw new JsonException();
@@ -561,6 +562,17 @@ namespace djack.RogueSurvivor.Data
                         if (0 >= relay_extent.X || 0 >= relay_extent.Y) throw new JsonException("Map: Extent must precede Tiles");
                         relay_tiles = LoadTiles(JsonElement.ParseValue(ref reader), relay_extent);
                         break;
+                    case 11:
+                        {
+                        var stage = JsonElement.ParseValue(ref reader);
+                        foreach (var x in stage.EnumerateArray()) {
+                            var images = new HashSet<string>();
+                            foreach (var imageID in x[1].EnumerateArray()) images.Add(imageID.GetString() ?? throw new JsonException("null decoration"));
+                            if (0 >= images.Count) throw new JsonException("Decorations: position without decorations");
+                            m_Decorations.Add(x[0].Deserialize<Point>(options), images);
+                        }
+                        }
+                        break;
                 }
                 return code;
             }
@@ -665,25 +677,43 @@ namespace djack.RogueSurvivor.Data
       JsonSerializer.Serialize(writer, Extent, options);
       if (null != m_TileIDs) {
         // row-major, one row per line: reads like the map
-        // The writer would put each tile on its own line, so we lay the whole array out ourselves.
         writer.WritePropertyName("Tiles");
-        var w_opts = writer.Options;
-        var row_sep = w_opts.Indented ? w_opts.NewLine + new string(w_opts.IndentCharacter, w_opts.IndentSize * (writer.CurrentDepth + 1)) : string.Empty;
+        var rows = new List<string>(Extent.Y);
         var stage = new System.Text.StringBuilder();
-        stage.Append('[');
         for (int y = 0; y < Extent.Y; y++) {
-          if (0 < y) stage.Append(',');
-          stage.Append(row_sep);
+          stage.Clear();
           stage.Append('[');
           for (int x = 0; x < Extent.X; x++) {
             if (0 < x) stage.Append(',');
             stage.Append(m_TileIDs[x, y]);
           }
           stage.Append(']');
+          rows.Add(stage.ToString());
         }
-        if (w_opts.Indented) stage.Append(w_opts.NewLine + new string(w_opts.IndentCharacter, w_opts.IndentSize * writer.CurrentDepth));
-        stage.Append(']');
-        writer.WriteRawValue(stage.ToString());
+        writer.WriteArrayOfLines(rows);
+      }
+      if (0 < m_Decorations.Count) {
+        // each entry is [position, [image IDs]], one entry per line
+        writer.WritePropertyName("Decorations");
+        var rows = new List<string>(m_Decorations.Count);
+        var stage = new System.Text.StringBuilder();
+        foreach (var x in m_Decorations) {
+          stage.Clear();
+          stage.Append("[[");
+          stage.Append(x.Key.X);
+          stage.Append(',');
+          stage.Append(x.Key.Y);
+          stage.Append("],[");
+          bool first = true;
+          foreach (var imageID in x.Value) {
+            if (!first) stage.Append(',');
+            first = false;
+            stage.Append(JsonSerializer.Serialize(imageID, options));
+          }
+          stage.Append("]]");
+          rows.Add(stage.ToString());
+        }
+        writer.WriteArrayOfLines(rows);
       }
       if (0 != m_iCheckNextActorIndex) writer.WriteNumber("NextActorIndex", m_iCheckNextActorIndex);
       writer.WritePropertyName("Zones");
