@@ -518,7 +518,7 @@ namespace djack.RogueSurvivor.Data
                         }
                     }
                     if (null != outside) {
-                        foreach (var z in inside) {
+                        foreach (var z in outside) {
                             z.Bounds.DoForEach(pt => SetIsInsideAt(pt, false));
                         }
                     }

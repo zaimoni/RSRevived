@@ -214,7 +214,7 @@ namespace djack.RogueSurvivor.Engine
           } else err += "missing key, command line options: " + x.Key;
         }
         foreach(var x in test.m_CommandLineOptions) {
-          if (!test.m_CommandLineOptions.TryGetValue(x.Key, out var cache)) err += "extra key, command line options: " + x.Key + ":" + x.Value;
+          if (!m_CommandLineOptions.TryGetValue(x.Key, out var cache)) err +="extra key, command line options: " + x.Key + ":" + x.Value;
         }
 
         if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
