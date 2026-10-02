@@ -3963,7 +3963,32 @@ namespace djack.RogueSurvivor.Engine
       m_UI.WaitEscape();
       RemoveOverlay(working);
     }
-    public void ErrorPopup(string msg) { ErrorPopup(new string[] { msg }); }
+    public void ErrorPopup(string msg) { ErrorPopup(WrapLines(msg, CANVAS_WIDTH - 4, x => RogueForm.Get.Measure(new string[] { x })[^1].Width)); }
+
+    /// <summary>Breaks a message into lines no wider than max_width: at its newlines, then at spaces.
+    /// A stretch with no space that fits is broken wherever it has to be.</summary>
+    internal static string[] WrapLines(string msg, int max_width, Func<string, int> width)
+    {
+      List<string> ret = new();
+      foreach (var line in msg.Split('\n')) {
+        var rest = line;
+        while (max_width < width(rest)) {
+          int cut = -1;
+          for (int i = rest.IndexOf(' '); 0 < i; i = rest.IndexOf(' ', i + 1)) {
+            if (max_width < width(rest.Substring(0, i))) break;
+            cut = i;
+          }
+          if (0 > cut) {
+            cut = rest.Length - 1;
+            while (1 < cut && max_width < width(rest.Substring(0, cut))) cut--;
+          }
+          ret.Add(rest.Substring(0, cut));
+          rest = rest.Substring(cut).TrimStart(' ');
+        }
+        ret.Add(rest);
+      }
+      return ret.ToArray();
+    }
 
     private bool InterpretForPC(ActorAction? act) {
       if (null == act) return false;
