@@ -277,6 +277,7 @@ namespace djack.RogueSurvivor.Engine
         else if (reader.ValueTextEquals("Player")) return 16;
         else if (reader.ValueTextEquals("UniqueActors")) return 17;
         else if (reader.ValueTextEquals("RefugeePool")) return 18;
+        else if (reader.ValueTextEquals("Police")) return 19;
 
         RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -284,6 +285,9 @@ namespace djack.RogueSurvivor.Engine
 
     private Session(ref Utf8JsonReader reader, JsonSerializerOptions options)
     {
+      // We are not the live session.  The field initializer for Police subscribed its threat tracking to live game events.
+      Police.Detach();
+
       if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
       int origin_depth = reader.CurrentDepth;
       reader.Read();
@@ -354,6 +358,9 @@ namespace djack.RogueSurvivor.Engine
               break;
           case 17:
               relay_uniqueActors = JsonSerializer.Deserialize<UniqueActors>(ref reader, options) ?? throw new JsonException();
+              break;
+          case 19:
+              Police.LoadJson(JsonElement.ParseValue(ref reader), options);
               break;
           case 18:
               {
@@ -449,6 +456,8 @@ namespace djack.RogueSurvivor.Engine
       JsonSerializer.Serialize(writer, UniqueItems, options);
       writer.WritePropertyName("UniqueActors");
       JsonSerializer.Serialize(writer, UniqueActors, options);
+      writer.WritePropertyName("Police");
+      Police.toJson(writer, options);
       writer.WriteEndObject();
     }
 

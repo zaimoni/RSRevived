@@ -4,7 +4,9 @@ using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
@@ -232,6 +234,34 @@ namespace djack.RogueSurvivor.Data
             FactionID = faction;
             RadioID = radio;
         }
+
+#region JSON save/load
+        /// <summary>Stops tracking live game events.  For a faction that belongs to a session that is not (yet) the live one.</summary>
+        public void Detach() => Threats.Detach();
+
+        // FactionID and RadioID are not saved: whoever constructs us knows them.
+        // Not saved yet: ItemMemory, the event log, the rankings.
+        public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            if (Threats.Any()) {
+                writer.WritePropertyName("Threats");
+                Threats.toJson(writer);
+            }
+            if (Investigate.Any()) {
+                writer.WritePropertyName("Investigate");
+                Investigate.toJson(writer);
+            }
+            writer.WriteEndObject();
+        }
+
+        /// <summary>Precondition: we are freshly constructed.</summary>
+        public void LoadJson(JsonElement src, JsonSerializerOptions options)
+        {
+            if (src.TryGetProperty("Threats", out var relay)) Threats.LoadJson(relay);
+            if (src.TryGetProperty("Investigate", out relay)) Investigate.LoadJson(relay);
+        }
+#endregion
 
         public ImplicitRadio implicitRadio { get => m_implicitRadio ??= new ImplicitRadio(this); }
 

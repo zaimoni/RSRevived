@@ -22,6 +22,8 @@ namespace Zaimoni.SetTheory
 
         public RelationC() { }
 
+        public List<KeyValuePair<K,List<V>>>.Enumerator GetEnumerator() => _rel.GetEnumerator();
+
         public void Clear() { lock(this) { _rel = new(); } }
 
         public void Add(K key, V val)

@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.Json;
 using System.Threading;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 using Zaimoni.Lazy;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
@@ -41,6 +43,47 @@ namespace djack.RogueSurvivor.Data
           }
         }
 #endif
+
+#region JSON save/load
+        /// <summary>Stops tracking live game events.  For a tracker that belongs to a session that is not (yet) the live one.</summary>
+        public void Detach()
+        {
+          Actor.Dies -= HandleDie;
+          Actor.Moving -= HandleMove;
+        }
+
+        // one entry per threat: {"Actor": reference, "Where": [[map reference, [points]], ...]}
+        public void toJson(Utf8JsonWriter writer)
+        {
+          writer.WriteStartArray();
+          lock(_threats) {
+            foreach(var x in _threats) {
+              List<string> rows = new(x.Value.Count);
+              foreach(var where in x.Value) rows.Add("[" + JSON_ext.RenderRef(where.Key) + "," + JSON_ext.RenderPoints(where.Value) + "]");
+              writer.WriteStartObject();
+              writer.WriteRef("Actor", x.Key);
+              writer.WritePropertyName("Where");
+              writer.WriteArrayOfLines(rows);
+              writer.WriteEndObject();
+            }
+          }
+          writer.WriteEndArray();
+        }
+
+        // Actors and maps are cross-links: we are filled when the load finishes.
+        public void LoadJson(JsonElement src)
+        {
+          foreach(var x in src.EnumerateArray()) {
+            Dictionary<Map, HashSet<Point>> where = new();
+            foreach(var y in x.Require("Where").EnumerateArray()) {
+              HashSet<Point> pts = new();
+              foreach(var pt in y[1].EnumerateArray()) pts.Add(pt.ReadPoint());
+              y[0].ReadRef<Map>(m => where.Add(m, pts));
+            }
+            x.Require("Actor").ReadRef<Actor>(a => { lock(_threats) { _threats.Add(a, where); } });
+          }
+        }
+#endregion
 
         public bool IsThreat(Actor a)
         {
@@ -563,6 +606,27 @@ namespace djack.RogueSurvivor.Data
     [Serializable]
     public sealed class LocationSet : Zaimoni.SetTheory.RelationC<Map, Point>
     {
+#region JSON save/load
+      public bool Any() { foreach(var x in this) return true; return false; }
+
+      // one entry per map: [map reference, [points]]
+      public void toJson(Utf8JsonWriter writer)
+      {
+        List<string> rows = new();
+        foreach(var x in this) rows.Add("[" + JSON_ext.RenderRef(x.Key) + "," + JSON_ext.RenderPoints(x.Value) + "]");
+        writer.WriteArrayOfLines(rows);
+      }
+
+      // Maps are cross-links: we are filled when the load finishes.
+      public void LoadJson(JsonElement src)
+      {
+        foreach(var x in src.EnumerateArray()) {
+          List<Point> pts = new();
+          foreach(var pt in x[1].EnumerateArray()) pts.Add(pt.ReadPoint());
+          x[0].ReadRef<Map>(m => Add(m, pts));
+        }
+      }
+#endregion
 
       public bool Contains(in Location loc) => Contains(loc.Map, loc.Position);
       public bool ContainsAny(ZoneLoc loc)

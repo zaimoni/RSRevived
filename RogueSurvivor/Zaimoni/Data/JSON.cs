@@ -159,7 +159,25 @@ namespace Zaimoni.JSON
         // The owner may come later in the file.  On load, cross-links are filled in by PreserveReferenceHandler.Finish,
         // in file order; until then the field, list or dictionary they fill is empty.
 
-        static private string RenderRef<T>(T src) where T : class => "{\"$ref\":\"" + PreserveReferenceHandler.Resolver.Reference(src) + "\"}";
+        /// <summary>a reference, as text for WriteArrayOfLines</summary>
+        static public string RenderRef<T>(T src) where T : class => "{\"$ref\":\"" + PreserveReferenceHandler.Resolver.Reference(src) + "\"}";
+
+        /// <summary>points, as text for WriteArrayOfLines: [[x,y],[x,y]]</summary>
+        static public string RenderPoints(IEnumerable<Zaimoni.Data.Vector2D<short>> src)
+        {
+            var ret = new StringBuilder("[");
+            foreach (var pt in src) {
+                if (1 < ret.Length) ret.Append(',');
+                ret.Append('[').Append(pt.X).Append(',').Append(pt.Y).Append(']');
+            }
+            return ret.Append(']').ToString();
+        }
+
+        static public Zaimoni.Data.Vector2D<short> ReadPoint(this JsonElement src)
+        {
+            if (JsonValueKind.Array != src.ValueKind || 2 != src.GetArrayLength()) throw new JsonException("expected [x, y]: " + src.GetRawText());
+            return new(src[0].GetInt16(), src[1].GetInt16());
+        }
 
         static public void WriteRef<T>(this Utf8JsonWriter writer, string name, T src) where T : class
         {

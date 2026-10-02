@@ -162,7 +162,12 @@ Steps:
   - `RogueGame.RefugeePool` is a read-only accessor, so `RogueGame.cs` needs no JSON handling. The loaded pool is kept on the session (`m_JsonLoadedRefugeePool`).
   - `ItemTrap` writes `Owner` and `KnownBy`; `TaskEscapeNanny` writes `Escapees`, dropping the dead first as `Trigger` does.
   - A save or load that throws part-way must be abandoned with `PreserveReferenceHandler.Reset()`, not `Finish()`: `Finish` would throw again on the fixups whose targets never loaded. The bootstrap block in `Session.SaveBin` now does this.
-- [ ] 6. Police `RadioFaction`: item memory, `ThreatTracking`, the investigate set, event log, rankings.
+- [ ] 6. Police `RadioFaction`: item memory, `ThreatTracking`, the investigate set, event log, rankings. `Session` writes a `Police` object last; `FactionID` and `RadioID` are not saved, since whoever constructs the faction knows them.
+  - [x] 6a. `Threats`: one entry per threat, `{"Actor": reference, "Where": [[map reference, [points]], …]}`. `Investigate`: `[map reference, [points]]` per line. Both are cross-links, filled when the load finishes.
+    - **Event handlers.** `ThreatTracking`'s constructor subscribes to the static `Actor.Dies`/`Actor.Moving` events, and `Session.Police` is a field initializer, so every constructed `Session` subscribes one. The JSON `Session` constructor now calls `Police.Detach()` first. Re-attaching a loaded session's tracker belongs to the post-load stage (step 7). Before this, each bootstrap save left one more subscribed tracker behind.
+    - Generic containers get enumerators, not read accessors: `RelationC` has a `GetEnumerator` over its private list.
+  - [ ] 6b. `ItemMemory` (`Ary2Dictionary<Location, Item_IDs, int>`), grouped by map, one location per line, item kinds by name. In a helper not tied to `RadioFaction`: `PlayerController` holds the same type. A legend for item kinds is a deferred size optimization.
+  - [ ] 6c. Event log and rankings. These hold `ActorTag`s, not references. Event verbs are written as strings: `SVOevent.v_code` is a raw number because its data design is not finished (context probably matters).
 - [ ] 7. Post-load stage for a JSON-loaded session: derived caches and `RepairLoad`. Installing the loaded world and player, and JSON as a real save format, wait until after phase 3.
 
 Not yet decided:
