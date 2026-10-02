@@ -105,7 +105,7 @@ See "Not yet decided" under Phase 2.
 Phase 1 is complete. What `Map` still does not save is everything involving actors: the actor list and corpses. Three other `Map` fields are deliberately not saved:
 
 - `Seed`: only used in map generation.
-- `BgMusic`: arguably recoverable from where the map is. Not saved; deriving it on load is still to do.
+- `BgMusic`: not saved; deriving it on load is still to do, and `Map` stays incomplete until it is. The generator code that chooses a map's name and place also chooses its music (every `new Map(…)` in `BaseTownGenerator` passes both), so it can be rebuilt from the name: district entry maps, `Sewers@`, `Subway@`, `basement…@`, shop basements, and the named unique maps. Use a `UniqueMaps` lookup to tiebreak where the name alone is not enough.
 - `IsSecret`: do not wire in. It waits for a feature redesign and a big-bang integration. The original intent was to keep the CHAR Underground Base out of [police] pathfinding and to put the map in stasis; the stasis effect is to be eliminated in a storyline revision. The legacy `GetObjectData` does not write it either, so it is already lost on a legacy load.
 
 Readability rule: the JSON is meant to be read, so no packing of the `Item_s` kind. Omitting a field whose value is implied is fine.
@@ -154,7 +154,14 @@ Steps:
   - `DraggedCorpse` on the actor is a `$ref`.
   - Trust entries: written when the actor is alive, or dead with a corpse (`Map.HasCorpseOf`, by identity). A dead actor without a corpse is still skipped. The untested `World.CorpseFrom(ActorTag)`/`Map.CorpseFrom(ActorTag)` are not used here; they matter where only a tag is stored (step 6).
   - `Corpse` and `Actor` are now complete. The controllers are tracked separately and remain incomplete.
-- [ ] 5. `UniqueActors` and the refugee pool. `ItemTrap` and `TaskEscapeNanny` become complete.
+- [x] 5. `UniqueActors` and the refugee pool. `ItemTrap` and `TaskEscapeNanny` become complete.
+  - No explicit ownership test. `Session` writes `RefugeePool` and then `UniqueActors` after `World`, and both write their actors the ordinary way: an actor a map or corpse already saved becomes a `$ref`; anything else is defined there.
+  - `Actor.s_SaveMap` is the write-side mirror of `s_LoadMap`: an actor writes `Position` only while its own map is saving it. An actor saved by the catalog or the pool writes none, and loads with no map.
+  - Accepted change in state: a dead unique whose corpse is gone loads with a null map. Dead actors leave their map's list at turn end/start; after that the only access is through the unique actor catalog.
+  - `UniqueActors` is an object keyed by unique name; each entry has `Actor`, `Spawned`, and `WithRefugees`/`Music`/`Message` when set. A unique not generated yet is absent.
+  - `RogueGame.RefugeePool` is a read-only accessor, so `RogueGame.cs` needs no JSON handling. The loaded pool is kept on the session (`m_JsonLoadedRefugeePool`).
+  - `ItemTrap` writes `Owner` and `KnownBy`; `TaskEscapeNanny` writes `Escapees`, dropping the dead first as `Trigger` does.
+  - A save or load that throws part-way must be abandoned with `PreserveReferenceHandler.Reset()`, not `Finish()`: `Finish` would throw again on the fixups whose targets never loaded. The bootstrap block in `Session.SaveBin` now does this.
 - [ ] 6. Police `RadioFaction`: item memory, `ThreatTracking`, the investigate set, event log, rankings.
 - [ ] 7. Post-load stage for a JSON-loaded session: derived caches and `RepairLoad`. Installing the loaded world and player, and JSON as a real save format, wait until after phase 3.
 
@@ -182,6 +189,7 @@ Move `GameOptions`, `Keybindings`, `HiScoreTable` and `GameHintsStatus` to attri
 
 ## Ordering constraints in the JSON format
 
+- In a `Session`, `RefugeePool` and `UniqueActors` must follow `World`: their actors may be `$ref`s to actors a map or corpse defined.
 - In a `Session`, `TileLegend` must precede `World`; in a `Map`, `Extent` must precede `Tiles`. The reader throws otherwise.
 - In a `District`, `WorldPos` must precede `Maps`: the `Map` constructor copies `m_District.WorldPosition` into `DistrictPos` and hashes it. The reader throws otherwise.
 

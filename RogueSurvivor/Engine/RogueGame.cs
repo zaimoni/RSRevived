@@ -282,6 +282,7 @@ namespace djack.RogueSurvivor.Engine
     static private KeyValuePair<Map, KeyValuePair<ZoneLoc, HashSet<Point>>>[]? s_Arrival = null;
     static private ZoneLoc[]? s_RefugeeSpawnZones = null;
     static private List<Actor>? s_RefugeePool = null;
+    static public IEnumerable<Actor>? RefugeePool { get => s_RefugeePool; }   // read-only; for Session to save
 #nullable restore
 
 #nullable enable

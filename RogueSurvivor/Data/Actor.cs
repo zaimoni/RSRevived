@@ -899,6 +899,9 @@ namespace djack.RogueSurvivor.Data
 #region JSON save/load
     // Our location is our Position, plus the map that owns us.  While a map loads its actors, it is here.
     [NonSerialized] public static Map? s_LoadMap = null;
+    // Likewise while a map saves its actors.  An actor saved by anything else (the unique actor catalog, the refugee pool)
+    // does not write a Position, and so loads with no map: like an unspawned unique.
+    [NonSerialized] public static Map? s_SaveMap = null;
 
     // Implied when omitted: stats at the model's base value, "previous" stats equal to the current ones,
     // action points at the model's speed, counters at zero, flags that are false, an idle Activity,
@@ -996,7 +999,7 @@ namespace djack.RogueSurvivor.Data
       flag("Sleeping", IsSleeping);
       flag("Crouching", IsCrouching);
       writer.WriteNumber("SpawnTime", SpawnTime);
-      if (null != m_Location.Map) {
+      if (null != m_Location.Map && s_SaveMap == m_Location.Map) {
         // just the position: the map that owns us knows it is our map
         writer.WritePropertyName("Position");
         JsonSerializer.Serialize(writer, m_Location.Position, options);

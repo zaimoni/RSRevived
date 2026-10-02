@@ -37,10 +37,10 @@ namespace djack.RogueSurvivor.Engine.Tasks
     }
 #endregion
 
-        // incomplete: _escapees needs Actor save/load.  Without them, Trigger does nothing.
         private TaskEscapeNanny(JsonElement src, JsonSerializerOptions options) : base(src, options)
         {
             _escapees = new();
+            if (src.TryGetProperty("Escapees", out var relay)) relay.ReadRefs(_escapees);   // cross-links: filled when the load finishes
             _safe_zone = new();
             foreach (var x in src.Require("SafeZone").EnumerateArray()) _safe_zone.Add(x.Deserialize<Point>(options));
         }
@@ -50,6 +50,8 @@ namespace djack.RogueSurvivor.Engine.Tasks
         public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
         {
             base.toJsonFields(writer, options);
+            _escapees.RemoveAll(a => a.IsDead);  // as Trigger does; nothing may own the dead, so they cannot be saved
+            if (0 < _escapees.Count) writer.WriteRefs("Escapees", _escapees);
             writer.WriteArray("SafeZone", _safe_zone, options);
         }
 

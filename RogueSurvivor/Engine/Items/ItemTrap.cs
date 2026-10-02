@@ -79,20 +79,24 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 #endregion
 
-    // incomplete: m_Owner and m_Known need Actor save/load
     private ItemTrap(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<ItemTrapModel>();
         m_IsActivated = src.TryGetProperty("Activated", out var relay) && relay.GetBoolean();
         m_IsTriggered = src.TryGetProperty("Triggered", out relay) && relay.GetBoolean();
+        // cross-links: filled when the load finishes
+        if (src.TryGetProperty("Owner", out relay)) relay.ReadRef<Actor>(a => m_Owner = a);
+        if (src.TryGetProperty("KnownBy", out relay)) relay.ReadRefs(m_Known = new());
     }
 
     static ItemTrap IJsonStaged<ItemTrap>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
-        OptimizeBeforeSaving(default);  // as the legacy save does
+        OptimizeBeforeSaving(default);  // as the legacy save does: drops a dead owner, and the dead from those who know of us
         base.toJsonFields(writer, options);
         if (m_IsActivated) writer.WriteBoolean("Activated", true);
         if (m_IsTriggered) writer.WriteBoolean("Triggered", true);
+        if (null != m_Owner) writer.WriteRef("Owner", m_Owner);
+        if (null != m_Known && 0 < m_Known.Count) writer.WriteRefs("KnownBy", m_Known);
     }
 
 #region UsableItem implementation

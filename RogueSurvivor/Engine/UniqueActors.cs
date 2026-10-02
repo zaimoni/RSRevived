@@ -5,7 +5,9 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Text.Json;
 using djack.RogueSurvivor.Gameplay;
+using Zaimoni.JSON;
 
 using Actor = djack.RogueSurvivor.Data.Actor;
 using BaseMapGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseMapGenerator;
@@ -321,5 +323,88 @@ namespace djack.RogueSurvivor.Engine
       init_HansVonHanz(tgen);
       init_FatherTime(tgen);
     }
+
+#region JSON save/load
+    // We must be saved after the World.  A unique that is on a map, or has a corpse, was saved there and is a reference here.
+    // Any other (not spawned yet; or dead, with its corpse gone) is saved here in full, and so loads with no map.
+    static private void save(Utf8JsonWriter writer, string name, UniqueActor src, JsonSerializerOptions options)
+    {
+      if (null == src) return;  // not generated yet
+      writer.WritePropertyName(name);
+      writer.WriteStartObject();
+      writer.WritePropertyName("Actor");
+      JsonSerializer.Serialize(writer, src.TheActor, options);
+      writer.WriteBoolean("Spawned", src.IsSpawned);
+      if (src.IsWithRefugees) writer.WriteBoolean("WithRefugees", true);
+      if (null != src.EventThemeMusic) writer.WriteString("Music", src.EventThemeMusic);
+      if (null != src.EventMessage) writer.WriteString("Message", src.EventMessage);
+      writer.WriteEndObject();
+    }
+
+    static private UniqueActor load(JsonElement src, string name, JsonSerializerOptions options)
+    {
+      if (!src.TryGetProperty(name, out var relay)) return null;
+      return new UniqueActor(relay.Require("Actor").Deserialize<Actor>(options) ?? throw new JsonException("null unique actor: " + name),
+                             relay.Require("Spawned").GetBoolean(),
+                             relay.TryGetProperty("WithRefugees", out var x) && x.GetBoolean(),
+                             relay.TryGetProperty("Music", out x) ? x.GetString() : null,
+                             relay.TryGetProperty("Message", out x) ? x.GetString() : null);
+    }
+
+    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      writer.WriteStartObject();
+      save(writer, nameof(BigBear), BigBear, options);
+      save(writer, nameof(Duckman), Duckman, options);
+      save(writer, nameof(FamuFataru), FamuFataru, options);
+      save(writer, nameof(FatherTime), FatherTime, options);
+      save(writer, nameof(HansVonHanz), HansVonHanz, options);
+      save(writer, nameof(JasonMyers), JasonMyers, options);
+      save(writer, nameof(PoliceStationPrisoner), PoliceStationPrisoner, options);
+      save(writer, nameof(Roguedjack), Roguedjack, options);
+      save(writer, nameof(Santaman), Santaman, options);
+      save(writer, nameof(TheSewersThing), TheSewersThing, options);
+      writer.WriteEndObject();
+    }
+
+    public UniqueActors() { }   // was implicit, until the constructor below was added
+
+    private UniqueActors(JsonElement src, JsonSerializerOptions options)
+    {
+      BigBear = load(src, nameof(BigBear), options);
+      Duckman = load(src, nameof(Duckman), options);
+      FamuFataru = load(src, nameof(FamuFataru), options);
+      FatherTime = load(src, nameof(FatherTime), options);
+      HansVonHanz = load(src, nameof(HansVonHanz), options);
+      JasonMyers = load(src, nameof(JasonMyers), options);
+      PoliceStationPrisoner = load(src, nameof(PoliceStationPrisoner), options);
+      Roguedjack = load(src, nameof(Roguedjack), options);
+      Santaman = load(src, nameof(Santaman), options);
+      TheSewersThing = load(src, nameof(TheSewersThing), options);
+    }
+
+    public static UniqueActors fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+      var src = JsonElement.ParseValue(ref reader);
+      if (JsonValueKind.Object != src.ValueKind) throw new JsonException("expected object for UniqueActors");
+      return new(src, options);
+    }
+#endregion
   }
+}
+
+namespace Zaimoni.JsonConvert
+{
+    public class UniqueActors : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.UniqueActors>
+    {
+        public override djack.RogueSurvivor.Engine.UniqueActors Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            return djack.RogueSurvivor.Engine.UniqueActors.fromJson(ref reader, options);
+        }
+
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Engine.UniqueActors src, JsonSerializerOptions options)
+        {
+            src.toJson(writer, options);
+        }
+    }
 }

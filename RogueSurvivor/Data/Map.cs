@@ -817,8 +817,17 @@ namespace djack.RogueSurvivor.Data
         }
         writer.WriteEndArray();
       }
+      {
+      // while we are here, the actors we own (including our corpses' dead actors) write their Position
+      var prior = Actor.s_SaveMap;
+      Actor.s_SaveMap = this;
+      try { // body not indented, to leave its lines alone
       if (0 < m_ActorsList.Count) writer.WriteArray("Actors", m_ActorsList, options);
       if (0 < m_CorpsesList.Count) writer.WriteArray("Corpses", m_CorpsesList, options);
+      } finally {
+        Actor.s_SaveMap = prior;
+      }
+      }
       if (0 < m_Timers.Count) writer.WriteArray("Timers", m_Timers, options);
     }
 

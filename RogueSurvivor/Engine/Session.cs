@@ -275,6 +275,8 @@ namespace djack.RogueSurvivor.Engine
         else if (reader.ValueTextEquals("UniqueItems")) return 14;
         else if (reader.ValueTextEquals("TileLegend")) return 15;
         else if (reader.ValueTextEquals("Player")) return 16;
+        else if (reader.ValueTextEquals("UniqueActors")) return 17;
+        else if (reader.ValueTextEquals("RefugeePool")) return 18;
 
         RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -290,6 +292,8 @@ namespace djack.RogueSurvivor.Engine
       UniqueMaps? relay_uniqueMaps = null;
       World? relay_world = null;
       UniqueItems? relay_uniqueItems = null;
+      UniqueActors? relay_uniqueActors = null;
+      List<Actor>? relay_refugees = null;
 
       void read(ref Utf8JsonReader reader) {
           int code = field_code(ref reader);
@@ -348,6 +352,16 @@ namespace djack.RogueSurvivor.Engine
           case 16:
               JsonElement.ParseValue(ref reader).ReadRef<Actor>(a => m_JsonLoadedPlayer = a);   // a cross-link: set when the load finishes
               break;
+          case 17:
+              relay_uniqueActors = JsonSerializer.Deserialize<UniqueActors>(ref reader, options) ?? throw new JsonException();
+              break;
+          case 18:
+              {
+              // these are on no map: no Actor.s_LoadMap
+              relay_refugees = new();
+              foreach (var x in JsonElement.ParseValue(ref reader).EnumerateArray()) relay_refugees.Add(x.Deserialize<Actor>(options) ?? throw new JsonException("null refugee"));
+              }
+              break;
           }
       }
 
@@ -362,6 +376,8 @@ namespace djack.RogueSurvivor.Engine
       if (null != relay_commandline) m_CommandLineOptions = new(relay_commandline);
       if (null != relay_uniqueMaps) UniqueMaps = relay_uniqueMaps;
       if (null != relay_uniqueItems) UniqueItems = relay_uniqueItems;
+      if (null != relay_uniqueActors) UniqueActors = relay_uniqueActors;
+      m_JsonLoadedRefugeePool = relay_refugees;
       m_JsonLoadedWorld = relay_world;
       Map.LoadTileLegend(null); // only meaningful for the save it came from
 
@@ -392,6 +408,7 @@ namespace djack.RogueSurvivor.Engine
     // JSON load does not take the World live yet.  We keep it, so that re-saving a JSON-loaded session saves what was loaded (round-trip test).
     [NonSerialized] private readonly World? m_JsonLoadedWorld = null;
     [NonSerialized] private Actor? m_JsonLoadedPlayer = null;   // likewise; not readonly, as it is a cross-link
+    [NonSerialized] private readonly List<Actor>? m_JsonLoadedRefugeePool = null;   // likewise; the live one is RogueGame's
 
     public static Session fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new Session(ref reader, options);
 
@@ -421,11 +438,17 @@ namespace djack.RogueSurvivor.Engine
       {
       var player = (null != m_JsonLoadedWorld) ? m_JsonLoadedPlayer : RogueGame.Player;
       if (null != player) writer.WriteRef("Player", player);
+      // Refugees waiting to arrive are on no map, so nothing else saves them.  Must follow World, as must UniqueActors:
+      // an actor that a map or corpse already saved is a reference here.
+      var refugees = (null != m_JsonLoadedWorld) ? m_JsonLoadedRefugeePool : RogueGame.RefugeePool;
+      if (null != refugees) writer.WriteArray("RefugeePool", refugees, options);
       }
       writer.WritePropertyName("UniqueMaps");
       JsonSerializer.Serialize(writer, UniqueMaps, options);
       writer.WritePropertyName("UniqueItems");
       JsonSerializer.Serialize(writer, UniqueItems, options);
+      writer.WritePropertyName("UniqueActors");
+      JsonSerializer.Serialize(writer, UniqueActors, options);
       writer.WriteEndObject();
     }
 
@@ -506,6 +529,7 @@ namespace djack.RogueSurvivor.Engine
 
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.ActorTag());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.UniqueItems());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.UniqueActors());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Inventory>());
 
           var items = new Zaimoni.JSON.Polymorphic<Item>();
@@ -524,7 +548,7 @@ namespace djack.RogueSurvivor.Engine
           items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemSprayScent>("ItemSprayScent"));
           items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemTracker>("ItemTracker"));
           items.Add(new Zaimoni.JsonConvert.Via<Item, Data._Item.PrimedExplosive>("PrimedExplosive"));
-          items.Add(new Zaimoni.JsonConvertIncomplete.Via<Item, Items.ItemTrap>("ItemTrap"));   // owner and known-by need Actor
+          items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemTrap>("ItemTrap"));
           items.RequireAllSubtypes();
           s_j_opts.Converters.Add(items);
 
@@ -559,7 +583,7 @@ namespace djack.RogueSurvivor.Engine
 
           var tasks = new Zaimoni.JSON.Polymorphic<TimedTask>();
           tasks.Add(new Zaimoni.JsonConvert.Via<TimedTask, djack.RogueSurvivor.Engine.Tasks.TaskRemoveDecoration>("TaskRemoveDecoration"));
-          tasks.Add(new Zaimoni.JsonConvertIncomplete.Via<TimedTask, djack.RogueSurvivor.Engine.Tasks.TaskEscapeNanny>("TaskEscapeNanny"));
+          tasks.Add(new Zaimoni.JsonConvert.Via<TimedTask, djack.RogueSurvivor.Engine.Tasks.TaskEscapeNanny>("TaskEscapeNanny"));
           tasks.RequireAllSubtypes();
           s_j_opts.Converters.Add(tasks);
 
@@ -580,6 +604,7 @@ namespace djack.RogueSurvivor.Engine
 #if BOOTSTRAP_JSON_SERIALIZATION
       var json_path = filepath+"json";
       var json_path2 = json_path+"2";   // only survives a failed round-trip test
+      try { // body not indented, to leave its lines alone
       {
       using var stream = json_path.CreateStream(true);
       System.Text.Json.JsonSerializer.Serialize(stream, session, typeof(Session), JSON_opts);
@@ -609,6 +634,12 @@ namespace djack.RogueSurvivor.Engine
       var json_audit = 0 >= json_incomplete.Count ? "all JSON converters complete" : "incomplete JSON converters (" + json_incomplete.Count.ToString() + "): " + string.Join(", ", json_incomplete);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, json_audit);
       RogueGame.Game.ErrorPopup("JSON round trip ok; " + json_audit);
+      } catch {
+        // A save or load that failed part-way leaves ids and fixups behind: abandon them, or they poison the next attempt.
+        // (Finish would throw again, on the fixups whose targets never loaded.)
+        Zaimoni.JSON.PreserveReferenceHandler.Reset();
+        throw;
+      }
 #elif BOOTSTRAP_Z_SERIALIZATION
 	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
       RogueGame.Game.ErrorPopup("in-house save ok");
