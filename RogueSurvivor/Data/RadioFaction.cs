@@ -181,6 +181,13 @@ namespace djack.RogueSurvivor.Data
             SurvivalPoints = asc.SurvivalPoints;
         }
 
+        public Ranking(int _t0, int survival, int kill, int achievement) {
+            t0 = _t0;
+            SurvivalPoints = survival;
+            KillPoints = kill;
+            AchievementPoints = achievement;
+        }
+
         public Ranking(Ranking src, ActorScoring asc) {
             t0 = src.t0;
             AchievementPoints = asc.AchievementPoints;
@@ -196,6 +203,12 @@ namespace djack.RogueSurvivor.Data
         public readonly int t1;
         public readonly ActorTag killer;
         public readonly Location loc;
+
+        public Demise(int _t1, ActorTag _killer, Location _loc) {
+            t1 = _t1;
+            killer = _killer;
+            loc = _loc;
+        }
 
         public Demise(Actor victim, Actor? kill) {
             loc = victim.Location;
@@ -239,8 +252,32 @@ namespace djack.RogueSurvivor.Data
         /// <summary>Stops tracking live game events.  For a faction that belongs to a session that is not (yet) the live one.</summary>
         public void Detach() => Threats.Detach();
 
+        // SVOevent.v_code is a raw number, as its data design is not finished.  The save uses words.
+        static private readonly string[] s_VerbNames = { "FactionKill", "FactionAggression", "Murder", "Assault" };    // v_code 1..4
+
+        static private string Render(in ActorTag src) => "{\"Name\":" + JsonSerializer.Serialize(src.Name) + ",\"SpawnTime\":" + src.SpawnTime.ToString() + "}";
+        static private string Render(in Location src) => "[[" + src.Position.X.ToString() + "," + src.Position.Y.ToString() + "]," + JSON_ext.RenderRef(src.Map) + "]";
+        static private string Render(in Ranking src) => "[" + src.t0.ToString() + "," + src.SurvivalPoints.ToString() + "," + src.KillPoints.ToString() + "," + src.AchievementPoints.ToString() + "]";
+
+        static private Ranking ReadRanking(JsonElement src)
+        {
+            if (JsonValueKind.Array != src.ValueKind || 4 != src.GetArrayLength()) throw new JsonException("expected [t0, survival, kill, achievement]: " + src.GetRawText());
+            return new(src[0].GetInt32(), src[1].GetInt32(), src[2].GetInt32(), src[3].GetInt32());
+        }
+
+        /// <param name="handler">runs when the load finishes: the map is a cross-link</param>
+        static private void ReadLocation(JsonElement src, Action<Location> handler)
+        {
+            if (JsonValueKind.Array != src.ValueKind || 2 != src.GetArrayLength()) throw new JsonException("expected [[x, y], map reference]: " + src.GetRawText());
+            var pt = src[0].ReadPoint();
+            src[1].ReadRef<Map>(m => handler(new Location(m, pt)));
+        }
+
         // FactionID and RadioID are not saved: whoever constructs us knows them.
-        // Not saved yet: the event log, the rankings.
+        // The event log and the rankings hold ActorTags, not references to actors.  One entry per line:
+        // EventLog: {"Subject": tag, "Seen": [[x, y], map reference], "SeenTurn", "Verb", "Object": tag, "Turn"}
+        // Quick:    {"Who": tag, "Rank": [t0, survival, kill, achievement]}
+        // Dead:     likewise, then "Died": turn, "Killer": tag (omitted when there was none), "Where": [[x, y], map reference]
         public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
@@ -254,6 +291,32 @@ namespace djack.RogueSurvivor.Data
                 writer.WritePropertyName("Investigate");
                 Investigate.toJson(writer);
             }
+            if (0 < m_EventLog.Count) {
+                List<string> rows = new(m_EventLog.Count);
+                foreach (var x in m_EventLog) {
+                    var verb = (1 <= x.v_code && s_VerbNames.Length >= x.v_code) ? s_VerbNames[x.v_code - 1] : x.v_code.ToString();
+                    rows.Add("{\"Subject\":" + Render(x.subject) + ",\"Seen\":" + Render(x.s_last_seen.Location) + ",\"SeenTurn\":" + x.s_last_seen.Turn.ToString()
+                           + ",\"Verb\":\"" + verb + "\",\"Object\":" + Render(x.direct_object) + ",\"Turn\":" + x.Turn.ToString() + "}");
+                }
+                writer.WritePropertyName("EventLog");
+                writer.WriteArrayOfLines(rows);
+            }
+            if (0 < m_Quick.Count) {
+                List<string> rows = new(m_Quick.Count);
+                foreach (var x in m_Quick) rows.Add("{\"Who\":" + Render(x.Key) + ",\"Rank\":" + Render(x.Value) + "}");
+                writer.WritePropertyName("Quick");
+                writer.WriteArrayOfLines(rows);
+            }
+            if (0 < m_Dead.Count) {
+                List<string> rows = new(m_Dead.Count);
+                foreach (var x in m_Dead) {
+                    var demise = x.Value.Value;
+                    rows.Add("{\"Who\":" + Render(x.Key) + ",\"Rank\":" + Render(x.Value.Key) + ",\"Died\":" + demise.t1.ToString()
+                           + (default == demise.killer ? "" : ",\"Killer\":" + Render(demise.killer)) + ",\"Where\":" + Render(demise.loc) + "}");
+                }
+                writer.WritePropertyName("Dead");
+                writer.WriteArrayOfLines(rows);
+            }
             writer.WriteEndObject();
         }
 
@@ -263,6 +326,30 @@ namespace djack.RogueSurvivor.Data
             if (src.TryGetProperty("ItemMemory", out var relay)) ItemMemoryJSON.Load(relay, ItemMemory);
             if (src.TryGetProperty("Threats", out relay)) Threats.LoadJson(relay);
             if (src.TryGetProperty("Investigate", out relay)) Investigate.LoadJson(relay);
+            if (src.TryGetProperty("EventLog", out relay)) {
+                foreach (var x in relay.EnumerateArray()) {
+                    var subject = x.Require("Subject").Deserialize<ActorTag>(options);
+                    var seen_turn = x.Require("SeenTurn").GetInt32();
+                    var verb = x.Require("Verb").GetString() ?? throw new JsonException("null Verb");
+                    var v_code = 1 + Array.IndexOf(s_VerbNames, verb);
+                    if (0 >= v_code && !int.TryParse(verb, out v_code)) throw new JsonException("unrecognized Verb: " + verb);
+                    var direct_object = x.Require("Object").Deserialize<ActorTag>(options);
+                    var turn = x.Require("Turn").GetInt32();
+                    ReadLocation(x.Require("Seen"), loc => m_EventLog.Add(new(subject, new(loc, seen_turn), (sbyte)v_code, direct_object, turn)));
+                }
+            }
+            if (src.TryGetProperty("Quick", out relay)) {
+                foreach (var x in relay.EnumerateArray()) m_Quick.Add(x.Require("Who").Deserialize<ActorTag>(options), ReadRanking(x.Require("Rank")));
+            }
+            if (src.TryGetProperty("Dead", out relay)) {
+                foreach (var x in relay.EnumerateArray()) {
+                    var who = x.Require("Who").Deserialize<ActorTag>(options);
+                    var rank = ReadRanking(x.Require("Rank"));
+                    var died = x.Require("Died").GetInt32();
+                    ActorTag killer = x.TryGetProperty("Killer", out var y) ? y.Deserialize<ActorTag>(options) : default;
+                    ReadLocation(x.Require("Where"), loc => m_Dead.Add(who, new(rank, new(died, killer, loc))));
+                }
+            }
         }
 #endregion
 

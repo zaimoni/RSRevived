@@ -162,14 +162,18 @@ Steps:
   - `RogueGame.RefugeePool` is a read-only accessor, so `RogueGame.cs` needs no JSON handling. The loaded pool is kept on the session (`m_JsonLoadedRefugeePool`).
   - `ItemTrap` writes `Owner` and `KnownBy`; `TaskEscapeNanny` writes `Escapees`, dropping the dead first as `Trigger` does.
   - A save or load that throws part-way must be abandoned with `PreserveReferenceHandler.Reset()`, not `Finish()`: `Finish` would throw again on the fixups whose targets never loaded. The bootstrap block in `Session.SaveBin` now does this.
-- [ ] 6. Police `RadioFaction`: item memory, `ThreatTracking`, the investigate set, event log, rankings. `Session` writes a `Police` object last; `FactionID` and `RadioID` are not saved, since whoever constructs the faction knows them.
+- [x] 6. Police `RadioFaction`: item memory, `ThreatTracking`, the investigate set, event log, rankings. `Session` writes a `Police` object last; `FactionID` and `RadioID` are not saved, since whoever constructs the faction knows them.
   - [x] 6a. `Threats`: one entry per threat, `{"Actor": reference, "Where": [[map reference, [points]], …]}`. `Investigate`: `[map reference, [points]]` per line. Both are cross-links, filled when the load finishes.
     - **Event handlers.** `ThreatTracking`'s constructor subscribes to the static `Actor.Dies`/`Actor.Moving` events, and `Session.Police` is a field initializer, so every constructed `Session` subscribes one. The JSON `Session` constructor now calls `Police.Detach()` first. Re-attaching a loaded session's tracker belongs to the post-load stage (step 7). Before this, each bootstrap save left one more subscribed tracker behind.
     - Generic containers get enumerators, not read accessors: `RelationC` has a `GetEnumerator` over its private list.
   - [x] 6b. `ItemMemory` (`Ary2Dictionary<Location, Item_IDs, int>`): one `{"Map": reference, "Seen": […]}` per map; each line of `Seen` is `[x, y, turn]` where nothing was there, or `[x, y, turn, item kinds…]`. Item kinds by name. In `ItemMemoryJSON`, a helper not tied to `RadioFaction`: `PlayerController` holds the same type.
     - `Ary2Dictionary` gets two enumerators (what was seen; where nothing was seen). Its third dictionary, the by-item index, is derived: `Set` rebuilds it on load.
     - **Size.** The police are told about every tile of every entry map at world creation (`District.EntryMap`'s setter calls `ForcePoliceKnown`), so "nothing seen at turn 0" lines dominate the file: 44,097 of 53,215 lines in the headless test world. Deferred size optimizations: a legend for item kinds; a denser form for the nothing-seen entries (for example runs along a row).
-  - [ ] 6c. Event log and rankings. These hold `ActorTag`s, not references. Event verbs are written as strings: `SVOevent.v_code` is a raw number because its data design is not finished (context probably matters).
+  - [x] 6c. Event log and rankings, one entry per line. These hold `ActorTag`s, not references; only their locations' maps are cross-links.
+    - `EventLog`: `{"Subject": tag, "Seen": [[x, y], map reference], "SeenTurn", "Verb", "Object": tag, "Turn"}`.
+    - `Quick`: `{"Who": tag, "Rank": [t0, survival, kill, achievement]}`. `Dead`: likewise, then `"Died"`, `"Killer"` (omitted when there was none), `"Where"`.
+    - Event verbs are written as words (`FactionKill`, `FactionAggression`, `Murder`, `Assault` for `v_code` 1..4): `SVOevent.v_code` is a raw number because its data design is not finished (context probably matters). The words exist only in the save format. A code with no word is written as its number.
+    - `Ranking` and `Demise` gained field-wise constructors.
 - [ ] 7. Post-load stage for a JSON-loaded session: derived caches and `RepairLoad`. Installing the loaded world and player, and JSON as a real save format, wait until after phase 3.
 
 Not yet decided:
