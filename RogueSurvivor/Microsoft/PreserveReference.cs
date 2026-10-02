@@ -106,7 +106,7 @@ namespace Zaimoni.JSON
            if (null != _objectToReferenceIdMap) {
                foreach (var x in _objectToReferenceIdMap) {
                    if (null != _defined && _defined.Contains(x.Key)) continue;
-                   (err ??= new()).Add("referenced but never saved: " + x.Value + " (" + x.Key.GetType().FullName + ")");
+                   (err ??= new()).Add("referenced but never saved: " + x.Value + " (" + x.Key.GetType().FullName + ": " + x.Key.ToString() + ")");
                }
            }
            if (null != _fixups) {

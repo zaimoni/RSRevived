@@ -272,7 +272,11 @@ namespace djack.RogueSurvivor.Engine
           map.RemoveAllItemsAt(pt);
           map.RemoveAllDecorationsAt(pt);
           if (clearZones) map.RemoveAllZonesAt(pt);
-          map.GetActorAt(pt)?.RemoveFromMap();
+          var actor = map.GetActorAt(pt);
+          if (null != actor) {
+            actor.RemoveFromMap();
+            Session.Get.Police.Threats.Cleared(actor);  // cf. _actorPlace.  It is not dying, so nothing else makes the police forget it.
+          }
         }
       }
     }
