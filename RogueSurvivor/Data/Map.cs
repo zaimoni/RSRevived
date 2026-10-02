@@ -270,6 +270,49 @@ namespace djack.RogueSurvivor.Data
 #endif
     }
 
+#region JSON post-load
+    // Two stages.  JsonPostLoad rebuilds what is derived from our own content: safe for a session that is not the live one.
+    // JsonAttach binds our actors to the live game (static events, the live session): only for a session that is going live.
+    public void JsonPostLoad()
+    {
+      ReconstructAuxiliaryFields(false);
+      RegenerateMapGeometry();
+      OnConstructed();
+    }
+
+    public void JsonAttach() { foreach(var a in m_ActorsList) a.JsonAttach(); }
+    public void JsonDetach() { foreach(var a in m_ActorsList) a.JsonDetach(); }
+
+    /// <summary>For the bootstrap test: derived data is not in the save, so the round trip cannot see it.</summary>
+    /// <param name="live">the map we were loaded from a save of</param>
+    public void JsonDerivedDataErrors(Map live, List<string> errors)
+    {
+      void err(string what) => errors.Add(Name + ": " + what);
+
+      // by-position caches: against our own lists (the live map may still hold actors that died this turn)
+      if (m_aux_ActorsByPosition.Count != m_ActorsList.Count) err("actors by position: " + m_aux_ActorsByPosition.Count.ToString() + " for " + m_ActorsList.Count.ToString() + " actors");
+      foreach(var a in m_ActorsList) if (!m_aux_ActorsByPosition.TryGetValue(a.Location.Position, out var who) || who != a) err("actor not found at its own position: " + a.UnmodifiedName);
+      int n_corpses = 0;
+      foreach(var x in m_aux_CorpsesByPosition) n_corpses += x.Value.Count;
+      if (n_corpses != m_CorpsesList.Count) err("corpses by position: " + n_corpses.ToString() + " for " + m_CorpsesList.Count.ToString() + " corpses");
+      foreach(var c in m_CorpsesList) if (!m_aux_CorpsesByPosition.TryGetValue(c.Location.Position, out var here) || !here.Contains(c)) err("corpse not found at its own position: " + c.DeadGuy.UnmodifiedName);
+      if (Players.Get.Count != m_ActorsList.Count(a => a.IsPlayer)) err("Players cache");
+      if (PowerGenerators.Get.Count != m_MapObjectsByPosition.Values.Count(obj => obj is Engine.MapObjects.PowerGenerator)) err("PowerGenerators cache");
+
+      // geometry: derived from tiles, which do not change
+      void same(List<Point> mine, List<Point> theirs, string what) { if (!mine.SequenceEqual(theirs)) err("map geometry differs: " + what); }
+      same(m_FullCorner_nw, live.m_FullCorner_nw, "full corner nw");
+      same(m_FullCorner_ne, live.m_FullCorner_ne, "full corner ne");
+      same(m_FullCorner_se, live.m_FullCorner_se, "full corner se");
+      same(m_FullCorner_sw, live.m_FullCorner_sw, "full corner sw");
+      same(m_FlushWall_n, live.m_FlushWall_n, "flush wall n");
+      same(m_FlushWall_s, live.m_FlushWall_s, "flush wall s");
+      same(m_FlushWall_w, live.m_FlushWall_w, "flush wall w");
+      same(m_FlushWall_e, live.m_FlushWall_e, "flush wall e");
+      if (!destination_maps.Get.Select(m => m.Name).OrderBy(x => x).SequenceEqual(live.destination_maps.Get.Select(m => m.Name).OrderBy(x => x))) err("destination maps");
+    }
+#endregion
+
     public void RepairLoad()
     {
       foreach(var a in m_ActorsList) a.RepairLoad();
@@ -491,6 +534,12 @@ namespace djack.RogueSurvivor.Data
             reader.Read();
 
             m_District = s_LoadOwner;
+            // readonly block, as for the other constructors.  These are lazy: nothing is computed until used.
+            Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
+            Viewpoints = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findViewpoints);
+            Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
+            PowerGenerators = new NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsByPosition, _findPowerGenerators);
+            destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
             DistrictPos = m_District.WorldPosition;
 
             reader.ReadMetadata(out var relay_id, out _);
@@ -3589,7 +3638,7 @@ retry:
     public bool IsFlushWWall(Point pt) { return m_FlushWall_w.Contains(pt); }
     public bool IsFlushEWall(Point pt) { return m_FlushWall_e.Contains(pt); }
 
-    private void ReconstructAuxiliaryFields()
+    private void ReconstructAuxiliaryFields(bool attach = true)
     {
       m_aux_ActorsByPosition.Clear();
       foreach (Actor mActors in m_ActorsList) {
@@ -3601,7 +3650,7 @@ retry:
         } else {
           m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);
         }
-        (mActors.Controller as PlayerController)?.InstallHandlers();
+        if (attach) (mActors.Controller as PlayerController)?.InstallHandlers();
       }
       m_aux_CorpsesByPosition.Clear();
       foreach (var mCorpses in m_CorpsesList) {

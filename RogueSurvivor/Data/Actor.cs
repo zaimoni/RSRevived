@@ -981,6 +981,15 @@ namespace djack.RogueSurvivor.Data
 
     static Actor IJsonStaged<Actor>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
+    // Our controller was assigned directly when we were loaded.  These bind it to, and release it from, the live game.
+    public void JsonAttach()
+    {
+      m_Controller?.TakeControl();
+      RepairLoad(); // may hand us to the player (command line); the Controller setter then keeps TakeControl/LeaveControl paired
+    }
+
+    public void JsonDetach() { m_Controller?.LeaveControl(); }
+
     public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
       void flag(string name, bool value) { if (value) writer.WriteBoolean(name, true); }

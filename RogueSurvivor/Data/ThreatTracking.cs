@@ -52,6 +52,9 @@ namespace djack.RogueSurvivor.Data
           Actor.Moving -= HandleMove;
         }
 
+        /// <summary>The reverse of Detach: for a tracker whose session is going live.</summary>
+        public void Attach() => InstallHandlers(default);
+
         // one entry per threat: {"Actor": reference, "Where": [[map reference, [points]], ...]}
         public void toJson(Utf8JsonWriter writer)
         {

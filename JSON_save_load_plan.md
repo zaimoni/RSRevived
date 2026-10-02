@@ -174,7 +174,15 @@ Steps:
     - `Quick`: `{"Who": tag, "Rank": [t0, survival, kill, achievement]}`. `Dead`: likewise, then `"Died"`, `"Killer"` (omitted when there was none), `"Where"`.
     - Event verbs are written as words (`FactionKill`, `FactionAggression`, `Murder`, `Assault` for `v_code` 1..4): `SVOevent.v_code` is a raw number because its data design is not finished (context probably matters). The words exist only in the save format. A code with no word is written as its number.
     - `Ranking` and `Demise` gained field-wise constructors.
-- [ ] 7. Post-load stage for a JSON-loaded session: derived caches and `RepairLoad`. Installing the loaded world and player, and JSON as a real save format, wait until after phase 3.
+- [x] 7. Post-load stage for a JSON-loaded session: derived caches and `RepairLoad`. Installing the loaded world and player, and JSON as a real save format, wait until after phase 3.
+  - Two stages, because only one is safe on a session that is not live.
+  - **`Session.JsonPostLoad()`**: derived data that depends only on the loaded session. Per map: actors and corpses by position, map geometry, the pathing cache clock. Call once, after `PreserveReferenceHandler.Finish()`. The bootstrap test runs it.
+    - The map's lazy caches (`Players`, `Viewpoints`, `Police`, `PowerGenerators`, `destination_maps`) are `readonly`, so the JSON `Map` constructor assigns them.
+    - `Map.ReconstructAuxiliaryFields` took a parameter so that this stage can skip its `PlayerController.InstallHandlers()` call.
+  - **`Session.JsonAttach()` / `JsonDetach()`**: binding to the live game. `TakeControl` then `RepairLoad` for each actor on a map; re-attaching the police threat tracker. Nothing in the game calls these yet.
+    - Only actors on a map, as for the legacy `RepairLoad`. A controller cannot `TakeControl` of an actor on no map: `CivilianAI` reviews item ratings, and `Actor.HasEnoughFoodFor` reads the map's clock. In the live game such an actor took control at construction, with an empty inventory.
+    - Not carried over from the legacy path: `MapObject.RepairLoad` (the JSON load already set the location; a second call throws in DEBUG) and `Map.AfterLoad(District)`.
+  - **Bootstrap check of derived data** (`Session.JsonDerivedDataErrors()`), since the round-trip text cannot see it. By-position caches and the `Players`/`PowerGenerators` caches are checked against the loaded map's own lists, because the live map may still hold actors that died this turn. Geometry and destination maps are compared with the live map.
 
 Not yet decided:
 

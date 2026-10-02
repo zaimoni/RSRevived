@@ -419,6 +419,43 @@ namespace djack.RogueSurvivor.Engine
 
     public static Session fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new Session(ref reader, options);
 
+#region JSON post-load, for a session that was loaded from JSON
+    /// <summary>Rebuilds what is derived from our own content.  Call once, after PreserveReferenceHandler.Finish.
+    /// Safe for a session that is not the live one.</summary>
+    public void JsonPostLoad() { m_JsonLoadedWorld!.DoForAllMaps(m => m.JsonPostLoad()); }
+
+    /// <summary>Binds us to the live game: static events, the live session.  Only for a session that is going live.
+    /// Nothing calls this yet, other than tests: taking a JSON-loaded session live comes later.</summary>
+    // Only actors on a map, as for the legacy RepairLoad.  A controller cannot TakeControl of an actor that is on no map
+    // (a refugee waiting to arrive, an unspawned unique): reviewing its item ratings needs the map's clock.
+    public void JsonAttach()
+    {
+      m_JsonLoadedWorld!.DoForAllMaps(m => m.JsonAttach());
+      Police.Attach();
+    }
+
+    public void JsonDetach()
+    {
+      Police.Detach();
+      m_JsonLoadedWorld!.DoForAllMaps(m => m.JsonDetach());
+    }
+
+    /// <summary>For the bootstrap test: derived data is not in the save, so the round trip cannot see it.  Empty if and only if ok.</summary>
+    public List<string> JsonDerivedDataErrors()
+    {
+      List<string> errors = new();
+      var live = World.Get;
+      var loaded = m_JsonLoadedWorld!;
+      for (short x = 0; x < live.Size; x++) for (short y = 0; y < live.Size; y++) {
+        var a = live[x, y].Maps.ToList();
+        var b = loaded[x, y].Maps.ToList();
+        if (a.Count != b.Count) { errors.Add("district " + x.ToString() + "," + y.ToString() + ": map count"); continue; }
+        for (int i = 0; i < a.Count; i++) b[i].JsonDerivedDataErrors(a[i], errors);
+      }
+      return errors;
+    }
+#endregion
+
     public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options) {
       writer.WriteStartObject();
       writer.WriteNumber("Seed", s_seed);
@@ -627,6 +664,11 @@ namespace djack.RogueSurvivor.Engine
       test2 = System.Text.Json.JsonSerializer.Deserialize<Session>(stream2, JSON_opts) ?? throw new JsonException();
       }
       Zaimoni.JSON.PreserveReferenceHandler.Finish();
+      test2.JsonPostLoad();
+      {
+      var json_derived = test2.JsonDerivedDataErrors();
+      if (0 < json_derived.Count) throw new InvalidOperationException("JSON load, derived data:\n" + string.Join("\n", json_derived));
+      }
       RogueGame.Game.ErrorPopup("JSON load ok");
       // round-trip test: what we loaded must save as the same text.  Does not notice what is not saved at all.
       {

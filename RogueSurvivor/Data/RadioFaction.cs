@@ -251,6 +251,7 @@ namespace djack.RogueSurvivor.Data
 #region JSON save/load
         /// <summary>Stops tracking live game events.  For a faction that belongs to a session that is not (yet) the live one.</summary>
         public void Detach() => Threats.Detach();
+        public void Attach() => Threats.Attach();
 
         // SVOevent.v_code is a raw number, as its data design is not finished.  The save uses words.
         static private readonly string[] s_VerbNames = { "FactionKill", "FactionAggression", "Murder", "Assault" };    // v_code 1..4
