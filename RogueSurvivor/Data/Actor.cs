@@ -900,7 +900,6 @@ namespace djack.RogueSurvivor.Data
     // Our location is our Position, plus the map that owns us.  While a map loads its actors, it is here.
     [NonSerialized] public static Map? s_LoadMap = null;
 
-    // Not saved yet: cross-links to other actors, the dragged corpse, ActorScoring.
     // Implied when omitted: stats at the model's base value, "previous" stats equal to the current ones,
     // action points at the model's speed, counters at zero, flags that are false, an idle Activity,
     // a controller that is what the model would construct.
@@ -961,6 +960,7 @@ namespace djack.RogueSurvivor.Data
       if (src.TryGetProperty("AggressorOf", out relay)) relay.ReadRefs(m_AggressorOf = new());
       if (src.TryGetProperty("SelfDefenceFrom", out relay)) relay.ReadRefs(m_SelfDefenceFrom = new());
       if (src.TryGetProperty("Trust", out relay)) relay.ReadRefDictionary(m_TrustDict = new(), options);
+      if (src.TryGetProperty("DraggedCorpse", out relay)) relay.ReadRef<Corpse>(c => m_DraggedCorpse = c);
 
       // Assigned directly, bypassing the Controller setter: TakeControl is for a live actor, and belongs to the post-load stage.
       var prior = ActorController.s_LoadOwner;
@@ -1045,10 +1045,11 @@ namespace djack.RogueSurvivor.Data
       if (null != m_AggressorOf && 0 < m_AggressorOf.Count) writer.WriteRefs("AggressorOf", m_AggressorOf);
       if (null != m_SelfDefenceFrom && 0 < m_SelfDefenceFrom.Count) writer.WriteRefs("SelfDefenceFrom", m_SelfDefenceFrom);
       if (null != m_TrustDict) {
-        // The dead are skipped: nothing owns them yet, so they cannot be saved.  \todo revisit once corpses are saved (a revivable corpse should keep its trust)
-        var live = m_TrustDict.Where(x => !x.Key.IsDead).ToList();
+        // The dead are skipped unless they still have a corpse: the corpse saves them, and they may be revived.  Otherwise nothing owns them.
+        var live = m_TrustDict.Where(x => !x.Key.IsDead || (x.Key.m_Location.Map?.HasCorpseOf(x.Key) ?? false)).ToList();
         if (0 < live.Count) writer.WriteRefDictionary("Trust", live, options);
       }
+      if (null != m_DraggedCorpse) writer.WriteRef("DraggedCorpse", m_DraggedCorpse);
 
       if (null != m_Controller && !m_Controller.IsJsonDefault) {
         writer.WritePropertyName("Controller");

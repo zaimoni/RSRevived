@@ -147,7 +147,13 @@ Steps:
   - Dead keys in the trust dictionary are skipped on write, without touching the live dictionary. Revisit once corpses are saved (step 4): a revivable corpse should keep its trust.
   - `Scoring` (the actor's `ActorScoring`) is written only when it has something in it: `Achievements`, `FirstKills`, `KillCounts`, `Sightings`, `Events` (`[turn, text]` per line), `VisitedMaps` (`$ref`s), `DeathReason`.
   - `Actor` stays incomplete until the dragged corpse is saved (step 4).
-- [ ] 4. Corpses: `Sealed<Corpse>`, `Corpses` on `Map`, the dragged-corpse link.
+- [x] 4. Corpses: `Sealed<Corpse>`, `Corpses` on `Map`, the dragged-corpse link.
+  - A corpse owns its dead actor: `DeadGuy` is written in full inside the corpse, with its `Position` and `"Dead": true`. A corpse has no location of its own. `Map` holds `Actor.s_LoadMap` while loading `Corpses`, as it does for `Actors`.
+  - `Turn`, `HitPoints` and `Rotation` are always written. Implied when omitted: `MaxHitPoints` equal to the dead actor's current maximum, a `Scale` of 1.
+  - Loaded through a constructor that does not add the corpse to its map; the corpses-by-position cache belongs to the post-load stage (step 7).
+  - `DraggedCorpse` on the actor is a `$ref`.
+  - Trust entries: written when the actor is alive, or dead with a corpse (`Map.HasCorpseOf`, by identity). A dead actor without a corpse is still skipped. The untested `World.CorpseFrom(ActorTag)`/`Map.CorpseFrom(ActorTag)` are not used here; they matter where only a tag is stored (step 6).
+  - `Corpse` and `Actor` are now complete. The controllers are tracked separately and remain incomplete.
 - [ ] 5. `UniqueActors` and the refugee pool. `ItemTrap` and `TaskEscapeNanny` become complete.
 - [ ] 6. Police `RadioFaction`: item memory, `ThreatTracking`, the investigate set, event log, rankings.
 - [ ] 7. Post-load stage for a JSON-loaded session: derived caches and `RepairLoad`. Installing the loaded world and player, and JSON as a real save format, wait until after phase 3.

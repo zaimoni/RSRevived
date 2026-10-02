@@ -414,7 +414,7 @@ namespace djack.RogueSurvivor.Data
     }
         #endregion
 
-        private const int field_code_UB = 13;
+        private const int field_code_UB = 14;
         static private int field_code(ref Utf8JsonReader reader)
         {
             if (reader.ValueTextEquals("Name")) return 1;
@@ -429,7 +429,8 @@ namespace djack.RogueSurvivor.Data
             else if (reader.ValueTextEquals("Tiles")) return 10;
             else if (reader.ValueTextEquals("Decorations")) return 11;
             else if (reader.ValueTextEquals("Scents")) return 12;
-            else if (reader.ValueTextEquals("Actors")) return field_code_UB;
+            else if (reader.ValueTextEquals("Actors")) return 13;
+            else if (reader.ValueTextEquals("Corpses")) return field_code_UB;
 
             Engine.RogueGame.Game.ErrorPopup(reader.GetString());
             throw new JsonException();
@@ -602,6 +603,19 @@ namespace djack.RogueSurvivor.Data
                         Actor.s_LoadMap = this;
                         try {
                             foreach (var x in stage.EnumerateArray()) m_ActorsList.Add(x.Deserialize<Actor>(options) ?? throw new JsonException("null actor"));
+                        } finally {
+                            Actor.s_LoadMap = prior;
+                        }
+                        }
+                        break;
+                    case 14:
+                        {
+                        // Each corpse saves its dead actor, whose location is on us.  Not Add(Corpse): that is for a live map.
+                        var stage = JsonElement.ParseValue(ref reader);
+                        var prior = Actor.s_LoadMap;
+                        Actor.s_LoadMap = this;
+                        try {
+                            foreach (var x in stage.EnumerateArray()) m_CorpsesList.Add(x.Deserialize<Corpse>(options) ?? throw new JsonException("null corpse"));
                         } finally {
                             Actor.s_LoadMap = prior;
                         }
@@ -804,6 +818,7 @@ namespace djack.RogueSurvivor.Data
         writer.WriteEndArray();
       }
       if (0 < m_ActorsList.Count) writer.WriteArray("Actors", m_ActorsList, options);
+      if (0 < m_CorpsesList.Count) writer.WriteArray("Corpses", m_CorpsesList, options);
       if (0 < m_Timers.Count) writer.WriteArray("Timers", m_Timers, options);
     }
 
@@ -2633,6 +2648,11 @@ retry:
 
     public bool HasCorpsesAt(Point p) { return m_aux_CorpsesByPosition.ContainsKey(p); }
     public bool Has(Corpse c) { return m_CorpsesList.Contains(c); }
+    /// <summary>by identity, not by ActorTag</summary>
+    public bool HasCorpseOf(Actor a) {
+      foreach (var c in m_CorpsesList) if (c.DeadGuy == a) return true;
+      return false;
+    }
 
 #region Corpse::Location support
     public void Add(Corpse c)

@@ -6,7 +6,9 @@
 
 using System;
 using System.Runtime.Serialization;
+using System.Text.Json;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
@@ -15,7 +17,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  public sealed class Corpse : ILocation, ISerializable
+  public sealed class Corpse : ILocation, ISerializable, IJsonStaged<Corpse>
   {
     public const int ZOMBIFY_DELAY = 6*WorldTime.TURNS_PER_HOUR;
 
@@ -69,6 +71,35 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("Rotation", Rotation);
       info.AddValue("Scale", Scale);
      }
+#endregion
+
+#region JSON save/load
+    // We own our dead actor: it is saved in full here, and nowhere else.  Our location is its location.
+    // Unlike the public constructor, this does not add us to our map: the map that owns us does that.
+    private Corpse(JsonElement src, JsonSerializerOptions options)
+    {
+      src.RecordRef(this);
+      DeadGuy = src.Require("DeadGuy").Deserialize<Actor>(options) ?? throw new JsonException("null DeadGuy");
+      Turn = src.Require("Turn").GetInt32();
+      HitPoints = src.Require("HitPoints").GetSingle();
+      MaxHitPoints = src.TryGetProperty("MaxHitPoints", out var relay) ? relay.GetInt32() : DeadGuy.MaxHPs;
+      Rotation = src.Require("Rotation").GetSingle();
+      Scale = src.TryGetProperty("Scale", out relay) ? relay.GetSingle() : 1f;
+    }
+
+    static Corpse IJsonStaged<Corpse>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    // implied when omitted: MaxHitPoints equal to what our dead actor's would be now, a Scale of 1
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      writer.WritePropertyName("DeadGuy");
+      JsonSerializer.Serialize(writer, DeadGuy, options);
+      writer.WriteNumber("Turn", Turn);
+      writer.WriteNumber("HitPoints", HitPoints);
+      if (DeadGuy.MaxHPs != MaxHitPoints) writer.WriteNumber("MaxHitPoints", MaxHitPoints);
+      writer.WriteNumber("Rotation", Rotation);
+      if (1f != Scale) writer.WriteNumber("Scale", Scale);
+    }
 #endregion
 
     public Location Location {

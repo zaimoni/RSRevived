@@ -528,7 +528,8 @@ namespace djack.RogueSurvivor.Engine
           items.RequireAllSubtypes();
           s_j_opts.Converters.Add(items);
 
-          s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Sealed<Actor>());   // cross-links, ActorScoring
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Actor>());   // its controllers are tracked separately, below
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Corpse>());
 
           // saving $type only so far: AIs reload with amnesia
           var minds = new Zaimoni.JSON.Polymorphic<ActorController>();
