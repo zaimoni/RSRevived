@@ -19,6 +19,10 @@ namespace Zaimoni.Data
 
         public Ary2Dictionary() {}
 
+        // for save/load: what was seen, and where nothing was seen.  The third dictionary is derived from these.
+        public Dictionary<Key1, KeyValuePair<Range, HashSet<Key2>>>.Enumerator GetEnumerator() => _first_second_dict.GetEnumerator();
+        public Dictionary<Key1, Range>.Enumerator GetNothingSeenEnumerator() => _no_entries.GetEnumerator();
+
         public void Clear() {
             lock (_no_entries) {
             lock (_first_second_dict) {

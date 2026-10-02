@@ -240,10 +240,12 @@ namespace djack.RogueSurvivor.Data
         public void Detach() => Threats.Detach();
 
         // FactionID and RadioID are not saved: whoever constructs us knows them.
-        // Not saved yet: ItemMemory, the event log, the rankings.
+        // Not saved yet: the event log, the rankings.
         public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
+            writer.WritePropertyName("ItemMemory");
+            ItemMemoryJSON.Save(writer, ItemMemory);
             if (Threats.Any()) {
                 writer.WritePropertyName("Threats");
                 Threats.toJson(writer);
@@ -258,7 +260,8 @@ namespace djack.RogueSurvivor.Data
         /// <summary>Precondition: we are freshly constructed.</summary>
         public void LoadJson(JsonElement src, JsonSerializerOptions options)
         {
-            if (src.TryGetProperty("Threats", out var relay)) Threats.LoadJson(relay);
+            if (src.TryGetProperty("ItemMemory", out var relay)) ItemMemoryJSON.Load(relay, ItemMemory);
+            if (src.TryGetProperty("Threats", out relay)) Threats.LoadJson(relay);
             if (src.TryGetProperty("Investigate", out relay)) Investigate.LoadJson(relay);
         }
 #endregion
@@ -428,6 +431,68 @@ namespace djack.RogueSurvivor.Data
             List<KeyValuePair<ActorTag, KeyValuePair<Ranking, Demise>>> ret = m_Dead.ToList();
             ret.Sort(cmp);
             return ret;
+        }
+    }
+}
+
+namespace djack.RogueSurvivor.Data
+{
+    // Item memory: for each location seen, when, and which kinds of item were there.  Not specific to a radio faction.
+    // One entry per map: {"Map": reference, "Seen": [...]}.
+    // Each line of Seen is [x, y, turn] where nothing was there, or [x, y, turn, item kinds...].
+    static public class ItemMemoryJSON
+    {
+        static public void Save(Utf8JsonWriter writer, Ary2Dictionary<Location, Gameplay.Item_IDs, int> src)
+        {
+            List<KeyValuePair<Map, List<string>>> by_map = new();
+            List<string> rows(Map m) {
+                foreach (var x in by_map) if (x.Key == m) return x.Value;
+                by_map.Add(new(m, new()));
+                return by_map[by_map.Count - 1].Value;
+            }
+
+            var empty = src.GetNothingSeenEnumerator();
+            while (empty.MoveNext()) {
+                var x = empty.Current;
+                rows(x.Key.Map).Add("[" + x.Key.Position.X.ToString() + "," + x.Key.Position.Y.ToString() + "," + x.Value.ToString() + "]");
+            }
+            foreach (var x in src) {
+                var stage = new System.Text.StringBuilder("[");
+                stage.Append(x.Key.Position.X).Append(',').Append(x.Key.Position.Y).Append(',').Append(x.Value.Key);
+                foreach (var id in x.Value.Value) stage.Append(",\"").Append(id.ToString()).Append('"');
+                rows(x.Key.Map).Add(stage.Append(']').ToString());
+            }
+
+            writer.WriteStartArray();
+            foreach (var x in by_map) {
+                writer.WriteStartObject();
+                writer.WriteRef("Map", x.Key);
+                writer.WritePropertyName("Seen");
+                writer.WriteArrayOfLines(x.Value);
+                writer.WriteEndObject();
+            }
+            writer.WriteEndArray();
+        }
+
+        /// <param name="dest">Filled when the load finishes: the maps are cross-links.</param>
+        static public void Load(JsonElement src, Ary2Dictionary<Location, Gameplay.Item_IDs, int> dest)
+        {
+            foreach (var x in src.EnumerateArray()) {
+                var seen = x.Require("Seen");
+                x.Require("Map").ReadRef<Map>(m => {
+                    foreach (var row in seen.EnumerateArray()) {
+                        var ub = row.GetArrayLength();
+                        if (3 > ub) throw new JsonException("expected [x, y, turn, item kinds...]: " + row.GetRawText());
+                        List<Gameplay.Item_IDs>? ids = null;
+                        for (int i = 3; i < ub; i++) {
+                            var id = JSON_ext.ParseEnum<Gameplay.Item_IDs>(row[i].GetString());
+                            if (Gameplay.Item_IDs._COUNT == id) throw new JsonException("not an item kind: _COUNT");
+                            (ids ??= new()).Add(id);
+                        }
+                        dest.Set(new Location(m, new Point(row[0].GetInt16(), row[1].GetInt16())), ids, row[2].GetInt32());
+                    }
+                });
+            }
         }
     }
 }
