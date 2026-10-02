@@ -9,7 +9,9 @@ using djack.RogueSurvivor.Engine.Items;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -24,6 +26,28 @@ namespace djack.RogueSurvivor.Data
     protected readonly Actor m_Actor;
 
     protected ActorController(Actor src) { m_Actor = src; }
+
+#region JSON save/load
+    // A controller is constructed for an actor.  While an actor loads its controllers, it is here.
+    [NonSerialized] public static Actor? s_LoadOwner = null;
+
+    /// <summary>for the subclasses' fromJson</summary>
+    static protected Actor JsonOwner { get => s_LoadOwner ?? throw new JsonException("controller without an actor to control"); }
+
+    /// <summary>for the subclasses' fromJson</summary>
+    static protected T JsonLoaded<T>(JsonElement src, T ret) where T : ActorController
+    {
+      src.RecordRef(ret);
+      return ret;
+    }
+
+    // So far, a controller saves nothing but its $type: the AI reloads with amnesia.
+    public virtual void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) { }
+
+    /// <summary>True if and only if we are indistinguishable, when saved, from what our actor's model would construct.
+    /// Our actor then does not write us at all.  This gets more specific as controller save/load is built out.</summary>
+    public virtual bool IsJsonDefault { get => GetType() == m_Actor.Model.DefaultController; }
+#endregion
 
     public virtual void RepairLoad() { }
 

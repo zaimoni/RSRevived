@@ -21,12 +21,17 @@ using Zaimoni.Data;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using djack.RogueSurvivor.Engine.Actions;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal class CivilianAI : OrderableAI
+  internal class CivilianAI : OrderableAI, IJsonStaged<CivilianAI>
   {
+    // JSON: saves $type only so far (the AI reloads with amnesia)
+    static CivilianAI IJsonStaged<CivilianAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new CivilianAI(JsonOwner));
+
 #nullable enable
     private static readonly string[] FIGHT_EMOTES = new string[MAX_EMOTES] {
       "Go away",

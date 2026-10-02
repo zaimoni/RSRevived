@@ -915,5 +915,32 @@ namespace djack.RogueSurvivor.Data
             }
             return false;
         }
+
+        // JSON: an array with one entry per slot, null where the slot is empty.  Our owner writes us only when !IsEmpty.
+        public bool IsEmpty {
+            get {
+                foreach (var it in m_Items) if (null != it) return false;
+                return true;
+            }
+        }
+
+        public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            writer.WriteStartArray();
+            foreach (var it in m_Items) {
+                if (null == it) writer.WriteNullValue();
+                else JsonSerializer.Serialize(writer, it, options);
+            }
+            writer.WriteEndArray();
+        }
+
+        public InventorySlots(JsonElement src, JsonSerializerOptions options)
+        {
+            var ub = src.GetArrayLength();
+            if (0 >= ub) throw new JsonException("inventory slots: must have at least one slot");
+            m_Items = new Item?[ub];
+            int i = 0;
+            foreach (var x in src.EnumerateArray()) m_Items[i++] = JsonValueKind.Null == x.ValueKind ? null : x.Deserialize<Item>(options);
+        }
     }
 }

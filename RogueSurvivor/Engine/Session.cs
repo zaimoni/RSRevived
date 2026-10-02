@@ -15,6 +15,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text.Json;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -273,6 +274,7 @@ namespace djack.RogueSurvivor.Engine
         else if (reader.ValueTextEquals("UniqueMaps")) return 13;
         else if (reader.ValueTextEquals("UniqueItems")) return 14;
         else if (reader.ValueTextEquals("TileLegend")) return 15;
+        else if (reader.ValueTextEquals("Player")) return 16;
 
         RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -343,6 +345,9 @@ namespace djack.RogueSurvivor.Engine
           case 14:
               relay_uniqueItems = JsonSerializer.Deserialize<UniqueItems>(ref reader, options) ?? throw new JsonException();
               break;
+          case 16:
+              JsonElement.ParseValue(ref reader).ReadRef<Actor>(a => m_JsonLoadedPlayer = a);   // a cross-link: set when the load finishes
+              break;
           }
       }
 
@@ -386,6 +391,7 @@ namespace djack.RogueSurvivor.Engine
 
     // JSON load does not take the World live yet.  We keep it, so that re-saving a JSON-loaded session saves what was loaded (round-trip test).
     [NonSerialized] private readonly World? m_JsonLoadedWorld = null;
+    [NonSerialized] private Actor? m_JsonLoadedPlayer = null;   // likewise; not readonly, as it is a cross-link
 
     public static Session fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new Session(ref reader, options);
 
@@ -412,6 +418,10 @@ namespace djack.RogueSurvivor.Engine
       Map.SaveTileLegend(writer);
       writer.WritePropertyName("World");
       JsonSerializer.Serialize(writer, m_JsonLoadedWorld ?? World.Get, options);
+      {
+      var player = (null != m_JsonLoadedWorld) ? m_JsonLoadedPlayer : RogueGame.Player;
+      if (null != player) writer.WriteRef("Player", player);
+      }
       writer.WritePropertyName("UniqueMaps");
       JsonSerializer.Serialize(writer, UniqueMaps, options);
       writer.WritePropertyName("UniqueItems");
@@ -517,6 +527,24 @@ namespace djack.RogueSurvivor.Engine
           items.Add(new Zaimoni.JsonConvertIncomplete.Via<Item, Items.ItemTrap>("ItemTrap"));   // owner and known-by need Actor
           items.RequireAllSubtypes();
           s_j_opts.Converters.Add(items);
+
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Sealed<Actor>());   // cross-links, ActorScoring
+
+          // saving $type only so far: AIs reload with amnesia
+          var minds = new Zaimoni.JSON.Polymorphic<ActorController>();
+          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, PlayerController>("PlayerController"));
+          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.CHARGuardAI>("CHARGuardAI"));
+          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.CivilianAI>("CivilianAI"));
+          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.FeralDogAI>("FeralDogAI"));
+          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.GangAI>("GangAI"));
+          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.InsaneHumanAI>("InsaneHumanAI"));
+          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.RatAI>("RatAI"));
+          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.SewersThingAI>("SewersThingAI"));
+          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.SkeletonAI>("SkeletonAI"));
+          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.SoldierAI>("SoldierAI"));
+          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.ZombieAI>("ZombieAI"));
+          minds.RequireAllSubtypes();
+          s_j_opts.Converters.Add(minds);
 
           var objs = new Zaimoni.JSON.Polymorphic<MapObject>();
           objs.Add(new Zaimoni.JsonConvert.Via<MapObject, MapObject>("MapObject"));

@@ -6,6 +6,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
@@ -50,6 +52,35 @@ namespace djack.RogueSurvivor.Data
 #endif
       for (DollPart index = DollPart.NONE; index < DollPart._COUNT; ++index)
         m_Decorations[(int)index] = null;
+    }
+
+    // JSON: an object of body part to image IDs.  Our owner writes us only when HasDecorations.
+    public bool HasDecorations {
+      get {
+        if (null != m_Decorations) foreach (var x in m_Decorations) if (null != x && 0 < x.Count) return true;
+        return false;
+      }
+    }
+
+    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      writer.WriteStartObject();
+      if (null != m_Decorations) {
+        for (DollPart index = DollPart.NONE; index < DollPart._COUNT; ++index) {
+          var x = m_Decorations[(int)index];
+          if (null != x && 0 < x.Count) writer.WriteArray(index.ToString(), x, options);
+        }
+      }
+      writer.WriteEndObject();
+    }
+
+    public Doll(ActorModel model, JsonElement src) : this(model)
+    {
+      if (null == m_Decorations) throw new JsonException(model.ID.ToString() + " is not drawn from parts: it cannot have a Doll");
+      foreach (var x in src.EnumerateObject()) {
+        if (char.IsDigit(x.Name, 0) || !Enum.TryParse<DollPart>(x.Name, out var part) || 0 > (int)part || DollPart._COUNT <= part) throw new JsonException("unrecognized doll part: " + x.Name);
+        foreach (var imageID in x.Value.EnumerateArray()) AddDecoration(part, imageID.GetString() ?? throw new JsonException("null doll decoration"));
+      }
     }
   }
 }

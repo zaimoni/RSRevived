@@ -130,7 +130,16 @@ Steps:
   - Until `Finish()`, every cross-linked field, list and dictionary is empty. Nothing during the load may rely on them.
   - Helpers in `JSON_ext`: `WriteRef`/`ReadRef`, `WriteRefs`/`ReadRefs` (one `{"$ref":…}` per line), `WriteRefDictionary`/`ReadRefDictionary` (`[reference, value]` per line).
   - Ids are assigned on first mention, so a forward-referenced object has a lower id than objects defined before it. Ids are not in definition order.
-- [ ] 2. Actor core: `Sealed<Actor>` (model, faction, name, flags, spawn time, stats, skills, doll, inventory, inventory slots, controller type). `Map` writes `Actors` as a bare array in list order (turn order). `Session` writes the player as a `$ref`.
+- [x] 2. Actor core: `Sealed<Actor>` (model, faction, name, flags, spawn time, stats, skills, doll, inventory, inventory slots, controller type). `Map` writes `Actors` as a bare array in list order (turn order). `Session` writes the player as a `$ref`.
+  - `Name` is always written: it is expected to differ from the model's name (non-human actors get their instance number suffixed).
+  - `Controller` is omitted only when it is truly the default, i.e. what the model would create with no saved state. That test gets more specific as controller save/load is built out.
+  - On load the controller field is assigned directly. `TakeControl`, the actors-by-position cache and `CommandLinePlayer` belong to the post-load stage (step 7).
+  - A `PlayerController` can be constructed without the UI, so the headless harness can cover the player path. `RogueGame.HandlePlayerActor` cannot run headless.
+  - `Actor` registers as incomplete (`JsonConvertIncomplete.Sealed<Actor>`) until its cross-links and `ActorScoring` are saved.
+  - Eleven controller types under `Polymorphic<ActorController>`, all incomplete: `PlayerController` and the ten AIs. `ActorController.IsJsonDefault` is the "truly default" test; today it only compares the type with the model's default controller.
+  - `Location` rejects a null map in DEBUG, so the actor cannot be built with a position alone. `Actor.s_LoadMap` holds the owning map while it loads its `Actors`; an actor saved with a `Position` but loaded outside a map is rejected.
+  - Also implied when omitted: `ActionPoints` at the model's speed; `Infection`, `OdorSuppressorCounter`, `TrustInLeader` at zero; `Activity` when `IDLE`; flags that are false; `Slots` when all empty.
+  - `Session` keeps the loaded player in `m_JsonLoadedPlayer`, so re-saving a loaded session writes that one.
 - [ ] 3. Actor cross-links (target, followers, trust, aggressor and self-defence lists) and `ActorScoring`.
 - [ ] 4. Corpses: `Sealed<Corpse>`, `Corpses` on `Map`, the dragged-corpse link.
 - [ ] 5. `UniqueActors` and the refugee pool. `ItemTrap` and `TaskEscapeNanny` become complete.

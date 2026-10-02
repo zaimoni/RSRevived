@@ -10,6 +10,8 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -19,8 +21,11 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal class SewersThingAI : BaseAI
+  internal class SewersThingAI : BaseAI, IJsonStaged<SewersThingAI>
   {
+    // JSON: saves $type only so far (the AI reloads with amnesia)
+    static SewersThingAI IJsonStaged<SewersThingAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new SewersThingAI(JsonOwner));
+
     private const int LOS_MEMORY = 2*(WorldTime.TURNS_PER_HOUR);
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;

@@ -11,6 +11,8 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -21,8 +23,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
   /// <summary>
   /// Zombie AI : used by Zombie, Zombie Master and Zombified branches.
   /// </summary>
-  internal class ZombieAI : BaseAI
+  internal class ZombieAI : BaseAI, IJsonStaged<ZombieAI>
   {
+    // JSON: saves $type only so far (the AI reloads with amnesia)
+    static ZombieAI IJsonStaged<ZombieAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ZombieAI(JsonOwner));
+
     private const int LOS_MEMORY = 2*(WorldTime.TURNS_PER_HOUR/3);
     private const int USE_EXIT_CHANCE = 50;
     private const int FOLLOW_SCENT_THROUGH_EXIT_CHANCE = 90;    // dead constant?

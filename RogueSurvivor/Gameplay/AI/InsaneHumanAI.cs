@@ -9,6 +9,8 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -18,8 +20,11 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal class InsaneHumanAI : BaseAI
+  internal class InsaneHumanAI : BaseAI, IJsonStaged<InsaneHumanAI>
   {
+    // JSON: saves $type only so far (the AI reloads with amnesia)
+    static InsaneHumanAI IJsonStaged<InsaneHumanAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new InsaneHumanAI(JsonOwner));
+
     private static readonly string[] INSANITIES = new string[56]
     {
       "WHY WALK THERE?",

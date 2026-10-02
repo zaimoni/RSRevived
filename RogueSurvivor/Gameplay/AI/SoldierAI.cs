@@ -14,6 +14,8 @@ using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -21,8 +23,11 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal class SoldierAI : OrderableAI
+  internal class SoldierAI : OrderableAI, IJsonStaged<SoldierAI>
   {
+    // JSON: saves $type only so far (the AI reloads with amnesia)
+    static SoldierAI IJsonStaged<SoldierAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new SoldierAI(JsonOwner));
+
     private static readonly string[] FIGHT_EMOTES = new string[3]
     {
       "Damn",

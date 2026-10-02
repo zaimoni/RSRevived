@@ -12,8 +12,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.Json;
 using System.Threading;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 using static Zaimoni.Data.Functor;
 
 using Point = Zaimoni.Data.Vector2D<short>;
@@ -70,7 +72,7 @@ namespace djack.RogueSurvivor.Data
     };
 
   [Serializable]
-  public sealed class Actor : IEquatable<Actor>, IInventory, IDeserializationCallback, ILocation, Zaimoni.Data.INoun
+  public sealed class Actor : IEquatable<Actor>, IInventory, IDeserializationCallback, ILocation, Zaimoni.Data.INoun, IJsonStaged<Actor>
     {
     public const int BASE_ACTION_COST = 100;
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
@@ -907,6 +909,144 @@ namespace djack.RogueSurvivor.Data
 
       Controller.RepairLoad();
     }
+
+#region JSON save/load
+    // Our location is our Position, plus the map that owns us.  While a map loads its actors, it is here.
+    [NonSerialized] public static Map? s_LoadMap = null;
+
+    // Not saved yet: cross-links to other actors, the dragged corpse, ActorScoring.
+    // Implied when omitted: stats at the model's base value, "previous" stats equal to the current ones,
+    // action points at the model's speed, counters at zero, flags that are false, an idle Activity,
+    // a controller that is what the model would construct.
+    private Actor(JsonElement src, JsonSerializerOptions options)
+    {
+      bool flag(string name) => src.TryGetProperty(name, out var x) && x.GetBoolean();
+      int stat(string name, int implied) => src.TryGetProperty(name, out var x) ? x.GetInt32() : implied;
+
+      src.RecordRef(this);
+      m_ModelID = src.RequireEnum<GameActors.IDs>("Model");
+      if (GameActors.IDs._COUNT == m_ModelID) throw new JsonException("not an actor model: _COUNT");
+      m_FactionID = src.RequireEnum<GameFactions.IDs>("Faction");
+      if (GameFactions.IDs._COUNT == m_FactionID) throw new JsonException("not a faction: _COUNT");
+      m_Name = src.Require("Name").GetString() ?? throw new JsonException("null Name");
+      IsPluralName = flag("PluralName");
+      SetFlag(Flags.IS_PROPER_NAME, flag("ProperName"));
+      SetFlag(Flags.IS_UNIQUE, flag("Unique"));
+      SetFlag(Flags.IS_DEAD, flag("Dead"));
+      SetFlag(Flags.IS_RUNNING, flag("Running"));
+      SetFlag(Flags.IS_SLEEPING, flag("Sleeping"));
+      SetFlag(Flags.IS_CROUCHING, flag("Crouching"));
+      SpawnTime = src.Require("SpawnTime").GetInt32();
+
+      var model = Model;
+      if (src.TryGetProperty("Position", out var relay)) {
+        m_Location = new Location(s_LoadMap ?? throw new JsonException("actor has a Position, but is not being loaded by a map"), relay.Deserialize<Point>(options));
+      } else m_Location = new Location();
+
+      m_HitPoints = stat("HitPoints", model.BaseHitPoints);
+      m_previousHitPoints = stat("PreviousHitPoints", m_HitPoints);
+      m_StaminaPoints = stat("StaminaPoints", model.BaseStaminaPoints);
+      m_previousStamina = stat("PreviousStaminaPoints", m_StaminaPoints);
+      m_FoodPoints = stat("FoodPoints", model.BaseFoodPoints);
+      m_previousFoodPoints = stat("PreviousFoodPoints", m_FoodPoints);
+      m_SleepPoints = stat("SleepPoints", model.BaseSleepPoints);
+      m_previousSleepPoints = stat("PreviousSleepPoints", m_SleepPoints);
+      m_Sanity = stat("Sanity", model.BaseSanity);
+      m_previousSanity = stat("PreviousSanity", m_Sanity);
+      m_ActionPoints = stat("ActionPoints", model.DollBody.Speed);
+      m_Infection = stat("Infection", 0);
+      OdorSuppressorCounter = stat("OdorSuppressorCounter", 0);
+      m_TrustInLeader = stat("TrustInLeader", 0);
+      Activity = src.TryGetProperty("Activity", out _) ? src.RequireEnum<Activity>("Activity") : Activity.IDLE;
+
+      m_Skills = src.TryGetProperty("Skills", out relay) ? new SkillTable(relay) : new SkillTable();
+      m_Doll = src.TryGetProperty("Doll", out relay) ? new Doll(model, relay) : new Doll(model);
+      m_Inventory = src.TryGetProperty("Inventory", out relay) ? relay.Deserialize<Inventory>(options) : null;
+      m_InventorySlots = src.TryGetProperty("Slots", out relay) ? new InventorySlots(relay, options)
+                       : (model.Abilities.HasInventory ? new InventorySlots(1) : null);
+      ActorScoring = new ActorScoring(this);
+
+      // Assigned directly, bypassing the Controller setter: TakeControl is for a live actor, and belongs to the post-load stage.
+      var prior = ActorController.s_LoadOwner;
+      ActorController.s_LoadOwner = this;
+      try {
+        m_Controller = src.TryGetProperty("Controller", out relay) ? (relay.Deserialize<ActorController>(options) ?? throw new JsonException("null Controller"))
+                     : model.InstanciateController(this);
+        if (src.TryGetProperty("Subconscious", out relay)) m_Subconscious = relay.Deserialize<ActorController>(options);
+      } finally {
+        ActorController.s_LoadOwner = prior;
+      }
+
+      OnDeserialized(default);  // whether we eat; current attack and defence, from what we have equipped
+    }
+
+    static Actor IJsonStaged<Actor>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      void flag(string name, bool value) { if (value) writer.WriteBoolean(name, true); }
+      void stat(string name, int value, int implied) { if (implied != value) writer.WriteNumber(name, value); }
+
+      var model = Model;
+      writer.WriteString("Model", m_ModelID.ToString());
+      writer.WriteString("Faction", m_FactionID.ToString());
+      writer.WriteString("Name", m_Name);
+      flag("ProperName", IsProperName);
+      flag("PluralName", IsPluralName);
+      flag("Unique", IsUnique);
+      flag("Dead", IsDead);
+      flag("Running", IsRunning);
+      flag("Sleeping", IsSleeping);
+      flag("Crouching", IsCrouching);
+      writer.WriteNumber("SpawnTime", SpawnTime);
+      if (null != m_Location.Map) {
+        // just the position: the map that owns us knows it is our map
+        writer.WritePropertyName("Position");
+        JsonSerializer.Serialize(writer, m_Location.Position, options);
+      }
+
+      stat("HitPoints", m_HitPoints, model.BaseHitPoints);
+      stat("PreviousHitPoints", m_previousHitPoints, m_HitPoints);
+      stat("StaminaPoints", m_StaminaPoints, model.BaseStaminaPoints);
+      stat("PreviousStaminaPoints", m_previousStamina, m_StaminaPoints);
+      stat("FoodPoints", m_FoodPoints, model.BaseFoodPoints);
+      stat("PreviousFoodPoints", m_previousFoodPoints, m_FoodPoints);
+      stat("SleepPoints", m_SleepPoints, model.BaseSleepPoints);
+      stat("PreviousSleepPoints", m_previousSleepPoints, m_SleepPoints);
+      stat("Sanity", m_Sanity, model.BaseSanity);
+      stat("PreviousSanity", m_previousSanity, m_Sanity);
+      stat("ActionPoints", m_ActionPoints, model.DollBody.Speed);
+      stat("Infection", m_Infection, 0);
+      stat("OdorSuppressorCounter", OdorSuppressorCounter, 0);
+      stat("TrustInLeader", m_TrustInLeader, 0);
+      if (Activity.IDLE != Activity) writer.WriteString("Activity", Activity.ToString());
+
+      if (0 < m_Skills.CountSkills) {
+        writer.WritePropertyName("Skills");
+        m_Skills.toJson(writer);
+      }
+      if (m_Doll.HasDecorations) {
+        writer.WritePropertyName("Doll");
+        m_Doll.toJson(writer, options);
+      }
+      if (null != m_Inventory) {
+        writer.WritePropertyName("Inventory");
+        JsonSerializer.Serialize(writer, m_Inventory, options);
+      }
+      if (null != m_InventorySlots && !m_InventorySlots.IsEmpty) {
+        writer.WritePropertyName("Slots");
+        m_InventorySlots.toJson(writer, options);
+      }
+      if (null != m_Controller && !m_Controller.IsJsonDefault) {
+        writer.WritePropertyName("Controller");
+        JsonSerializer.Serialize(writer, m_Controller, options);
+      }
+      if (null != m_Subconscious) {
+        writer.WritePropertyName("Subconscious");
+        JsonSerializer.Serialize(writer, m_Subconscious, options);
+      }
+    }
+#endregion
 
 
     public void RevertToAI() {

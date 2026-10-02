@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 #nullable enable
 
@@ -68,6 +69,24 @@ namespace djack.RogueSurvivor.Data
       var ret = Engine.Rules.Get.DiceRoller.Choose(m_Table);
       DecOrRemoveSkill(ret.Key);
       return ret.Key;
+    }
+
+    // JSON: an object of skill name to level.  Our owner decides whether to write us at all.
+    public void toJson(Utf8JsonWriter writer)
+    {
+      writer.WriteStartObject();
+      if (null != m_Table) foreach (var x in m_Table) writer.WriteNumber(x.Key.ToString(), x.Value);
+      writer.WriteEndObject();
+    }
+
+    public SkillTable(JsonElement src)
+    {
+      foreach (var x in src.EnumerateObject()) {
+        if (char.IsDigit(x.Name, 0) || !Enum.TryParse<Gameplay.Skills.IDs>(x.Name, out var id) || !Enum.IsDefined(id)) throw new JsonException("unrecognized skill: " + x.Name);
+        var level = x.Value.GetSByte();
+        if (0 >= level) throw new JsonException("skill level must be positive: " + x.Name);
+        if (!(m_Table ??= new()).TryAdd(id, level)) throw new JsonException("skill repeated: " + x.Name);
+      }
     }
   }
 }

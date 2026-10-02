@@ -12,6 +12,8 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -19,8 +21,11 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal class FeralDogAI : BaseAI
+  internal class FeralDogAI : BaseAI, IJsonStaged<FeralDogAI>
   {
+    // JSON: saves $type only so far (the AI reloads with amnesia)
+    static FeralDogAI IJsonStaged<FeralDogAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new FeralDogAI(JsonOwner));
+
     private static readonly string[] FIGHT_EMOTES = new string[MAX_EMOTES]
     {
       "waf",

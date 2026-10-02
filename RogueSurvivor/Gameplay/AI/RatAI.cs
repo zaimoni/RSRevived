@@ -8,6 +8,8 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -17,8 +19,11 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal class RatAI : BaseAI
+  internal class RatAI : BaseAI, IJsonStaged<RatAI>
   {
+    // JSON: saves $type only so far (the AI reloads with amnesia)
+    static RatAI IJsonStaged<RatAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new RatAI(JsonOwner));
+
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
 
     private readonly LOSSensor m_LOSSensor;

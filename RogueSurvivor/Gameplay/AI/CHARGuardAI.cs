@@ -17,14 +17,19 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal class CHARGuardAI : OrderableAI
+  internal class CHARGuardAI : OrderableAI, IJsonStaged<CHARGuardAI>
   {
+    // JSON: saves $type only so far (the AI reloads with amnesia)
+    static CHARGuardAI IJsonStaged<CHARGuardAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new CHARGuardAI(JsonOwner));
+
     private static readonly string[] FIGHT_EMOTES = new string[3]
     {
       "Go away",

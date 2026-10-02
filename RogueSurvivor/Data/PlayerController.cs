@@ -13,6 +13,8 @@ using System.Runtime.Serialization;
 using System.Linq;
 using Zaimoni.Data;
 using static Zaimoni.Data.Functor;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
@@ -75,8 +77,11 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  public sealed class PlayerController : ObjectiveAI
+  public sealed class PlayerController : ObjectiveAI, IJsonStaged<PlayerController>
     {
+      // JSON: saves $type only so far (the AI reloads with amnesia)
+      static PlayerController IJsonStaged<PlayerController>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new PlayerController(JsonOwner));
+
     private readonly Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
     private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int> m_itemMemory;
     private List<Waypoint_s>? m_Waypoints = null;

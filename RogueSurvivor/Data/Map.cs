@@ -414,7 +414,7 @@ namespace djack.RogueSurvivor.Data
     }
         #endregion
 
-        private const int field_code_UB = 12;
+        private const int field_code_UB = 13;
         static private int field_code(ref Utf8JsonReader reader)
         {
             if (reader.ValueTextEquals("Name")) return 1;
@@ -428,7 +428,8 @@ namespace djack.RogueSurvivor.Data
             else if (reader.ValueTextEquals("Timers")) return 9;
             else if (reader.ValueTextEquals("Tiles")) return 10;
             else if (reader.ValueTextEquals("Decorations")) return 11;
-            else if (reader.ValueTextEquals("Scents")) return field_code_UB;
+            else if (reader.ValueTextEquals("Scents")) return 12;
+            else if (reader.ValueTextEquals("Actors")) return field_code_UB;
 
             Engine.RogueGame.Game.ErrorPopup(reader.GetString());
             throw new JsonException();
@@ -590,6 +591,19 @@ namespace djack.RogueSurvivor.Data
                             }
                             if (0 >= scents.Count) throw new JsonException("Scents: position without scents");
                             m_ScentsByPosition.Add(x[0].Deserialize<Point>(options), scents);
+                        }
+                        }
+                        break;
+                    case 13:
+                        {
+                        // in list order: that is turn order.  Not PlaceAt: that is for a live map.
+                        var stage = JsonElement.ParseValue(ref reader);
+                        var prior = Actor.s_LoadMap;
+                        Actor.s_LoadMap = this;
+                        try {
+                            foreach (var x in stage.EnumerateArray()) m_ActorsList.Add(x.Deserialize<Actor>(options) ?? throw new JsonException("null actor"));
+                        } finally {
+                            Actor.s_LoadMap = prior;
                         }
                         }
                         break;
@@ -788,6 +802,7 @@ namespace djack.RogueSurvivor.Data
         }
         writer.WriteEndArray();
       }
+      if (0 < m_ActorsList.Count) writer.WriteArray("Actors", m_ActorsList, options);
       if (0 < m_Timers.Count) writer.WriteArray("Timers", m_Timers, options);
     }
 
