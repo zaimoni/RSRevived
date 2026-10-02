@@ -24,8 +24,8 @@ namespace Zaimoni.JSON
        private Dictionary<object, string>? _objectToReferenceIdMap = null;
        // saving: an id can be handed out (forward reference) before its definition is written
        private HashSet<object>? _defined = null;
-       // loading: a reference can be read before its definition
-       private Dictionary<string, List<Action<object>>>? _fixups = null;
+       // loading: a reference can be read before its definition.  These run in the order they were deferred.
+       private List<KeyValuePair<string, Action<object>>>? _fixups = null;
 
        private Dictionary<string, object> ReferenceToObject { get => _referenceIdToObjectMap ??= new(); }
        private Dictionary<object, string> ObjectToReference { get => _objectToReferenceIdMap ??= new(ReferenceEqualityComparer.Instance); }
@@ -36,9 +36,6 @@ namespace Zaimoni.JSON
        public override void AddReference(string referenceId, object value)
        {
            if (!ReferenceToObject.TryAdd(referenceId, value)) throw new JsonException("duplicate id found: " + referenceId);
-           if (null != _fixups && _fixups.Remove(referenceId, out var pending)) {
-               foreach (var fixup in pending) fixup(value);
-           }
        }
 
        /// <summary>the id for value, assigning one if needed.  Does not claim the definition has been written.</summary>
@@ -76,7 +73,8 @@ namespace Zaimoni.JSON
             throw new JsonException("id not found: " + referenceId);
        }
 
-       /// <summary>runs fixup immediately if the id is already loaded; otherwise, when it is loaded.</summary>
+       /// <summary>Queues fixup for RunFixups, even when the id is already loaded.
+       /// Running some fixups at once and others later would reorder the lists and dictionaries they fill.</summary>
        public void Defer<T>(string referenceId, Action<T> fixup) where T:class
        {
            void relay(object src) {
@@ -84,13 +82,21 @@ namespace Zaimoni.JSON
                else throw new JsonException("type mismatch: " + referenceId + " is not " + typeof(T).FullName);
            }
 
-           if (TryResolve(referenceId, out object? value)) {
-               relay(value!);
-               return;
+           (_fixups ??= new()).Add(new(referenceId, relay));
+       }
+
+       /// <summary>Runs the deferred fixups, in the order they were deferred.  Call once everything is loaded.
+       /// Those whose id never loaded are left for Errors to report.</summary>
+       public void RunFixups()
+       {
+           if (null == _fixups) return;
+           List<KeyValuePair<string, Action<object>>>? unresolved = null;
+           for (int i = 0; i < _fixups.Count; i++) {   // a fixup is allowed to defer more
+               var x = _fixups[i];
+               if (TryResolve(x.Key, out object? value)) x.Value(value!);
+               else (unresolved ??= new()).Add(x);
            }
-           _fixups ??= new();
-           if (!_fixups.TryGetValue(referenceId, out var pending)) _fixups.Add(referenceId, pending = new());
-           pending.Add(relay);
+           _fixups = unresolved;
        }
 
        /// <summary>null if and only if the save, or load, was self-consistent.</summary>
@@ -104,7 +110,11 @@ namespace Zaimoni.JSON
                }
            }
            if (null != _fixups) {
-               foreach (var x in _fixups) (err ??= new()).Add("referenced but never loaded: " + x.Key);
+               string? last = null;
+               foreach (var x in _fixups) {
+                   if (x.Key == last) continue;
+                   (err ??= new()).Add("referenced but never loaded: " + (last = x.Key));
+               }
            }
            return null == err ? null : string.Join("\n", err);
        }
@@ -119,11 +129,16 @@ namespace Zaimoni.JSON
        static public void Reset() => s_resolve = null;
        static public PreserveReferenceResolver Resolver { get => (s_resolve ??= new()); }
 
-       /// <summary>call after each complete save, or load.  Resets even when it throws.</summary>
+       /// <summary>call after each complete save, or load.  Runs the deferred fixups of a load.  Resets even when it throws.</summary>
        static public void Finish()
        {
-           var err = s_resolve?.Errors();
-           s_resolve = null;
+           string? err;
+           try {
+               s_resolve?.RunFixups();
+               err = s_resolve?.Errors();
+           } finally {
+               s_resolve = null;
+           }
            if (null != err) throw new JsonException(err);
        }
    }

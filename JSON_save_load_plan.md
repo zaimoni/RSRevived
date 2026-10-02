@@ -125,7 +125,11 @@ Design:
 
 Steps:
 
-- [ ] 1. Resolver: ordered end-of-load fixups; helpers for a single reference, a list of references, a dictionary keyed by reference.
+- [x] 1. Resolver: ordered end-of-load fixups; helpers for a single reference, a list of references, a dictionary keyed by reference.
+  - `Defer` now always queues, even when the id is already loaded; `PreserveReferenceHandler.Finish()` runs the queue in the order deferred, then validates. This replaces the Phase 0 behaviour (run at once if known, else when the id loads).
+  - Until `Finish()`, every cross-linked field, list and dictionary is empty. Nothing during the load may rely on them.
+  - Helpers in `JSON_ext`: `WriteRef`/`ReadRef`, `WriteRefs`/`ReadRefs` (one `{"$ref":…}` per line), `WriteRefDictionary`/`ReadRefDictionary` (`[reference, value]` per line).
+  - Ids are assigned on first mention, so a forward-referenced object has a lower id than objects defined before it. Ids are not in definition order.
 - [ ] 2. Actor core: `Sealed<Actor>` (model, faction, name, flags, spawn time, stats, skills, doll, inventory, inventory slots, controller type). `Map` writes `Actors` as a bare array in list order (turn order). `Session` writes the player as a `$ref`.
 - [ ] 3. Actor cross-links (target, followers, trust, aggressor and self-defence lists) and `ActorScoring`.
 - [ ] 4. Corpses: `Sealed<Corpse>`, `Corpses` on `Map`, the dragged-corpse link.

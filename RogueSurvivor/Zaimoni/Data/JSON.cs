@@ -147,6 +147,63 @@ namespace Zaimoni.JSON
             writer.WriteRawValue(stage.ToString());
         }
 
+#region cross-links
+        // A cross-link refers to an object that some other part of the save owns, and so defines: only a $ref is written here.
+        // The owner may come later in the file.  On load, cross-links are filled in by PreserveReferenceHandler.Finish,
+        // in file order; until then the field, list or dictionary they fill is empty.
+
+        static private string RenderRef<T>(T src) where T : class => "{\"$ref\":\"" + PreserveReferenceHandler.Resolver.Reference(src) + "\"}";
+
+        static public void WriteRef<T>(this Utf8JsonWriter writer, string name, T src) where T : class
+        {
+            writer.WritePropertyName(name);
+            src.SaveAsRef(writer);
+        }
+
+        /// <summary>one reference per line</summary>
+        static public void WriteRefs<T>(this Utf8JsonWriter writer, string name, IEnumerable<T> src) where T : class
+        {
+            List<string> rows = new();
+            foreach (var x in src) rows.Add(RenderRef(x));
+            writer.WritePropertyName(name);
+            writer.WriteArrayOfLines(rows);
+        }
+
+        /// <summary>Each entry is [reference, value], one entry per line.  Intended for values that are numbers or strings.</summary>
+        static public void WriteRefDictionary<K, V>(this Utf8JsonWriter writer, string name, IEnumerable<KeyValuePair<K, V>> src, JsonSerializerOptions options) where K : class
+        {
+            List<string> rows = new();
+            foreach (var x in src) rows.Add("[" + RenderRef(x.Key) + "," + JsonSerializer.Serialize(x.Value, options) + "]");
+            writer.WritePropertyName(name);
+            writer.WriteArrayOfLines(rows);
+        }
+
+        static public string RefId(this JsonElement src)
+        {
+            if (JsonValueKind.Object == src.ValueKind && src.TryGetProperty("$ref", out var id)) return id.GetString() ?? throw new JsonException("null $ref");
+            throw new JsonException("expected a reference: " + src.GetRawText());
+        }
+
+        /// <param name="assign">runs when the load finishes, not now</param>
+        static public void ReadRef<T>(this JsonElement src, Action<T> assign) where T : class => PreserveReferenceHandler.Resolver.Defer(src.RefId(), assign);
+
+        /// <param name="dest">filled when the load finishes, in file order</param>
+        static public void ReadRefs<T>(this JsonElement src, ICollection<T> dest) where T : class
+        {
+            foreach (var x in src.EnumerateArray()) x.ReadRef<T>(dest.Add);
+        }
+
+        /// <param name="dest">filled when the load finishes, in file order</param>
+        static public void ReadRefDictionary<K, V>(this JsonElement src, IDictionary<K, V> dest, JsonSerializerOptions options) where K : class
+        {
+            foreach (var x in src.EnumerateArray()) {
+                if (JsonValueKind.Array != x.ValueKind || 2 != x.GetArrayLength()) throw new JsonException("expected [reference, value]: " + x.GetRawText());
+                var value = x[1].Deserialize<V>(options)!;
+                x[0].ReadRef<K>(key => dest.Add(key, value));
+            }
+        }
+#endregion
+
         public static void RecordRef<T>(this string relay_id, T src) where T : class {
             var resolve = PreserveReferenceHandler.Resolver;
             resolve.AddReference(relay_id, src);
