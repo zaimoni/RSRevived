@@ -703,6 +703,7 @@ namespace djack.RogueSurvivor.Data
 #endif
 
     public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+      OptimizeBeforeSaving(default);    // as the legacy save does: drops dead actors from our list
       writer.WriteString("Name", Name);
       writer.WriteString("Lighting", Lighting.ToString());
       writer.WritePropertyName("LocalTime");

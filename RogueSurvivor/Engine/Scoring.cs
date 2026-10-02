@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Zaimoni.JSON;
 using Zaimoni.Serialization;
 
 #nullable enable
@@ -288,6 +289,84 @@ namespace djack.RogueSurvivor.Engine
                                                        : string.Format("- Fail : {0}.", achievement.TeaseName));
       } while(Achievement.IDs._COUNT > ++i);
     }
+
+#region JSON save/load
+    // Our actor writes us, as its "Scoring", only when we have something to say.
+    public bool IsJsonEmpty {
+      get {
+        return 0 >= m_FirstKills.Count && 0 >= m_KillCounts.Count && 0 >= m_Sightings.Count && 0 >= m_Events.Count && 0 >= m_VisitedMaps.Count
+            && null == m_DeathReason && 0 >= CompletedAchievementsCount;
+      }
+    }
+
+    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      writer.WriteStartObject();
+      if (0 < CompletedAchievementsCount) {
+        writer.WritePropertyName("Achievements");
+        writer.WriteStartArray();
+        for (Achievement.IDs i = 0; Achievement.IDs._COUNT > i; i++) if (Achievements_completed[(int)i]) writer.WriteStringValue(i.ToString());
+        writer.WriteEndArray();
+      }
+      if (0 < m_FirstKills.Count) {
+        writer.WritePropertyName("FirstKills");
+        writer.WriteStartObject();
+        foreach (var x in m_FirstKills) writer.WriteNumber(x.Key.ToString(), x.Value);
+        writer.WriteEndObject();
+      }
+      if (0 < m_KillCounts.Count) {
+        writer.WritePropertyName("KillCounts");
+        writer.WriteStartObject();
+        foreach (var x in m_KillCounts) writer.WriteNumber(x.Key.ToString(), x.Value);
+        writer.WriteEndObject();
+      }
+      if (0 < m_Sightings.Count) {
+        writer.WritePropertyName("Sightings");
+        writer.WriteStartArray();
+        foreach (var x in m_Sightings) writer.WriteStringValue(x.ToString());
+        writer.WriteEndArray();
+      }
+      if (0 < m_Events.Count) {
+        // each entry is [turn, text], one per line
+        List<string> rows = new(m_Events.Count);
+        foreach (var x in m_Events) rows.Add("[" + x.Key.ToString() + "," + JsonSerializer.Serialize(x.Value, options) + "]");
+        writer.WritePropertyName("Events");
+        writer.WriteArrayOfLines(rows);
+      }
+      if (0 < m_VisitedMaps.Count) writer.WriteRefs("VisitedMaps", m_VisitedMaps);
+      if (null != m_DeathReason) writer.WriteString("DeathReason", m_DeathReason);
+      writer.WriteEndObject();
+    }
+
+    static private GameActors.IDs JsonModel(string? text)
+    {
+      var ret = JSON_ext.ParseEnum<GameActors.IDs>(text);
+      if (GameActors.IDs._COUNT == ret) throw new JsonException("not an actor model: _COUNT");
+      return ret;
+    }
+
+    public ActorScoring(Actor src, JsonElement json, JsonSerializerOptions options) : this(src)
+    {
+      if (json.TryGetProperty("Achievements", out var relay)) {
+        foreach (var x in relay.EnumerateArray()) {
+          var id = JSON_ext.ParseEnum<Achievement.IDs>(x.GetString());
+          if (Achievement.IDs._COUNT == id) throw new JsonException("not an achievement: _COUNT");
+          Achievements_completed[(int)id] = true;
+        }
+      }
+      if (json.TryGetProperty("FirstKills", out relay)) foreach (var x in relay.EnumerateObject()) m_FirstKills.Add(JsonModel(x.Name), x.Value.GetInt32());
+      if (json.TryGetProperty("KillCounts", out relay)) foreach (var x in relay.EnumerateObject()) m_KillCounts.Add(JsonModel(x.Name), x.Value.GetInt32());
+      if (json.TryGetProperty("Sightings", out relay)) foreach (var x in relay.EnumerateArray()) m_Sightings.Add(JsonModel(x.GetString()));
+      if (json.TryGetProperty("Events", out relay)) {
+        foreach (var x in relay.EnumerateArray()) {
+          if (JsonValueKind.Array != x.ValueKind || 2 != x.GetArrayLength()) throw new JsonException("expected [turn, text]: " + x.GetRawText());
+          m_Events.Add(new(x[0].GetInt32(), x[1].GetString() ?? throw new JsonException("null event text")));
+        }
+      }
+      if (json.TryGetProperty("VisitedMaps", out relay)) relay.ReadRefs(m_VisitedMaps);   // cross-links: filled when the load finishes
+      if (json.TryGetProperty("DeathReason", out relay)) m_DeathReason = relay.GetString();
+    }
+#endregion
   }
 
   public sealed class Scoring_fatality

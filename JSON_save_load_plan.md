@@ -140,7 +140,13 @@ Steps:
   - `Location` rejects a null map in DEBUG, so the actor cannot be built with a position alone. `Actor.s_LoadMap` holds the owning map while it loads its `Actors`; an actor saved with a `Position` but loaded outside a map is rejected.
   - Also implied when omitted: `ActionPoints` at the model's speed; `Infection`, `OdorSuppressorCounter`, `TrustInLeader` at zero; `Activity` when `IDLE`; flags that are false; `Slots` when all empty.
   - `Session` keeps the loaded player in `m_JsonLoadedPlayer`, so re-saving a loaded session writes that one.
-- [ ] 3. Actor cross-links (target, followers, trust, aggressor and self-defence lists) and `ActorScoring`.
+- [x] 3. Actor cross-links (target, followers, trust, aggressor and self-defence lists) and `ActorScoring`.
+  - **Pre-save pruning.** The legacy save runs `[OnSerializing]` hooks; the JSON save now calls the same ones from `toJsonFields`: `Actor` (dead target, dead followers/aggressors), `Map` (dead actors out of its list), `Inventory` (zero-quantity items), `ItemTrap` (dead owner and known-by). Saving therefore mutates live state, as the legacy save does. `ItemEntertainment`'s hook is compiled out (`#if PROTOTYPE`) and is not called.
+  - `Target` is a single `$ref`; `Followers`, `AggressorOf`, `SelfDefenceFrom` are lists of `$ref`s; `Trust` is `[reference, value]` pairs. Each is omitted when empty, and the list stays null on load.
+  - The leader is not written: the fixup that fills a leader's `Followers` sets each follower's leader.
+  - Dead keys in the trust dictionary are skipped on write, without touching the live dictionary. Revisit once corpses are saved (step 4): a revivable corpse should keep its trust.
+  - `Scoring` (the actor's `ActorScoring`) is written only when it has something in it: `Achievements`, `FirstKills`, `KillCounts`, `Sightings`, `Events` (`[turn, text]` per line), `VisitedMaps` (`$ref`s), `DeathReason`.
+  - `Actor` stays incomplete until the dragged corpse is saved (step 4).
 - [ ] 4. Corpses: `Sealed<Corpse>`, `Corpses` on `Map`, the dragged-corpse link.
 - [ ] 5. `UniqueActors` and the refugee pool. `ItemTrap` and `TaskEscapeNanny` become complete.
 - [ ] 6. Police `RadioFaction`: item memory, `ThreatTracking`, the investigate set, event log, rankings.

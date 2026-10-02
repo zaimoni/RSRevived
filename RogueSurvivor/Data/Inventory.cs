@@ -113,6 +113,7 @@ namespace djack.RogueSurvivor.Data
     static Inventory IJsonStaged<Inventory>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        OptimizeBeforeSaving(default);  // as the legacy save does
         writer.WriteNumber("MaxCapacity", m_maxCapacity);
         writer.WriteArray("Items", m_Items, options);
     }

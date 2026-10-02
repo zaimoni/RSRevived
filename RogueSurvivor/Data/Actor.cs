@@ -949,7 +949,18 @@ namespace djack.RogueSurvivor.Data
       m_Inventory = src.TryGetProperty("Inventory", out relay) ? relay.Deserialize<Inventory>(options) : null;
       m_InventorySlots = src.TryGetProperty("Slots", out relay) ? new InventorySlots(relay, options)
                        : (model.Abilities.HasInventory ? new InventorySlots(1) : null);
-      ActorScoring = new ActorScoring(this);
+      ActorScoring = src.TryGetProperty("Scoring", out relay) ? new ActorScoring(this, relay, options) : new ActorScoring(this);
+
+      // Cross-links.  These are filled when the load finishes, in file order; until then they are empty.
+      // Our leader is not saved: the leader's Followers sets it.
+      if (src.TryGetProperty("Target", out relay)) relay.ReadRef<Actor>(a => m_TargetActor = a);
+      if (src.TryGetProperty("Followers", out relay)) {
+        m_Followers = new();
+        foreach (var x in relay.EnumerateArray()) x.ReadRef<Actor>(fo => { m_Followers.Add(fo); fo.m_Leader = this; });
+      }
+      if (src.TryGetProperty("AggressorOf", out relay)) relay.ReadRefs(m_AggressorOf = new());
+      if (src.TryGetProperty("SelfDefenceFrom", out relay)) relay.ReadRefs(m_SelfDefenceFrom = new());
+      if (src.TryGetProperty("Trust", out relay)) relay.ReadRefDictionary(m_TrustDict = new(), options);
 
       // Assigned directly, bypassing the Controller setter: TakeControl is for a live actor, and belongs to the post-load stage.
       var prior = ActorController.s_LoadOwner;
@@ -971,6 +982,8 @@ namespace djack.RogueSurvivor.Data
     {
       void flag(string name, bool value) { if (value) writer.WriteBoolean(name, true); }
       void stat(string name, int value, int implied) { if (implied != value) writer.WriteNumber(name, value); }
+
+      OptimizeBeforeSaving(default);    // as the legacy save does: drops a dead target, and dead followers/aggressors
 
       var model = Model;
       writer.WriteString("Model", m_ModelID.ToString());
@@ -1021,6 +1034,22 @@ namespace djack.RogueSurvivor.Data
         writer.WritePropertyName("Slots");
         m_InventorySlots.toJson(writer, options);
       }
+      if (!ActorScoring.IsJsonEmpty) {
+        writer.WritePropertyName("Scoring");
+        ActorScoring.toJson(writer, options);
+      }
+
+      // cross-links: other actors, who are saved by whatever owns them
+      if (null != m_TargetActor) writer.WriteRef("Target", m_TargetActor);
+      if (null != m_Followers && 0 < m_Followers.Count) writer.WriteRefs("Followers", m_Followers);
+      if (null != m_AggressorOf && 0 < m_AggressorOf.Count) writer.WriteRefs("AggressorOf", m_AggressorOf);
+      if (null != m_SelfDefenceFrom && 0 < m_SelfDefenceFrom.Count) writer.WriteRefs("SelfDefenceFrom", m_SelfDefenceFrom);
+      if (null != m_TrustDict) {
+        // The dead are skipped: nothing owns them yet, so they cannot be saved.  \todo revisit once corpses are saved (a revivable corpse should keep its trust)
+        var live = m_TrustDict.Where(x => !x.Key.IsDead).ToList();
+        if (0 < live.Count) writer.WriteRefDictionary("Trust", live, options);
+      }
+
       if (null != m_Controller && !m_Controller.IsJsonDefault) {
         writer.WritePropertyName("Controller");
         JsonSerializer.Serialize(writer, m_Controller, options);

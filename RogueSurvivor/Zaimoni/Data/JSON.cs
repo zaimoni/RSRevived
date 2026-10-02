@@ -116,6 +116,13 @@ namespace Zaimoni.JSON
             throw new JsonException("unrecognized " + typeof(T).Name + " for " + name + ": " + stage.GetRawText());
         }
 
+        /// <summary>For an enum used as a JSON property name, or as a bare string in an array.  Same rules as RequireEnum.</summary>
+        public static T ParseEnum<T>(string? text) where T : struct, Enum
+        {
+            if (!string.IsNullOrEmpty(text) && !char.IsDigit(text[0]) && '-' != text[0] && Enum.TryParse<T>(text, out var ret)) return ret;
+            throw new JsonException("unrecognized " + typeof(T).Name + ": " + text);
+        }
+
         /// <summary>An owned collection, as a bare JSON array: no $id/$values wrapper, as it is never shared.</summary>
         public static void WriteArray<T>(this Utf8JsonWriter writer, string name, IEnumerable<T> src, JsonSerializerOptions options)
         {

@@ -89,6 +89,7 @@ namespace djack.RogueSurvivor.Engine.Items
     static ItemTrap IJsonStaged<ItemTrap>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+        OptimizeBeforeSaving(default);  // as the legacy save does
         base.toJsonFields(writer, options);
         if (m_IsActivated) writer.WriteBoolean("Activated", true);
         if (m_IsTriggered) writer.WriteBoolean("Triggered", true);
