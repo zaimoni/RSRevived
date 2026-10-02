@@ -1943,6 +1943,11 @@ retry:
         return null;
     }
 
+    public Corpse? CorpseFrom(Actor src) {
+        foreach(var c in m_CorpsesList) if (c.DeadGuy == src) return c;
+        return null;
+    }
+
     public void Recalc(Actor actor)
     {
       if (actor.IsPlayer) Players.Recalc();
@@ -2649,10 +2654,7 @@ retry:
     public bool HasCorpsesAt(Point p) { return m_aux_CorpsesByPosition.ContainsKey(p); }
     public bool Has(Corpse c) { return m_CorpsesList.Contains(c); }
     /// <summary>by identity, not by ActorTag</summary>
-    public bool HasCorpseOf(Actor a) {
-      foreach (var c in m_CorpsesList) if (c.DeadGuy == a) return true;
-      return false;
-    }
+    public bool HasCorpseOf(Actor a) => CorpseFrom(a) is not null;
 
 #region Corpse::Location support
     public void Add(Corpse c)
