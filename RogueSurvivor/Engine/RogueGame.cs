@@ -15066,12 +15066,12 @@ retry:
     // Using an extension function for the Verb class is intentional (same API as for raw strings)
     static public string Conjugate(this string verb, Actor actor)
     {
-      return verb.Conjugate((RogueGame.IsPlayer(actor) && 1 == World.Get.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
+      return verb.Conjugate((RogueGame.IsPlayer(actor) && 1 == World.Get.PlayerCount) ? 2 : 3, 1);
     }
 
     static public string Conjugate(this Verb verb, Actor actor)
     {
-      return verb.Conjugate((RogueGame.IsPlayer(actor) && 1 == World.Get.PlayerCount) ? 2 : 3, actor.IsPluralName ? 3 : 1);
+      return verb.Conjugate((RogueGame.IsPlayer(actor) && 1 == World.Get.PlayerCount) ? 2 : 3, 1);
     }
 
     static public List<PlayerController>? SetDifference(this List<PlayerController> lhs, List<PlayerController>? rhs) {

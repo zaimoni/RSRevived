@@ -232,25 +232,12 @@ namespace djack.RogueSurvivor.Data
     }
 
     // while a general noun interface would have to allow detection of singular vs plural naming, this would matter only for e.g. a swarm of rats.
-#if OBSOLETE
-    public bool IsPluralName
-    {
-      get {
-        return GetFlag(Actor.Flags.IS_PLURAL_NAME);
-      }
-      private set {
-        SetFlag(Actor.Flags.IS_PLURAL_NAME, value);
-      }
-    }
-#else
-    public readonly bool IsPluralName;
-#endif
 
 #nullable enable
     public string TheName
     {
       get {
-        if (!IsProperName && !IsPluralName)
+        if (!IsProperName)
           return "the " + m_Name;
         return Name;
       }
@@ -845,7 +832,6 @@ namespace djack.RogueSurvivor.Data
       m_FactionID = faction.ID;
       m_Name = string.IsNullOrEmpty(name) ? model.Name : name;
       IsProperName = false;
-      IsPluralName = false;
       m_Location = new Location();
       SpawnTime = spawnTime;
       IsUnique = false;
@@ -929,7 +915,6 @@ namespace djack.RogueSurvivor.Data
       m_FactionID = src.RequireEnum<GameFactions.IDs>("Faction");
       if (GameFactions.IDs._COUNT == m_FactionID) throw new JsonException("not a faction: _COUNT");
       m_Name = src.Require("Name").GetString() ?? throw new JsonException("null Name");
-      IsPluralName = flag("PluralName");
       SetFlag(Flags.IS_PROPER_NAME, flag("ProperName"));
       SetFlag(Flags.IS_UNIQUE, flag("Unique"));
       SetFlag(Flags.IS_DEAD, flag("Dead"));
@@ -992,7 +977,6 @@ namespace djack.RogueSurvivor.Data
       writer.WriteString("Faction", m_FactionID.ToString());
       writer.WriteString("Name", m_Name);
       flag("ProperName", IsProperName);
-      flag("PluralName", IsPluralName);
       flag("Unique", IsUnique);
       flag("Dead", IsDead);
       flag("Running", IsRunning);
@@ -4170,7 +4154,7 @@ final_exit:
       NONE = 0,
       IS_UNIQUE = 1,
       IS_PROPER_NAME = 2,
-      IS_PLURAL_NAME = 4,
+//    IS_PLURAL_NAME = 4, // dead: actors are never plurally named.  The value stays reserved while the binary savefile is an option.
       IS_DEAD = 8,
       IS_RUNNING = 16,
       IS_SLEEPING = 32,
