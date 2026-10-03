@@ -97,6 +97,10 @@ is also a PC.
 
 In general, scoring doesn't work right in multiple-PC games.
 
+--start=new
+--start=load
+
+These options pre-select New Game and Load menu options, respectively.
 
 2. Joining the thin blue line
 =====================
