@@ -9,7 +9,7 @@ Recorded 2026-10-01.
 
 - Production save is still `BinaryFormatter`, through the `System.Runtime.Serialization.Formatters` package.
 - JSON is `Session.SaveFormat.FORMAT_JSON`, the test format: `Session.Save`/`Session.Load` take it, and a JSON-loaded session goes live (phases 0-2 done, 2026-10-02). It is not offered from the game's menus; the command line reaches it (see "Test drive" below).
-- Under `BOOTSTRAP_JSON_SERIALIZATION` (not defined in the csproj), every binary save also runs the JSON save-then-reload round trip inside `Session.SaveBin`, and audits the converters.
+- Under `BOOTSTRAP_JSON_SERIALIZATION` (`dotnet build -p:JsonBootstrap=true`; off in a plain build), every binary save also runs the JSON save-then-reload round trip inside `Session.SaveBin`, and audits the converters.
 - A converter's namespace says whether it is finished: `Zaimoni.JsonConvert` (complete) or `Zaimoni.JsonConvertIncomplete`. Still incomplete: the eleven `ActorController` types (phase 3: they save only their `$type`), `Map` (`BgMusic` still to derive on load), `Session` (the statics that phase 3 saves under the player's controller).
 - Polymorphic roots so far: `Item` (16), `MapObject` (6), `TimedTask` (2), `ActorController` (11). Phase 3 adds `Objective` (~30), `ActorAction` / `WorldUpdate` (~33), and the observers, sensors and percepts.
 - A custom `JsonConverter<Base>` bypasses the built-in `[JsonDerivedType]` handling, just as it bypasses `ReferenceHandler`. So `$type` is hand-rolled alongside the existing `$id`/`$ref`.
