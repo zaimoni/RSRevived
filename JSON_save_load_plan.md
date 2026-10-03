@@ -8,23 +8,24 @@ Recorded 2026-10-01.
 ## Where things stand
 
 - Production save is still `BinaryFormatter`, through the `System.Runtime.Serialization.Formatters` package.
-- The JSON path only runs under `BOOTSTRAP_JSON_SERIALIZATION` (not defined in the csproj), as a save-then-reload smoke test inside `Session.SaveBin`.
-- A converter's namespace says whether it is finished: `Zaimoni.JsonConvert` (complete) or `Zaimoni.JsonConvertIncomplete`.
-- `Map` writes only Name, Lighting, LocalTime, Extent, NextActorIndex and Zones.
-- `Session` omits UniqueItems, UniqueActors, Police, the player reference, and the `RogueGame`/`PlayerController`/`Actor` statics.
-- No polymorphic root is started:
-
-| Root | Concrete types |
-|---|---|
-| `Item` | ~16 |
-| `MapObject` | 6 |
-| `TimedTask` | 2 |
-| `ActorController` | 10 |
-| `Objective` | ~30 |
-| `ActorAction` / `WorldUpdate` | ~33 |
-| Observers, sensors, percepts | a handful, some generic |
-
+- JSON is `Session.SaveFormat.FORMAT_JSON`, the test format: `Session.Save`/`Session.Load` take it, and a JSON-loaded session goes live (phases 0-2 done, 2026-10-02). It is not offered from the game's menus; the command line reaches it (see "Test drive" below).
+- Under `BOOTSTRAP_JSON_SERIALIZATION` (not defined in the csproj), every binary save also runs the JSON save-then-reload round trip inside `Session.SaveBin`, and audits the converters.
+- A converter's namespace says whether it is finished: `Zaimoni.JsonConvert` (complete) or `Zaimoni.JsonConvertIncomplete`. Still incomplete: the eleven `ActorController` types (phase 3: they save only their `$type`), `Map` (`BgMusic` still to derive on load), `Session` (the statics that phase 3 saves under the player's controller).
+- Polymorphic roots so far: `Item` (16), `MapObject` (6), `TimedTask` (2), `ActorController` (11). Phase 3 adds `Objective` (~30), `ActorAction` / `WorldUpdate` (~33), and the observers, sensors and percepts.
 - A custom `JsonConverter<Base>` bypasses the built-in `[JsonDerivedType]` handling, just as it bypasses `ReferenceHandler`. So `$type` is hand-rolled alongside the existing `$id`/`$ref`.
+
+## Test drive (command line)
+
+Options that drive the program rather than the game, held in `Engine.TestDrive`, parsed in `Program.Main`. They never enter `Session.CommandLineOptions` (so are never saved): they describe a test run, not the game being played.
+
+- `--start=new`: skip the main menu into the new-game dialogs, which `--spawn` and its relatives fill in.
+- `--start=load`: skip the menu and load the default save (`Saves/save.dat`, binary).
+- `--start=load-json`: skip the menu and load the test-format save beside it (`Saves/save.json`; `Session.JsonPath`).
+- `--save-and-exit`: at the first point a player would be asked to act (`RogueGame.HandlePlayerActor`), save to the default slot in both formats, then quit. Works after any of the three starts, and after a start from the menu.
+
+With `--save-and-exit` the run is unattended: `ErrorPopup` and `InfoPopup` go to the log instead of waiting for ESC, an unhandled exception is logged instead of shown in the bug-report dialog, and the process exit code is non-zero when the run failed (`TestDrive.ExitCode`). A `--start` that cannot start (no save to load) ends an unattended run as a failure, and shows the menu otherwise.
+
+The end-to-end JSON test is two runs: `--start=new --spawn=… --save-and-exit`, then `--start=load-json --save-and-exit`. The second run's `save.json` should match the first's, up to what the load changes (controllers reload with amnesia until phase 3).
 
 ## Design
 
@@ -174,15 +175,17 @@ Steps:
     - `Quick`: `{"Who": tag, "Rank": [t0, survival, kill, achievement]}`. `Dead`: likewise, then `"Died"`, `"Killer"` (omitted when there was none), `"Where"`.
     - Event verbs are written as words (`FactionKill`, `FactionAggression`, `Murder`, `Assault` for `v_code` 1..4): `SVOevent.v_code` is a raw number because its data design is not finished (context probably matters). The words exist only in the save format. A code with no word is written as its number.
     - `Ranking` and `Demise` gained field-wise constructors.
-- [x] 7. Post-load stage for a JSON-loaded session: derived caches and `RepairLoad`. Installing the loaded world and player, and JSON as a real save format, wait until after phase 3.
+- [x] 7. Post-load stage for a JSON-loaded session: derived caches and `RepairLoad`. Then (pulled forward from after phase 3, for the command-line test drive) installing the loaded world and player, and JSON as a save format.
   - Two stages, because only one is safe on a session that is not live.
   - **`Session.JsonPostLoad()`**: derived data that depends only on the loaded session. Per map: actors and corpses by position, map geometry, the pathing cache clock. Call once, after `PreserveReferenceHandler.Finish()`. The bootstrap test runs it.
     - The map's lazy caches (`Players`, `Viewpoints`, `Police`, `PowerGenerators`, `destination_maps`) are `readonly`, so the JSON `Map` constructor assigns them.
     - `Map.ReconstructAuxiliaryFields` took a parameter so that this stage can skip its `PlayerController.InstallHandlers()` call.
-  - **`Session.JsonAttach()` / `JsonDetach()`**: binding to the live game. `TakeControl` then `RepairLoad` for each actor on a map; re-attaching the police threat tracker. Nothing in the game calls these yet.
+  - **`Session.JsonAttach()` / `JsonDetach()`**: binding to the live game. `TakeControl` then `RepairLoad` for each actor on a map; re-attaching the police threat tracker.
     - Only actors on a map, as for the legacy `RepairLoad`. A controller cannot `TakeControl` of an actor on no map: `CivilianAI` reviews item ratings, and `Actor.HasEnoughFoodFor` reads the map's clock. In the live game such an actor took control at construction, with an empty inventory.
     - Not carried over from the legacy path: `MapObject.RepairLoad` (the JSON load already set the location; a second call throws in DEBUG) and `Map.AfterLoad(District)`.
   - **Bootstrap check of derived data** (`Session.JsonDerivedDataErrors()`), since the round-trip text cannot see it. By-position caches and the `Players`/`PowerGenerators` caches are checked against the loaded map's own lists, because the live map may still hold actors that died this turn. Geometry and destination maps are compared with the live map.
+  - **Taking a loaded session live** (`Session.JsonTakeLive`, from `Session.Load(…, FORMAT_JSON)`): what the legacy load does from `Session.OnDeserialization` and `World.OnDeserialized`. Installs the session (`s_TheSession`), the world (`World.JsonTakeLive`), the player and refugee pool (`RogueGame.AfterLoad(Actor?, List<Actor>?)`), then `JsonAttach`. The staging fields (`m_JsonLoadedWorld` and friends) are then cleared, so the live game is what saves next. The counted commands and message log are reset: they are not in the save until phase 3.
+  - `Session.Save(…, FORMAT_JSON)` / `Session.Load(…, FORMAT_JSON)`: `SaveJson`, `LoadJsonStaged` (through the post-load stage, not live: what the bootstrap round trip uses) and `LoadJson`. Each abandons the resolver (`PreserveReferenceHandler.Reset`) when it fails part-way, so a failed attempt cannot poison the next. `RogueGame.LoadGame` takes the format; the after-load repairs (zone exits, zone walk, sensors) run for both formats.
 
 Not yet decided:
 
@@ -200,7 +203,7 @@ Data design notes that bear on the format:
 - The underlying problem: command translation is front-end dependent and has to be isolated from game code. `HandlePlayerActor` inlines what would be `PlayerController.GetAction` and `PlayerController.SelectAction`.
 - Also here: the `PlayerController` event handlers and the message log.
 
-After phase 3: install the loaded world and player (take a JSON-loaded session live), and offer JSON as a save format behind a test define.
+After phase 3: offer JSON from the game's own save and load commands (today only the command line and the bootstrap reach it).
 
 ### Phase 4: retire BinaryFormatter
 
@@ -212,9 +215,10 @@ Move `GameOptions`, `Keybindings`, `HiScoreTable` and `GameHintsStatus` to attri
 - In a `Session`, `TileLegend` must precede `World`; in a `Map`, `Extent` must precede `Tiles`. The reader throws otherwise.
 - In a `District`, `WorldPos` must precede `Maps`: the `Map` constructor copies `m_District.WorldPosition` into `DistrictPos` and hashes it. The reader throws otherwise.
 
-## Before a JSON-loaded world can go live
+## A JSON-loaded world going live
 
-- The JSON `Map` constructor does not build the derived caches (`Players`, `PowerGenerators`, and the rest). That is deliberate: they belong to a postprocessing stage after load, as in the legacy format, and are not saved.
+- The JSON `Map` constructor does not build the derived caches (`Players`, `PowerGenerators`, and the rest). That is deliberate: they belong to a postprocessing stage after load (`JsonPostLoad`), as in the legacy format, and are not saved.
+- What a live JSON-loaded game is missing until phase 3: AI and player controller state (they reload as freshly constructed), the message log, counted commands, the player's item memory.
 
 ## Parked
 

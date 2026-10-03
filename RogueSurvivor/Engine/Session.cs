@@ -412,10 +412,10 @@ namespace djack.RogueSurvivor.Engine
             info.read_s(ref s_Player, "s_Player");
  */
 
-    // JSON load does not take the World live yet.  We keep it, so that re-saving a JSON-loaded session saves what was loaded (round-trip test).
-    [NonSerialized] private readonly World? m_JsonLoadedWorld = null;
-    [NonSerialized] private Actor? m_JsonLoadedPlayer = null;   // likewise; not readonly, as it is a cross-link
-    [NonSerialized] private readonly List<Actor>? m_JsonLoadedRefugeePool = null;   // likewise; the live one is RogueGame's
+    // A JSON load stages what it loads here, until JsonTakeLive installs it (or does not: the bootstrap round-trip test re-saves what was loaded).
+    [NonSerialized] private World? m_JsonLoadedWorld = null;
+    [NonSerialized] private Actor? m_JsonLoadedPlayer = null;   // a cross-link: set when the load finishes
+    [NonSerialized] private List<Actor>? m_JsonLoadedRefugeePool = null;   // the live one is RogueGame's
 
     public static Session fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new Session(ref reader, options);
 
@@ -424,20 +424,32 @@ namespace djack.RogueSurvivor.Engine
     /// Safe for a session that is not the live one.</summary>
     public void JsonPostLoad() { m_JsonLoadedWorld!.DoForAllMaps(m => m.JsonPostLoad()); }
 
-    /// <summary>Binds us to the live game: static events, the live session.  Only for a session that is going live.
-    /// Nothing calls this yet, other than tests: taking a JSON-loaded session live comes later.</summary>
+    /// <summary>Binds us to the live game: static events, the live session.  Only for a session that is going live.</summary>
     // Only actors on a map, as for the legacy RepairLoad.  A controller cannot TakeControl of an actor that is on no map
     // (a refugee waiting to arrive, an unspawned unique): reviewing its item ratings needs the map's clock.
     public void JsonAttach()
     {
-      m_JsonLoadedWorld!.DoForAllMaps(m => m.JsonAttach());
+      (m_JsonLoadedWorld ?? World.Get).DoForAllMaps(m => m.JsonAttach());
       Police.Attach();
     }
 
     public void JsonDetach()
     {
       Police.Detach();
-      m_JsonLoadedWorld!.DoForAllMaps(m => m.JsonDetach());
+      (m_JsonLoadedWorld ?? World.Get).DoForAllMaps(m => m.JsonDetach());
+    }
+
+    /// <summary>Installs us as the live game.  Call once, after JsonPostLoad.  What the legacy load does from OnDeserialized and World.OnDeserialized.</summary>
+    private void JsonTakeLive()
+    {
+      s_TheSession = this;
+      m_JsonLoadedWorld!.JsonTakeLive();
+      RogueGame.AfterLoad(m_JsonLoadedPlayer, m_JsonLoadedRefugeePool);
+      JsonAttach();
+      // from here on, we save the live game
+      m_JsonLoadedWorld = null;
+      m_JsonLoadedPlayer = null;
+      m_JsonLoadedRefugeePool = null;
     }
 
     /// <summary>For the bootstrap test: derived data is not in the save, so the round trip cannot see it.  Empty if and only if ok.</summary>
@@ -535,6 +547,9 @@ namespace djack.RogueSurvivor.Engine
                 case SaveFormat.FORMAT_BIN:
                     SaveBin(session, filepath);
                     break;
+                case SaveFormat.FORMAT_JSON:
+                    SaveJson(session, filepath);
+                    break;
             }
         }
 
@@ -550,9 +565,13 @@ namespace djack.RogueSurvivor.Engine
 #endif
             switch (format) {
                 case SaveFormat.FORMAT_BIN: return LoadBin(filepath);
+                case SaveFormat.FORMAT_JSON: return LoadJson(filepath);
                 default: return false;
             }
         }
+
+        /// <summary>the test-format save that goes with a default-format save</summary>
+        public static string JsonPath(string filepath) => Path.ChangeExtension(filepath, ".json");
 
     private static JsonSerializerOptions? s_j_opts = null;
     public static JsonSerializerOptions JSON_opts {
@@ -648,35 +667,18 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
 #if BOOTSTRAP_JSON_SERIALIZATION
-      var json_path = filepath+"json";
+      var json_path = JsonPath(filepath);
       var json_path2 = json_path+"2";   // only survives a failed round-trip test
-      try { // body not indented, to leave its lines alone
-      {
-      using var stream = json_path.CreateStream(true);
-      System.Text.Json.JsonSerializer.Serialize(stream, session, typeof(Session), JSON_opts);
-	  stream.Flush();
-      }
-      Zaimoni.JSON.PreserveReferenceHandler.Finish();
+      SaveJson(session, json_path);
       RogueGame.Game.ErrorPopup("JSON save ok");
-      Session test2;
-      {
-      using var stream2 = json_path.CreateStream(false);
-      test2 = System.Text.Json.JsonSerializer.Deserialize<Session>(stream2, JSON_opts) ?? throw new JsonException();
-      }
-      Zaimoni.JSON.PreserveReferenceHandler.Finish();
-      test2.JsonPostLoad();
+      var test2 = LoadJsonStaged(json_path);
       {
       var json_derived = test2.JsonDerivedDataErrors();
       if (0 < json_derived.Count) throw new InvalidOperationException("JSON load, derived data:\n" + string.Join("\n", json_derived));
       }
       RogueGame.Game.ErrorPopup("JSON load ok");
       // round-trip test: what we loaded must save as the same text.  Does not notice what is not saved at all.
-      {
-      using var stream3 = json_path2.CreateStream(true);
-      System.Text.Json.JsonSerializer.Serialize(stream3, test2, typeof(Session), JSON_opts);
-	  stream3.Flush();
-      }
-      Zaimoni.JSON.PreserveReferenceHandler.Finish();
+      SaveJson(test2, json_path2);
       var json_diff = Zaimoni.JSON.JSON_ext.FirstDifference(File.ReadAllLines(json_path), File.ReadAllLines(json_path2));
       if (null != json_diff) throw new InvalidOperationException("JSON round trip: "+ json_path + " vs. "+ json_path2 + "\n" + json_diff);
       File.Delete(json_path2);
@@ -685,12 +687,6 @@ namespace djack.RogueSurvivor.Engine
       var json_audit = 0 >= json_incomplete.Count ? "all JSON converters complete" : "incomplete JSON converters (" + json_incomplete.Count.ToString() + "): " + string.Join(", ", json_incomplete);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, json_audit);
       RogueGame.Game.ErrorPopup("JSON round trip ok; " + json_audit);
-      } catch {
-        // A save or load that failed part-way leaves ids and fixups behind: abandon them, or they poison the next attempt.
-        // (Finish would throw again, on the fixups whose targets never loaded.)
-        Zaimoni.JSON.PreserveReferenceHandler.Reset();
-        throw;
-      }
 #elif BOOTSTRAP_Z_SERIALIZATION
 	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
       RogueGame.Game.ErrorPopup("in-house save ok");
@@ -702,6 +698,66 @@ namespace djack.RogueSurvivor.Engine
 	  filepath.BinarySerialize(session);
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
+    }
+
+    // JSON is the test format until the audit in SaveBin lists nothing.  A save or load that fails part-way leaves ids and
+    // fixups behind: abandon them, or they poison the next attempt.  (Finish would throw again, on the fixups whose targets never loaded.)
+    private static void SaveJson(Session session, string filepath)
+    {
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving JSON session...");
+      try {
+        using (var stream = filepath.CreateStream(true)) {
+          JsonSerializer.Serialize(stream, session, typeof(Session), JSON_opts);
+          stream.Flush();
+        }
+        PreserveReferenceHandler.Finish();
+      } catch {
+        PreserveReferenceHandler.Reset();
+        throw;
+      }
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving JSON session... done!");
+    }
+
+    /// <summary>Loads, through the post-load stage, but does not install: the result is not the live session.</summary>
+    private static Session LoadJsonStaged(string filepath)
+    {
+      try {
+        Session ret;
+        using (var stream = filepath.CreateStream(false)) {
+          ret = JsonSerializer.Deserialize<Session>(stream, JSON_opts) ?? throw new JsonException("no session");
+        }
+        PreserveReferenceHandler.Finish();
+        ret.JsonPostLoad();
+        return ret;
+      } catch {
+        PreserveReferenceHandler.Reset();
+        throw;
+      }
+    }
+
+    private static bool LoadJson(string filepath)
+    {
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading JSON session...");
+#if DEBUG
+#else
+      try {
+#endif
+        LoadJsonStaged(filepath).JsonTakeLive();
+#if DEBUG
+#else
+      } catch (Exception ex) {
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load JSON session (no save game?).");
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
+        return false;
+      }
+#endif
+#if DEBUG
+      var errors = new List<string>();
+      World.Get._RejectInventoryDamage(errors);
+      if (0 < errors.Count) throw new InvalidOperationException("inventory damage on load: " + string.Join("\n", errors));
+#endif
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading JSON session... done!");
+      return true;
     }
 
     private static bool LoadBin(string filepath)
@@ -824,6 +880,7 @@ namespace djack.RogueSurvivor.Engine
       FORMAT_BIN,
       FORMAT_SOAP, // dropped from .NET Core
       FORMAT_XML,  // incompatible with access control
+      FORMAT_JSON  // test format: see the audit in SaveBin
     }
   }
 }

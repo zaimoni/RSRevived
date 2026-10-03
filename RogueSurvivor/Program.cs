@@ -31,6 +31,7 @@ namespace djack.RogueSurvivor
             }
             reading_PC = false;
           }
+          if (Engine.TestDrive.Parse(tmp)) continue;   // how to run the program; not part of the game, so not in CommandLineOptions
           if (tmp.StartsWith("--seed=") && 0 == Engine.Session.COMMAND_LINE_SEED) {
             if (int.TryParse(tmp.Substring(7), out int tmp2)) Engine.Session.COMMAND_LINE_SEED = tmp2;
           }
@@ -56,6 +57,7 @@ namespace djack.RogueSurvivor
           //    C1@5,6 would override both district and position
           // --no-spawn : do not create a random PC.  requires a --PC option to be viable.  Incompatible with --spawn and --spawn-district
           // --city : specify city size and dimensions; default is 5,50
+          // --start=new|load|load-json : skip the main menu.  --save-and-exit : save, then quit, when a player would first act.
         }
         if (Engine.Session.CommandLineOptions.ContainsKey("no-spawn")) {
           if (   !Engine.Session.CommandLineOptions.ContainsKey("PC")
@@ -83,13 +85,18 @@ namespace djack.RogueSurvivor
         try {
           Application.Run(rogueForm);
         } catch (Exception ex) {
-          using (Bugreport bugreport = new(ex)) {
-            int num = (int) bugreport.ShowDialog();
+          if (Engine.TestDrive.Unattended) {
+            Engine.TestDrive.Failed(ex.ToString());   // no one to read a dialog
+          } else {
+            using (Bugreport bugreport = new(ex)) {
+              int num = (int) bugreport.ShowDialog();
+            }
           }
           Application.Exit();
         }
       }
 #endif
+      Environment.ExitCode = Engine.TestDrive.ExitCode;
       Logger.WriteLine(Logger.Stage.CLEAN_MAIN, "exiting program...");
     }
   }

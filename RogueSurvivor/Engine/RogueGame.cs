@@ -352,6 +352,14 @@ namespace djack.RogueSurvivor.Engine
       m_MapView = setPlayer(Map.decode(src)).Location.View;
     }
 
+    /// <summary>For a JSON-loaded session going live.  The message log and counted commands are not in the JSON save yet.</summary>
+    static public void AfterLoad(Actor? player, List<Actor>? refugees)
+    {
+      if (null != player) m_MapView = setPlayer(player).Location.View;
+      s_RefugeePool = refugees;
+      s_CountedCommands = null;
+    }
+
     static public void Load(SerializationInfo info, StreamingContext context)
     {
       info.read_nullsafe(ref s_MessageManager, "s_MessageManager");
@@ -935,6 +943,15 @@ namespace djack.RogueSurvivor.Engine
         }
         return null;
       });
+      bool? load(string saveName, Session.SaveFormat format) {
+        if (!File.Exists(saveName)) return null;
+        gy1 += 2*BOLD_LINE_SPACING;
+        m_UI.UI_DrawStringBold(Color.Yellow, "Loading game, please wait...", gx1, gy1, new Color?());
+        m_UI.UI_Repaint();
+        if (!LoadGame(saveName, format)) return null;
+        StartSimThread();
+        return true;
+      }
       Func<int, bool?> choice_handler = (c => {
           switch (c) {
           case 0:
@@ -944,14 +961,7 @@ namespace djack.RogueSurvivor.Engine
             }
             break;
           case 1:
-            if (flag2) {
-              gy1 += 2*BOLD_LINE_SPACING;
-              m_UI.UI_DrawStringBold(Color.Yellow, "Loading game, please wait...", gx1, gy1, new Color?());
-              m_UI.UI_Repaint();
-              LoadGame(GetUserSave());
-              StartSimThread();
-              return true;
-            }
+            if (flag2) return load(GetUserSave(), Session.SaveFormat.FORMAT_BIN);
             break;
           case 2: s_KeyBindings.HandleRedefineKeys(); break;
           case 3:
@@ -966,6 +976,28 @@ namespace djack.RogueSurvivor.Engine
         }
         return null;
       });
+
+      // command line: skip the menu, once.  A game that ends afterwards comes back here, to the menu.
+      var start = TestDrive.Start;
+      if (TestDrive.StartAs.MAIN_MENU != start) {
+        TestDrive.Start = TestDrive.StartAs.MAIN_MENU;
+        setup_handler(0);
+        bool? ok = start switch {
+          TestDrive.StartAs.NEW_GAME => choice_handler(0),
+          TestDrive.StartAs.LOAD_GAME => choice_handler(1),
+          TestDrive.StartAs.LOAD_JSON => load(Session.JsonPath(GetUserSave()), Session.SaveFormat.FORMAT_JSON),
+          _ => null
+        };
+        if (true == ok) {
+          m_IsGameRunning = true;
+          return;
+        }
+        if (TestDrive.Unattended) {   // no one to pick from the menu
+          TestDrive.Failed("could not start: " + start.ToString());
+          m_IsGameRunning = false;
+          return;
+        }
+      }
 
       m_IsGameRunning = ChoiceMenu(choice_handler, setup_handler, entries.Length);
     }
@@ -3138,6 +3170,12 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (player.IsSleeping) throw new InvalidOperationException("player.IsSleeping");
 #endif
+      if (TestDrive.SaveAndExit) {   // test run: the game got as far as asking a player to act
+        DoSaveGame(GetUserSave());
+        StopTheWorld();
+        Session.Save(Session.Get, Session.JsonPath(GetUserSave()), Session.SaveFormat.FORMAT_JSON);   // the test format as well, for --start=load-json
+        return;
+      }
       pc.SparseReset();
       pc.UpdateSensors();
       pc.BeforeAction();
@@ -3950,8 +3988,17 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #nullable enable
+    /// <summary>A test run has no one to dismiss a popup: it goes to the log instead.</summary>
+    static private bool Unattended(string[] msg)
+    {
+      if (!TestDrive.Unattended) return false;
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Join("\n", msg));
+      return true;
+    }
+
     private void ErrorPopup(string[] msg)
     {
+      if (Unattended(msg)) return;
       var staging_size = RogueForm.Get.Measure(msg);
 #if DEBUG
       if (CANVAS_HEIGHT-4 < staging_size[^1].Height) throw new InvalidOperationException("test case: height " + staging_size[^1].Height.ToString());
@@ -3963,7 +4010,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.WaitEscape();
       RemoveOverlay(working);
     }
-    public void ErrorPopup(string msg) => ErrorPopup(RogueForm.Get.WrapLines(msg));
+    public void ErrorPopup(string msg) { if (!Unattended(new string[] { msg })) ErrorPopup(RogueForm.Get.WrapLines(msg)); }
 
     private bool InterpretForPC(ActorAction? act) {
       if (null == act) return false;
@@ -3977,6 +4024,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void InfoPopup(string[] msg)
     {
+      if (Unattended(msg)) return;
       var staging_size = RogueForm.Get.Measure(msg);
 #if DEBUG
       if (CANVAS_HEIGHT-4 < staging_size[^1].Height) throw new InvalidOperationException("test case: height " + staging_size[^1].Height.ToString());
@@ -3989,7 +4037,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.WaitEscape();
       RemoveOverlay(working);
     }
-    public void InfoPopup(string msg) => InfoPopup(RogueForm.Get.WrapLines(msg));
+    public void InfoPopup(string msg) { if (!Unattended(new string[] { msg })) InfoPopup(RogueForm.Get.WrapLines(msg)); }
 
     private bool YesNoPopup(string[] msg)
     {
@@ -13749,12 +13797,12 @@ restart:
       AddMessage(new("PERMADEATH : SAVE GAME DELETED!", Session.Get.WorldTime.TurnCounter, Color.Red));
     }
 
-    private bool LoadGame(string saveName)
+    private bool LoadGame(string saveName, Session.SaveFormat format = Session.SaveFormat.FORMAT_BIN)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
 #endif
-      if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN)) return false;
+      if (!Session.Load(saveName, format)) return false;
       World.Get.DoForAllMaps(m=>m.RegenerateZoneExits());
       World.Get.DoForAllMaps(m=>m.RepairZoneWalk());
       Direction_ext.Now();

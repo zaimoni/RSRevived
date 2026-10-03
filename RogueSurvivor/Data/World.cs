@@ -476,8 +476,11 @@ namespace djack.RogueSurvivor.Data
       m_Extent = new Rectangle(Point.Empty, new Point(m_Size, m_Size));
       var c_size = (short)(m_Size - 2);
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(c_size, c_size));
-//    s_Recent = this; // not until ready to take live
+//    s_Recent = this; // not until ready to take live: JsonTakeLive
     }
+
+    /// <summary>Installs us as the live world.  For Session, when a JSON-loaded session goes live.</summary>
+    public void JsonTakeLive() { s_Recent = this; }
 
     public static World fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new World(ref reader, options);
 
@@ -531,7 +534,7 @@ namespace djack.RogueSurvivor.Data
     static public World Load(ref Utf8JsonReader reader)
     {
       var stage = JsonSerializer.Deserialize<World>(ref reader, Engine.Session.JSON_opts) ?? throw new JsonException();
-//    s_Recent = stage; // when taking live
+//    s_Recent = stage; // when taking live: JsonTakeLive
       return stage;
     }
 

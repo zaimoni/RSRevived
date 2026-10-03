@@ -196,6 +196,7 @@
     <Compile Include="Engine\UniqueMap.cs" />
     <Compile Include="Engine\UniqueMaps.cs" />
     <Compile Include="Engine\Session.cs" />
+    <Compile Include="Engine\TestDrive.cs" />
     <Compile Include="Engine\TextFile.cs" />
     <Compile Include="Engine\RogueGame.cs" />
     <Compile Include="Engine\LOS.cs" />
