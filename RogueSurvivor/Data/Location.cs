@@ -358,7 +358,7 @@ namespace Zaimoni.JsonConvert
             var relay_pos = JsonSerializer.Deserialize<Point>(ref reader, options);
             reader.Read();
             if (System.Text.Json.JsonTokenType.EndArray == reader.TokenType) return new(null, relay_pos);
-            var relay_map = reader.TryReadRef<Map>();
+            var relay_map = reader.TryReadRef<djack.RogueSurvivor.Data.Map>();   // Map alone is now the converter, in this namespace
             reader.Read();
             if (System.Text.Json.JsonTokenType.EndArray != reader.TokenType) throw new JsonException();
             return new(relay_map, relay_pos);

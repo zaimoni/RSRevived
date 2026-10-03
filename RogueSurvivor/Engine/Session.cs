@@ -652,7 +652,7 @@ namespace djack.RogueSurvivor.Engine
           tasks.RequireAllSubtypes();
           s_j_opts.Converters.Add(tasks);
 
-          s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Map());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Map());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Session());
         }
         return s_j_opts;
