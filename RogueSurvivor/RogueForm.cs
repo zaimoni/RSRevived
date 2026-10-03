@@ -441,6 +441,35 @@ namespace djack.RogueSurvivor
     public Size Measure(string src) { return Measure(src, m_BoldFont); }
     public Size[] Measure(IEnumerable<string> src) { return Measure(src, m_BoldFont); }
 
+    /// <summary>Breaks a message into lines no wider than max_width: at its newlines, then at spaces.
+    /// A stretch with no space that fits is broken wherever it has to be.</summary>
+    public string[] WrapLines(string msg)
+    {
+      int width(string x) => Measure(x).Width;
+      const int max_width = IRogueUI.CANVAS_WIDTH - 4;
+      // end backward compatibility retrofit
+
+      List<string> ret = new();
+      foreach (var line in msg.Split('\n')) {
+        var rest = line;
+        while (max_width < width(rest)) {
+          int cut = -1;
+          for (int i = rest.IndexOf(' '); 0 < i; i = rest.IndexOf(' ', i + 1)) {
+            if (max_width < width(rest.Substring(0, i))) break;
+            cut = i;
+          }
+          if (0 > cut) {
+            cut = rest.Length - 1;
+            while (1 < cut && max_width < width(rest.Substring(0, cut))) cut--;
+          }
+          ret.Add(rest.Substring(0, cut));
+          rest = rest.Substring(cut).TrimStart(' ');
+        }
+        ret.Add(rest);
+      }
+      return ret.ToArray();
+    }
+
     public void UI_DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy)
     {
       Size[] sizeArray = Measure(lines, m_BoldFont);
