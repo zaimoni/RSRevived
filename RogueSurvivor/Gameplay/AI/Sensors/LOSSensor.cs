@@ -41,7 +41,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     public LOSSensor(SensingFilter filters, Actor actor)
     {
 #if DEBUG
-      if (filters == SensingFilter.NONE) throw new ArgumentNullException(nameof(filters));
+      if (default == filters) throw new ArgumentNullException(nameof(filters));
 #endif
       m_Actor = actor;
       Filters = filters;
@@ -118,13 +118,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private Action<List<Percept>, Location[]> HowToSense()
     {
       Action<List<Percept>, Location[]>? ret = null;
-      if ((Filters & SensingFilter.ACTORS) != SensingFilter.NONE) ret = _seeActors;
-      if ((Filters & SensingFilter.ITEMS) != SensingFilter.NONE) {
+      if (default != (Filters & SensingFilter.ACTORS)) ret = _seeActors;
+      if (default != (Filters & SensingFilter.ITEMS)) {
         var items = m_Actor.Controller.ItemMemory;
         ret = ret.Compose(null != items ? items.Bind<List<Percept>, Location[], Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int>>(_seeItems)
                                         : _seeItems);
       }
-      if ((Filters & SensingFilter.CORPSES) != SensingFilter.NONE) ret = ret.Compose(_seeCorpses);
+      if (default != (Filters & SensingFilter.CORPSES)) ret = ret.Compose(_seeCorpses);
       if (null == ret) throw new ArgumentNullException(nameof(ret));
       return ret;
     }
@@ -157,10 +157,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       return perceptList;
     }
 
-    [System.Flags]
+    [Flags]
     public enum SensingFilter
     {
-      NONE = 0,
       ACTORS = 1,
       ITEMS = 2,
       CORPSES = 4,
