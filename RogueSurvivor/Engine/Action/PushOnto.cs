@@ -5,11 +5,13 @@ using System.Linq;
 
 using djack.RogueSurvivor.Data;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Engine.Op
 {
     [Serializable]
-    class PushOnto : WorldUpdate, Actions.ObjectOrigin, Actions.ObjectDest, CanFinish
+    class PushOnto : WorldUpdate, Actions.ObjectOrigin, Actions.ObjectDest, CanFinish, IJsonStaged<PushOnto>
     {
         private readonly Location m_NewLocation;
         private readonly Location m_From;
@@ -38,6 +40,26 @@ namespace djack.RogueSurvivor.Engine.Op
             if (!to.TileModel.IsWalkable) return false;
             return true;
         }
+
+        #region JSON save/load
+        private PushOnto(JsonElement src, JsonSerializerOptions options)
+        {
+            m_From = src.Require("From").Deserialize<Location>(options);
+            m_NewLocation = src.Require("To").Deserialize<Location>(options);
+            m_ObjCode = src.Require("Code").GetInt32();
+        }
+
+        static PushOnto IJsonStaged<PushOnto>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new PushOnto(src, options));
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            writer.WritePropertyName("From");
+            JsonSerializer.Serialize(writer, m_From, options);
+            writer.WritePropertyName("To");
+            JsonSerializer.Serialize(writer, m_NewLocation, options);
+            writer.WriteNumber("Code", m_ObjCode);   // a bit field
+        }
+        #endregion
 
         public PushOnto(Location from, Location to, int code)
         {
@@ -185,7 +207,7 @@ namespace djack.RogueSurvivor.Engine.Op
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    class PushOnto : ActorAction,Actions.ObjectOrigin,Actions.ObjectDest
+    class PushOnto : ActorAction,Actions.ObjectOrigin,Actions.ObjectDest, IJsonStaged<PushOnto>
     {
         private readonly MapObject m_Object;
         private readonly Location m_NewLocation;
@@ -217,6 +239,27 @@ namespace djack.RogueSurvivor.Engine._Action
             if (null == obj) return from.MapObject;
             return obj;
         }
+
+        #region JSON save/load
+        private PushOnto(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+        {
+            m_Object = src.Require("Object").RequireRef<MapObject>();
+            m_Origin = src.Require("From").Deserialize<Location>(options);
+            m_NewLocation = src.Require("To").Deserialize<Location>(options);
+        }
+
+        static PushOnto IJsonStaged<PushOnto>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new PushOnto(JsonActor(src), src, options));
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            toJsonActor(writer);
+            writer.WriteRef("Object", m_Object);
+            writer.WritePropertyName("From");
+            JsonSerializer.Serialize(writer, m_Origin, options);
+            writer.WritePropertyName("To");
+            JsonSerializer.Serialize(writer, m_NewLocation, options);
+        }
+        #endregion
 
         public PushOnto(Actor actor, Location from, Location to, MapObject? obj = null) : base(actor)
         {

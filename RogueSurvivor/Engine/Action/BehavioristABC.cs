@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
@@ -12,11 +14,26 @@ namespace djack.RogueSurvivor.Engine._Action
     // monolith code...not ideal, but trying to manage save/load issues
     // competes with class ActionSequence
     [Serializable]
-    internal class BehavioristABC : ActorAction, Actions.Resolvable
+    internal class BehavioristABC : ActorAction, Actions.Resolvable, IJsonStaged<BehavioristABC>
     {
         private readonly ReflexCode _reflexCode;
         [NonSerialized] private bool _resolved = false;
         [NonSerialized] private ActorAction? _action = null;
+
+        #region JSON save/load
+        private BehavioristABC(Actor actor, JsonElement src) : base(actor)
+        {
+            _reflexCode = src.RequireEnum<ReflexCode>("Reflex");
+        }
+
+        static BehavioristABC IJsonStaged<BehavioristABC>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new BehavioristABC(JsonActor(src), src));
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            toJsonActor(writer);
+            writer.WriteString("Reflex", _reflexCode.ToString());
+        }
+        #endregion
 
         public BehavioristABC(Actor whom, ReflexCode code) : base(whom) {
             _reflexCode = code;

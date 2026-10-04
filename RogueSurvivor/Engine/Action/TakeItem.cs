@@ -1,16 +1,36 @@
 ﻿using System;
 using djack.RogueSurvivor.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    internal class TakeItem : ActorAction, ActorTake, Target<MapObject?>
+    internal class TakeItem : ActorAction, ActorTake, Target<MapObject?>, IJsonStaged<TakeItem>
     {
         private readonly Data.Model.InvOrigin m_src;
         private readonly Item m_Item;
         [NonSerialized] private bool m_Crouching = false;
+
+        #region JSON save/load
+        private TakeItem(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+        {
+            m_src = src.Require("Source").Deserialize<Data.Model.InvOrigin>(options);
+            m_Item = src.Require("Item").RequireRef<Item>();
+        }
+
+        static TakeItem IJsonStaged<TakeItem>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new TakeItem(JsonActor(src), src, options));
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            toJsonActor(writer);
+            writer.WritePropertyName("Source");
+            JsonSerializer.Serialize(writer, m_src, options);
+            writer.WriteRef("Item", m_Item);
+        }
+        #endregion
 
         public TakeItem(Actor actor, in Location loc, Item it) : base(actor)
         {

@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Engine.Op
 {
     [Serializable]
-    internal class MoveStep : WorldUpdate, ActorDest, ActorOrigin
+    internal class MoveStep : WorldUpdate, ActorDest, ActorOrigin, IJsonStaged<MoveStep>
     {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
@@ -19,6 +21,26 @@ namespace djack.RogueSurvivor.Engine.Op
 
         public Location dest { get { return m_NewLocation; } }  // of m_Actor
         public Location origin { get { return m_Origin; } }
+
+        #region JSON save/load
+        private MoveStep(JsonElement src, JsonSerializerOptions options)
+        {
+            m_Origin = src.Require("From").Deserialize<Location>(options);
+            m_NewLocation = src.Require("To").Deserialize<Location>(options);
+            if (src.TryGetProperty("Running", out var x)) is_running = x.GetBoolean();
+        }
+
+        static MoveStep IJsonStaged<MoveStep>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new MoveStep(src, options));
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            writer.WritePropertyName("From");
+            JsonSerializer.Serialize(writer, m_Origin, options);
+            writer.WritePropertyName("To");
+            JsonSerializer.Serialize(writer, m_NewLocation, options);
+            if (is_running) writer.WriteBoolean("Running", true);
+        }
+        #endregion
 
         public MoveStep(Location from, Location to, bool run)
         {
@@ -81,7 +103,7 @@ namespace djack.RogueSurvivor.Engine.Op
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    public class MoveStep : ActorAction, ActorDest, ActorOrigin
+    public class MoveStep : ActorAction, ActorDest, ActorOrigin, IJsonStaged<MoveStep>
     {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
@@ -95,6 +117,27 @@ namespace djack.RogueSurvivor.Engine._Action
             if (1 != Rules.InteractionDistance(in dest, in origin)) throw new InvalidOperationException("move delta must be adjacent");
             if (!actor.CanEnter(dest)) throw new InvalidOperationException("must be able to exist at the destination");
         }
+
+        #region JSON save/load
+        private MoveStep(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+        {
+            m_Origin = src.Require("From").Deserialize<Location>(options);
+            m_NewLocation = src.Require("To").Deserialize<Location>(options);
+            if (src.TryGetProperty("Running", out var x)) is_running = x.GetBoolean();
+        }
+
+        static MoveStep IJsonStaged<MoveStep>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new MoveStep(JsonActor(src), src, options));
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            toJsonActor(writer);
+            writer.WritePropertyName("From");
+            JsonSerializer.Serialize(writer, m_Origin, options);
+            writer.WritePropertyName("To");
+            JsonSerializer.Serialize(writer, m_NewLocation, options);
+            if (is_running) writer.WriteBoolean("Running", true);
+        }
+        #endregion
 
         private MoveStep(Location from, Location to, bool run, Actor actor) : base(actor)
         {

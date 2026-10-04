@@ -4,6 +4,8 @@ using System.Linq;
 
 using djack.RogueSurvivor.Data;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 
 #nullable enable
@@ -14,9 +16,35 @@ using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    class Fork : ActorAction, RecursivePathfinderMoveCost
+    class Fork : ActorAction, RecursivePathfinderMoveCost, IJsonStaged<Fork>
     {
       private readonly Dictionary<int, List<ActorAction>> m_Options = new Dictionary<int, List<ActorAction>>();
+
+      #region JSON save/load
+      // options by move cost: [[cost, [actions]], ...]
+      private Fork(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+      {
+        foreach (var x in src.Require("Options").EnumerateArray()) {
+          if (JsonValueKind.Array != x.ValueKind || 2 != x.GetArrayLength()) throw new JsonException("expected [cost, [actions]]: " + x.GetRawText());
+          m_Options.Add(x[0].GetInt32(), x[1].Deserialize<List<ActorAction>>(options) ?? throw new JsonException("null options"));
+        }
+      }
+
+      static Fork IJsonStaged<Fork>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Fork(JsonActor(src), src, options));
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+      {
+        toJsonActor(writer);
+        writer.WriteStartArray("Options");
+        foreach (var x in m_Options) {
+          writer.WriteStartArray();
+          writer.WriteNumberValue(x.Key);
+          JsonSerializer.Serialize(writer, x.Value, options);
+          writer.WriteEndArray();
+        }
+        writer.WriteEndArray();
+      }
+      #endregion
 
       public Fork(Actor actor, List<ActorAction> legal_path) : base(actor)
       {
@@ -201,9 +229,20 @@ retry:
 namespace djack.RogueSurvivor.Engine.Op
 {
     [Serializable]
-    class Fork : WorldUpdate, CanReduce<WorldUpdate>
+    class Fork : WorldUpdate, CanReduce<WorldUpdate>, IJsonStaged<Fork>
     {
       private readonly List<WorldUpdate> m_Options = new List<WorldUpdate>();
+
+      #region JSON save/load
+      private Fork(JsonElement src, JsonSerializerOptions options)
+      {
+        m_Options = src.Require("Options").Deserialize<List<WorldUpdate>>(options) ?? throw new JsonException("null Options");
+      }
+
+      static Fork IJsonStaged<Fork>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Fork(src, options));
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) => writer.WriteArray("Options", m_Options, options);
+      #endregion
 
       public Fork(List<WorldUpdate> legal_path)
       {

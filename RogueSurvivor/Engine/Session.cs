@@ -648,6 +648,44 @@ namespace djack.RogueSurvivor.Engine
           minds.RequireAllSubtypes();
           s_j_opts.Converters.Add(minds);
 
+          // Actions: only those an objective may hold, which [Serializable] marks.  The rest are transient.
+          var acts = new Zaimoni.JSON.Polymorphic<ActorAction>();
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionChain>("ActionChain"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionCloseDoor>("ActionCloseDoor"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionDropItem>("ActionDropItem"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionGiveTo>("ActionGiveTo"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionMeleeAttack>("ActionMeleeAttack"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionMoveDelta>("ActionMoveDelta"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionPull>("ActionPull"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionRangedAttack>("ActionRangedAttack"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionSequence>("ActionSequence"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionSleep>("ActionSleep"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionTake>("ActionTake"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionTrade>("ActionTrade"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionUse>("ActionUse"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionUseItem>("ActionUseItem"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionWait>("ActionWait"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine._Action.BehavioristABC>("BehavioristABC"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine._Action.Fork>("Fork"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine._Action.Join>("Join"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine._Action.MoveStep>("MoveStep"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine._Action.PushOnto>("PushOnto"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine._Action.TakeItem>("TakeItem"));
+          acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine._Action.TradeItem>("TradeItem"));
+          acts.RequireAllSubtypes(t => t.IsSerializable);
+          s_j_opts.Converters.Add(acts);
+
+          var plans = new Zaimoni.JSON.Polymorphic<WorldUpdate>();
+          plans.Add(new Zaimoni.JsonConvert.Via<WorldUpdate, Engine.Actions.OpportunityTarget>("OpportunityTarget"));
+          plans.Add(new Zaimoni.JsonConvert.Via<WorldUpdate, Engine.Actions.UpdateMoveDelta>("UpdateMoveDelta"));
+          plans.Add(new Zaimoni.JsonConvert.Via<WorldUpdate, Engine.Op.Chain>("Chain"));
+          plans.Add(new Zaimoni.JsonConvert.Via<WorldUpdate, Engine.Op.Fork>("Fork"));
+          plans.Add(new Zaimoni.JsonConvert.Via<WorldUpdate, Engine.Op.Join>("Join"));
+          plans.Add(new Zaimoni.JsonConvert.Via<WorldUpdate, Engine.Op.MoveStep>("MoveStep"));
+          plans.Add(new Zaimoni.JsonConvert.Via<WorldUpdate, Engine.Op.PushOnto>("PushOnto"));
+          plans.RequireAllSubtypes(t => t.IsSerializable);
+          s_j_opts.Converters.Add(plans);
+
           var objs = new Zaimoni.JSON.Polymorphic<MapObject>();
           objs.Add(new Zaimoni.JsonConvert.Via<MapObject, MapObject>("MapObject"));
           objs.Add(new Zaimoni.JsonConvert.Via<MapObject, ShelfLike>("ShelfLike"));

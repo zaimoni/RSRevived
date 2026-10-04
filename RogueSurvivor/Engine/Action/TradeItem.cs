@@ -4,13 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    public sealed class TradeItem : ActorAction, ActorGive, ActorTake, TargetActor
+    public sealed class TradeItem : ActorAction, ActorGive, ActorTake, TargetActor, IJsonStaged<TradeItem>
     {
         private readonly Item m_TakeItem;
         private readonly Item m_GiveItem;
@@ -20,6 +22,26 @@ namespace djack.RogueSurvivor.Engine._Action
         public Item Give { get => m_GiveItem; }
         public Item Take { get => m_TakeItem; }
         public Actor? Whom { get => m_dest.a_owner; }
+
+        #region JSON save/load
+        private TradeItem(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+        {
+            m_GiveItem = src.Require("Give").RequireRef<Item>();
+            m_TakeItem = src.Require("Take").RequireRef<Item>();
+            m_dest = src.Require("Dest").Deserialize<Data.Model.InvOrigin>(options);
+        }
+
+        static TradeItem IJsonStaged<TradeItem>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new TradeItem(JsonActor(src), src, options));
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            toJsonActor(writer);
+            writer.WriteRef("Give", m_GiveItem);
+            writer.WriteRef("Take", m_TakeItem);
+            writer.WritePropertyName("Dest");
+            JsonSerializer.Serialize(writer, m_dest, options);
+        }
+        #endregion
 
         private TradeItem(Actor actor, Item give, Item take, in Data.Model.InvOrigin dest) : base(actor)
         {

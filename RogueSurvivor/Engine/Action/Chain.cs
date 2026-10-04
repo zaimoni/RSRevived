@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using djack.RogueSurvivor.Data;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
@@ -12,11 +14,22 @@ using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
 namespace djack.RogueSurvivor.Engine.Op
 {
     [Serializable]
-    internal class Chain : WorldUpdate, CanReduce<WorldUpdate>
+    internal class Chain : WorldUpdate, CanReduce<WorldUpdate>, IJsonStaged<Chain>
     {
         private readonly List<WorldUpdate> m_Actions;
 
         // for now, assume any constructor ActionChain needs, we need an analog for
+        #region JSON save/load
+        private Chain(JsonElement src, JsonSerializerOptions options)
+        {
+            m_Actions = src.Require("Actions").Deserialize<List<WorldUpdate>>(options) ?? throw new JsonException("null Actions");
+        }
+
+        static Chain IJsonStaged<Chain>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Chain(src, options));
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) => writer.WriteArray("Actions", m_Actions, options);
+        #endregion
+
         public Chain(List<WorldUpdate> actions)
         {
 #if DEBUG

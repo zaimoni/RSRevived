@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using djack.RogueSurvivor.Data;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 using Goal_NextAction = djack.RogueSurvivor.Gameplay.AI.Goal_NextAction;
@@ -15,12 +17,29 @@ using Goal_NextAction = djack.RogueSurvivor.Gameplay.AI.Goal_NextAction;
 namespace djack.RogueSurvivor.Engine.Op
 {
     [Serializable]
-    class Join : WorldUpdate, CanReduce<WorldUpdate>
+    class Join : WorldUpdate, CanReduce<WorldUpdate>, IJsonStaged<Join>
     {
         private List<WorldUpdate> m_Options;
         private WorldUpdate m_Sequel;
 
         public WorldUpdate Sequel { get { return m_Sequel; } }
+
+        #region JSON save/load
+        private Join(JsonElement src, JsonSerializerOptions options)
+        {
+            m_Options = src.Require("Options").Deserialize<List<WorldUpdate>>(options) ?? throw new JsonException("null Options");
+            m_Sequel = src.Require("Sequel").Deserialize<WorldUpdate>(options) ?? throw new JsonException("null Sequel");
+        }
+
+        static Join IJsonStaged<Join>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Join(src, options));
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            writer.WriteArray("Options", m_Options, options);
+            writer.WritePropertyName("Sequel");
+            JsonSerializer.Serialize(writer, m_Sequel, options);
+        }
+        #endregion
 
         public Join(List<WorldUpdate> options, WorldUpdate sequel)
         {
@@ -155,11 +174,31 @@ namespace djack.RogueSurvivor.Engine.Op
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]
-    class Join : ActorAction, RecursivePathfinderMoveCost
+    class Join : ActorAction, RecursivePathfinderMoveCost, IJsonStaged<Join>
     {
       private List<ActorAction> m_Options;
       private WorldUpdate? m_Sequel = null;
       [NonSerialized] private List<ActorAction>? _real_options;
+
+      #region JSON save/load
+      private Join(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+      {
+        m_Options = src.Require("Options").Deserialize<List<ActorAction>>(options) ?? throw new JsonException("null Options");
+        if (src.TryGetProperty("Sequel", out var x)) m_Sequel = x.Deserialize<WorldUpdate>(options);
+      }
+
+      static Join IJsonStaged<Join>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Join(JsonActor(src), src, options));
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+      {
+        toJsonActor(writer);
+        writer.WriteArray("Options", m_Options, options);
+        if (null != m_Sequel) {
+          writer.WritePropertyName("Sequel");
+          JsonSerializer.Serialize(writer, m_Sequel, options);
+        }
+      }
+      #endregion
 
       public Join(Actor actor, List<ActorAction> options, WorldUpdate? sequel = null) : base(actor)
       {
