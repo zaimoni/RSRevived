@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -55,6 +57,46 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         _items = null;
       }
     }
+
+#region JSON save/load
+    private LOSSensor(Actor actor, JsonElement src, JsonSerializerOptions options)
+    {
+      m_Actor = actor;
+      Filters = src.RequireEnum<SensingFilter>("Filters");
+      if (src.TryGetProperty("Friends", out var x)) x.ReadRefValueDictionary(_friends = new(), options);
+      if (src.TryGetProperty("Enemies", out x)) x.ReadRefValueDictionary(_enemies = new(), options);
+      if (src.TryGetProperty("Items", out x)) {
+        _items = new();
+        foreach (var pair in x.EnumerateArray()) {
+          if (JsonValueKind.Array != pair.ValueKind || 2 != pair.GetArrayLength()) throw new JsonException("expected [location, stack]: " + pair.GetRawText());
+          _items.Add(pair[0].Deserialize<Location>(options), pair[1].Deserialize<Data.Model.InvOrigin>(options));
+        }
+      }
+    }
+
+    public static LOSSensor fromJson(JsonElement src, JsonSerializerOptions options) => new(ActorController.ActorOrOwner(src), src, options);
+
+    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      OptimizeBeforeSaving(default);    // as the legacy save does: a dead viewpoint forgets
+      writer.WriteStartObject();
+      ActorController.WriteActorUnlessOwner(writer, m_Actor);
+      writer.WriteString("Filters", Filters.ToString());
+      if (null != _friends && 0 < _friends.Count) writer.WriteRefValueDictionary("Friends", _friends, options);
+      if (null != _enemies && 0 < _enemies.Count) writer.WriteRefValueDictionary("Enemies", _enemies, options);
+      if (null != _items && 0 < _items.Count) {
+        writer.WriteStartArray("Items");
+        foreach (var x in _items) {
+          writer.WriteStartArray();
+          JsonSerializer.Serialize(writer, x.Key, options);
+          JsonSerializer.Serialize(writer, x.Value, options);
+          writer.WriteEndArray();
+        }
+        writer.WriteEndArray();
+      }
+      writer.WriteEndObject();
+    }
+#endregion
 
     private void _seeActors(List<Percept> perceptList, Location[] normalized_FOV)
     {
@@ -165,4 +207,16 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       CORPSES = 4,
     }
   }
+}
+
+namespace Zaimoni.JsonConvert
+{
+    using System.Text.Json;
+
+    // internal: the sensor is
+    internal sealed class LOSSensor : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Gameplay.AI.Sensors.LOSSensor>
+    {
+        public override djack.RogueSurvivor.Gameplay.AI.Sensors.LOSSensor Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options) => djack.RogueSurvivor.Gameplay.AI.Sensors.LOSSensor.fromJson(JsonElement.ParseValue(ref reader), options);
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Gameplay.AI.Sensors.LOSSensor src, JsonSerializerOptions options) => src.toJson(writer, options);
+    }
 }

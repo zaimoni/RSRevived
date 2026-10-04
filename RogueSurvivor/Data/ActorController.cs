@@ -42,6 +42,10 @@ namespace djack.RogueSurvivor.Data
     /// <summary>for the subclasses' fromJson</summary>
     static protected Actor JsonOwner { get => s_LoadOwner ?? throw new JsonException("controller without an actor to control"); }
 
+    // An action's or sensor's actor is the one whose controller is being saved or loaded.  Only a different one is written.
+    static public void WriteActorUnlessOwner(Utf8JsonWriter writer, Actor src) { if (src != s_SaveOwner) writer.WriteRef("Actor", src); }
+    static public Actor ActorOrOwner(JsonElement src) => src.TryGetProperty("Actor", out var a) ? a.RequireRef<Actor>() : (s_LoadOwner ?? throw new JsonException("no actor to own this"));
+
     /// <summary>for the subclasses' fromJson</summary>
     static protected T JsonLoaded<T>(JsonElement src, T ret) where T : ActorController
     {

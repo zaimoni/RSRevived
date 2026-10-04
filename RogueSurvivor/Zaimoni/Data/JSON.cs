@@ -243,6 +243,29 @@ namespace Zaimoni.JSON
                 x[0].ReadRef<K>(key => dest.Add(key, value));
             }
         }
+
+        /// <summary>[key, reference] per line: the values are references</summary>
+        static public void WriteRefValueDictionary<K, V>(this Utf8JsonWriter writer, string name, IEnumerable<KeyValuePair<K, V>> src, JsonSerializerOptions options) where V : class
+        {
+            writer.WriteStartArray(name);
+            foreach (var x in src) {
+                writer.WriteStartArray();
+                JsonSerializer.Serialize(writer, x.Key, options);
+                x.Value.SaveAsRef(writer);
+                writer.WriteEndArray();
+            }
+            writer.WriteEndArray();
+        }
+
+        /// <param name="dest">filled when the load finishes, in file order</param>
+        static public void ReadRefValueDictionary<K, V>(this JsonElement src, IDictionary<K, V> dest, JsonSerializerOptions options) where V : class
+        {
+            foreach (var x in src.EnumerateArray()) {
+                if (JsonValueKind.Array != x.ValueKind || 2 != x.GetArrayLength()) throw new JsonException("expected [key, reference]: " + x.GetRawText());
+                var key = x[0].Deserialize<K>(options)!;
+                x[1].ReadRef<V>(value => dest.Add(key, value));
+            }
+        }
 #endregion
 
         public static void RecordRef<T>(this string relay_id, T src) where T : class {

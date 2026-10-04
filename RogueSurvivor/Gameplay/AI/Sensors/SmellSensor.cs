@@ -8,6 +8,8 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.AI;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Rectangle = Zaimoni.Data.Box2D<short>;
 
@@ -37,6 +39,24 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       m_OdorToSmell = odorToSmell;
     }
 
+#region JSON save/load
+    private SmellSensor(JsonElement src, JsonSerializerOptions options)
+    {
+      m_OdorToSmell = src.RequireEnum<Odor>("Odor");
+      if (src.TryGetProperty("Scents", out var x)) foreach (var scent in x.EnumerateArray()) m_List.Add(scent.Deserialize<Percept_s<AIScent>>(options));
+    }
+
+    public static SmellSensor fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      writer.WriteStartObject();
+      writer.WriteString("Odor", m_OdorToSmell.ToString());
+      if (0 < m_List.Count) writer.WriteArray("Scents", m_List, options);
+      writer.WriteEndObject();
+    }
+#endregion
+
     public List<Percept_s<AIScent>> Sense(Actor actor)
     {
 #if DEBUG
@@ -61,6 +81,13 @@ namespace Zaimoni.JsonConvert
     using System.Text.Json;
     using Zaimoni.JSON;
     using AIScent = djack.RogueSurvivor.Gameplay.AI.Sensors.AIScent;
+
+    // internal: the sensor is
+    internal sealed class SmellSensor : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Gameplay.AI.Sensors.SmellSensor>
+    {
+        public override djack.RogueSurvivor.Gameplay.AI.Sensors.SmellSensor Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options) => djack.RogueSurvivor.Gameplay.AI.Sensors.SmellSensor.fromJson(JsonElement.ParseValue(ref reader), options);
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Gameplay.AI.Sensors.SmellSensor src, JsonSerializerOptions options) => src.toJson(writer, options);
+    }
 
     public sealed class Scent : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.AI.Percept_s<AIScent>>
     {

@@ -603,6 +603,10 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Message());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.MessageManager());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.PathToTarget());
+          // AI state: sensors (phase 3 step 3)
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.LOSSensor());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.SmellSensor());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.MemorizedSensor<Gameplay.AI.Sensors.LOSSensor>());
 
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.ActorTag());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.UniqueItems());
