@@ -180,7 +180,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       LoF = 0,   // line of fire -- should be telegraphed and obvious to anyone looking at the ranged weapon user, at least the near part (5 degree precision?)
       CloseToActor,
       ClearingZone,
-      UsingChokepoint,
+      UsingChokepoint,  // dead; leaving in place for binary compatibility
       MinStepPath,   // may be either List<List<Point>> or List<List<Location>>
       PathingTo,
       EscapingTo,
@@ -484,8 +484,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _sparse.Unset(SparseData.CloseToActor);
       _sparse.Unset(SparseData.ClearingZone);
       _sparse.Unset(SparseData.EscapingTo);
+#if PROTOTYPE_LINEAR_CHOKEPOINT
       var choke = GetChokepoint();
       if (null != choke && 0>=choke.Contains(m_Actor.Location)) _sparse.Unset(SparseData.UsingChokepoint);
+#endif
 
       OnMove();  // 2019-08-24: both calls required to pass regression test
     }
@@ -962,11 +964,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected void RecordCloseToActor(Actor a,int maxDist) { _sparse.Set(SparseData.CloseToActor,new KeyValuePair<Actor,int>(a,maxDist)); }
     public KeyValuePair<Actor, int> GetCloseToActor() { return _sparse.Get<KeyValuePair<Actor, int>>(SparseData.CloseToActor); }
 
+#if PROTOTYPE_LINEAR_CHOKEPOINT
     protected void RecordChokepoint(LinearChokepoint src) {
       if (null == src || 0 >= src.Contains(m_Actor.Location)) return;
       _sparse.Set(SparseData.UsingChokepoint, src);
     }
     public LinearChokepoint GetChokepoint() { return _sparse.Get<LinearChokepoint>(SparseData.UsingChokepoint); }
+#endif
 
     // caller does not have the goal-set that mandated calculating this
     // caller does have the action generated from the path
