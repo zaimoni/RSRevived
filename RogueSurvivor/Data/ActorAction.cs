@@ -41,7 +41,7 @@ namespace djack.RogueSurvivor.Data
   public abstract class ActorAction
   {
     protected readonly Actor m_Actor;
-    protected string? m_FailReason;
+    [NonSerialized] protected string? m_FailReason;
 
     public string? FailReason { get { return m_FailReason; } }
     public bool PerformedBy(Actor? a) { return m_Actor == a; }
