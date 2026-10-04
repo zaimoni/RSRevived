@@ -284,3 +284,34 @@ namespace djack.RogueSurvivor.Data.Model
     public override string ToString() => Origin.ToString() + " containing " + it.ToString();
   }
 }
+
+namespace Zaimoni.JsonConvert
+{
+    using System.Text.Json;
+    using Zaimoni.JSON;
+
+    public sealed class InvOrigin : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Data.Model.InvOrigin>
+    {
+        public override djack.RogueSurvivor.Data.Model.InvOrigin Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            var stage = JsonElement.ParseValue(ref reader);
+            var actor = stage.TryGetProperty("Actor", out var x) ? x.RequireRef<djack.RogueSurvivor.Data.Actor>() : null;
+            var shelf = stage.TryGetProperty("Shelf", out x) ? x.RequireRef<djack.RogueSurvivor.Data.ShelfLike>() : null;
+            djack.RogueSurvivor.Data.Location? loc = stage.TryGetProperty("Location", out x) ? x.Deserialize<djack.RogueSurvivor.Data.Location>(options) : null;
+            if (null == actor && null == shelf && null == loc) throw new JsonException("inventory origin of nothing: " + stage.GetRawText());
+            return new(actor, shelf, loc);
+        }
+
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.Model.InvOrigin src, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            if (null != src.a_owner) writer.WriteRef("Actor", src.a_owner);
+            if (null != src.obj_owner) writer.WriteRef("Shelf", src.obj_owner);
+            if (null != src.loc) {
+                writer.WritePropertyName("Location");
+                JsonSerializer.Serialize(writer, src.loc.Value, options);
+            }
+            writer.WriteEndObject();
+        }
+    }
+}

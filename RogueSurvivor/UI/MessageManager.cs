@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using Zaimoni.JSON;
 
 using Color = System.Drawing.Color;
 
@@ -34,6 +35,38 @@ namespace djack.RogueSurvivor.UI
       m_DisplaySize = displaySize;
       m_History = new(historySize);
       m_Messages = new(displaySize);
+    }
+
+    private MessageManager(System.Text.Json.JsonElement src, System.Text.Json.JsonSerializerOptions options)
+    {
+      m_LinesSpacing = src.Require("LinesSpacing").GetInt32();
+      m_HistorySize = src.Require("HistorySize").GetInt32();
+      m_DisplaySize = src.Require("DisplaySize").GetInt32();
+      m_History = new(m_HistorySize);
+      m_Messages = new(m_DisplaySize);
+      if (src.TryGetProperty("Messages", out var x)) foreach (var msg in x.EnumerateArray()) m_Messages.Add(Message.fromJson(msg));
+      if (src.TryGetProperty("History", out x)) foreach (var msg in x.EnumerateArray()) m_History.Add(Message.fromJson(msg));
+    }
+
+    public static MessageManager fromJson(System.Text.Json.JsonElement src, System.Text.Json.JsonSerializerOptions options) => new(src, options);
+
+    public void toJson(System.Text.Json.Utf8JsonWriter writer)
+    {
+      writer.WriteStartObject();
+      writer.WriteNumber("LinesSpacing", m_LinesSpacing);
+      writer.WriteNumber("HistorySize", m_HistorySize);
+      writer.WriteNumber("DisplaySize", m_DisplaySize);
+      if (0 < m_Messages.Count) {
+        writer.WriteStartArray("Messages");
+        foreach (var msg in m_Messages) msg.toJson(writer);
+        writer.WriteEndArray();
+      }
+      if (0 < m_History.Count) {
+        writer.WriteStartArray("History");
+        foreach (var msg in m_History) msg.toJson(writer);
+        writer.WriteEndArray();
+      }
+      writer.WriteEndObject();
     }
 
     public void Clear() { m_Messages.Clear(); }
@@ -80,5 +113,16 @@ namespace djack.RogueSurvivor.UI
             gy += m_LinesSpacing;
         }
     }
+  }
+}
+
+namespace Zaimoni.JsonConvert
+{
+  using System.Text.Json;
+
+  public sealed class MessageManager : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.UI.MessageManager>
+  {
+    public override djack.RogueSurvivor.UI.MessageManager Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options) => djack.RogueSurvivor.UI.MessageManager.fromJson(JsonElement.ParseValue(ref reader), options);
+    public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.UI.MessageManager src, JsonSerializerOptions options) => src.toJson(writer);
   }
 }

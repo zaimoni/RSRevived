@@ -212,6 +212,22 @@ namespace Zaimoni.JSON
         /// <param name="assign">runs when the load finishes, not now</param>
         static public void ReadRef<T>(this JsonElement src, Action<T> assign) where T : class => PreserveReferenceHandler.Resolver.Defer(src.RefId(), assign);
 
+        /// <summary>Resolves now, for a reference that must be in hand to construct what holds it (a struct, a readonly field).
+        /// The referent has to be loaded already: the file order guarantees that, or this throws.</summary>
+        static public T RequireRef<T>(this JsonElement src) where T : class
+        {
+            var id = src.RefId();
+            if (!PreserveReferenceHandler.Resolver.TryResolve(id, out var obj)) throw new JsonException("not yet loaded: " + id);
+            return obj as T ?? throw new JsonException("type mismatch: " + id + " is not " + typeof(T).FullName);
+        }
+
+        static public List<T> RequireRefs<T>(this JsonElement src) where T : class
+        {
+            List<T> ret = new();
+            foreach (var x in src.EnumerateArray()) ret.Add(x.RequireRef<T>());
+            return ret;
+        }
+
         /// <param name="dest">filled when the load finishes, in file order</param>
         static public void ReadRefs<T>(this JsonElement src, ICollection<T> dest) where T : class
         {

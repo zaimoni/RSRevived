@@ -55,3 +55,29 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     }
   }
 }
+
+namespace Zaimoni.JsonConvert
+{
+    using System.Text.Json;
+    using Zaimoni.JSON;
+    using AIScent = djack.RogueSurvivor.Gameplay.AI.Sensors.AIScent;
+
+    public sealed class Scent : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.AI.Percept_s<AIScent>>
+    {
+        public override djack.RogueSurvivor.Engine.AI.Percept_s<AIScent> Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            var stage = JsonElement.ParseValue(ref reader);
+            return new(new AIScent(stage.Require("Strength").GetInt32()), stage.Require("Turn").GetInt32(), stage.Require("Location").Deserialize<djack.RogueSurvivor.Data.Location>(options));
+        }
+
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Engine.AI.Percept_s<AIScent> src, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            writer.WriteNumber("Turn", src.Turn);
+            writer.WritePropertyName("Location");
+            JsonSerializer.Serialize(writer, src.Location, options);
+            writer.WriteNumber("Strength", src.Percepted.Strength);
+            writer.WriteEndObject();
+        }
+    }
+}

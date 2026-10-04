@@ -192,9 +192,20 @@ Not yet decided:
 - Whether `Controller` is omitted when it is the model's default controller (implied while controllers carry no state).
 - References to actors nobody owns (a dead actor with no corpse, still in a trust or aggressor list). The save-side check will throw and name the field; decide the rule from what a real save shows.
 
-### Phase 3: AI state (after November)
+### Phase 3: AI state (started 2026-10-04)
 
-Objectives, actions, sensors and percepts. Each needs a decision: persist, or rebuild after load.
+Objectives, actions, sensors and percepts. The rule (2026-10-03): a field tagged `[NonSerialized]` is rebuilt after load; every other field is persisted. For actions, `[Serializable]` on the class is the existing marker for "can be stored in an objective", so it is the registry for `Polymorphic<ActorAction>`; an unregistered action reaching the save is an error naming the holding objective.
+
+Steps (each round-tripped in the headless harness first):
+
+- [x] 1. Value types: `Percept_<T>` (payload keyed by kind: `Actor`, `Inventory`, `Stack`, `Corpses`, `MapObject`, `Text`; no `$type`, the kinds are closed and unrelated), `Percept_s<AIScent>`, `ZoneLoc` (`[map, rectangle]`; its `Zone` is `[NonSerialized]`), `InvOrigin` (whichever of `Actor`/`Shelf`/`Location` is set), `ActorOrder`, `ActorDirective` (only what differs from the defaults; `{}` when nothing does), `Waypoint_s`, `Message`/`MessageManager` (colors: a known color by name, any other as `#AARRGGBB`; the text is stored as shown, since the live constructor prefixes the turn), `PathToTarget`. `LinearChokepoint` was suppressed as unwired before this step, so `SparseData.UsingChokepoint` has nothing to save.
+  - These hold references inside structs and readonly fields, so they resolve **now** (`JSON_ext.RequireRef`, `RequireRefs`), not at `Finish`. The referent must already be loaded. Inside a map's actor list that is not guaranteed (an order or a path may name another map, or an actor on it), so **controllers must load after `World`**: step 5 stages each actor's controller JSON and constructs it once all maps are in. Cross-links that live in class fields keep using the deferred `ReadRef`.
+- [ ] 2. `Polymorphic<ActorAction>` and `Polymorphic<WorldUpdate>`: the 27 `[Serializable]` actions and 6 world updates. `m_Actor` implied by the owning controller; `m_FailReason` is `[NonSerialized]` (2026-10-03) so each writes only its own fields. `ActionSequence` writes its behaviors by `ZeroAryBehaviors` name.
+- [ ] 3. Sensors: `LOSSensor`, `SmellSensor`, `MemorizedSensor<LOSSensor>`, as nested objects of the leaf controllers (an interface held only in typed fields: no root).
+- [ ] 4. `Polymorphic<Objective>`: 30 classes incl. `Goal_LastAction<ActionCloseDoor>` as its own tag and `Cooperate.SharedPlan` (shared between actors, so `$id`). Objectives in both `Objectives` and `FOVevents` are one object. `m_Actor` implied to be the owner (DEBUG check; written when it differs).
+- [ ] 5. Controller layers: `BaseAI`, `ObjectiveAI` (`Objectives`, `FOVevents` as `$ref`s to objectives only, the faction-derived watchers being re-added by the constructor; `PlannedMoves`; `ItemPriorities`; `_sparse` as an object keyed by `SparseData` name, each key with its fixed value type; `_STA_reserve`; `_rating_overrides`; `_last_move`; `_recoil`), `OrderableAI`, then the ten AI leaves. `IsJsonDefault` grows with each layer. Controllers load after `World` (see step 1).
+- [ ] 6. `PlayerController` (`m_LOSSensor`, `m_itemMemory` via `ItemMemoryJSON`, `m_Waypoints`, `Messages`) and the statics: counted commands under the owning controller; `s_BeforeAction`/`s_AfterAction` once, under the session's `Player` controller (decision pending: or a `Session`-level `PlayerUI` key). `Session` completes.
+- [ ] 7. Audit empty; JSON offered from the game's own save and load commands.
 
 Data design notes that bear on the format:
 
@@ -202,8 +213,6 @@ Data design notes that bear on the format:
 - **Counted commands belong with `PlayerController`.** They live in `RogueGame` as technical debt (`s_CountedCommands` is already keyed by `PlayerController`). Save them inside the owning player's controller object, not as a `Session`-level field, so paying the debt changes no file.
 - The underlying problem: command translation is front-end dependent and has to be isolated from game code. `HandlePlayerActor` inlines what would be `PlayerController.GetAction` and `PlayerController.SelectAction`.
 - Also here: the `PlayerController` event handlers and the message log.
-
-After phase 3: offer JSON from the game's own save and load commands (today only the command line and the bootstrap reach it).
 
 ### Phase 4: retire BinaryFormatter
 

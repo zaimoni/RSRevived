@@ -68,3 +68,27 @@ namespace djack.RogueSurvivor.Data
     }
   }
 }
+
+namespace Zaimoni.JsonConvert
+{
+    using System.Text.Json;
+    using Zaimoni.JSON;
+
+    public sealed class ActorOrder : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Data.ActorOrder>
+    {
+        public override djack.RogueSurvivor.Data.ActorOrder Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            var stage = JsonElement.ParseValue(ref reader);
+            return new(stage.RequireEnum<djack.RogueSurvivor.Data.ActorTasks>("Task"), stage.Require("Location").Deserialize<djack.RogueSurvivor.Data.Location>(options));
+        }
+
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.ActorOrder src, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("Task", src.Task.ToString());
+            writer.WritePropertyName("Location");
+            JsonSerializer.Serialize(writer, src.Location, options);
+            writer.WriteEndObject();
+        }
+    }
+}

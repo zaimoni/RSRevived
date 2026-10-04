@@ -560,3 +560,27 @@ namespace djack.RogueSurvivor.Data
   }
 #endif
 }
+
+namespace Zaimoni.JsonConvert
+{
+    using System.Text.Json;
+    using Zaimoni.JSON;
+
+    public sealed class ZoneLoc : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Data.ZoneLoc>
+    {
+        public override djack.RogueSurvivor.Data.ZoneLoc Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            var stage = JsonElement.ParseValue(ref reader);
+            if (JsonValueKind.Array != stage.ValueKind || 2 != stage.GetArrayLength()) throw new JsonException("expected [map, rectangle]: " + stage.GetRawText());
+            return new(stage[0].RequireRef<djack.RogueSurvivor.Data.Map>(), stage[1].Deserialize<Rectangle>(options));
+        }
+
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.ZoneLoc src, JsonSerializerOptions options)
+        {
+            writer.WriteStartArray();
+            src.m.SaveAsRef(writer);
+            JsonSerializer.Serialize(writer, src.Rect, options);
+            writer.WriteEndArray();
+        }
+    }
+}

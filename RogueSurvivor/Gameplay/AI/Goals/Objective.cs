@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using djack.RogueSurvivor.Data;
+using System.Text.Json;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
@@ -75,6 +77,54 @@ namespace djack.RogueSurvivor.Gameplay.AI
         private bool _expired = false;
 
         public PathToTarget() { }
+
+#region JSON
+        private PathToTarget(System.Text.Json.JsonElement src, System.Text.Json.JsonSerializerOptions options)
+        {
+            if (src.TryGetProperty("Reasons", out var x)) {
+                foreach (var pair in x.EnumerateArray()) {
+                    if (System.Text.Json.JsonValueKind.Array != pair.ValueKind || 2 != pair.GetArrayLength()) throw new System.Text.Json.JsonException("expected [location, reason]: " + pair.GetRawText());
+                    reasons.Add(pair[0].Deserialize<Location>(options), pair[1].GetInt32());
+                }
+            }
+            if (src.TryGetProperty("PointSteps", out x)) pt_path = x.Deserialize<List<List<Point>>>(options);
+            if (src.TryGetProperty("Steps", out x)) loc_path = x.Deserialize<List<List<Location>>>(options);
+            if (src.TryGetProperty("StageView", out x)) foreach (var loc in x.EnumerateArray()) stage_view.Add(loc.Deserialize<Location>(options));
+            if (src.TryGetProperty("StageInventory", out x)) foreach (var loc in x.EnumerateArray()) stage_inventory.Add(loc.Deserialize<Location>(options));
+            if (src.TryGetProperty("StageGenerators", out x)) stage_generators.AddRange(x.RequireRefs<Engine.MapObjects.PowerGenerator>());
+            if (src.TryGetProperty("Expired", out x)) _expired = x.GetBoolean();
+        }
+
+        public static PathToTarget fromJson(System.Text.Json.JsonElement src, System.Text.Json.JsonSerializerOptions options) => new(src, options);
+
+        public void toJson(System.Text.Json.Utf8JsonWriter writer, System.Text.Json.JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            if (0 < reasons.Count) {
+                writer.WriteStartArray("Reasons");
+                foreach (var x in reasons) {
+                    writer.WriteStartArray();
+                    System.Text.Json.JsonSerializer.Serialize(writer, x.Key, options);
+                    writer.WriteNumberValue(x.Value);
+                    writer.WriteEndArray();
+                }
+                writer.WriteEndArray();
+            }
+            if (null != pt_path) {
+                writer.WritePropertyName("PointSteps");
+                System.Text.Json.JsonSerializer.Serialize(writer, pt_path, options);
+            }
+            if (null != loc_path) {
+                writer.WritePropertyName("Steps");
+                System.Text.Json.JsonSerializer.Serialize(writer, loc_path, options);
+            }
+            if (0 < stage_view.Count) writer.WriteArray("StageView", stage_view, options);
+            if (0 < stage_inventory.Count) writer.WriteArray("StageInventory", stage_inventory, options);
+            if (0 < stage_generators.Count) writer.WriteRefs("StageGenerators", stage_generators);
+            if (_expired) writer.WriteBoolean("Expired", true);
+            writer.WriteEndObject();
+        }
+#endregion
 
         public int steps {
             get {
@@ -637,5 +687,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (null != pt_path) return ai.UsePreexistingPath(pt_path);
             return null;
         }
+    }
+}
+
+namespace Zaimoni.JsonConvert
+{
+    using System.Text.Json;
+
+    public sealed class PathToTarget : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Gameplay.AI.PathToTarget>
+    {
+        public override djack.RogueSurvivor.Gameplay.AI.PathToTarget Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options) => djack.RogueSurvivor.Gameplay.AI.PathToTarget.fromJson(JsonElement.ParseValue(ref reader), options);
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Gameplay.AI.PathToTarget src, JsonSerializerOptions options) => src.toJson(writer, options);
     }
 }

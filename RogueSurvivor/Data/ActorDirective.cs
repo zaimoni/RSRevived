@@ -23,3 +23,34 @@ namespace djack.RogueSurvivor.Data
     public ActorCourage Courage = Courage_default;
   }
 }
+
+namespace Zaimoni.JsonConvert
+{
+    using System.Text.Json;
+    using Zaimoni.JSON;
+    using Directive = djack.RogueSurvivor.Data.ActorDirective;
+
+    public sealed class ActorDirective : System.Text.Json.Serialization.JsonConverter<Directive>
+    {
+        public override Directive Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            var stage = JsonElement.ParseValue(ref reader);
+            Directive ret = new();
+            if (stage.TryGetProperty("CanThrowGrenades", out var x)) ret.CanThrowGrenades = x.GetBoolean();
+            if (stage.TryGetProperty("CanSleep", out x)) ret.CanSleep = x.GetBoolean();
+            if (stage.TryGetProperty("CanTrade", out x)) ret.CanTrade = x.GetBoolean();
+            if (stage.TryGetProperty("Courage", out x)) ret.Courage = JSON_ext.ParseEnum<djack.RogueSurvivor.Data.ActorCourage>(x.GetString());
+            return ret;
+        }
+
+        public override void Write(Utf8JsonWriter writer, Directive src, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            if (Directive.CanThrowGrenades_default != src.CanThrowGrenades) writer.WriteBoolean("CanThrowGrenades", src.CanThrowGrenades);
+            if (Directive.CanSleep_default != src.CanSleep) writer.WriteBoolean("CanSleep", src.CanSleep);
+            if (Directive.CanTrade_default != src.CanTrade) writer.WriteBoolean("CanTrade", src.CanTrade);
+            if (Directive.Courage_default != src.Courage) writer.WriteString("Courage", src.Courage.ToString());
+            writer.WriteEndObject();
+        }
+    }
+}

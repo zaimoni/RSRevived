@@ -181,3 +181,52 @@ namespace djack.RogueSurvivor.Engine.AI
 #nullable restore
   }
 }
+
+namespace Zaimoni.JsonConvert
+{
+    using djack.RogueSurvivor.Data;
+    using System.Text.Json;
+    using Zaimoni.JSON;
+    using Loc = djack.RogueSurvivor.Data.Location;   // Location here is the converter
+
+    /// <summary>A percept's payload is one of a closed set of unrelated types, so the key naming it says which: no $type.</summary>
+    public sealed class Percept<T> : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.AI.Percept_<T>> where T : class
+    {
+        public override djack.RogueSurvivor.Engine.AI.Percept_<T> Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        {
+            var stage = JsonElement.ParseValue(ref reader);
+            var turn = stage.Require("Turn").GetInt32();
+            var loc = stage.Require("Location").Deserialize<Loc>(options);
+            object payload;
+            if (stage.TryGetProperty("Actor", out var x)) payload = x.RequireRef<Actor>();
+            else if (stage.TryGetProperty("Inventory", out x)) payload = x.RequireRef<Inventory>();
+            else if (stage.TryGetProperty("Stack", out x)) payload = x.Deserialize<djack.RogueSurvivor.Data.Model.InvOrigin>(options);
+            else if (stage.TryGetProperty("Corpses", out x)) payload = x.RequireRefs<Corpse>();
+            else if (stage.TryGetProperty("MapObject", out x)) payload = x.RequireRef<MapObject>();
+            else if (stage.TryGetProperty("Text", out x)) payload = x.GetString() ?? throw new JsonException("null percept text");
+            else throw new JsonException("percept of nothing: " + stage.GetRawText());
+            return new(payload as T ?? throw new JsonException("percept is not " + typeof(T).FullName), turn, in loc);
+        }
+
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Engine.AI.Percept_<T> src, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            writer.WriteNumber("Turn", src.Turn);
+            writer.WritePropertyName("Location");
+            JsonSerializer.Serialize(writer, src.Location, options);
+            switch (src.Percepted) {
+            case Actor a: writer.WriteRef("Actor", a); break;
+            case Inventory inv: writer.WriteRef("Inventory", inv); break;
+            case djack.RogueSurvivor.Data.Model.InvOrigin stack:
+                writer.WritePropertyName("Stack");
+                JsonSerializer.Serialize(writer, stack, options);
+                break;
+            case List<Corpse> corpses: writer.WriteRefs("Corpses", corpses); break;
+            case MapObject obj: writer.WriteRef("MapObject", obj); break;
+            case string text: writer.WriteString("Text", text); break;
+            default: throw new JsonException("percept of " + src.Percepted.GetType().FullName + " is not saved");
+            }
+            writer.WriteEndObject();
+        }
+    }
+}

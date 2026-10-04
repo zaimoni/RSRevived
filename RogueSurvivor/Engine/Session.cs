@@ -591,6 +591,18 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Vector2D_short());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Box2D_short());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Location());
+          // AI state: value types (phase 3 step 1)
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Percept<object>());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Percept<Actor>());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Scent());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.ZoneLoc());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.InvOrigin());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.ActorOrder());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.ActorDirective());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Waypoint());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Message());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.MessageManager());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.PathToTarget());
 
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.ActorTag());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.UniqueItems());
