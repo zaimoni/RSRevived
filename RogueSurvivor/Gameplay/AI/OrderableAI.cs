@@ -1230,7 +1230,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                    // * else if not in damage field, rest (to reset AP) or try to improve tactical positioning/get away further
                    // * else do not contrain processing (null out)
                    // XXX \todo once enemies_in_FOV is location-based we can use different sequences safely for the engaged and not-engaged cases
-                   var next = new ActionSequence(m_Actor,new int[] { (int)ZeroAryBehaviors.AttackWithoutMoving_ObjAI, (int)ZeroAryBehaviors.WaitIfSafe_ObjAI });
+                   var next = new ActionSequence(m_Actor,new ZeroAryBehaviors[] { ZeroAryBehaviors.AttackWithoutMoving_ObjAI, ZeroAryBehaviors.WaitIfSafe_ObjAI });
                    SetObjective(new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, next, next));
               }
             } else m_Actor.Run();
@@ -1422,7 +1422,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                    // * else if not in damage field, rest (to reset AP) or try to improve tactical positioning/get away further
                    // * else do not contrain processing (null out)
                    // XXX \todo once enemies_in_FOV is location-based we can use different sequences safely for the engaged and not-engaged cases
-                   var next = new ActionSequence(m_Actor,new int[] { (int)ZeroAryBehaviors.AttackWithoutMoving_ObjAI, (int)ZeroAryBehaviors.WaitIfSafe_ObjAI });
+                   var next = new ActionSequence(m_Actor,new ZeroAryBehaviors[] { ZeroAryBehaviors.AttackWithoutMoving_ObjAI, ZeroAryBehaviors.WaitIfSafe_ObjAI });
                    SetObjective(new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, next, next));
                 }
               }
@@ -4107,7 +4107,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       act = TurnOnAdjacentGenerators();
       if (null != act) {
-        SetObjective(new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new int[] { (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
+        SetObjective(new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new ZeroAryBehaviors[] { ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
         return act;
       }
 

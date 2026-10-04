@@ -10,10 +10,10 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
         private readonly int _AP;
         private readonly int _turn;
-        private readonly List<int> _handler_codes;
+        private readonly List<ZeroAryBehaviors> _handler_codes;
         [NonSerialized] private ActorAction _result;
 
-        public ActionSequence(Actor actor, IEnumerable<int> codes)
+        public ActionSequence(Actor actor, IEnumerable<ZeroAryBehaviors> codes)
         : base(actor)
         {
 #if DEBUG

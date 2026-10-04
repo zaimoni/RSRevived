@@ -20,6 +20,13 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
 namespace djack.RogueSurvivor.Data
 {
+  // The suffix names the class whose ExecAryZeroBehavior implements the behavior.  Was nested in ObjectiveAI.
+  public enum ZeroAryBehaviors {
+    AttackWithoutMoving_ObjAI = 0,
+    WaitIfSafe_ObjAI,
+    TurnOnAdjacentGenerators_ObjAI
+  };
+
   [Serializable]
   public abstract class ActorController
   {
@@ -210,7 +217,7 @@ namespace djack.RogueSurvivor.Data
 
     public abstract bool IsMyTurn();
     /// <returns>null, or an action x for which x.IsPerformable() is true</returns>
-    public virtual ActorAction? ExecAryZeroBehavior(int code) { return null; }
+    public virtual ActorAction? ExecAryZeroBehavior(ZeroAryBehaviors code) { return null; }
 #nullable restore
 
     public bool CanSee(in Location x)  // correctness requires Location being value-copied

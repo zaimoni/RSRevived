@@ -187,12 +187,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       LambdaPath
     };
 
-    public enum ZeroAryBehaviors {
-      AttackWithoutMoving_ObjAI = 0,
-      WaitIfSafe_ObjAI,
-      TurnOnAdjacentGenerators_ObjAI
-    };
-
     protected enum CallChain {
       NONE = 0,
       ManageMeleeRisk,   // OrderableAI::ManageMeleeRisk; this caller is retreating and needs additional postprocessing
@@ -422,12 +416,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       RogueGame.Game.PagedPopup(m_Actor.UnmodifiedName+"'s objectives", Objectives.Count, label, details);
     }
 
-    public override ActorAction? ExecAryZeroBehavior(int code)
+    public override ActorAction? ExecAryZeroBehavior(ZeroAryBehaviors code)
     {
       switch(code) {
-        case (int)ZeroAryBehaviors.AttackWithoutMoving_ObjAI: return AttackWithoutMoving();
-        case (int)ZeroAryBehaviors.WaitIfSafe_ObjAI: return WaitIfSafe();
-        case (int)ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI: return TurnOnAdjacentGenerators();
+        case ZeroAryBehaviors.AttackWithoutMoving_ObjAI: return AttackWithoutMoving();
+        case ZeroAryBehaviors.WaitIfSafe_ObjAI: return WaitIfSafe();
+        case ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI: return TurnOnAdjacentGenerators();
         default: return base.ExecAryZeroBehavior(code);
       }
     }
