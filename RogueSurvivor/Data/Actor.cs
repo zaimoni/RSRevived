@@ -1063,13 +1063,19 @@ namespace djack.RogueSurvivor.Data
       }
       if (null != m_DraggedCorpse) writer.WriteRef("DraggedCorpse", m_DraggedCorpse);
 
-      if (null != m_Controller && !m_Controller.IsJsonDefault) {
-        writer.WritePropertyName("Controller");
-        JsonSerializer.Serialize(writer, m_Controller, options);
-      }
-      if (null != m_Subconscious) {
-        writer.WritePropertyName("Subconscious");
-        JsonSerializer.Serialize(writer, m_Subconscious, options);
+      var prior = ActorController.s_SaveOwner;
+      ActorController.s_SaveOwner = this;
+      try {
+        if (null != m_Controller && !m_Controller.IsJsonDefault) {
+          writer.WritePropertyName("Controller");
+          JsonSerializer.Serialize(writer, m_Controller, options);
+        }
+        if (null != m_Subconscious) {
+          writer.WritePropertyName("Subconscious");
+          JsonSerializer.Serialize(writer, m_Subconscious, options);
+        }
+      } finally {
+        ActorController.s_SaveOwner = prior;
       }
     }
 #endregion

@@ -7,6 +7,8 @@
 using System;
 
 using djack.RogueSurvivor.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
@@ -18,9 +20,25 @@ namespace djack.RogueSurvivor.Engine.Actions
   }
 
    [Serializable]
-  public sealed class ActionMeleeAttack : ActorAction, CombatAction
+  public sealed class ActionMeleeAttack : ActorAction, CombatAction, IJsonStaged<ActionMeleeAttack>
     {
     private readonly Actor m_Target;
+
+    #region JSON save/load
+    // the live constructor also resets the actor's activity: not for a load
+    private ActionMeleeAttack(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+    {
+      m_Target = src.Require("Target").RequireRef<Actor>();
+    }
+
+    static ActionMeleeAttack IJsonStaged<ActionMeleeAttack>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionMeleeAttack(JsonActor(src), src, options));
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      toJsonActor(writer);
+      writer.WriteRef("Target", m_Target);
+    }
+    #endregion
 
     public ActionMeleeAttack(Actor actor, Actor target) : base(actor)
     {

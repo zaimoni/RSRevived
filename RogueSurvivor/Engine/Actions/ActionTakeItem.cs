@@ -6,16 +6,33 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
   [Serializable]
-  internal class ActionTake : ActorAction,ActorTake,Target<MapObject?>
+  internal class ActionTake : ActorAction,ActorTake,Target<MapObject?>, IJsonStaged<ActionTake>
   {
     private readonly Gameplay.Item_IDs m_ID;
     [NonSerialized] private _Action.TakeItem? _resolved = null;
+
+    #region JSON save/load
+    private ActionTake(Actor actor, JsonElement src) : base(actor)
+    {
+      m_ID = src.RequireEnum<Gameplay.Item_IDs>("ID");
+    }
+
+    static ActionTake IJsonStaged<ActionTake>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionTake(JsonActor(src), src));
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      toJsonActor(writer);
+      writer.WriteString("ID", m_ID.ToString());
+    }
+    #endregion
 
     public ActionTake(Actor actor, Gameplay.Item_IDs it) : base(actor)
     {
@@ -102,13 +119,31 @@ namespace djack.RogueSurvivor.Engine.Actions
   } // ActionTake
 
   [Serializable]
-  internal class ActionGiveTo : ActorAction,ActorGive,TargetActor
+  internal class ActionGiveTo : ActorAction,ActorGive,TargetActor, IJsonStaged<ActionGiveTo>
   {
     private readonly Gameplay.Item_IDs m_ID;
     private readonly Gameplay.AI.OrderableAI m_Target;
     [NonSerialized] Item? gift;
     [NonSerialized] Item? received;
     [NonSerialized] ActorAction? m_ConcreteAction; // not meant to be Resolvable
+
+    #region JSON save/load
+    // The target is written as its actor: a controller with no state of its own is not in the save at all.
+    private ActionGiveTo(Actor actor, JsonElement src) : base(actor)
+    {
+      m_ID = src.RequireEnum<Gameplay.Item_IDs>("ID");
+      m_Target = src.Require("Target").RequireRef<Actor>().Controller as Gameplay.AI.OrderableAI ?? throw new JsonException("cannot give to an actor that does not take orders");
+    }
+
+    static ActionGiveTo IJsonStaged<ActionGiveTo>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionGiveTo(JsonActor(src), src));
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      toJsonActor(writer);
+      writer.WriteString("ID", m_ID.ToString());
+      writer.WriteRef("Target", m_Target.ControlledActor);
+    }
+    #endregion
 
     public ActionGiveTo(Actor actor, Gameplay.AI.OrderableAI target, Gameplay.Item_IDs it) : base(actor)
     {

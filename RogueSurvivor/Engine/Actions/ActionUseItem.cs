@@ -6,6 +6,8 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -15,9 +17,25 @@ namespace djack.RogueSurvivor.Engine.Actions
   }
 
   [Serializable]
-  public sealed class ActionUseItem : ActorAction, Use<Item>
+  public sealed class ActionUseItem : ActorAction, Use<Item>, IJsonStaged<ActionUseItem>
     {
     private readonly Item m_Item;
+
+    #region JSON save/load
+    // the live constructor also resets the actor's activity: not for a load
+    private ActionUseItem(Actor actor, JsonElement src) : base(actor)
+    {
+      m_Item = src.Require("Item").RequireRef<Item>();
+    }
+
+    static ActionUseItem IJsonStaged<ActionUseItem>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionUseItem(JsonActor(src), src));
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      toJsonActor(writer);
+      writer.WriteRef("Item", m_Item);
+    }
+    #endregion
 
     public ActionUseItem(Actor actor, Item it) : base(actor)
     {
@@ -43,10 +61,25 @@ namespace djack.RogueSurvivor.Engine.Actions
   } // ActionUseItem
 
   [Serializable]
-  internal class ActionUse : ActorAction, Use<Item>
+  internal class ActionUse : ActorAction, Use<Item>, IJsonStaged<ActionUse>
     {
     private readonly Gameplay.Item_IDs m_ID;
     [NonSerialized] private Item? m_Item = null;
+
+    #region JSON save/load
+    private ActionUse(Actor actor, JsonElement src) : base(actor)
+    {
+      m_ID = src.RequireEnum<Gameplay.Item_IDs>("ID");
+    }
+
+    static ActionUse IJsonStaged<ActionUse>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionUse(JsonActor(src), src));
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      toJsonActor(writer);
+      writer.WriteString("ID", m_ID.ToString());
+    }
+    #endregion
 
     public ActionUse(Actor actor, Gameplay.Item_IDs it) : base(actor)
     {

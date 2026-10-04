@@ -9,6 +9,8 @@ using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
@@ -27,12 +29,35 @@ namespace djack.RogueSurvivor.Engine.Actions
   }
 
   [Serializable]
-  public sealed class ActionRangedAttack : ActorAction, CombatAction
+  public sealed class ActionRangedAttack : ActorAction, CombatAction, IJsonStaged<ActionRangedAttack>
   {
     private readonly List<Point> m_LoF = new List<Point>();
     private readonly Actor m_Target;
     public readonly FireMode FMode;
     [NonSerialized] ObjectiveAI oai;
+
+    #region JSON save/load
+    private ActionRangedAttack(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+    {
+      m_Target = src.Require("Target").RequireRef<Actor>();
+      if (src.TryGetProperty("LoF", out var x)) foreach (var pt in x.EnumerateArray()) m_LoF.Add(pt.ReadPoint());
+      if (src.TryGetProperty("FireMode", out x)) FMode = JSON_ext.ParseEnum<FireMode>(x.GetString());
+      OnDeserialized(default);
+    }
+
+    static ActionRangedAttack IJsonStaged<ActionRangedAttack>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionRangedAttack(JsonActor(src), src, options));
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      toJsonActor(writer);
+      writer.WriteRef("Target", m_Target);
+      if (0 < m_LoF.Count) {
+        writer.WritePropertyName("LoF");
+        writer.WriteRawValue(JSON_ext.RenderPoints(m_LoF));
+      }
+      if (default != FMode) writer.WriteString("FireMode", FMode.ToString());
+    }
+    #endregion
 
     public ActionRangedAttack(Actor actor, Actor target, FireMode mode=default) : base(actor)
     {
@@ -86,9 +111,13 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     // This is not covering fire.  More like a pop out and snipe at something
     [Serializable]
-    internal class OpportunityTarget : WorldUpdate
+    internal class OpportunityTarget : WorldUpdate, IJsonStaged<OpportunityTarget>
     {
         public OpportunityTarget() { }
+
+        // JSON: no state
+        static OpportunityTarget IJsonStaged<OpportunityTarget>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new OpportunityTarget());
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) { }
 
         public override bool IsLegal() => true;
         public override bool IsRelevant() => true;

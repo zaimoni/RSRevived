@@ -7,15 +7,21 @@
 using System;
 
 using djack.RogueSurvivor.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
   [Serializable]
-  internal class ActionSleep : ActorAction
+  internal class ActionSleep : ActorAction, IJsonStaged<ActionSleep>
   {
     public ActionSleep(Actor actor) : base(actor) {}
+
+    // JSON: no state
+    static ActionSleep IJsonStaged<ActionSleep>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionSleep(JsonActor(src)));
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) => toJsonActor(writer);
     public override bool IsLegal() => m_Actor.CanSleep(out m_FailReason);
     public override void Perform() => m_Actor.StartSleeping();
   }

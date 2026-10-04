@@ -1,18 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using djack.RogueSurvivor.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
     [Serializable]
-    internal class ActionChain : ActorAction, Resolvable, RecursivePathfinderMoveCost
+    internal class ActionChain : ActorAction, Resolvable, RecursivePathfinderMoveCost, IJsonStaged<ActionChain>
     {
         private readonly List<ActorAction> m_Actions;
 
         public ActorAction ConcreteAction { get { return m_Actions[0]; } }
         public ActorAction LastAction { get { return m_Actions[^1]; } }
+
+        #region JSON save/load
+        private ActionChain(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+        {
+            m_Actions = src.Require("Actions").Deserialize<List<ActorAction>>(options) ?? throw new JsonException("null Actions");
+        }
+
+        static ActionChain IJsonStaged<ActionChain>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionChain(JsonActor(src), src, options));
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            toJsonActor(writer);
+            writer.WriteArray("Actions", m_Actions, options);
+        }
+        #endregion
 
         public ActionChain(Actor actor, List<ActorAction> actions) : base(actor)
         {

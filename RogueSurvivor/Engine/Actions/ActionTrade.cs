@@ -6,13 +6,30 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
   [Serializable]
-  internal class ActionTrade : ActorAction
+  internal class ActionTrade : ActorAction, IJsonStaged<ActionTrade>
   {
     private readonly Actor m_Target;
+
+    #region JSON save/load
+    private ActionTrade(Actor actor, JsonElement src) : base(actor)
+    {
+      m_Target = src.Require("Target").RequireRef<Actor>();
+    }
+
+    static ActionTrade IJsonStaged<ActionTrade>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionTrade(JsonActor(src), src));
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      toJsonActor(writer);
+      writer.WriteRef("Target", m_Target);
+    }
+    #endregion
 
     public ActionTrade(Actor actor, Actor target) : base(actor)
     {

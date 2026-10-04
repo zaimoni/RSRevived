@@ -6,6 +6,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
@@ -57,6 +59,19 @@ namespace djack.RogueSurvivor.Data
       m_Actor = act.m_Actor;
     }
 
+#region JSON save/load
+    // An action's actor is the one whose controller is being saved or loaded.  Only a different one is written.
+    protected void toJsonActor(Utf8JsonWriter writer) { if (m_Actor != ActorController.s_SaveOwner) writer.WriteRef("Actor", m_Actor); }
+    static protected Actor JsonActor(JsonElement src) => src.TryGetProperty("Actor", out var a) ? a.RequireRef<Actor>() : (ActorController.s_LoadOwner ?? throw new JsonException("action without an actor"));
+
+    // for the subclasses' fromJson
+    static protected T JsonLoaded<T>(JsonElement src, T ret) where T : ActorAction
+    {
+      src.RecordRef(ret);
+      return ret;
+    }
+#endregion
+
     public abstract bool IsLegal();
     // RS Alpha 10- do not distinguish between IsLegal() and IsPerformable().
     // We have to because we schedule actions for later turns; a legal action is schedulable, but a performable action actually can be done now.
@@ -82,6 +97,13 @@ namespace djack.RogueSurvivor.Data
     public abstract class WorldUpdate : Zaimoni.Data.Operator<Actor, ActorAction>
     {
         protected WorldUpdate() {}
+
+        // for the subclasses' fromJson
+        static protected T JsonLoaded<T>(JsonElement src, T ret) where T : WorldUpdate
+        {
+            src.RecordRef(ret);
+            return ret;
+        }
 
         public abstract bool IsLegal();
         public abstract bool IsRelevant();

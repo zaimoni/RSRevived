@@ -131,15 +131,23 @@ namespace Zaimoni.JSON
         /// <summary>Fails at startup, rather than mid-save, when a concrete subtype was not registered.
         /// Generic type definitions are not checked: their closed instantiations have to be registered one by one.</summary>
         [System.Diagnostics.Conditional("DEBUG")]
-        public void RequireAllSubtypes()
+        public void RequireAllSubtypes() => RequireAllSubtypes(t => true);
+
+        /// <param name="wanted">which concrete subtypes belong in a save; the others must not be registered</param>
+        [System.Diagnostics.Conditional("DEBUG")]
+        public void RequireAllSubtypes(Predicate<Type> wanted)
         {
             List<string>? missing = null;
+            List<string>? extra = null;
             foreach (var t in typeof(TBase).Assembly.GetTypes()) {
                 if (t.IsAbstract || t.IsInterface || t.IsGenericTypeDefinition) continue;
                 if (!typeof(TBase).IsAssignableFrom(t)) continue;
-                if (!m_ByType.ContainsKey(t)) (missing ??= new()).Add(t.FullName ?? t.Name);
+                if (wanted(t)) {
+                    if (!m_ByType.ContainsKey(t)) (missing ??= new()).Add(t.FullName ?? t.Name);
+                } else if (m_ByType.ContainsKey(t)) (extra ??= new()).Add(t.FullName ?? t.Name);
             }
             if (null != missing) throw new InvalidOperationException("not registered for JSON save/load of " + typeof(TBase).FullName + ": " + string.Join(", ", missing));
+            if (null != extra) throw new InvalidOperationException("registered for JSON save/load of " + typeof(TBase).FullName + " but not meant to be saved: " + string.Join(", ", extra));
         }
 
         // fields declared as a derived type must dispatch as well

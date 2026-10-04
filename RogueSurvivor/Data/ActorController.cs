@@ -35,8 +35,9 @@ namespace djack.RogueSurvivor.Data
     protected ActorController(Actor src) { m_Actor = src; }
 
 #region JSON save/load
-    // A controller is constructed for an actor.  While an actor loads its controllers, it is here.
+    // A controller is constructed for an actor.  While an actor loads its controllers, it is here; while it saves them, s_SaveOwner.
     [NonSerialized] public static Actor? s_LoadOwner = null;
+    [NonSerialized] public static Actor? s_SaveOwner = null;
 
     /// <summary>for the subclasses' fromJson</summary>
     static protected Actor JsonOwner { get => s_LoadOwner ?? throw new JsonException("controller without an actor to control"); }

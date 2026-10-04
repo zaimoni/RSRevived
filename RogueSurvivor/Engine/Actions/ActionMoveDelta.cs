@@ -4,6 +4,8 @@ using System.Linq;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -24,7 +26,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   }
 
   [Serializable]
-  public sealed class ActionMoveDelta : ActorAction,ActorDest,ActorOrigin,Resolvable
+  public sealed class ActionMoveDelta : ActorAction,ActorDest,ActorOrigin,Resolvable, IJsonStaged<ActionMoveDelta>
   {
     private readonly Location m_NewLocation;
     private readonly Location m_Origin;
@@ -33,6 +35,25 @@ namespace djack.RogueSurvivor.Engine.Actions
 	public Location dest { get { return m_NewLocation; } }  // of m_Actor
 	public Location origin { get { return m_Origin; } }
     public ActorAction ConcreteAction { get { return _result ?? _resolve(); } }
+
+    #region JSON save/load
+    private ActionMoveDelta(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+    {
+      m_Origin = src.Require("From").Deserialize<Location>(options);
+      m_NewLocation = src.Require("To").Deserialize<Location>(options);
+    }
+
+    static ActionMoveDelta IJsonStaged<ActionMoveDelta>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionMoveDelta(JsonActor(src), src, options));
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      toJsonActor(writer);
+      writer.WritePropertyName("From");
+      JsonSerializer.Serialize(writer, m_Origin, options);
+      writer.WritePropertyName("To");
+      JsonSerializer.Serialize(writer, m_NewLocation, options);
+    }
+    #endregion
 
     public ActionMoveDelta(Actor actor, Location to) : base(actor)
     {
@@ -220,13 +241,31 @@ namespace djack.RogueSurvivor.Engine.Actions
   }
 
   [Serializable]
-  public sealed class UpdateMoveDelta : WorldUpdate, ActorDest, ActorOrigin, CanComplete<Actor>
+  public sealed class UpdateMoveDelta : WorldUpdate, ActorDest, ActorOrigin, CanComplete<Actor>, IJsonStaged<UpdateMoveDelta>
   {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
 
         public Location dest { get { return m_NewLocation; } }  // of m_Actor
         public Location origin { get { return m_Origin; } }
+
+        #region JSON save/load
+        private UpdateMoveDelta(JsonElement src, JsonSerializerOptions options)
+        {
+            m_Origin = src.Require("From").Deserialize<Location>(options);
+            m_NewLocation = src.Require("To").Deserialize<Location>(options);
+        }
+
+        static UpdateMoveDelta IJsonStaged<UpdateMoveDelta>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new UpdateMoveDelta(src, options));
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            writer.WritePropertyName("From");
+            JsonSerializer.Serialize(writer, m_Origin, options);
+            writer.WritePropertyName("To");
+            JsonSerializer.Serialize(writer, m_NewLocation, options);
+        }
+        #endregion
 
         public UpdateMoveDelta(Location from, Location to) {
 #if DEBUG

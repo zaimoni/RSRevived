@@ -7,14 +7,33 @@
 using System;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
   [Serializable]
-  internal class ActionCloseDoor : ActorAction
+  internal class ActionCloseDoor : ActorAction, IJsonStaged<ActionCloseDoor>
   {
     private readonly DoorWindow m_Door;
     private readonly bool m_IsFreeAction;
+
+    #region JSON save/load
+    private ActionCloseDoor(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+    {
+      m_Door = src.Require("Door").RequireRef<DoorWindow>();
+      if (src.TryGetProperty("Free", out var x)) m_IsFreeAction = x.GetBoolean();
+    }
+
+    static ActionCloseDoor IJsonStaged<ActionCloseDoor>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionCloseDoor(JsonActor(src), src, options));
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      toJsonActor(writer);
+      writer.WriteRef("Door", m_Door);
+      if (m_IsFreeAction) writer.WriteBoolean("Free", true);
+    }
+    #endregion
 
     public ActionCloseDoor(Actor actor, DoorWindow door, bool free = false) : base(actor)
     {
