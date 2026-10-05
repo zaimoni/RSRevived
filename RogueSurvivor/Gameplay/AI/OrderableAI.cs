@@ -93,8 +93,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // always execute.  Expire on execution
       public override bool UrgentAction_readonly(out ActorAction ret)
       {
-        ret = null;   // one-shot: UrgentAction expires us whether or not it hands over the intent
-        if (!Intent.IsPerformable() || Intent.Abort()) {
+        ret = null;   // one-shot: UrgentAction expires us whether or not it hands over the intent.  Legal, not performable: a save is not now.
+        if (!Intent.IsLegal() || Intent.Abort()) {
           _isExpired = true;
           return true;
         }
@@ -186,7 +186,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         public override bool UrgentAction_readonly(out ActorAction ret)
         {
           ret = null;   // one-shot: UrgentAction expires us whether or not it hands over an intent
-          if ((Intent_engaged?.IsPerformable() ?? false) || (Intent_disengaged?.IsPerformable() ?? false)) return false;
+          if ((Intent_engaged?.IsLegal() ?? false) || (Intent_disengaged?.IsLegal() ?? false)) return false;   // legal, not performable: a save is not now
           _isExpired = true;
           return true;
         }
@@ -249,6 +249,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // always execute.  Expire on inability to continue
+      public override bool UrgentAction_readonly(out ActorAction ret)
+      {
+        ret = null;   // legal, not performable: a save is not now
+        if (!Intent.IsLegal()) {
+          _isExpired = true;
+          return true;
+        }
+        return false;
+      }
+
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
@@ -523,7 +533,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         toJsonBase(writer);
 
-        writer.WriteRefDictionary("Targets", _target_locs, options);
+        writer.WriteStartArray("Targets");
+        foreach (var x in _target_locs) {
+          writer.WriteStartArray();
+          x.Key.SaveAsRef(writer);
+          writer.WriteArrayValue(x.Value, options);   // bare, not the default collection's {"$id", "$values"}
+          writer.WriteEndArray();
+        }
+        writer.WriteEndArray();
 
       }
 

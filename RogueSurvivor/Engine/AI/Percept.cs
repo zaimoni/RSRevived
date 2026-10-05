@@ -188,17 +188,18 @@ namespace Zaimoni.JsonConvert
     using System.Text.Json;
     using Zaimoni.JSON;
     using Loc = djack.RogueSurvivor.Data.Location;   // Location here is the converter
+    using Tag = djack.RogueSurvivor.Data.ActorTag;    // as is ActorTag
 
     /// <summary>a percept of an actor by tag: the actor itself may be long gone</summary>
-    public sealed class PerceptOfTag : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.AI.Percept_<ActorTag>>
+    public sealed class PerceptOfTag : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.AI.Percept_<Tag>>
     {
-        public override djack.RogueSurvivor.Engine.AI.Percept_<ActorTag> Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
+        public override djack.RogueSurvivor.Engine.AI.Percept_<Tag> Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
         {
             var stage = JsonElement.ParseValue(ref reader);
-            return new(stage.Require("ActorTag").Deserialize<ActorTag>(options), stage.Require("Turn").GetInt32(), stage.Require("Location").Deserialize<Loc>(options));
+            return new(stage.Require("ActorTag").Deserialize<Tag>(options), stage.Require("Turn").GetInt32(), stage.Require("Location").Deserialize<Loc>(options));
         }
 
-        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Engine.AI.Percept_<ActorTag> src, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Engine.AI.Percept_<Tag> src, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
             writer.WriteNumber("Turn", src.Turn);

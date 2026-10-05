@@ -140,14 +140,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 }
                 writer.WriteEndArray();
             }
-            if (null != pt_path) {
-                writer.WritePropertyName("PointSteps");
-                System.Text.Json.JsonSerializer.Serialize(writer, pt_path, options);
-            }
-            if (null != loc_path) {
-                writer.WritePropertyName("Steps");
-                System.Text.Json.JsonSerializer.Serialize(writer, loc_path, options);
-            }
+            if (null != pt_path) writer.WriteArrayOfArrays("PointSteps", pt_path, options);
+            if (null != loc_path) writer.WriteArrayOfArrays("Steps", loc_path, options);
             if (0 < stage_view.Count) writer.WriteArray("StageView", stage_view, options);
             if (0 < stage_inventory.Count) writer.WriteArray("StageInventory", stage_inventory, options);
             if (0 < stage_generators.Count) writer.WriteRefs("StageGenerators", stage_generators);

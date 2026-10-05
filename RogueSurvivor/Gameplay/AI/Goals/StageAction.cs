@@ -51,7 +51,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
       public override bool UrgentAction_readonly(out ActorAction ret)
       {
         ret = null;
-        if (Intent.IsPerformable() && !Intent.Abort()) return false;   // would be staged: keep
+        if (Intent.IsLegal() && !Intent.Abort()) return false;   // would be staged: keep.  Legal, not performable: a save is not now
         _isExpired = true;
         return true;
       }

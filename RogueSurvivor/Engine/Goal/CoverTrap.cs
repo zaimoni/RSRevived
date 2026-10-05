@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Engine._Goal
 
         // JSON: an array of locations, under a key naming us (SharedPlan)
         public static CoverTrap fromJson(JsonElement src, JsonSerializerOptions options) => new(src.Deserialize<Location[]>(options) ?? throw new JsonException("null CoverTrap"));
-        public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options) => JsonSerializer.Serialize(writer, m_Locations, options);
+        public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options) => writer.WriteArrayValue(m_Locations, options);
 
         public static bool IsDone(in Location loc) {
             if (loc.Map.IsTrapCoveringMapObjectAt(loc.Position)) return true;

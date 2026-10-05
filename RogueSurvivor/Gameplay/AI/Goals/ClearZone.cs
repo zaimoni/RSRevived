@@ -115,6 +115,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         {
 
           ret = null;
+          if (null == threats || null == tourism) return false;   // not re-bound yet (RepairLoad is for a live session): cannot decide
 
           Predicate<Point>? is_cleared = null;
 

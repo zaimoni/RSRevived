@@ -39,7 +39,7 @@ namespace djack.RogueSurvivor.Engine._Action
         foreach (var x in m_Options) {
           writer.WriteStartArray();
           writer.WriteNumberValue(x.Key);
-          JsonSerializer.Serialize(writer, x.Value, options);
+          writer.WriteArrayValue(x.Value, options);
           writer.WriteEndArray();
         }
         writer.WriteEndArray();

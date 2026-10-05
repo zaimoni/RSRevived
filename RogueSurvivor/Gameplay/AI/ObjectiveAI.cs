@@ -336,9 +336,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           JsonSerializer.Serialize(writer, (ZoneLoc)x.Value, options);
           break;
         case SparseData.MinStepPath:   // two forms, told apart on load by the elements
-          writer.WritePropertyName("MinStepPath");
-          if (x.Value is List<List<Point>> pts) JsonSerializer.Serialize(writer, pts, options);
-          else JsonSerializer.Serialize(writer, (List<List<Location>>)x.Value, options);
+          if (x.Value is List<List<Point>> pts) writer.WriteArrayOfArrays("MinStepPath", pts, options);
+          else writer.WriteArrayOfArrays("MinStepPath", (List<List<Location>>)x.Value, options);
           break;
         case SparseData.PathingTo:
           writer.WriteArray("PathingTo", (HashSet<Location>)x.Value, options);

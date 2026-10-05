@@ -134,6 +134,22 @@ namespace Zaimoni.JSON
 
         /// <summary>An array of already-rendered JSON values, one per line.
         /// For bulk data, where the writer's own indenting would put every number on its own line.</summary>
+        /// <summary>a bare array, as a value: the default collection path would wrap it in {"$id", "$values"}</summary>
+        public static void WriteArrayValue<T>(this Utf8JsonWriter writer, IEnumerable<T> src, JsonSerializerOptions options)
+        {
+            writer.WriteStartArray();
+            foreach (var x in src) JsonSerializer.Serialize(writer, x, options);
+            writer.WriteEndArray();
+        }
+
+        /// <summary>a bare array of bare arrays</summary>
+        public static void WriteArrayOfArrays<T>(this Utf8JsonWriter writer, string name, IEnumerable<IEnumerable<T>> src, JsonSerializerOptions options)
+        {
+            writer.WriteStartArray(name);
+            foreach (var x in src) writer.WriteArrayValue(x, options);
+            writer.WriteEndArray();
+        }
+
         public static void WriteArrayOfLines(this Utf8JsonWriter writer, IEnumerable<string> src)
         {
             var opts = writer.Options;
