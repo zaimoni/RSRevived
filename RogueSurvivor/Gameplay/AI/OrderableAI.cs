@@ -1137,6 +1137,57 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected OrderableAI(Actor src) : base(src) {}
 
+#region JSON save/load
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      base.toJsonFields(writer, options);
+      OptimizeBeforeSaving(default);    // as the legacy save does: the dead forget what they saw
+      m_TabooTrades?.OnlyIfNot(Actor.IsDeceased);   // CivilianAI's legacy hook; the dead are not in the save, whoever refused to trade with them
+      if (null != m_TabooTrades && 0 < m_TabooTrades.Count) writer.WriteRefs("TabooTrades", m_TabooTrades);
+      if (null != m_Directive) {
+        writer.WritePropertyName("Directive");
+        JsonSerializer.Serialize(writer, m_Directive, options);
+      }
+      if (null != m_Order) {
+        writer.WritePropertyName("Order");
+        JsonSerializer.Serialize(writer, m_Order, options);
+      }
+      void percept<T>(string name, Percept_<T>? src) where T : class {
+        if (null == src) return;
+        writer.WritePropertyName(name);
+        JsonSerializer.Serialize(writer, src, options);
+      }
+      percept("LastEnemySaw", m_LastEnemySaw);
+      percept("LastItemsSaw", m_LastItemsSaw);
+      percept("LastSoldierSaw", m_LastSoldierSaw);
+      percept("LastRaidHeard", m_LastRaidHeard);
+      if (m_ReachedPatrolPoint) writer.WriteBoolean("ReachedPatrolPoint", true);
+      if (0 != m_ReportStage) writer.WriteNumber("ReportStage", m_ReportStage);
+      if (DontFollowLeader) writer.WriteBoolean("DontFollowLeader", true);
+    }
+
+    protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
+    {
+      base.loadJsonFields(src, options);
+      if (src.TryGetProperty("TabooTrades", out var x)) x.ReadRefs(m_TabooTrades = new());
+      if (src.TryGetProperty("Directive", out x)) m_Directive = x.Deserialize<ActorDirective>(options);
+      if (src.TryGetProperty("Order", out x)) m_Order = x.Deserialize<ActorOrder>(options);
+      if (src.TryGetProperty("LastEnemySaw", out x)) m_LastEnemySaw = x.Deserialize<Percept_<Actor>>(options);
+      if (src.TryGetProperty("LastItemsSaw", out x)) m_LastItemsSaw = x.Deserialize<Percept>(options);
+      if (src.TryGetProperty("LastSoldierSaw", out x)) m_LastSoldierSaw = x.Deserialize<Percept>(options);
+      if (src.TryGetProperty("LastRaidHeard", out x)) m_LastRaidHeard = x.Deserialize<Percept>(options);
+      if (src.TryGetProperty("ReachedPatrolPoint", out x)) m_ReachedPatrolPoint = x.GetBoolean();
+      if (src.TryGetProperty("ReportStage", out x)) m_ReportStage = x.GetInt32();
+      if (src.TryGetProperty("DontFollowLeader", out x)) DontFollowLeader = x.GetBoolean();
+    }
+
+    protected override bool HasJsonState { get {
+      if (base.HasJsonState) return true;
+      if (null != m_TabooTrades && 0 < m_TabooTrades.Count) return true;
+      return null != m_Directive || null != m_Order || null != m_LastEnemySaw || null != m_LastItemsSaw || null != m_LastSoldierSaw || null != m_LastRaidHeard || m_ReachedPatrolPoint || 0 != m_ReportStage || DontFollowLeader;
+    } }
+#endregion
+
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
       // these (last-seen history) need rethinking anyway (as part of a reputation system, etc.)
