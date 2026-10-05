@@ -252,6 +252,175 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+#region JSON save/load
+    // ItemPriorities is not written: TakeControl recomputes it (ReviewItemRatings), so it is derived for a load, whatever the binary save does.
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      base.toJsonFields(writer, options);
+      if (0 < Objectives.Count) writer.WriteArray("Objectives", Objectives, options);   // before FOVevents: those are references to these
+      {
+      List<Objective>? watched = null;
+      foreach (var x in FOVevents.Watchers) if (x is Objective o) (watched ??= new()).Add(o);   // the faction watchers are re-added by the constructor
+      if (null != watched) writer.WriteRefs("FOVevents", watched);
+      }
+      if (0 < PlannedMoves.Count) {
+        writer.WriteStartArray("PlannedMoves");
+        foreach (var x in PlannedMoves) {
+          writer.WriteStartArray();
+          JsonSerializer.Serialize(writer, x.Key, options);
+          writer.WriteStartArray();
+          foreach (var y in x.Value) {
+            writer.WriteStartArray();
+            JsonSerializer.Serialize(writer, y.Key, options);
+            writer.WriteNumberValue(y.Value);
+            writer.WriteEndArray();
+          }
+          writer.WriteEndArray();
+          writer.WriteEndArray();
+        }
+        writer.WriteEndArray();
+      }
+      {
+      bool any = false;
+      foreach (var x in _sparse.Contents) {
+        if (!any) {
+          writer.WriteStartObject("Sparse");
+          any = true;
+        }
+        // each key has its own value type
+        switch (x.Key) {
+        case SparseData.LoF:
+          writer.WritePropertyName("LoF");
+          writer.WriteRawValue(JSON_ext.RenderPoints((List<Point>)x.Value));
+          break;
+        case SparseData.CloseToActor:
+          {
+          var close = (KeyValuePair<Actor, int>)x.Value;
+          writer.WriteStartArray("CloseToActor");
+          close.Key.SaveAsRef(writer);
+          writer.WriteNumberValue(close.Value);
+          writer.WriteEndArray();
+          }
+          break;
+        case SparseData.ClearingZone:
+          writer.WritePropertyName("ClearingZone");
+          JsonSerializer.Serialize(writer, (ZoneLoc)x.Value, options);
+          break;
+        case SparseData.MinStepPath:   // two forms, told apart on load by the elements
+          writer.WritePropertyName("MinStepPath");
+          if (x.Value is List<List<Point>> pts) JsonSerializer.Serialize(writer, pts, options);
+          else JsonSerializer.Serialize(writer, (List<List<Location>>)x.Value, options);
+          break;
+        case SparseData.PathingTo:
+          writer.WriteArray("PathingTo", (HashSet<Location>)x.Value, options);
+          break;
+        case SparseData.EscapingTo:
+          writer.WriteArray("EscapingTo", (List<Location>)x.Value, options);
+          break;
+        case SparseData.LambdaPath:
+          writer.WritePropertyName("LambdaPath");
+          JsonSerializer.Serialize(writer, (PathToTarget)x.Value, options);
+          break;
+        default: throw new JsonException("sparse data " + x.Key.ToString() + " is not saved");
+        }
+      }
+      if (any) writer.WriteEndObject();
+      }
+      if (0 != _STA_reserve) writer.WriteNumber("STA_reserve", _STA_reserve);
+      if (null != _rating_overrides && 0 < _rating_overrides.Count) {
+        writer.WriteStartArray("RatingOverrides");
+        foreach (var x in _rating_overrides) {
+          writer.WriteStartArray();
+          writer.WriteStringValue(x.Key.ToString());
+          writer.WriteNumberValue(x.Value.Key);
+          writer.WriteNumberValue(x.Value.Value);
+          writer.WriteEndArray();
+        }
+        writer.WriteEndArray();
+      }
+      if (null != _last_move) {
+        writer.WritePropertyName("LastMove");
+        JsonSerializer.Serialize(writer, _last_move, options);
+      }
+      if (0 != _recoil) writer.WriteNumber("Recoil", _recoil);
+    }
+
+    protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
+    {
+      base.loadJsonFields(src, options);
+      if (src.TryGetProperty("Objectives", out var x)) Objectives.AddRange(x.Deserialize<List<Objective>>(options) ?? throw new JsonException("null Objectives"));
+      if (src.TryGetProperty("FOVevents", out x)) foreach (var o in x.EnumerateArray()) o.ReadRef<Observer<Location[]>>(FOVevents.Add);   // after the constructor's watchers, as in the live game
+      if (src.TryGetProperty("PlannedMoves", out x)) {
+        foreach (var plan in x.EnumerateArray()) {
+          if (JsonValueKind.Array != plan.ValueKind || 2 != plan.GetArrayLength()) throw new JsonException("expected [point, [[point, cost], ...]]: " + plan.GetRawText());
+          Dictionary<Point, int> moves = new();
+          foreach (var y in plan[1].EnumerateArray()) {
+            if (JsonValueKind.Array != y.ValueKind || 2 != y.GetArrayLength()) throw new JsonException("expected [point, cost]: " + y.GetRawText());
+            moves.Add(y[0].ReadPoint(), y[1].GetInt32());
+          }
+          PlannedMoves.Add(plan[0].ReadPoint(), moves);
+        }
+      }
+      if (src.TryGetProperty("Sparse", out x)) {
+        foreach (var y in x.EnumerateObject()) {
+          switch (JSON_ext.ParseEnum<SparseData>(y.Name)) {
+          case SparseData.LoF:
+            {
+            List<Point> pts = new();
+            foreach (var pt in y.Value.EnumerateArray()) pts.Add(pt.ReadPoint());
+            _sparse.Set(SparseData.LoF, pts);
+            }
+            break;
+          case SparseData.CloseToActor:
+            _sparse.Set(SparseData.CloseToActor, new KeyValuePair<Actor, int>(y.Value[0].RequireRef<Actor>(), y.Value[1].GetInt32()));
+            break;
+          case SparseData.ClearingZone:
+            _sparse.Set(SparseData.ClearingZone, y.Value.Deserialize<ZoneLoc>(options) ?? throw new JsonException("null ClearingZone"));
+            break;
+          case SparseData.MinStepPath:
+            {
+            // a step is a list of points, or of locations: a location is [point, map]
+            bool locs = false;
+            foreach (var step in y.Value.EnumerateArray()) { foreach (var e in step.EnumerateArray()) { locs = JsonValueKind.Array == e.ValueKind && 0 < e.GetArrayLength() && JsonValueKind.Array == e[0].ValueKind; break; } break; }
+            if (locs) _sparse.Set(SparseData.MinStepPath, y.Value.Deserialize<List<List<Location>>>(options) ?? throw new JsonException("null MinStepPath"));
+            else _sparse.Set(SparseData.MinStepPath, y.Value.Deserialize<List<List<Point>>>(options) ?? throw new JsonException("null MinStepPath"));
+            }
+            break;
+          case SparseData.PathingTo:
+            _sparse.Set(SparseData.PathingTo, y.Value.Deserialize<HashSet<Location>>(options) ?? throw new JsonException("null PathingTo"));
+            break;
+          case SparseData.EscapingTo:
+            _sparse.Set(SparseData.EscapingTo, y.Value.Deserialize<List<Location>>(options) ?? throw new JsonException("null EscapingTo"));
+            break;
+          case SparseData.LambdaPath:
+            _sparse.Set(SparseData.LambdaPath, y.Value.Deserialize<PathToTarget>(options) ?? throw new JsonException("null LambdaPath"));
+            break;
+          default: throw new JsonException("sparse data " + y.Name + " is not loaded");
+          }
+        }
+      }
+      if (src.TryGetProperty("STA_reserve", out x)) _STA_reserve = x.GetInt32();
+      if (src.TryGetProperty("RatingOverrides", out x)) {
+        _rating_overrides = new();
+        foreach (var y in x.EnumerateArray()) {
+          if (JsonValueKind.Array != y.ValueKind || 3 != y.GetArrayLength()) throw new JsonException("expected [kind, rating, origin]: " + y.GetRawText());
+          _rating_overrides.Add(JSON_ext.ParseEnum<Item_IDs>(y[0].GetString()), new(y[1].GetSByte(), y[2].GetInt32()));
+        }
+      }
+      if (src.TryGetProperty("LastMove", out x)) _last_move = x.Deserialize<ActorAction>(options) as ActionMoveDelta ?? throw new JsonException("LastMove is not a move");
+      if (src.TryGetProperty("Recoil", out x)) _recoil = x.GetSByte();
+    }
+
+    /// <summary>true if and only if a save would write a field of ours</summary>
+    protected virtual bool HasJsonState { get {
+      if (0 < Objectives.Count || 0 < PlannedMoves.Count || 0 != _STA_reserve || 0 != _recoil || null != _last_move) return true;
+      if (null != _rating_overrides && 0 < _rating_overrides.Count) return true;
+      foreach (var x in _sparse.Contents) return true;
+      foreach (var x in FOVevents.Watchers) if (x is Objective) return true;
+      return false;
+    } }
+#endregion
+
     public override void RepairLoad()
     {
       foreach(var o in Objectives) o.RepairLoad();
