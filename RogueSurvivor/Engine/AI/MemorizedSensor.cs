@@ -7,7 +7,6 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using Zaimoni.JSON;
 
@@ -37,10 +36,7 @@ namespace djack.RogueSurvivor.Engine.AI
 
     // memorized sensor, etc. would need a rethinking if it was possible to debrief the recently revived
     // (this is data-live for corpses through their controller)
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
-    {
-      Forget();
-    }
+    private void OptimizeBeforeSaving() => Forget();
 
 #region JSON save/load
     private MemorizedSensor(JsonElement src, JsonSerializerOptions options)
@@ -54,7 +50,7 @@ namespace djack.RogueSurvivor.Engine.AI
 
     public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
-      OptimizeBeforeSaving(default);    // as the legacy save does: forget what is stale
+      OptimizeBeforeSaving();    // as the legacy save does: forget what is stale
       writer.WriteStartObject();
       writer.WriteNumber("Persistance", m_Persistance);
       writer.WritePropertyName("Sensor");

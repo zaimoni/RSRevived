@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using Zaimoni.Data;
 using Zaimoni.JSON;
@@ -554,7 +553,7 @@ namespace djack.RogueSurvivor.Data
       // a new kind of map, or a renamed one, shows up here the first time it is saved, rather than as the wrong music after a load
       if (DeriveBgMusic(Name) != BgMusic) throw new InvalidOperationException("BgMusic not derivable from name: " + Name + " plays " + BgMusic);
 #endif
-      OptimizeBeforeSaving(default);    // as the legacy save does: drops dead actors from our list
+      OptimizeBeforeSaving();    // as the legacy save does: drops dead actors from our list
       writer.WriteString("Name", Name);
       writer.WriteString("Lighting", Lighting.ToString());
       writer.WritePropertyName("LocalTime");
@@ -3459,7 +3458,7 @@ retry:
       }
     }
 
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    private void OptimizeBeforeSaving()
     {
       m_ActorsList.OnlyIfNot(Actor.IsDeceased);
 

@@ -14,7 +14,6 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Linq;
 using Zaimoni.Data;
 
@@ -92,12 +91,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override bool HasJsonState { get => 0 != m_SafeTurns || !m_Exploration.IsEmpty || !ReferenceEquals(m_Emotes, FIGHT_EMOTES) || base.HasJsonState; }
     #endregion
-
-    // we don't have memory, but we do have taboo trades
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
-    {
-      TabooTrades?.OnlyIfNot(Actor.IsDeceased);
-    }
 
     public void InstallUniqueEmotes(string[] src)
     {

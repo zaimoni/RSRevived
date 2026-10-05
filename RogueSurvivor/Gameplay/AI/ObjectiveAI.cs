@@ -16,7 +16,6 @@ using djack.RogueSurvivor.Gameplay.AI.Goals;
 using Zaimoni.Data;
 using System.Text.Json;
 using Zaimoni.JSON;
-using System.Runtime.Serialization;
 
 using static Zaimoni.Data.Functor;
 
@@ -266,7 +265,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // An objective that is expired, or that UrgentAction_readonly reports done with nothing to do (true, null: what the
     // SelectAction overrides discard), is dropped at any save.  It may still be an FOV watcher.  (2026-10-04)
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    private void OptimizeBeforeSaving()
     {
       HashSet<Objective> done = new(ReferenceEqualityComparer.Instance);
       void test(Objective o) {
@@ -285,7 +284,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
       base.toJsonFields(writer, options);
-      OptimizeBeforeSaving(default);    // as the legacy save does: expired objectives go
+      OptimizeBeforeSaving();    // as the legacy save does: expired objectives go
       if (0 < Objectives.Count) writer.WriteArray("Objectives", Objectives, options);   // before FOVevents: those are references to these
       {
       List<Objective>? watched = null;

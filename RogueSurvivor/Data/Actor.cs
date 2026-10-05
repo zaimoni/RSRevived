@@ -990,7 +990,7 @@ namespace djack.RogueSurvivor.Data
       void flag(string name, bool value) { if (value) writer.WriteBoolean(name, true); }
       void stat(string name, int value, int implied) { if (implied != value) writer.WriteNumber(name, value); }
 
-      OptimizeBeforeSaving(default);    // as the legacy save does: drops a dead target, and dead followers/aggressors
+      OptimizeBeforeSaving();    // as the legacy save does: drops a dead target, and dead followers/aggressors
 
       var model = Model;
       writer.WriteString("Model", m_ModelID.ToString());
@@ -4147,7 +4147,7 @@ final_exit:
 
     // This is a backstop for bugs elsewhere.
     // Just optimize everything that's an Actor or contains an Actor.
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    private void OptimizeBeforeSaving()
     {
       if (m_TargetActor?.IsDead ?? false) m_TargetActor = null;
       if (m_Leader?.IsDead ?? false) m_Leader = null;

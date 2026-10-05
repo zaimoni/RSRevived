@@ -8,7 +8,6 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using Zaimoni.Data;
 using System.Text.Json;
 using Zaimoni.JSON;
@@ -49,7 +48,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       Filters = filters;
     }
 
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    private void OptimizeBeforeSaving()
     {
       if (null != m_Actor && m_Actor.IsDead) {
         _friends = null;
@@ -88,7 +87,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
-      OptimizeBeforeSaving(default);    // as the legacy save does: a dead viewpoint forgets
+      OptimizeBeforeSaving();    // as the legacy save does: a dead viewpoint forgets
       writer.WriteStartObject();
       ActorController.WriteActorUnlessOwner(writer, m_Actor);
       writer.WriteString("Filters", Filters.ToString());

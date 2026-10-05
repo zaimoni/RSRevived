@@ -1322,7 +1322,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
       base.toJsonFields(writer, options);
-      OptimizeBeforeSaving(default);    // as the legacy save does: the dead forget what they saw
+      OptimizeBeforeSaving();    // as the legacy save does: the dead forget what they saw
       m_TabooTrades?.OnlyIfNot(Actor.IsDeceased);   // CivilianAI's legacy hook; the dead are not in the save, whoever refused to trade with them
       if (null != m_TabooTrades && 0 < m_TabooTrades.Count) writer.WriteRefs("TabooTrades", m_TabooTrades);
       if (null != m_Directive) {
@@ -1369,7 +1369,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     } }
 #endregion
 
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    private void OptimizeBeforeSaving()
     {
       // these (last-seen history) need rethinking anyway (as part of a reputation system, etc.)
       if (m_Actor.IsDead) {

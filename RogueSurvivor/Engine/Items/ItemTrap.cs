@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using djack.RogueSurvivor.Data;
 using Zaimoni.Data;
 using System.Text.Json;
@@ -91,7 +90,7 @@ namespace djack.RogueSurvivor.Engine.Items
     static ItemTrap IJsonStaged<ItemTrap>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
-        OptimizeBeforeSaving(default);  // as the legacy save does: drops a dead owner, and the dead from those who know of us
+        OptimizeBeforeSaving();  // as the legacy save does: drops a dead owner, and the dead from those who know of us
         base.toJsonFields(writer, options);
         if (m_IsActivated) writer.WriteBoolean("Activated", true);
         if (m_IsTriggered) writer.WriteBoolean("Triggered", true);
@@ -257,7 +256,7 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
     // alpha10
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    private void OptimizeBeforeSaving()
     {
       // cleanup dead owner ref
       if (m_Owner?.IsDead ?? false) m_Owner = null;

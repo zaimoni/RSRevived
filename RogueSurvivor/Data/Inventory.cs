@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.Serialization;
 using System.Linq;
 using System.Text.Json;
 using Zaimoni.JSON;
@@ -113,16 +112,14 @@ namespace djack.RogueSurvivor.Data
     static Inventory IJsonStaged<Inventory>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
-        OptimizeBeforeSaving(default);  // as the legacy save does
+        OptimizeBeforeSaving();  // as the legacy save does
         writer.WriteNumber("MaxCapacity", m_maxCapacity);
         writer.WriteArray("Items", m_Items, options);
     }
 
+    // backstop.  Any zero-quantity items are to be eliminated.
 
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
-    { // backstop.  Any zero-quantity items are to be eliminated.
-      RepairZeroQty();
-    }
+    private void OptimizeBeforeSaving() => RepairZeroQty();
 
     public bool CanAddAll(Item it) {
       if (!IsFull) return true;

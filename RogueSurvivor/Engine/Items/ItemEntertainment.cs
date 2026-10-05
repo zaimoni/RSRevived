@@ -6,10 +6,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay.AI;
-using Zaimoni.Data;
 using System.Text.Json;
 using Zaimoni.JSON;
 
@@ -85,17 +83,5 @@ namespace djack.RogueSurvivor.Engine.Items
     }
     public bool FreeSlotByUse(Actor a) { return false; } // not quite correct
 #endregion
-
-#if PROTOTYPE
-    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
-    {
-      // clean up dead actors refs
-      // side effect: revived actors will forget about boring items
-      if (null != m_BoringFor) {
-        m_BoringFor.OnlyIfNot(Actor.IsDeceased);
-        if (m_BoringFor.Count == 0) m_BoringFor = null;
-      }
-    }
-#endif
   }
 }
