@@ -558,15 +558,44 @@ namespace djack.RogueSurvivor.Engine
             m_Scoring_fatality = new Scoring_fatality(killer, victim);
         }
 
+        /// <summary>The game's save: the stable format, then in a DEBUG build the test format beside it (phase 3 step 7).
+        /// Stable first, so a test-format bug can never cost the game.  The build property adds the round-trip self-check.</summary>
+        public static void SaveGame(Session session, string filepath)
+        {
+#if DEBUG
+            if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+            var errors = new List<string>();
+            World.Get._RejectInventoryDamage(errors);
+            if (0 < errors.Count) throw new InvalidOperationException("inventory damage pre-save: " + string.Join("\n", errors));
+#endif
+            Save(session, filepath, SaveFormat.FORMAT_BIN);
+#if DEBUG
+            SaveTestFormat(session, filepath);
+#endif
+#if BOOTSTRAP_JSON_SERIALIZATION
+            RoundTripTest(filepath);
+#endif
+        }
+
+#if DEBUG
+        /// <summary>The test save is derived from the stable one, so a failure costs only the file: it is deleted, so that its absence is the signal.</summary>
+        private static void SaveTestFormat(Session session, string filepath)
+        {
+            var path = JsonPath(filepath);
+            try {
+                Save(session, path, SaveFormat.FORMAT_JSON);
+            } catch (Exception ex) {
+                try { File.Delete(path); } catch (Exception) { }
+                Logger.WriteLine(Logger.Stage.RUN_MAIN, "test-format save failed: " + ex.ToString());
+                RogueGame.Game.ErrorPopup("test-format save failed: " + ex.Message);
+            }
+        }
+#endif
+
         public static void Save(Session session, string filepath, SaveFormat format)
         {
 #if DEBUG
             if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
-#endif
-#if DEBUG
-            var errors = new List<string>();
-            World.Get._RejectInventoryDamage(errors);
-            if (0 < errors.Count) throw new InvalidOperationException("inventory damage pre-save: " + string.Join("\n", errors));
 #endif
             switch (format) {
                 case SaveFormat.FORMAT_BIN:
@@ -789,28 +818,7 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
-#if BOOTSTRAP_JSON_SERIALIZATION
-      var json_path = JsonPath(filepath);
-      var json_path2 = json_path+"2";   // only survives a failed round-trip test
-      SaveJson(session, json_path);
-      RogueGame.Game.ErrorPopup("JSON save ok");
-      var test2 = LoadJsonStaged(json_path);
-      {
-      var json_derived = test2.JsonDerivedDataErrors();
-      if (0 < json_derived.Count) throw new InvalidOperationException("JSON load, derived data:\n" + string.Join("\n", json_derived));
-      }
-      RogueGame.Game.ErrorPopup("JSON load ok");
-      // round-trip test: what we loaded must save as the same text.  Does not notice what is not saved at all.
-      SaveJson(test2, json_path2);
-      var json_diff = Zaimoni.JSON.JSON_ext.FirstDifference(File.ReadAllLines(json_path), File.ReadAllLines(json_path2));
-      if (null != json_diff) throw new InvalidOperationException("JSON round trip: "+ json_path + " vs. "+ json_path2 + "\n" + json_diff);
-      File.Delete(json_path2);
-      // audit: JSON is not a real save format until nothing is listed here
-      var json_incomplete = Zaimoni.JSON.Audit.IncompleteConverters(JSON_opts);
-      var json_audit = 0 >= json_incomplete.Count ? "all JSON converters complete" : "incomplete JSON converters (" + json_incomplete.Count.ToString() + "): " + string.Join(", ", json_incomplete);
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, json_audit);
-      RogueGame.Game.ErrorPopup("JSON round trip ok; " + json_audit);
-#elif BOOTSTRAP_Z_SERIALIZATION
+#if BOOTSTRAP_Z_SERIALIZATION
 	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
       RogueGame.Game.ErrorPopup("in-house save ok");
       // immediate integation test
@@ -823,7 +831,32 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
     }
 
-    // JSON is the test format until the audit in SaveBin lists nothing.  A save or load that fails part-way leaves ids and
+#if BOOTSTRAP_JSON_SERIALIZATION
+    /// <summary>The self-check, after SaveGame wrote both formats: the test save must load, agree on derived data, and save again as the
+    /// same text.  Does not notice what is not saved at all.  Then the converter audit.</summary>
+    private static void RoundTripTest(string filepath)
+    {
+      var json_path = JsonPath(filepath);
+      var json_path2 = json_path+"2";   // only survives a failed round-trip test
+      RogueGame.Game.ErrorPopup("JSON save ok");
+      var test2 = LoadJsonStaged(json_path);
+      {
+      var json_derived = test2.JsonDerivedDataErrors();
+      if (0 < json_derived.Count) throw new InvalidOperationException("JSON load, derived data:\n" + string.Join("\n", json_derived));
+      }
+      RogueGame.Game.ErrorPopup("JSON load ok");
+      SaveJson(test2, json_path2);
+      var json_diff = Zaimoni.JSON.JSON_ext.FirstDifference(File.ReadAllLines(json_path), File.ReadAllLines(json_path2));
+      if (null != json_diff) throw new InvalidOperationException("JSON round trip: "+ json_path + " vs. "+ json_path2 + "\n" + json_diff);
+      File.Delete(json_path2);
+      var json_incomplete = Zaimoni.JSON.Audit.IncompleteConverters(JSON_opts);
+      var json_audit = 0 >= json_incomplete.Count ? "all JSON converters complete" : "incomplete JSON converters (" + json_incomplete.Count.ToString() + "): " + string.Join(", ", json_incomplete);
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, json_audit);
+      RogueGame.Game.ErrorPopup("JSON round trip ok; " + json_audit);
+    }
+#endif
+
+    // JSON is the test format (see SaveGame).  A save or load that fails part-way leaves ids and
     // fixups behind: abandon them, or they poison the next attempt.  (Finish would throw again, on the fixups whose targets never loaded.)
     private static void SaveJson(Session session, string filepath)
     {
@@ -927,6 +960,9 @@ namespace djack.RogueSurvivor.Engine
       bool flag = false;
       try {
         File.Delete(filepath);
+#if DEBUG
+        File.Delete(JsonPath(filepath));   // the derived test save goes with it
+#endif
         flag = true;
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to delete saved game (no save?)");
@@ -1004,7 +1040,7 @@ namespace djack.RogueSurvivor.Engine
       FORMAT_BIN,
       FORMAT_SOAP, // dropped from .NET Core
       FORMAT_XML,  // incompatible with access control
-      FORMAT_JSON  // test format: see the audit in SaveBin
+      FORMAT_JSON  // test format: see SaveGame
     }
   }
 }

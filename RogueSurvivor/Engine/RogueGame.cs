@@ -3184,9 +3184,8 @@ namespace djack.RogueSurvivor.Engine
       if (player.IsSleeping) throw new InvalidOperationException("player.IsSleeping");
 #endif
       if (TestDrive.SaveAndExit) {   // test run: the game got as far as asking a player to act
-        DoSaveGame(GetUserSave());
+        DoSaveGame(GetUserSave());   // a DEBUG build writes the test format as well, for --start=load-json
         StopTheWorld();
-        Session.Save(Session.Get, Session.JsonPath(GetUserSave()), Session.SaveFormat.FORMAT_JSON);   // the test format as well, for --start=load-json
         return;
       }
       pc.SparseReset();
@@ -13776,8 +13775,8 @@ restart:
       m_Status = "SAVING";
       RedrawPlayScreen();
       m_UI.UI_Repaint();
-      Session.Save(Session.Get, saveName, Session.SaveFormat.FORMAT_BIN);
-      File.Copy(saveName, GetUserSaveBackup(),true);
+      Session.SaveGame(Session.Get, saveName);
+      File.Copy(saveName, GetUserSaveBackup(),true);   // the stable format only: the test save beside it is derived
       m_Status = null;
       RedrawPlayScreen();
       m_UI.UI_Repaint();

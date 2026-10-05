@@ -9,8 +9,9 @@ Recorded 2026-10-01.
 
 - Production save is still `BinaryFormatter`, through the `System.Runtime.Serialization.Formatters` package.
 - JSON is `Session.SaveFormat.FORMAT_JSON`, the test format: `Session.Save`/`Session.Load` take it, and a JSON-loaded session goes live (phases 0-2 done, 2026-10-02). It is not offered from the game's menus; the command line reaches it (see "Test drive" below).
-- Under `BOOTSTRAP_JSON_SERIALIZATION` (`dotnet build -p:JsonBootstrap=true`; off in a plain build), every binary save also runs the JSON save-then-reload round trip inside `Session.SaveBin`, and audits the converters.
-- A converter's namespace says whether it is finished: `Zaimoni.JsonConvert` (complete) or `Zaimoni.JsonConvertIncomplete`. Still incomplete: the eleven `ActorController` types (phase 3: they save only their `$type`) and `Session` (the statics that phase 3 saves under the player's controller). `Map` completed 2026-10-02 with the `BgMusic` derivation.
+- A DEBUG build writes the test save beside every stable save (`Session.SaveGame`, phase 3 step 7, 2026-10-05). Under `BOOTSTRAP_JSON_SERIALIZATION` (`dotnet build -p:JsonBootstrap=true`; off in a plain build), every save also runs the save-then-reload round trip self-check and audits the converters.
+- A converter's namespace says whether it is finished: `Zaimoni.JsonConvert` (complete) or `Zaimoni.JsonConvertIncomplete`. The audit has been empty since 2026-10-05 (phase 3 step 6). `Map` completed 2026-10-02 with the `BgMusic` derivation.
+- Two roles, two formats (see "Stable and test formats" below): the **stable** format is what the game plays on and backs up; the **test** format is derived from it at every save in a DEBUG build, and may break at any time. Today stable is binary and test is JSON; phase 4 makes JSON stable.
 - Polymorphic roots so far: `Item` (16), `MapObject` (6), `TimedTask` (2), `ActorController` (11). Phase 3 adds `Objective` (~30), `ActorAction` / `WorldUpdate` (~33), and the observers, sensors and percepts.
 - A custom `JsonConverter<Base>` bypasses the built-in `[JsonDerivedType]` handling, just as it bypasses `ReferenceHandler`. So `$type` is hand-rolled alongside the existing `$id`/`$ref`.
 
@@ -19,9 +20,9 @@ Recorded 2026-10-01.
 Options that drive the program rather than the game, held in `Engine.TestDrive`, parsed in `Program.Main`. They never enter `Session.CommandLineOptions` (so are never saved): they describe a test run, not the game being played.
 
 - `--start=new`: skip the main menu into the new-game dialogs, which `--spawn` and its relatives fill in.
-- `--start=load`: skip the menu and load the default save (`Saves/save.dat`, binary).
-- `--start=load-json`: skip the menu and load the test-format save beside it (`Saves/save.json`; `Session.JsonPath`).
-- `--save-and-exit`: at the first point a player would be asked to act (`RogueGame.HandlePlayerActor`), save to the default slot in both formats, then quit. Works after any of the three starts, and after a start from the menu.
+- `--start=load`: skip the menu and load the default save (`Saves/save.dat`, the stable format). Documented in the manual.
+- `--start=load-json`: skip the menu and load the test-format save beside it (`Saves/save.json`; `Session.JsonPath`). Not documented: the test format may break at any time. Renamed `load-test` in phase 4.
+- `--save-and-exit`: at the first point a player would be asked to act (`RogueGame.HandlePlayerActor`), save to the default slot, then quit. Works after any of the three starts, and after a start from the menu. (Both formats: explicitly until phase 3 step 7, then because a DEBUG save always writes both.)
 
 With `--save-and-exit` the run is unattended: `ErrorPopup` and `InfoPopup` go to the log instead of waiting for ESC, an unhandled exception is logged instead of shown in the bug-report dialog, and the process exit code is non-zero when the run failed (`TestDrive.ExitCode`). A `--start` that cannot start (no save to load) ends an unattended run as a failure, and shows the menu otherwise.
 
@@ -68,13 +69,13 @@ See "Not yet decided" under Phase 2.
   - DEBUG: `RequireAllSubtypes()` throws while building the options if any non-abstract subtype of a root is unregistered. Open generic definitions are skipped; their closed instantiations are registered one by one.
   - Type-side pattern: a `(JsonElement src, JsonSerializerOptions options)` constructor chained through the base class, which calls `src.RecordRef(this)` first; a `public virtual toJsonFields` that calls `base.toJsonFields` first; an explicit `static T IJsonStaged<T>.fromJson`.
   - Proved on `TimedTask`: `TaskRemoveDecoration` complete; `TaskEscapeNanny` incomplete (its escapee list needs Actor). `Map` does not write its timers yet (phase 1).
-- [x] **Round-trip test**: save, load, save again, compare the two JSON texts. Runs in `Session.SaveBin` under `BOOTSTRAP_JSON_SERIALIZATION`.
+- [x] **Round-trip test**: save, load, save again, compare the two JSON texts. Runs from `Session.SaveGame` (`RoundTripTest`; was inside `SaveBin` until phase 3 step 7) under `BOOTSTRAP_JSON_SERIALIZATION`.
   - A mismatch throws, naming the first differing line; the second text is left beside the save as `<save>json2`.
   - It cannot notice a field that is not saved at all: both texts omit it.
   - `Session` keeps the JSON-loaded `World` (`m_JsonLoadedWorld`), since it is not taken live; re-saving a loaded session writes that one.
   - Writers must be deterministic given load order. First case: `Map_Links` is now loaded in save order, so each map's exits iterate as they were saved.
 - [x] **Audit** listing every `Incomplete` converter and registry entry: `Zaimoni.JSON.Audit.IncompleteConverters(options)`. JSON becomes a real `SaveFormat` only when the list is empty.
-  - Controlled by `BOOTSTRAP_JSON_SERIALIZATION`, not `DEBUG`: the list is logged and shown in the "JSON round trip ok" popup. Ordinary DEBUG play never builds `JSON_opts`, so neither the audit nor `RequireAllSubtypes()` runs there.
+  - Controlled by `BOOTSTRAP_JSON_SERIALIZATION`, not `DEBUG`: the list is logged and shown in the "JSON round trip ok" popup. (Until phase 3 step 7 ordinary DEBUG play never built `JSON_opts`; since the parallel save, `RequireAllSubtypes()` runs at the first DEBUG save, and the audit stays with the self-check.)
   - It only sees registered converters. A type with no converter at all (`Actor`, `Item`, ...) is not listed until something registers it.
 
 ### Phase 1: map contents without actors (weeks 2-3)
@@ -236,7 +237,9 @@ Steps (each round-tripped in the headless harness first):
   - **`PlayerUI`**, a `Session`-level key written last: `{"BeforeAction": [...], "AfterAction": [...]}`, entries under `Polymorphic<EventUnconditional>` (`UIOnSighting`: `Actor`, `Text`, `Music`; `UITracking`: `Actor`). They are per-session state shared by every `PlayerController` (multi-PC), so they do not hang off one controller; `Reset()` builds the after list as a copy of the before list, so the shared entries are `$ref`s there, which is why the root has ids. Written last so that `UIOnSighting.who` (readonly) can `RequireRef` an actor `World` or `UniqueActors` defined. Staged on the session (`m_JsonLoadedBeforeAction`/`AfterAction`, like the refugee pool) and installed by `JsonTakeLive` through `PlayerController.AfterLoad`. Not rebuilt from `Reset()`: that would re-arm sightings that already fired, and `KnowsWhere` reads the tracking entries.
     - Pruned at save: an entry whose `Expire` would drop it without acting (`EventUnconditional.IsStale`: an expired sighting, a dead actor). `expired` is therefore implied false. The key is omitted when nothing is left.
   - The turn-7 save round-trips with the audit empty (31.6 MB, 1.1M lines, identical text); `ctest` covers a non-police player's log, waypoint, item memory, parked and then installed counted command, and the shared/stale UI entries.
-- [ ] 7. JSON offered from the game's own save and load commands.
+- [x] 7. Parallel save (respecified and done 2026-10-05; was "JSON offered from the game's own save and load commands", which phase 4 now covers). In a DEBUG build, every write of the stable save is followed by a write of the test save beside it: a save, not a self-test. Stable first, so a test-format bug can never cost the game; a failed test write deletes its partial file and logs (DEBUG: a one-line popup), so a missing test file is the only staleness signal and `--start=load-test` needs no timestamp logic. The test file gets no turn-versioned backup: it is derived, and any `save.N` re-renders into it (`--start=load --save-and-exit`, or `dangle`). The round-trip self-check (save, load, re-save, compare, audit) moves out of the save path and becomes an explicit opt-in under the build property; the test drive and `dangle` are its normal homes. Release builds write and read only the stable format.
+  - `Session.SaveGame(session, path)` is the game's one save entry (`RogueGame.DoSaveGame`; the test drive's save-and-exit goes through it and lost its own JSON line): the DEBUG inventory-damage pre-check, `Save(FORMAT_BIN)`, then `SaveTestFormat` (DEBUG) and `RoundTripTest` (build property). `Session.Save(session, path, format)` remains the single-format primitive. Permadeath's `Session.Delete` removes the test sibling too (DEBUG), or a dead game's test file would outlive it.
+  - After `--start=load-json --save-and-exit`, the parallel save writes a binary save from a JSON-loaded session: the binary writer's first look at that object graph, and a way back from a test file to stable.
 
 Data design notes that bear on the format:
 
@@ -247,7 +250,20 @@ Data design notes that bear on the format:
 
 ### Phase 4: retire BinaryFormatter
 
-Move `GameOptions`, `Keybindings`, `HiScoreTable` and `GameHintsStatus` to attribute-driven JSON, then drop the `System.Runtime.Serialization.Formatters` package.
+1. Rename the test-format plumbing after its role, not its encoding, since JSON is about to be the stable format: `--start=load-json` → `--start=load-test`, `JsonBootstrap`/`BOOTSTRAP_JSON_SERIALIZATION` → `TestFormat`/`BOOTSTRAP_TEST_SERIALIZATION`, `Session.JsonPath` → `Session.TestPath`, and `Session.StableFormat`/`Session.TestFormat` properties that the build resolves to concrete `SaveFormat` values. Done first, so the commit that removes the binary format is only that.
+2. Move `GameOptions`, `Keybindings`, `HiScoreTable` and `GameHintsStatus` to attribute-driven JSON.
+3. JSON becomes `StableFormat`: the menus' save and load, the turn-versioned backups, `--start=load`. Drop the `System.Runtime.Serialization.Formatters` package. `TestFormat` is then whatever encoding is under experiment, or nothing.
+
+## Stable and test formats
+
+Decided 2026-10-05. The question was whether one build should save exactly one format, or a development build both.
+
+- Either way a development build must **load** the stable format: the real saves are the fixtures that found what the harness worlds never did. The question is only whether it keeps a working stable **writer**.
+- For exclusive save: with two hand-rolled writers (after phase 4), every data-model change is two edits and two loaders, and the stable writer gets no coverage from play in the dev build. It is also honest about model changes: the old format cannot hold the new state, so the only correct move is "new build loads old version, saves new" — migration on load, needed for players regardless. And one file per slot: no stale sibling to mislead `--start=load-test`.
+- For dual save: the developer plays dev builds. Under exclusive save the game in progress is in the unstable format and every unstable change costs it. Under dual save the progression lives in stable and the test file is regenerated from live state at every save, so the test format can break daily for free — which is how phase 3 went: the JSON changed shape a dozen times, the binary saves carried on, and the one stable break was deliberate.
+- The distinction that decides it: **encoding changes** (an item-kind legend, run-length nothing-seen entries, the `$values` fix) touch no model and leave the stable writer alone; dual save costs nothing there. **Model changes** force a stable break under either option, and dual save degenerates to exclusive save by itself.
+- So: dual save in DEBUG builds through phase 4 and the encoding optimizations, collapsing to one format afterward, when changes are model changes and each is a versioned break with loader migration. The divergence between stable and test is *which converters are registered*: two `JsonSerializerOptions` sharing everything but the converters under experiment, so the format switch is the options object passed, not a global.
+- Consequences accepted: every DEBUG save pays the test write (31 MB at turn 7, growing with the item memory: the deferred size work moves up), through the one place the stable save is written, autosaves included; release builds write and read stable only, and `load-test` is simply not there.
 
 ## Ordering constraints in the JSON format
 
