@@ -13849,20 +13849,20 @@ restart:
     private void LoadKeybindings()
     {
       m_UI.DrawHeadNote("Loading keybindings...");
-      s_KeyBindings = Keybindings.Load(Path.Combine(GetUserConfigPath(), "keys.dat"));
+      s_KeyBindings = Keybindings.Load(Path.Combine(GetUserConfigPath(), "keys.json"));
       m_UI.DrawHeadNote("Loading keybindings... done!");
     }
 
     private void LoadHints()
     {
       m_UI.DrawHeadNote("Loading hints...");
-      s_Hints = GameHintsStatus.Load(Path.Combine(GetUserConfigPath(), "hints.dat"));
+      s_Hints = GameHintsStatus.Load(Path.Combine(GetUserConfigPath(), "hints.json"));
       m_UI.DrawHeadNote("Loading hints... done!");
     }
 
     static private void SaveHints()
     {
-      GameHintsStatus.Save(s_Hints, Path.Combine(GetUserConfigPath(), "hints.dat"));
+      GameHintsStatus.Save(s_Hints, Path.Combine(GetUserConfigPath(), "hints.json"));
     }
 
     public void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, bool valuesOnNewLine = false, int rightPadding = 256)
@@ -13924,7 +13924,7 @@ restart:
 
     public static string GraveFilePath(string graveName) { return Path.Combine(GetUserGraveyardPath(), graveName + ".txt"); }
     public static string GetUserConfigPath() { return Path.Combine(GetUserBasePath(), "Config") + Path.DirectorySeparatorChar; }
-    public static string GetUserOptionsFilePath() { return Path.Combine(GetUserConfigPath(), "options.dat"); }
+    public static string GetUserOptionsFilePath() { return Path.Combine(GetUserConfigPath(), "options.json"); }
     public static string GetUserScreenshotsPath() { return Path.Combine(GetUserBasePath(), "Screenshots") + Path.DirectorySeparatorChar; }
 
     public string GetUserNewScreenshotName()
@@ -13987,7 +13987,7 @@ restart:
 
     static private string GetUserManualFilePath() { return Path.Combine(GetUserDocsPath(), _manualFile); }
     static private string GetUserHiScorePath() { return GetUserSavesPath(); }
-    static private string GetUserHiScoreFilePath() { return Path.Combine(GetUserHiScorePath(), "hiscores.dat"); }
+    static private string GetUserHiScoreFilePath() { return Path.Combine(GetUserHiScorePath(), "hiscores.json"); }
     static private string GetUserHiScoreTextFilePath() { return Path.Combine(GetUserHiScorePath(), "hiscores.txt"); }
 
     private void GenerateWorld(bool isVerbose)  // XXX morally part of the World constructor, but we want the World constructor to not know about game-specific content

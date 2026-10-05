@@ -28,6 +28,15 @@ namespace djack.RogueSurvivor.Engine
 
     public Keybindings() => ResetToDefaults();
 
+    // JSON: {"Bindings": {"BARRICADE_MODE": "B", ...}}.  The defaults first, so a command the file predates keeps its default key.
+    [System.Text.Json.Serialization.JsonConstructor]
+    public Keybindings(Dictionary<PlayerCommand, Keys> bindings) : this()
+    {
+      foreach (var x in bindings) Set(x.Key, x.Value);
+    }
+
+    public Dictionary<PlayerCommand, Keys> Bindings { get => m_CommandToKeyData; }
+
     private void ResetToDefaults()
     {
       m_CommandToKeyData.Clear();
@@ -152,7 +161,7 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings...");
-	  filepath.BinarySerialize(this);
+	  filepath.JsonSerialize(this);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings... done!");
     }
 
@@ -164,7 +173,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings... ("+filepath+")");
       Keybindings keybindings;
       try {
-	    keybindings = filepath.BinaryDeserialize<Keybindings>();
+	    keybindings = filepath.JsonDeserialize<Keybindings>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load keybindings (first run?), using defaults.");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
@@ -278,7 +287,7 @@ namespace djack.RogueSurvivor.Engine
 
       // save the keybindings
       m_UI.DrawHeadNote("Saving keybindings...");
-      Save(Path.Combine(RogueGame.GetUserConfigPath(), "keys.dat"));
+      Save(Path.Combine(RogueGame.GetUserConfigPath(), "keys.json"));
       m_UI.DrawHeadNote("Saving keybindings... done!");
     }
   }

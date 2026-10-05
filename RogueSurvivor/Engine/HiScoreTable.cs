@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly List<HiScore> m_Table;
     private readonly int m_MaxEntries;
 
-    public int Count { get { return m_Table.Count; } }
+    [System.Text.Json.Serialization.JsonIgnore] public int Count { get { return m_Table.Count; } }
 
     public HiScore this[int index] {
       get {
@@ -33,6 +33,16 @@ namespace djack.RogueSurvivor.Engine
       m_Table = new List<HiScore>(maxEntries);
       m_MaxEntries = maxEntries;
     }
+
+    // JSON: {"MaxEntries": 12, "Table": [...]}
+    [System.Text.Json.Serialization.JsonConstructor]
+    public HiScoreTable(int maxEntries, IReadOnlyList<HiScore> table) : this(maxEntries)
+    {
+      m_Table.AddRange(table);
+    }
+
+    public int MaxEntries { get => m_MaxEntries; }
+    public IReadOnlyList<HiScore> Table { get => m_Table; }
 
     public void Clear()
     {
@@ -68,7 +78,7 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table...");
-	  filepath.BinarySerialize(table);
+	  filepath.JsonSerialize(table);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table... done!");
     }
 
@@ -80,7 +90,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table...");
       HiScoreTable hiScoreTable;
       try {
-	    hiScoreTable = filepath.BinaryDeserialize<HiScoreTable>();
+	    hiScoreTable = filepath.JsonDeserialize<HiScoreTable>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hiscore table (no hiscores?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));

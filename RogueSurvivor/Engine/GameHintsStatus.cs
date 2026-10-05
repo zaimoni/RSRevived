@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Collections.Generic;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
@@ -13,6 +14,26 @@ namespace djack.RogueSurvivor.Engine
   internal class GameHintsStatus
   {
     private readonly bool[] m_AdvisorHints = new bool[(int) AdvisorHint._COUNT];
+
+    public GameHintsStatus() {}
+
+    // JSON: {"Given": ["MOVE", ...]}, the hints given, by name.  A name no longer declared fails the load, which resets.
+    [System.Text.Json.Serialization.JsonConstructor]
+    public GameHintsStatus(IReadOnlyList<AdvisorHint> given)
+    {
+      foreach (var hint in given) {
+        if (AdvisorHint._COUNT == hint) throw new System.Text.Json.JsonException("not a hint: _COUNT");
+        SetAdvisorHintAsGiven(hint);
+      }
+    }
+
+    public IReadOnlyList<AdvisorHint> Given {
+      get {
+        var ret = new List<AdvisorHint>();
+        for (int index = 0; index < (int)AdvisorHint._COUNT; ++index) if (m_AdvisorHints[index]) ret.Add((AdvisorHint)index);
+        return ret;
+      }
+    }
 
     public void ResetAllHints()
     {
@@ -50,7 +71,7 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints...");
-	  filepath.BinarySerialize(hints);
+	  filepath.JsonSerialize(hints);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints... done!");
     }
 
@@ -62,7 +83,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hints...");
       GameHintsStatus gameHintsStatus;
       try {
-	    gameHintsStatus = filepath.BinaryDeserialize<GameHintsStatus>();
+	    gameHintsStatus = filepath.JsonDeserialize<GameHintsStatus>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hints (first run?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));

@@ -11,16 +11,32 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class HiScore
   {
-    public readonly string Name;
-    public readonly int TotalPoints;
-    public readonly int DifficultyPercent;
-    public readonly int SurvivalPoints;
-    public readonly int KillPoints;
-    public readonly int AchievementPoints;
-    public readonly int TurnSurvived;
-    public readonly TimeSpan PlayingTime;
-    public readonly string SkillsDescription;
-    public readonly string Death;
+    public string Name { get; }
+    public int TotalPoints { get; }
+    public int DifficultyPercent { get; }
+    public int SurvivalPoints { get; }
+    public int KillPoints { get; }
+    public int AchievementPoints { get; }
+    public int TurnSurvived { get; }
+    public TimeSpan PlayingTime { get; }
+    public string SkillsDescription { get; }
+    public string Death { get; }
+
+    // JSON: every property, by name
+    [System.Text.Json.Serialization.JsonConstructor]
+    public HiScore(string name, int totalPoints, int difficultyPercent, int survivalPoints, int killPoints, int achievementPoints, int turnSurvived, TimeSpan playingTime, string skillsDescription, string death)
+    {
+      Name = name;
+      TotalPoints = totalPoints;
+      DifficultyPercent = difficultyPercent;
+      SurvivalPoints = survivalPoints;
+      KillPoints = killPoints;
+      AchievementPoints = achievementPoints;
+      TurnSurvived = turnSurvived;
+      PlayingTime = playingTime;
+      SkillsDescription = skillsDescription;
+      Death = death;
+    }
 
     // default constructor
     public HiScore()

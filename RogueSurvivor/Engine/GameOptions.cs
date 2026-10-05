@@ -972,7 +972,7 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving options...");
-	  filepath.BinarySerialize(options);
+	  filepath.JsonSerialize(options);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving options... done!");
     }
 
@@ -984,7 +984,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options...");
       GameOptions gameOptions;
       try {
-	    gameOptions = filepath.BinaryDeserialize<GameOptions>();
+	    gameOptions = filepath.JsonDeserialize<GameOptions>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load options (no custom options?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
