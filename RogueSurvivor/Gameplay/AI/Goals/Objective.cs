@@ -35,6 +35,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       public virtual void RepairLoad() {}
 
+#region JSON save/load
+      // The owner's saved turn and expiry.  The subclasses' JSON constructors chain here.
+      protected Objective(Actor who, JsonElement src) : this(src.Require("Turn").GetInt32(), who)
+      {
+        if (src.TryGetProperty("Expired", out var x)) _isExpired = x.GetBoolean();
+      }
+
+      // An objective's actor is the one whose controller is being saved or loaded.  Only a different one is written.
+      static protected Actor JsonActor(JsonElement src) => ActorController.ActorOrOwner(src);
+
+      static protected T JsonLoaded<T>(JsonElement src, T ret) where T : Objective
+      {
+        src.RecordRef(ret);
+        return ret;
+      }
+
+      /// <summary>the common fields; the subclass then writes its own</summary>
+      protected void toJsonBase(Utf8JsonWriter writer)
+      {
+        ActorController.WriteActorUnlessOwner(writer, m_Actor);
+        writer.WriteNumber("Turn", turn);
+        if (_isExpired) writer.WriteBoolean("Expired", true);
+      }
+#endregion
+
       /// <param name="ret">null triggers deletion.  non-null ret.IsPerformable() must be true</param>
       /// <returns>true to take action</returns>
       public abstract bool UrgentAction(out ActorAction? ret);

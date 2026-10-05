@@ -14,6 +14,8 @@ using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Gameplay.AI.Goals;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using static Zaimoni.Data.Functor;
 
@@ -28,8 +30,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 {
   // savefile break \todo rename this to what it actually does
   [Serializable]
-  internal class Goal_RestRatherThanLoseturnWhenTired : Objective
+  internal class Goal_RestRatherThanLoseturnWhenTired : Objective, IJsonStaged<Goal_RestRatherThanLoseturnWhenTired>
   {
+    #region JSON save/load
+    private Goal_RestRatherThanLoseturnWhenTired(Actor who, JsonElement src) : base(who, src) { }
+    static Goal_RestRatherThanLoseturnWhenTired IJsonStaged<Goal_RestRatherThanLoseturnWhenTired>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_RestRatherThanLoseturnWhenTired(JsonActor(src), src));
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) => toJsonBase(writer);
+    #endregion
+
     public Goal_RestRatherThanLoseturnWhenTired(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
 
     public override bool UrgentAction(out ActorAction ret)
@@ -47,9 +55,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
   }
 
   [Serializable]
-  internal class Goal_RecoverSTA : Objective
+  internal class Goal_RecoverSTA : Objective, IJsonStaged<Goal_RecoverSTA>
   {
     public readonly int targetSTA;
+
+    #region JSON save/load
+
+    private Goal_RecoverSTA(Actor who, JsonElement src) : base(who, src)
+
+    {
+
+      targetSTA = src.Require("TargetSTA").GetInt32();
+
+    }
+
+
+    static Goal_RecoverSTA IJsonStaged<Goal_RecoverSTA>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_RecoverSTA(JsonActor(src), src));
+
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+    {
+
+      toJsonBase(writer);
+
+      writer.WriteNumber("TargetSTA", targetSTA);
+
+    }
+
+    #endregion
+
 
     public Goal_RecoverSTA(int t0, Actor who, int target)
     : base(t0,who)
@@ -71,8 +106,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
   }
 
   [Serializable]
-  internal class Goal_MedicateSLP : Objective
+  internal class Goal_MedicateSLP : Objective, IJsonStaged<Goal_MedicateSLP>
   {
+    #region JSON save/load
+    private Goal_MedicateSLP(Actor who, JsonElement src) : base(who, src) { }
+    static Goal_MedicateSLP IJsonStaged<Goal_MedicateSLP>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_MedicateSLP(JsonActor(src), src));
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) => toJsonBase(writer);
+    #endregion
+
     public Goal_MedicateSLP(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
 
     public override bool UrgentAction(out ActorAction ret)
@@ -89,8 +130,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
   }
 
   [Serializable]
-  internal class Goal_MedicateHP : Objective
+  internal class Goal_MedicateHP : Objective, IJsonStaged<Goal_MedicateHP>
   {
+    #region JSON save/load
+    private Goal_MedicateHP(Actor who, JsonElement src) : base(who, src) { }
+    static Goal_MedicateHP IJsonStaged<Goal_MedicateHP>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_MedicateHP(JsonActor(src), src));
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) => toJsonBase(writer);
+    #endregion
+
     public Goal_MedicateHP(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
 
     public override bool UrgentAction(out ActorAction ret)
@@ -107,8 +154,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
   }
 
   [Serializable]
-  internal class Goal_RechargeAll : Objective
+  internal class Goal_RechargeAll : Objective, IJsonStaged<Goal_RechargeAll>
   {
+    #region JSON save/load
+    private Goal_RechargeAll(Actor who, JsonElement src) : base(who, src) { }
+    static Goal_RechargeAll IJsonStaged<Goal_RechargeAll>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_RechargeAll(JsonActor(src), src));
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) => toJsonBase(writer);
+    #endregion
+
     public Goal_RechargeAll(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
 
     public override bool UrgentAction(out ActorAction ret)
@@ -131,9 +184,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
   }
 
   [Serializable]
-  internal class Goal_Butcher : Objective
+  internal class Goal_Butcher : Objective, IJsonStaged<Goal_Butcher>
   {
     private readonly Corpse _corpse;
+
+    #region JSON save/load
+
+    private Goal_Butcher(Actor who, JsonElement src) : base(who, src)
+
+    {
+
+      _corpse = src.Require("Corpse").RequireRef<Corpse>();
+
+    }
+
+
+    static Goal_Butcher IJsonStaged<Goal_Butcher>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_Butcher(JsonActor(src), src));
+
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+    {
+
+      toJsonBase(writer);
+
+      writer.WriteRef("Corpse", _corpse);
+
+    }
+
+    #endregion
+
 
     public Goal_Butcher(int t0, Actor who, Corpse target) : base(t0,who)
     {

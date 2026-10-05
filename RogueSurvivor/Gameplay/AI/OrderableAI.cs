@@ -26,6 +26,8 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using djack.RogueSurvivor.Gameplay.AI.Goals;
 using System.Runtime.Serialization;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -46,9 +48,38 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // Engine.AI.Percept looks related, but reverse-engineering the required action is problematic
     // workaround for breaking action loops
     [Serializable]
-    internal class Goal_NextAction : Objective
+    internal class Goal_NextAction : Objective, IJsonStaged<Goal_NextAction>
     {
       public readonly ActorAction Intent;
+
+      #region JSON save/load
+
+      private Goal_NextAction(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+      {
+
+        Intent = src.Require("Intent").Deserialize<ActorAction>(options) ?? throw new JsonException("null Intent");
+
+      }
+
+
+      static Goal_NextAction IJsonStaged<Goal_NextAction>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_NextAction(JsonActor(src), src, options));
+
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+      {
+
+        toJsonBase(writer);
+
+        writer.WritePropertyName("Intent");
+
+        JsonSerializer.Serialize(writer, Intent, options);
+
+      }
+
+      #endregion
+
 
       public Goal_NextAction(int t0, Actor who, ActorAction intent) : base(t0,who)
       {
@@ -81,10 +112,55 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_NextCombatAction : Objective
+    internal class Goal_NextCombatAction : Objective, IJsonStaged<Goal_NextCombatAction>
     {
         public readonly ActorAction Intent_engaged;
         public readonly ActorAction Intent_disengaged;
+
+        #region JSON save/load
+
+        private Goal_NextCombatAction(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+        {
+
+            if (src.TryGetProperty("Engaged", out var x)) Intent_engaged = x.Deserialize<ActorAction>(options);
+
+            if (src.TryGetProperty("Disengaged", out x)) Intent_disengaged = x.Deserialize<ActorAction>(options);
+
+            if (null == Intent_engaged && null == Intent_disengaged) throw new JsonException("combat action with no intent");
+
+        }
+
+
+        static Goal_NextCombatAction IJsonStaged<Goal_NextCombatAction>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_NextCombatAction(JsonActor(src), src, options));
+
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+        {
+
+            toJsonBase(writer);
+
+            if (null != Intent_engaged) {
+
+              writer.WritePropertyName("Engaged");
+
+              JsonSerializer.Serialize(writer, Intent_engaged, options);
+
+            }
+
+            if (null != Intent_disengaged) {
+
+              writer.WritePropertyName("Disengaged");
+
+              JsonSerializer.Serialize(writer, Intent_disengaged, options);
+
+            }
+
+        }
+
+        #endregion
+
 
         public Goal_NextCombatAction(int t0, Actor who, ActorAction engaged, ActorAction disengaged)
         : base(t0, who)
@@ -112,9 +188,38 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_NonCombatComplete : Objective
+    internal class Goal_NonCombatComplete : Objective, IJsonStaged<Goal_NonCombatComplete>
     {
       public readonly ActorAction Intent;
+
+      #region JSON save/load
+
+      private Goal_NonCombatComplete(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+      {
+
+        Intent = src.Require("Intent").Deserialize<ActorAction>(options) ?? throw new JsonException("null Intent");
+
+      }
+
+
+      static Goal_NonCombatComplete IJsonStaged<Goal_NonCombatComplete>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_NonCombatComplete(JsonActor(src), src, options));
+
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+      {
+
+        toJsonBase(writer);
+
+        writer.WritePropertyName("Intent");
+
+        JsonSerializer.Serialize(writer, Intent, options);
+
+      }
+
+      #endregion
+
 
       public Goal_NonCombatComplete(int t0, Actor who, ActorAction intent) : base(t0,who)
       {
@@ -149,9 +254,40 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_LastAction<T> : Objective where T:ActorAction
+    internal class Goal_LastAction<T> : Objective, IJsonStaged<Goal_LastAction<T>> where T:ActorAction
     {
       public readonly T Intent;
+
+      #region JSON save/load
+
+      // Registered per closed type, e.g. Goal_LastAction<ActionCloseDoor>: the action dispatches through its own root
+
+      private Goal_LastAction(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+      {
+
+        Intent = src.Require("Intent").Deserialize<ActorAction>(options) as T ?? throw new JsonException("Intent is not " + typeof(T).Name);
+
+      }
+
+
+      static Goal_LastAction<T> IJsonStaged<Goal_LastAction<T>>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_LastAction<T>(JsonActor(src), src, options));
+
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+      {
+
+        toJsonBase(writer);
+
+        writer.WritePropertyName("Intent");
+
+        JsonSerializer.Serialize<ActorAction>(writer, Intent, options);
+
+      }
+
+      #endregion
+
 
       public Goal_LastAction(int t0, Actor who, T intent) : base(t0,who)
       {
@@ -181,9 +317,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_DoNotPickup : Objective
+    internal class Goal_DoNotPickup : Objective, IJsonStaged<Goal_DoNotPickup>
     {
       public readonly Item_IDs Avoid;
+
+      #region JSON save/load
+
+      private Goal_DoNotPickup(Actor who, JsonElement src) : base(who, src)
+
+      {
+
+        Avoid = src.RequireEnum<Item_IDs>("Avoid");
+
+      }
+
+
+      static Goal_DoNotPickup IJsonStaged<Goal_DoNotPickup>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_DoNotPickup(JsonActor(src), src));
+
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+      {
+
+        toJsonBase(writer);
+
+        writer.WriteString("Avoid", Avoid.ToString());
+
+      }
+
+      #endregion
+
 
       public Goal_DoNotPickup(int t0, Actor who, Item_IDs avoid) : base(t0,who)
       {
@@ -217,9 +380,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_BreakLineOfSight : Objective
+    internal class Goal_BreakLineOfSight : Objective, IJsonStaged<Goal_BreakLineOfSight>
     {
       readonly private HashSet<Location> _locs;
+
+      #region JSON save/load
+
+      private Goal_BreakLineOfSight(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+      {
+
+        _locs = src.Require("Locations").Deserialize<HashSet<Location>>(options) ?? throw new JsonException("null Locations");
+
+      }
+
+
+      static Goal_BreakLineOfSight IJsonStaged<Goal_BreakLineOfSight>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_BreakLineOfSight(JsonActor(src), src, options));
+
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+      {
+
+        toJsonBase(writer);
+
+        writer.WriteArray("Locations", _locs, options);
+
+      }
+
+      #endregion
+
 
       public Goal_BreakLineOfSight(int t0, Actor who, Location loc)
       : base(t0,who)
@@ -251,7 +441,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // \todo re-implement as mini-threat tracking
     [Serializable]
-    internal class Goal_Terminate : Objective
+    internal class Goal_Terminate : Objective, IJsonStaged<Goal_Terminate>
     {
       readonly private Dictionary<Actor,HashSet<Location>> _target_locs = new Dictionary<Actor, HashSet<Location>>();
 
@@ -265,6 +455,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
           locs.Add(target.Location);
         } else _target_locs[target] = new HashSet<Location> { target.Location };
       }
+
+      #region JSON save/load
+
+      // [[target, [locations]], ...]: filled when the load finishes
+
+      private Goal_Terminate(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+      {
+
+        src.Require("Targets").ReadRefDictionary(_target_locs, options);
+
+      }
+
+
+      static Goal_Terminate IJsonStaged<Goal_Terminate>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_Terminate(JsonActor(src), src, options));
+
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+      {
+
+        toJsonBase(writer);
+
+        writer.WriteRefDictionary("Targets", _target_locs, options);
+
+      }
+
+      #endregion
+
 
       public Goal_Terminate(int t0, Actor who, Actor target)
       : base(t0,who)
@@ -350,11 +569,46 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_PathTo : Objective
+    internal class Goal_PathTo : Objective, IJsonStaged<Goal_PathTo>
     {
       private readonly HashSet<Location> _locs;
       private readonly bool walking;
       private int turns;
+
+      #region JSON save/load
+
+      private Goal_PathTo(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+      {
+
+        _locs = src.Require("Locations").Deserialize<HashSet<Location>>(options) ?? throw new JsonException("null Locations");
+
+        if (src.TryGetProperty("Walking", out var x)) walking = x.GetBoolean();
+
+        turns = src.TryGetProperty("Turns", out x) ? x.GetInt32() : int.MaxValue;
+
+      }
+
+
+      static Goal_PathTo IJsonStaged<Goal_PathTo>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_PathTo(JsonActor(src), src, options));
+
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+      {
+
+        toJsonBase(writer);
+
+        writer.WriteArray("Locations", _locs, options);
+
+        if (walking) writer.WriteBoolean("Walking", true);
+
+        if (int.MaxValue != turns) writer.WriteNumber("Turns", turns);
+
+      }
+
+      #endregion
+
 
       public Goal_PathTo(Actor who, in Location loc, bool walk=false,int n=int.MaxValue)
       : base(who.Location.Map.LocalTime.TurnCounter, who)
@@ -402,7 +656,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_PathToStack : Objective,LatePathable
+    internal class Goal_PathToStack : Objective,LatePathable, IJsonStaged<Goal_PathToStack>
     {
       private readonly List<Data.Model.InvOrigin> _stacks = new(1);
       [NonSerialized] private OrderableAI ordai;
@@ -423,6 +677,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return _stacks.Select(p => p.Inventory);
       } }
       public IEnumerable<Location> Destinations { get => _stacks.Select(p => p.Location); }
+
+      #region JSON save/load
+
+      private Goal_PathToStack(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+      {
+
+        foreach (var x in src.Require("Stacks").EnumerateArray()) _stacks.Add(x.Deserialize<Data.Model.InvOrigin>(options));
+
+        OnDeserialized(default);
+
+      }
+
+
+      static Goal_PathToStack IJsonStaged<Goal_PathToStack>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_PathToStack(JsonActor(src), src, options));
+
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+      {
+
+        toJsonBase(writer);
+
+        writer.WriteArray("Stacks", _stacks, options);
+
+      }
+
+      #endregion
+
 
       public Goal_PathToStack(Actor who, in Data.Model.InvOrigin src) : base(who.Location.Map.LocalTime.TurnCounter, who)
       {
@@ -558,12 +841,49 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_HintPathToActor : Objective,Pathable
+    internal class Goal_HintPathToActor : Objective,Pathable, IJsonStaged<Goal_HintPathToActor>
     {
       private readonly Actor _dest;
       private readonly ActorAction _when_at_target;
 
       public Actor Whom { get { return _dest; } }
+
+      #region JSON save/load
+
+      private Goal_HintPathToActor(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+      {
+
+        _dest = src.Require("Whom").RequireRef<Actor>();
+
+        if (src.TryGetProperty("AtTarget", out var x)) _when_at_target = x.Deserialize<ActorAction>(options);
+
+      }
+
+
+      static Goal_HintPathToActor IJsonStaged<Goal_HintPathToActor>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_HintPathToActor(JsonActor(src), src, options));
+
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+      {
+
+        toJsonBase(writer);
+
+        writer.WriteRef("Whom", _dest);
+
+        if (null != _when_at_target) {
+
+          writer.WritePropertyName("AtTarget");
+
+          JsonSerializer.Serialize(writer, _when_at_target, options);
+
+        }
+
+      }
+
+      #endregion
+
 
       public Goal_HintPathToActor(int t0, Actor who, Actor dest, ActorAction at_target=null)
       : base(t0,who)
@@ -626,12 +946,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
-    internal class Goal_BreakBarricade : Objective
+    internal class Goal_BreakBarricade : Objective, IJsonStaged<Goal_BreakBarricade>
     {
       private readonly Location _dest;  // 2018-08-12: Using DoorWindow here doesn't work -- AI continues breaking the barricade even after it is gone
       private readonly Location[]? _alternates = null; // for when multiple doors are in a row
 
 #nullable enable
+      #region JSON save/load
+      private Goal_BreakBarricade(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+      {
+        _dest = src.Require("Target").Deserialize<Location>(options);
+        if (src.TryGetProperty("Alternates", out var x)) _alternates = x.Deserialize<Location[]>(options);
+      }
+
+      static Goal_BreakBarricade IJsonStaged<Goal_BreakBarricade>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Goal_BreakBarricade(JsonActor(src), src, options));
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+      {
+        toJsonBase(writer);
+        writer.WritePropertyName("Target");
+        JsonSerializer.Serialize(writer, _dest, options);
+        if (null != _alternates) writer.WriteArray("Alternates", _alternates, options);
+      }
+      #endregion
+
       public Goal_BreakBarricade(Actor who, DoorWindow dest) : base(who.Location.Map.LocalTime.TurnCounter, who)
       {
         _dest = dest.Location;
