@@ -352,7 +352,8 @@ namespace djack.RogueSurvivor.Engine
       m_MapView = setPlayer(Map.decode(src)).Location.View;
     }
 
-    /// <summary>For a JSON-loaded session going live.  The message log and counted commands are not in the JSON save yet.</summary>
+    /// <summary>For a JSON-loaded session going live.  The message log comes with the player's controller (setPlayer);
+    /// the counted commands are re-installed by each loaded PlayerController's TakeControl, which follows this.</summary>
     static public void AfterLoad(Actor? player, List<Actor>? refugees)
     {
       if (null != player) m_MapView = setPlayer(player).Location.View;
@@ -3148,6 +3149,18 @@ namespace djack.RogueSurvivor.Engine
 
     // Don't want this in PlayerController; the required public accessors are unacceptable.
     static private List<KeyValuePair<PlayerController, KeyValuePair<int, PlayerCommand> > >? s_CountedCommands = null;
+
+    // The JSON save keeps a controller's counted command with that controller: one entry out, one entry in.
+    static internal KeyValuePair<int, PlayerCommand>? CountedCommand(PlayerController pc)
+    {
+      if (null != s_CountedCommands) {
+        var ub = s_CountedCommands.Count;
+        while(0 <= --ub) if (s_CountedCommands[ub].Key == pc) return s_CountedCommands[ub].Value;   // the last one, as HandlePlayerActor finds it
+      }
+      return null;
+    }
+
+    static internal void CountedCommand(PlayerController pc, KeyValuePair<int, PlayerCommand> src) => (s_CountedCommands ??= new()).Add(new(pc, src));
 
     // These don't alter game state
     static private readonly PlayerCommand[] s_ReadonlyCommands = new PlayerCommand[]{

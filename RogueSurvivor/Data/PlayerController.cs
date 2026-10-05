@@ -30,10 +30,12 @@ namespace djack.RogueSurvivor.Data
   public interface EventUnconditional // maybe more general
   {
     bool Expire(Actor viewpoint);
+    /// <summary>what Expire would drop without acting: the save drops it instead</summary>
+    bool IsStale { get; }
   }
 
   [Serializable]
-  internal class UIOnSighting : EventUnconditional
+  internal class UIOnSighting : EventUnconditional, IJsonStaged<UIOnSighting>
   {
     private bool expired = false;
     private readonly Actor who;
@@ -46,6 +48,25 @@ namespace djack.RogueSurvivor.Data
         msg = _msg;
         music = _music;
     }
+
+#region JSON save/load
+    // expired is implied false: a stale entry is not written.  The actor was defined by World or UniqueActors, both earlier in the file.
+    static UIOnSighting IJsonStaged<UIOnSighting>.fromJson(JsonElement src, JsonSerializerOptions options)
+    {
+        var ret = new UIOnSighting(src.Require("Actor").RequireRef<Actor>(), src.Require("Text").GetString() ?? throw new JsonException("null Text"), src.TryGetProperty("Music", out var x) ? x.GetString() : null);
+        src.RecordRef(ret);
+        return ret;
+    }
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+        writer.WriteRef("Actor", who);
+        writer.WriteString("Text", msg);
+        if (null != music) writer.WriteString("Music", music);
+    }
+
+    public bool IsStale { get => expired || who.IsDead; }
+#endregion
 
     public bool Expire(Actor viewpoint)
     {
@@ -65,11 +86,24 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  internal class UITracking : EventUnconditional
+  internal class UITracking : EventUnconditional, IJsonStaged<UITracking>
   {
     private readonly Actor who;
 
     public UITracking(Actor _who) { who = _who; }
+
+#region JSON save/load
+    static UITracking IJsonStaged<UITracking>.fromJson(JsonElement src, JsonSerializerOptions options)
+    {
+        var ret = new UITracking(src.Require("Actor").RequireRef<Actor>());
+        src.RecordRef(ret);
+        return ret;
+    }
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) => writer.WriteRef("Actor", who);
+
+    public bool IsStale { get => who.IsDead; }
+#endregion
 
     public bool Expire(Actor viewpoint) { return who.IsDead; }
 
@@ -79,24 +113,63 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   public sealed class PlayerController : ObjectiveAI, IJsonStaged<PlayerController>
     {
-      // JSON: saves $type only so far (the AI reloads with amnesia)
-      static PlayerController IJsonStaged<PlayerController>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new PlayerController(JsonOwner));
-
-    private readonly Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
+    private Gameplay.AI.Sensors.LOSSensor m_LOSSensor;   // not readonly: the JSON load assigns it after construction
     private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int> m_itemMemory;
     private List<Waypoint_s>? m_Waypoints = null;
-    public readonly MessageManager Messages;
+    public MessageManager Messages;   // not readonly: the JSON load assigns it after construction
 
     private static List<EventUnconditional>? s_BeforeAction;
     private static List<EventUnconditional>? s_AfterAction;
 
+    // A JSON load parks the counted command here (RogueGame's is the live game's); TakeControl installs it when the loaded session goes live.
+    [NonSerialized] private KeyValuePair<int, PlayerCommand>? m_JsonCountedCommand = null;
+
 	public PlayerController(Actor src, PlayerController? upgrading = null) : base(src) {
       m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES(), src);   // deal with vision capabilities
-      m_itemMemory = m_Actor.IsFaction(GameFactions.IDs.ThePolice) ? Session.Get.Police.ItemMemory
+      m_itemMemory = m_Actor.IsFaction(GameFactions.IDs.ThePolice) ? (Session.Loading ?? Session.Get).Police.ItemMemory
                                                                    : new();
 
       Messages = upgrading?.Messages ?? new MessageManager(RogueGame.MESSAGES_SPACING, RogueGame.MESSAGES_HISTORY, RogueGame.MAX_MESSAGES);
     }
+
+#region JSON save/load
+    static PlayerController IJsonStaged<PlayerController>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new PlayerController(JsonOwner));
+
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      base.toJsonFields(writer, options);
+      writer.WritePropertyName("LOS");
+      JsonSerializer.Serialize(writer, m_LOSSensor, options);
+      if (!m_Actor.IsFaction(GameFactions.IDs.ThePolice)) {   // a police player shares the faction's item memory, saved under Police: the constructor's rule
+        writer.WritePropertyName("ItemMemory");
+        ItemMemoryJSON.Save(writer, m_itemMemory);
+      }
+      if (null != m_Waypoints) writer.WriteArray("Waypoints", m_Waypoints, options);
+      writer.WritePropertyName("Messages");
+      JsonSerializer.Serialize(writer, Messages, options);
+      var counted = RogueGame.CountedCommand(this) ?? m_JsonCountedCommand;
+      if (null != counted) {
+        writer.WriteStartArray("CountedCommand");
+        writer.WriteNumberValue(counted.Value.Key);
+        writer.WriteStringValue(counted.Value.Value.ToString());
+        writer.WriteEndArray();
+      }
+    }
+
+    protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
+    {
+      base.loadJsonFields(src, options);
+      JsonElement x;
+      m_LOSSensor = src.Require("LOS").Deserialize<Gameplay.AI.Sensors.LOSSensor>(options) ?? throw new JsonException("null LOS");
+      if (src.TryGetProperty("ItemMemory", out x)) ItemMemoryJSON.Load(x, m_itemMemory);
+      if (src.TryGetProperty("Waypoints", out x)) m_Waypoints = x.Deserialize<List<Waypoint_s>>(options) ?? throw new JsonException("null Waypoints");
+      Messages = src.Require("Messages").Deserialize<MessageManager>(options) ?? throw new JsonException("null Messages");
+      if (src.TryGetProperty("CountedCommand", out x)) {
+        if (JsonValueKind.Array != x.ValueKind || 2 != x.GetArrayLength()) throw new JsonException("expected [count, command]: " + x.GetRawText());
+        m_JsonCountedCommand = new(x[0].GetInt32(), JSON_ext.ParseEnum<PlayerCommand>(x[1].GetString()));
+      }
+    }
+#endregion
 
 #region UI messages
     // forwarder system for to RogueGame::AddMessage
@@ -338,6 +411,10 @@ namespace djack.RogueSurvivor.Data
     {
       base.TakeControl();
       Actor.Says += HandleSay;
+      if (null != m_JsonCountedCommand) {   // the JSON-loaded session is going live
+        RogueGame.CountedCommand(this, m_JsonCountedCommand.Value);
+        m_JsonCountedCommand = null;
+      }
     }
 
     public override void LeaveControl()
@@ -369,6 +446,37 @@ namespace djack.RogueSurvivor.Data
     {
       info.AddValue(nameof(s_BeforeAction), s_BeforeAction);
       info.AddValue(nameof(s_AfterAction),  s_AfterAction);
+    }
+
+    // JSON: a Session-level object {"BeforeAction": [...], "AfterAction": [...]}, each entry a $type'd EventUnconditional.
+    // Reset() builds the after list as a copy of the before list, so the shared entries are $refs there.
+    // Stale entries (what Expire would drop without acting) are not written; the key is omitted when nothing is left.
+    static public void toJsonUI(Utf8JsonWriter writer, string name, JsonSerializerOptions options, List<EventUnconditional>? before, List<EventUnconditional>? after)
+    {
+      var live_before = before?.FindAll(e => !e.IsStale);
+      var live_after = after?.FindAll(e => !e.IsStale);
+      if ((live_before?.Count ?? 0) <= 0 && (live_after?.Count ?? 0) <= 0) return;
+      writer.WritePropertyName(name);
+      writer.WriteStartObject();
+      if (0 < (live_before?.Count ?? 0)) writer.WriteArray("BeforeAction", live_before!, options);
+      if (0 < (live_after?.Count ?? 0)) writer.WriteArray("AfterAction", live_after!, options);
+      writer.WriteEndObject();
+    }
+
+    /// <summary>the live game's</summary>
+    static public void toJsonUI(Utf8JsonWriter writer, string name, JsonSerializerOptions options) => toJsonUI(writer, name, options, s_BeforeAction, s_AfterAction);
+
+    static public void fromJsonUI(JsonElement src, JsonSerializerOptions options, out List<EventUnconditional>? before, out List<EventUnconditional>? after)
+    {
+      before = src.TryGetProperty("BeforeAction", out var x) ? x.Deserialize<List<EventUnconditional>>(options) : null;
+      after = src.TryGetProperty("AfterAction", out x) ? x.Deserialize<List<EventUnconditional>>(options) : null;
+    }
+
+    /// <summary>For a JSON-loaded session going live.</summary>
+    static public void AfterLoad(List<EventUnconditional>? before, List<EventUnconditional>? after)
+    {
+      s_BeforeAction = before;
+      s_AfterAction = after;
     }
 #endregion
 

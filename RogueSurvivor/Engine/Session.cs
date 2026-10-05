@@ -283,6 +283,7 @@ namespace djack.RogueSurvivor.Engine
         else if (reader.ValueTextEquals("UniqueActors")) return 17;
         else if (reader.ValueTextEquals("RefugeePool")) return 18;
         else if (reader.ValueTextEquals("Police")) return 19;
+        else if (reader.ValueTextEquals("PlayerUI")) return 20;
 
         RogueGame.Game.ErrorPopup(reader.GetString());
         throw new JsonException();
@@ -369,6 +370,9 @@ namespace djack.RogueSurvivor.Engine
           case 19:
               Police.LoadJson(JsonElement.ParseValue(ref reader), options);
               break;
+          case 20:
+              PlayerController.fromJsonUI(JsonElement.ParseValue(ref reader), options, out m_JsonLoadedBeforeAction, out m_JsonLoadedAfterAction);
+              break;
           case 18:
               {
               // these are on no map: no Actor.s_LoadMap
@@ -429,6 +433,8 @@ namespace djack.RogueSurvivor.Engine
     [NonSerialized] private World? m_JsonLoadedWorld = null;
     [NonSerialized] private Actor? m_JsonLoadedPlayer = null;   // a cross-link: set when the load finishes
     [NonSerialized] private List<Actor>? m_JsonLoadedRefugeePool = null;   // the live one is RogueGame's
+    [NonSerialized] private List<EventUnconditional>? m_JsonLoadedBeforeAction = null;   // the live ones are PlayerController's
+    [NonSerialized] private List<EventUnconditional>? m_JsonLoadedAfterAction = null;
 
     public static Session fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) => new Session(ref reader, options);
 
@@ -458,11 +464,14 @@ namespace djack.RogueSurvivor.Engine
       s_TheSession = this;
       m_JsonLoadedWorld!.JsonTakeLive();
       RogueGame.AfterLoad(m_JsonLoadedPlayer, m_JsonLoadedRefugeePool);
+      PlayerController.AfterLoad(m_JsonLoadedBeforeAction, m_JsonLoadedAfterAction);
       JsonAttach();
       // from here on, we save the live game
       m_JsonLoadedWorld = null;
       m_JsonLoadedPlayer = null;
       m_JsonLoadedRefugeePool = null;
+      m_JsonLoadedBeforeAction = null;
+      m_JsonLoadedAfterAction = null;
     }
 
     /// <summary>For the bootstrap test: derived data is not in the save, so the round trip cannot see it.  Empty if and only if ok.</summary>
@@ -520,6 +529,9 @@ namespace djack.RogueSurvivor.Engine
       JsonSerializer.Serialize(writer, UniqueActors, options);
       writer.WritePropertyName("Police");
       Police.toJson(writer, options);
+      // last: its entries name actors that World or UniqueActors defined
+      if (null != m_JsonLoadedWorld) PlayerController.toJsonUI(writer, "PlayerUI", options, m_JsonLoadedBeforeAction, m_JsonLoadedAfterAction);
+      else PlayerController.toJsonUI(writer, "PlayerUI", options);
       writer.WriteEndObject();
     }
 
@@ -651,9 +663,8 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Actor>());   // its controllers are tracked separately, below
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Corpse>());
 
-          // saving $type only so far: AIs reload with amnesia
           var minds = new Zaimoni.JSON.Polymorphic<ActorController>();
-          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, PlayerController>("PlayerController"));
+          minds.Add(new Zaimoni.JsonConvert.Via<ActorController, PlayerController>("PlayerController"));
           minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.CHARGuardAI>("CHARGuardAI"));
           minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.CivilianAI>("CivilianAI"));
           minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.FeralDogAI>("FeralDogAI"));
@@ -666,6 +677,13 @@ namespace djack.RogueSurvivor.Engine
           minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.ZombieAI>("ZombieAI"));
           minds.RequireAllSubtypes();
           s_j_opts.Converters.Add(minds);
+
+          // the player UI's pending events (Session's PlayerUI); the two lists share entries, so these have ids
+          var ui_events = new Zaimoni.JSON.Polymorphic<EventUnconditional>();
+          ui_events.Add(new Zaimoni.JsonConvert.Via<EventUnconditional, UIOnSighting>("UIOnSighting"));
+          ui_events.Add(new Zaimoni.JsonConvert.Via<EventUnconditional, UITracking>("UITracking"));
+          ui_events.RequireAllSubtypes();
+          s_j_opts.Converters.Add(ui_events);
 
           // Actions: only those an objective may hold, which [Serializable] marks.  The rest are transient.
           var acts = new Zaimoni.JSON.Polymorphic<ActorAction>();
@@ -758,7 +776,7 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(tasks);
 
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Map());
-          s_j_opts.Converters.Add(new Zaimoni.JsonConvertIncomplete.Session());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Session());
         }
         return s_j_opts;
       }
@@ -991,7 +1009,7 @@ namespace djack.RogueSurvivor.Engine
   }
 }
 
-namespace Zaimoni.JsonConvertIncomplete
+namespace Zaimoni.JsonConvert
 {
     public class Session : System.Text.Json.Serialization.JsonConverter<djack.RogueSurvivor.Engine.Session>
     {
