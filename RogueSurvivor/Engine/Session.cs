@@ -28,7 +28,6 @@ namespace djack.RogueSurvivor.Engine
         /// <summary>The session being loaded from JSON, while it is: what a constructor run by the load must consult instead of Get,
         /// which is the live session, or a fresh default one when there is none (its constructor resets the World).</summary>
         public static Session? Loading { get => s_Loading; }
-        private static Map.ActorCode s_Player;
 
         [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
         private Scoring m_Scoring = new();
@@ -227,27 +226,6 @@ namespace djack.RogueSurvivor.Engine
         s_Loading = null;
       }
     }
-
-/*
-        private static Map.ActorCode s_Player;
-
-        public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.Item_IDs.TRACKER_POLICE_RADIO);
-
-        public readonly UniqueActors UniqueActors = new();
-        public readonly UniqueItems UniqueItems = new();
- */
-
-/*
-            PlayerController.Save(info, context);
-            RogueGame.Save(info, context);
- */
-
-/*
-            PlayerController.Load(info, context);
-            // end load other classes' static variables
-            RogueGame.Load(info, context);
-            info.read_s(ref s_Player, "s_Player");
- */
 
     // A JSON load stages what it loads here, until JsonTakeLive installs it (or does not: the bootstrap round-trip test re-saves what was loaded).
     [NonSerialized] private World? m_JsonLoadedWorld = null;

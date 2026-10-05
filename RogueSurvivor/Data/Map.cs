@@ -1883,6 +1883,7 @@ retry:
 
     public int TurnOrderFor(Actor a) { return m_ActorsList.IndexOf(a); }
 
+#if OBSOLETE_ACTORCODE
     [Serializable]
     public readonly struct ActorCode {
         public readonly District.MapCode Key;
@@ -1905,6 +1906,7 @@ retry:
       if (0 > src.Value || m.m_ActorsList.Count <= src.Value) throw new ArgumentOutOfRangeException("src.Value", src.Value.ToString());
       return m.m_ActorsList[src.Value];
     }
+#endif
 
     // 2019-01-24: profiling indicates this is a cache target, but CPU cost of using cache ~25% greater than not having one
     private string ReasonNotWalkableFor(Point pt, ActorModel model)
