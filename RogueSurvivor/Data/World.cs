@@ -298,46 +298,6 @@ namespace djack.RogueSurvivor.Data
       foreach(var d in m_DistrictsGrid) d.RepairLoad();
     }
 
-    protected World(Zaimoni.Serialization.DecodeObjects decode)
-    {
-        byte relay_b = 0;
-        int relay_i = 0;
-        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref m_Size);
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref relay_b);
-        Weather = (Weather)(relay_b);
-        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref relay_i);
-        NextWeatherCheckTurn = relay_i;
-        decode.LoadFrom(ref m_DistrictsGrid);
-
-        ulong code;
-        m_PlayerDistrict = decode.Load<District>(out code);
-        if (0 < code && null == m_PlayerDistrict) {
-            decode.Schedule(code, (o) => {
-                if (o is District w) m_PlayerDistrict = w;
-                else throw new InvalidOperationException("District object not loaded");
-            });
-        }
-
-        m_SimDistrict = decode.Load<District>(out code);
-        if (0 < code && null == m_SimDistrict) {
-            decode.Schedule(code, (o) => {
-                if (o is District w) m_SimDistrict = w;
-                else throw new InvalidOperationException("District object not loaded");
-            });
-        }
-
-        void onLoaded(District[] src) {
-            foreach (var x in src) {
-                m_Ready.Add(x);
-            }
-        }
-        Zaimoni.Serialization.ISave.LinearLoad<District>(decode, onLoaded);
-
-        m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(m_Size, m_Size));
-        s_Recent = this;
-        initTurnOrder();
-    }
-
     private void SaveLoadOk(World test) {
         var err = string.Empty;
 
