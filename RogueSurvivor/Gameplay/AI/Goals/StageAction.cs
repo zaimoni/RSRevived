@@ -48,6 +48,14 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
       }
 
       // always execute.  Expire on execution
+      public override bool UrgentAction_readonly(out ActorAction ret)
+      {
+        ret = null;
+        if (Intent.IsPerformable() && !Intent.Abort()) return false;   // would be staged: keep
+        _isExpired = true;
+        return true;
+      }
+
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;

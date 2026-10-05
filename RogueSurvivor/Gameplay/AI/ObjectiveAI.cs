@@ -165,6 +165,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public Goal_RechargeAll(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
 
+    public override bool UrgentAction_readonly(out ActorAction ret)
+
+    {
+
+      ret = null;   // asks the recharge doctrine: deliberation, not stored state
+
+      return false;
+
+    }
+
+
     public override bool UrgentAction(out ActorAction ret)
     {
       ret = null;
@@ -253,11 +264,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    // An expired objective is done with; it may still be an FOV watcher.  Safe to drop at any save (2026-10-04).
+    // An objective that is expired, or that UrgentAction_readonly reports done with nothing to do (true, null: what the
+    // SelectAction overrides discard), is dropped at any save.  It may still be an FOV watcher.  (2026-10-04)
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
     {
-      Objectives.RemoveAll(o => o.IsExpired);
-      FOVevents.RemoveAll(w => w is Objective o && o.IsExpired);
+      HashSet<Objective> done = new(ReferenceEqualityComparer.Instance);
+      void test(Objective o) {
+        if (done.Contains(o)) return;
+        if (o.IsExpired || (o.UrgentAction_readonly(out var act) && null == act) || o.IsExpired) done.Add(o);
+      }
+      foreach (var o in Objectives.ToList()) test(o);
+      foreach (var w in FOVevents.Watchers.ToList()) if (w is Objective o) test(o);
+      if (0 >= done.Count) return;
+      Objectives.RemoveAll(done.Contains);
+      FOVevents.RemoveAll(w => w is Objective o && done.Contains(o));
     }
 
 #region JSON save/load

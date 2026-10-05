@@ -49,6 +49,23 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             _whom.Add(target);
         }
 
+        public override bool UrgentAction_readonly(out ActorAction? ret)
+
+        {
+
+          ret = null;
+
+          if (_isExpired) return true;
+
+          _whom.RemoveAll(Actor.IsDeceased);
+
+          if (0 >= _whom.Count) _isExpired = true;
+
+          return _isExpired;
+
+        }
+
+
         public override bool UrgentAction(out ActorAction? ret)
         {
             ret = null;

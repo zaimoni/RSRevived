@@ -88,6 +88,17 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             return false;
         }
 
+        public override bool UrgentAction_readonly(out ActorAction? ret)
+
+        {
+
+          ret = null;   // asks what the AI needs and wants: deliberation, not stored state
+
+          return false;
+
+        }
+
+
         public override bool UrgentAction(out ActorAction? ret)
         {
             ret = null;

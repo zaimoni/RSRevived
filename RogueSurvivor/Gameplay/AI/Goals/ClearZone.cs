@@ -110,6 +110,47 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             tourism = m_Actor.InterestingLocs!;
         }
 
+        public override bool UrgentAction_readonly(out ActorAction? ret)
+
+        {
+
+          ret = null;
+
+          Predicate<Point>? is_cleared = null;
+
+          var threats_at = threats.ThreatWhere(m_Zone.m);
+
+          if (0 < threats_at.Count) is_cleared = pt => !threats_at.Contains(pt);
+
+          var tourism_at = tourism.In(m_Zone.m);
+
+          if (0 < tourism_at.Count) is_cleared = is_cleared.And(pt => !tourism_at.Contains(pt));
+
+          else if (null == is_cleared) {
+
+            _isExpired = true;
+
+            return true;
+
+          }
+
+          m_Unverified.RemoveWhere(is_cleared);
+
+          m_Unverified.Remove(m_Actor.Location.Position);
+
+          if (0 >= m_Unverified.Count) {
+
+            _isExpired = true;
+
+            return true;
+
+          }
+
+          return false;
+
+        }
+
+
         public override bool UrgentAction(out ActorAction? ret)
         {
             ret = null;

@@ -169,6 +169,27 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             return ret;
         }
 
+        public override bool UrgentAction_readonly(out ActorAction ret)
+
+        {
+
+          ret = null;
+
+          _stacks.RemoveAll(x => !x.Key.Exists || !(x.Key.Inventory?.Has(x.Value) ?? false));   // gone, or not there: nothing to report at a save
+
+          if (0 >= _stacks.Count) {
+
+            _isExpired = true;
+
+            return true;
+
+          }
+
+          return false;
+
+        }
+
+
         public override bool UrgentAction(out ActorAction ret)
         {
             ret = null;

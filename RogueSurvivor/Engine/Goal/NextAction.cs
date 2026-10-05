@@ -125,6 +125,12 @@ namespace djack.RogueSurvivor.Engine.Goal
         }
 
         // always execute.  Expire on execution
+        public override bool UrgentAction_readonly(out ActorAction? ret)
+        {
+          ret = null;   // one-shot, and binding a plan is an act: never pruned at a save
+          return false;
+        }
+
         public override bool UrgentAction(out ActorAction? ret)
         {
             ret = null;

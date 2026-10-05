@@ -156,6 +156,27 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             m_Plan = plan;
         }
 
+        public override bool UrgentAction_readonly(out ActorAction? ret)
+
+        {
+
+          ret = null;
+
+          if (m_Plan.IsExpired) return true; // expired
+
+          if (!m_Plan.IsLegal() || m_Plan.IsDone(m_Actor)) {
+
+            _isExpired = true;
+
+            return true;
+
+          }
+
+          return false;
+
+        }
+
+
         public override bool UrgentAction(out ActorAction? ret)
         {
             ret = null;
