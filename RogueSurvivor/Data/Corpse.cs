@@ -5,9 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Runtime.Serialization;
 using System.Text.Json;
-using Zaimoni.Data;
 using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;

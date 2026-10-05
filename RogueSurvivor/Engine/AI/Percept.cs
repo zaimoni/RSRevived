@@ -8,7 +8,6 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine.AI
