@@ -57,7 +57,7 @@ namespace djack.RogueSurvivor
           //    C1@5,6 would override both district and position
           // --no-spawn : do not create a random PC.  requires a --PC option to be viable.  Incompatible with --spawn and --spawn-district
           // --city : specify city size and dimensions; default is 5,50
-          // --start=new|load|load-json : skip the main menu.  --save-and-exit : save, then quit, when a player would first act.
+          // --start=new|load|load-test : skip the main menu.  --save-and-exit : save, then quit, when a player would first act.
         }
         if (Engine.Session.CommandLineOptions.ContainsKey("no-spawn")) {
           if (   !Engine.Session.CommandLineOptions.ContainsKey("PC")

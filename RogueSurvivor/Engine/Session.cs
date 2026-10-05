@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define BOOTSTRAP_Z_SERIALIZATION
-// #define BOOTSTRAP_JSON_SERIALIZATION
+// #define BOOTSTRAP_TEST_SERIALIZATION
 
 using djack.RogueSurvivor.Data;
 using System;
@@ -568,11 +568,11 @@ namespace djack.RogueSurvivor.Engine
             World.Get._RejectInventoryDamage(errors);
             if (0 < errors.Count) throw new InvalidOperationException("inventory damage pre-save: " + string.Join("\n", errors));
 #endif
-            Save(session, filepath, SaveFormat.FORMAT_BIN);
+            Save(session, filepath, StableFormat);
 #if DEBUG
             SaveTestFormat(session, filepath);
 #endif
-#if BOOTSTRAP_JSON_SERIALIZATION
+#if BOOTSTRAP_TEST_SERIALIZATION
             RoundTripTest(filepath);
 #endif
         }
@@ -581,9 +581,10 @@ namespace djack.RogueSurvivor.Engine
         /// <summary>The test save is derived from the stable one, so a failure costs only the file: it is deleted, so that its absence is the signal.</summary>
         private static void SaveTestFormat(Session session, string filepath)
         {
-            var path = JsonPath(filepath);
+            if (TestFormat is not { } format) return;   // nothing under experiment
+            var path = TestPath(filepath);
             try {
-                Save(session, path, SaveFormat.FORMAT_JSON);
+                Save(session, path, format);
             } catch (Exception ex) {
                 try { File.Delete(path); } catch (Exception) { }
                 Logger.WriteLine(Logger.Stage.RUN_MAIN, "test-format save failed: " + ex.ToString());
@@ -624,8 +625,15 @@ namespace djack.RogueSurvivor.Engine
             }
         }
 
-        /// <summary>the test-format save that goes with a default-format save</summary>
-        public static string JsonPath(string filepath) => Path.ChangeExtension(filepath, ".json");
+        /// <summary>The format the game plays on and backs up: what the menus and --start=load read.</summary>
+        public static SaveFormat StableFormat { get => SaveFormat.FORMAT_BIN; }
+
+        /// <summary>The format under experiment, written beside every stable save in a DEBUG build and read by --start=load-test;
+        /// null when there is none.  May break at any time: the file is derived, and any stable save re-renders into it.</summary>
+        public static SaveFormat? TestFormat { get => SaveFormat.FORMAT_JSON; }
+
+        /// <summary>the test-format save that goes with a stable-format save</summary>
+        public static string TestPath(string filepath) => Path.ChangeExtension(filepath, ".test");
 
     private static JsonSerializerOptions? s_j_opts = null;
     public static JsonSerializerOptions JSON_opts {
@@ -831,12 +839,12 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
     }
 
-#if BOOTSTRAP_JSON_SERIALIZATION
+#if BOOTSTRAP_TEST_SERIALIZATION
     /// <summary>The self-check, after SaveGame wrote both formats: the test save must load, agree on derived data, and save again as the
     /// same text.  Does not notice what is not saved at all.  Then the converter audit.</summary>
     private static void RoundTripTest(string filepath)
     {
-      var json_path = JsonPath(filepath);
+      var json_path = TestPath(filepath);
       var json_path2 = json_path+"2";   // only survives a failed round-trip test
       RogueGame.Game.ErrorPopup("JSON save ok");
       var test2 = LoadJsonStaged(json_path);
@@ -961,7 +969,7 @@ namespace djack.RogueSurvivor.Engine
       try {
         File.Delete(filepath);
 #if DEBUG
-        File.Delete(JsonPath(filepath));   // the derived test save goes with it
+        File.Delete(TestPath(filepath));   // the derived test save goes with it
 #endif
         flag = true;
       } catch (Exception ex) {

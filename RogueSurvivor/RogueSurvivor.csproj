@@ -54,11 +54,11 @@
     <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
-  <!-- dotnet build -p:JsonBootstrap=true : every save also runs the JSON save-then-reload round trip self-check and the converter audit.
-       (A DEBUG build always writes the JSON test save beside the binary one; see JSON_save_load_plan.md.)
+  <!-- dotnet build -p:TestFormat=true : every save also runs the test-format save-then-reload round trip self-check and the converter audit.
+       (A DEBUG build always writes the test-format save beside the stable one; see JSON_save_load_plan.md.)
        Must follow the configuration groups above, which assign DefineConstants outright. -->
-  <PropertyGroup Condition=" '$(JsonBootstrap)' == 'true' ">
-    <DefineConstants>$(DefineConstants);BOOTSTRAP_JSON_SERIALIZATION</DefineConstants>
+  <PropertyGroup Condition=" '$(TestFormat)' == 'true' ">
+    <DefineConstants>$(DefineConstants);BOOTSTRAP_TEST_SERIALIZATION</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

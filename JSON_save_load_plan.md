@@ -9,7 +9,8 @@ Recorded 2026-10-01.
 
 - Production save is still `BinaryFormatter`, through the `System.Runtime.Serialization.Formatters` package.
 - JSON is `Session.SaveFormat.FORMAT_JSON`, the test format: `Session.Save`/`Session.Load` take it, and a JSON-loaded session goes live (phases 0-2 done, 2026-10-02). It is not offered from the game's menus; the command line reaches it (see "Test drive" below).
-- A DEBUG build writes the test save beside every stable save (`Session.SaveGame`, phase 3 step 7, 2026-10-05). Under `BOOTSTRAP_JSON_SERIALIZATION` (`dotnet build -p:JsonBootstrap=true`; off in a plain build), every save also runs the save-then-reload round trip self-check and audits the converters.
+- A DEBUG build writes the test save beside every stable save (`Session.SaveGame`, phase 3 step 7, 2026-10-05). Under `BOOTSTRAP_TEST_SERIALIZATION` (`dotnet build -p:TestFormat=true`; off in a plain build), every save also runs the save-then-reload round trip self-check and audits the converters.
+- The roles are named in code, the encodings only where an encoding is meant (phase 4 step 1, 2026-10-05): `Session.StableFormat` and `Session.TestFormat` (nullable: nothing under experiment) resolve to `SaveFormat` values per build; `Session.TestPath` pairs `save.test` with `save.dat`; `--start=load-test`. `SaveJson`/`LoadJson` and the `m_JsonLoaded*` staging fields keep their names: they are about JSON.
 - A converter's namespace says whether it is finished: `Zaimoni.JsonConvert` (complete) or `Zaimoni.JsonConvertIncomplete`. The audit has been empty since 2026-10-05 (phase 3 step 6). `Map` completed 2026-10-02 with the `BgMusic` derivation.
 - Two roles, two formats (see "Stable and test formats" below): the **stable** format is what the game plays on and backs up; the **test** format is derived from it at every save in a DEBUG build, and may break at any time. Today stable is binary and test is JSON; phase 4 makes JSON stable.
 - Polymorphic roots so far: `Item` (16), `MapObject` (6), `TimedTask` (2), `ActorController` (11). Phase 3 adds `Objective` (~30), `ActorAction` / `WorldUpdate` (~33), and the observers, sensors and percepts.
@@ -21,7 +22,7 @@ Options that drive the program rather than the game, held in `Engine.TestDrive`,
 
 - `--start=new`: skip the main menu into the new-game dialogs, which `--spawn` and its relatives fill in.
 - `--start=load`: skip the menu and load the default save (`Saves/save.dat`, the stable format). Documented in the manual.
-- `--start=load-json`: skip the menu and load the test-format save beside it (`Saves/save.json`; `Session.JsonPath`). Not documented: the test format may break at any time. Renamed `load-test` in phase 4.
+- `--start=load-test` (was `load-json` until phase 4 step 1): skip the menu and load the test-format save beside it (`Saves/save.test`; `Session.TestPath`). Not documented: the test format may break at any time. Cannot start when the build has no test format.
 - `--save-and-exit`: at the first point a player would be asked to act (`RogueGame.HandlePlayerActor`), save to the default slot, then quit. Works after any of the three starts, and after a start from the menu. (Both formats: explicitly until phase 3 step 7, then because a DEBUG save always writes both.)
 
 With `--save-and-exit` the run is unattended: `ErrorPopup` and `InfoPopup` go to the log instead of waiting for ESC, an unhandled exception is logged instead of shown in the bug-report dialog, and the process exit code is non-zero when the run failed (`TestDrive.ExitCode`). A `--start` that cannot start (no save to load) ends an unattended run as a failure, and shows the menu otherwise.
@@ -250,7 +251,7 @@ Data design notes that bear on the format:
 
 ### Phase 4: retire BinaryFormatter
 
-1. Rename the test-format plumbing after its role, not its encoding, since JSON is about to be the stable format: `--start=load-json` → `--start=load-test`, `JsonBootstrap`/`BOOTSTRAP_JSON_SERIALIZATION` → `TestFormat`/`BOOTSTRAP_TEST_SERIALIZATION`, `Session.JsonPath` → `Session.TestPath`, and `Session.StableFormat`/`Session.TestFormat` properties that the build resolves to concrete `SaveFormat` values. Done first, so the commit that removes the binary format is only that.
+1. [x] Rename the test-format plumbing after its role, not its encoding, since JSON is about to be the stable format (2026-10-05): `--start=load-json` → `--start=load-test`, `JsonBootstrap`/`BOOTSTRAP_JSON_SERIALIZATION` → `TestFormat`/`BOOTSTRAP_TEST_SERIALIZATION`, `Session.JsonPath` → `Session.TestPath` (the file is `save.test`: its encoding is whatever is under experiment, and `save.json` is about to mean the stable save), and `Session.StableFormat`/`Session.TestFormat` properties that the build resolves to concrete `SaveFormat` values (`TestFormat` nullable). `RogueGame.LoadGame` takes the format explicitly. Done first, so the commit that removes the binary format is only that.
 2. Move `GameOptions`, `Keybindings`, `HiScoreTable` and `GameHintsStatus` to attribute-driven JSON.
 3. JSON becomes `StableFormat`: the menus' save and load, the turn-versioned backups, `--start=load`. Drop the `System.Runtime.Serialization.Formatters` package. `TestFormat` is then whatever encoding is under experiment, or nothing.
 

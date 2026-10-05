@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Engine
       MAIN_MENU = 0, // default: ask
       NEW_GAME,      // the new game dialogs, which --spawn etc. fill in
       LOAD_GAME,     // the default save
-      LOAD_JSON      // the test-format save
+      LOAD_TEST      // the test-format save (Session.TestFormat; nothing to load when there is none)
     }
 
     static public StartAs Start = StartAs.MAIN_MENU;
@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Engine
       switch (arg) {
       case "--start=new": Start = StartAs.NEW_GAME; return true;
       case "--start=load": Start = StartAs.LOAD_GAME; return true;
-      case "--start=load-json": Start = StartAs.LOAD_JSON; return true;
+      case "--start=load-test": Start = StartAs.LOAD_TEST; return true;
       case "--save-and-exit": SaveAndExit = true; return true;
       default: return false;
       }

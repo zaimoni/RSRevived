@@ -962,7 +962,7 @@ namespace djack.RogueSurvivor.Engine
             }
             break;
           case 1:
-            if (flag2) return load(GetUserSave(), Session.SaveFormat.FORMAT_BIN);
+            if (flag2) return load(GetUserSave(), Session.StableFormat);
             break;
           case 2: s_KeyBindings.HandleRedefineKeys(); break;
           case 3:
@@ -986,7 +986,7 @@ namespace djack.RogueSurvivor.Engine
         bool? ok = start switch {
           TestDrive.StartAs.NEW_GAME => choice_handler(0),
           TestDrive.StartAs.LOAD_GAME => choice_handler(1),
-          TestDrive.StartAs.LOAD_JSON => load(Session.JsonPath(GetUserSave()), Session.SaveFormat.FORMAT_JSON),
+          TestDrive.StartAs.LOAD_TEST => Session.TestFormat is { } test_format ? load(Session.TestPath(GetUserSave()), test_format) : null,
           _ => null
         };
         if (true == ok) {
@@ -3184,7 +3184,7 @@ namespace djack.RogueSurvivor.Engine
       if (player.IsSleeping) throw new InvalidOperationException("player.IsSleeping");
 #endif
       if (TestDrive.SaveAndExit) {   // test run: the game got as far as asking a player to act
-        DoSaveGame(GetUserSave());   // a DEBUG build writes the test format as well, for --start=load-json
+        DoSaveGame(GetUserSave());   // a DEBUG build writes the test format as well, for --start=load-test
         StopTheWorld();
         return;
       }
@@ -13795,7 +13795,7 @@ restart:
       ClearMessages();
       RedrawPlayScreen(new UI.Message("LOADING GAME, PLEASE WAIT...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       m_UI.UI_Repaint();
-      if (!LoadGame(saveName)) AddMessage(new("LOADING FAILED, NO GAME SAVED OR VERSION NOT COMPATIBLE.", Session.Get.WorldTime.TurnCounter, Color.Red));
+      if (!LoadGame(saveName, Session.StableFormat)) AddMessage(new("LOADING FAILED, NO GAME SAVED OR VERSION NOT COMPATIBLE.", Session.Get.WorldTime.TurnCounter, Color.Red));
 
       StartSimThread();  // alpha10.1
     }
@@ -13809,7 +13809,7 @@ restart:
       AddMessage(new("PERMADEATH : SAVE GAME DELETED!", Session.Get.WorldTime.TurnCounter, Color.Red));
     }
 
-    private bool LoadGame(string saveName, Session.SaveFormat format = Session.SaveFormat.FORMAT_BIN)
+    private bool LoadGame(string saveName, Session.SaveFormat format)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
