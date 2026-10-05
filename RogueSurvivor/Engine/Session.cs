@@ -608,6 +608,7 @@ namespace djack.RogueSurvivor.Engine
           // AI state: value types (phase 3 step 1)
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Percept<object>());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Percept<Actor>());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.PerceptOfTag());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Scent());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.ZoneLoc());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.InvOrigin());

@@ -1286,9 +1286,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private ActorDirective? m_Directive;
     private ActorOrder? m_Order;
 #nullable restore
-    protected Percept_<Actor> m_LastEnemySaw;
+    protected Percept_<ActorTag> m_LastEnemySaw;    // by tag: the actor may be long dead (savefile break 2026-10-04)
     protected Percept m_LastItemsSaw;
-    protected Percept m_LastSoldierSaw;
+    protected Percept_<ActorTag> m_LastSoldierSaw;
     protected Percept m_LastRaidHeard;
 #nullable enable
     [NonSerialized] static private Percept? _lastRaidHeard; // staging for m_LastRaidHeard
@@ -1316,7 +1316,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         writer.WritePropertyName("Order");
         JsonSerializer.Serialize(writer, m_Order, options);
       }
-      void percept<T>(string name, Percept_<T>? src) where T : class {
+      void percept<T>(string name, Percept_<T>? src) {
         if (null == src) return;
         writer.WritePropertyName(name);
         JsonSerializer.Serialize(writer, src, options);
@@ -1336,9 +1336,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (src.TryGetProperty("TabooTrades", out var x)) x.ReadRefs(m_TabooTrades = new());
       if (src.TryGetProperty("Directive", out x)) m_Directive = x.Deserialize<ActorDirective>(options);
       if (src.TryGetProperty("Order", out x)) m_Order = x.Deserialize<ActorOrder>(options);
-      if (src.TryGetProperty("LastEnemySaw", out x)) m_LastEnemySaw = x.Deserialize<Percept_<Actor>>(options);
+      if (src.TryGetProperty("LastEnemySaw", out x)) m_LastEnemySaw = x.Deserialize<Percept_<ActorTag>>(options);
       if (src.TryGetProperty("LastItemsSaw", out x)) m_LastItemsSaw = x.Deserialize<Percept>(options);
-      if (src.TryGetProperty("LastSoldierSaw", out x)) m_LastSoldierSaw = x.Deserialize<Percept>(options);
+      if (src.TryGetProperty("LastSoldierSaw", out x)) m_LastSoldierSaw = x.Deserialize<Percept_<ActorTag>>(options);
       if (src.TryGetProperty("LastRaidHeard", out x)) m_LastRaidHeard = x.Deserialize<Percept>(options);
       if (src.TryGetProperty("ReachedPatrolPoint", out x)) m_ReachedPatrolPoint = x.GetBoolean();
       if (src.TryGetProperty("ReportStage", out x)) m_ReportStage = x.GetInt32();
@@ -2459,7 +2459,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return string.Format("I saw {0} {1} {2}.", percept.Percepted.Name, str1, str2);
     }
 
+    protected string DescribePercept(Percept_<ActorTag> percept, Actor audience)
+    {
+      if (null == percept) return null;
+      string str1 = MakeCentricLocationDirection(m_Actor.Location, percept.Location);
+      string str2 = string.Format("{0} ago", WorldTime.MakeTimeDurationMessage(m_Actor.Location.Map.LocalTime.TurnCounter - percept.Turn));
+      return string.Format("I saw {0} {1} {2}.", percept.Percepted.Name, str1, str2);
+    }
+
     protected ActionSay? BehaviorTellFriendAboutPercept(Percept percept, int chance)
+    {
+      var friends = AdjacentFriends();
+      if (null == friends) return null;
+      var rules = Rules.Get;
+      if (!rules.RollChance(chance)) return null;
+      Actor actorAt1 = rules.DiceRoller.Choose(friends);
+      if (actorAt1.IsPlayer) RogueGame.Game.PanViewportTo(actorAt1);
+      string text = DescribePercept(percept, actorAt1);
+      return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, default);
+    }
+
+    protected ActionSay? BehaviorTellFriendAboutPercept(Percept_<ActorTag> percept, int chance)
     {
       var friends = AdjacentFriends();
       if (null == friends) return null;

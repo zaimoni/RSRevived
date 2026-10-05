@@ -186,7 +186,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // if we have no enemies and have not fled an explosion, our friends can see that we're safe
       if (null == _enemies) AdviseFriendsOfSafety();
-      else m_LastEnemySaw = Rules.Get.DiceRoller.Choose(_enemies);
+      else {
+        var seen = Rules.Get.DiceRoller.Choose(_enemies);
+        m_LastEnemySaw = new(new ActorTag(seen.Percepted), seen.Turn, seen.Location);
+      }
 
       // New objectives system
       if (tracing) {
@@ -502,7 +505,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (p.Percepted is not Actor actor || actor == m_Actor) return false;
           return actor.Controller is SoldierAI;
       });
-      if (percept1 != null) m_LastSoldierSaw = percept1;
+      if (percept1 != null) m_LastSoldierSaw = new(new ActorTag((Actor)percept1.Percepted), percept1.Turn, percept1.Location);
 
       if (m_Actor.Model.Abilities.IsLawEnforcer && combat_unready.Value) {
         tmpAction = BehaviorEnforceLaw();
