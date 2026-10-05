@@ -11,7 +11,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Engine.Tasks
 {
     [Serializable]
-    class TaskEscapeNanny : TimedTask, Zaimoni.Serialization.ISerialize, IJsonStaged<TaskEscapeNanny>
+    class TaskEscapeNanny : TimedTask, IJsonStaged<TaskEscapeNanny>
     {
         private readonly List<Actor> _escapees;
         private readonly HashSet<Point> _safe_zone;
@@ -27,15 +27,6 @@ namespace djack.RogueSurvivor.Engine.Tasks
             _escapees = new() { escapee };
             _safe_zone = safe_zone;
         }
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected TaskEscapeNanny(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-        base.save(encode);
-    }
-#endregion
 
         private TaskEscapeNanny(JsonElement src, JsonSerializerOptions options) : base(src, options)
         {
