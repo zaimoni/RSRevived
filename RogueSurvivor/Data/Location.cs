@@ -20,7 +20,7 @@ using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with trans
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  public readonly struct Location(Map map, Point pos) : IEquatable<Location>, Zaimoni.Serialization.ISerialize
+  public readonly struct Location(Map map, Point pos) : IEquatable<Location>
     {
     public readonly Map Map = map
 #if DEBUG
@@ -30,35 +30,6 @@ namespace djack.RogueSurvivor.Data
     public readonly Point Position = pos;
 
     public Location(Map map, int x, int y) : this(map, new((short)x, (short)y)) {}
-
-#region implement Zaimoni.Serialization.ISerialize
-#if FAIL
-    protected Location(Zaimoni.Serialization.DecodeObjects decode)
-    {
-        ulong code;
-        Map = decode.Load<Map>(out code);
-        if (null == Map) {
-            if (0 < code) {
-                decode.Schedule(code, (o) => {
-                    if (o is Map w) Map = w; // local copy doesn't work for structs
-                    else throw new InvalidOperationException("Map object not loaded");
-                });
-            } else throw new InvalidOperationException("m_EntryMap must ultimately be non-null");
-        }
-
-        Zaimoni.Serialization.ISave.Deserialize7bit(decode.src, ref Position); // not really...
-    }
-#endif
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
-    {
-        Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, Position); // assumes normalized
-        var code = encode.Saving(Map); // obligatory, in spite of type prefix/suffix
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else throw new ArgumentNullException(nameof(Map));
-    }
-#endregion
-
 
     // projection functions for Linq
     [NonSerialized] public static Func<Location, Point> pos = loc => loc.Position;
@@ -395,15 +366,6 @@ namespace Zaimoni.Serialization {
                 if (o is Map m) handler(m, stage_pos); // local copy doesn't work for structs
                 else throw new InvalidOperationException("Map object not loaded");
             });
-        }
-
-        internal static void SaveSigned(Zaimoni.Serialization.EncodeObjects encode, in Location src)
-        {
-            SaveSigned(encode.dest, src.Position);
-
-            var code = encode.Saving(src.Map); // obligatory, in spite of type prefix/suffix
-            if (0 < code) Formatter.SerializeObjCode(encode.dest, code);
-            else throw new ArgumentNullException(nameof(Map));
         }
     }
 }

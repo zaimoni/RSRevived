@@ -13,7 +13,7 @@ using Map = djack.RogueSurvivor.Data.Map;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  public class UniqueMaps : Zaimoni.Serialization.ISerialize
+  public class UniqueMaps
     {
     public UniqueMap CHARUndergroundFacility { get; set; }
     public UniqueMap PoliceStation_OfficesLevel { get; set; }
@@ -128,43 +128,6 @@ namespace djack.RogueSurvivor.Engine
         } else {
             Hospital_Power = new(stage);
         }
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
-    {
-//      Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)8); // fail-fast if things don't add up?
-
-        var code = encode.Saving(CHARUndergroundFacility.TheMap);
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else throw new ArgumentNullException("CHARUndergroundFacility.TheMap");
-
-        code = encode.Saving(PoliceStation_OfficesLevel.TheMap);
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else throw new ArgumentNullException("PoliceStation_OfficesLevel.TheMap");
-
-        code = encode.Saving(PoliceStation_JailsLevel.TheMap);
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else throw new ArgumentNullException("PoliceStation_JailsLevel.TheMap");
-
-        code = encode.Saving(Hospital_Admissions.TheMap);
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else throw new ArgumentNullException("Hospital_Admissions.TheMap");
-
-        code = encode.Saving(Hospital_Offices.TheMap);
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else throw new ArgumentNullException("Hospital_Offices.TheMap");
-
-        code = encode.Saving(Hospital_Patients.TheMap);
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else throw new ArgumentNullException("Hospital_Patients.TheMap");
-
-        code = encode.Saving(Hospital_Storage.TheMap);
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else throw new ArgumentNullException("Hospital_Storage.TheMap");
-
-        code = encode.Saving(Hospital_Power.TheMap);
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else throw new ArgumentNullException("Hospital_Power.TheMap");
     }
 #endregion
 

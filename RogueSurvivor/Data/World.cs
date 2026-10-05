@@ -23,7 +23,7 @@ using Rectangle = Zaimoni.Data.Box2D<short>;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  public sealed class World : Zaimoni.Serialization.ISerialize
+  public sealed class World
   {
     // alpha10
     // weather stays from 1h to 3 days and then change
@@ -359,22 +359,6 @@ namespace djack.RogueSurvivor.Data
         if (m_Size != test.m_Size) err += "World size mismatch: "+m_Size.ToString()+ "" + test.m_Size.ToString();
 
         if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
-    {
-        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_Size);
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)Weather);
-        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, NextWeatherCheckTurn);
-        encode.SaveTo(m_DistrictsGrid);
-
-        var code = encode.Saving(m_PlayerDistrict);
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else Zaimoni.Serialization.Formatter.SerializeNull(encode.dest);
-        code = encode.Saving(m_SimDistrict);
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else Zaimoni.Serialization.Formatter.SerializeNull(encode.dest);
-        Zaimoni.Serialization.ISave.LinearSave(encode, m_Ready);
     }
 
     static private int field_code(ref Utf8JsonReader reader) {

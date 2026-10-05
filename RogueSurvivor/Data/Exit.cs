@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Data
 {
   // deriving from Zaimoni.Serialization.ISerialize, prevents using a primary constructor
   [Serializable]
-  public sealed class Exit : Zaimoni.Serialization.ISerialize
+  public sealed class Exit
     {
     private Location m_Location;	// XXX this cannot be public readonly Location: load fails in the runtime library Nov 5 2016.  Retry after compiler upgrade.
 
@@ -22,18 +22,6 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     public Exit(in Location dest) { m_Location = dest; }
     public Exit(Map toMap, in Point toPosition) : this(new Location(toMap, toPosition)) {}
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected Exit(Zaimoni.Serialization.DecodeObjects decode)
-    {
-      Zaimoni.Serialization.ISave.LoadSigned(decode, ref m_Location, (m, pt) => m_Location = new(m, pt));
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
-    {
-      Zaimoni.Serialization.ISave.SaveSigned(encode, m_Location);
-    }
-#endregion
 
 
     // note that if we are pathfinding, we do not have actor anyway.  All livings can jump, however

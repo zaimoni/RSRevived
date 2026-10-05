@@ -6,7 +6,6 @@
 
 using System;
 using System.Linq;
-using System.Runtime.Serialization;
 
 #nullable enable
 
@@ -27,7 +26,7 @@ namespace djack.RogueSurvivor.Data
 
 // 2025-12-27: won't build if this is a struct
   [Serializable]
-  public class WorldTime : ISerializable
+  public class WorldTime
     {
     public const int HOURS_PER_DAY = 24;    // not scalable
     public const int TURNS_PER_HOUR = 30;   // defines space-time scale.  Standard game is 30 turns/hour, district size 50
@@ -115,18 +114,6 @@ namespace djack.RogueSurvivor.Data
       TurnCounter = turnCounter;
     }
 
-#region Implement ISerializable
-    // general idea is Plain Old Data before objects.
-    protected WorldTime(SerializationInfo info, StreamingContext context)
-    {
-      TurnCounter = info.GetInt32("TurnCounter");
-    }
-
-    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-      info.AddValue("TurnCounter", m_TurnCounter);
-    }
-#endregion
 #region implement Zaimoni.Serialization.ISerialize
     protected WorldTime(Zaimoni.Serialization.DecodeObjects decode)
     {

@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  public sealed class Map : ISerializable, IMap, Zaimoni.Serialization.ISerialize
+  public sealed class Map : IMap
     {
     public const int GROUND_INVENTORY_SLOTS = RogueGame.INVENTORY_SLOTS_PER_LINE;
     public readonly int Seed;
@@ -196,73 +196,6 @@ namespace djack.RogueSurvivor.Data
       OnConstructed();
     }
 
-#region Implement ISerializable
-    protected Map(SerializationInfo info, StreamingContext context)
-    {
-      Seed = info.GetInt32("m_Seed");
-      info.read_s(ref DistrictPos, "m_DistrictPos");
-      Name = info.GetString("m_Name");
-      RepairHash(ref _hash);
-
-      info.read(ref LocalTime, "m_LocalTime");
-      info.read_s(ref Extent, "m_Extent");
-      Rect = new Rectangle(Point.Empty,Extent);
-      info.read(ref m_Exits, "m_Exits");
-      info.read(ref m_Zones, "m_Zones");
-      info.read(ref m_ActorsList, "m_ActorsList");
-      info.read(ref m_MapObjectsByPosition, "m_MapObjectsByPosition");
-      info.read(ref m_GroundItemsByPosition, "m_GroundItemsByPosition");
-      info.read(ref m_CorpsesList, "m_CorpsesList");
-      info.read_s(ref m_Lighting, "m_Lighting");
-      info.read(ref m_ScentsByPosition, "m_ScentsByPosition");
-      info.read(ref m_Timers, "m_Timers");
-      info.read(ref m_TileIDs, "m_TileIDs");
-      info.read(ref m_IsInside, "m_IsInside");
-      info.read(ref m_Decorations, "m_Decorations");
-      BgMusic = info.GetString("m_BgMusic");   // alpha10
-      // readonly block
-      Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
-      Viewpoints = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findViewpoints);
-      Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
-      PowerGenerators = new NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsByPosition, _findPowerGenerators);
-      destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
-    }
-
-    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-#if CPU_HOG_TRACE
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "preparing to save: "+this);
-#endif
-      info.AddValue("m_Seed", Seed);
-      info.AddValue("m_DistrictPos", DistrictPos);
-      info.AddValue("m_Name", Name);
-      info.AddValue("m_LocalTime", LocalTime);
-      info.AddValue("m_Extent", Extent);
-      info.AddValue("m_Exits", m_Exits);
-      info.AddValue("m_Zones", m_Zones);
-      info.AddValue("m_ActorsList", m_ActorsList);  // this fails when Actor is ISerializable(!): length ok, all values null
-      info.AddValue("m_MapObjectsByPosition", m_MapObjectsByPosition);
-      info.AddValue("m_GroundItemsByPosition", m_GroundItemsByPosition);
-      info.AddValue("m_CorpsesList", m_CorpsesList);
-      info.AddValue("m_Lighting", m_Lighting);
-      info.AddValue("m_ScentsByPosition", m_ScentsByPosition);
-      info.AddValue("m_Timers", m_Timers);
-      info.AddValue("m_TileIDs", m_TileIDs);
-      info.AddValue("m_IsInside", m_IsInside);
-      info.AddValue("m_Decorations", m_Decorations);
-      info.AddValue("m_BgMusic", BgMusic);    // alpha10
-#if CPU_HOG_TRACE
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "ready to save: "+this);
-#endif
-     }
-
-    [OnDeserialized] private void OnDeserialized(StreamingContext context)
-    {
-      ReconstructAuxiliaryFields();
-      RegenerateMapGeometry();
-      OnConstructed();
-    }
-
     public void AfterLoad(District d) {
       if (DistrictPos == d.WorldPosition) m_District = d;
 #if DEBUG
@@ -330,132 +263,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     private void RepairHash(ref int hash) => hash = Name.GetHashCode() ^ DistrictPos.GetHashCode();
-#endregion
-#region implement Zaimoni.Serialization.ISerialize
-    protected Map(Zaimoni.Serialization.DecodeObjects decode)
-    {
-      byte tmp_byte = 0;
-      Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref Seed);
-      Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref Name);
-      Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref tmp_byte);
-      m_Lighting = (Lighting)tmp_byte;
-
-      Zaimoni.Serialization.ISave.Deserialize7bit(decode.src, ref Extent);
-      Rect = new Rectangle(Point.Empty,Extent);
-
-      Zaimoni.Serialization.ISave.Deserialize7bit(decode.src, ref DistrictPos);
-      RepairHash(ref _hash);
-      LocalTime = decode.LoadInline<WorldTime>();
-
-      Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref BgMusic); // alpha10
-
-      decode.LoadFrom(ref m_IsInside);
-      decode.LoadFrom(ref m_TileIDs); // dimensions should agree with Extent
-
-      m_Zones = new();
-      Zaimoni.Serialization.ISave.LinearLoad<Zone>(decode, src => m_Zones.AddRange(src));
-
-      m_Exits = new();
-      Zaimoni.Serialization.ISave.LinearLoadSigned<Exit>(decode, src => {
-          foreach (var x in src) m_Exits.Add(x.Key, x.Value);
-      });
-
-      m_Decorations = new();
-
-      void format_deco(KeyValuePair<Point, string[]>[] src) {
-          var ub = src.Length;
-          while (0 < ub) {
-              var x = src[--ub];
-              var arr = x.Value;
-              m_Decorations.Add(x.Key, new(arr));
-              src[ub] = default;    // to force early GC
-          };
-      };
-
-      Zaimoni.Serialization.ISave.LinearLoad(decode, format_deco);
-
-      m_ScentsByPosition = new();
-
-      void format_scents(KeyValuePair<Point, OdorScent[]>[] src) {
-          var ub = src.Length;
-          while (0 < ub) {
-              var x = src[--ub];
-              var arr = x.Value;
-              m_ScentsByPosition.Add(x.Key, new(arr));
-              src[ub] = default;    // to force early GC
-          };
-      };
-      Zaimoni.Serialization.ISave.LinearLoadInline(decode, format_scents);
-
-      m_GroundItemsByPosition = new();
-
-      void format_ginv(KeyValuePair<Point, Inventory>[] src) {
-          var ub = src.Length;
-          while (0 < ub) {
-              var x = src[--ub];
-              m_GroundItemsByPosition.Add(x.Key, x.Value);
-              src[ub] = default;    // to force early GC
-          };
-      };
-//    inline doesn't play well with inventory percepts
-//    Zaimoni.Serialization.ISave.LinearLoadInline(decode, (Action<KeyValuePair<Point, Inventory>[]>)format_ginv);
-      Zaimoni.Serialization.ISave.LinearLoad(decode, (Action<KeyValuePair<Point, Inventory>[]>)format_ginv);
-
-/*
-      info.read(ref m_ActorsList, "m_ActorsList");
-      info.read(ref m_MapObjectsByPosition, "m_MapObjectsByPosition");
-      info.read(ref m_GroundItemsByPosition, "m_GroundItemsByPosition");
-      info.read(ref m_CorpsesList, "m_CorpsesList");
-      info.read(ref m_Timers, "m_Timers");
-
-      // readonly block
-      Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
-      Viewpoints = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findViewpoints);
-      Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
-      PowerGenerators = new NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsByPosition, _findPowerGenerators);
-      destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
-
-      ReconstructAuxiliaryFields();
-      RegenerateMapGeometry();
-      OnConstructed();
-
-      foreach(var a in m_ActorsList) a.RepairLoad();
-      foreach(var x in m_MapObjectsByPosition) {
-        x.Value.RepairLoad(this, x.Key);
-#if BOOTSTRAP_Z_DICTIONARY
-        m_MapObjectsByPosition_alt.Add(x.Key, x.Value);
-#endif
-      }
- */
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
-    {
-      Zaimoni.Serialization.Formatter.Serialize(encode.dest, Seed);
-      Zaimoni.Serialization.Formatter.Serialize(encode.dest, Name);
-      Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)m_Lighting);
-      Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, Extent);
-      Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, DistrictPos);
-      Zaimoni.Serialization.ISave.InlineSave(encode, in LocalTime);
-      Zaimoni.Serialization.Formatter.Serialize(encode.dest, BgMusic); // alpha10
-      encode.SaveTo(m_IsInside);
-      encode.SaveTo(m_TileIDs); // dimensions should agree with Extent
-      encode.SaveTo(m_Zones);
-
-      Zaimoni.Serialization.ISave.LinearSaveSigned(encode, m_Exits);
-      Zaimoni.Serialization.ISave.LinearSave(encode, m_Decorations);
-      Zaimoni.Serialization.ISave.LinearSaveInline(encode, m_ScentsByPosition);
-//    Zaimoni.Serialization.ISave.LinearSaveInline(encode, m_GroundItemsByPosition);
-      Zaimoni.Serialization.ISave.LinearSave(encode, m_GroundItemsByPosition);
-
-/*
-      info.AddValue("m_ActorsList", m_ActorsList);  // this fails when Actor is ISerializable(!): length ok, all values null
-      info.AddValue("m_MapObjectsByPosition", m_MapObjectsByPosition);
-      info.AddValue("m_CorpsesList", m_CorpsesList);
-      info.AddValue("m_Timers", m_Timers);
- */
-    }
-        #endregion
 
         private const int field_code_UB = 14;
         static private int field_code(ref Utf8JsonReader reader)
@@ -724,47 +531,6 @@ namespace djack.RogueSurvivor.Data
         public static Map fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options) {
         return reader.TryReadRef<Map>() ?? new Map(ref reader, options);
     }
-
-#if false
-    public readonly int Seed; // savefile break: make non-serialized, used only in map generation? or retain for audit trail?
-    public readonly string Name;    // involved in Dictionary hashcode
-    public readonly string BgMusic;  // alpha10; very few values, may be able to recompute on-fly
-#nullable enable
-    private readonly byte[,] m_TileIDs; // required to load exits
-    private readonly Dictionary<Point,HashSet<string>> m_Decorations = new();
-    private readonly List<Actor> m_ActorsList = new(5);
-    private readonly Dictionary<Point, MapObject> m_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
-    private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
-    private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
-    private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
-    private readonly List<TimedTask> m_Timers = new List<TimedTask>(5); // The end-of-turn timers.
-
-    // position inverting caches
-    [NonSerialized] private readonly Dictionary<Point, Actor> m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
-    [NonSerialized] private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
-    // AI support caches, etc.
-    [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
-    [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Viewpoints;
-    [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Police;
-    [NonSerialized] public readonly NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
-    [NonSerialized] public readonly NonSerializedCache<Map, Map, HashSet<Map>> destination_maps;
-    // map geometry
-#if PRERELEASE_MOTHBALL
-    [NonSerialized] private readonly List<LinearChokepoint> m_Chokepoints = new List<LinearChokepoint>();
-#endif
-    [NonSerialized] private readonly List<Point> m_FullCorner_nw = new List<Point>();
-    [NonSerialized] private readonly List<Point> m_FullCorner_ne = new List<Point>();
-    [NonSerialized] private readonly List<Point> m_FullCorner_se = new List<Point>();
-    [NonSerialized] private readonly List<Point> m_FullCorner_sw = new List<Point>();
-    [NonSerialized] private readonly List<Point> m_FlushWall_n = new List<Point>();
-    [NonSerialized] private readonly List<Point> m_FlushWall_s = new List<Point>();
-    [NonSerialized] private readonly List<Point> m_FlushWall_w = new List<Point>();
-    [NonSerialized] private readonly List<Point> m_FlushWall_e = new List<Point>();
-    [NonSerialized] private Dictionary<Rectangle, ZoneLoc>? m_ClearableZones = null;
-    [NonSerialized] private Dictionary<Rectangle,ZoneLoc>? m_CanonicalZones = null;
-    // this is going to want an end-of-turn map updater
-    [NonSerialized] public readonly TimeCache<string, Dictionary<Location, int>> pathing_exits_to_goals = new TimeCache<string, Dictionary<Location, int>>(); // type is that needed by user, not that generated by pathfinding
-#endif
 
     // BgMusic is not saved: BaseTownGenerator picks it from the kind of map, which the name records.  The entry map,
     // named for its district, is the one kind with no prefix of its own.

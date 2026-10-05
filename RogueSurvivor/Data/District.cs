@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]
-  public sealed class District : Zaimoni.Serialization.ISerialize
+  public sealed class District
   {
 #nullable enable
     private readonly List<Map> m_Maps = new List<Map>(3);
@@ -172,25 +172,6 @@ namespace djack.RogueSurvivor.Data
         if (WorldPosition != test.WorldPosition) err += "District Kind mismatch: "+ WorldPosition.to_s()+ "" + test.WorldPosition.to_s();
 
         if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
-    {
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)Kind);
-        // don't want to support negative world pos coordinates here; if we have to extend west/north dynamically, that's a constructor call
-        Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, in WorldPosition);
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_Name);
-        encode.SaveTo(m_Maps);
-
-        var code = encode.Saving(m_EntryMap); // obligatory, in spite of type prefix/suffix
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else throw new ArgumentNullException(nameof(m_EntryMap));
-        code = encode.Saving(m_SewersMap);
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else Zaimoni.Serialization.Formatter.SerializeNull(encode.dest);
-        code = encode.Saving(m_SubwayMap);
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else Zaimoni.Serialization.Formatter.SerializeNull(encode.dest);
     }
 
     [OnDeserialized] private void OnDeserialized(StreamingContext context)

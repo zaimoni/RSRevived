@@ -17,7 +17,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  public sealed class Corpse : ILocation, ISerializable, IJsonStaged<Corpse>
+  public sealed class Corpse : ILocation, IJsonStaged<Corpse>
   {
     public const int ZOMBIFY_DELAY = 6*WorldTime.TURNS_PER_HOUR;
 
@@ -50,28 +50,6 @@ namespace djack.RogueSurvivor.Data
       Scale = Math.Max(0.0f, Math.Min(1f, scale));
       DeadGuy.Location.Map.Add(this);
     }
-
-#region Implement ISerializable
-    protected Corpse(SerializationInfo info, StreamingContext context)
-    {
-      info.read(ref DeadGuy, "DeadGuy");
-      Turn = info.GetInt32("Turn");
-      MaxHitPoints = info.GetInt32("MaxHitPoints");
-      HitPoints = info.GetSingle("HitPoints");
-      Rotation = info.GetSingle("Rotation");
-      Scale = info.GetSingle("Scale");
-    }
-
-    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-      info.AddValue("DeadGuy", DeadGuy);
-      info.AddValue("Turn", Turn);
-      info.AddValue("MaxHitPoints", MaxHitPoints);
-      info.AddValue("HitPoints", HitPoints);
-      info.AddValue("Rotation", Rotation);
-      info.AddValue("Scale", Scale);
-     }
-#endregion
 
 #region JSON save/load
     // We own our dead actor: it is saved in full here, and nowhere else.  Our location is its location.
