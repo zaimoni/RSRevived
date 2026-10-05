@@ -9,7 +9,6 @@ using djack.RogueSurvivor.Gameplay.AI;
 using djack.RogueSurvivor.UI;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Linq;
 using Zaimoni.Data;
 using static Zaimoni.Data.Functor;
@@ -436,18 +435,6 @@ namespace djack.RogueSurvivor.Data
     }
 
 #region Session save/load assistants
-    static public void Load(SerializationInfo info, StreamingContext context)
-    {
-      info.read_nullsafe(ref s_BeforeAction, nameof(s_BeforeAction));
-      info.read_nullsafe(ref s_AfterAction,  nameof(s_AfterAction));
-    }
-
-    static public void Save(SerializationInfo info, StreamingContext context)
-    {
-      info.AddValue(nameof(s_BeforeAction), s_BeforeAction);
-      info.AddValue(nameof(s_AfterAction),  s_AfterAction);
-    }
-
     // JSON: a Session-level object {"BeforeAction": [...], "AfterAction": [...]}, each entry a $type'd EventUnconditional.
     // Reset() builds the after list as a copy of the before list, so the shared entries are $refs there.
     // Stale entries (what Expire would drop without acting) are not written; the key is omitted when nothing is left.

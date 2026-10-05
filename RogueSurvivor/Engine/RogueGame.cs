@@ -23,7 +23,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -347,11 +346,6 @@ namespace djack.RogueSurvivor.Engine
     static public bool IsSimulating { get { return "Simulation Thread" == Thread.CurrentThread.Name; } }
 
 #region Session save/load assistants
-    static public void AfterLoad(Map.ActorCode src)
-    {
-      m_MapView = setPlayer(Map.decode(src)).Location.View;
-    }
-
     /// <summary>For a JSON-loaded session going live.  The message log comes with the player's controller (setPlayer);
     /// the counted commands are re-installed by each loaded PlayerController's TakeControl, which follows this.</summary>
     static public void AfterLoad(Actor? player, List<Actor>? refugees)
@@ -359,21 +353,6 @@ namespace djack.RogueSurvivor.Engine
       if (null != player) m_MapView = setPlayer(player).Location.View;
       s_RefugeePool = refugees;
       s_CountedCommands = null;
-    }
-
-    static public void Load(SerializationInfo info, StreamingContext context)
-    {
-      info.read_nullsafe(ref s_MessageManager, "s_MessageManager");
-      info.read_nullsafe(ref s_RefugeePool, "s_RefugeePool");
-      info.read_nullsafe(ref s_CountedCommands, "s_CountedCommands");
-    }
-
-    static public void Save(SerializationInfo info, StreamingContext context)
-    {
-      info.AddValue("s_Player",Map.encode(Player));
-      info.AddValue("s_MessageManager", s_MessageManager);
-      info.AddValue("s_RefugeePool", s_RefugeePool);
-      info.AddValue("s_CountedCommands", s_CountedCommands);
     }
 
     // very severe access control issue; should be called only from Session::Session()

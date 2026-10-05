@@ -14,7 +14,6 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using Zaimoni.Data;
 
@@ -103,19 +102,6 @@ namespace djack.RogueSurvivor.Engine
     public static void Reset() { s_Rules = null; }
 
 #region Session save/load assistants
-    public void Load(SerializationInfo info, StreamingContext context)
-    {
-      info.read(ref m_DiceRoller, "m_DiceRoller");
-    }
-
-    public void Save(SerializationInfo info, StreamingContext context)
-    {
-      info.AddValue("m_DiceRoller", DiceRoller,typeof(DiceRoller));
-    }
-
-    public void Load(Zaimoni.Serialization.DecodeObjects decode) => m_DiceRoller = decode.LoadInline<DiceRoller>();
-    public void Save(Zaimoni.Serialization.EncodeObjects encode) => Zaimoni.Serialization.ISave.InlineSave(encode, m_DiceRoller);
-
     static public void Load(ref Utf8JsonReader reader)
     {
       s_Rules = JsonSerializer.Deserialize<Rules>(ref reader, Session.JSON_opts) ?? throw new JsonException();

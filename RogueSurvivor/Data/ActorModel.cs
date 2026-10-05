@@ -5,8 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Diagnostics.Eventing.Reader;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
@@ -65,32 +63,6 @@ namespace djack.RogueSurvivor.Data
     }
 
 #region Session save/load assistants
-    static public void Load(SerializationInfo info, StreamingContext context)
-    {
-      var stage = (ulong[]) info.GetValue("GameActors_createdCounts", typeof(ulong[]));
-      if ((int)Gameplay.GameActors.IDs._COUNT != stage.Length) throw new InvalidOperationException("need upgrade path for Actor::Load");
-      // \todo auto-repair if the incoming count is incorrect
-      Array.Copy(stage, _createdCounts, (int)Gameplay.GameActors.IDs._COUNT);
-    }
-
-    static public void Save(SerializationInfo info, StreamingContext context)
-    {
-      info.AddValue("GameActors_createdCounts", _createdCounts);
-    }
-
-    // it is a semantic error for the created count to be negative, so we
-    // don't need to binary-encode against the possibility of negative values
-    static public void Load(Zaimoni.Serialization.DecodeObjects decode)
-    {
-        var stage = new ulong[(int)Gameplay.GameActors.IDs._COUNT];
-        decode.LoadFrom7bit(ref stage);
-        if ((int)Gameplay.GameActors.IDs._COUNT != stage.Length) throw new InvalidOperationException("need upgrade path for Actor::Load");
-        // \todo auto-repair if the incoming count is incorrect
-        Array.Copy(stage, _createdCounts, (int)Gameplay.GameActors.IDs._COUNT);
-    }
-
-    static public void Save(Zaimoni.Serialization.EncodeObjects encode) => encode.SaveTo7bit(_createdCounts);
-
     static public void Load(ref Utf8JsonReader reader)
     {
       var stage = JsonSerializer.Deserialize<ulong[]>(ref reader, Engine.Session.JSON_opts) ?? throw new JsonException();
@@ -103,7 +75,6 @@ namespace djack.RogueSurvivor.Data
     {
       JsonSerializer.Serialize(writer, _createdCounts, Engine.Session.JSON_opts);
     }
-
 #endregion
 
     public ActorModel(Gameplay.GameActors.IDs id, string? imageID, string name, string pluralName, int scoreValue, string flavor, DollBody body, Abilities abilities, Gameplay.GameActors.ActorData src, Type defaultController)
