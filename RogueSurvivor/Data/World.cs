@@ -294,15 +294,6 @@ namespace djack.RogueSurvivor.Data
       initTurnOrder();
     }
 
-    [OnDeserialized] private void OnDeserialized(StreamingContext context)
-    {
-      m_Extent = new Rectangle(Point.Empty, new Point(m_Size, m_Size));
-      var c_size = (short)(m_Size - 2);
-      m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(c_size, c_size));
-      s_Recent = this;
-      initTurnOrder();
-    }
-
     static public void Load(SerializationInfo info, StreamingContext context)
     {
       info.read_nullsafe(ref s_Recent, "World");

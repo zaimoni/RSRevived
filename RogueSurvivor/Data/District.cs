@@ -165,20 +165,6 @@ namespace djack.RogueSurvivor.Data
         }
     }
 
-    public void SaveLoadOk(District test) {
-        var err = string.Empty;
-
-        if (Kind != test.Kind) err += "District Kind mismatch: "+ Kind.ToString()+ "" + test.Kind.ToString();
-        if (WorldPosition != test.WorldPosition) err += "District Kind mismatch: "+ WorldPosition.to_s()+ "" + test.WorldPosition.to_s();
-
-        if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
-    }
-
-    [OnDeserialized] private void OnDeserialized(StreamingContext context)
-    {
-      foreach(var m in m_Maps) m.AfterLoad(this);
-    }
-
     public void RepairLoad()
     {
       foreach(var m in m_Maps) m.RepairLoad();
