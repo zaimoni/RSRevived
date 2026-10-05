@@ -35,8 +35,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
 
-    private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor;
-    private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
+    private MemorizedSensor<LOSSensor> m_MemLOSSensor;
+    private SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
     private SmellSensor? m_MasterSmellSensor = null;
     private ExplorationData? m_Exploration = null;
 
@@ -46,6 +46,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.Model.Abilities.IsUndeadMaster) m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
       if (m_Actor.Model.Abilities.ZombieAI_Explore) m_Exploration = new ExplorationData();
     }
+
+    #region JSON save/load
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      base.toJsonFields(writer, options);
+      writer.WritePropertyName("MemLOS");
+      JsonSerializer.Serialize(writer, m_MemLOSSensor, options);
+      writer.WritePropertyName("Smell");
+      JsonSerializer.Serialize(writer, m_LivingSmellSensor, options);
+      if (null != m_MasterSmellSensor) {
+        writer.WritePropertyName("MasterSmell");
+        JsonSerializer.Serialize(writer, m_MasterSmellSensor, options);
+      }
+      if (null != m_Exploration && !m_Exploration.IsEmpty) {
+        writer.WritePropertyName("Exploration");
+        m_Exploration.toJson(writer, options, m_Actor);
+      }
+    }
+
+    protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
+    {
+      base.loadJsonFields(src, options);
+      JsonElement x;
+      m_MemLOSSensor = src.Require("MemLOS").Deserialize<MemorizedSensor<LOSSensor>>(options) ?? throw new JsonException("null MemLOS");
+      m_LivingSmellSensor = src.Require("Smell").Deserialize<SmellSensor>(options) ?? throw new JsonException("null Smell");
+      if (src.TryGetProperty("MasterSmell", out x)) m_MasterSmellSensor = x.Deserialize<SmellSensor>(options);
+      if (src.TryGetProperty("Exploration", out x)) m_Exploration = new(x, options);
+    }
+
+    protected override bool HasJsonState { get => (null != m_Exploration && !m_Exploration.IsEmpty) || base.HasJsonState; }
+    #endregion
 
 #nullable enable
     public override List<Percept> UpdateSensors()

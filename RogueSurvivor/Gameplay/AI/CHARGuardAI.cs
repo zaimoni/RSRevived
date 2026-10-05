@@ -39,7 +39,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int LOS_MEMORY = WorldTime.TURNS_PER_HOUR/3;
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS;
 
-    private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor;
+    private MemorizedSensor<LOSSensor> m_MemLOSSensor;
 
     private List<Actor> _squad = null;
 
@@ -47,6 +47,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES, src), LOS_MEMORY);
     }
+
+    #region JSON save/load
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      base.toJsonFields(writer, options);
+      writer.WritePropertyName("MemLOS");
+      JsonSerializer.Serialize(writer, m_MemLOSSensor, options);
+      if (null != _squad && 0 < _squad.Count) writer.WriteRefs("Squad", _squad);
+    }
+
+    protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
+    {
+      base.loadJsonFields(src, options);
+      JsonElement x;
+      m_MemLOSSensor = src.Require("MemLOS").Deserialize<MemorizedSensor<LOSSensor>>(options) ?? throw new JsonException("null MemLOS");
+      if (src.TryGetProperty("Squad", out x)) x.ReadRefs(_squad = new());
+    }
+
+    protected override bool HasJsonState { get => (null != _squad && 0 < _squad.Count) || base.HasJsonState; }
+    #endregion
 
     public override bool UsesExplosives { get => false; }
 

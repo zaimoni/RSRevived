@@ -26,13 +26,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
 
-    private readonly LOSSensor m_LOSSensor;
-    private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
+    private LOSSensor m_LOSSensor;
+    private SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
 
     public RatAI(Actor src) : base(src)
     {
       m_LOSSensor = new LOSSensor(VISION_SEES, src);
     }
+
+    #region JSON save/load
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      base.toJsonFields(writer, options);
+      writer.WritePropertyName("LOS");
+      JsonSerializer.Serialize(writer, m_LOSSensor, options);
+      writer.WritePropertyName("Smell");
+      JsonSerializer.Serialize(writer, m_LivingSmellSensor, options);
+    }
+
+    protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
+    {
+      base.loadJsonFields(src, options);
+      JsonElement x;
+      m_LOSSensor = src.Require("LOS").Deserialize<LOSSensor>(options) ?? throw new JsonException("null LOS");
+      m_LivingSmellSensor = src.Require("Smell").Deserialize<SmellSensor>(options) ?? throw new JsonException("null Smell");
+    }
+    #endregion
 
     public override List<Percept> UpdateSensors()
     {

@@ -55,9 +55,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS | LOSSensor.SensingFilter.CORPSES;
 
-    private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor;
+    private MemorizedSensor<LOSSensor> m_MemLOSSensor;
     private int m_SafeTurns;
-    private readonly ExplorationData m_Exploration = new ExplorationData();
+    private ExplorationData m_Exploration = new ExplorationData();
     private string[] m_Emotes;
 
     public CivilianAI(Actor src) : base(src)
@@ -65,6 +65,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES, src), LOS_MEMORY);
       m_Emotes = FIGHT_EMOTES;
     }
+
+    #region JSON save/load
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      base.toJsonFields(writer, options);
+      writer.WritePropertyName("MemLOS");
+      JsonSerializer.Serialize(writer, m_MemLOSSensor, options);
+      if (0 != m_SafeTurns) writer.WriteNumber("SafeTurns", m_SafeTurns);
+      if (!m_Exploration.IsEmpty) {
+        writer.WritePropertyName("Exploration");
+        m_Exploration.toJson(writer, options, m_Actor);
+      }
+      if (!ReferenceEquals(m_Emotes, FIGHT_EMOTES)) writer.WriteArray("Emotes", m_Emotes, options);   // a unique's own
+    }
+
+    protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
+    {
+      base.loadJsonFields(src, options);
+      JsonElement x;
+      m_MemLOSSensor = src.Require("MemLOS").Deserialize<MemorizedSensor<LOSSensor>>(options) ?? throw new JsonException("null MemLOS");
+      if (src.TryGetProperty("SafeTurns", out x)) m_SafeTurns = x.GetInt32();
+      if (src.TryGetProperty("Exploration", out x)) m_Exploration = new(x, options);
+      if (src.TryGetProperty("Emotes", out x)) m_Emotes = x.Deserialize<string[]>(options) ?? throw new JsonException("null Emotes");
+    }
+
+    protected override bool HasJsonState { get => 0 != m_SafeTurns || !m_Exploration.IsEmpty || !ReferenceEquals(m_Emotes, FIGHT_EMOTES) || base.HasJsonState; }
+    #endregion
 
     // we don't have memory, but we do have taboo trades
     [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)

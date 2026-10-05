@@ -8,6 +8,8 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
@@ -30,6 +32,54 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private readonly List<Zone> m_ZonesQueue = new(EXPLORATION_ZONES);
 
     public ExplorationData() {}
+
+#region JSON save/load
+    // A zone does not know its map; the actor's does, or one of the maps explored.  Written as [map, index into its zones].
+    public ExplorationData(JsonElement src, JsonSerializerOptions options)
+    {
+      if (src.TryGetProperty("Locations", out var x)) m_LocationsQueue.AddRange(x.Deserialize<List<Location>>(options) ?? throw new JsonException("null Locations"));
+      if (src.TryGetProperty("Zones", out x)) {
+        foreach (var pair in x.EnumerateArray()) {
+          if (JsonValueKind.Array != pair.ValueKind || 2 != pair.GetArrayLength()) throw new JsonException("expected [map, zone index]: " + pair.GetRawText());
+          var m = pair[0].RequireRef<Map>();
+          var zone = m.Zones.ElementAtOrDefault(pair[1].GetInt32()) ?? throw new JsonException(m.Name + " has no zone #" + pair[1].GetRawText());
+          m_ZonesQueue.Add(zone);
+        }
+      }
+    }
+
+    public bool IsEmpty { get => 0 >= m_LocationsQueue.Count && 0 >= m_ZonesQueue.Count; }
+
+    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options, Actor who)
+    {
+      writer.WriteStartObject();
+      if (0 < m_LocationsQueue.Count) writer.WriteArray("Locations", m_LocationsQueue, options);
+      if (0 < m_ZonesQueue.Count) {
+        writer.WriteStartArray("Zones");
+        foreach (var zone in m_ZonesQueue) {
+          var m = who.Location.Map;
+          int i = m.Zones.ToList().IndexOf(zone);
+          if (0 > i) {
+            foreach (var loc in m_LocationsQueue) {
+              if (loc.Map == m) continue;
+              i = loc.Map.Zones.ToList().IndexOf(zone);
+              if (0 <= i) {
+                m = loc.Map;
+                break;
+              }
+            }
+          }
+          if (0 > i) throw new JsonException(who.UnmodifiedName + " explored zone " + zone.ToString() + " on no map it remembers");
+          writer.WriteStartArray();
+          m.SaveAsRef(writer);
+          writer.WriteNumberValue(i);
+          writer.WriteEndArray();
+        }
+        writer.WriteEndArray();
+      }
+      writer.WriteEndObject();
+    }
+#endregion
 
 #if DEAD_FUNC
     public void Clear()

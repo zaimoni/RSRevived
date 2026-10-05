@@ -44,13 +44,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS;
 
-    private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor;
-    private readonly ExplorationData m_Exploration = new ExplorationData();
+    private MemorizedSensor<LOSSensor> m_MemLOSSensor;
+    private ExplorationData m_Exploration = new ExplorationData();
 
     public SoldierAI(Actor src) : base(src)
     {
       m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES, src), LOS_MEMORY);
     }
+
+    #region JSON save/load
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      base.toJsonFields(writer, options);
+      writer.WritePropertyName("MemLOS");
+      JsonSerializer.Serialize(writer, m_MemLOSSensor, options);
+      if (!m_Exploration.IsEmpty) {
+        writer.WritePropertyName("Exploration");
+        m_Exploration.toJson(writer, options, m_Actor);
+      }
+    }
+
+    protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
+    {
+      base.loadJsonFields(src, options);
+      JsonElement x;
+      m_MemLOSSensor = src.Require("MemLOS").Deserialize<MemorizedSensor<LOSSensor>>(options) ?? throw new JsonException("null MemLOS");
+      if (src.TryGetProperty("Exploration", out x)) m_Exploration = new(x, options);
+    }
+
+    protected override bool HasJsonState { get => !m_Exploration.IsEmpty || base.HasJsonState; }
+    #endregion
 
 #nullable enable
     public override List<Percept> UpdateSensors()

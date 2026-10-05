@@ -653,16 +653,16 @@ namespace djack.RogueSurvivor.Engine
           // saving $type only so far: AIs reload with amnesia
           var minds = new Zaimoni.JSON.Polymorphic<ActorController>();
           minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, PlayerController>("PlayerController"));
-          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.CHARGuardAI>("CHARGuardAI"));
-          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.CivilianAI>("CivilianAI"));
-          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.FeralDogAI>("FeralDogAI"));
-          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.GangAI>("GangAI"));
-          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.InsaneHumanAI>("InsaneHumanAI"));
-          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.RatAI>("RatAI"));
-          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.SewersThingAI>("SewersThingAI"));
-          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.SkeletonAI>("SkeletonAI"));
-          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.SoldierAI>("SoldierAI"));
-          minds.Add(new Zaimoni.JsonConvertIncomplete.Via<ActorController, Gameplay.AI.ZombieAI>("ZombieAI"));
+          minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.CHARGuardAI>("CHARGuardAI"));
+          minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.CivilianAI>("CivilianAI"));
+          minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.FeralDogAI>("FeralDogAI"));
+          minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.GangAI>("GangAI"));
+          minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.InsaneHumanAI>("InsaneHumanAI"));
+          minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.RatAI>("RatAI"));
+          minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.SewersThingAI>("SewersThingAI"));
+          minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.SkeletonAI>("SkeletonAI"));
+          minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.SoldierAI>("SoldierAI"));
+          minds.Add(new Zaimoni.JsonConvert.Via<ActorController, Gameplay.AI.ZombieAI>("ZombieAI"));
           minds.RequireAllSubtypes();
           s_j_opts.Converters.Add(minds);
 

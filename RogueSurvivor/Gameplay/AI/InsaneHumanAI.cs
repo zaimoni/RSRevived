@@ -90,12 +90,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;
 
-    private readonly LOSSensor m_LOSSensor;
+    private LOSSensor m_LOSSensor;
 
     public InsaneHumanAI(Actor src) : base(src)
     {
       m_LOSSensor = new LOSSensor(VISION_SEES, src);
     }
+
+    #region JSON save/load
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      base.toJsonFields(writer, options);
+      writer.WritePropertyName("LOS");
+      JsonSerializer.Serialize(writer, m_LOSSensor, options);
+    }
+
+    protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
+    {
+      base.loadJsonFields(src, options);
+      JsonElement x;
+      m_LOSSensor = src.Require("LOS").Deserialize<LOSSensor>(options) ?? throw new JsonException("null LOS");
+    }
+    #endregion
 
     public override List<Percept> UpdateSensors()
     {

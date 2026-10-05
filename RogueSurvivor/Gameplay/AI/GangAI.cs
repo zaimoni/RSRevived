@@ -38,8 +38,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS;
 
-    private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor;
-    private readonly ExplorationData m_Exploration = new ExplorationData();
+    private MemorizedSensor<LOSSensor> m_MemLOSSensor;
+    private ExplorationData m_Exploration = new ExplorationData();
     private GameGangs.IDs m_GangID = GameGangs.IDs.NONE;
 
     // due to how this is called, we cannot include the gang id as a parameter
@@ -47,6 +47,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES, src), LOS_MEMORY);
     }
+
+    #region JSON save/load
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      base.toJsonFields(writer, options);
+      writer.WritePropertyName("MemLOS");
+      JsonSerializer.Serialize(writer, m_MemLOSSensor, options);
+      if (!m_Exploration.IsEmpty) {
+        writer.WritePropertyName("Exploration");
+        m_Exploration.toJson(writer, options, m_Actor);
+      }
+      if (GameGangs.IDs.NONE != m_GangID) writer.WriteString("Gang", m_GangID.ToString());
+    }
+
+    protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
+    {
+      base.loadJsonFields(src, options);
+      JsonElement x;
+      m_MemLOSSensor = src.Require("MemLOS").Deserialize<MemorizedSensor<LOSSensor>>(options) ?? throw new JsonException("null MemLOS");
+      if (src.TryGetProperty("Exploration", out x)) m_Exploration = new(x, options);
+      if (src.TryGetProperty("Gang", out x)) m_GangID = JSON_ext.ParseEnum<GameGangs.IDs>(x.GetString());
+    }
+
+    protected override bool HasJsonState { get => !m_Exploration.IsEmpty || GameGangs.IDs.NONE != m_GangID || base.HasJsonState; }
+    #endregion
 
     public override GameGangs.IDs GangID { get => m_GangID; }
     public void Join(GameGangs.IDs src) {

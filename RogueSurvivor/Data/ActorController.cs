@@ -84,9 +84,12 @@ namespace djack.RogueSurvivor.Data
     public virtual void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) { }
     protected virtual void loadJsonFields(JsonElement src, JsonSerializerOptions options) { }
 
+    /// <summary>true if and only if a save would write a field of ours; each layer adds its own</summary>
+    protected virtual bool HasJsonState { get => false; }
+
     /// <summary>True if and only if we are indistinguishable, when saved, from what our actor's model would construct.
-    /// Our actor then does not write us at all.  This gets more specific as controller save/load is built out.</summary>
-    public virtual bool IsJsonDefault { get => GetType() == m_Actor.Model.DefaultController; }
+    /// Our actor then does not write us at all.</summary>
+    public bool IsJsonDefault { get => GetType() == m_Actor.Model.DefaultController && !HasJsonState; }
 #endregion
 
     public virtual void RepairLoad() { }

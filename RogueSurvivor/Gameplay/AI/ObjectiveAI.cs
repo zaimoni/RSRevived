@@ -411,8 +411,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (src.TryGetProperty("Recoil", out x)) _recoil = x.GetSByte();
     }
 
-    /// <summary>true if and only if a save would write a field of ours</summary>
-    protected virtual bool HasJsonState { get {
+    protected override bool HasJsonState { get {
+      if (base.HasJsonState) return true;
       if (0 < Objectives.Count || 0 < PlannedMoves.Count || 0 != _STA_reserve || 0 != _recoil || null != _last_move) return true;
       if (null != _rating_overrides && 0 < _rating_overrides.Count) return true;
       foreach (var x in _sparse.Contents) return true;

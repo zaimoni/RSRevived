@@ -30,14 +30,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;
 
-    private readonly MemorizedSensor<LOSSensor> m_MemLOSSensor;
-    private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
-    private readonly SmellSensor m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
+    private MemorizedSensor<LOSSensor> m_MemLOSSensor;
+    private SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
+    private SmellSensor m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
 
     public SewersThingAI(Actor src) : base(src)
     {
       m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES, src), LOS_MEMORY);
     }
+
+    #region JSON save/load
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      base.toJsonFields(writer, options);
+      writer.WritePropertyName("MemLOS");
+      JsonSerializer.Serialize(writer, m_MemLOSSensor, options);
+      writer.WritePropertyName("Smell");
+      JsonSerializer.Serialize(writer, m_LivingSmellSensor, options);
+      writer.WritePropertyName("MasterSmell");
+      JsonSerializer.Serialize(writer, m_MasterSmellSensor, options);
+    }
+
+    protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
+    {
+      base.loadJsonFields(src, options);
+      JsonElement x;
+      m_MemLOSSensor = src.Require("MemLOS").Deserialize<MemorizedSensor<LOSSensor>>(options) ?? throw new JsonException("null MemLOS");
+      m_LivingSmellSensor = src.Require("Smell").Deserialize<SmellSensor>(options) ?? throw new JsonException("null Smell");
+      m_MasterSmellSensor = src.Require("MasterSmell").Deserialize<SmellSensor>(options) ?? throw new JsonException("null MasterSmell");
+    }
+    #endregion
 
     public override List<Percept> UpdateSensors()
     {
