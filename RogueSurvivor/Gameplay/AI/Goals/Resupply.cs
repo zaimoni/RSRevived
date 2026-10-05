@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 
 using djack.RogueSurvivor.Data;
 using System.Text.Json;
@@ -21,24 +20,17 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         #region JSON save/load
 
         private Resupply(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
-
         {
-
             List<Item_IDs> kinds = new();
 
             foreach (var x in src.Require("Critical").EnumerateArray()) kinds.Add(JSON_ext.ParseEnum<Item_IDs>(x.GetString()));
-
             critical = kinds.ToArray();
-
             dests = src.Require("Destinations").Deserialize<Location[]>(options) ?? throw new JsonException("null Destinations");
 
-            OnDeserialized(default);
-
+            OnDeserialized();
         }
 
-
         static Resupply IJsonStaged<Resupply>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Resupply(JsonActor(src), src, options));
-
 
         public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
 
@@ -68,11 +60,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             dests = head_for.ToArray();
         }
 
-        [OnDeserialized]
-        void OnDeserialized(StreamingContext context)
-        {
-            oai = (m_Actor.Controller as ObjectiveAI)!;
-        }
+        void OnDeserialized() => oai = (m_Actor.Controller as ObjectiveAI)!;
 
         private bool desires_changed(HashSet<Item_IDs> src) {
             if (critical.Length != src.Count) return true;

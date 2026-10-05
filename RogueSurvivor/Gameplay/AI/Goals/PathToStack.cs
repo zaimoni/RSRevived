@@ -4,7 +4,6 @@ using djack.RogueSurvivor.Engine.Actions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using Zaimoni.JSON;
 
@@ -27,25 +26,16 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
         // [[stack, kind], ...]
 
-        private PathToStack(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
-
-        {
-
+        private PathToStack(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src) {
             foreach (var x in src.Require("Stacks").EnumerateArray()) {
-
                 if (JsonValueKind.Array != x.ValueKind || 2 != x.GetArrayLength()) throw new JsonException("expected [stack, kind]: " + x.GetRawText());
-
                 _stacks.Add(new(x[0].Deserialize<Data.Model.InvOrigin>(options), JSON_ext.ParseEnum<Item_IDs>(x[1].GetString())));
-
             }
 
-            OnDeserialized(default);
-
+            OnDeserialized();
         }
 
-
         static PathToStack IJsonStaged<PathToStack>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new PathToStack(JsonActor(src), src, options));
-
 
         public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
 
@@ -84,12 +74,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         }
 
         // We are not a primary owning authority for inventories, so don't do the auto-repair before save
-
-        [OnDeserialized]
-        void OnDeserialized(StreamingContext context)
-        {
-            oai = m_Actor.Controller as ObjectiveAI;
-        }
+        void OnDeserialized() => oai = m_Actor.Controller as ObjectiveAI;
 
         public void Add(in Data.Model.InvOrigin src, Item_IDs take) {
             KeyValuePair<Data.Model.InvOrigin, Item_IDs> stage = new(src, take);

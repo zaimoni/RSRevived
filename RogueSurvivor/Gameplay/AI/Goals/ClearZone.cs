@@ -1,10 +1,9 @@
-﻿using System;
+﻿using djack.RogueSurvivor.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using djack.RogueSurvivor.Data;
-using System.Runtime.Serialization;
-using Zaimoni.Data;
 using System.Text.Json;
+using Zaimoni.Data;
 using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
@@ -31,21 +30,15 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
         // threats and tourism are re-bound by RepairLoad, at the post-load stage
 
-        private ClearZone(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
-
-        {
-
+        private ClearZone(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src) {
             m_Zone = src.Require("Zone").Deserialize<ZoneLoc>(options) ?? throw new JsonException("null Zone");
 
             if (src.TryGetProperty("Unverified", out var x)) foreach (var pt in x.EnumerateArray()) m_Unverified.Add(pt.ReadPoint());
 
-            OnDeserialized(default);
-
+            OnDeserialized();
         }
 
-
         static ClearZone IJsonStaged<ClearZone>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ClearZone(JsonActor(src), src, options));
-
 
         public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
 
@@ -99,10 +92,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             ;
         }
 
-        [OnDeserialized] private void OnDeserialized(StreamingContext context)
-        {
-            oai = (m_Actor.Controller as ObjectiveAI)!;
-        }
+        private void OnDeserialized() => oai = (m_Actor.Controller as ObjectiveAI)!;
 
         public override void RepairLoad()
         {

@@ -6,12 +6,14 @@
 
 #define B_MOVIE_MARTIAL_ARTS
 
+using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
+using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
+using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Threading;
 using Zaimoni.Data;
@@ -19,15 +21,11 @@ using Zaimoni.JSON;
 using static Zaimoni.Data.Functor;
 
 using Point = Zaimoni.Data.Vector2D<short>;
-using Rectangle = Zaimoni.Data.Box2D<short>;
 
 using Color = System.Drawing.Color;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using PowerGenerator = djack.RogueSurvivor.Engine.MapObjects.PowerGenerator;
 using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
-using djack.RogueSurvivor.Gameplay;
-using djack.RogueSurvivor.Data;
-using djack.RogueSurvivor.Engine.Actions;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -866,7 +864,7 @@ namespace djack.RogueSurvivor.Data
       m_CurrentRangedAttack = Attack.BLANK;
     }
 
-    [OnDeserialized] private void OnDeserialized(StreamingContext context)
+    private void OnDeserialized()
     {
       _has_to_eat = Model.Abilities.HasToEat;
       var w = GetEquippedWeapon();
@@ -971,7 +969,7 @@ namespace djack.RogueSurvivor.Data
         ActorController.s_LoadOwner = prior;
       }
 
-      OnDeserialized(default);  // whether we eat; current attack and defence, from what we have equipped
+      OnDeserialized();  // whether we eat; current attack and defence, from what we have equipped
     }
 
     static Actor IJsonStaged<Actor>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);

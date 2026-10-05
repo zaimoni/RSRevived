@@ -14,20 +14,19 @@ using djack.RogueSurvivor.Engine._Action;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
+using djack.RogueSurvivor.Gameplay.AI.Goals;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 using static Zaimoni.Data.Functor;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
-using djack.RogueSurvivor.Gameplay.AI.Goals;
-using System.Runtime.Serialization;
-using System.Text.Json;
-using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -774,14 +773,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       #region JSON save/load
 
-      private Goal_PathToStack(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
-
-      {
-
+      private Goal_PathToStack(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src) {
         foreach (var x in src.Require("Stacks").EnumerateArray()) _stacks.Add(x.Deserialize<Data.Model.InvOrigin>(options));
 
-        OnDeserialized(default);
-
+        OnDeserialized();
       }
 
 
@@ -808,9 +803,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         newStack(in src);
       }
 
-      [OnDeserialized] void OnDeserialized(StreamingContext context) {
-        ordai = m_Actor.Controller as OrderableAI;
-      }
+      void OnDeserialized() => ordai = m_Actor.Controller as OrderableAI;
 
       /// <returns>true if and only if no stacks remain</returns>
       private bool _removeInvalidStacks()

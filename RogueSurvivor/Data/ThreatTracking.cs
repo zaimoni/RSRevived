@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Threading;
 using Zaimoni.Data;
 using Zaimoni.JSON;
-using Zaimoni.Lazy;
+
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 
@@ -23,12 +22,9 @@ namespace djack.RogueSurvivor.Data
         // As we actually have to iterate over the keys of _threats in a multi-threaded situation, just lock it when using.
         private readonly Dictionary<Actor, Dictionary<Map, HashSet<Point>>> _threats = new Dictionary<Actor, Dictionary<Map, HashSet<Point>>>();
 
-        public ThreatTracking()
-        {
-          InstallHandlers(default);
-        }
+        public ThreatTracking() => InstallHandlers();
 
-        [OnDeserialized] private void InstallHandlers(StreamingContext context) {
+        private void InstallHandlers() {
           Actor.Dies += HandleDie;  // XXX removal would be in destructor
           Actor.Moving += HandleMove;
           _ThreatWhere_cache = new Dictionary<Map, HashSet<Point>>();
@@ -53,7 +49,7 @@ namespace djack.RogueSurvivor.Data
         }
 
         /// <summary>The reverse of Detach: for a tracker whose session is going live.</summary>
-        public void Attach() => InstallHandlers(default);
+        public void Attach() => InstallHandlers();
 
         // one entry per threat: {"Actor": reference, "Where": [[map reference, [points]], ...]}
         public void toJson(Utf8JsonWriter writer)

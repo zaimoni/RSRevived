@@ -8,7 +8,6 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using Zaimoni.JSON;
 
@@ -42,7 +41,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Target = src.Require("Target").RequireRef<Actor>();
       if (src.TryGetProperty("LoF", out var x)) foreach (var pt in x.EnumerateArray()) m_LoF.Add(pt.ReadPoint());
       if (src.TryGetProperty("FireMode", out x)) FMode = JSON_ext.ParseEnum<FireMode>(x.GetString());
-      OnDeserialized(default);
+      OnDeserialized();
     }
 
     static ActionRangedAttack IJsonStaged<ActionRangedAttack>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionRangedAttack(JsonActor(src), src, options));
@@ -63,7 +62,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       m_Target = target;
       FMode = mode;
-      OnDeserialized(default);
+      OnDeserialized();
     }
 
     public ActionRangedAttack(Actor actor, Actor target, List<Point> lof, FireMode mode) : base(actor)
@@ -71,12 +70,12 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Target = target;
       m_LoF = lof;
       FMode = mode;
-      OnDeserialized(default);
+      OnDeserialized();
     }
 
     public Actor target { get { return m_Target; } }
 
-    [OnDeserialized] private void OnDeserialized(StreamingContext context)
+    private void OnDeserialized()
     {
       if (m_Actor.Controller is ObjectiveAI ai) oai = ai;
       else throw new ArgumentNullException(nameof(oai));

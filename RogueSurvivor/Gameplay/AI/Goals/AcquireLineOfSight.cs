@@ -2,9 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
-using Zaimoni.Data;
 using System.Text.Json;
+using Zaimoni.Data;
 using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
@@ -18,14 +17,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
         #region JSON save/load
 
-        private AcquireLineOfSight(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
-
-        {
-
+        private AcquireLineOfSight(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src) {
             _locs = src.Require("Locations").Deserialize<HashSet<Location>>(options) ?? throw new JsonException("null Locations");
 
-            OnDeserialized(default);
-
+            OnDeserialized();
         }
 
 
@@ -51,7 +46,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             if (!who.CanEnter(loc)) throw new InvalidOperationException("unpathable");
 #endif
             _locs = new HashSet<Location> { loc };
-            OnDeserialized(default);
+            OnDeserialized();
         }
 
         public AcquireLineOfSight(Actor who, IEnumerable<Location> locs) : base(who.Location.Map.LocalTime.TurnCounter, who)
@@ -61,7 +56,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 #if DEBUG
             if (0 >= _locs.Count) throw new ArgumentNullException(nameof(locs));
 #endif
-            OnDeserialized(default);
+            OnDeserialized();
         }
 
         public AcquireLineOfSight(Actor who, HashSet<Location> locs) : base(who.Location.Map.LocalTime.TurnCounter, who)
@@ -71,36 +66,14 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 #if DEBUG
             if (0 >= _locs.Count) throw new ArgumentNullException(nameof(locs));
 #endif
-            OnDeserialized(default);
+            OnDeserialized();
         }
 
-        [OnDeserialized] private void OnDeserialized(StreamingContext context)
+        private void OnDeserialized()
         {
             if (m_Actor.Controller is ObjectiveAI ai) oai = ai;
             else throw new ArgumentNullException(nameof(oai));
         }
-
-#if PROTOTYPE
-        public void NewTarget(Location target)
-        {
-            _locs.Add(target);
-        }
-
-        public void NewTarget(IEnumerable<Location> target)
-        {
-            _locs.UnionWith(target);
-        }
-
-        public void RemoveTarget(Location target)
-        {
-            _locs.Remove(target);
-        }
-
-        public void RemoveTarget(IEnumerable<Location> target)
-        {
-            _locs.ExceptWith(target);
-        }
-#endif
 
         public override bool UrgentAction(out ActorAction ret)
         {
