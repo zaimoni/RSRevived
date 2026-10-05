@@ -72,12 +72,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       TabooTrades?.OnlyIfNot(Actor.IsDeceased);
     }
 
-    public override void TakeControl()
-    {
-      base.TakeControl();
-      ReviewItemRatings();  // XXX \todo should be in ObjectiveAI override
-    }
-
     public void InstallUniqueEmotes(string[] src)
     {
 #if DEBUG

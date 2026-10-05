@@ -256,6 +256,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(var o in Objectives) o.RepairLoad();
     }
 
+    public override void TakeControl()
+    {
+      base.TakeControl();
+      ReviewItemRatings();
+    }
+
     public enum SparseData {
       LoF = 0,   // line of fire -- should be telegraphed and obvious to anyone looking at the ranged weapon user, at least the near part (5 degree precision?)
       CloseToActor,
