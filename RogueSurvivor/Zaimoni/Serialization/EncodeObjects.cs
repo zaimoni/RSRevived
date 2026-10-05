@@ -202,6 +202,15 @@ namespace Zaimoni.Serialization
                 Formatter.Deserialize(decode.src, ref dest[n++]);
             }
         }
+
+        static void LinearSaveInline<T>(EncodeObjects encode, IEnumerable<T>? src) where T:ISerialize
+        {
+            var count = src?.Count() ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src) InlineSave(encode, x);
+            }
+        }
     }
 
     public class EncodeObjects

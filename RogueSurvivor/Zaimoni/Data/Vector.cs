@@ -4,6 +4,8 @@ using System.IO;
 using System.Numerics;
 using System.Text.Json;
 
+using Point = Zaimoni.Data.Vector2D<short>;
+
 /*
  * We do not use C# generics here because they compile-error due to being defective relative to C++ templates.  We would need to
  * be able to whitelist according to arbitrary member functions/operators (C++ compile-errors when the required interface is missing,
@@ -650,12 +652,12 @@ namespace Zaimoni.Serialization
     public partial interface ISave
     {
 #region 7bit support
-        static void Serialize7bit(Stream dest, in Data.Vector2D<short> src)
+        static void Serialize7bit(Stream dest, in Point src)
         {
             Serialize7bit(dest, src.X);
             Serialize7bit(dest, src.Y);
         }
-        static void Deserialize7bit(Stream dest, ref Data.Vector2D<short> src)
+        static void Deserialize7bit(Stream dest, ref Point src)
         {
             Deserialize7bit(dest, ref src.X);
             Deserialize7bit(dest, ref src.Y);
@@ -687,7 +689,7 @@ namespace Zaimoni.Serialization
         }
 
 
-        static void SaveSigned(Stream dest, in Data.Vector2D<short> src)
+        static void SaveSigned(Stream dest, in Point src)
         {
             Data.Vector2D<ushort> stage = default;
             sbyte code = 0;
@@ -706,7 +708,7 @@ namespace Zaimoni.Serialization
             Serialize7bit(dest, stage);
         }
 
-        static void LoadSigned(Stream src, ref Data.Vector2D<short> dest)
+        static void LoadSigned(Stream src, ref Point dest)
         {
             Data.Vector2D<ushort> stage = default;
             sbyte code = 0;
@@ -720,6 +722,182 @@ namespace Zaimoni.Serialization
             else dest.Y = (short)-(short)stage.Y;
 
         }
-        #endregion
+
+        static void LinearSaveSigned<T>(EncodeObjects encode, Dictionary<Point, T>? src) where T : ISerialize
+        {
+            var count = src?.Count ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count)
+            {
+                foreach (var x in src!) SaveSigned(encode, x);
+            }
+        }
+
+        static void SaveSigned<T>(EncodeObjects encode, KeyValuePair<Point, T> src) where T : ISerialize
+        {
+            SaveSigned(encode.dest, src.Key);
+            Save(encode, src.Value);
+        }
+
+        static void LinearLoadSigned<T>(DecodeObjects decode, Action<KeyValuePair<Point, T>[]> handler) where T : class, ISerialize
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new KeyValuePair<Point, T>[count];
+            var stage = new Lazy.Join<KeyValuePair<Point, T>[]>(dest, handler);
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count)
+            {
+                --count;
+                Point stage_pos = default;
+                LoadSigned(decode.src, ref stage_pos);
+                var obj = decode.Load<T>(out var code);
+                if (null != obj)
+                {
+                    dest[n++] = new(stage_pos, obj);
+                    continue;
+                }
+                if (0 >= code) throw new InvalidOperationException("object not loaded");
+
+                var i = n;
+                decode.Schedule(code, (o) => {
+                    if (o is T src) dest[i] = new(stage_pos, src);
+                    else throw new InvalidOperationException("requested object is not a " + typeof(T).AssemblyQualifiedName);
+                    stage.signal();
+                });
+                stage.Schedule();
+                n++;
+            }
+            stage.isDone();
+        }
+
+        static void LinearSave<T>(EncodeObjects encode, Dictionary<Point, T>? src) where T : ISerialize
+        {
+            var count = src?.Count ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src!) Save(encode, x);
+            }
+        }
+
+        static void Save<T>(EncodeObjects encode, KeyValuePair<Point, T> src) where T : ISerialize
+        {
+            Serialize7bit(encode.dest, src.Key);
+            Save(encode, src.Value);
+        }
+
+        static void LinearLoad<T>(DecodeObjects decode, Action<KeyValuePair<Point, T>[]> handler) where T : class, ISerialize
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new KeyValuePair<Point, T>[count];
+            var stage = new Lazy.Join<KeyValuePair<Point, T>[]>(dest, handler);
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                Point stage_pos = default;
+                Deserialize7bit(decode.src, ref stage_pos);
+                var obj = decode.Load<T>(out var code);
+                if (null != obj) {
+                    dest[n++] = new(stage_pos, obj);
+                    continue;
+                }
+                if (0 >= code) throw new InvalidOperationException("object not loaded");
+
+                var i = n;
+                decode.Schedule(code, (o) => {
+                    if (o is T src) dest[i] = new(stage_pos, src);
+                    else throw new InvalidOperationException("requested object is not a " + typeof(T).AssemblyQualifiedName);
+                    stage.signal();
+                });
+                stage.Schedule();
+                n++;
+            }
+            stage.isDone();
+        }
+
+        static void LinearSave(EncodeObjects encode, Dictionary<Point, HashSet<string>>? src)
+        {
+            var count = src?.Count ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src!) Save(encode, x);
+            }
+        }
+
+        static void Save(EncodeObjects encode, KeyValuePair<Point, HashSet<string>> src)
+        {
+            Serialize7bit(encode.dest, src.Key);
+            LinearSave(encode, src.Value);
+        }
+
+        static void LinearLoad(DecodeObjects decode, Action<KeyValuePair<Point, string[]>[]> handler)
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new KeyValuePair<Point, string[]>[count];
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                Point stage_pos = default;
+                Deserialize7bit(decode.src, ref stage_pos);
+                LinearLoad(decode, out string[] stage_strings);
+                dest[n++] = new(stage_pos, stage_strings);
+            }
+            handler(dest);
+        }
+
+        static void LinearLoadInline<T>(DecodeObjects decode, Action<KeyValuePair<Point, T>[]> handler) where T : ISerialize
+        {
+            int count = 0;
+            Formatter.Deserialize7bit(decode.src, ref count);
+            if (0 >= count) return; // no action needed
+            var dest = new KeyValuePair<Point, T>[count];
+
+            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
+            int n = 0;
+            while (0 < count) {
+                --count;
+                Point stage_pos = default;
+                Deserialize7bit(decode.src, ref stage_pos);
+                var stage_t = decode.LoadInline<T>();
+                dest[n] = new KeyValuePair<Point, T>(stage_pos, stage_t);
+            }
+            handler(dest);
+        }
+
+        static void LinearSaveInline<T>(EncodeObjects encode, Dictionary<Point, List<T>>? src) where T:ISerialize
+        {
+            var count = src?.Count ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src) {
+                    Serialize7bit(encode.dest, x.Key);
+                    LinearSaveInline(encode, x.Value);
+                }
+            }
+        }
+
+        static void LinearSaveInline<T>(EncodeObjects encode, Dictionary<Point, T>? src) where T:ISerialize
+        {
+            var count = src?.Count ?? 0;
+            Formatter.Serialize7bit(encode.dest, count);
+            if (0 < count) {
+                foreach (var x in src) {
+                    Serialize7bit(encode.dest, x.Key);
+                    Zaimoni.Serialization.ISave.InlineSave(encode, x.Value);
+                }
+            }
+        }
+#endregion
     }
 }
