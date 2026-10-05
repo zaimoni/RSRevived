@@ -580,6 +580,7 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts = new();
           s_j_opts.ReferenceHandler = new Zaimoni.JSON.PreserveReferenceHandler();
           s_j_opts.WriteIndented = true;
+          s_j_opts.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;   // a save file is not HTML: < > and non-ASCII as themselves (the tag Goal_LastAction<ActionCloseDoor>)
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.DiceRoller());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.District());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Random());
@@ -689,6 +690,42 @@ namespace djack.RogueSurvivor.Engine
           plans.Add(new Zaimoni.JsonConvert.Via<WorldUpdate, Engine.Op.PushOnto>("PushOnto"));
           plans.RequireAllSubtypes(t => t.IsSerializable);
           s_j_opts.Converters.Add(plans);
+
+          // Objectives: likewise the [Serializable] ones.  A plan shared between cooperating actors has an id of its own.
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Gameplay.AI.Goals.SharedPlan>());
+          var goals = new Zaimoni.JSON.Polymorphic<Gameplay.AI.Objective>();
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_RestRatherThanLoseturnWhenTired>("Goal_RestRatherThanLoseturnWhenTired"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_RecoverSTA>("Goal_RecoverSTA"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_MedicateSLP>("Goal_MedicateSLP"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_MedicateHP>("Goal_MedicateHP"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_RechargeAll>("Goal_RechargeAll"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_Butcher>("Goal_Butcher"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_NextAction>("Goal_NextAction"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_NextCombatAction>("Goal_NextCombatAction"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_NonCombatComplete>("Goal_NonCombatComplete"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_LastAction<Engine.Actions.ActionCloseDoor>>("Goal_LastAction<ActionCloseDoor>"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_DoNotPickup>("Goal_DoNotPickup"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_BreakLineOfSight>("Goal_BreakLineOfSight"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_Terminate>("Goal_Terminate"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_PathTo>("Goal_PathTo"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_PathToStack>("Goal_PathToStack"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_HintPathToActor>("Goal_HintPathToActor"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goal_BreakBarricade>("Goal_BreakBarricade"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goals.AcquireLineOfSight>("AcquireLineOfSight"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goals.BlacklistExits>("BlacklistExits"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goals.ClearZone>("ClearZone"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goals.Cooperate>("Cooperate"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goals.FleeExplosive>("FleeExplosive"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goals.InferActor>("InferActor"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goals.PathTo>("PathTo"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goals.PathToStack>("PathToStack"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goals.Resupply>("Resupply"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goals.StageAction>("StageAction"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Gameplay.AI.Goals.Trade>("Trade"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Engine.Goal.DeathTrapped>("DeathTrapped"));
+          goals.Add(new Zaimoni.JsonConvert.Via<Gameplay.AI.Objective, Engine.Goal.NextAction>("NextAction"));
+          goals.RequireAllSubtypes(t => t.IsSerializable);
+          s_j_opts.Converters.Add(goals);
 
           var objs = new Zaimoni.JSON.Polymorphic<MapObject>();
           objs.Add(new Zaimoni.JsonConvert.Via<MapObject, MapObject>("MapObject"));
