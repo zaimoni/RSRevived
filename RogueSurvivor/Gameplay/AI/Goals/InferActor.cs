@@ -5,6 +5,8 @@ using System.Linq;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.AI;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
@@ -15,9 +17,36 @@ using Size = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     [Serializable]
-    internal class InferActor : Objective
+    internal class InferActor : Objective, IJsonStaged<InferActor>
     {
         private readonly List<Percept_<Actor>> tracked;
+
+        #region JSON save/load
+
+        private InferActor(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+        {
+
+            tracked = src.Require("Tracked").Deserialize<List<Percept_<Actor>>>(options) ?? throw new JsonException("null Tracked");
+
+        }
+
+
+        static InferActor IJsonStaged<InferActor>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new InferActor(JsonActor(src), src, options));
+
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+        {
+
+            toJsonBase(writer);
+
+            writer.WriteArray("Tracked", tracked, options);
+
+        }
+
+        #endregion
+
 
         public InferActor(Actor who, Percept_<Actor> target) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {

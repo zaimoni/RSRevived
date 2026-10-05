@@ -2,18 +2,71 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay.AI;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Goal
 {
     [Serializable]
-    internal class NextAction : Objective
+    internal class NextAction : Objective, IJsonStaged<NextAction>
     {
         private readonly ActorAction? Intent_engaged;
         private readonly ActorAction? Intent_disengaged;
         private readonly WorldUpdate? Plan_engaged;
         private readonly WorldUpdate? Plan_disengaged;
+
+        #region JSON save/load
+
+        private NextAction(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+        {
+
+            if (src.TryGetProperty("Engaged", out var x)) Intent_engaged = x.Deserialize<ActorAction>(options);
+
+            if (src.TryGetProperty("Disengaged", out x)) Intent_disengaged = x.Deserialize<ActorAction>(options);
+
+            if (src.TryGetProperty("PlanEngaged", out x)) Plan_engaged = x.Deserialize<WorldUpdate>(options);
+
+            if (src.TryGetProperty("PlanDisengaged", out x)) Plan_disengaged = x.Deserialize<WorldUpdate>(options);
+
+            if (null == Intent_engaged && null == Intent_disengaged && null == Plan_engaged && null == Plan_disengaged) throw new JsonException("next action with no intent");
+
+        }
+
+
+        static NextAction IJsonStaged<NextAction>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new NextAction(JsonActor(src), src, options));
+
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+        {
+
+            toJsonBase(writer);
+
+            void slot<T>(string name, T? value) where T : class {
+
+                if (null == value) return;
+
+                writer.WritePropertyName(name);
+
+                JsonSerializer.Serialize(writer, value, options);
+
+            }
+
+            slot("Engaged", Intent_engaged);
+
+            slot("Disengaged", Intent_disengaged);
+
+            slot("PlanEngaged", Plan_engaged);
+
+            slot("PlanDisengaged", Plan_disengaged);
+
+        }
+
+        #endregion
+
 
         public NextAction(Actor who, ActorAction engaged) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {

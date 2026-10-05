@@ -4,15 +4,46 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     // only need to see one target to expire
     [Serializable]
-    class AcquireLineOfSight : Objective, LatePathable, Observer<Location[]>
+    class AcquireLineOfSight : Objective, LatePathable, Observer<Location[]>, IJsonStaged<AcquireLineOfSight>
     {
         readonly private HashSet<Location> _locs;
         [NonSerialized] ObjectiveAI oai;
+
+        #region JSON save/load
+
+        private AcquireLineOfSight(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+        {
+
+            _locs = src.Require("Locations").Deserialize<HashSet<Location>>(options) ?? throw new JsonException("null Locations");
+
+            OnDeserialized(default);
+
+        }
+
+
+        static AcquireLineOfSight IJsonStaged<AcquireLineOfSight>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new AcquireLineOfSight(JsonActor(src), src, options));
+
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+        {
+
+            toJsonBase(writer);
+
+            writer.WriteArray("Locations", _locs, options);
+
+        }
+
+        #endregion
+
 
         public AcquireLineOfSight(Actor who, in Location loc) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {

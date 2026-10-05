@@ -4,6 +4,8 @@ using System.Linq;
 using djack.RogueSurvivor.Data;
 using System.Runtime.Serialization;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
@@ -17,13 +19,56 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
     // police version
     [Serializable]
-    class ClearZone : Objective,Pathable,Observer<Location[]>
+    class ClearZone : Objective,Pathable,Observer<Location[]>, IJsonStaged<ClearZone>
     {
         private readonly ZoneLoc m_Zone;
         private readonly HashSet<Point> m_Unverified = new HashSet<Point>();
         [NonSerialized] private ObjectiveAI oai;
         [NonSerialized] private ThreatTracking threats;
         [NonSerialized] private LocationSet tourism;
+
+        #region JSON save/load
+
+        // threats and tourism are re-bound by RepairLoad, at the post-load stage
+
+        private ClearZone(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+        {
+
+            m_Zone = src.Require("Zone").Deserialize<ZoneLoc>(options) ?? throw new JsonException("null Zone");
+
+            if (src.TryGetProperty("Unverified", out var x)) foreach (var pt in x.EnumerateArray()) m_Unverified.Add(pt.ReadPoint());
+
+            OnDeserialized(default);
+
+        }
+
+
+        static ClearZone IJsonStaged<ClearZone>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ClearZone(JsonActor(src), src, options));
+
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+        {
+
+            toJsonBase(writer);
+
+            writer.WritePropertyName("Zone");
+
+            JsonSerializer.Serialize(writer, m_Zone, options);
+
+            if (0 < m_Unverified.Count) {
+
+                writer.WritePropertyName("Unverified");
+
+                writer.WriteRawValue(JSON_ext.RenderPoints(m_Unverified));
+
+            }
+
+        }
+
+        #endregion
+
 
         public ClearZone(int t0, Actor who, ZoneLoc dest) : base(t0, who) {
             m_Zone = dest;

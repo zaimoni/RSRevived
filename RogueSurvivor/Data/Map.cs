@@ -1240,6 +1240,13 @@ namespace djack.RogueSurvivor.Data
 
     public Exit? GetExitAt(Point pos) => m_Exits.GetValueOrDefault(pos);
 
+    /// <summary>where e leaves from, if it is one of ours.  An exit does not know this itself.</summary>
+    public Point? FindExitOrigin(Exit e)
+    {
+      foreach (var x in m_Exits) if (ReferenceEquals(x.Value, e)) return x.Key;
+      return null;
+    }
+
     public Dictionary<Location,Exit> GetExits(Predicate<Exit> test) {
       var ret = new Dictionary<Location, Exit>();
       foreach(var x in m_Exits) {

@@ -3,6 +3,8 @@ using djack.RogueSurvivor.Engine.Actions;
 using System;
 using System.Collections.Generic;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
@@ -10,13 +12,45 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     // need this level of indirection so that all actors know about the plan's progress
     [Serializable]
-    public sealed class SharedPlan
+    public sealed class SharedPlan : IJsonStaged<SharedPlan>
     {
         private WorldUpdate m_Plan;
         private Condition<Actor> m_Target;
         private bool m_Expired = false;
 
         public bool IsExpired { get { return m_Expired; } }
+
+#region JSON save/load
+        // Shared between the cooperating actors: has an $id (Sealed<SharedPlan>).  Condition<Actor> has one implementor, keyed by its name.
+        private SharedPlan(JsonElement src, JsonSerializerOptions options)
+        {
+            m_Plan = src.Require("Plan").Deserialize<WorldUpdate>(options) ?? throw new JsonException("null Plan");
+            var target = src.Require("Target");
+            if (target.TryGetProperty("CoverTrap", out var x)) m_Target = Engine._Goal.CoverTrap.fromJson(x, options);
+            else throw new JsonException("unknown plan target: " + target.GetRawText());
+            if (src.TryGetProperty("Expired", out x)) m_Expired = x.GetBoolean();
+        }
+
+        static SharedPlan IJsonStaged<SharedPlan>.fromJson(JsonElement src, JsonSerializerOptions options)
+        {
+            var ret = new SharedPlan(src, options);
+            src.RecordRef(ret);
+            return ret;
+        }
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            writer.WritePropertyName("Plan");
+            JsonSerializer.Serialize(writer, m_Plan, options);
+            writer.WriteStartObject("Target");
+            if (m_Target is Engine._Goal.CoverTrap trap) {
+                writer.WritePropertyName("CoverTrap");
+                trap.toJson(writer, options);
+            } else throw new JsonException("plan target of " + m_Target.GetType().FullName + " is not saved");
+            writer.WriteEndObject();
+            if (m_Expired) writer.WriteBoolean("Expired", true);
+        }
+#endregion
 
         public SharedPlan(WorldUpdate src, Condition<Actor> done) {
 #if DEBUG
@@ -82,9 +116,38 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     }
 
     [Serializable]
-    class Cooperate : Objective
+    class Cooperate : Objective, IJsonStaged<Cooperate>
     {
         private SharedPlan m_Plan;
+
+        #region JSON save/load
+
+        private Cooperate(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+        {
+
+            m_Plan = src.Require("Plan").Deserialize<SharedPlan>(options) ?? throw new JsonException("null Plan");
+
+        }
+
+
+        static Cooperate IJsonStaged<Cooperate>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Cooperate(JsonActor(src), src, options));
+
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+        {
+
+            toJsonBase(writer);
+
+            writer.WritePropertyName("Plan");
+
+            JsonSerializer.Serialize(writer, m_Plan, options);
+
+        }
+
+        #endregion
+
 
         public Cooperate(Actor who, SharedPlan plan) : base(who.Location.Map.LocalTime.TurnCounter, who) {
 #if DEBUG

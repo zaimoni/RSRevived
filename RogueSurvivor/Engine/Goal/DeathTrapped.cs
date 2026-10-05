@@ -3,15 +3,44 @@ using System.Collections.Generic;
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay.AI;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine.Goal
 {
     [Serializable]
-    internal class DeathTrapped : Objective
+    internal class DeathTrapped : Objective, IJsonStaged<DeathTrapped>
     {
         private List<Location> banned;
+
+        #region JSON save/load
+
+        private DeathTrapped(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+        {
+
+            banned = src.Require("Banned").Deserialize<List<Location>>(options) ?? throw new JsonException("null Banned");
+
+        }
+
+
+        static DeathTrapped IJsonStaged<DeathTrapped>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new DeathTrapped(JsonActor(src), src, options));
+
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+        {
+
+            toJsonBase(writer);
+
+            writer.WriteArray("Banned", banned, options);
+
+        }
+
+        #endregion
+
 
         public DeathTrapped(Actor who, in Location ban) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {

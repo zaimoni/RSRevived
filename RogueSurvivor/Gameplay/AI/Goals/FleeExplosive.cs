@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using PrimedExplosive = djack.RogueSurvivor.Data._Item.PrimedExplosive;
@@ -10,10 +12,43 @@ using PrimedExplosive = djack.RogueSurvivor.Data._Item.PrimedExplosive;
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     [Serializable]
-    public sealed class FleeExplosive: Objective
+    public sealed class FleeExplosive: Objective, IJsonStaged<FleeExplosive>
     {
         private readonly ZoneLoc m_Fear;
         private PrimedExplosive m_Explosive;
+
+        #region JSON save/load
+
+        private FleeExplosive(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+        {
+
+            m_Fear = src.Require("Zone").Deserialize<ZoneLoc>(options) ?? throw new JsonException("null Zone");
+
+            m_Explosive = src.Require("Explosive").RequireRef<PrimedExplosive>();
+
+        }
+
+
+        static FleeExplosive IJsonStaged<FleeExplosive>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new FleeExplosive(JsonActor(src), src, options));
+
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+        {
+
+            toJsonBase(writer);
+
+            writer.WritePropertyName("Zone");
+
+            JsonSerializer.Serialize(writer, m_Fear, options);
+
+            writer.WriteRef("Explosive", m_Explosive);
+
+        }
+
+        #endregion
+
 
         public FleeExplosive(Actor who, ZoneLoc avoid, PrimedExplosive obj) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {

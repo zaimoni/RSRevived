@@ -5,6 +5,8 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Items;
 
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Engine._Goal
 {
@@ -14,6 +16,10 @@ namespace djack.RogueSurvivor.Engine._Goal
         private Location[] m_Locations;
 
         public CoverTrap(IEnumerable<Location> locs) { m_Locations = locs.ToArray(); }
+
+        // JSON: an array of locations, under a key naming us (SharedPlan)
+        public static CoverTrap fromJson(JsonElement src, JsonSerializerOptions options) => new(src.Deserialize<Location[]>(options) ?? throw new JsonException("null CoverTrap"));
+        public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options) => JsonSerializer.Serialize(writer, m_Locations, options);
 
         public static bool IsDone(in Location loc) {
             if (loc.Map.IsTrapCoveringMapObjectAt(loc.Position)) return true;

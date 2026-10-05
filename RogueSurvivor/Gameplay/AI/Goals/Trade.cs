@@ -5,15 +5,44 @@ using System.Linq;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     [Serializable]
-    class Trade : Objective
+    class Trade : Objective, IJsonStaged<Trade>
     {
         readonly List<Actor> _whom = new List<Actor>(1);
+
+        #region JSON save/load
+
+        private Trade(Actor who, JsonElement src) : base(who, src)
+
+        {
+
+            _whom.AddRange(src.Require("Whom").RequireRefs<Actor>());
+
+        }
+
+
+        static Trade IJsonStaged<Trade>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Trade(JsonActor(src), src));
+
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+        {
+
+            toJsonBase(writer);
+
+            writer.WriteRefs("Whom", _whom);
+
+        }
+
+        #endregion
+
 
         public Trade(int t0, Actor who, Actor target) : base(t0, who)
         {

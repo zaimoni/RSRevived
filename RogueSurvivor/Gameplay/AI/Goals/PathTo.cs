@@ -4,16 +4,53 @@ using System.Linq;
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     // Ancestor class Goal_PathTo
     [Serializable]
-    internal class PathTo : Objective, LatePathable
+    internal class PathTo : Objective, LatePathable, IJsonStaged<PathTo>
     {
       private readonly HashSet<Location> _locs;
       private readonly bool walking;
       private int turns;
+
+      #region JSON save/load
+
+      private PathTo(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+      {
+
+        _locs = src.Require("Locations").Deserialize<HashSet<Location>>(options) ?? throw new JsonException("null Locations");
+
+        if (src.TryGetProperty("Walking", out var x)) walking = x.GetBoolean();
+
+        turns = src.TryGetProperty("Turns", out x) ? x.GetInt32() : int.MaxValue;
+
+      }
+
+
+      static PathTo IJsonStaged<PathTo>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new PathTo(JsonActor(src), src, options));
+
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+      {
+
+        toJsonBase(writer);
+
+        writer.WriteArray("Locations", _locs, options);
+
+        if (walking) writer.WriteBoolean("Walking", true);
+
+        if (int.MaxValue != turns) writer.WriteNumber("Turns", turns);
+
+      }
+
+      #endregion
+
 
       public PathTo(Actor who, in Location loc, bool walk=false,int n=int.MaxValue)
       : base(who.Location.Map.LocalTime.TurnCounter, who)

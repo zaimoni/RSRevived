@@ -1,12 +1,43 @@
 ﻿using System;
 using djack.RogueSurvivor.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     [Serializable]
-    internal class StageAction : Objective
+    internal class StageAction : Objective, IJsonStaged<StageAction>
     {
       public readonly ActorAction Intent;
+
+      #region JSON save/load
+
+      private StageAction(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+      {
+
+        Intent = src.Require("Intent").Deserialize<ActorAction>(options) ?? throw new JsonException("null Intent");
+
+      }
+
+
+      static StageAction IJsonStaged<StageAction>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new StageAction(JsonActor(src), src, options));
+
+
+      public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+      {
+
+        toJsonBase(writer);
+
+        writer.WritePropertyName("Intent");
+
+        JsonSerializer.Serialize(writer, Intent, options);
+
+      }
+
+      #endregion
+
 
       public StageAction(int t0, Actor who, ActorAction free_act) : base(t0,who)
       {

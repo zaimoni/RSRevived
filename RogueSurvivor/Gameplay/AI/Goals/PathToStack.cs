@@ -5,12 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.Json;
+using Zaimoni.JSON;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     // design ancestor: Goal_PathToStack
     [Serializable]
-    internal class PathToStack : Objective, LatePathable, PreciseCountermand
+    internal class PathToStack : Objective, LatePathable, PreciseCountermand, IJsonStaged<PathToStack>
     {
         private readonly List<KeyValuePair<Data.Model.InvOrigin, Item_IDs>> _stacks = new(1);
         [NonSerialized] private ObjectiveAI oai;
@@ -20,6 +22,57 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public IEnumerable<Inventory> Inventories { get { return _stacks.Select(p => p.Key.inv); } }
         public IEnumerable<Location> Destinations { get { return _stacks.Select(p => p.Key.Location); } }
 #endif
+
+        #region JSON save/load
+
+        // [[stack, kind], ...]
+
+        private PathToStack(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
+
+        {
+
+            foreach (var x in src.Require("Stacks").EnumerateArray()) {
+
+                if (JsonValueKind.Array != x.ValueKind || 2 != x.GetArrayLength()) throw new JsonException("expected [stack, kind]: " + x.GetRawText());
+
+                _stacks.Add(new(x[0].Deserialize<Data.Model.InvOrigin>(options), JSON_ext.ParseEnum<Item_IDs>(x[1].GetString())));
+
+            }
+
+            OnDeserialized(default);
+
+        }
+
+
+        static PathToStack IJsonStaged<PathToStack>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new PathToStack(JsonActor(src), src, options));
+
+
+        public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+
+        {
+
+            toJsonBase(writer);
+
+            writer.WriteStartArray("Stacks");
+
+            foreach (var x in _stacks) {
+
+                writer.WriteStartArray();
+
+                JsonSerializer.Serialize(writer, x.Key, options);
+
+                writer.WriteStringValue(x.Value.ToString());
+
+                writer.WriteEndArray();
+
+            }
+
+            writer.WriteEndArray();
+
+        }
+
+        #endregion
+
 
         public PathToStack(Actor who, in Data.Model.InvOrigin src, Item_IDs take) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
