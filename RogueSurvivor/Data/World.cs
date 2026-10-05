@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Threading;
 using Zaimoni.Data;
@@ -292,11 +291,6 @@ namespace djack.RogueSurvivor.Data
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(size, size));
 
       initTurnOrder();
-    }
-
-    static public void Load(SerializationInfo info, StreamingContext context)
-    {
-      info.read_nullsafe(ref s_Recent, "World");
     }
 
     public void RepairLoad()
