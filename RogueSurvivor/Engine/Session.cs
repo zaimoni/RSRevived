@@ -28,7 +28,6 @@ namespace djack.RogueSurvivor.Engine
         [NonSerialized] public static int COMMAND_LINE_SEED = 0;
         [NonSerialized] public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
         private static Session s_TheSession;
-        [NonSerialized] private static bool s_IsLoading = false;
         [NonSerialized] private static Session? s_Loading = null;
 
         /// <summary>The session being loaded from JSON, while it is: what a constructor run by the load must consult instead of Get,
@@ -55,12 +54,7 @@ namespace djack.RogueSurvivor.Engine
         public int ScriptStage_PoliceCHARrelations = 0;
         public int ScriptStage_HospitalPowerup = 0;
 
-        public static Session Get { get {
-#if DEBUG
-          if (s_IsLoading) throw new InvalidOperationException("unsafe game loading");
-#endif
-          return s_TheSession ??= new Session();
-        } }
+        public static Session Get => s_TheSession ??= new Session();
 
         // This has been historically problematic.  With the no-skew scheduler, it's simplest to say the world time is just the time
         // of the last district to simulate in a turn -- the bottom-right one.  Note that the entry map is "last" so it will execute last.
