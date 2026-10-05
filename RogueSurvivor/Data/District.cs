@@ -348,7 +348,6 @@ namespace djack.RogueSurvivor.Data
       return new MapCode(m.District.WorldPosition, (short)code);
     }
 
-    // should work if called at or after IDeserializationCallback.OnDeserialization for World
     public static Map decode(MapCode src) {
       var d = World.Get.At(src.Key);
       if (null == d) throw new ArgumentNullException(nameof(d));

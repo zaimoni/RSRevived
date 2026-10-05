@@ -72,7 +72,7 @@ namespace djack.RogueSurvivor.Data
     };
 
   [Serializable]
-  public sealed class Actor : IEquatable<Actor>, IInventory, IDeserializationCallback, ILocation, Zaimoni.Data.INoun, IJsonStaged<Actor>
+  public sealed class Actor : IEquatable<Actor>, IInventory, ILocation, Zaimoni.Data.INoun, IJsonStaged<Actor>
     {
     public const int BASE_ACTION_COST = 100;
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
@@ -878,11 +878,6 @@ namespace djack.RogueSurvivor.Data
       m_CurrentDefence = Model.BaseDefence;
       var armor = GetEquippedArmor();
       if (null != armor) m_CurrentDefence += armor.Model.ToDefence();
-    }
-
-    void IDeserializationCallback.OnDeserialization(object? sender)
-    {
-      if (null != m_Followers) foreach(var fo in m_Followers) fo.m_Leader = this;
     }
 
     public void RepairLoad()
