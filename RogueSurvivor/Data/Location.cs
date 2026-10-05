@@ -344,28 +344,3 @@ namespace Zaimoni.JsonConvert
         }
     }
 }
-
-namespace Zaimoni.Serialization {
-
-    public partial interface ISave
-    {
-        // handler must save to the target location field, or else
-        internal static void LoadSigned(DecodeObjects decode, ref Location dest, Action<Map, Point> handler)
-        {
-            Point stage_pos = default;
-            LoadSigned(decode.src, ref stage_pos);
-
-            ulong code;
-            var stage_map = decode.Load<Map>(out code);
-            if (null != stage_map) {
-                dest = new(stage_map, stage_pos);
-                return;
-            }
-            if (0 >= code) throw new InvalidOperationException("Location.Map must ultimately be non-null");
-            decode.Schedule(code, (o) => {
-                if (o is Map m) handler(m, stage_pos); // local copy doesn't work for structs
-                else throw new InvalidOperationException("Map object not loaded");
-            });
-        }
-    }
-}

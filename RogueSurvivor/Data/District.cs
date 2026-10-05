@@ -115,54 +115,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     // \todo will need m_Event_Raids
-    protected District(Zaimoni.Serialization.DecodeObjects decode)
-    {
-        byte relay_b = 0;
-
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref relay_b);
-        Kind = (DistrictKind)(relay_b);
-
-        Zaimoni.Serialization.ISave.Deserialize7bit(decode.src, ref WorldPosition);
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_Name);
-
-        m_Maps = new();
-        void onLoaded(Map[] src) {
-          foreach(var m in src) { m.AfterLoad(this); }
-          m_Maps.AddRange(src);
-        }
-        Zaimoni.Serialization.ISave.LinearLoad<Map>(decode, onLoaded);
-
-        ulong code;
-        m_EntryMap = decode.Load<Map>(out code);
-        if (null == m_EntryMap) {
-            if (0 < code) {
-                decode.Schedule(code, (o) => {
-                    if (o is Map w) m_EntryMap = w;
-                    else throw new InvalidOperationException("Map object not loaded");
-                });
-            } else throw new InvalidOperationException("m_EntryMap must ultimately be non-null");
-        }
-
-        m_SewersMap = decode.Load<Map>(out code);
-        if (null == m_SewersMap) {
-            if (0 < code) {
-                decode.Schedule(code, (o) => {
-                    if (o is Map w) m_SewersMap = w;
-                    else throw new InvalidOperationException("Map object not loaded");
-                });
-            }
-        }
-
-        m_SubwayMap = decode.Load<Map>(out code);
-        if (null == m_SubwayMap) {
-            if (0 < code) {
-                decode.Schedule(code, (o) => {
-                    if (o is Map w) m_SubwayMap = w;
-                    else throw new InvalidOperationException("Map object not loaded");
-                });
-            }
-        }
-    }
 
     public void RepairLoad()
     {
