@@ -5,8 +5,9 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define AUDIT_ITEM_INVARIANTS
-// #define BOOTSTRAP_Z_DICTIONARY
 
+using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,8 +24,6 @@ using ItemMeleeWeapon = djack.RogueSurvivor.Engine.Items.ItemMeleeWeapon;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
-using djack.RogueSurvivor.Data;
-using djack.RogueSurvivor.Engine;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -72,9 +71,6 @@ namespace djack.RogueSurvivor.Data
     private readonly List<Actor> m_ActorsList = new(5);
     private int m_iCheckNextActorIndex;
     private readonly Dictionary<Point, MapObject> m_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
-#if BOOTSTRAP_Z_DICTIONARY
-    [NonSerialized] private readonly Zaimoni.Collections.Dictionary<Point, MapObject> m_MapObjectsByPosition_alt = new(5);
-#endif
     private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
     private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
@@ -248,12 +244,7 @@ namespace djack.RogueSurvivor.Data
     public void RepairLoad()
     {
       foreach(var a in m_ActorsList) a.RepairLoad();
-      foreach(var x in m_MapObjectsByPosition) {
-        x.Value.RepairLoad(this, x.Key);
-#if BOOTSTRAP_Z_DICTIONARY
-        m_MapObjectsByPosition_alt.Add(x.Key, x.Value);
-#endif
-      }
+      foreach(var x in m_MapObjectsByPosition) x.Value.RepairLoad(this, x.Key);
     }
 
     private void OnConstructed()
@@ -2044,24 +2035,14 @@ retry:
 
     public MapObject? GetMapObjectAt(Point pos)
     {
-#if BOOTSTRAP_Z_DICTIONARY
-      var test = m_MapObjectsByPosition_alt.TryGetValue(pos, out var mapObject_alt);
-#endif
       if (m_MapObjectsByPosition.TryGetValue(pos, out var mapObject)) {
 #if DEBUG
         // existence check for bugs relating to map object location
         if (this!=mapObject.Location.Map) throw new InvalidOperationException("map object and map disagree on map");
         if (pos!=mapObject.Location.Position) throw new InvalidOperationException("map object and map disagree on position");
-#if BOOTSTRAP_Z_DICTIONARY
-        if (!test) throw new InvalidOperationException("desync; "+ m_MapObjectsByPosition.to_s()+"\n"+ m_MapObjectsByPosition_alt.to_s());
-        if (mapObject_alt != mapObject) throw new InvalidOperationException("desync #2");
-#endif
 #endif
         return mapObject;
       }
-#if BOOTSTRAP_Z_DICTIONARY
-      if (test) throw new InvalidOperationException("desync #3");
-#endif
       return null;
     }
 
@@ -2072,10 +2053,7 @@ retry:
       return null == test ? null : test.Value.Map.GetMapObjectAt(test.Value.Position);
     }
 
-    public bool HasMapObjectAt(Point position)
-    {
-      return m_MapObjectsByPosition.ContainsKey(position);
-    }
+    public bool HasMapObjectAt(Point position) =>  m_MapObjectsByPosition.ContainsKey(position);
 
     public void PlaceAt(MapObject mapObj, Point position)
     {
@@ -2105,27 +2083,16 @@ retry:
             if (police.ItemMemory.HaveEverSeen(mapObj.Location)) police.Investigate.Record(mapObj.Location); // XXX \todo should message based on item memories
           }
           m_MapObjectsByPosition.Remove(mapObj.Location.Position);
-#if BOOTSTRAP_Z_DICTIONARY
-          m_MapObjectsByPosition_alt.Remove(mapObj.Location.Position);
-#endif
         } else {
           if (this != mapObj.Location.Map) mapObj.Remove();
         }
       }
       mapObj.Location = new Location(this, position); // should update this while not in a map
       m_MapObjectsByPosition.Add(position, mapObj);
-#if BOOTSTRAP_Z_DICTIONARY
-      m_MapObjectsByPosition_alt.Add(position, mapObj);
-#endif
       if (update_item_memory) Engine.Session.Get.Police.Investigate.Record(mapObj.Location);
     }
 
-    public void RemoveMapObjectAt(Point pt) {
-      m_MapObjectsByPosition.Remove(pt);
-#if BOOTSTRAP_Z_DICTIONARY
-      m_MapObjectsByPosition_alt.Remove(pt);
-#endif
-    }
+    public void RemoveMapObjectAt(Point pt)  => m_MapObjectsByPosition.Remove(pt);
 
     // this will need rethinking when off-ground inventory (chairs, tables) happens
     public bool IsTrapCoveringMapObjectAt(Point pos) { return GetMapObjectAt(pos)?.CoversTraps ?? false; }
