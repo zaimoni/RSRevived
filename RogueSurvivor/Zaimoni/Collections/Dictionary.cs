@@ -5,10 +5,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
-using System.Runtime.Serialization;
-using Zaimoni.Data;
 using System.Linq;
+using System.Threading;
+using Zaimoni.Data;
 
 #nullable enable
 
@@ -21,7 +20,7 @@ using System.Linq;
 namespace Zaimoni.Collections
 {
     [Serializable]
-    public class Dictionary<Key, Value> : IDictionary<Key, Value>, IDictionary, IReadOnlyDictionary<Key, Value>, ISerializable, IDeserializationCallback, Fn_to_s
+    public class Dictionary<Key, Value> : IDictionary<Key, Value>, IDictionary, IReadOnlyDictionary<Key, Value>, Fn_to_s
     {
         private const string COLLECTION_WAS_MODIFIED = "enumeration failed: Collection was modified";
 
@@ -84,8 +83,8 @@ namespace Zaimoni.Collections
         }
 
 
-        [OptionalField] private Entry[] entries;
-        [OptionalField] public readonly IEqualityComparer<Key> Comparer;
+        private Entry[] entries;
+        public readonly IEqualityComparer<Key> Comparer;
         [NonSerialized] private int count;
         [NonSerialized] private int activeList;
         [NonSerialized] private int version;
@@ -121,55 +120,6 @@ namespace Zaimoni.Collections
                 foreach (var pair in dictionary) Add(pair.Key, pair.Value);
             }
         }
-
-#region save/load support
-        protected Dictionary(SerializationInfo info, StreamingContext context)
-        {
-            info.read(ref Comparer, "m_Comparer");
-            Comparer ??= EqualityComparer<Key>.Default;
-
-            info.read(ref entries, "m_Entries");
-            entries ??= new Entry[0];
-
-            count = entries.Length;
-        }
-
-        void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            if (EqualityComparer<Key>.Default != Comparer) info.AddValue("m_Comparer", Comparer);
-            var ub = Count;
-            if (0 < ub) {
-                var relay = new Entry[ub];
-                var index = 0;
-                var i = 0;
-                while (i < count) {
-                    ref var staging = ref entries[i++];
-                    if (0 <= staging.hashCode) relay[index++] = staging;
-                }
-                info.AddValue("m_Entries", relay);
-            }
-        }
-
-        [OnDeserializing] private void onDeserializing()
-        {   // safe defaults
-            activeList = -1;
-            count = 0;
-            version = 0;
-            freeList = -1;
-            freeCount = 0;
-        }
-
-        void IDeserializationCallback.OnDeserialization(object? sender)
-        {
-            var ub = count;
-            var i = 0;
-            count = 0; // reset so calling Add works
-            while (i < ub) {
-                ref var staging = ref entries[i++];
-                Add(staging.key, staging.value);
-            }
-        }
-#endregion
 
         public int Count { get { return count - freeCount; } }
 
