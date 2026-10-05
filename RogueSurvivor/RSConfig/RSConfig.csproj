@@ -26,7 +26,6 @@
     <Content Include="..\IconPNG.ico" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Runtime.Serialization.Formatters" Version="9.0.0-*" />
   </ItemGroup>
 
   <!-- no target platforms other than AnyCPU for .NET Core 3.0 -->

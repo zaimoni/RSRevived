@@ -13896,7 +13896,7 @@ restart:
 
     public static string GetUserBasePath() => SetupConfig.DirPath;
     public static string GetUserSavesPath() => Path.Combine(GetUserBasePath(), "Saves");
-    public static string GetUserSave() => Path.Combine(GetUserSavesPath(), "save.dat");
+    public static string GetUserSave() => Path.Combine(GetUserSavesPath(), "save.json");   // was save.dat (BinaryFormatter) until phase 4, 2026-10-05
 
     public static string GetUserSaveBackup()
     {

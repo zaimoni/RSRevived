@@ -7,8 +7,8 @@ Recorded 2026-10-01.
 
 ## Where things stand
 
-- Production save is still `BinaryFormatter`, through the `System.Runtime.Serialization.Formatters` package.
-- JSON is `Session.SaveFormat.FORMAT_JSON`, the test format: `Session.Save`/`Session.Load` take it, and a JSON-loaded session goes live (phases 0-2 done, 2026-10-02). It is not offered from the game's menus; the command line reaches it (see "Test drive" below).
+- **JSON is the stable save format** (phase 4 step 3, 2026-10-05): `Saves/save.json`, the turn-versioned backups `save.N`, the menus' save and load, `--start=load`. `BinaryFormatter` and the `System.Runtime.Serialization.Formatters` package are gone; a binary `save.dat` no longer loads (re-render it with a build before this one: `--start=load --save-and-exit` writes `save.test`, which is the new `save.json`). The `ISerializable` implementations and `[Serializable]` stay: the attribute is the registry marker for the polymorphic roots, and the binary-era code is dead but harmless.
+- Nothing is under experiment (`Session.TestFormat` is null), so a DEBUG build writes only the stable save and `--start=load-test` cannot start. The self-check under the build property round-trips the stable save instead.
 - A DEBUG build writes the test save beside every stable save (`Session.SaveGame`, phase 3 step 7, 2026-10-05). Under `BOOTSTRAP_TEST_SERIALIZATION` (`dotnet build -p:TestFormat=true`; off in a plain build), every save also runs the save-then-reload round trip self-check and audits the converters.
 - The roles are named in code, the encodings only where an encoding is meant (phase 4 step 1, 2026-10-05): `Session.StableFormat` and `Session.TestFormat` (nullable: nothing under experiment) resolve to `SaveFormat` values per build; `Session.TestPath` pairs `save.test` with `save.dat`; `--start=load-test`. `SaveJson`/`LoadJson` and the `m_JsonLoaded*` staging fields keep their names: they are about JSON.
 - A converter's namespace says whether it is finished: `Zaimoni.JsonConvert` (complete) or `Zaimoni.JsonConvertIncomplete`. The audit has been empty since 2026-10-05 (phase 3 step 6). `Map` completed 2026-10-02 with the `BgMusic` derivation.
@@ -21,7 +21,7 @@ Recorded 2026-10-01.
 Options that drive the program rather than the game, held in `Engine.TestDrive`, parsed in `Program.Main`. They never enter `Session.CommandLineOptions` (so are never saved): they describe a test run, not the game being played.
 
 - `--start=new`: skip the main menu into the new-game dialogs, which `--spawn` and its relatives fill in.
-- `--start=load`: skip the menu and load the default save (`Saves/save.dat`, the stable format). Documented in the manual.
+- `--start=load`: skip the menu and load the default save (`Saves/save.json`, the stable format; `save.dat` until phase 4). Documented in the manual.
 - `--start=load-test` (was `load-json` until phase 4 step 1): skip the menu and load the test-format save beside it (`Saves/save.test`; `Session.TestPath`). Not documented: the test format may break at any time. Cannot start when the build has no test format.
 - `--save-and-exit`: at the first point a player would be asked to act (`RogueGame.HandlePlayerActor`), save to the default slot, then quit. Works after any of the three starts, and after a start from the menu. (Both formats: explicitly until phase 3 step 7, then because a DEBUG save always writes both.)
 
@@ -256,7 +256,8 @@ Data design notes that bear on the format:
    - `GameOptions` is a struct of public properties, so it needs no attributes; a partial file sets what it names and leaves the struct default (not `ResetToDefaultValues`) for the rest.
    - `Keybindings`: `{"Bindings": {"SHOUT": "Y, Control", …}}` through a `[JsonConstructor]` that applies the file over the defaults, so a command the file predates keeps its default key; the reverse dictionary is derived. `HiScore`: fields became get-only properties with a `[JsonConstructor]`; `HiScoreTable`: `MaxEntries` and `Table`, `Count` ignored. `GameHintsStatus`: `{"Given": [hint names]}`; an unknown name or `_COUNT` fails the load, which resets.
    - Harness: `cfgtest` round-trips all four, and checks the partial-file and bad-name paths.
-3. JSON becomes `StableFormat`: the menus' save and load, the turn-versioned backups, `--start=load`. Drop the `System.Runtime.Serialization.Formatters` package. `TestFormat` is then whatever encoding is under experiment, or nothing.
+3. [x] JSON becomes `StableFormat` (2026-10-05): the menus' save and load, the turn-versioned backups, `--start=load`, all through `Session.SaveGame`/`Session.Load` unchanged; the slot is `Saves/save.json`. `TestFormat` is null: nothing under experiment. `SaveBin`, `LoadBin`, `FileExt.BinarySerialize`/`BinaryDeserialize` and the `System.Runtime.Serialization.Formatters` package (also from `RSConfig.csproj`, where it was unused) are gone; `SaveFormat.FORMAT_BIN` is `FORMAT_BIN_XXX`, a tombstone. `dangle` now loads the stable JSON save; the turn-7 fixture is its JSON rendering (`real.json`), which round-trips to identical text with the audit empty.
+   - Not removed: the `ISerializable` constructors and `GetObjectData` bodies, `OnDeserialized` hooks that the JSON load reuses, and `[Serializable]`, which is the registry marker for the polymorphic roots. Cleaning the dead binary-era code out is a separate pass, when wanted.
 
 ## Stable and test formats
 

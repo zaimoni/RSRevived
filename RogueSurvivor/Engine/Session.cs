@@ -599,9 +599,6 @@ namespace djack.RogueSurvivor.Engine
             if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
             switch (format) {
-                case SaveFormat.FORMAT_BIN:
-                    SaveBin(session, filepath);
-                    break;
                 case SaveFormat.FORMAT_JSON:
                     SaveJson(session, filepath);
                     break;
@@ -619,18 +616,17 @@ namespace djack.RogueSurvivor.Engine
             if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
             switch (format) {
-                case SaveFormat.FORMAT_BIN: return LoadBin(filepath);
                 case SaveFormat.FORMAT_JSON: return LoadJson(filepath);
                 default: return false;
             }
         }
 
         /// <summary>The format the game plays on and backs up: what the menus and --start=load read.</summary>
-        public static SaveFormat StableFormat { get => SaveFormat.FORMAT_BIN; }
+        public static SaveFormat StableFormat { get => SaveFormat.FORMAT_JSON; }
 
         /// <summary>The format under experiment, written beside every stable save in a DEBUG build and read by --start=load-test;
         /// null when there is none.  May break at any time: the file is derived, and any stable save re-renders into it.</summary>
-        public static SaveFormat? TestFormat { get => SaveFormat.FORMAT_JSON; }
+        public static SaveFormat? TestFormat { get => null; }
 
         /// <summary>the test-format save that goes with a stable-format save</summary>
         public static string TestPath(string filepath) => Path.ChangeExtension(filepath, ".test");
@@ -819,32 +815,12 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private static void SaveBin(Session session, string filepath)
-    {
-#if DEBUG
-      if (null == session) throw new ArgumentNullException(nameof(session));
-      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
-#endif
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
-#if BOOTSTRAP_Z_SERIALIZATION
-	  Zaimoni.Serialization.Virtual.BinarySave(filepath+"test", session);
-      RogueGame.Game.ErrorPopup("in-house save ok");
-      // immediate integation test
-      var compare = Zaimoni.Serialization.Virtual.BinaryLoad<Session>(filepath + "test");
-      session.SaveLoadOk(compare);
-      RogueGame.Game.ErrorPopup("in-house load ok");
-#else
-	  filepath.BinarySerialize(session);
-#endif
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
-    }
-
 #if BOOTSTRAP_TEST_SERIALIZATION
-    /// <summary>The self-check, after SaveGame wrote both formats: the test save must load, agree on derived data, and save again as the
-    /// same text.  Does not notice what is not saved at all.  Then the converter audit.</summary>
+    /// <summary>The self-check, after SaveGame wrote its formats: the test save (the stable one, when nothing is under experiment) must
+    /// load, agree on derived data, and save again as the same text.  Does not notice what is not saved at all.  Then the converter audit.</summary>
     private static void RoundTripTest(string filepath)
     {
-      var json_path = TestPath(filepath);
+      var json_path = (null == TestFormat) ? filepath : TestPath(filepath);
       var json_path2 = json_path+"2";   // only survives a failed round-trip test
       RogueGame.Game.ErrorPopup("JSON save ok");
       var test2 = LoadJsonStaged(json_path);
@@ -864,7 +840,7 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-    // JSON is the test format (see SaveGame).  A save or load that fails part-way leaves ids and
+    // JSON is the stable format since phase 4 (2026-10-05).  A save or load that fails part-way leaves ids and
     // fixups behind: abandon them, or they poison the next attempt.  (Finish would throw again, on the fixups whose targets never loaded.)
     private static void SaveJson(Session session, string filepath)
     {
@@ -922,40 +898,6 @@ namespace djack.RogueSurvivor.Engine
       if (0 < errors.Count) throw new InvalidOperationException("inventory damage on load: " + string.Join("\n", errors));
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading JSON session... done!");
-      return true;
-    }
-
-    private static bool LoadBin(string filepath)
-    {
-#if DEBUG
-      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
-#endif
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
-#if DEBUG
-#else
-      try {
-#endif
-        s_IsLoading = true;
-        s_TheSession = filepath.BinaryDeserialize<Session>();
-        s_IsLoading = false;
-        s_TheSession.RepairLoad();
-#if DEBUG
-#else
-      } catch (Exception ex) {
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
-        return false;
-      }
-#endif
-#if DEBUG
-      var errors = new List<string>();
-      World.Get._RejectInventoryDamage(errors);
-      if (0 < errors.Count) throw new InvalidOperationException("inventory damage on load: " + string.Join("\n", errors));
-#endif
-#if PRERELEASE_MOTHBALL
-      s_TheSession.World.DoForAllMaps(m=>m.RegenerateChokepoints());
-#endif
-	  Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
       return true;
     }
 
@@ -1045,10 +987,10 @@ namespace djack.RogueSurvivor.Engine
 
     public enum SaveFormat
     {
-      FORMAT_BIN,
+      FORMAT_BIN_XXX,  // BinaryFormatter: retired 2026-10-05 (phase 4)
       FORMAT_SOAP, // dropped from .NET Core
       FORMAT_XML,  // incompatible with access control
-      FORMAT_JSON  // test format: see SaveGame
+      FORMAT_JSON  // the stable format since phase 4; see SaveGame
     }
   }
 }

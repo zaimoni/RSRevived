@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Zaimoni.Data
 {
@@ -18,24 +17,6 @@ namespace Zaimoni.Data
             if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
             return new FileStream(filepath, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, save ? FileShare.None : FileShare.Read);
-		}
-
-		public static void BinarySerialize<_T_>(this string filepath, _T_ src)
-		{
-#if DEBUG
-            if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
-#endif
-            using var stream = filepath.CreateStream(true);
-			(new BinaryFormatter()).Serialize(stream, src);
-			stream.Flush();
-		}
-		public static _T_ BinaryDeserialize<_T_>(this string filepath)
-		{
-#if DEBUG
-            if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
-#endif
-            using var stream = filepath.CreateStream(false);
-    		return (_T_)(new BinaryFormatter()).Deserialize(stream);
 		}
 
         // Configuration files: attribute-driven JSON, readable, enums by name (phase 4 step 2).
