@@ -1197,6 +1197,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_LastSoldierSaw = null;
         m_LastRaidHeard = null;
       }
+      // an emptied ground inventory is gone from its map: nothing to go back for (2026-10-04)
+      if (m_LastItemsSaw?.Percepted is Inventory inv && inv.IsEmpty) m_LastItemsSaw = null;
     }
 
 #nullable enable

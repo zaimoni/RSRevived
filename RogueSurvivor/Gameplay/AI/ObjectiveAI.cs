@@ -16,6 +16,7 @@ using djack.RogueSurvivor.Gameplay.AI.Goals;
 using Zaimoni.Data;
 using System.Text.Json;
 using Zaimoni.JSON;
+using System.Runtime.Serialization;
 
 using static Zaimoni.Data.Functor;
 
@@ -252,11 +253,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+    // An expired objective is done with; it may still be an FOV watcher.  Safe to drop at any save (2026-10-04).
+    [OnSerializing] private void OptimizeBeforeSaving(StreamingContext context)
+    {
+      Objectives.RemoveAll(o => o.IsExpired);
+      FOVevents.RemoveAll(w => w is Objective o && o.IsExpired);
+    }
+
 #region JSON save/load
     // ItemPriorities is not written: TakeControl recomputes it (ReviewItemRatings), so it is derived for a load, whatever the binary save does.
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
       base.toJsonFields(writer, options);
+      OptimizeBeforeSaving(default);    // as the legacy save does: expired objectives go
       if (0 < Objectives.Count) writer.WriteArray("Objectives", Objectives, options);   // before FOVevents: those are references to these
       {
       List<Objective>? watched = null;

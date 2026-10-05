@@ -55,7 +55,17 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         _friends = null;
         _enemies = null;
         _items = null;
+        return;
       }
+      // the dead seen last turn are not in the save (2026-10-04)
+      static void forget_dead(ref Dictionary<Location, Actor>? seen) {
+        if (null == seen) return;
+        var dead = seen.Where(x => x.Value.IsDead).Select(x => x.Key).ToList();
+        foreach (var loc in dead) seen.Remove(loc);
+        if (0 >= seen.Count) seen = null;
+      }
+      forget_dead(ref _friends);
+      forget_dead(ref _enemies);
     }
 
 #region JSON save/load

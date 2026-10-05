@@ -24,6 +24,7 @@ namespace Zaimoni.Data
 
         public void Add(Observer<T> src) { if (!m_Watchers.Contains(src)) m_Watchers.Add(src); }
         public IEnumerable<Observer<T>> Watchers { get => m_Watchers; }
+        public int RemoveAll(Predicate<Observer<T>> test) => m_Watchers.RemoveAll(test);
     }
 
     // not really observer pattern
