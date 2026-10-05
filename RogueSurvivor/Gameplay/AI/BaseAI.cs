@@ -18,6 +18,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using Zaimoni.Data;
+using System.Text.Json;
+using Zaimoni.JSON;
 using static Zaimoni.Data.Functor;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using Point = Zaimoni.Data.Vector2D<short>;
@@ -45,6 +47,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] private bool _processing;
 
     protected BaseAI(Actor src) : base(src) {}
+
+#region JSON save/load
+    public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
+    {
+      base.toJsonFields(writer, options);
+      if (null != m_prevLocation.Map) {
+        writer.WritePropertyName("PrevLocation");
+        JsonSerializer.Serialize(writer, m_prevLocation, options);
+      }
+    }
+
+    protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
+    {
+      base.loadJsonFields(src, options);
+      if (src.TryGetProperty("PrevLocation", out var x)) m_prevLocation = x.Deserialize<Location>(options);
+    }
+#endregion
 
     public Location PrevLocation { get { return m_prevLocation; } }
     public void UpdatePrevLocation() { m_prevLocation = m_Actor.Location; } // for PlayerController

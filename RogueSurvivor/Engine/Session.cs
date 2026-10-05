@@ -29,6 +29,11 @@ namespace djack.RogueSurvivor.Engine
         [NonSerialized] public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
         private static Session s_TheSession;
         [NonSerialized] private static bool s_IsLoading = false;
+        [NonSerialized] private static Session? s_Loading = null;
+
+        /// <summary>The session being loaded from JSON, while it is: what a constructor run by the load must consult instead of Get,
+        /// which is the live session, or a fresh default one when there is none (its constructor resets the World).</summary>
+        public static Session? Loading { get => s_Loading; }
         private static Map.ActorCode s_Player;
 
         [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
@@ -287,7 +292,9 @@ namespace djack.RogueSurvivor.Engine
     {
       // We are not the live session.  The field initializer for Police subscribed its threat tracking to live game events.
       Police.Detach();
-
+      s_Loading = this;
+      try {
+      // body not indented, to leave its lines alone
       if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
       int origin_depth = reader.CurrentDepth;
       reader.Read();
@@ -389,6 +396,12 @@ namespace djack.RogueSurvivor.Engine
       Map.LoadTileLegend(null); // only meaningful for the save it came from
 
       if (JsonTokenType.EndObject != reader.TokenType) throw new JsonException();
+
+      // Everything with an id is in: the controllers' state can now refer to any of it.
+      ActorController.LoadPending(options);
+      } finally {
+        s_Loading = null;
+      }
     }
 
 /*
@@ -822,6 +835,7 @@ namespace djack.RogueSurvivor.Engine
         return ret;
       } catch {
         PreserveReferenceHandler.Reset();
+        ActorController.AbandonPending();
         throw;
       }
     }

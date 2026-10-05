@@ -27,5 +27,6 @@ namespace Zaimoni.Data
         public void Set(K key, object val) {
           (_map ??= new Dictionary<K, object>())[key] = val;
         }
+        public IEnumerable<KeyValuePair<K, object>> Contents { get => _map ?? (IEnumerable<KeyValuePair<K, object>>)Array.Empty<KeyValuePair<K, object>>(); }
     }
 }

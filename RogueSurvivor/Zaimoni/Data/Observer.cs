@@ -23,6 +23,7 @@ namespace Zaimoni.Data
         }
 
         public void Add(Observer<T> src) { if (!m_Watchers.Contains(src)) m_Watchers.Add(src); }
+        public IEnumerable<Observer<T>> Watchers { get => m_Watchers; }
     }
 
     // not really observer pattern

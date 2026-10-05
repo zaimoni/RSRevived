@@ -243,9 +243,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ObjectiveAI(Actor src) : base(src) {
       // implicit police radio, and trained to use it properly
       if (m_Actor.IsFaction(GameFactions.IDs.ThePolice)) {
-        FOVevents.Add(new TryToClearZones(Session.Get.Police, src));
-        FOVevents.Add(Session.Get.Police.implicitRadio); // want this to be lexically late to run early and update threats/tourism for others
-        if (   (1 <= Session.Get.ScriptStage_PoliceStationPrisoner || 1 <= Session.Get.ScriptStage_PoliceCHARrelations)
+        var session = Session.Loading ?? Session.Get;   // a JSON load constructs us before its session is the live one
+        FOVevents.Add(new TryToClearZones(session.Police, src));
+        FOVevents.Add(session.Police.implicitRadio); // want this to be lexically late to run early and update threats/tourism for others
+        if (   (1 <= session.ScriptStage_PoliceStationPrisoner || 1 <= session.ScriptStage_PoliceCHARrelations)
             &&  LookingForCHARBase.IsSecret) // other order of tests crashes at game start
           FOVevents.Add(new LookingForCHARBase(src));
       }

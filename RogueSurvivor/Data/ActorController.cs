@@ -46,15 +46,43 @@ namespace djack.RogueSurvivor.Data
     static public void WriteActorUnlessOwner(Utf8JsonWriter writer, Actor src) { if (src != s_SaveOwner) writer.WriteRef("Actor", src); }
     static public Actor ActorOrOwner(JsonElement src) => src.TryGetProperty("Actor", out var a) ? a.RequireRef<Actor>() : (s_LoadOwner ?? throw new JsonException("no actor to own this"));
 
-    /// <summary>for the subclasses' fromJson</summary>
+    // Two-phase load.  A controller's state refers to things (other maps, other actors' controllers) that may be later in the
+    // file, and other controllers' state refers to this controller.  So the actor's load constructs the controller as the live
+    // game would, a shell, and the fields are read from the staged JSON once the whole World is in: Session calls LoadPending last.
+    [NonSerialized] private static List<KeyValuePair<ActorController, JsonElement>>? s_JsonPending = null;
+
+    /// <summary>for the subclasses' fromJson: registers the shell, and stages its fields</summary>
     static protected T JsonLoaded<T>(JsonElement src, T ret) where T : ActorController
     {
       src.RecordRef(ret);
+      (s_JsonPending ??= new()).Add(new(ret, src));
       return ret;
     }
 
-    // So far, a controller saves nothing but its $type: the AI reloads with amnesia.
+    /// <summary>Reads the staged fields of every controller constructed since the last call, in file order.</summary>
+    static public void LoadPending(JsonSerializerOptions options)
+    {
+      if (null == s_JsonPending) return;
+      var pending = s_JsonPending;
+      s_JsonPending = null;
+      var prior = s_LoadOwner;
+      try {
+        foreach (var x in pending) {
+          s_LoadOwner = x.Key.m_Actor;
+          x.Key.loadJsonFields(x.Value, options);
+        }
+      } finally {
+        s_LoadOwner = prior;
+      }
+    }
+
+    /// <summary>a load that failed part-way: the shells are garbage</summary>
+    static public void AbandonPending() => s_JsonPending = null;
+
+    // The layers chain: base first, then their own fields.  The field names are flat in the one object, so merging BaseAI
+    // into ActorController would change no file.
     public virtual void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) { }
+    protected virtual void loadJsonFields(JsonElement src, JsonSerializerOptions options) { }
 
     /// <summary>True if and only if we are indistinguishable, when saved, from what our actor's model would construct.
     /// Our actor then does not write us at all.  This gets more specific as controller save/load is built out.</summary>
