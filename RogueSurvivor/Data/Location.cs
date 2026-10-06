@@ -51,7 +51,7 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     public Inventory? Items { get => Map.GetItemsAt(Position); }
     public Exit? Exit { get => Map.GetExitAt(Position); }
-    public void SetExit(in Location dest) => Map.SetExitAt(Position, new Exit(in dest));
+    public void SetExit(in Location dest) => Map.SetExitAt(Position, new Exit(dest));
     public List<Corpse>? Corpses { get => Map.GetCorpsesAt(Position); }
     public Tile Tile { get => Map.GetTileAt(Position); }
     public TileModel TileModel { get => Map.GetTileModelAt(Position); }

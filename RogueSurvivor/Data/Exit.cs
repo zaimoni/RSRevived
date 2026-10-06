@@ -10,19 +10,13 @@ using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Data
 {
-  // deriving from Zaimoni.Serialization.ISerialize, prevents using a primary constructor
   [Serializable]
-  public sealed class Exit
-    {
-    private Location m_Location;	// XXX this cannot be public readonly Location: load fails in the runtime library Nov 5 2016.  Retry after compiler upgrade.
+  public sealed class Exit(Location dest)
+  {
+    public Map ToMap => dest.Map;
+    public Location Location => dest;
 
-    public Map ToMap { get { return m_Location.Map; } }
-    public Location Location { get { return m_Location; } }
-
-#nullable enable
-    public Exit(in Location dest) { m_Location = dest; }
-    public Exit(Map toMap, in Point toPosition) : this(new Location(toMap, toPosition)) {}
-
+    public Exit(Map toMap, in Point toPosition) : this(new(toMap, toPosition)) {}
 
     // note that if we are pathfinding, we do not have actor anyway.  All livings can jump, however
     // we do not consider actors to block exits when pathfinding
@@ -58,7 +52,7 @@ namespace djack.RogueSurvivor.Data
 
     public override string ToString()
     {
-      return "Exit; destination "+m_Location.ToString();
+      return "Exit; destination "+dest.ToString();
     }
   }
 }
