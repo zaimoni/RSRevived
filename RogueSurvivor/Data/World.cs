@@ -405,7 +405,6 @@ namespace djack.RogueSurvivor.Data
       m_Extent = new Rectangle(Point.Empty, new Point(m_Size, m_Size));
       var c_size = (short)(m_Size - 2);
       m_CHAR_City = new Rectangle(CHAR_City_Origin,new Point(c_size, c_size));
-//    s_Recent = this; // not until ready to take live: JsonTakeLive
     }
 
     /// <summary>Installs us as the live world.  For Session, when a JSON-loaded session goes live.</summary>
@@ -462,45 +461,10 @@ namespace djack.RogueSurvivor.Data
 
     static public World Load(ref Utf8JsonReader reader)
     {
-      var stage = JsonSerializer.Deserialize<World>(ref reader, Engine.Session.JSON_opts) ?? throw new JsonException();
-//    s_Recent = stage; // when taking live: JsonTakeLive
-      return stage;
-    }
-
-    static public void Load(Zaimoni.Serialization.DecodeObjects decode)
-    {
-       // function extraction target does not work -- out/ref parameter needs accessing from lambda function
-       var code = Zaimoni.Serialization.Formatter.DeserializeObjCode(decode.src);
-       if (0 < code) {
-           var obj = decode.Seen(code);
-           if (null != obj) {
-                    if (obj is World w) {
-                        // s_Recent = w; // when taking live
-                        s_Recent.SaveLoadOk(w); // when building out
-                    }
-                    else throw new InvalidOperationException("World object not loaded");
-           } else {
-                    decode.Schedule(code, (o) => {
-                        if (o is World w) {
-                            // s_Recent = w; // when taking live
-                            s_Recent.SaveLoadOk(w); // when building out
-                        }
-                        else throw new InvalidOperationException("World object not loaded");
-                    });
-           }
-        } else throw new InvalidOperationException("World object not loaded");
-        // end failed function extraction target
-
-//    s_Recent = stage; // when taking live
+      return JsonSerializer.Deserialize<World>(ref reader, Engine.Session.JSON_opts) ?? throw new JsonException();
     }
 
     static public void Reset() => s_Recent = new World();
-
-#if PROTOTYPE
-    public Point toWorldPos(int n) { return new Point(n % m_Size, n / m_Size); }
-    public int fromWorldPos(Point pt) { return pt.X + m_Size*pt.Y; }
-    public int fromWorldPos(int x, int y) { return x + m_Size*y; }
-#endif
 
     public HashSet<Actor>? PoliceInRadioRange(Location loc, Predicate<Actor>? test =null)
     {

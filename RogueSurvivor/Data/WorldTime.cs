@@ -114,15 +114,6 @@ namespace djack.RogueSurvivor.Data
       TurnCounter = turnCounter;
     }
 
-#region implement Zaimoni.Serialization.ISerialize
-    protected WorldTime(Zaimoni.Serialization.DecodeObjects decode)
-    {
-      int tmp_int = 0; // should be same type as TurnCounter i.e. m_TurnCounter
-      Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref tmp_int);
-      TurnCounter = tmp_int;
-    }
-#endregion
-
     public override string ToString()
     {
       return string.Format("day {0} hour {1:D2}", m_Day, m_Hour);
@@ -209,14 +200,5 @@ namespace Zaimoni.JsonConvert {
         public override void Write(System.Text.Json.Utf8JsonWriter writer, djack.RogueSurvivor.Data.WorldTime src, System.Text.Json.JsonSerializerOptions options) {
             writer.WriteNumberValue(src.TurnCounter);
         }
-    }
-}
-
-
-namespace Zaimoni.Serialization {
-
-    public partial interface ISave
-    {
-        static void InlineSave(EncodeObjects encode, in djack.RogueSurvivor.Data.WorldTime src) => Formatter.Serialize7bit(encode.dest, src.TurnCounter);
     }
 }
