@@ -298,14 +298,6 @@ namespace djack.RogueSurvivor.Data
       foreach(var d in m_DistrictsGrid) d.RepairLoad();
     }
 
-    private void SaveLoadOk(World test) {
-        var err = string.Empty;
-
-        if (m_Size != test.m_Size) err += "World size mismatch: "+m_Size.ToString()+ "" + test.m_Size.ToString();
-
-        if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
-    }
-
     static private int field_code(ref Utf8JsonReader reader) {
         if (reader.ValueTextEquals("Size")) return 1;
         else if (reader.ValueTextEquals("Weather")) return 2;
