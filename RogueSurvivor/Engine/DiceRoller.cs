@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using Zaimoni.Serialization;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
@@ -19,16 +18,13 @@ using Random = Microsoft.Random;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  public class DiceRoller : ISerialize
+  public class DiceRoller
     {
     private readonly Random m_Rng;
 
     public DiceRoller(int seed) => m_Rng = new Random(seed);
     public DiceRoller() : this((int) DateTime.UtcNow.Ticks) {}
     private DiceRoller(Random src) { m_Rng = src; }
-
-    public DiceRoller(DecodeObjects decode) => m_Rng = decode.LoadInline<Random>();
-    public void save(EncodeObjects encode) => ISave.InlineSave(encode, m_Rng);
 
     static private int field_code(ref Utf8JsonReader reader) {
       if (reader.ValueTextEquals("m_Rng")) return 1;

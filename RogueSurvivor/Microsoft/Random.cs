@@ -34,12 +34,11 @@
 ===========================================================*/
 using System;
 using System.Text.Json;
-using Zaimoni.Serialization;
 
 namespace Microsoft
 {
     [Serializable]
-    public class Random : ISerialize
+    public class Random
     {
         // Private Constants
         private const int MBIG = Int32.MaxValue;
@@ -91,20 +90,6 @@ namespace Microsoft
             inext = 0;
             inextp = 21;
             Seed = 1;
-        }
-
-        public Random(DecodeObjects decode)
-        {
-            Formatter.Deserialize(decode.src, ref inext);
-            Formatter.Deserialize(decode.src, ref inextp);
-            decode.LoadFrom7bit(ref SeedArray);
-        }
-
-        public void save(EncodeObjects encode)
-        {
-            Formatter.Serialize(encode.dest, inext);
-            Formatter.Serialize(encode.dest, inextp);
-            encode.SaveTo7bit(SeedArray);
         }
 
         static private int field_code(ref Utf8JsonReader reader)

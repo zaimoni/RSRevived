@@ -11,14 +11,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Zaimoni.JSON;
-using Zaimoni.Serialization;
 
 #nullable enable
 
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-    public sealed class Scoring : ISerialize
+    public sealed class Scoring
     {
     private static readonly Achievement[] Achievements = new Achievement[(int)Achievement.IDs._COUNT] {
         new Achievement(Achievement.IDs.REACHED_DAY_07, "Reached Day 7", "Did not reach XXX", new string[1] {
@@ -64,26 +63,6 @@ namespace djack.RogueSurvivor.Engine
         if (ub != (int)Achievements[ub].ID) throw new InvalidProgramException("mismatch between achievement id and array position: " + ub.ToString() + " " + Achievements[ub].ID.ToString());
       }
 #endif
-    }
-
-    protected Scoring(DecodeObjects decode)
-    {
-       Formatter.Deserialize(decode.src, ref m_ReincarnationNumber);
-       Formatter.Deserialize(decode.src, ref RealLifePlayingTime);
-    }
-
-    void ISerialize.save(EncodeObjects encode)
-    {
-       Formatter.Serialize(encode.dest, m_ReincarnationNumber);
-       Formatter.Serialize(encode.dest, RealLifePlayingTime);
-    }
-
-    public void SaveLoadOk(Scoring test) {
-        var err = string.Empty;
-        if (m_ReincarnationNumber != test.m_ReincarnationNumber) err += "m_ReincarnationNumber != test.m_ReincarnationNumber: " + m_ReincarnationNumber.ToString() + " "+ test.m_ReincarnationNumber.ToString() + "\n";
-        if (RealLifePlayingTime != test.RealLifePlayingTime) err += "RealLifePlayingTime != test.RealLifePlayingTime: " + RealLifePlayingTime.ToString() + " "+ test.RealLifePlayingTime.ToString() + "\n";
-
-        if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
     }
 
     static private int field_code(ref Utf8JsonReader reader) {
