@@ -785,9 +785,9 @@ namespace djack.RogueSurvivor.Engine
 
     public enum SaveFormat
     {
-      FORMAT_BIN_XXX,  // BinaryFormatter: retired 2026-10-05 (phase 4)
-      FORMAT_SOAP, // dropped from .NET Core
-      FORMAT_XML,  // incompatible with access control
+//    FORMAT_BIN_XXX,  // BinaryFormatter: retired 2026-10-05 (phase 4)
+//    FORMAT_SOAP, // dropped from .NET Core
+//    FORMAT_XML,  // incompatible with access control
       FORMAT_JSON  // the stable format since phase 4; see SaveGame
     }
   }
