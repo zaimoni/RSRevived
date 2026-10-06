@@ -14,7 +14,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemSprayScent : Item, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemSprayScent>
+  public sealed class ItemSprayScent : Item, IJsonStaged<ItemSprayScent>
     {
     new public ItemSprayScentModel Model { get {return (base.Model as ItemSprayScentModel)!; } }
     private int m_SprayQty;
@@ -40,17 +40,6 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public ItemSprayScent(ItemSprayScentModel model, int qty) : base(model) { SprayQuantity = qty; }
     public ItemSprayScent(ItemSprayScentModel model) : this(model, model.MaxSprayQuantity) {}
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected ItemSprayScent(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
-        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref m_SprayQty);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-        base.save(encode);
-        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_SprayQty);
-    }
-#endregion
 
     private ItemSprayScent(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<ItemSprayScentModel>();

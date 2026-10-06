@@ -14,7 +14,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemLight : Item, BatteryPowered, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemLight>
+  public sealed class ItemLight : Item, BatteryPowered, IJsonStaged<ItemLight>
   {
     new public ItemLightModel Model { get {return (base.Model as ItemLightModel)!; } }
     private int m_Batteries;
@@ -53,17 +53,6 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemLight(ItemLightModel model, int qty) : base(model) { Batteries = qty; }
     public ItemLight(ItemLightModel model) : this(model, model.MaxBatteries) {}
 
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected ItemLight(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
-        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref m_Batteries);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-        base.save(encode);
-        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_Batteries);
-    }
-#endregion
 
     private ItemLight(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<ItemLightModel>();

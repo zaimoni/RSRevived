@@ -7,7 +7,6 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Text.Json;
-using Zaimoni.JSON;
 
 #nullable enable
 
@@ -19,11 +18,6 @@ namespace djack.RogueSurvivor.Engine.Items
     new public ItemWeaponModel Model { get {return (base.Model as ItemWeaponModel)!; } }
     protected ItemWeapon(ItemWeaponModel model) : base(model) {}
     protected ItemWeapon(ItemWeaponModel model, int qty) : base(model, qty) {}
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected ItemWeapon(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
-#endregion
-
     protected ItemWeapon(JsonElement src, JsonSerializerOptions options) : base(src, options) { RequireModel<ItemWeaponModel>(); }
   }
 }

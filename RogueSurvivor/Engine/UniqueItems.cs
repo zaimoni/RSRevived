@@ -11,23 +11,11 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  public class UniqueItems : Zaimoni.Serialization.ISerialize
+  public class UniqueItems
   {
     public UniqueItem TheSubwayWorkerBadge = default;
 
     public UniqueItems() {}
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected UniqueItems(Zaimoni.Serialization.DecodeObjects decode) {
-        Zaimoni.Serialization.ISave.Load(decode, ref TheSubwayWorkerBadge, (it,spawned) => {
-            TheSubwayWorkerBadge = new(it, spawned);
-        });
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-        Zaimoni.Serialization.ISave.Save(encode, in TheSubwayWorkerBadge);
-    }
-#endregion
 
     private UniqueItems(JsonElement src, JsonSerializerOptions options) {
         if (src.TryGetProperty("TheSubwayWorkerBadge", out var relay)) TheSubwayWorkerBadge = load(relay, options);

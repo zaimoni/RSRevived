@@ -50,8 +50,8 @@ namespace djack.RogueSurvivor.Data
         public bool Consume() => 0 >= Interlocked.Decrement(ref QtyLike);
     }
 
-    [Serializable]
-  public class Item : INoun, Zaimoni.Serialization.ISerialize, IJsonStaged<Item>
+  [Serializable]
+  public class Item : INoun, IJsonStaged<Item>
     {
     public readonly Gameplay.Item_IDs ModelID;
     private int m_Quantity;
@@ -121,27 +121,6 @@ namespace djack.RogueSurvivor.Data
       m_Quantity = qty;
       EquippedPart = DollPart.NONE;
     }
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected Item(Zaimoni.Serialization.DecodeObjects decode) {
-        int tmp_int = 0;
-        byte tmp_byte = 0;
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref tmp_int);
-        ModelID = (Gameplay.Item_IDs)(tmp_int);
-        // we intentionally save/load quantity even if not model-stackable
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_Quantity);
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref tmp_byte);
-        EquippedPart = (DollPart)tmp_byte;
-    }
-
-    protected void save(Zaimoni.Serialization.EncodeObjects encode) {
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (int)(ModelID));
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_Quantity);
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)EquippedPart);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => save(encode);
-#endregion
 
     protected Item(JsonElement src, JsonSerializerOptions options) {
         src.RecordRef(this);

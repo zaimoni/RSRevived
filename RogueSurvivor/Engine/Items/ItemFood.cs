@@ -6,7 +6,6 @@
 
 using djack.RogueSurvivor.Data;
 using System;
-using System.Xml.Linq;
 using System.Text.Json;
 using Zaimoni.JSON;
 
@@ -15,7 +14,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemFood : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemFood>
+  public sealed class ItemFood : Item, UsableItem, IJsonStaged<ItemFood>
     {
     public readonly WorldTime? BestBefore;
 
@@ -65,17 +64,6 @@ namespace djack.RogueSurvivor.Engine.Items
 #endif
       BestBefore = new WorldTime(bestBefore);
     }
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected ItemFood(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
-        if (IsPerishable) BestBefore = decode.LoadInline<WorldTime>();
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-        base.save(encode);
-        if (IsPerishable) Zaimoni.Serialization.ISave.InlineSave(encode, in BestBefore);
-    }
-#endregion
 
     private ItemFood(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<ItemFoodModel>();

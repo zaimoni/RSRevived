@@ -14,7 +14,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  public sealed class PowerGenerator : StateMapObject, Zaimoni.Serialization.ISerialize, IJsonStaged<PowerGenerator>
+  public sealed class PowerGenerator : StateMapObject, IJsonStaged<PowerGenerator>
     {
     private const int STATE_OFF = 0;
     private const int STATE_ON = 1;
@@ -39,10 +39,6 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     // While there is only one kind of power generator currently, the graphics
     // should be isolated from the constructor "just in case".
     public PowerGenerator() : base(m_imageIDs[0]) {}
-#region implement Zaimoni.Serialization.ISerialize
-    protected PowerGenerator(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
-#endregion
 
     private PowerGenerator(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         var stage = src.Require("State").GetString();

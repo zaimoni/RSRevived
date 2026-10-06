@@ -14,24 +14,13 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  internal sealed class Board : MapObject, Zaimoni.Serialization.ISerialize, IJsonStaged<Board>
+  internal sealed class Board : MapObject, IJsonStaged<Board>
     {
     public readonly string[] Text;
 
     public Board(string imageID, string[] text) : base(imageID) {
       Text = text;
     }
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected Board(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
-        Zaimoni.Serialization.ISave.LinearLoad(decode, out Text);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-        base.save(encode);
-        Zaimoni.Serialization.ISave.LinearSave(encode, Text);
-    }
-#endregion
 
     private Board(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         var stage = new System.Collections.Generic.List<string>();

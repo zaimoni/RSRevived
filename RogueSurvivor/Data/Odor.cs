@@ -16,8 +16,8 @@ namespace djack.RogueSurvivor.Data
     SUPPRESSOR  // alpha 10
   }
 
-    [Serializable]
-  public class OdorScent : Zaimoni.Serialization.ISerialize
+  [Serializable]
+  public class OdorScent
   {
     public const int MIN_STRENGTH = 1;
     public const int MAX_STRENGTH = 9*WorldTime.TURNS_PER_HOUR;
@@ -41,22 +41,6 @@ namespace djack.RogueSurvivor.Data
       Odor = odor;
       Strength = strength;
     }
-
-#region implement Zaimoni.Serialization.ISerialize
-    public OdorScent(Zaimoni.Serialization.DecodeObjects decode)
-    {
-        byte stage = default;
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref stage);
-        Odor = (Odor)stage;
-        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref m_Strength);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
-    {
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)Odor);
-        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_Strength);
-    }
-#endregion
 
     public bool Decay(short decay_rate)
     {

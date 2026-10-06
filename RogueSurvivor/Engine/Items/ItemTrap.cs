@@ -14,7 +14,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemTrap : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemTrap>
+  public sealed class ItemTrap : Item, UsableItem, IJsonStaged<ItemTrap>
     {
 #nullable enable
     new public ItemTrapModel Model { get { return (base.Model as ItemTrapModel)!; } }
@@ -61,22 +61,6 @@ namespace djack.RogueSurvivor.Engine.Items
       m_IsTriggered = (0 != (flags & 2U));
     }
     public ItemTrap Clone() { return new ItemTrap(Model); }
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected ItemTrap(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
-        byte tmp_byte = 0;
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref tmp_byte);
-        m_IsActivated = (0 != (tmp_byte & 1U)) ? true : false;
-        m_IsTriggered = (0 != (tmp_byte & 2U)) ? true : false;
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-        base.save(encode);
-
-        uint transcode = (m_IsActivated ? 1U : 0U) | (m_IsTriggered ? 2U : 0U);
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)transcode);
-    }
-#endregion
 
     private ItemTrap(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<ItemTrapModel>();

@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Data
  * we would like actors to have enough item memory to track seen *internal* inventory (not yet implemented)
  */
   [Serializable]
-  public class MapObject : ILocation, INoun, Zaimoni.Serialization.ISerialize, IJsonStaged<MapObject>
+  public class MapObject : ILocation, INoun, IJsonStaged<MapObject>
   {
     public const int CAR_WEIGHT = 100;
     public const int MAX_NORMAL_WEIGHT = 10;
@@ -89,24 +89,6 @@ namespace djack.RogueSurvivor.Data
         m_BreakState = value;
         bool now_broken = Break.BROKEN == value;
         if ((Break.BROKEN == old)!= now_broken) InvalidateLOS();
-#if OBSOLETE
-        if (now_broken) {
-          if (null != m_Inventory) {
-            if (!m_Inventory.IsEmpty) {
-              // cf. RogueGame::KillActor
-              foreach (Item it in m_Inventory.Items.ToArray()) {
-                if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
-                if (it.Model.IsUnbreakable || it.IsUnique || Engine.Rules.Get.RollChance(Engine.RogueGame.ItemSurviveKillProbability(it, "suicide"))) { // not really, but this keys the most lenient drop probabilities
-                  m_Inventory.RemoveAllQuantity(it);
-                  Location.Drop(it);
-                }
-              }
-              Engine.Session.Get.Police.Investigate.Record(Location);  // cheating ai: police consider death drops tourism targets
-            }
-            m_Inventory = null;
-          }
-        }
-#endif
       }
     }
 
@@ -206,32 +188,6 @@ namespace djack.RogueSurvivor.Data
 
       if (_ID_StartsBroken(m_ID)) m_BreakState = Break.BROKEN;
     }
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected MapObject(Zaimoni.Serialization.DecodeObjects decode) {
-        byte stage_byte = 0;
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref stage_byte);
-        m_ID = (IDs)stage_byte;
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref stage_byte);
-        m_BreakState = (Break)(stage_byte / max_Fire);
-        m_FireState = (Fire)(stage_byte % max_Fire);
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_HitPoints);
-    }
-
-    protected void save(Zaimoni.Serialization.EncodeObjects encode) {
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)m_ID);
-        int crm_code = (int)m_BreakState*max_Fire+(int)m_FireState;
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)crm_code);
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_HitPoints);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)m_ID);
-        int crm_code = (int)m_BreakState*max_Fire+(int)m_FireState;
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (byte)crm_code);
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_HitPoints);
-    }
-#endregion
 
     // what the constructor would choose for our current ID
     private Break DefaultBreakState { get => _ID_StartsBroken(m_ID) ? Break.BROKEN : (0 == Model.MaxHitPoints ? Break.UNBREAKABLE : Break.BREAKABLE); }
@@ -472,7 +428,7 @@ namespace djack.RogueSurvivor.Data
 
 #nullable enable
   [Serializable]
-  public sealed class ShelfLike : MapObject, IInventory, Zaimoni.Serialization.ISerialize, IJsonStaged<ShelfLike>
+  public sealed class ShelfLike : MapObject, IInventory, IJsonStaged<ShelfLike>
     {
     private readonly Inventory m_Inventory;
     public Inventory Inventory { get => m_Inventory; }
@@ -486,28 +442,6 @@ namespace djack.RogueSurvivor.Data
 
       m_Inventory = new Inventory(Map.GROUND_INVENTORY_SLOTS);
     }
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected ShelfLike(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
-        m_Inventory = decode.Load<Inventory>(out var code);
-        if (null == m_Inventory) {
-            if (0 < code) {
-                m_Inventory = new(1);
-                decode.Schedule(code, (o) => {
-                    if (o is Inventory w) w.DestructiveTransferAll(m_Inventory);
-                    else throw new InvalidOperationException("Inventory object not loaded");
-                });
-            } else throw new InvalidOperationException("Inventory object not loaded");
-        }
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-        base.save(encode);
-        var code = encode.Saving(m_Inventory); // obligatory, in spite of type prefix/suffix
-        if (0 < code) Zaimoni.Serialization.Formatter.SerializeObjCode(encode.dest, code);
-        else throw new ArgumentNullException(nameof(m_Inventory));
-    }
-#endregion
 
     private ShelfLike(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         if (!ID.HasShelf()) throw new JsonException(ID.ToString() + " does not have a shelf");

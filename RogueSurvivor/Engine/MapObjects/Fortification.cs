@@ -14,20 +14,12 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  public sealed class Fortification : MapObject, Zaimoni.Serialization.ISerialize, IJsonStaged<Fortification>
+  public sealed class Fortification : MapObject, IJsonStaged<Fortification>
     {
     public const int SMALL_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS/2;
     public const int LARGE_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS;
 
-#if OBSOLETE
-    public Fortification(string imageID) : base(imageID, Fire.BURNABLE) {}
-#endif
     public Fortification(bool isLarge) : base(isLarge ? Gameplay.GameImages.OBJ_LARGE_WOODEN_FORTIFICATION : Gameplay.GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fire.BURNABLE) {}
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected Fortification(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
-#endregion
 
     private Fortification(JsonElement src, JsonSerializerOptions options) : base(src, options) {}
     static Fortification IJsonStaged<Fortification>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);

@@ -19,7 +19,7 @@ using Size = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Data
 {
 #nullable enable
-  public struct AVtable // : Zaimoni.Serialization.ISerialize // attribute-value table
+  public struct AVtable // attribute-value table
   {
     private Dictionary<string, object>? m_Attributes;   // doesn't play nice with changing save/load implementations
 
@@ -55,31 +55,12 @@ namespace djack.RogueSurvivor.Data
         if (0 >= attr.Count) m_Attributes = null;
       }
     }
-
-#region implement Zaimoni.Serialization.ISerialize
-#if PROTOTYPE
-    public AVtable(Zaimoni.Serialization.DecodeObjects decode)
-    {
-        m_Attributes = new();
-        var self = this;
-        void onLoaded(KeyValuePair<string, object>[] src) {
-                foreach (var x in src) self.m_Attributes!.Add(x.Key, x.Value);
-        };
-        Zaimoni.Serialization.ISave.LinearLoad(decode, onLoaded);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
-    {
-        Zaimoni.Serialization.ISave.LinearSave(encode, m_Attributes);
-    }
-#endif
-#endregion
   }
 #nullable restore
 
   // not meant to be self-contained
   [Serializable]
-  public class Zone : Zaimoni.Serialization.ISerialize
+  public class Zone
   {
     private readonly string m_Name = "unnamed zone";
     private Rectangle m_Bounds; // assumed to be fully in bounds of the underlying map
@@ -98,20 +79,6 @@ namespace djack.RogueSurvivor.Data
       m_Name = name;
       m_Bounds = bounds;
     }
-
-#region implement Zaimoni.Serialization.ISerialize
-    public Zone(Zaimoni.Serialization.DecodeObjects decode)
-    {
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_Name);
-        Zaimoni.Serialization.ISave.Deserialize7bit(decode.src, ref m_Bounds);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
-    {
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_Name);
-        Zaimoni.Serialization.ISave.Serialize7bit(encode.dest, in m_Bounds);
-    }
-#endregion
 
     public override string ToString() => m_Name + " " + m_Bounds.to_s();
   }

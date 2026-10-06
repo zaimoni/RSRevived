@@ -22,7 +22,7 @@ using ItemTrap = djack.RogueSurvivor.Engine.Items.ItemTrap;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  public sealed class Inventory : IEnumerable<Item>, Zaimoni.Serialization.ISerialize, IJsonStaged<Inventory>
+  public sealed class Inventory : IEnumerable<Item>, IJsonStaged<Inventory>
     {
     private readonly List<Item> m_Items = new(1);
     private int m_maxCapacity;
@@ -88,20 +88,6 @@ namespace djack.RogueSurvivor.Data
 #endif
       m_maxCapacity = maxCapacity;
     }
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected Inventory(Zaimoni.Serialization.DecodeObjects decode) {
-        Zaimoni.Serialization.Formatter.Deserialize7bit(decode.src, ref m_maxCapacity);
-
-        void onLoaded(Item[] src) { m_Items.AddRange(src); }
-        Zaimoni.Serialization.ISave.LinearLoad<Item>(decode, onLoaded);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-        Zaimoni.Serialization.Formatter.Serialize7bit(encode.dest, m_maxCapacity);
-        encode.SaveTo(m_Items);
-    }
-#endregion
 
     private Inventory(JsonElement src, JsonSerializerOptions options) {
         src.RecordRef(this);

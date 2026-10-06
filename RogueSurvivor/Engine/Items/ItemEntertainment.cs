@@ -16,7 +16,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemEntertainment : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemEntertainment>
+  public sealed class ItemEntertainment : Item, UsableItem, IJsonStaged<ItemEntertainment>
     {
     List<ActorTag>? m_BoringFor = null; // alpha10 boring items moved out of Actor
 
@@ -24,16 +24,6 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public ItemEntertainment(ItemEntertainmentModel model) : base(model) {}
     public ItemEntertainment(ItemEntertainmentModel model, int qty) : base(model, qty) {}
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected ItemEntertainment(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
-      Zaimoni.Serialization.ISave.LinearLoad(decode, x => m_BoringFor = new(x));
-    }
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-      base.save(encode);
-      Zaimoni.Serialization.ISave.LinearSave(encode, m_BoringFor);
-    }
-#endregion
 
     private ItemEntertainment(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<ItemEntertainmentModel>();

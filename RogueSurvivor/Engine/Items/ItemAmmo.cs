@@ -14,7 +14,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemAmmo : Item, UsableItem, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemAmmo>
+  public sealed class ItemAmmo : Item, UsableItem, IJsonStaged<ItemAmmo>
     {
     [NonSerialized] private ItemRangedWeapon? _rw = null; // set by UseBeforeDrop
 
@@ -32,11 +32,6 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public ItemAmmo(ItemAmmoModel model, int qty) : base(model, qty) {}
     public ItemAmmo(ItemAmmoModel model) : this(model, model.MaxQuantity) {}
-
-#region implement Zaimoni.Serialization.ISerialize
-        protected ItemAmmo(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
-        void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
-#endregion
 
     private ItemAmmo(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<ItemAmmoModel>();

@@ -14,16 +14,11 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemBarricadeMaterial : Item, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemBarricadeMaterial>
+  public sealed class ItemBarricadeMaterial : Item, IJsonStaged<ItemBarricadeMaterial>
     {
     new public ItemBarricadeMaterialModel Model { get {return (base.Model as ItemBarricadeMaterialModel)!; } }
 
     public ItemBarricadeMaterial(ItemBarricadeMaterialModel model, int qty=1) : base(model, qty) {}
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected ItemBarricadeMaterial(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
-#endregion
 
     private ItemBarricadeMaterial(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<ItemBarricadeMaterialModel>();

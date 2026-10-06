@@ -52,21 +52,9 @@ namespace djack.RogueSurvivor.Data
     }
 
     [Serializable]
-    public readonly record struct ActorTag(string Name, int SpawnTime): Zaimoni.Serialization.ISerialize
+    public readonly record struct ActorTag(string Name, int SpawnTime)
     {
         internal ActorTag(Actor src) : this(src.UnmodifiedName, src.SpawnTime) {}
-
- #region implement Zaimoni.Serialization.ISerialize
-        /* protected */ public ActorTag(Zaimoni.Serialization.DecodeObjects decode) : this(decode.DeserializeString(), decode.DeserializeInt())
-        {
-        }
-
-        void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode)
-        {
-            Zaimoni.Serialization.Formatter.Serialize(encode.dest, SpawnTime);
-            Zaimoni.Serialization.Formatter.Serialize(encode.dest, Name);
-        }
-#endregion
     };
 
   [Serializable]
@@ -4210,29 +4198,6 @@ final_exit:
     }
   }
 }
-
-namespace Zaimoni.Serialization
-{
-
-    public partial interface ISave
-    {
-        static void LinearLoad(DecodeObjects decode, Action<ActorTag[]> handler)
-        {
-            int count = 0;
-            Formatter.Deserialize7bit(decode.src, ref count);
-            if (0 >= count) return; // no action needed
-            var dest = new ActorTag[count];
-
-            int n = 0;
-            while (0 < count) {
-                dest[n] = new ActorTag(decode);
-                n++;
-            }
-            handler(dest);
-        }
-    }
-}
-
 
 namespace Zaimoni.JsonConvert
 {

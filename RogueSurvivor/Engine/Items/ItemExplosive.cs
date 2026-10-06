@@ -7,7 +7,6 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Text.Json;
-using Zaimoni.JSON;
 
 #nullable enable
 
@@ -20,15 +19,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public ItemExplosive(Data.Model.Explosive model, int qty=1) : base(model, qty) {}
 
-#region implement Zaimoni.Serialization.ISerialize
-    protected ItemExplosive(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
-
-    new protected void save(Zaimoni.Serialization.EncodeObjects encode) {
-        base.save(encode);
-    }
-#endregion
-
     protected ItemExplosive(JsonElement src, JsonSerializerOptions options) : base(src, options) { RequireModel<Data.Model.Explosive>(); }
 
-    }
+  }
 }

@@ -14,7 +14,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemMedicine : Item,UsableItem, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemMedicine>
+  public sealed class ItemMedicine : Item,UsableItem, IJsonStaged<ItemMedicine>
     {
     new public ItemMedicineModel Model { get {return (base.Model as ItemMedicineModel)!; } }
     public int Healing { get { return Model.Healing; } }
@@ -25,11 +25,6 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public ItemMedicine(ItemMedicineModel model) : base(model) {}
     public ItemMedicine(ItemMedicineModel model, int qty) : base(model, qty) {}
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected ItemMedicine(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
-#endregion
 
     private ItemMedicine(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<ItemMedicineModel>();

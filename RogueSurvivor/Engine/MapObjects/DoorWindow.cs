@@ -15,7 +15,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.MapObjects
 {
   [Serializable]
-  public sealed class DoorWindow : StateMapObject, Zaimoni.Serialization.ISerialize, IJsonStaged<DoorWindow>
+  public sealed class DoorWindow : StateMapObject, IJsonStaged<DoorWindow>
     {
     public const int BASE_HITPOINTS = 40;   // XXX spacetime scaling candidate
     public const int STATE_CLOSED = 0;
@@ -80,19 +80,6 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       m_type = (byte)_type;
       SetState(STATE_CLOSED);
     }
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected DoorWindow(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_type);
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref m_BarricadePoints);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-        base.save(encode);
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_type);
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, m_BarricadePoints);
-    }
-#endregion
 
     static private readonly string[] state_names = new string[MAX_STATE] { "CLOSED", "OPEN", "BROKEN" };
 

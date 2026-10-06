@@ -6,7 +6,6 @@
 
 // #define AUDIT_ITEM_INVARIANTS
 
-using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using System;
 using System.Collections.Generic;
@@ -3442,49 +3441,6 @@ retry:
       return Name+" ("+Width.ToString()+","+Height.ToString()+")"+(this == District.EntryMap ? "" : " in "+District.Name);
     }
   }
-}
-
-namespace Zaimoni.Serialization
-{
-
-    public partial interface ISave
-    {
-        static void LinearLoadInline(DecodeObjects decode, out OdorScent[] dest)
-        {
-            dest = null;
-            int count = 0;
-            Formatter.Deserialize7bit(decode.src, ref count);
-            if (0 >= count) return; // no action needed
-            dest = new OdorScent[count];
-
-            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
-            int n = 0;
-            while (0 < count) {
-                --count;
-                dest[n++] = new(decode);
-            }
-        }
-
-
-        static void LinearLoadInline(DecodeObjects decode, Action<KeyValuePair<Point, OdorScent[]>[]> handler)
-        {
-            int count = 0;
-            Formatter.Deserialize7bit(decode.src, ref count);
-            if (0 >= count) return; // no action needed
-            var dest = new KeyValuePair<Point, OdorScent[]>[count];
-
-            // function extraction target does not work -- out/ref parameter needs accessing from lambda function
-            int n = 0;
-            while (0 < count) {
-                --count;
-                Point stage_pos = default;
-                Deserialize7bit(decode.src, ref stage_pos);
-                LinearLoadInline(decode, out OdorScent[] stage_strings);
-                dest[n++] = new(stage_pos, stage_strings);
-            }
-            handler(dest);
-        }
-    }
 }
 
 namespace Zaimoni.JsonConvert

@@ -15,7 +15,7 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  public sealed class ItemBodyArmor : Item, Zaimoni.Serialization.ISerialize, IJsonStaged<ItemBodyArmor>
+  public sealed class ItemBodyArmor : Item, IJsonStaged<ItemBodyArmor>
     {
     private static readonly Item_IDs[] BAD_POLICE_OUTFITS = new[]{
       Item_IDs.ARMOR_HELLS_SOULS_JACKET,
@@ -38,11 +38,6 @@ namespace djack.RogueSurvivor.Engine.Items
     public static int Rate(ItemBodyArmor armor) => armor.Rating;
 
     public ItemBodyArmor(Data.Model.BodyArmor model) : base(model) {}
-
-#region implement Zaimoni.Serialization.ISerialize
-    protected ItemBodyArmor(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {}
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) => base.save(encode);
-#endregion
 
     private ItemBodyArmor(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<Data.Model.BodyArmor>();

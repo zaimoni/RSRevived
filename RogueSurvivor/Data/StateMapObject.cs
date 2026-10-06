@@ -6,7 +6,6 @@
 
 using System;
 using System.Text.Json;
-using Zaimoni.JSON;
 
 #nullable enable
 
@@ -14,7 +13,7 @@ namespace djack.RogueSurvivor.Data
 {
   // both use cases are "not that many states"
   [Serializable]
-  public abstract class StateMapObject : MapObject, Zaimoni.Serialization.ISerialize
+  public abstract class StateMapObject : MapObject
     {
     protected int m_State;
 
@@ -24,23 +23,6 @@ namespace djack.RogueSurvivor.Data
 
     protected StateMapObject(string hiddenImageID) : base(hiddenImageID) {}
     protected StateMapObject(string hiddenImageID, Fire burnable) : base(hiddenImageID, burnable) {}
-#region implement Zaimoni.Serialization.ISerialize
-    protected StateMapObject(Zaimoni.Serialization.DecodeObjects decode) : base(decode) {
-        sbyte stage_sbyte = 0;
-        Zaimoni.Serialization.Formatter.Deserialize(decode.src, ref stage_sbyte);
-        m_State = stage_sbyte;
-    }
-
-    new protected void save(Zaimoni.Serialization.EncodeObjects encode) {
-        base.save(encode);
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (sbyte)m_State);
-    }
-
-    void Zaimoni.Serialization.ISerialize.save(Zaimoni.Serialization.EncodeObjects encode) {
-        base.save(encode);
-        Zaimoni.Serialization.Formatter.Serialize(encode.dest, (sbyte)m_State);
-    }
-#endregion
 
     // State is saved by name, by the subclass that knows what it means
     protected StateMapObject(JsonElement src, JsonSerializerOptions options) : base(src, options) {}
