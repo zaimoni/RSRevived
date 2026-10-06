@@ -5,3 +5,5 @@ RogueSurvivor/RSConfig/obj/
 RogueSurvivor/.vs/
 RogueSurvivor/.claude/
 PreRelease/Config/log.txt
+*.diff
+*.bak
