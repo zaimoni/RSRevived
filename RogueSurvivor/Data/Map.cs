@@ -3454,8 +3454,7 @@ namespace Zaimoni.JsonConvert
 
         public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.Map src, JsonSerializerOptions options)
         {
-            var id = src.TrySaveAsRef(writer);
-            if (null == id) return;
+            if (!src.TryStartDefinition(writer, out var id)) return;
             writer.WriteStartDefinition(id);
             src.toJsonFields(writer, options);
             writer.WriteEndObject();

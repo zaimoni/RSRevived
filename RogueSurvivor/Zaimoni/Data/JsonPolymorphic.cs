@@ -78,10 +78,22 @@ namespace Zaimoni.JSON
     /// <summary>Shared implementation of Zaimoni.JsonConvert.Sealed and Zaimoni.JsonConvertIncomplete.Sealed</summary>
     public abstract class SealedBase<T> : JsonConverter<T> where T : class, IJsonStaged<T>
     {
+        /// <param name="compactAnonymous">an object nothing refers to is a value: one line, where that reads well</param>
+        protected SealedBase(bool compactAnonymous) { m_CompactAnonymous = compactAnonymous; }
+
+        private readonly bool m_CompactAnonymous;
+
         public override void Write(Utf8JsonWriter writer, T src, JsonSerializerOptions options)
         {
-            var id = src.TrySaveAsRef(writer);
-            if (null == id) return;
+            if (!src.TryStartDefinition(writer, out var id)) return;
+            if (null == id && m_CompactAnonymous) {
+                writer.WriteCompact(w => {
+                    w.WriteStartDefinition(null);
+                    src.toJsonFields(w, options);
+                    w.WriteEndObject();
+                });
+                return;
+            }
             writer.WriteStartDefinition(id);
             src.toJsonFields(writer, options);
             writer.WriteEndObject();
@@ -103,6 +115,12 @@ namespace Zaimoni.JSON
 
         private readonly Dictionary<string, Subtype<TBase>> m_ByTag = new();
         private readonly Dictionary<Type, Subtype<TBase>> m_ByType = new();
+        private readonly bool m_CompactAnonymous;
+
+        public Polymorphic() : this(false) { }
+
+        /// <param name="compactAnonymous">an object nothing refers to is a value: one line, where that reads well (items, map objects, actions)</param>
+        public Polymorphic(bool compactAnonymous) { m_CompactAnonymous = compactAnonymous; }
 
         public Polymorphic<TBase> Add(Subtype<TBase> src)
         {
@@ -155,10 +173,18 @@ namespace Zaimoni.JSON
 
         public override void Write(Utf8JsonWriter writer, TBase src, JsonSerializerOptions options)
         {
-            var id = src.TrySaveAsRef(writer);
-            if (null == id) return;
+            if (!src.TryStartDefinition(writer, out var id)) return;
             if (!m_ByType.TryGetValue(src.GetType(), out var entry)) throw new JsonException("not registered for JSON save of " + typeof(TBase).FullName + ": " + src.GetType().FullName);
-            writer.WriteStartDefinition(id, typeof(TBase) == src.GetType() ? null : entry.Tag);   // the root class is implied
+            var tag = typeof(TBase) == src.GetType() ? null : entry.Tag;   // the root class is implied
+            if (null == id && m_CompactAnonymous) {
+                writer.WriteCompact(w => {
+                    w.WriteStartDefinition(null, tag);
+                    entry.Save(w, src, options);
+                    w.WriteEndObject();
+                });
+                return;
+            }
+            writer.WriteStartDefinition(id, tag);
             entry.Save(writer, src, options);
             writer.WriteEndObject();
         }
@@ -189,7 +215,11 @@ namespace Zaimoni.JSON
 namespace Zaimoni.JsonConvert
 {
     /// <summary>For a class with identity ($id/$ref) but no subclasses: no $type is written.</summary>
-    public sealed class Sealed<T> : Zaimoni.JSON.SealedBase<T> where T : class, Zaimoni.JSON.IJsonStaged<T> { }
+    public sealed class Sealed<T> : Zaimoni.JSON.SealedBase<T> where T : class, Zaimoni.JSON.IJsonStaged<T>
+    {
+        public Sealed() : base(false) { }
+        public Sealed(bool compactAnonymous) : base(compactAnonymous) { }
+    }
 
     public sealed class Via<TBase, T> : Zaimoni.JSON.Subtype<TBase> where TBase : class where T : class, TBase, Zaimoni.JSON.IJsonStaged<T>
     {
@@ -204,7 +234,11 @@ namespace Zaimoni.JsonConvert
 namespace Zaimoni.JsonConvertIncomplete
 {
     /// <summary>For a class with identity ($id/$ref) but no subclasses: no $type is written.</summary>
-    public sealed class Sealed<T> : Zaimoni.JSON.SealedBase<T> where T : class, Zaimoni.JSON.IJsonStaged<T> { }
+    public sealed class Sealed<T> : Zaimoni.JSON.SealedBase<T> where T : class, Zaimoni.JSON.IJsonStaged<T>
+    {
+        public Sealed() : base(false) { }
+        public Sealed(bool compactAnonymous) : base(compactAnonymous) { }
+    }
 
     public sealed class Via<TBase, T> : Zaimoni.JSON.Subtype<TBase> where TBase : class where T : class, TBase, Zaimoni.JSON.IJsonStaged<T>
     {

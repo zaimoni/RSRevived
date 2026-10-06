@@ -469,9 +469,9 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.ActorTag());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.UniqueItems());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.UniqueActors());
-          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Inventory>());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Inventory>(true));
 
-          var items = new Zaimoni.JSON.Polymorphic<Item>();
+          var items = new Zaimoni.JSON.Polymorphic<Item>(true);
           items.Add(new Zaimoni.JsonConvert.Via<Item, Item>("Item"));
           items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemAmmo>("ItemAmmo"));
           items.Add(new Zaimoni.JsonConvert.Via<Item, Items.ItemBarricadeMaterial>("ItemBarricadeMaterial"));
@@ -492,7 +492,7 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(items);
 
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Actor>());   // its controllers are tracked separately, below
-          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Corpse>());
+          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Corpse>(true));
 
           var minds = new Zaimoni.JSON.Polymorphic<ActorController>();
           minds.Add(new Zaimoni.JsonConvert.Via<ActorController, PlayerController>("PlayerController"));
@@ -510,14 +510,14 @@ namespace djack.RogueSurvivor.Engine
           s_j_opts.Converters.Add(minds);
 
           // the player UI's pending events (Session's PlayerUI); the two lists share entries, so these have ids
-          var ui_events = new Zaimoni.JSON.Polymorphic<EventUnconditional>();
+          var ui_events = new Zaimoni.JSON.Polymorphic<EventUnconditional>(true);
           ui_events.Add(new Zaimoni.JsonConvert.Via<EventUnconditional, UIOnSighting>("UIOnSighting"));
           ui_events.Add(new Zaimoni.JsonConvert.Via<EventUnconditional, UITracking>("UITracking"));
           ui_events.RequireAllSubtypes();
           s_j_opts.Converters.Add(ui_events);
 
           // Actions: only those an objective may hold, which [Serializable] marks.  The rest are transient.
-          var acts = new Zaimoni.JSON.Polymorphic<ActorAction>();
+          var acts = new Zaimoni.JSON.Polymorphic<ActorAction>(true);
           acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionChain>("ActionChain"));
           acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionCloseDoor>("ActionCloseDoor"));
           acts.Add(new Zaimoni.JsonConvert.Via<ActorAction, Engine.Actions.ActionDropItem>("ActionDropItem"));
@@ -543,7 +543,7 @@ namespace djack.RogueSurvivor.Engine
           acts.RequireAllSubtypes(t => t.IsSerializable);
           s_j_opts.Converters.Add(acts);
 
-          var plans = new Zaimoni.JSON.Polymorphic<WorldUpdate>();
+          var plans = new Zaimoni.JSON.Polymorphic<WorldUpdate>(true);
           plans.Add(new Zaimoni.JsonConvert.Via<WorldUpdate, Engine.Actions.OpportunityTarget>("OpportunityTarget"));
           plans.Add(new Zaimoni.JsonConvert.Via<WorldUpdate, Engine.Actions.UpdateMoveDelta>("UpdateMoveDelta"));
           plans.Add(new Zaimoni.JsonConvert.Via<WorldUpdate, Engine.Op.Chain>("Chain"));
@@ -590,7 +590,7 @@ namespace djack.RogueSurvivor.Engine
           goals.RequireAllSubtypes(t => t.IsSerializable);
           s_j_opts.Converters.Add(goals);
 
-          var objs = new Zaimoni.JSON.Polymorphic<MapObject>();
+          var objs = new Zaimoni.JSON.Polymorphic<MapObject>(true);
           objs.Add(new Zaimoni.JsonConvert.Via<MapObject, MapObject>("MapObject"));
           objs.Add(new Zaimoni.JsonConvert.Via<MapObject, ShelfLike>("ShelfLike"));
           objs.Add(new Zaimoni.JsonConvert.Via<MapObject, MapObjects.Board>("Board"));
@@ -600,7 +600,7 @@ namespace djack.RogueSurvivor.Engine
           objs.RequireAllSubtypes();
           s_j_opts.Converters.Add(objs);
 
-          var tasks = new Zaimoni.JSON.Polymorphic<TimedTask>();
+          var tasks = new Zaimoni.JSON.Polymorphic<TimedTask>(true);
           tasks.Add(new Zaimoni.JsonConvert.Via<TimedTask, djack.RogueSurvivor.Engine.Tasks.TaskRemoveDecoration>("TaskRemoveDecoration"));
           tasks.Add(new Zaimoni.JsonConvert.Via<TimedTask, djack.RogueSurvivor.Engine.Tasks.TaskEscapeNanny>("TaskEscapeNanny"));
           tasks.RequireAllSubtypes();
@@ -644,6 +644,9 @@ namespace djack.RogueSurvivor.Engine
     {
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving JSON session...");
       try {
+        // Two passes.  The first, to nowhere, learns which objects anything refers to; the second writes $id only for those, and an
+        // object with no id is a value, which its converter may put on one line.  The pre-save pruning hooks run twice: they are idempotent.
+        PreserveReferenceHandler.PrimeFromCountingPass(() => JsonSerializer.Serialize(Stream.Null, session, typeof(Session), JSON_opts));
         using (var stream = filepath.CreateStream(true)) {
           JsonSerializer.Serialize(stream, session, typeof(Session), JSON_opts);
           stream.Flush();

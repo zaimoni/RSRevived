@@ -24,6 +24,10 @@ namespace Zaimoni.JSON
        private Dictionary<object, string>? _objectToReferenceIdMap = null;
        // saving: an id can be handed out (forward reference) before its definition is written
        private HashSet<object>? _defined = null;
+       // Saving is two passes.  The first (wanted null) hands every definition an id and records what was referenced; the second
+       // (wanted: that set) hands ids only to those, densely numbered, and an object nothing refers to is written without one.
+       private readonly HashSet<object>? _wanted;
+       private HashSet<object>? _referenced = null;
        // loading: a reference can be read before its definition.  These run in the order they were deferred.
        private List<KeyValuePair<string, Action<object>>>? _fixups = null;
 
@@ -31,31 +35,50 @@ namespace Zaimoni.JSON
        private Dictionary<object, string> ObjectToReference { get => _objectToReferenceIdMap ??= new(ReferenceEqualityComparer.Instance); }
        private HashSet<object> Defined { get => _defined ??= new(ReferenceEqualityComparer.Instance); }
 
-       public PreserveReferenceResolver() { }
+       public PreserveReferenceResolver(HashSet<object>? wanted = null) { _wanted = wanted; }
+
+       /// <summary>what Reference was asked for: the objects something refers to</summary>
+       public HashSet<object> Referenced { get => _referenced ??= new(ReferenceEqualityComparer.Instance); }
 
        public override void AddReference(string referenceId, object value)
        {
            if (!ReferenceToObject.TryAdd(referenceId, value)) throw new JsonException("duplicate id found: " + referenceId);
        }
 
-       /// <summary>the id for value, assigning one if needed.  Does not claim the definition has been written.</summary>
+       /// <summary>the id for a reference to value, assigning one if needed.  Does not claim the definition has been written.</summary>
        public string Reference(object value)
        {
+           Referenced.Add(value);
            if (!ObjectToReference.TryGetValue(value, out string? referenceId)) {
-               _referenceCount++;
-               referenceId = _referenceCount.ToString();
-               _objectToReferenceIdMap!.Add(value, referenceId);
+               if (null != _wanted && !_wanted.Contains(value)) throw new JsonException("referenced in the second pass of the save but not the first: " + value.GetType().FullName + ": " + value.ToString());
+               referenceId = NewId(value);
            }
            return referenceId;
        }
 
-       /// <param name="alreadyExists">false if and only if the caller is now responsible for writing the definition</param>
-       public override string GetReference(object value, out bool alreadyExists)
+       private string NewId(object value)
        {
-           var referenceId = Reference(value);
-           alreadyExists = !Defined.Add(value);
+           _referenceCount++;
+           var referenceId = _referenceCount.ToString();
+           ObjectToReference.Add(value, referenceId);
            return referenceId;
        }
+
+       /// <summary>for a definition</summary>
+       /// <param name="alreadyExists">false if and only if the caller is now responsible for writing the definition</param>
+       /// <returns>the id to write; null when nothing refers to value (second pass), which is then written without one</returns>
+       public string? Define(object value, out bool alreadyExists)
+       {
+           alreadyExists = !Defined.Add(value);
+           if (alreadyExists) return Reference(value);   // written already: this is a reference to it
+           if (ObjectToReference.TryGetValue(value, out string? referenceId)) return referenceId;   // referenced before defined
+           if (null != _wanted && !_wanted.Contains(value)) return null;
+           return NewId(value);
+       }
+
+       /// <summary>System.Text.Json's own path, for a reference type it serializes itself: always an id</summary>
+       public override string GetReference(object value, out bool alreadyExists)
+           => Define(value, out alreadyExists) ?? (ObjectToReference.TryGetValue(value, out string? referenceId) ? referenceId : NewId(value));
 
        public bool TryResolve(string referenceId, out object? value)
        {
@@ -128,6 +151,20 @@ namespace Zaimoni.JSON
 
        static public void Reset() => s_resolve = null;
        static public PreserveReferenceResolver Resolver { get => (s_resolve ??= new()); }
+
+       /// <summary>The first of a save's two passes: run it to nowhere, so that the resolver learns which objects anything refers to.
+       /// Leaves the resolver primed for the second pass, which hands ids only to those; Finish, or Reset, as usual after it.</summary>
+       static public void PrimeFromCountingPass(Action pass)
+       {
+           var counting = s_resolve = new();
+           try {
+               pass();
+           } catch {
+               s_resolve = null;
+               throw;
+           }
+           s_resolve = new(counting.Referenced);
+       }
 
        /// <summary>call after each complete save, or load.  Runs the deferred fixups of a load.  Resets even when it throws.</summary>
        static public void Finish()

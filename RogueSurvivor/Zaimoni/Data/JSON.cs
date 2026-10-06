@@ -12,16 +12,17 @@ namespace Zaimoni.JSON
 {
     static public class JSON_ext
     {
-        static public string? TrySaveAsRef<T>(this T src, Utf8JsonWriter writer) where T:class {
+        /// <summary>Starts writing src: as a $ref when its definition was written already, otherwise the caller writes the definition.</summary>
+        /// <param name="id">for WriteStartDefinition; null when nothing refers to src, which is then written without one</param>
+        /// <returns>true if and only if the caller writes the definition</returns>
+        static public bool TryStartDefinition<T>(this T src, Utf8JsonWriter writer, out string? id) where T:class {
             var resolve = PreserveReferenceHandler.Resolver;
-            var id = resolve.GetReference(src, out bool alreadyExists);
-            if (alreadyExists) {
-                writer.WriteStartObject();
-                writer.WriteString("$ref", id);
-                writer.WriteEndObject();
-                return null;
-            }
-            return id;
+            id = resolve.Define(src, out bool alreadyExists);
+            if (!alreadyExists) return true;
+            writer.WriteStartObject();
+            writer.WriteString("$ref", id);
+            writer.WriteEndObject();
+            return false;
         }
 
         static public void SaveAsRef<T>(this T src, Utf8JsonWriter writer) where T : class
@@ -52,11 +53,11 @@ namespace Zaimoni.JSON
         }
 
         /// <summary>Starts the definition of an object.  Caller writes the fields, then WriteEndObject.</summary>
-        /// <param name="id">from TrySaveAsRef</param>
-        static public void WriteStartDefinition(this Utf8JsonWriter writer, string id, string? type = null)
+        /// <param name="id">from TryStartDefinition; null writes no $id</param>
+        static public void WriteStartDefinition(this Utf8JsonWriter writer, string? id, string? type = null)
         {
             writer.WriteStartObject();
-            writer.WriteString("$id", id);
+            if (null != id) writer.WriteString("$id", id);
             if (null != type) writer.WriteString("$type", type);
         }
 
