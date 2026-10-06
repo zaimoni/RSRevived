@@ -158,7 +158,7 @@ namespace Zaimoni.JSON
             var id = src.TrySaveAsRef(writer);
             if (null == id) return;
             if (!m_ByType.TryGetValue(src.GetType(), out var entry)) throw new JsonException("not registered for JSON save of " + typeof(TBase).FullName + ": " + src.GetType().FullName);
-            writer.WriteStartDefinition(id, entry.Tag);
+            writer.WriteStartDefinition(id, typeof(TBase) == src.GetType() ? null : entry.Tag);   // the root class is implied
             entry.Save(writer, src, options);
             writer.WriteEndObject();
         }
@@ -173,9 +173,11 @@ namespace Zaimoni.JSON
                 var id = relay_ref.GetString() ?? throw new JsonException("null $ref");
                 ret = PreserveReferenceHandler.Resolver.ResolveReference(id) as TBase ?? throw new JsonException("type mismatch: " + id + " is not " + typeof(TBase).FullName);
             } else {
-                if (!src.TryGetProperty("$type", out var relay_type)) throw new JsonException("missing $type for " + typeof(TBase).FullName);
-                var tag = relay_type.GetString() ?? throw new JsonException("null $type");
-                if (!m_ByTag.TryGetValue(tag, out var entry)) throw new JsonException("unknown $type " + tag + " for " + typeof(TBase).FullName);
+                Subtype<TBase>? entry;
+                if (src.TryGetProperty("$type", out var relay_type)) {
+                    var tag = relay_type.GetString() ?? throw new JsonException("null $type");
+                    if (!m_ByTag.TryGetValue(tag, out entry)) throw new JsonException("unknown $type " + tag + " for " + typeof(TBase).FullName);
+                } else if (!m_ByType.TryGetValue(typeof(TBase), out entry)) throw new JsonException("missing $type for " + typeof(TBase).FullName);   // no $type: the root class, when it is itself registered
                 ret = entry.Load(src, options);
             }
             if (!want.IsInstanceOfType(ret)) throw new JsonException("type mismatch: " + ret.GetType().FullName + " is not " + want.FullName);

@@ -96,10 +96,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       if (null != _items && 0 < _items.Count) {
         writer.WriteStartArray("Items");
         foreach (var x in _items) {
-          writer.WriteStartArray();
-          JsonSerializer.Serialize(writer, x.Key, options);
-          JsonSerializer.Serialize(writer, x.Value, options);
-          writer.WriteEndArray();
+          writer.WriteCompact(w => {
+            w.WriteStartArray();
+            JsonSerializer.Serialize(w, x.Key, options);
+            JsonSerializer.Serialize(w, x.Value, options);
+            w.WriteEndArray();
+          });
         }
         writer.WriteEndArray();
       }

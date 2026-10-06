@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -178,6 +179,32 @@ namespace Zaimoni.JSON
         /// <summary>a reference, as text for WriteArrayOfLines</summary>
         static public string RenderRef<T>(T src) where T : class => "{\"$ref\":\"" + PreserveReferenceHandler.Resolver.Reference(src) + "\"}";
 
+        /// <summary>A value, which has no identity, on one line: rendered without indenting, then written raw.  Entities, which have
+        /// $id, stay blocks.  Inside a compact rendering the writer is already unindented, so a nested value writes directly.</summary>
+        public static void WriteCompact(this Utf8JsonWriter writer, Action<Utf8JsonWriter> body)
+        {
+            if (!writer.Options.Indented) {
+                body(writer);
+                return;
+            }
+            var buffer = s_compact_buffer ??= new();
+            buffer.ResetWrittenCount();
+            var compact = s_compact_writer;
+            if (null == compact || compact.Options.Encoder != writer.Options.Encoder) {
+                compact?.Dispose();
+                compact = s_compact_writer = new Utf8JsonWriter(buffer, new JsonWriterOptions { Indented = false, Encoder = writer.Options.Encoder });
+            } else compact.Reset(buffer);
+            body(compact);
+            compact.Flush();
+            writer.WriteRawValue(buffer.WrittenSpan, true);
+        }
+
+        [ThreadStatic] private static ArrayBufferWriter<byte>? s_compact_buffer;
+        [ThreadStatic] private static Utf8JsonWriter? s_compact_writer;
+
+        /// <summary>a point, as text: [x,y]</summary>
+        static public string RenderPoint(Zaimoni.Data.Vector2D<short> src) => "[" + src.X.ToString() + "," + src.Y.ToString() + "]";
+
         /// <summary>points, as text for WriteArrayOfLines: [[x,y],[x,y]]</summary>
         static public string RenderPoints(IEnumerable<Zaimoni.Data.Vector2D<short>> src)
         {
@@ -265,10 +292,12 @@ namespace Zaimoni.JSON
         {
             writer.WriteStartArray(name);
             foreach (var x in src) {
-                writer.WriteStartArray();
-                JsonSerializer.Serialize(writer, x.Key, options);
-                x.Value.SaveAsRef(writer);
-                writer.WriteEndArray();
+                writer.WriteCompact(w => {
+                    w.WriteStartArray();
+                    JsonSerializer.Serialize(w, x.Key, options);
+                    x.Value.SaveAsRef(w);
+                    w.WriteEndArray();
+                });
             }
             writer.WriteEndArray();
         }

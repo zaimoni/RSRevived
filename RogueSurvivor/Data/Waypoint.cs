@@ -47,11 +47,13 @@ namespace Zaimoni.JsonConvert
 
         public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.Waypoint_s src, JsonSerializerOptions options)
         {
-            writer.WriteStartObject();
-            writer.WritePropertyName("Location");
-            JsonSerializer.Serialize(writer, src.dest, options);
-            writer.WriteString("Label", src.label);
-            writer.WriteEndObject();
+            writer.WriteCompact(w => {
+                w.WriteStartObject();
+                w.WritePropertyName("Location");
+                JsonSerializer.Serialize(w, src.dest, options);
+                w.WriteString("Label", src.label);
+                w.WriteEndObject();
+            });
         }
     }
 }

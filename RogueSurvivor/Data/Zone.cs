@@ -544,10 +544,12 @@ namespace Zaimoni.JsonConvert
 
         public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.ZoneLoc src, JsonSerializerOptions options)
         {
-            writer.WriteStartArray();
-            src.m.SaveAsRef(writer);
-            JsonSerializer.Serialize(writer, src.Rect, options);
-            writer.WriteEndArray();
+            writer.WriteCompact(w => {
+                w.WriteStartArray();
+                src.m.SaveAsRef(w);
+                JsonSerializer.Serialize(w, src.Rect, options);
+                w.WriteEndArray();
+            });
         }
     }
 }

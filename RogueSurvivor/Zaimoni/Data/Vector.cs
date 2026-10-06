@@ -581,10 +581,7 @@ namespace Zaimoni.JsonConvert {
         }
 
         public override void Write(Utf8JsonWriter writer, Zaimoni.Data.Vector2D<short> src, JsonSerializerOptions options) {
-            writer.WriteStartArray();
-            writer.WriteNumberValue(src.X);
-            writer.WriteNumberValue(src.Y);
-            writer.WriteEndArray();
+            writer.WriteRawValue(Zaimoni.JSON.JSON_ext.RenderPoint(src));   // one line, not four
         }
     }
 
@@ -634,13 +631,15 @@ namespace Zaimoni.JsonConvert {
         }
 
         public override void Write(Utf8JsonWriter writer, Zaimoni.Data.Box2D<short> src, JsonSerializerOptions options) {
-            writer.WriteStartObject();
-            // Location, Size
-            writer.WritePropertyName("Location");
-            System.Text.Json.JsonSerializer.Serialize(writer, src.Location, djack.RogueSurvivor.Engine.Session.JSON_opts);
-            writer.WritePropertyName("Size");
-            System.Text.Json.JsonSerializer.Serialize(writer, src.Size, djack.RogueSurvivor.Engine.Session.JSON_opts);
-            writer.WriteEndObject();
+            Zaimoni.JSON.JSON_ext.WriteCompact(writer, w => {
+                w.WriteStartObject();
+                // Location, Size
+                w.WritePropertyName("Location");
+                System.Text.Json.JsonSerializer.Serialize(w, src.Location, djack.RogueSurvivor.Engine.Session.JSON_opts);
+                w.WritePropertyName("Size");
+                System.Text.Json.JsonSerializer.Serialize(w, src.Size, djack.RogueSurvivor.Engine.Session.JSON_opts);
+                w.WriteEndObject();
+            });
         }
     }
 }

@@ -48,11 +48,13 @@ namespace djack.RogueSurvivor.UI
 
     public void toJson(System.Text.Json.Utf8JsonWriter writer)
     {
-      writer.WriteStartObject();
-      writer.WriteNumber("Turn", Turn);
-      Zaimoni.JsonConvert.Message.WriteColor(writer, "Color", Color);
-      writer.WriteString("Text", Text);
-      writer.WriteEndObject();
+      writer.WriteCompact(w => {
+        w.WriteStartObject();
+        w.WriteNumber("Turn", Turn);
+        Zaimoni.JsonConvert.Message.WriteColor(w, "Color", Color);
+        w.WriteString("Text", Text);
+        w.WriteEndObject();
+      });
     }
   }
 }

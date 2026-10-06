@@ -526,14 +526,25 @@ namespace djack.RogueSurvivor.Data
 namespace djack.RogueSurvivor.Data
 {
     // Item memory: for each location seen, when, and which kinds of item were there.  Not specific to a radio faction.
-    // One entry per map: {"Map": reference, "Seen": [...]}.
-    // Each line of Seen is [x, y, turn] where nothing was there, or [x, y, turn, item kinds...].
+    // One entry per map: {"Map": reference, "Kinds": [names], "Seen": [...], "Nothing": [...]}.
+    // Seen: one line per cell that had items, [x, y, turn, kinds...], each kind an index into Kinds, the block's legend (sorted by name).
+    //   A kind by name in place of an index is accepted on load: the shape before 2026-10-06, which also put the cells where
+    //   nothing was in Seen, as [x, y, turn].
+    // Nothing: the cells where nothing was, as runs along a row at one turn: [turn, y, x0, x1], or [turn, y, x] for one cell.
+    //   (The police are told about every tile of every entry map at world creation, so as single cells these dominated the file.)
     static public class ItemMemoryJSON
     {
+        private sealed class Block
+        {
+            public readonly HashSet<Gameplay.Item_IDs> kinds = new();
+            public readonly List<KeyValuePair<Point, KeyValuePair<int, HashSet<Gameplay.Item_IDs>>>> seen = new();
+            public readonly Dictionary<int, Dictionary<short, List<short>>> nothing = new();   // turn, row, columns
+        }
+
         static public void Save(Utf8JsonWriter writer, Ary2Dictionary<Location, Gameplay.Item_IDs, int> src)
         {
-            List<KeyValuePair<Map, List<string>>> by_map = new();
-            List<string> rows(Map m) {
+            List<KeyValuePair<Map, Block>> by_map = new();
+            Block block(Map m) {
                 foreach (var x in by_map) if (x.Key == m) return x.Value;
                 by_map.Add(new(m, new()));
                 return by_map[by_map.Count - 1].Value;
@@ -542,42 +553,110 @@ namespace djack.RogueSurvivor.Data
             var empty = src.GetNothingSeenEnumerator();
             while (empty.MoveNext()) {
                 var x = empty.Current;
-                rows(x.Key.Map).Add("[" + x.Key.Position.X.ToString() + "," + x.Key.Position.Y.ToString() + "," + x.Value.ToString() + "]");
+                var b = block(x.Key.Map);
+                if (!b.nothing.TryGetValue(x.Value, out var rows)) b.nothing.Add(x.Value, rows = new());
+                if (!rows.TryGetValue(x.Key.Position.Y, out var columns)) rows.Add(x.Key.Position.Y, columns = new());
+                columns.Add(x.Key.Position.X);
             }
             foreach (var x in src) {
-                var stage = new System.Text.StringBuilder("[");
-                stage.Append(x.Key.Position.X).Append(',').Append(x.Key.Position.Y).Append(',').Append(x.Value.Key);
-                foreach (var id in x.Value.Value) stage.Append(",\"").Append(id.ToString()).Append('"');
-                rows(x.Key.Map).Add(stage.Append(']').ToString());
+                var b = block(x.Key.Map);
+                b.seen.Add(new(x.Key.Position, x.Value));
+                b.kinds.UnionWith(x.Value.Value);
             }
 
             writer.WriteStartArray();
             foreach (var x in by_map) {
+                var b = x.Value;
                 writer.WriteStartObject();
                 writer.WriteRef("Map", x.Key);
-                writer.WritePropertyName("Seen");
-                writer.WriteArrayOfLines(x.Value);
+                if (0 < b.seen.Count) {
+                    var legend = b.kinds.OrderBy(k => k.ToString(), StringComparer.Ordinal).ToList();
+                    var index = new Dictionary<Gameplay.Item_IDs, int>();
+                    foreach (var k in legend) index.Add(k, index.Count);
+                    writer.WritePropertyName("Kinds");
+                    writer.WriteRawValue("[\"" + string.Join("\",\"", legend) + "\"]");
+                    List<string> rows = new(b.seen.Count);
+                    foreach (var cell in b.seen) {
+                        var stage = new System.Text.StringBuilder("[");
+                        stage.Append(cell.Key.X).Append(',').Append(cell.Key.Y).Append(',').Append(cell.Value.Key);
+                        foreach (var id in cell.Value.Value) stage.Append(',').Append(index[id]);
+                        rows.Add(stage.Append(']').ToString());
+                    }
+                    writer.WritePropertyName("Seen");
+                    writer.WriteArrayOfLines(rows);
+                }
+                if (0 < b.nothing.Count) {
+                    List<string> rows = new();
+                    foreach (var turn in b.nothing.Keys.OrderBy(t => t)) {
+                        var by_row = b.nothing[turn];
+                        foreach (var y in by_row.Keys.OrderBy(y => y)) {
+                            var columns = by_row[y];
+                            columns.Sort();
+                            int i = 0;
+                            while (i < columns.Count) {
+                                int j = i;
+                                while (j + 1 < columns.Count && columns[j + 1] == columns[j] + 1) j++;
+                                var stage = new System.Text.StringBuilder("[");
+                                stage.Append(turn).Append(',').Append(y).Append(',').Append(columns[i]);
+                                if (i < j) stage.Append(',').Append(columns[j]);
+                                rows.Add(stage.Append(']').ToString());
+                                i = j + 1;
+                            }
+                        }
+                    }
+                    writer.WritePropertyName("Nothing");
+                    writer.WriteArrayOfLines(rows);
+                }
                 writer.WriteEndObject();
             }
             writer.WriteEndArray();
+        }
+
+        static private Gameplay.Item_IDs Kind(string? name)
+        {
+            var id = JSON_ext.ParseEnum<Gameplay.Item_IDs>(name);
+            if (Gameplay.Item_IDs._COUNT == id) throw new JsonException("not an item kind: _COUNT");
+            return id;
         }
 
         /// <param name="dest">Filled when the load finishes: the maps are cross-links.</param>
         static public void Load(JsonElement src, Ary2Dictionary<Location, Gameplay.Item_IDs, int> dest)
         {
             foreach (var x in src.EnumerateArray()) {
-                var seen = x.Require("Seen");
+                var block = x;
                 x.Require("Map").ReadRef<Map>(m => {
-                    foreach (var row in seen.EnumerateArray()) {
-                        var ub = row.GetArrayLength();
-                        if (3 > ub) throw new JsonException("expected [x, y, turn, item kinds...]: " + row.GetRawText());
-                        List<Gameplay.Item_IDs>? ids = null;
-                        for (int i = 3; i < ub; i++) {
-                            var id = JSON_ext.ParseEnum<Gameplay.Item_IDs>(row[i].GetString());
-                            if (Gameplay.Item_IDs._COUNT == id) throw new JsonException("not an item kind: _COUNT");
-                            (ids ??= new()).Add(id);
+                    List<Gameplay.Item_IDs>? legend = null;
+                    if (block.TryGetProperty("Kinds", out var kinds)) {
+                        legend = new();
+                        foreach (var k in kinds.EnumerateArray()) legend.Add(Kind(k.GetString()));
+                    }
+                    if (block.TryGetProperty("Seen", out var seen)) {
+                        foreach (var row in seen.EnumerateArray()) {
+                            var ub = row.GetArrayLength();
+                            if (3 > ub) throw new JsonException("expected [x, y, turn, item kinds...]: " + row.GetRawText());
+                            List<Gameplay.Item_IDs>? ids = null;
+                            for (int i = 3; i < ub; i++) {
+                                var k = row[i];
+                                if (JsonValueKind.Number == k.ValueKind) {
+                                    var n = k.GetInt32();
+                                    if (null == legend || 0 > n || legend.Count <= n) throw new JsonException("item kind not in the legend: " + row.GetRawText());
+                                    (ids ??= new()).Add(legend[n]);
+                                } else (ids ??= new()).Add(Kind(k.GetString()));
+                            }
+                            dest.Set(new Location(m, new Point(row[0].GetInt16(), row[1].GetInt16())), ids, row[2].GetInt32());
                         }
-                        dest.Set(new Location(m, new Point(row[0].GetInt16(), row[1].GetInt16())), ids, row[2].GetInt32());
+                    }
+                    if (block.TryGetProperty("Nothing", out var nothing)) {
+                        foreach (var row in nothing.EnumerateArray()) {
+                            var ub = row.GetArrayLength();
+                            if (3 != ub && 4 != ub) throw new JsonException("expected [turn, y, x] or [turn, y, x0, x1]: " + row.GetRawText());
+                            var turn = row[0].GetInt32();
+                            var y = row[1].GetInt16();
+                            var x0 = row[2].GetInt16();
+                            var x1 = (4 == ub) ? row[3].GetInt16() : x0;
+                            if (x1 < x0) throw new JsonException("run out of order: " + row.GetRawText());
+                            for (var px = x0; px <= x1; px++) dest.Set(new Location(m, new Point(px, y)), null, turn);
+                        }
                     }
                 });
             }

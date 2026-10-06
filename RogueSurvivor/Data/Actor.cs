@@ -4213,10 +4213,12 @@ namespace Zaimoni.JsonConvert
 
         public override void Write(System.Text.Json.Utf8JsonWriter writer, djack.RogueSurvivor.Data.ActorTag src, System.Text.Json.JsonSerializerOptions options)
         {
-            writer.WriteStartObject();
-            writer.WriteString("Name", src.Name);
-            writer.WriteNumber("SpawnTime", src.SpawnTime);
-            writer.WriteEndObject();
+            Zaimoni.JSON.JSON_ext.WriteCompact(writer, w => {
+                w.WriteStartObject();
+                w.WriteString("Name", src.Name);
+                w.WriteNumber("SpawnTime", src.SpawnTime);
+                w.WriteEndObject();
+            });
         }
     }
 }

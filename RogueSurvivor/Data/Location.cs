@@ -337,10 +337,12 @@ namespace Zaimoni.JsonConvert
 
         public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.Location src, JsonSerializerOptions options)
         {
-            writer.WriteStartArray();
-            JsonSerializer.Serialize(writer, src.Position, options);
-            if (null != src.Map) src.Map.SaveAsRef(writer);
-            writer.WriteEndArray();
+            writer.WriteCompact(w => {
+                w.WriteStartArray();
+                JsonSerializer.Serialize(w, src.Position, options);
+                if (null != src.Map) src.Map.SaveAsRef(w);
+                w.WriteEndArray();
+            });
         }
     }
 }
