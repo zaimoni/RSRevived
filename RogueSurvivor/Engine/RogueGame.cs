@@ -5488,7 +5488,7 @@ namespace djack.RogueSurvivor.Engine
           var actorAt = exitAt.Location.Actor;
           if (actorAt != null) {
             if (player.IsEnemyOf(actorAt)) {
-              if (player.CanMeleeAttack(actorAt, out reason)) {
+              if (ActionMeleeAttack.Can(player, actorAt, out reason)) {
                 DoMeleeAttack(player, actorAt);
                 return true;
               } else {

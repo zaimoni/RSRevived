@@ -128,7 +128,12 @@ namespace djack.RogueSurvivor.Engine.Goal
         public override bool UrgentAction_readonly(out ActorAction? ret)
         {
           ret = null;   // one-shot, and binding a plan is an act: never pruned at a save
-          return false;
+          if (   (Intent_engaged?.IsLegal() ?? false)
+              || (Intent_disengaged?.IsLegal() ?? false)
+              || (Plan_engaged?.IsLegal() ?? false)
+              || (Plan_disengaged?.IsLegal() ?? false)
+              ) return false;   // legal, not performable: a save is not now
+          return true;
         }
 
         public override bool UrgentAction(out ActorAction? ret)

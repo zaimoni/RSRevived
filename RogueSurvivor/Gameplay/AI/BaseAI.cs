@@ -472,7 +472,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable enable
     protected ActionMeleeAttack? BehaviorMeleeAttack(Actor target)
     {
-      return (m_Actor.CanMeleeAttack(target) ? new ActionMeleeAttack(m_Actor, target) : null);
+      return (ActionMeleeAttack.Can(m_Actor, target) ? new ActionMeleeAttack(m_Actor, target) : null);
     }
 
     /// <returns>null, or a non-free action</returns>
@@ -881,7 +881,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((useFlags & UseExitFlags.DONT_BACKTRACK) != UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
       if (exitAt.IsNotBlocked(out var actorAt, out var mapObjectAt, m_Actor)) return (m_Actor.CanUseExit() ? new ActionUseExit(m_Actor, m_Actor.Location) : null);
       if ((useFlags & UseExitFlags.ATTACK_BLOCKING_ENEMIES) != UseExitFlags.NONE) {
-        if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && m_Actor.CanMeleeAttack(actorAt))
+        if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && ActionMeleeAttack.Can(m_Actor, actorAt))
           return new ActionMeleeAttack(m_Actor, actorAt);
       }
       if ((useFlags & UseExitFlags.BREAK_BLOCKING_OBJECTS) != UseExitFlags.NONE) {

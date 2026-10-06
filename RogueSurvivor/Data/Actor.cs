@@ -6,7 +6,6 @@
 
 #define B_MOVIE_MARTIAL_ARTS
 
-using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
@@ -1224,32 +1223,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 #endif
-
-    public string ReasonCantMeleeAttack(Actor target)
-    {
-#if B_MOVIE_MARTIAL_ARTS
-      bool in_range = Rules.IsAdjacent(in m_Location, target.Location);
-      // even martial arts 1 unlocks extended range.
-      if (!in_range && 0<UsingPolearmInBMovie && 2==Rules.GridDistance(in m_Location,target.Location)) in_range = true;
-      if (!in_range) return "not adjacent";
-#else
-      if (!Rules.IsAdjacent(Location, target.Location)) return "not adjacent";
-#endif
-      if (StaminaPoints < STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to attack";
-      if (target.IsDead) return "already dead!";
-      return "";
-    }
-
-    public bool CanMeleeAttack(Actor target, out string reason)
-    {
-      reason = ReasonCantMeleeAttack(target);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanMeleeAttack(Actor target)
-    {
-      return string.IsNullOrEmpty(ReasonCantMeleeAttack(target));
-    }
 
     public Defence Defence {
       get {

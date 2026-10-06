@@ -375,7 +375,7 @@ namespace djack.RogueSurvivor.Engine
           var exit = actor.Model.Abilities.AI_CanUseAIExits ? actor.Location.Exit : null;
           if (null != exit && exit.Location==loc) {
            if (exit.IsNotBlocked(out var a, out var obj, actor)) return new ActionUseExit(actor, actor.Location);
-           if (a != null && actor.IsEnemyOf(a) && actor.CanMeleeAttack(a)) return new ActionMeleeAttack(actor, a);
+           if (a != null && actor.IsEnemyOf(a) && ActionMeleeAttack.Can(actor, a)) return new ActionMeleeAttack(actor, a);
            return ActionBreak.schedule(actor, obj);
           }
         }
@@ -388,7 +388,7 @@ namespace djack.RogueSurvivor.Engine
       var actorAt = map.GetActorAt(point);
       if (actorAt != null) {
         if (actor.IsEnemyOf(actorAt)) {
-          return (actor.CanMeleeAttack(actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
+          return (ActionMeleeAttack.Can(actor, actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
         }
 		// player as leader should be able to switch with player as follower
 		// NPCs shouldn't be leading players anyway
@@ -829,7 +829,7 @@ retry:
           Actor? target = null;
           foreach(var pt_actor in actors_in_way.Values) {
             if (pt_actor == actorAt) continue;
-            if (!actor.CanMeleeAttack(pt_actor, out reason)) continue;
+            if (!ActionMeleeAttack.Can(actor, pt_actor, out reason)) continue;
             if (null == target || target.HitPoints>pt_actor.HitPoints) target = pt_actor;
           }
           return (null != target ? new ActionMeleeAttack(actor, target) : null);
@@ -839,7 +839,7 @@ retry:
       reason = null;
       if (actors_in_way.TryGetValue(point,out Actor actorAt)) {
         if (actor.IsEnemyOf(actorAt)) {
-          return (actor.CanMeleeAttack(actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
+          return (ActionMeleeAttack.Can(actor, actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
         }
 #if B_MOVIE_MARTIAL_ARTS
         if (1<actors_in_way.Count) return find_target(actors_in_way, actorAt, out reason);
