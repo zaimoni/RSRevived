@@ -679,7 +679,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (null != TurnOnAdjacentGenerators()) {
         ret.Add(new("Turn on all adjacent generators", () => {
-            SetObjective(new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new ZeroAryBehaviors[] { ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
+            SetObjective(new Goal_NonCombatComplete(m_Actor, new ActionSequence(m_Actor, new ZeroAryBehaviors[] { ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
         }));
       }
 

@@ -238,7 +238,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       #endregion
 
 
-      public Goal_NonCombatComplete(int t0, Actor who, ActorAction intent) : base(t0,who)
+      public Goal_NonCombatComplete(Actor who, ActorAction intent) : base(who.Location.Map.LocalTime.TurnCounter, who)
       {
         Intent = intent
 #if DEBUG
@@ -251,11 +251,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction_readonly(out ActorAction ret)
       {
         ret = null;   // legal, not performable: a save is not now
-        if (!Intent.IsLegal()) {
-          _isExpired = true;
-          return true;
-        }
-        return false;
+        if (Intent.IsLegal()) return false;
+        _isExpired = true;
+        return true;
       }
 
       public override bool UrgentAction(out ActorAction ret)
@@ -263,11 +261,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ret = null;
         // XXX need some sense of what a combat action is
         if (null != m_Actor.Controller.enemies_in_FOV) {    // VAPORWARE: respond to enemies "known but not in FOV"
-          if (!Intent.IsLegal()) {
-            _isExpired = true;
-            return true;
-          }
-          return false;
+          if (Intent.IsLegal()) return false;
+          _isExpired = true;
+          return true;
         }
         if (!Intent.IsPerformable()) {
           _isExpired = true;
@@ -4692,7 +4688,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       act = TurnOnAdjacentGenerators();
       if (null != act) {
-        SetObjective(new Goal_NonCombatComplete(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, new ActionSequence(m_Actor, new ZeroAryBehaviors[] { ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
+        SetObjective(new Goal_NonCombatComplete(m_Actor, new ActionSequence(m_Actor, new ZeroAryBehaviors[] { ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
         return act;
       }
 

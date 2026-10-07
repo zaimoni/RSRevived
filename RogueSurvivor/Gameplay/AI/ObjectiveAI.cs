@@ -5152,7 +5152,7 @@ restart_chokepoints:
         // need an after-action "hint" to the target on where/who to go to
         if (!(target.Controller is OrderableAI targ_ai)) return null;
         if (targ_ai.IsFocused) return null;
-        targ_ai.SetObjective(new Goal_NonCombatComplete(target.Location.Map.LocalTime.TurnCounter, target, new BehavioristABC(target, ReflexCode.RecruitedLOS)));
+        targ_ai.SetObjective(new Goal_NonCombatComplete(target, new BehavioristABC(target, ReflexCode.RecruitedLOS)));
         target.TargetActor = m_Actor;
       }
       return ret;
