@@ -171,8 +171,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         #endregion
 
 
-        public Goal_NextCombatAction(int t0, Actor who, ActorAction engaged, ActorAction disengaged)
-        : base(t0, who)
+        public Goal_NextCombatAction(Actor who, ActorAction engaged, ActorAction disengaged) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
 #if DEBUG
             if (null == engaged && null==disengaged) throw new ArgumentNullException(nameof(engaged)+"; "+nameof(disengaged));
@@ -1792,7 +1791,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                    // * else do not contrain processing (null out)
                    // XXX \todo once enemies_in_FOV is location-based we can use different sequences safely for the engaged and not-engaged cases
                    var next = new ActionSequence(m_Actor,new ZeroAryBehaviors[] { ZeroAryBehaviors.AttackWithoutMoving_ObjAI, ZeroAryBehaviors.WaitIfSafe_ObjAI });
-                   SetObjective(new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, next, next));
+                   SetObjective(new Goal_NextCombatAction(m_Actor, next, next));
               }
             } else m_Actor.Run();
           }
@@ -1984,7 +1983,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                    // * else do not contrain processing (null out)
                    // XXX \todo once enemies_in_FOV is location-based we can use different sequences safely for the engaged and not-engaged cases
                    var next = new ActionSequence(m_Actor,new ZeroAryBehaviors[] { ZeroAryBehaviors.AttackWithoutMoving_ObjAI, ZeroAryBehaviors.WaitIfSafe_ObjAI });
-                   SetObjective(new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, next, next));
+                   SetObjective(new Goal_NextCombatAction(m_Actor, next, next));
                 }
               }
               return tmpAction;

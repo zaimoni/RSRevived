@@ -3142,7 +3142,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (0 >= final_act.Count) continue;
           // \todo: something that decides which escape destination to use, (i.e. actually can react to newly visible threat, etc.)
           var schedule = Rules.Get.DiceRoller.Choose(final_act);
-          SetObjective(new Goal_NextCombatAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, schedule.Value, schedule.Value));
+          SetObjective(new Goal_NextCombatAction(m_Actor, schedule.Value, schedule.Value));
           return step;
         }
       }
