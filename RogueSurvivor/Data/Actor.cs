@@ -1137,35 +1137,6 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCouldntFireAt(target));
     }
 
-    private string ReasonCantFireAt(Actor target, List<Point> LoF)
-    {
-      LoF?.Clear();
-      if (!(GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) return "no ranged weapon equipped";
-      int dist = Rules.InteractionDistance(in m_Location, target.Location);
-      var range = m_CurrentRangedAttack.Range;
-      if (range < dist) return "out of range";
-      if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
-      if (1<dist && !LOS.CanTraceFireLine(in m_Location, target.Location, range, LoF)) return "no line of fire";
-      if (target.IsDead) return "already dead!";
-      return "";
-    }
-
-    public bool CanFireAt(Actor target, List<Point> LoF, out string reason)
-    {
-      reason = ReasonCantFireAt(target,LoF);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanFireAt(Actor target, List<Point> LoF)
-    {
-      return string.IsNullOrEmpty(ReasonCantFireAt(target, LoF));
-    }
-
-    public bool CanFireAt(Actor target)
-    {
-      return string.IsNullOrEmpty(ReasonCantFireAt(target, null));
-    }
-
     // very hypothetical -- lack of ranged weapon validity checks
     private string ReasonCantFireAt(Actor target, int range, List<Point> LoF)
     {

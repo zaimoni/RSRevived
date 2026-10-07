@@ -66,13 +66,13 @@ namespace djack.RogueSurvivor.Engine.Actions
       RogueGame.Game.DoMeleeAttack(m_Actor, m_Target);
     }
 
-    public static string? ReasonIllegal(Actor target)
+    private static string? ReasonIllegal(Actor target)
     {
       if (target.IsDead) return "already dead!";
       return null;
     }
 
-    public static string? ReasonCant(Actor aggressor, Actor target)
+    private static string? ReasonCant(Actor aggressor, Actor target)
     {
 #if B_MOVIE_MARTIAL_ARTS
       bool in_range = Rules.IsAdjacent(aggressor.Location, target.Location);
@@ -86,20 +86,20 @@ namespace djack.RogueSurvivor.Engine.Actions
       return null;
     }
 
-    private static string ReasonCantMeleeAttack(Actor aggressor, Actor target)
+    private static string ReasonCannot(Actor aggressor, Actor target)
     {
       return ReasonIllegal(target) ?? ReasonCant(aggressor, target) ?? "";
     }
 
     public static bool Can(Actor aggressor, Actor target, out string reason)
     {
-      reason = ReasonCantMeleeAttack(aggressor, target);
+      reason = ReasonCannot(aggressor, target);
       return string.IsNullOrEmpty(reason);
     }
 
     public static bool Can(Actor aggressor, Actor target)
     {
-      return string.IsNullOrEmpty(ReasonCantMeleeAttack(aggressor, target));
+      return string.IsNullOrEmpty(ReasonCannot(aggressor, target));
     }
   }
 }

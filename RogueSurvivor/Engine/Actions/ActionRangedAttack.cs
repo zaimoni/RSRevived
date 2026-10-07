@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
@@ -83,8 +84,14 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      m_LoF.Clear();
-      return m_Actor.CanFireAt(m_Target, m_LoF, out m_FailReason);
+      m_FailReason = ReasonIllegal(m_Target) ?? "";
+      return string.IsNullOrEmpty(m_FailReason);
+    }
+
+    public override bool IsPerformable()
+    {
+      m_FailReason = ReasonIllegal(m_Target) ?? ReasonCant(m_Actor, m_Target, m_LoF) ?? "";
+      return string.IsNullOrEmpty(m_FailReason);
     }
 
     public override void Perform()
@@ -106,7 +113,42 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (!m_Target.IsDead) oai.RecruitHelp(m_Target);
       m_Target.InferEnemy(m_Actor);
     }
-  }
+
+        private static string? ReasonIllegal(Actor target)
+        {
+            if (target.IsDead) return "already dead!";
+            return null;
+        }
+
+        private static string? ReasonCant(Actor aggressor, Actor target, List<Point>? LoF)
+        {
+            LoF?.Clear();
+            if (!(aggressor.GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) return "no ranged weapon equipped";
+            int dist = Rules.InteractionDistance(aggressor.Location, target.Location);
+            var range = aggressor.CurrentRangedAttack.Range;
+            if (range < dist) return "out of range";
+            if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
+            if (1 < dist && !LOS.CanTraceFireLine(aggressor.Location, target.Location, range, LoF)) return "no line of fire";
+            if (target.IsDead) return "already dead!";
+            return null;
+        }
+
+        private static string ReasonCannot(Actor aggressor, Actor target, List<Point>? LoF = null)
+        {
+            return ReasonIllegal(target) ?? ReasonCant(aggressor, target, LoF) ?? "";
+        }
+
+        public static bool Can(Actor aggressor, Actor target, out string reason, List<Point>? LoF = null)
+        {
+            reason = ReasonCannot(aggressor, target, LoF);
+            return string.IsNullOrEmpty(reason);
+        }
+
+        public static bool Can(Actor aggressor, Actor target, List<Point>? LoF = null)
+        {
+            return string.IsNullOrEmpty(ReasonCannot(aggressor, target, LoF));
+        }
+    }
 
     // This is not covering fire.  More like a pop out and snipe at something
     [Serializable]

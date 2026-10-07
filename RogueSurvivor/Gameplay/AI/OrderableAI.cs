@@ -2688,7 +2688,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == rw) continue;
         if (!friend_where.Value.IsEnemyOf(enemy)) continue;
         // XXX not quite right (should use best reloadable weapon)
-        if (friend_where.Value.CanFireAt(enemy,LoF)) {
+        if (ActionRangedAttack.Can(friend_where.Value, enemy, LoF)) {
           ret.UnionWith(LoF);
           continue;
         }

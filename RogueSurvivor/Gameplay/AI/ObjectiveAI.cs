@@ -1641,7 +1641,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
-      if (!m_Actor.CanFireAt(target)) return null;
+      if (!ActionRangedAttack.Can(m_Actor,target)) return null;
 
 //    var test = _damage_field.ContainsKey(m_Actor.Location.Position);
 

@@ -5488,13 +5488,13 @@ namespace djack.RogueSurvivor.Engine
           var actorAt = exitAt.Location.Actor;
           if (actorAt != null) {
             if (player.IsEnemyOf(actorAt)) {
-              if (ActionMeleeAttack.Can(player, actorAt, out reason)) {
-                DoMeleeAttack(player, actorAt);
+              var melee = new ActionMeleeAttack(player, actorAt);
+              if (melee.IsPerformable()) {
+                melee.Perform();
                 return true;
-              } else {
-                ErrorPopup(string.Format("Cannot attack {0} : {1}.", actorAt.Name, reason));
-                return false;
               }
+              ErrorPopup(string.Format("Cannot attack {0} : {1}.", actorAt.Name, melee.FailReason));
+              return false;
             } else {
               ErrorPopup(string.Format("{0} is not your enemy.", actorAt.Name));
               return false;
@@ -5616,7 +5616,7 @@ namespace djack.RogueSurvivor.Engine
 
       UI.OverlayPopup modeDesc = new(overlayPopupText, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
       UI.OverlayImage target = new(MapToScreen(currentTarget.Location), GameImages.ICON_TARGET);
-      bool flag3 = player.CanFireAt(currentTarget, LoF, out string reason);
+      bool flag3 = ActionRangedAttack.Can(player, currentTarget, out string reason, LoF);
 
       List<UI.OverlayImage> display_path(List<Point> los) {
         List<UI.OverlayImage> ret = new();
@@ -5648,7 +5648,7 @@ namespace djack.RogueSurvivor.Engine
               AddOverlay(modeDesc = new(overlayPopupText, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
               RemoveOverlay(target);
               AddOverlay(target = new(MapToScreen(currentTarget.Location), GameImages.ICON_TARGET));
-              flag3 = player.CanFireAt(currentTarget, LoF, out reason);
+              flag3 = ActionRangedAttack.Can(player, currentTarget, out reason, LoF);
               foreach(var o in LoS) RemoveOverlay(o);
               LoS = display_path(LoF);
               foreach(var o in LoS) AddOverlay(o);
