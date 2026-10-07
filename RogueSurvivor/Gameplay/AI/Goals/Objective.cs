@@ -35,11 +35,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       public virtual void RepairLoad() {}
 
-      /// <summary>UrgentAction without its side effects: no new objectives, no pathing, no speech, nothing from the per-turn
-      /// state of SelectAction.  Answers "done with, nothing to do" (true, null) from stored state alone, pruning its own
-      /// stale entries as UrgentAction would.  Overridden where UrgentAction acts; otherwise UrgentAction is already that.</summary>
-      public virtual bool UrgentAction_readonly(out ActorAction? ret) => UrgentAction(out ret);
-
 #region JSON save/load
       // The owner's saved turn and expiry.  The subclasses' JSON constructors chain here.
       protected Objective(Actor who, JsonElement src) : this(src.Require("Turn").GetInt32(), who)
@@ -65,11 +60,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 #endregion
 
+      /// <summary>UrgentAction without its side effects: no new objectives, no pathing, no speech, nothing from the per-turn
+      /// state of SelectAction.  Answers "done with, nothing to do" (true, null) from stored state alone, pruning its own
+      /// stale entries as UrgentAction would.  Overridden where UrgentAction acts; otherwise UrgentAction is already that.</summary>
+      /// <param name="ret">null triggers deletion.  non-null ret.IsLegal() must be true</param>
+      /// <returns>true to take action</returns>
+      public virtual bool UrgentAction_readonly(out ActorAction? ret) => UrgentAction(out ret);
+
       /// <param name="ret">null triggers deletion.  non-null ret.IsPerformable() must be true</param>
       /// <returns>true to take action</returns>
       public abstract bool UrgentAction(out ActorAction? ret);
-
-//    public virtual List<Objective>? Subobjectives() { return null; }  // theoretically reasonable, but didn't actually get used
     }
 
     public interface Pathable
