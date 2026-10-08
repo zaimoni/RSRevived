@@ -5427,7 +5427,7 @@ restart_chokepoints:
         foreach(var x in friends) {
           if (x.Value.IsPlayer) continue;
           if (this is OrderableAI ai && ai.IsActorTabooTrade(x.Value)) continue;
-          if (!m_Actor.CanTradeWith(x.Value)) continue;
+          if (!ActionTrade.Can(m_Actor, x.Value)) continue;
           if (null==m_Actor.MinStepPathTo(m_Actor.Location, x.Key)) continue;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
           if (1 == TradeableItems.Count) {
             var other_TradeableItems = (x.Value.Controller as OrderableAI).GetTradeableItems();
@@ -5486,7 +5486,7 @@ restart_chokepoints:
           if (ally.IsDead) continue;
           if (ally.IsPlayer) continue;
           if (this is OrderableAI ai && ai.IsActorTabooTrade(ally)) continue;
-          if (!m_Actor.CanTradeWith(ally)) continue;
+          if (!ActionTrade.Can(m_Actor, ally)) continue;
           if (null==m_Actor.MinStepPathTo(m_Actor.Location, ally.Location)) continue;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
           if (1 == TradeableItems.Count) {
             var other_TradeableItems = (ally.Controller as OrderableAI).GetTradeableItems();

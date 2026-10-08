@@ -5366,7 +5366,7 @@ namespace djack.RogueSurvivor.Engine
         }
         var actorAt = src[0].a_owner; // backward compatibility
         if (null != actorAt) {
-          if (player.CanTradeWith(actorAt, out string reason)) {
+          if (ActionTrade.Can(player, actorAt, out string reason)) {
             ClearOverlays();
             RedrawPlayScreen();
             if (DoTrade(pc, invSpec.Value.Key.it!, actorAt, true)) player.SpendActionPoints();
@@ -7106,7 +7106,7 @@ namespace djack.RogueSurvivor.Engine
          {
              Actor actorAt = map.GetActorAt(pt);
              if (actorAt == null) return false;
-             return Player.CanTradeWith(actorAt);
+             return ActionTrade.Can(Player, actorAt);
          });
         case AdvisorHint.NPC_GIVING_ITEM:
           if (Player.Inventory?.IsEmpty ?? true) return false;
@@ -7992,7 +7992,7 @@ namespace djack.RogueSurvivor.Engine
       // 10. Trading options; cf. ObjectiveAI::HaveTradingTargets()
       var TradeableItems = (Player.Controller as ObjectiveAI)?.GetTradeableItems();
       var order_ai = actor.Controller as OrderableAI;
-      bool trade_ok = null!=order_ai && null != TradeableItems && 0 < TradeableItems.Count && !actor.IsPlayer && Player.CanTradeWith(actor) && null != Player.MinStepPathTo(Player.Location, actor.Location);
+      bool trade_ok = null!=order_ai && null != TradeableItems && 0 < TradeableItems.Count && !actor.IsPlayer && ActionTrade.Can(Player, actor) && null != Player.MinStepPathTo(Player.Location, actor.Location);
       if (trade_ok && 1== TradeableItems.Count) {
         var other_TradeableItems = order_ai.GetTradeableItems();
         if (null == other_TradeableItems) trade_ok = false;
@@ -9821,11 +9821,16 @@ namespace djack.RogueSurvivor.Engine
     {
       if (ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target))
         AddMessage(MakeMessage(speaker, VERB_CHAT_WITH.Conjugate(speaker), target));
-      if (speaker.IsPlayer || !speaker.CanTradeWith(target)) {
+      if (speaker.IsPlayer || !ActionTrade.Can(speaker, target)) {
         speaker.SpendActionPoints();
         return;
       }
-      DoTrade(speaker.Controller as OrderableAI, target.Controller as OrderableAI);
+      var trade = new ActionTrade(speaker, target);
+      if (!trade.IsPerformable()) {
+        speaker.SpendActionPoints();
+        return;
+      }
+      trade.Perform();
 
       // alpha10 recover san after "normal" chat or fast trade
       if (speaker.Model.Abilities.HasSanity) {
@@ -10205,7 +10210,7 @@ namespace djack.RogueSurvivor.Engine
     {   // precondition: !speaker.IsPlayer (need different implementation)
       var target = target_c.ControlledActor;
 #if DEBUG
-      if (!speaker_c.ControlledActor.CanTradeWith(target, out string reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
+      if (!ActionTrade.Can(speaker_c.ControlledActor, target, out string reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
 #endif
       DoTrade(speaker_c, PickItemsToTrade(speaker_c, target), target_c, false);
     }
@@ -12530,7 +12535,7 @@ restart:
           SleepIcon(actor)?.DrawIcon(screen, tint);
           HungerIcon(actor)?.DrawIcon(screen, tint);
           SanityIcon(actor)?.DrawIcon(screen, tint);
-          if (Player.CanTradeWith(actor)) {
+          if (ActionTrade.Can(Player, actor)) {
 /*          var o_oai = actor.Controller as OrderableAI;
             if (null != o_oai) {
               // \todo evaluate whether ai actually will accept any trades

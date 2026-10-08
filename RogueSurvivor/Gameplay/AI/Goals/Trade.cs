@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             i = _whom.Count;
             while (0 < i) {
                 var actor = _whom[--i];
-                if (!m_Actor.CanTradeWith(actor)) { // XXX \todo CouldTradeWith (less sensitive to current activity) but can't, just continues
+                if (!ActionTrade.Can(m_Actor, actor)) { // XXX \todo CouldTradeWith (less sensitive to current activity) but can't, just continues
                     _whom.RemoveAt(i);
                     continue;
                 }

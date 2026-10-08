@@ -3480,69 +3480,6 @@ final_exit:
     // maybe this should be over on the Inventory object
     public Item? GetItem(Gameplay.Item_IDs id) { return m_Inventory?.GetFirst(id); }
 
-    private string ReasonCantTradeWith(Actor target)
-    {
-      if (!IsPlayer && target.IsPlayer) return "target is player";
-      if (!Model.Abilities.CanTrade && target.Leader != this) return "can't trade";
-      if (!target.Model.Abilities.CanTrade && target.Leader != this) return "target can't trade";
-      if (IsEnemyOf(target)) return "is an enemy";
-      if (target.IsSleeping) return "is sleeping";
-      if (m_Inventory == null || m_Inventory.IsEmpty) return "nothing to offer";
-      if (target.m_Inventory == null || target.m_Inventory.IsEmpty) return "has nothing to trade";
-      // alpha10 dont bother someone who is fighting or fleeing
-      if (target.Activity == Activity.CHASING || target.Activity == Activity.FIGHTING || target.Activity == Activity.FLEEING || target.Activity == Activity.FLEEING_FROM_EXPLOSIVE) {
-        if (!target.IsPlayer) return "in combat";
-      }
-      // RS Revived: no trading with differing treacherous factions; should be "by AI controller" but player controller would need to simulate underlying target
-      switch(m_FactionID)
-      {
-      case GameFactions.IDs.TheCHARCorporation:
-      case GameFactions.IDs.TheBikers:
-      case GameFactions.IDs.TheGangstas:
-        if (target.m_FactionID!=m_FactionID) return "untrustworthy";
-        break;
-      }
-
-      switch(target.m_FactionID)
-      {
-      case GameFactions.IDs.TheCHARCorporation:
-      case GameFactions.IDs.TheBikers:
-      case GameFactions.IDs.TheGangstas:
-        if (target.m_FactionID!=m_FactionID) return "anticipates treachery";
-        break;
-      }
-
-      if (!IsPlayer && !target.IsPlayer) {
-        var theirs = target.GetRationalTradeableItems(this.Controller as Gameplay.AI.OrderableAI);
-        if (null == theirs) return "target unwilling to trade";
-        var mine = GetRationalTradeableItems(target.Controller as Gameplay.AI.OrderableAI);
-        if (null == mine) return "unwilling to trade";
-        bool ok = false;
-        foreach(Item want in theirs) {
-          foreach(Item have in mine) {
-            if (   !Gameplay.AI.ObjectiveAI.TradeVeto(have, want)
-                && !Gameplay.AI.ObjectiveAI.TradeVeto(want, have)) {
-               ok = true;
-               break;
-            }
-          }
-        }
-        if (!ok) return "no mutually acceptable trade";
-      }
-      return "";
-    }
-
-    public bool CanTradeWith(Actor target, out string reason)
-    {
-      reason = ReasonCantTradeWith(target);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanTradeWith(Actor target)
-    {
-      return string.IsNullOrEmpty(ReasonCantTradeWith(target));
-    }
-
     private string ReasonCantUseItem(Item it)
     {
       if (!Model.Abilities.CanUseItems) return "no ability to use items";
