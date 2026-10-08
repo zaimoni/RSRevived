@@ -25,6 +25,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     private ActionTrade(Actor actor, JsonElement src) : base(actor)
     {
       m_Target = src.Require("Target").RequireRef<Actor>();
+      // Perform needs OrderableAI controllers on both sides: a trade is between NPCs.  The controllers are shells by now (two-phase load).
+      if (actor.Controller is not OrderableAI) throw new JsonException("ActionTrade: " + actor.UnmodifiedName + " is not run by an OrderableAI");
+      if (m_Target.Controller is not OrderableAI) throw new JsonException("ActionTrade: " + m_Target.UnmodifiedName + " is not run by an OrderableAI");
     }
 
     static ActionTrade IJsonStaged<ActionTrade>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionTrade(JsonActor(src), src));
