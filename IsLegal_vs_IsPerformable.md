@@ -55,8 +55,10 @@ Any legacy action not in the registry (`ActionBump`, `ActionBashDoor`, `ActionUs
 |---|---|
 | `Abort()` is consulted only by `Goal_NextAction`. `ActorAction` documents it as the hook to run after `IsLegal`/`IsPerformable` (how a `Fork` reports it emptied itself); the two general classes never ask, so an emptied `Fork` is kept at save and handed over live. | Open. Parallel form: alive iff `IsLegal() && !Abort()` at save, `IsPerformable() && !Abort()` live, in all three. |
 | `Goal_NextAction` tests performability before "enemies in sight", so a legal-but-not-yet-performable intent expires even though the class would have deferred it; the save path keeps it. | Open; a behaviour change, so a design call. |
-| `RunIfAdvisable` on a handed-over `MoveStep` only in `Goal_NextCombatAction`. | Open; either both or neither, or it belongs in the step's `Perform`. |
+| `RunIfAdvisable` on a handed-over `ActionMoveStep` only in `Goal_NextCombatAction`. | Open; resolved by the plan under "Running", below, which removes the call from every objective. |
 | `Goal_NextCombatAction` has more fundamental design issues (2026-10-06). | Not a cleanup item; out of scope here. |
+
+**Running.** The `RunIfAdvisable` calls exist because `RogueGame.DoMove` and `RogueGame.LeaveMap` read `Actor.IsRunning` when they cost a change of location (inherited from Rogue Survivor), so an AI has to set it before an `ActionMoveStep` is performed: seventeen sites in `ObjectiveAI` and `OrderableAI` post-process a chosen step with `m_Actor.IsRunning = RunIfAdvisable(step.dest)`. `Engine._Action.MoveStep` is the intended shape: it stores the decision (`is_running`, saved as `Running`) and its `Perform` calls `m_Actor.Run()` itself. Plan, accepted 2026-10-08: migrate every `ActionMoveStep` that can reach `Perform` without a preceding `RunIfAdvisable` to `MoveStep` (`ActionMoveStep` is constructed at eight sites); once none remain, sink `RunIfAdvisable` into `ActionMoveStep.Perform()` and delete the seventeen post-processing calls. That also ends the divergence above by construction. Seen while counting: two of the seventeen (`OrderableAI.cs:738` and `:740`) call `ai.RunIfAdvisable(...)` and discard the result, so they decide nothing; sinking the call into `Perform` fixes that too.
 
 Related: `Goal_NextAction`, `Goal_NonCombatComplete` and `StageAction` have very similar use cases, so a reader will wonder whether they are one class. `StageAction` cannot be eliminated: it exists to influence `ObjectiveAI.RewriteAction`, through a thin wrapper that sets `ObjectiveAI._staged_action`. Whether the other two could fold together is a separate question from the pruning rules, which they already share.
 
@@ -76,5 +78,5 @@ Related: `Goal_NextAction`, `Goal_NonCombatComplete` and `StageAction` have very
 
 1. The `Can*` clauses in issue 1 that still matter (`ActionCloseDoor`, `TakeItem`, `ActionPull`, `ActionUseItem`/`ActionUse`): small, mechanical; each a legality/performability pair in the `ReasonIllegal ?? ReasonCant` shape the three split actions already use.
 2. The `Abort()` parallelism in issue 3.
-3. The two design calls in issue 3, if wanted.
+3. The deferral-order design call in issue 3, if wanted; the running plan (issue 3, "Running") on its own schedule.
 4. `ActionTake` and `ActionSleep` only when their use changes (see issue 1).
