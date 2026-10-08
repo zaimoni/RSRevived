@@ -10155,7 +10155,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     /// <remark>speaker's item is Key of trade; target's item is Value</remark>
-    private void DoTrade(OrderableAI speaker_c, KeyValuePair<Item, Item>? trade, OrderableAI target_c, bool doesTargetCheckForInterestInOffer)
+    public void DoTrade(OrderableAI speaker_c, KeyValuePair<Item, Item>? trade, OrderableAI target_c, bool doesTargetCheckForInterestInOffer)
     {
       var speaker = speaker_c.ControlledActor;
       var target = target_c.ControlledActor;
@@ -10206,16 +10206,7 @@ namespace djack.RogueSurvivor.Engine
       target.Take(donate);
     }
 
-    public void DoTrade(OrderableAI speaker_c, OrderableAI target_c)
-    {   // precondition: !speaker.IsPlayer (need different implementation)
-      var target = target_c.ControlledActor;
-#if DEBUG
-      if (!ActionTrade.Can(speaker_c.ControlledActor, target, out string reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
-#endif
-      DoTrade(speaker_c, PickItemsToTrade(speaker_c, target), target_c, false);
-    }
-
-    static private KeyValuePair<Item,Item>? PickItemsToTrade(OrderableAI speaker_c, Actor buyer)
+    static public KeyValuePair<Item,Item>? PickItemsToTrade(OrderableAI speaker_c, Actor buyer)
     {
       var negotiate = speaker_c.TradeOptions(buyer);
       if (null == negotiate) return null;

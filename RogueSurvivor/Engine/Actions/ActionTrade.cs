@@ -63,7 +63,9 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueGame.Game.DoTrade(m_Actor.Controller as Gameplay.AI.OrderableAI, m_Target.Controller as Gameplay.AI.OrderableAI);
+      var speaker_c = (m_Actor.Controller as OrderableAI)!;
+      var target_c = (m_Actor.Controller as OrderableAI)!;
+      RogueGame.Game.DoTrade(speaker_c, RogueGame.PickItemsToTrade(speaker_c, m_Target), target_c, false);
     }
 
         private static string? ReasonIllegal(Actor src, Actor target)
