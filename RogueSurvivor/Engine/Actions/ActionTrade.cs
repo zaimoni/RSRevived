@@ -47,8 +47,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 #endif
       ;
 #if DEBUG
-      if (actor.Controller is OrderableAI) throw new InvalidOperationException("tracing");
-      if (target.Controller is OrderableAI) throw new InvalidOperationException("tracing");
+      if (!(actor.Controller is OrderableAI)) throw new InvalidOperationException("tracing");
+      if (!(target.Controller is OrderableAI)) throw new InvalidOperationException("tracing");
 #endif
     }
 
@@ -67,7 +67,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       var speaker_c = (m_Actor.Controller as OrderableAI)!;
-      var target_c = (m_Actor.Controller as OrderableAI)!;
+      var target_c = (m_Target.Controller as OrderableAI)!;
       RogueGame.Game.DoTrade(speaker_c, RogueGame.PickItemsToTrade(speaker_c, m_Target), target_c, false);
     }
 
