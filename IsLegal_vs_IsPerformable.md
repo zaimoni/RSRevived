@@ -25,8 +25,8 @@ Only the classes registered for the save matter here (the `[Serializable]` actio
 | `ActionMeleeAttack` | adjacency, stamina | **Split** (`f08fd53b`): legality is the target alive; `Actor.CanMeleeAttack` became `ActionMeleeAttack.Can`. |
 | `ActionRangedAttack` | equipped ranged weapon, range, ammo, line of fire | **Split** (`8994e578`): likewise; `ActionRangedAttack.Can`. |
 | `ActionTrade` | activity (fighting, fleeing), empty inventories, a mutually acceptable trade | **Split** (`a3cbab3a`, `f6f49cd3`, `6dee9430`); see issue 4. |
-| `ActionTake` | reach (`init()` resolves the stack: "not in reach") | Open. Legality is the item still being where it was. |
-| `ActionSleep` | `CanSleep`: hungry, not sleepy enough | Open. Legality is `HasToSleep`. |
+| `ActionTake` | reach (`init()` resolves the stack: "not in reach") | Open, **very low priority** until it is used for anything but the `ActionChain` that recovers from a full inventory: it takes back an item dropped or exchanged to make room for something else, so if not even a substitute is in reach, a re-plan is in order, not a wait. |
+| `ActionSleep` | `CanSleep`: hungry, not sleepy enough | Open, **very low priority**: nothing in the game yet can move it from `!IsLegal()` to `IsLegal()` between turns. `IsHungry` follows the food clock, and the gap between when an `ActionSleep` would be created and when the actor is tired enough to sleep is about eleven hours of daytime game time. |
 | `ActionCloseDoor` | `ReasonCantClose`: "someone is there" | Open; it already has an `IsPerformable` (adjacency), so the clause only moves. |
 | `TakeItem` | `CanGet`: inventory full | Open; has an `IsPerformable` (distance). |
 | `ActionPull` | `ReasonCantPull`: blocking object, walkable destination | Open; has an `IsPerformable` (distance). |
@@ -36,6 +36,8 @@ Only the classes registered for the save matter here (the `[Serializable]` actio
 Already clean: `ActionMoveDelta`, `ActionGiveTo`, `ActionDropItem`, `ActionWait`, `MoveStep`, `PushOnto`, `TakeItem`'s sibling `TradeItem`, `Fork`, `Join`, `Chain`, `BehavioristABC`; every `WorldUpdate`.
 
 Any legacy action not in the registry (`ActionBump`, `ActionBashDoor`, `ActionUseExit`, …) can keep the mix without harming a save, since it never reaches one.
+
+**`Actor.IsEnemyOf` in an `IsLegal` is accepted as legality** (2026-10-08). It is emotional reasoning, but the relation only moves one way in practice: the sole route from enemy to not-enemy is an enmity that was indirect, through leadership, and never became direct, since aggressing or being aggressed makes it direct and that is irreversible. An intent stranded by that transition is a re-plan, not something a save should wait out. So `ActionTrade.ReasonIllegal`'s "is an enemy" stays where it is.
 
 ### 2. The save-time decision rule
 
@@ -56,6 +58,8 @@ Any legacy action not in the registry (`ActionBump`, `ActionBashDoor`, `ActionUs
 | `RunIfAdvisable` on a handed-over `MoveStep` only in `Goal_NextCombatAction`. | Open; either both or neither, or it belongs in the step's `Perform`. |
 | `Goal_NextCombatAction` has more fundamental design issues (2026-10-06). | Not a cleanup item; out of scope here. |
 
+Related: `Goal_NextAction`, `Goal_NonCombatComplete` and `StageAction` have very similar use cases, so a reader will wonder whether they are one class. `StageAction` cannot be eliminated: it exists to influence `ObjectiveAI.RewriteAction`, through a thin wrapper that sets `ObjectiveAI._staged_action`. Whether the other two could fold together is a separate question from the pruning rules, which they already share.
+
 ### 4. `ActionTrade` is between two NPCs
 
 `Perform` needs an `OrderableAI` on both sides; the static `Can` predicate still admits PCs for historical reasons (`RogueGame.DoChat` guards with `speaker.IsPlayer`).
@@ -70,6 +74,7 @@ Any legacy action not in the registry (`ActionBump`, `ActionBashDoor`, `ActionUs
 
 ## Order of work, if continued
 
-1. `ActionTake`, then the five `Can*` clauses in issue 1 (small, mechanical; each a legality/performability pair in the `ReasonIllegal ?? ReasonCant` shape the three split actions already use).
+1. The `Can*` clauses in issue 1 that still matter (`ActionCloseDoor`, `TakeItem`, `ActionPull`, `ActionUseItem`/`ActionUse`): small, mechanical; each a legality/performability pair in the `ReasonIllegal ?? ReasonCant` shape the three split actions already use.
 2. The `Abort()` parallelism in issue 3.
 3. The two design calls in issue 3, if wanted.
+4. `ActionTake` and `ActionSleep` only when their use changes (see issue 1).
