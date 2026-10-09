@@ -4020,21 +4020,9 @@ final_exit:
       if (m_Leader?.IsDead ?? false) m_Leader = null;
       // \todo match RS alpha 10's prune of trust entries in dead actors (m_TrustDict for us)
       // to avoid weirdness we want to drop only if no revivable corpse is in-game
-      if (null != m_Followers) {
-        m_Followers.OnlyIfNot(IsDeceased);
-        if (0 >= m_Followers.Count) m_Followers = null;
-        else m_Followers.TrimExcess();
-      }
-      if (null != m_AggressorOf) {
-        m_AggressorOf.OnlyIfNot(IsDeceased);
-        if (0 >= m_AggressorOf.Count) m_AggressorOf = null;
-        else m_AggressorOf.TrimExcess();
-      }
-      if (null != m_SelfDefenceFrom) {
-        m_SelfDefenceFrom.OnlyIfNot(IsDeceased);
-        if (0 >= m_SelfDefenceFrom.Count) m_SelfDefenceFrom = null;
-        else m_SelfDefenceFrom.TrimExcess();
-      }
+      m_Followers = m_Followers?.Optimize();
+      m_AggressorOf = m_AggressorOf?.Optimize();
+      m_SelfDefenceFrom = m_SelfDefenceFrom?.Optimize();
     }
 
     public override string ToString() { return Name; }
@@ -4076,6 +4064,16 @@ final_exit:
     public static int CountUndead(this IEnumerable<Actor> src)
     {
       return src.Count(a => a.Model.Abilities.IsUndead);
+    }
+
+    // this ref, or ref this, patameter with void return would have been best,
+    // but that's a compile error in C# 14
+    public static List<Actor>? Optimize(this List<Actor> src)
+    {
+      src.OnlyIfNot(Actor.IsDeceased);
+      if (0 >= src.Count) return null;
+      src.TrimExcess();
+      return src;
     }
   }
 }

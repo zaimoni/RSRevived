@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private MemorizedSensor<LOSSensor> m_MemLOSSensor;
 
-    private List<Actor> _squad = null;
+    private List<Actor>? _squad = null;
 
     public CHARGuardAI(Actor src) : base(src)
     {
@@ -64,7 +64,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (src.TryGetProperty("Squad", out x)) x.ReadRefs(_squad = new());
     }
 
-    protected override bool HasJsonState { get => (null != _squad && 0 < _squad.Count) || base.HasJsonState; }
+    protected override bool HasJsonState { get {
+      _squad = _squad?.Optimize();
+      return (null != _squad && 0 < _squad.Count) || base.HasJsonState;
+    } }
     #endregion
 
     public override bool UsesExplosives { get => false; }
