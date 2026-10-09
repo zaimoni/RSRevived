@@ -581,9 +581,9 @@ namespace djack.RogueSurvivor.Data
       _all = FilterSameMap(UpdateSensors());
       InitAICache(_all, _all);
       foreach(var o in Objectives.ToList()) {
-        if (o.IsExpired) Objectives.Remove(o);
+        if (o.IsExpired) Remove(o);
         else if (o.UrgentAction(out goal_action)) {
-          if (null==goal_action) Objectives.Remove(o);
+          if (null==goal_action) Remove(o);
 #if DEBUG
           else if (!goal_action.IsPerformable()) throw new InvalidOperationException("result of UrgentAction should be legal");
 #else
@@ -603,7 +603,7 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     // \todo? eliminate this in favor of something more secure
     public Objective[]? CurrentSelfOrders { get { return 0 >= Objectives.Count ? null : Objectives.ToArray(); }  }
-    public void Countermand(Objective o) { Objectives.Remove(o); }
+    public void Countermand(Objective o) => Remove(o);
 #nullable restore
 
     public override void WalkTo(in Location loc, int n = int.MaxValue)

@@ -568,6 +568,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Objectives.Insert(InsertObjectiveAt(src), src);
     }
 
+    protected void Remove(Objective o) {
+      Objectives.Remove(o);
+      if (o is Observer<Location[]> fov_ev) FOVevents.Remove(fov_ev);
+    }
+
     public ActorAction Pathing<T>() where T:Objective,Pathable
     {
         var remote = Goal<T>();

@@ -198,14 +198,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (tracing) {
             if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(o.ToString()+(o.IsExpired ? " : expired" : ""));
           }
-          if (o.IsExpired) Objectives.Remove(o);
+          if (o.IsExpired) Remove(o);
           else if (o.UrgentAction(out goal_action)) {
             if (tracing) {
               if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == goal_action ? "expiring by null"  : "proceeding : "+ goal_action.ToString());
             }
-            if (null==goal_action) Objectives.Remove(o);
+            if (null==goal_action) Remove(o);
 #if DEBUG
-            else if (!goal_action.IsPerformable()) throw new InvalidOperationException("result of UrgentAction should be legal");
+            else if (!goal_action.IsPerformable()) throw new InvalidOperationException("result of UrgentAction should be performable");
 #else
             else if (!goal_action.IsPerformable()) Objectives.Remove(o);
 #endif
@@ -743,7 +743,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                         else dests = update_path.Unstage(loc => dest_view != District.UsesCrossDistrictView(loc.Map));
                         if (0 < dests.Count) {
                             if (tracing) {
-                                if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("LoS on cross-district dests: "+dests.to_s());
+                                Logger.WriteLine(Logger.Stage.RUN_DEBUG, "LoS on cross-district dests: " + dests.to_s());
                             }
                             var goal = new Goals.AcquireLineOfSight(m_Actor, dests);
                             SetObjective(goal);
@@ -758,7 +758,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                     var dests = update_path.Unstage(loc => dest_view != District.UsesCrossDistrictView(loc.Map));
                     if (0 < dests.Count) {
                         if (tracing) {
-                            if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("LoS on dests: "+dests.to_s());
+                            Logger.WriteLine(Logger.Stage.RUN_DEBUG, "LoS on dests: " + dests.to_s());
                         }
                         var goal = new Goals.AcquireLineOfSight(m_Actor, dests);
                         SetObjective(goal);
@@ -773,7 +773,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               var unseen = considering?.Where(loc => !CanSee(loc)).ToHashSet();
               if (null != unseen && 0 < unseen.Count) {
                 if (tracing) {
-                  if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("LoS on unseen: "+unseen.to_s());
+                  Logger.WriteLine(Logger.Stage.RUN_DEBUG, "LoS on unseen: " + unseen.to_s());
                 }
                 var goal = new Goals.AcquireLineOfSight(m_Actor, unseen);
                 SetObjective(goal);

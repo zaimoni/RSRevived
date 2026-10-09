@@ -141,9 +141,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && !o.IsExpired)  Logger.WriteLine(Logger.Stage.RUN_MAIN, o.ToString());
 #endif
-          if (o.IsExpired) Objectives.Remove(o);
+          if (o.IsExpired) Remove(o);
           else if (o.UrgentAction(out goal_action)) {
-            if (null==goal_action) Objectives.Remove(o);
+            if (null==goal_action) Remove(o);
 #if DEBUG
             else if (!goal_action.IsPerformable()) throw new InvalidOperationException("result of UrgentAction should be legal");
 #else
