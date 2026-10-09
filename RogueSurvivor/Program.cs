@@ -58,6 +58,7 @@ namespace djack.RogueSurvivor
           // --no-spawn : do not create a random PC.  requires a --PC option to be viable.  Incompatible with --spawn and --spawn-district
           // --city : specify city size and dimensions; default is 5,50
           // --start=new|load|load-test : skip the main menu.  --save-and-exit : save, then quit, when a player would first act.
+          // --keys=TOKENS or --keys=@FILE : keys to play before the keyboard is heard from (Engine.KeyScript has the format).
         }
         if (Engine.Session.CommandLineOptions.ContainsKey("no-spawn")) {
           if (   !Engine.Session.CommandLineOptions.ContainsKey("PC")
@@ -85,7 +86,7 @@ namespace djack.RogueSurvivor
         try {
           Application.Run(rogueForm);
         } catch (Exception ex) {
-          if (Engine.TestDrive.Unattended) {
+          if (Engine.TestDrive.SaveAndExit) {   // a test run, even one whose key script has not run out
             Engine.TestDrive.Failed(ex.ToString());   // no one to read a dialog
           } else {
             using (Bugreport bugreport = new(ex)) {

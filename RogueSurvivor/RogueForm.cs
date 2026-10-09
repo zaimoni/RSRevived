@@ -167,6 +167,10 @@ namespace djack.RogueSurvivor
 #nullable enable
     public KeyEventArgs UI_WaitKey()
     {
+      if (KeyScript.Next() is { } scripted) {   // --keys: the script is the person at the keyboard, until it runs out
+        doEvents();
+        return scripted;
+      }
       while (true) {    // XXX no clean way to do this loop
         doEvents();
         if (null!= m_InKey) break;
@@ -180,6 +184,10 @@ namespace djack.RogueSurvivor
     {
       Interlocked.Exchange(ref m_InKey, null); // discard prior key
       var origin = m_GameCanvas.MouseLocation;
+      if (KeyScript.Next() is { } scripted) {   // --keys
+        doEvents();
+        return new(new(scripted, null), new(origin.X, origin.Y));
+      }
       do {
         Thread.Sleep(1);
         doEvents();

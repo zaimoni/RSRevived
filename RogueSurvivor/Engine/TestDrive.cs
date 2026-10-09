@@ -23,8 +23,8 @@ namespace djack.RogueSurvivor.Engine
     /// <summary>Save to the default slot, then quit, at the first point a player would be asked to act.</summary>
     static public bool SaveAndExit = false;
 
-    /// <summary>true if and only if no one is watching: popups that wait for a key should not.</summary>
-    static public bool Unattended { get => SaveAndExit; }
+    /// <summary>true if and only if no one is watching: popups that wait for a key should not.  A key script (--keys) is someone, until it runs out.</summary>
+    static public bool Unattended { get => SaveAndExit && KeyScript.IsEmpty; }
 
     /// <returns>true if and only if arg was one of ours</returns>
     static public bool Parse(string arg)
@@ -34,7 +34,13 @@ namespace djack.RogueSurvivor.Engine
       case "--start=load": Start = StartAs.LOAD_GAME; return true;
       case "--start=load-test": Start = StartAs.LOAD_TEST; return true;
       case "--save-and-exit": SaveAndExit = true; return true;
-      default: return false;
+      default:
+        try {
+          return KeyScript.Parse(arg);
+        } catch (Exception ex) {   // a token that is not a key, or a response file that cannot be read
+          Failed(ex.Message);   // the program still runs, so that whoever is attending can read the log
+          return true;
+        }
       }
     }
 

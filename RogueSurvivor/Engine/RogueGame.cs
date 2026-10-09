@@ -3162,7 +3162,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (player.IsSleeping) throw new InvalidOperationException("player.IsSleeping");
 #endif
-      if (TestDrive.SaveAndExit) {   // test run: the game got as far as asking a player to act
+      if (TestDrive.Unattended) {   // test run, and its key script if any has run out: the game got as far as asking a player to act
         DoSaveGame(GetUserSave());   // a DEBUG build writes the test format as well, for --start=load-test
         StopTheWorld();
         return;
