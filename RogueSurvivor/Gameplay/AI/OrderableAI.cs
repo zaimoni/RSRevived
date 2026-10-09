@@ -9,9 +9,9 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
-using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine._Action;
 using djack.RogueSurvivor.Engine.Actions;
+using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
 using djack.RogueSurvivor.Gameplay.AI.Goals;
@@ -1198,22 +1198,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
 
           // check for helpers that are ready and politely back off for them
-          var escape = new Zaimoni.Data.Stack<Point>(stackalloc Point[8]);
-          var motive = new Zaimoni.Data.Stack<Point>(stackalloc Point[8]);
+          var escape = new Zaimoni.Data.Stack<Location>(new Location[8]);
+          bool motive = false;
           foreach(Point pt in m_Actor.Location.Position.Adjacent()) {
             if (Rules.IsAdjacent(in pt, _dest.Position)) continue;
-            if (m_Actor.Location.Map.IsWalkableFor(pt,m_Actor)) escape.push(pt);
+            var dest = new Location(m_Actor.Location.Map, pt);
+            if (!Map.Canonical(ref dest)) continue;
+            if (dest.IsWalkableFor(m_Actor)) escape.push(dest);
             else {
-              Actor helper = m_Actor.Location.Map.GetActorAt(pt);
-              if (null == helper) continue;
+              var helper = dest.Actor;
+              if (helper is null) continue;
               if (break_from.Any(loc => Rules.IsAdjacent(loc, helper.Location))) continue;
               if (!helper.IsTired && null != (helper.Controller as ObjectiveAI)?.Goal<Goal_BreakBarricade>(o => o.Target == door)) {
-                motive.push(pt);
+                motive = true;
               }
             }
           }
-          if (0 < motive.Count && 0<escape.Count) {
-            ret = new ActionMoveStep(m_Actor,Rules.Get.DiceRoller.Choose(escape));
+          if (motive && 0<escape.Count) {
+            // breaching objects is expensive in stamina, so force walking.
+            ret = Engine._Action.MoveStep.Cast(m_Actor.Location, Rules.Get.DiceRoller.Choose(escape), false, m_Actor);
             return true;
           }
 
