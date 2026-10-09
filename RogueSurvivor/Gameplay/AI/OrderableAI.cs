@@ -1717,10 +1717,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != steps) {
         foreach(var step in steps) looks_safe(step.dest);
       }
-      if (0<safe.Count) {
-        Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name+": safe: " + safe.to_s());
-        if (safe.Contains(m_Actor.Location)) Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name + " can go all-out");
-        else Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name + " should dash");
+      if (tracing) {
+        if (0<safe.Count) {
+          Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name+": safe: " + safe.to_s());
+          if (safe.Contains(m_Actor.Location)) Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name + " can go all-out");
+          else Logger.WriteLine(Logger.Stage.RUN_DEBUG, m_Actor.Name + " should dash");
+        }
       }
 
       var attack_field = self.AttackField(others);
