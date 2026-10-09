@@ -60,7 +60,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (null != m_Exploration && !m_Exploration.IsEmpty) {
         writer.WritePropertyName("Exploration");
-        m_Exploration.toJson(writer, options, m_Actor);
+        m_Exploration.toJson(writer, options);
       }
     }
 

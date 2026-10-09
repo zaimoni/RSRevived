@@ -3704,7 +3704,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // need to make exploration data sufficient to prevent back-tracking onto doors
         // that is: unexplored 500, door+in/out 150, so need 0..3 entries to be < -150
 
-        if (!exploration.HasExplored(map.GetZonesAt(position))) num += EXPLORE_ZONES;
+        if (!exploration.HasExplored(map, map.GetZonesAt(position))) num += EXPLORE_ZONES;
         num += exploration.AgeScore(in loc);
         var mapObjectAt = map.GetMapObjectAt(position);
         // this is problematic when the door is the previous location.  Do not overwhelm in/out

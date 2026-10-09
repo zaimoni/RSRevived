@@ -833,7 +833,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Map map = loc.Map;
         Point position = loc.Position;
         int num = 0;
-        if (!exploration.HasExplored(map.GetZonesAt(position))) num += EXPLORE_ZONES;
+        if (!exploration.HasExplored(map, map.GetZonesAt(position))) num += EXPLORE_ZONES;
         num += exploration.AgeScore(in loc);
         var mapObjectAt = map.GetMapObjectAt(position);
         // this is problematic when the door is the previous location.  Do not overwhelm in/out

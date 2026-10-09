@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0 != m_SafeTurns) writer.WriteNumber("SafeTurns", m_SafeTurns);
       if (!m_Exploration.IsEmpty) {
         writer.WritePropertyName("Exploration");
-        m_Exploration.toJson(writer, options, m_Actor);
+        m_Exploration.toJson(writer, options);
       }
       if (!ReferenceEquals(m_Emotes, FIGHT_EMOTES)) writer.WriteArray("Emotes", m_Emotes, options);   // a unique's own
     }
@@ -157,7 +157,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var tourism = m_Actor.InterestingLocs;
           var map = m_Actor.Location.Map;
           m_Exploration.Update(m_Actor.Location,zone => {
-            zone.Bounds.DoForEach(pt => { if (!_items.HaveEverSeen(new Location(map, pt))) tourism.Record(map, in pt); });
+            zone.Rect.DoForEach(pt => { if (!_items.HaveEverSeen(new Location(map, pt))) tourism.Record(map, in pt); });
           });
         } else {
           m_Exploration.Update(m_Actor.Location);

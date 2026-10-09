@@ -103,6 +103,10 @@ namespace djack.RogueSurvivor.Data
       z = _z;
     }
 
+    // z is a cache: a ZoneLoc is its map and rectangle (the record's own equality would compare the cache too)
+    public bool Equals(ZoneLoc? other) => null != other && m == other.m && Rect == other.Rect;
+    public override int GetHashCode() => HashCode.Combine(m, Rect);
+
 #nullable enable
     public Location[]? Exits { get {
         var z0 = Zone;

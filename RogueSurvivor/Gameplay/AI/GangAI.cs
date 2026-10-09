@@ -56,7 +56,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       JsonSerializer.Serialize(writer, m_MemLOSSensor, options);
       if (!m_Exploration.IsEmpty) {
         writer.WritePropertyName("Exploration");
-        m_Exploration.toJson(writer, options, m_Actor);
+        m_Exploration.toJson(writer, options);
       }
       if (GameGangs.IDs.NONE != m_GangID) writer.WriteString("Gang", m_GangID.ToString());
     }

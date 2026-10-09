@@ -29,54 +29,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // alpha 10.1: Queue -> List
     private readonly List<Location> m_LocationsQueue = new(EXPLORATION_LOCATIONS);
-    private readonly List<Zone> m_ZonesQueue = new(EXPLORATION_ZONES);
+    private readonly List<ZoneLoc> m_ZonesQueue = new(EXPLORATION_ZONES);
 
     public ExplorationData() {}
 
 #region JSON save/load
-    // A zone does not know its map; the actor's does, or one of the maps explored.  Written as [map, index into its zones].
+    // A zone does not know its map; a ZoneLoc does, so the zones are saved as ZoneLoc ([map, rectangle]).
     public ExplorationData(JsonElement src, JsonSerializerOptions options)
     {
       if (src.TryGetProperty("Locations", out var x)) m_LocationsQueue.AddRange(x.Deserialize<List<Location>>(options) ?? throw new JsonException("null Locations"));
-      if (src.TryGetProperty("Zones", out x)) {
-        foreach (var pair in x.EnumerateArray()) {
-          if (JsonValueKind.Array != pair.ValueKind || 2 != pair.GetArrayLength()) throw new JsonException("expected [map, zone index]: " + pair.GetRawText());
-          var m = pair[0].RequireRef<Map>();
-          var zone = m.Zones.ElementAtOrDefault(pair[1].GetInt32()) ?? throw new JsonException(m.Name + " has no zone #" + pair[1].GetRawText());
-          m_ZonesQueue.Add(zone);
-        }
-      }
+      if (src.TryGetProperty("Zones", out x)) m_ZonesQueue.AddRange(x.Deserialize<List<ZoneLoc>>(options) ?? throw new JsonException("null Zones"));
     }
 
     public bool IsEmpty { get => 0 >= m_LocationsQueue.Count && 0 >= m_ZonesQueue.Count; }
 
-    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options, Actor who)
+    public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
       writer.WriteStartObject();
       if (0 < m_LocationsQueue.Count) writer.WriteArray("Locations", m_LocationsQueue, options);
-      if (0 < m_ZonesQueue.Count) {
-        writer.WriteStartArray("Zones");
-        foreach (var zone in m_ZonesQueue) {
-          var m = who.Location.Map;
-          int i = m.Zones.ToList().IndexOf(zone);
-          if (0 > i) {
-            foreach (var loc in m_LocationsQueue) {
-              if (loc.Map == m) continue;
-              i = loc.Map.Zones.ToList().IndexOf(zone);
-              if (0 <= i) {
-                m = loc.Map;
-                break;
-              }
-            }
-          }
-          if (0 > i) throw new JsonException(who.UnmodifiedName + " explored zone " + zone.ToString() + " on no map it remembers");
-          writer.WriteStartArray();
-          m.SaveAsRef(writer);
-          writer.WriteNumberValue(i);
-          writer.WriteEndArray();
-        }
-        writer.WriteEndArray();
-      }
+      if (0 < m_ZonesQueue.Count) writer.WriteArray("Zones", m_ZonesQueue, options);
       writer.WriteEndObject();
     }
 #endregion
@@ -117,12 +88,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (m_LocationsQueue.Count - i)*SCORE_DELTA - SCORE_BARRICADES - SCORE_INOUT;
     }
 
-    public bool HasExplored(List<Zone> zones)
+    public bool HasExplored(Map m, List<Zone>? zones)
     {
-      return !zones?.Any(zone => !m_ZonesQueue.Contains(zone)) ?? true;
+      return !zones?.Any(zone => !m_ZonesQueue.Contains(new ZoneLoc(m, zone))) ?? true;
     }
 
-    private void AddExplored(Zone zone)
+    private void AddExplored(ZoneLoc zone)
     {
       int i = m_ZonesQueue.IndexOf(zone);
       if (-1 < i) {
@@ -132,7 +103,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_ZonesQueue.Add(zone);
     }
 
-    private void AddExplored(Zone zone, Action<Zone> new_zone_handler)
+    private void AddExplored(ZoneLoc zone, Action<ZoneLoc> new_zone_handler)
     {
       int i = m_ZonesQueue.IndexOf(zone);
       if (-1 < i) {
@@ -147,7 +118,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // alpha10.1
     /// <param name="zone"></param>
     /// <returns>0 for zones not explored</returns>
-    public int GetExploredAge(Zone zone)
+    public int GetExploredAge(ZoneLoc zone)
     {
       int i = m_ZonesQueue.LastIndexOf(zone);    // Irrational caution (in case deduplication fails); IndexOf should be fine
       return (-1 < i) ? m_ZonesQueue.Count-i : 0;
@@ -158,12 +129,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     /// </summary>
     /// <param name="zones">can be null or empty, will return 0</param>
     /// <returns></returns>
-    public int GetExploredAge(List<Zone> zones)
+    public int GetExploredAge(List<ZoneLoc> zones)
     {
       if (0 >= (zones?.Count ?? 0)) return 0;
 
       int youngestAge = int.MaxValue;
-      foreach (Zone z in zones) {
+      foreach (ZoneLoc z in zones) {
         int age = GetExploredAge(z);
         if (age < youngestAge) youngestAge = age;
       }
@@ -176,15 +147,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       AddExplored(in location);
       var zonesAt = location.Map.GetZonesAt(location.Position);
       if (null == zonesAt || 0 >= zonesAt.Count) return;
-      foreach (Zone zone in zonesAt) AddExplored(zone);
+      foreach (Zone zone in zonesAt) AddExplored(new ZoneLoc(location.Map, zone));
     }
 
-    public void Update(Location location, Action<Zone> new_zone_handler)
+    public void Update(Location location, Action<ZoneLoc> new_zone_handler)
     {
       AddExplored(in location);
       var zonesAt = location.Map.GetZonesAt(location.Position);
       if (null == zonesAt || 0 >= zonesAt.Count) return;
-      foreach (Zone zone in zonesAt) AddExplored(zone, new_zone_handler);
+      foreach (Zone zone in zonesAt) AddExplored(new ZoneLoc(location.Map, zone), new_zone_handler);
     }
   }
 }
