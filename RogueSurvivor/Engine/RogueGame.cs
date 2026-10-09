@@ -14223,7 +14223,11 @@ restart:
     {
       var d1 = World.Get.CurrentSimulationDistrict();
       if (null == d1) return false;
+      var t0 = d1.LocalTime.TurnCounter;
       AdvancePlay(d1, ComputeSimFlagsForTurn(d.EntryMap.LocalTime.TurnCounter));    // void SimulateDistrict(d1) if becomes complicated again
+      if (t0 == d1.LocalTime.TurnCounter) {   // StopSimThread cut the turn short: d1 stays the current simulation district and resumes with the thread
+        lock (m_SimStateLock) { if (m_CancelSource.IsCancellationRequested) return false; }
+      }
       World.Get.ScheduleAdjacentForAdvancePlay(d1);
       return true;
     }
