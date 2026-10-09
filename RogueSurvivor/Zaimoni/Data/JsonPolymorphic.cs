@@ -105,7 +105,8 @@ namespace Zaimoni.JSON
             if (JsonValueKind.Object != src.ValueKind) throw new JsonException("expected object for " + typeof(T).FullName);
             if (!src.TryGetProperty("$ref", out var relay_ref)) return T.fromJson(src, options);
             var id = relay_ref.GetString() ?? throw new JsonException("null $ref");
-            return PreserveReferenceHandler.Resolver.ResolveReference(id) as T ?? throw new JsonException("type mismatch: " + id + " is not " + typeof(T).FullName);
+            var obj = PreserveReferenceHandler.Resolver.ResolveReference(id);
+            return obj as T ?? throw PreserveReferenceHandler.Fail("type mismatch: " + id + " is not " + typeof(T).FullName + " (" + PreserveReferenceHandler.Render(obj) + ")");
         }
     }
 
@@ -197,7 +198,8 @@ namespace Zaimoni.JSON
             TBase ret;
             if (src.TryGetProperty("$ref", out var relay_ref)) {
                 var id = relay_ref.GetString() ?? throw new JsonException("null $ref");
-                ret = PreserveReferenceHandler.Resolver.ResolveReference(id) as TBase ?? throw new JsonException("type mismatch: " + id + " is not " + typeof(TBase).FullName);
+                var obj = PreserveReferenceHandler.Resolver.ResolveReference(id);
+                ret = obj as TBase ?? throw PreserveReferenceHandler.Fail("type mismatch: " + id + " is not " + typeof(TBase).FullName + " (" + PreserveReferenceHandler.Render(obj) + ")");
             } else {
                 Subtype<TBase>? entry;
                 if (src.TryGetProperty("$type", out var relay_type)) {

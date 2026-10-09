@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Zaimoni.Data;
 
 #nullable enable
 
@@ -42,7 +43,7 @@ namespace Zaimoni.JSON
 
        public override void AddReference(string referenceId, object value)
        {
-           if (!ReferenceToObject.TryAdd(referenceId, value)) throw new JsonException("duplicate id found: " + referenceId);
+           if (!ReferenceToObject.TryAdd(referenceId, value)) throw PreserveReferenceHandler.Fail("duplicate id found: " + referenceId + " (" + PreserveReferenceHandler.Render(value) + ")");
        }
 
        /// <summary>the id for a reference to value, assigning one if needed.  Does not claim the definition has been written.</summary>
@@ -50,7 +51,7 @@ namespace Zaimoni.JSON
        {
            Referenced.Add(value);
            if (!ObjectToReference.TryGetValue(value, out string? referenceId)) {
-               if (null != _wanted && !_wanted.Contains(value)) throw new JsonException("referenced in the second pass of the save but not the first: " + value.GetType().FullName + ": " + value.ToString());
+               if (null != _wanted && !_wanted.Contains(value)) throw PreserveReferenceHandler.Fail("referenced in the second pass of the save but not the first: " + PreserveReferenceHandler.Render(value));
                referenceId = NewId(value);
            }
            return referenceId;
@@ -93,7 +94,7 @@ namespace Zaimoni.JSON
        {
             if (TryResolve(referenceId, out object? value)) return value!;
 
-            throw new JsonException("id not found: " + referenceId);
+            throw PreserveReferenceHandler.Fail("id not found: " + referenceId);
        }
 
        /// <summary>Queues fixup for RunFixups, even when the id is already loaded.
@@ -102,7 +103,7 @@ namespace Zaimoni.JSON
        {
            void relay(object src) {
                if (src is T dest) fixup(dest);
-               else throw new JsonException("type mismatch: " + referenceId + " is not " + typeof(T).FullName);
+               else throw PreserveReferenceHandler.Fail("type mismatch: " + referenceId + " is not " + typeof(T).FullName + " (" + PreserveReferenceHandler.Render(src) + ")");
            }
 
            (_fixups ??= new()).Add(new(referenceId, relay));
@@ -129,7 +130,7 @@ namespace Zaimoni.JSON
            if (null != _objectToReferenceIdMap) {
                foreach (var x in _objectToReferenceIdMap) {
                    if (null != _defined && _defined.Contains(x.Key)) continue;
-                   (err ??= new()).Add("referenced but never saved: " + x.Value + " (" + x.Key.GetType().FullName + ": " + x.Key.ToString() + ")");
+                   (err ??= new()).Add("referenced but never saved: " + x.Value + " (" + PreserveReferenceHandler.Render(x.Key) + ")");
                }
            }
            if (null != _fixups) {
@@ -151,6 +152,26 @@ namespace Zaimoni.JSON
 
        static public void Reset() => s_resolve = null;
        static public PreserveReferenceResolver Resolver { get => (s_resolve ??= new()); }
+
+       /// <summary>for the log of a failed save or load: what the game was saving, or loading, when it failed.  The game installs it.</summary>
+       static public Func<string?>? Where = null;
+       /// <summary>for the log of a failed save or load: a value in game terms, where its ToString is not.  The game installs it.</summary>
+       static public Func<object, string?>? Describe = null;
+
+       static public string Render(object value)
+       {
+           string? detail = null;
+           try { detail = Describe?.Invoke(value); } catch { }   // the value may be the broken thing: the log must not lose the original failure
+           return value.GetType().FullName + ": " + (detail ?? value.ToString());
+       }
+
+       /// <summary>A JsonException about references, logged before it is thrown: the stack trace says which converter asked, not what it asked for.</summary>
+       static public JsonException Fail(string why)
+       {
+           var where = Where?.Invoke();
+           Logger.WriteLine(Logger.Stage.RUN_DEBUG, "JSON references: " + why + (null == where ? "" : " (" + where + ")"));
+           return new JsonException(why);
+       }
 
        /// <summary>The first of a save's two passes: run it to nowhere, so that the resolver learns which objects anything refers to.
        /// Leaves the resolver primed for the second pass, which hands ids only to those; Finish, or Reset, as usual after it.</summary>
@@ -176,7 +197,7 @@ namespace Zaimoni.JSON
            } finally {
                s_resolve = null;
            }
-           if (null != err) throw new JsonException(err);
+           if (null != err) throw Fail(err);
        }
    }
 }

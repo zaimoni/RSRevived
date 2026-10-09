@@ -47,7 +47,7 @@ namespace Zaimoni.JSON
                 var obj = resolve.ResolveReference(id);
                 reader.Skip();
                 if (obj is T dest) return dest;
-                throw new JsonException("type mismatch: " + id + " is not "+typeof(T).FullName);
+                throw PreserveReferenceHandler.Fail("type mismatch: " + id + " is not "+typeof(T).FullName + " (" + PreserveReferenceHandler.Render(obj) + ")");
             }
             return null;
         }
@@ -261,8 +261,8 @@ namespace Zaimoni.JSON
         static public T RequireRef<T>(this JsonElement src) where T : class
         {
             var id = src.RefId();
-            if (!PreserveReferenceHandler.Resolver.TryResolve(id, out var obj)) throw new JsonException("not yet loaded: " + id);
-            return obj as T ?? throw new JsonException("type mismatch: " + id + " is not " + typeof(T).FullName);
+            if (!PreserveReferenceHandler.Resolver.TryResolve(id, out var obj)) throw PreserveReferenceHandler.Fail("not yet loaded: " + id);
+            return obj as T ?? throw PreserveReferenceHandler.Fail("type mismatch: " + id + " is not " + typeof(T).FullName + " (" + PreserveReferenceHandler.Render(obj!) + ")");
         }
 
         static public List<T> RequireRefs<T>(this JsonElement src) where T : class

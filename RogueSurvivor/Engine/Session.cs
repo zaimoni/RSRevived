@@ -430,11 +430,24 @@ namespace djack.RogueSurvivor.Engine
         public static string TestPath(string filepath) => Path.ChangeExtension(filepath, ".test");
 
     private static JsonSerializerOptions? s_j_opts = null;
+    /// <summary>a value in game terms, for the log of a failed save or load: the actor, or whose objective</summary>
+    static private string? JsonDescribe(object src)
+    {
+      if (src is Actor a) return a.Name + (a.IsDead ? " (dead)" : "") + " at " + a.Location.ToString();
+      if (src is Gameplay.AI.Objective o) {
+        var self = o.ToString();   // overridden where there is something to say
+        return (self == o.GetType().FullName ? "" : self + ", ") + "of " + o.Actor.Name;
+      }
+      return null;
+    }
+
     public static JsonSerializerOptions JSON_opts {
       get {
         if (null == s_j_opts) {
           s_j_opts = new();
           s_j_opts.ReferenceHandler = new Zaimoni.JSON.PreserveReferenceHandler();
+          Zaimoni.JSON.PreserveReferenceHandler.Where = ActorController.JsonOwnerContext;
+          Zaimoni.JSON.PreserveReferenceHandler.Describe = JsonDescribe;
           s_j_opts.WriteIndented = true;
           s_j_opts.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;   // a save file is not HTML: < > and non-ASCII as themselves (the tag Goal_LastAction<ActionCloseDoor>)
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.DiceRoller());

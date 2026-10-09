@@ -46,6 +46,14 @@ namespace djack.RogueSurvivor.Data
     static public void WriteActorUnlessOwner(Utf8JsonWriter writer, Actor src) { if (src != s_SaveOwner) writer.WriteRef("Actor", src); }
     static public Actor ActorOrOwner(JsonElement src) => src.TryGetProperty("Actor", out var a) ? a.RequireRef<Actor>() : (s_LoadOwner ?? throw new JsonException("no actor to own this"));
 
+    /// <summary>for the log of a failed save or load: whose controller it was in, if any</summary>
+    static public string? JsonOwnerContext()
+    {
+      if (null != s_SaveOwner) return "saving the controller of " + s_SaveOwner.Name;
+      if (null != s_LoadOwner) return "loading the controller of " + s_LoadOwner.Name;
+      return null;
+    }
+
     // Two-phase load.  A controller's state refers to things (other maps, other actors' controllers) that may be later in the
     // file, and other controllers' state refers to this controller.  So the actor's load constructs the controller as the live
     // game would, a shell, and the fields are read from the staged JSON once the whole World is in: Session calls LoadPending last.
