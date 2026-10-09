@@ -246,21 +246,22 @@ namespace djack.RogueSurvivor
       doEvents();
     }
 
+    // A test run (TestDrive.Unattended) has no one at the keyboard: a wait returns at once, as if dismissed.
     public void WaitEnter()
     {
-      if (RogueGame.IsSimulating) return;
+      if (RogueGame.IsSimulating || TestDrive.Unattended) return;
       while (UI_WaitKey().KeyCode != Keys.Return);
     }
 
     public void WaitEscape()
     {
-      if (RogueGame.IsSimulating) return;
+      if (RogueGame.IsSimulating || TestDrive.Unattended) return;
       while (UI_WaitKey().KeyCode != Keys.Escape);
     }
 
     public bool WaitEscape(Predicate<KeyEventArgs> ok)
     {
-      if (RogueGame.IsSimulating) return false;
+      if (RogueGame.IsSimulating || TestDrive.Unattended) return false;
       var test = UI_WaitKey(); // yes, no mouse processing
       while(test.KeyCode != Keys.Escape) {
         if (ok(test)) return true;
@@ -272,6 +273,7 @@ namespace djack.RogueSurvivor
 #nullable enable
     public T? WaitEscape<T>(Func<KeyEventArgs, T?> ok) where T:class
     {
+      if (RogueGame.IsSimulating || TestDrive.Unattended) return null;
       T? ret;
       do {
         var key = UI_WaitKey();
