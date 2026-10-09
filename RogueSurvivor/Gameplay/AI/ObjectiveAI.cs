@@ -624,11 +624,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     } }
 
-    public void CancelPathTo(Actor dest) {
-      var goal = Goal<Goal_HintPathToActor>(o => o.Whom == dest);
-      if (null != goal) Objectives.Remove(goal);    // \todo? optimize...could just find index and remove that index immediately
-    }
-
     private bool RecordDeathtrapped(Location loc)
     {
       var goal = Goal<Engine.Goal.DeathTrapped>();
