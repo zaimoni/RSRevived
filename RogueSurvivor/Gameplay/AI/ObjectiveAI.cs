@@ -284,7 +284,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
       base.toJsonFields(writer, options);
-      OptimizeBeforeSaving();    // as the legacy save does: expired objectives go
       if (0 < Objectives.Count) writer.WriteArray("Objectives", Objectives, options);   // before FOVevents: those are references to these
       {
       List<Objective>? watched = null;
@@ -439,6 +438,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     protected override bool HasJsonState { get {
+      OptimizeBeforeSaving();    // as the legacy save does: expired objectives go
       if (base.HasJsonState) return true;
       if (0 < Objectives.Count || 0 < PlannedMoves.Count || 0 != _STA_reserve || 0 != _recoil || null != _last_move) return true;
       if (null != _rating_overrides && 0 < _rating_overrides.Count) return true;

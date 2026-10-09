@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (src.TryGetProperty("Gang", out x)) m_GangID = JSON_ext.ParseEnum<GameGangs.IDs>(x.GetString());
     }
 
-    protected override bool HasJsonState { get => !m_Exploration.IsEmpty || GameGangs.IDs.NONE != m_GangID || base.HasJsonState; }
+    protected override bool HasJsonState => base.HasJsonState || !m_Exploration.IsEmpty || GameGangs.IDs.NONE != m_GangID;
     #endregion
 
     public override GameGangs.IDs GangID { get => m_GangID; }

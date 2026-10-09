@@ -93,7 +93,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    protected override bool HasJsonState { get => 0 != m_SafeTurns || !m_Exploration.IsEmpty || !ReferenceEquals(m_Emotes, FIGHT_EMOTES) || base.HasJsonState; }
+    protected override bool HasJsonState => base.HasJsonState || 0 != m_SafeTurns || !m_Exploration.IsEmpty || !ReferenceEquals(m_Emotes, FIGHT_EMOTES);
     #endregion
 
     public void InstallUniqueEmotes(string[] src)

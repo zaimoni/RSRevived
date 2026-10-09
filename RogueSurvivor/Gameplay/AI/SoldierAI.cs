@@ -71,7 +71,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (src.TryGetProperty("Exploration", out x)) m_Exploration = new(x, options);
     }
 
-    protected override bool HasJsonState { get => !m_Exploration.IsEmpty || base.HasJsonState; }
+    protected override bool HasJsonState => base.HasJsonState || !m_Exploration.IsEmpty;
     #endregion
 
 #nullable enable

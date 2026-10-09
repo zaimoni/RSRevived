@@ -66,7 +66,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override bool HasJsonState { get {
       _squad = _squad?.Optimize();
-      return (null != _squad && 0 < _squad.Count) || base.HasJsonState;
+      return base.HasJsonState || (null != _squad && 0 < _squad.Count);
     } }
     #endregion
 
