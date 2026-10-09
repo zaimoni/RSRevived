@@ -167,16 +167,17 @@ namespace djack.RogueSurvivor
 #nullable enable
     public KeyEventArgs UI_WaitKey()
     {
-      if (KeyScript.Next() is { } scripted) {   // --keys: the script is the person at the keyboard, until it runs out
+      if (InputScript.NextKey() is { } scripted) {   // --input: the script is the person at the keyboard, until it runs out
         doEvents();
         return scripted;
       }
+      InputScript.RejectUnattended();   // a test run with no one at the keyboard would wait forever
       while (true) {    // XXX no clean way to do this loop
         doEvents();
         if (null!= m_InKey) break;
         Thread.Sleep(100);
       }
-      return Interlocked.Exchange(ref m_InKey, null);
+      return InputScript.Record(Interlocked.Exchange(ref m_InKey, null)!);   // the log of a session replays as a script
     }
 
     // Ancestor is RogueGame::WaitKeyOrMouse
@@ -184,10 +185,11 @@ namespace djack.RogueSurvivor
     {
       Interlocked.Exchange(ref m_InKey, null); // discard prior key
       var origin = m_GameCanvas.MouseLocation;
-      if (KeyScript.Next() is { } scripted) {   // --keys
+      if (InputScript.Next(origin.X, origin.Y) is { } scripted) {   // --input
         doEvents();
-        return new(new(scripted, null), new(origin.X, origin.Y));
+        return scripted;
       }
+      InputScript.RejectUnattended();
       do {
         Thread.Sleep(1);
         doEvents();
@@ -195,10 +197,11 @@ namespace djack.RogueSurvivor
         // inline UI_GetMousePosition()
         var mousePos = m_GameCanvas.MouseLocation;
         var key = Interlocked.Exchange(ref m_InKey, null);
-        if (null != key) return new(new(key, null), new(mousePos.X, mousePos.Y));
+        if (null != key) return new(new(InputScript.Record(key), null), new(mousePos.X, mousePos.Y));
         // inline UI_PeekMouseButtons
         if (m_HasMouseButtons) {
             m_HasMouseButtons = false;
+            InputScript.Record(m_MouseButtons, mousePos.X, mousePos.Y);
             return new(new(null, m_MouseButtons), new(mousePos.X, mousePos.Y));
         }
         if (origin != mousePos) return new(default, new(mousePos.X, mousePos.Y));

@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor
           // --no-spawn : do not create a random PC.  requires a --PC option to be viable.  Incompatible with --spawn and --spawn-district
           // --city : specify city size and dimensions; default is 5,50
           // --start=new|load|load-test : skip the main menu.  --save-and-exit : save, then quit, when a player would first act.
-          // --keys=TOKENS or --keys=@FILE : keys to play before the keyboard is heard from (Engine.KeyScript has the format).
+          // --input=TOKENS or --input=@FILE : keys and mouse to play before the keyboard is heard from; --keys= is a synonym (Engine.InputScript has the format).
         }
         if (Engine.Session.CommandLineOptions.ContainsKey("no-spawn")) {
           if (   !Engine.Session.CommandLineOptions.ContainsKey("PC")
@@ -74,6 +74,8 @@ namespace djack.RogueSurvivor
       Application.CurrentCulture = CultureInfo.InvariantCulture;
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
+      // A test run: an exception in the game loop (RogueForm.OnShown) reaches the catch below, rather than a dialog no one dismisses.
+      if (Engine.TestDrive.SaveAndExit) Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "loading setup...");
       SetupConfig.Load();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "setup : " + SetupConfig.toString(SetupConfig.Video) + ", " + SetupConfig.toString(SetupConfig.Sound));
@@ -86,7 +88,7 @@ namespace djack.RogueSurvivor
         try {
           Application.Run(rogueForm);
         } catch (Exception ex) {
-          if (Engine.TestDrive.SaveAndExit) {   // a test run, even one whose key script has not run out
+          if (Engine.TestDrive.SaveAndExit) {   // a test run, even one whose input script has not run out
             Engine.TestDrive.Failed(ex.ToString());   // no one to read a dialog
           } else {
             using (Bugreport bugreport = new(ex)) {
