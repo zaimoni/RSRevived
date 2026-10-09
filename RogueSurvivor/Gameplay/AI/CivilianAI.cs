@@ -86,7 +86,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_MemLOSSensor = src.Require("MemLOS").Deserialize<MemorizedSensor<LOSSensor>>(options) ?? throw new JsonException("null MemLOS");
       if (src.TryGetProperty("SafeTurns", out x)) m_SafeTurns = x.GetInt32();
       if (src.TryGetProperty("Exploration", out x)) m_Exploration = new(x, options);
-      if (src.TryGetProperty("Emotes", out x)) m_Emotes = x.Deserialize<string[]>(options) ?? throw new JsonException("null Emotes");
+      if (src.TryGetProperty("Emotes", out x)) {
+        var emotes = x.Deserialize<string[]>(options) ?? throw new JsonException("null Emotes");
+        // the default is recognized by reference; a save that spelled it out (the binary-era saves did) must not keep spelling it out
+        m_Emotes = emotes.SequenceEqual(FIGHT_EMOTES) ? FIGHT_EMOTES : emotes;
+      }
     }
 
     protected override bool HasJsonState { get => 0 != m_SafeTurns || !m_Exploration.IsEmpty || !ReferenceEquals(m_Emotes, FIGHT_EMOTES) || base.HasJsonState; }
