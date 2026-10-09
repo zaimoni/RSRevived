@@ -93,7 +93,6 @@ namespace djack.RogueSurvivor.Data
     [Serializable]
     class LookingForCHARBase : Observer<Location[]>
     {
-        [NonSerialized] private static Map? m = null;
         public readonly Actor m_Actor; // for when we treat IsSecret per-faction, etc.
 
         public LookingForCHARBase(Actor who)
@@ -101,12 +100,17 @@ namespace djack.RogueSurvivor.Data
             m_Actor = who;
         }
 
+        // Not cached in a static: a load replaces the session, and its maps, underneath one.
+        private static Map TheMap => Engine.Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap;
+
         // \todo the whole concept of secret map should be per-faction (civilians and police are aligned here)
-        public static bool IsSecret { get { return (m ??= Engine.Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap).IsSecret; } }
+        /// <summary>Not answerable while a JSON load constructs controllers: the unique maps load after the World.</summary>
+        public static bool IsSecret { get { return TheMap.IsSecret; } }
 
         public bool update(Location[] fov) {
-            if (!IsSecret) return true;  // already found
-            foreach (var e in m!.Exits) {
+            var m = TheMap;
+            if (!m.IsSecret) return true;  // already found
+            foreach (var e in m.Exits) {
                 if (0 <= Array.IndexOf(fov, e.Location)) {
                     m.Expose();
                     // \todo faction-specific handling

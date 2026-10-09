@@ -257,9 +257,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var session = Session.Loading ?? Session.Get;   // a JSON load constructs us before its session is the live one
         FOVevents.Add(new TryToClearZones(session.Police, src));
         FOVevents.Add(session.Police.implicitRadio); // want this to be lexically late to run early and update threats/tourism for others
-        if (   (1 <= session.ScriptStage_PoliceStationPrisoner || 1 <= session.ScriptStage_PoliceCHARrelations)
-            &&  LookingForCHARBase.IsSecret) // other order of tests crashes at game start
-          FOVevents.Add(new LookingForCHARBase(src));
+        if (1 <= session.ScriptStage_PoliceStationPrisoner || 1 <= session.ScriptStage_PoliceCHARrelations) {
+          // Asking IsSecret first crashes at game start (no unique maps yet) and during a JSON load (they load after the World):
+          // a loading controller takes the watcher unasked, and the watcher's first update drops it if the base is known.
+          if (null != Session.Loading || LookingForCHARBase.IsSecret) FOVevents.Add(new LookingForCHARBase(src));
+        }
       }
     }
 
