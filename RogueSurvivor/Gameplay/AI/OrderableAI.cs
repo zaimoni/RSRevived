@@ -735,9 +735,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
         if (walking) m_Actor.Walk();
-        else if (ret is ActionMoveStep step) ai.RunIfAdvisable(step.dest);
+        else if (ret is ActionMoveStep step) m_Actor.IsRunning = ai.RunIfAdvisable(step.dest);
         else if (ret is ActionMoveDelta delta) {
-          if (delta.ConcreteAction is ActionMoveStep step2) ai.RunIfAdvisable(step2.dest);
+          if (delta.ConcreteAction is ActionMoveStep step2) m_Actor.IsRunning = ai.RunIfAdvisable(step2.dest);
         }
         return true;
       }
