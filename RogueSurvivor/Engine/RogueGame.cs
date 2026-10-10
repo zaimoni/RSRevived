@@ -3427,6 +3427,9 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.GIVE_ITEM:
                 flag1 = !TryInsanity(pc) && !HandlePlayerGiveItem(player, point);
                 break;
+              case PlayerCommand.TAKE_ITEM:
+                flag1 = !TryInsanity(pc) && !HandlePlayerTakeItem(pc);
+                break;
               case PlayerCommand.INITIATE_TRADE:
                 flag1 = !TryInsanity(pc) && !HandlePlayerInitiateTrade(pc, point);
                 break;
@@ -5121,6 +5124,65 @@ namespace djack.RogueSurvivor.Engine
         var target = select(dir);
         if (execute(target)) return true;
       } while (true);
+    }
+
+    private bool HandlePlayerTakeItem(PlayerController pc) {
+        const string MODE_TEXT = "TRANSFER ITEM - directions to select inventories, ESC cancels";
+        const string SRC_TEXT = "Taking from:";
+        const string DEST_TEXT = "Putting in:";
+        ClearOverlays();
+        AddOverlay(new UI.OverlayPopup(MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
+
+        var player = pc.ControlledActor;
+        Data.Model.InvOrigin src = default;
+        Data.Model.InvOrigin dest = default;
+
+        Data.Model.InvOrigin? take_from(Direction dir) {
+          if (dir == Direction.NEUTRAL) {
+            return player.Location.InventoryAtFeet();
+          }
+          var loc = player.Location + dir;
+          if (!Map.Canonical(ref loc)) return null;
+          var candidates = Map.AllItemsAt(loc);
+          if (null == candidates) return null;
+          return candidates[0];
+        }
+
+        bool record_take_from(Data.Model.InvOrigin? x) {
+          if (null == x) return false;
+          src = x.Value;
+          return true;
+        }
+
+        var aux_offset = GDI_Point.Empty;
+        aux_offset.Y += BOLD_LINE_SPACING+2;
+
+        UI.OverlayPopup aux = new(SRC_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, aux_offset);
+        AddOverlay(aux);
+
+        if (!DirectionCommandFiltered(take_from, record_take_from, "Nothing in sight.")) {
+          ClearOverlays();
+          return false;
+        }
+
+        RemoveOverlay(aux);
+
+        var relay = src.Inventory!.Where(obj => pc.ControlledActor.CanGet(obj));
+
+        var it = Choose(relay, "Taking...");
+        if (it is null) {
+          ClearOverlays();
+          return false;
+        }
+
+        ClearOverlays();
+        RedrawPlayScreen();
+
+        var act = new _Action.TakeItem(pc.ControlledActor, src, it);
+        bool ret = act.IsPerformable();
+        if (ret) act.Perform();
+
+        return ret;
     }
 
     private bool HandlePlayerTransferItem(PlayerController pc) {
@@ -10377,6 +10439,24 @@ namespace djack.RogueSurvivor.Engine
       bool details(int index) { ret = inv[index]!; return true; }
 
       PagedPopup(prompt, inv.Count(), label, details);
+
+      return ret;
+    }
+
+    public Item? Choose(IEnumerable<Item>? src, string prompt) {
+      if (src is null) return null;
+      var n = src.Count();
+      if (0 >= n) return null;
+      else if (1 == n) return src.First();
+
+      var inv = src.ToArray();
+
+      Item? ret = null;
+
+      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.Count(), DescribeItemShort(inv[index])); }
+      bool details(int index) { ret = inv[index]!; return true; }
+
+      PagedPopup(prompt, n, label, details);
 
       return ret;
     }

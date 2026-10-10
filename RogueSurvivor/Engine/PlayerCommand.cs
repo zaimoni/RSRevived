@@ -74,6 +74,7 @@ namespace djack.RogueSurvivor.Engine
     UNLOAD,
     TRANSFER_ITEM,
     AS_AI,
-    FAUST
+    FAUST,
+    TAKE_ITEM
     }
 }
