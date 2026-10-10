@@ -791,6 +791,19 @@ namespace djack.RogueSurvivor.Data
 
     // 2024-11-01: NPC viewpoint support removed as obsolescent for debugging
     public bool IsViewpoint { get => IsPlayer /* || IsDebuggingTarget */; } // i.e., is camera viewpoint
+
+    /// <summary>DEBUG report for an invariant failure about this actor: pans the viewport to it (making it the player, as
+    /// RogueGame.PanViewportTo(Actor) does) and writes the daimon cheat map, then hands back the exception to throw:
+    /// throw m_Actor.Spotlight(new InvalidOperationException(...)).  Only for a throw that propagates uncaught, which a
+    /// debugger then stops at with the failing actor in view: the game does not play on from here.</summary>
+    public Exception Spotlight(Exception e)
+    {
+#if DEBUG
+      RogueGame.Game.PanViewportTo(this);
+      World.Get.DaimonMap();
+#endif
+      return e;
+    }
 //  public bool IsNPCviewpoint { get { return IsDebuggingTarget; } }
 
     [NonSerialized] private string[]? _force_PC_names = null; // only used below

@@ -93,7 +93,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var actorAction = SelectAction();
       const bool tracing = false;
 #if DEBUG
-      if (null != actorAction && !actorAction.IsPerformable()) throw new InvalidOperationException("illegal action returned from SelectAction");
+      if (null != actorAction && !actorAction.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("illegal action returned from SelectAction"));
 #endif
       if (tracing) {
         RogueGame.Game.PanViewportTo(m_Actor);
@@ -456,7 +456,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var bump = Rules.IsBumpableFor(m_Actor, in location);
         if (!IsValidFleeingAction(bump)) return float.NaN;
 #if DEBUG
-        if (!bump.IsPerformable()) throw new InvalidOperationException("non-null non-performable bump");
+        if (!bump.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("non-null non-performable bump"));
 #else
         if (!bump.IsPerformable()) return float.NaN;
 #endif

@@ -43,7 +43,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public AcquireLineOfSight(Actor who, in Location loc) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
 #if DEBUG
-            if (!who.CanEnter(loc)) throw new InvalidOperationException("unpathable");
+            if (!who.CanEnter(loc)) throw who.Spotlight(new InvalidOperationException("unpathable"));
 #endif
             _locs = new HashSet<Location> { loc };
             OnDeserialized();

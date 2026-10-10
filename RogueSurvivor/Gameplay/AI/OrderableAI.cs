@@ -1825,7 +1825,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // end melee risk management check
 #if USING_ESCAPE_MOVES
-      if (null != _escape_moves) throw new InvalidOperationException("need to use escape moves");
+      if (null != _escape_moves) throw m_Actor.Spotlight(new InvalidOperationException("need to use escape moves"));
 #endif
       return null;
     }
@@ -1834,7 +1834,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 #if DEBUG
       if (null==tainted || 0 >=tainted.Count) throw new ArgumentNullException(nameof(tainted));
-      if (tainted.Contains(m_Actor.Location)) throw new InvalidOperationException("tainted.Contains(m_Actor.Location)");
+      if (tainted.Contains(m_Actor.Location)) throw m_Actor.Spotlight(new InvalidOperationException("tainted.Contains(m_Actor.Location)"));
 #endif
       int min_dist = int.MaxValue;
       int max_dist = int.MinValue;
@@ -2409,7 +2409,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   var actorAt = a_map.GetActorAtExt(pt);
                   if (null == actorAt) return false;
 #if DEBUG
-                  if (actorAt == m_Actor) throw new InvalidProgramException("actorAt == m_Actor"); // integrity issue w/map
+                  if (actorAt == m_Actor) throw m_Actor.Spotlight(new InvalidProgramException("actorAt == m_Actor")); // integrity issue w/map
 #endif
                   if (m_Actor.IsEnemyOf(actorAt)) {
                     score += (itemGrenadeModel.BlastAttack.DamageAt(Rules.GridDistance(new Location(a_map, view), actorAt.Location)) * actorAt.MaxHPs);
@@ -2426,7 +2426,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!firstGrenade.IsEquipped) firstGrenade.EquippedBy(m_Actor);    // XXX required by the legality check
       var actorAction = new ActionThrowGrenade(m_Actor, bestSpot.Value, firstGrenade);
 #if DEBUG
-      if (!actorAction.IsPerformable()) throw new InvalidProgramException("created illegal ActionThrowGrenade");  // invariant failure
+      if (!actorAction.IsPerformable()) throw m_Actor.Spotlight(new InvalidProgramException("created illegal ActionThrowGrenade"));  // invariant failure
 #endif
       return actorAction;
     }
@@ -2718,7 +2718,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var bump = Rules.IsBumpableFor(m_Actor, in location);
         if (!IsValidFleeingAction(bump)) return float.NaN;
 #if DEBUG
-        if (!bump.IsPerformable()) throw new InvalidOperationException("non-null non-performable bump");
+        if (!bump.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("non-null non-performable bump"));
 #else
         if (!bump.IsPerformable()) return float.NaN;
 #endif
@@ -3956,7 +3956,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return TradeItem.Cast(in stack, m_Actor, best_armor, obj);          }
         }
 #if DEBUG
-        if (is_real && !m_Actor.MayTakeFrom(in stack)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take");
+        if (is_real && !m_Actor.MayTakeFrom(in stack)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name + " attempted telekinetic take"));
 #endif
         var tmp = new Engine._Action.TakeItem(m_Actor, in stack, obj);
         if (tmp.IsLegal()) return tmp; // in case this is the biker/trap pickup crash [cairo123]
@@ -3984,7 +3984,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
 #if DEBUG
-        if (is_real && !m_Actor.MayTakeFromStackAt(in loc)) throw new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + loc + " at " + m_Actor.Location);
+        if (is_real && !m_Actor.MayTakeFromStackAt(in loc)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + loc + " at " + m_Actor.Location));
 #endif
         var tmp = new Engine._Action.TakeItem(m_Actor, in invsrc, obj);
         if (tmp.IsLegal()) return tmp; // in case this is the biker/trap pickup crash [cairo123]

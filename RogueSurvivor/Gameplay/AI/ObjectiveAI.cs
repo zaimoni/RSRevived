@@ -1282,7 +1282,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           if (null != _current_goals && !_current_goals.ValueEqual(GetPreviousGoals())) _last_move = null;
 #if DETECT_PERIOD_2_MOVE_LOOP
-          else throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
+          else throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act));
 #endif
       }
 #if TRACE_SELECTACTION
@@ -1321,7 +1321,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           if (null == _current_goals || !_current_goals.ValueEqual(GetPreviousGoals())) _last_move = null;
 #if DETECT_PERIOD_2_MOVE_LOOP
-          else throw new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act);
+          else throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act));
 #endif
       }
 #if TRACE_SELECTACTION
@@ -1984,7 +1984,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (null == _damage_field) throw new ArgumentNullException(nameof(_damage_field));
       if (null == _legal_steps) throw new ArgumentNullException(nameof(_legal_steps));
-      if (!_damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
+      if (!_damage_field.ContainsKey(m_Actor.Location.Position)) throw m_Actor.Spotlight(new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)"));
 #endif
       IEnumerable<Point> tmp_point = _legal_steps.Where(pt=>!_damage_field.ContainsKey(pt));
       if (tmp_point.Any()) return tmp_point.ToList();
@@ -1997,7 +1997,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (null == _damage_field) throw new ArgumentNullException(nameof(_damage_field));
       if (null == _legal_steps) throw new ArgumentNullException(nameof(_legal_steps));
-      if (!_damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
+      if (!_damage_field.ContainsKey(m_Actor.Location.Position)) throw m_Actor.Spotlight(new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)"));
 #endif
       var ret = new HashSet<Point>(Enumerable.Range(0, 16).Select(i => m_Actor.Location.Position.RadarSweep(2, i)).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor) && !m_Actor.Location.Map.HasActorAt(in pt)));
       ret.RemoveWhere(pt => !_legal_steps.Any(pt2 => Rules.IsAdjacent(in pt,in pt2)));
@@ -3131,7 +3131,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var act = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, x));
         if (act is ActionMoveStep step && step.IsLegal()) {
           m_Actor.Run();
-          if (!range.TryGetValue(x,out var final_dests)) throw new InvalidProgramException("tried to move where no safe location is nearby");
+          if (!range.TryGetValue(x,out var final_dests)) throw m_Actor.Spotlight(new InvalidProgramException("tried to move where no safe location is nearby"));
           var final_act = new Dictionary<Point,ActorAction>();
           foreach(var pt2 in final_dests) {
             var act2 = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt2));   // \todo may need to be a pathability check to enable push/shove
@@ -3558,7 +3558,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         set_distance_estimate(m_Actor.Location, in loc, new Point(0,0));
         foreach(var x in waypoint_dist) set_distance_estimate(x.Key, in loc, x.Value);
 #if DELEGATED_TO_CALLER
-        if (int.MaxValue <= ret.X) throw new InvalidOperationException("no-data bounds: "+ret.to_s()+" for "+loc+"; "+waypoint_dist.to_s()+" "+ last_waypoint_ok.ToString());
+        if (int.MaxValue <= ret.X) throw m_Actor.Spotlight(new InvalidOperationException("no-data bounds: "+ret.to_s()+" for "+loc+"; "+waypoint_dist.to_s()+" "+ last_waypoint_ok.ToString()));
 #endif
         return ret;
       }
@@ -3566,7 +3566,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       HashSet<Point> obtain_goals(Map m) {  // return value is only checked for zero/no-zero count, but we already paid for a full construction
         if (obtain_goals_cache.TryGetValue(m,out var cache)) {
 #if DIAGNOSE_SELF_PATHING
-          if (m_Actor.Location.Map == m && cache.Contains(m_Actor.Location.Position)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
+          if (m_Actor.Location.Map == m && cache.Contains(m_Actor.Location.Position)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s()));
 #endif
           return cache;
         }
@@ -3704,12 +3704,12 @@ Restart:
           Location dest = new Location(m2, pt);
           Point dist = waypoint_bounds(dest);
 #if DEBUG
-          if (short.MaxValue == dist.X) throw new InvalidOperationException("no distance estimate for "+(new Location(m2, pt)));
+          if (short.MaxValue == dist.X) throw m_Actor.Spotlight(new InvalidOperationException("no distance estimate for "+(new Location(m2, pt))));
 #else
           if (short.MaxValue == dist.X) return; // something haywire, discard
 #endif
 #if DEBUG
-          if (0 > dist.X || 0 > dist.Y) throw new InvalidOperationException("negative distance bounds: "+dist.to_s());
+          if (0 > dist.X || 0 > dist.Y) throw m_Actor.Spotlight(new InvalidOperationException("negative distance bounds: "+dist.to_s()));
 #endif
           if (ub < dist.X) return;
           bool in_bounds = m2.IsInBounds(pt);
@@ -4001,7 +4001,7 @@ retry:
         }
         if (1 == path[0].Count) {
 #if DEBUG
-          if (navigate.IsBlacklisted(path[0][0])) throw new InvalidOperationException("blacklisted path: "+path.to_s());
+          if (navigate.IsBlacklisted(path[0][0])) throw m_Actor.Spotlight(new InvalidOperationException("blacklisted path: "+path.to_s()));
 #endif
           ActorAction act = _legal_path[path[0][0]];
 #if TRACE_SELECTACTION
@@ -4204,8 +4204,7 @@ retry:
             }
             // \todo second test should be its own function
             if (!backtrack_ok && !goals.Any(loc => Rules.InteractionDistance(loc, _last_move.dest) > Rules.InteractionDistance(loc, _last_move.origin))) {
-              Session.Get.World.DaimonMap();
-              throw new InvalidOperationException(m_Actor.Name + " committed a period-2 move loop on turn " + m_Actor.Location.Map.LocalTime.TurnCounter + ": " + _last_move + ", " + act);
+              throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name + " committed a period-2 move loop on turn " + m_Actor.Location.Map.LocalTime.TurnCounter + ": " + _last_move + ", " + act));
             }
           }
 #endif
@@ -4220,11 +4219,11 @@ retry:
       var goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
       if (0 >= goals.Count) return null;
 #if DIAGNOSE_SELF_PATHING
-      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
+      if (goals.Contains(m_Actor.Location)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s()));
 #endif
       PartialInvertLOS(goals, m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather));
 #if DIAGNOSE_SELF_PATHING
-      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
+      if (goals.Contains(m_Actor.Location)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s()));
 #endif
 
       bool rude_goal(Location loc) {
@@ -4267,7 +4266,7 @@ restart:
       }
       force_polite(goals);
 #if DIAGNOSE_SELF_PATHING
-      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
+      if (goals.Contains(m_Actor.Location)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s()));
 #endif
       if (null != postblacklist) goals.RemoveWhere(postblacklist);
       Goal<Goals.BlacklistExits>()?.Censor(goals);
@@ -4278,7 +4277,7 @@ restart:
     {
       if (0 >= (goals?.Count ?? 0)) return null;
 #if DEBUG
-      if (goals.Contains(m_Actor.Location)) throw new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s());
+      if (goals.Contains(m_Actor.Location)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s()));
 #endif
       bool moveloop_risk = (null != _last_move && goals.Contains(_last_move.origin));
 
@@ -4322,20 +4321,18 @@ restart:
               var act = BehaviorMakeTime();
               if (null != act) return act;
 #if DEBUG
-              throw new InvalidProgramException("need to handle friend blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
+              throw m_Actor.Spotlight(new InvalidProgramException("need to handle friend blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s()));
 #endif
           } else {
 #if DEBUG
-              throw new InvalidProgramException("need to handle enemy blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
+              throw m_Actor.Spotlight(new InvalidProgramException("need to handle enemy blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s()));
 #endif
           }
           // \todo should try to get guidance from allies
           return new ActionWait(m_Actor);
         }
 #if DEBUG
-        RogueGame.Game.PanViewportTo(m_Actor);
-        World.Get.DaimonMap();
-        throw new InvalidProgramException("non-pathing to adjacent location: "+goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
+        throw m_Actor.Spotlight(new InvalidProgramException("non-pathing to adjacent location: "+goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s()));
 #else
         return new ActionWait(m_Actor); // completely inappropriate for a z on the other side of an exit
 #endif
@@ -4418,7 +4415,7 @@ restart:
       if (   1==m_Actor.Location.Map.destination_maps.Get.Count
           && !goals.Any(loc => loc.Map == m_Actor.Location.Map))
             {
-            throw new InvalidProgramException("need to handle single-map escape case");
+            throw m_Actor.Spotlight(new InvalidProgramException("need to handle single-map escape case"));
             }
 #endif
 

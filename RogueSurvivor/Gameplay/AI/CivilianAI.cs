@@ -205,7 +205,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             if (null==goal_action) Remove(o);
 #if DEBUG
-            else if (!goal_action.IsPerformable()) throw new InvalidOperationException("result of UrgentAction should be performable");
+            else if (!goal_action.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("result of UrgentAction should be performable"));
 #else
             else if (!goal_action.IsPerformable()) Objectives.Remove(o);
 #endif

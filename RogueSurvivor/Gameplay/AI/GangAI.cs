@@ -145,7 +145,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           else if (o.UrgentAction(out goal_action)) {
             if (null==goal_action) Remove(o);
 #if DEBUG
-            else if (!goal_action.IsPerformable()) throw new InvalidOperationException("result of UrgentAction should be legal");
+            else if (!goal_action.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("result of UrgentAction should be legal"));
 #else
             else if (!goal_action.IsPerformable()) Objectives.Remove(o);
 #endif
