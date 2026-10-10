@@ -4333,6 +4333,8 @@ restart:
           return new ActionWait(m_Actor);
         }
 #if DEBUG
+        RogueGame.Game.PanViewportTo(m_Actor);
+        World.Get.DaimonMap();
         throw new InvalidProgramException("non-pathing to adjacent location: "+goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s());
 #else
         return new ActionWait(m_Actor); // completely inappropriate for a z on the other side of an exit
