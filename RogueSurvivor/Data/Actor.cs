@@ -1944,12 +1944,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsInside {
-      get {
-        return Location.Map.IsInsideAt(Location.Position);
-      }
-    }
-
     public void TargetedActivity(Activity what, Actor whom)
     {
 #if IRRATIONAL_CAUTION

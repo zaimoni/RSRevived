@@ -244,7 +244,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != e) score += (e.Location==m_prevLocation ? BACKTRACKING : EXITS);    // Staying Alive: match fix to BehaviorExplore
 
         // alpha10.1 prefer inside when almost sleepy
-        if (m_Actor.IsAlmostSleepy && next.Map.IsInsideAt(next.Position)) score += INSIDE_WHEN_ALMOST_SLEEPY;
+        if (m_Actor.IsAlmostSleepy && next.IsInside) score += INSIDE_WHEN_ALMOST_SLEEPY;
 
         return score;
       }
@@ -517,7 +517,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // These all have the same problem: z will wander right over the trap no matter what when scent-tracking.
       // What is important is ability of livings to avoid the trap.
       // single spikes are ok as proporty markers, but the more damaging traps are all problematic.
-      else if (m_prevLocation.Map.IsInsideAt(m_prevLocation.Position) != isInside) reason = "protecting the building with";
+      else if (m_prevLocation.IsInside != isInside) reason = "protecting the building with";
       else {
         if (map.GetMapObjectAt(pos) is DoorWindow) reason = "protecting the doorway with";
         else if (map.HasExitAt(in pos)) reason = "protecting the exit with";

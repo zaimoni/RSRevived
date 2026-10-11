@@ -55,6 +55,7 @@ namespace djack.RogueSurvivor.Data
     public List<Corpse>? Corpses { get => Map.GetCorpsesAt(Position); }
     public Tile Tile { get => Map.GetTileAt(Position); }
     public TileModel TileModel { get => Map.GetTileModelAt(Position); }
+    public bool IsInside => Map.IsInsideAt(Position);
 #nullable restore
     public int IsBlockedForPathing { get => Map.IsBlockedForPathing(Position); }
     public void AddDecoration(string imageID) => Map.AddDecorationAt(imageID, Position);
@@ -222,7 +223,7 @@ namespace djack.RogueSurvivor.Data
       // sewers?
       if (District.IsSewersMap(Map)) decay += 2;
       // outside? = weather affected.
-      else if (!Map.IsInsideAt(Position)) {   // alpha10 weather affect only outside tiles
+      else if (!IsInside) {   // alpha10 weather affect only outside tiles
         switch (World.Get.Weather) {
         case Weather.CLEAR:
         case Weather.CLOUDY:

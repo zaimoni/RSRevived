@@ -1376,7 +1376,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public ZoneLoc ClearingThisZone() {
       var ret = _sparse.Get<ZoneLoc>(SparseData.ClearingZone);
       if (null != ret) return ret;
-      if (m_Actor.Location.Map.IsInsideAt(m_Actor.Location.Position)) {
+      if (m_Actor.Location.IsInside) {
         ret = m_Actor.Location.ClearableZone;
         if (null != ret) {
           _sparse.Set(SparseData.ClearingZone,ret);
@@ -7548,7 +7548,7 @@ restart_chokepoints:
 
       // resume legacy implementation
       if (Lighting.DARKNESS == m_Actor.Location.Map.Lighting) return true;
-      if (World.Get.Weather != Weather.HEAVY_RAIN) return !m_Actor.IsInside;
+      if (World.Get.Weather != Weather.HEAVY_RAIN) return !m_Actor.Location.IsInside;
       return true;
     }
 

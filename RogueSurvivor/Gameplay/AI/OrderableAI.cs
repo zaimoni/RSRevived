@@ -3403,7 +3403,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       } // invalid is impassable so acts like a wall
 
       // geometric code (walls, etc)
-      if (!loc.Map.IsInsideAt(loc.Position)) return 0;
+      if (!loc.IsInside) return 0;
       if (!loc.TileModel.IsWalkable) return 0;
       // we don't want to sleep next to anything that looks like an ex-door
       bool[] walls = new bool[Direction.COMPASS.Length];
@@ -3492,7 +3492,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var med_slp = item_memory.WhereIs(Item_IDs.MEDICINE_PILLS_SLP);    // \todo precalculate sleep-relevant medicines at game start
         bool known_bed(Location loc) {  // XXX depending on incoming events this may not be conservative enough
             if (null!=med_slp && med_slp.ContainsKey(loc)) return true;
-            if (!loc.Map.IsInsideAt(loc.Position)) return false;
+            if (!loc.IsInside) return false;
             if (!item_memory.HaveEverSeen(loc, out int when)) return false;
             // be as buggy as the display, which shows objects in their current positions
             if (!(loc.MapObject?.IsCouch ?? false)) return false;
@@ -3551,7 +3551,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       var item_memory = m_Actor.Controller.ItemMemory;
-      if (!m_Actor.IsInside) {
+      if (!m_Actor.Location.IsInside) {
         if (tracing && !RogueGame.IsSimulating) {
           RogueGame.Game.InfoPopup("not inside.  item memory status: " + (null != item_memory ? "no" : "have"));
         }
@@ -3559,7 +3559,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX this is stymied by closed, opaque doors which logically have inside squares near them; also ex-doorways
         // ignore barricaded doors on residences (they have lots of doors).  Do not respect those in shops, subways, or (vintage) the sewer maintenance.
         // \todo replace by more reasonable foreach loop
-        var see_inside = FOVloc.Where(loc => loc.Map.IsInsideAt(loc.Position) && loc.IsWalkableFor(m_Actor));
+        var see_inside = FOVloc.Where(loc => loc.IsInside && loc.IsWalkableFor(m_Actor));
         return BehaviorHeadFor(see_inside, false, false);
       }
 
@@ -3580,7 +3580,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         if (!scan_this.Any(pt => {
             Location loc = new Location(m_Actor.Location.Map, pt);
-            if (!loc.Map.IsInsideAt(loc.Position)) return false;
+            if (!loc.IsInside) return false;
             // be as buggy as the display, which shows objects in their current positions
             if (!(loc.MapObject?.IsCouch ?? false)) return false;
             return !(loc.Actor?.IsSleeping ?? false);   // cheat: bed should not have someone already sleeping in it
@@ -3779,7 +3779,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       // 2. Spray in a good position:
       //    2.1 entering or leaving a building.
-      if (PrevLocation.Map.IsInsideAt(PrevLocation.Position) != loc.Map.IsInsideAt(loc.Position)) return true;
+      if (PrevLocation.IsInside != loc.IsInside) return true;
       //    2.3 an exit.
       if (loc.Map.HasExitAt(loc.Position)) return true;
       //    2.2 a door/window.

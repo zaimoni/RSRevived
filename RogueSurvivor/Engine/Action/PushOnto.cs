@@ -109,7 +109,7 @@ namespace djack.RogueSurvivor.Engine.Op
             if (null != e) {
                 var exit_map = e.Location.Map;
                 var exit_district = exit_map.District;
-                if (exit_map == exit_district.SewersMap) return loc.Map.IsInsideAt(loc.Position) ? 1 + 16 : 4;
+                if (exit_map == exit_district.SewersMap) return loc.IsInside ? 1 + 16 : 4;
                 if (exit_map == exit_district.EntryMap || exit_map == exit_district.SubwayMap) return 1;
                 var unique_maps = Session.Get.UniqueMaps;
                 if (0 < unique_maps.HospitalDepth(exit_map) || 0 < unique_maps.PoliceStationDepth(exit_map)) return 1;
@@ -118,7 +118,7 @@ namespace djack.RogueSurvivor.Engine.Op
                 if (map == map.District.EntryMap) return 1 + 16; // typically a basement
             }
             // not an exit.
-            return loc.Map.IsInsideAt(loc.Position) ? 9 : 1;
+            return loc.IsInside ? 9 : 1;
         }
 
         static public int DisarmWithAlt(in Location loc)

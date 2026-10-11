@@ -886,7 +886,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (IsInBounds(p)) return IsInsideAt(p);
       Location? test = _Normalize(p);
-      return null!=test && test.Value.Map.IsInsideAt(test.Value.Position);
+      return test is not null && test.Value.IsInside;
     }
 
     public void SetTileModelAt(short x, short y, TileModel model)
