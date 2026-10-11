@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text.Json;
 using Zaimoni.Data;
@@ -2099,6 +2100,45 @@ retry:
     /// <summary>an activated trap that hurts: pathing avoids it</summary>
     private bool HasBlockingTrapAt(Point pos) => !IsTrapCoveringMapObjectAt(pos) && (GetItemsAt(pos)?.Has<Engine.Items.ItemTrap>(trap => trap.IsActivated && 0 < trap.Model.Damage) ?? false);
 
+    // This ignores interior walls, so is mainly useful on the entry map i.e. surface.
+    public KeyValuePair<HashSet<Point>, KeyValuePair<HashSet<Point>, HashSet<Point>>>? InsideHullOf(Point pos, int overflow)
+    {
+      HashSet<Point> interior = new();
+      HashSet<Point> border_unwalkable = new();
+      HashSet<Point> border_walkable = new();
+
+      System.Collections.Generic.Stack<Point> pending = new();
+
+      bool inside(Point pt) => IsInBounds(pt) && IsInsideAt(pt);
+
+      // priming
+      if (inside(pos)) pending.Push(pos);
+      else {
+          foreach (var pt in pos.Adjacent()) if (inside(pt)) pending.Push(pt);
+      }
+
+      if (0 >= pending.Count) return null;
+
+      do {
+        var pt = pending.Pop();
+        if (!interior.Add(pt)) continue;
+        if (interior.Count > overflow) return null;
+
+        foreach (var pt2 in pt.Adjacent()) {
+          if (interior.Contains(pt2)) continue;
+          if (border_unwalkable.Contains(pt2)) continue;
+          if (border_walkable.Contains(pt2)) continue;
+          if (!IsInBounds(pt2)) continue;
+
+          if (IsInsideAt(pt2)) pending.Push(pt2);
+          else if (GetTileModelAt(pt2).IsWalkable) border_walkable.Add(pt2);    
+          else border_unwalkable.Add(pt2);
+        }
+      } while (0 < pending.Count);
+
+      return new(interior, new(border_unwalkable, border_walkable));
+    }
+
     /// <summary>Would an activated trap at pos leave some building with no way in, or out, that pathing accepts?
     /// A building is a connected region of inside tiles (IsInsideAt; a shop's floor, a house's rooms and inner walls).  Its accesses
     /// are the doors and windows next to that region but not in it (the outer wall), and the exits within it.  An access is blocked
@@ -2109,21 +2149,21 @@ retry:
     {
       const int BUILDING_LIMIT = 2500;   // larger than any building: a region that big has accesses to spare
 
+#if PROTOTYPE
+      // sewers and subways won't seal
+      if (2 <= District.UsesCrossDistrictView(this)) return false;
+#endif
+
+      // the following is only valid for the surface i.e. entry map
+      if (1 != District.UsesCrossDistrictView(this)) return false;
+
       bool trapped(Point pt) => pt == pos || HasBlockingTrapAt(pt);
       bool inside(Point pt) => IsInBounds(pt) && IsInsideAt(pt);
 
-      // the building: flood-fill the inside tiles from those pos is on, or beside
-      HashSet<Point> region = new();
-      System.Collections.Generic.Stack<Point> pending = new();
-      if (inside(pos)) pending.Push(pos);
-      foreach (var pt in pos.Adjacent()) if (inside(pt)) pending.Push(pt);
-      if (0 >= pending.Count) return false;
-      while (0 < pending.Count) {
-        var pt = pending.Pop();
-        if (!region.Add(pt)) continue;
-        if (BUILDING_LIMIT < region.Count) return false;
-        foreach (var pt2 in pt.Adjacent()) if (inside(pt2) && !region.Contains(pt2)) pending.Push(pt2);
-      }
+      var test = InsideHullOf(pos, BUILDING_LIMIT);
+      if (test is null) return false;
+
+      var region = test.Value.Key;
 
       bool blocked(Point access, bool is_exit) {
         if (trapped(access)) return true;
