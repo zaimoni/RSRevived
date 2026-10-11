@@ -269,16 +269,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // SelectAction overrides discard), is dropped at any save.  It may still be an FOV watcher.  (2026-10-04)
     private void OptimizeBeforeSaving()
     {
-      HashSet<Objective> done = new(ReferenceEqualityComparer.Instance);
-      void test(Objective o) {
-        if (done.Contains(o)) return;
-        if (o.IsExpired || (o.UrgentAction_readonly(out var act) && null == act) || o.IsExpired) done.Add(o);
+      var n = Objectives.Count;
+      while(0 <= --n) {
+        var o = Objectives[n];
+        if (    o.IsExpired
+            || (o.UrgentAction_readonly(out var act) && act is null)
+            ||  o.IsExpired) {
+          Remove(o);
+        }
       }
-      foreach (var o in Objectives.ToList()) test(o);
-      foreach (var w in FOVevents.Watchers.ToList()) if (w is Objective o) test(o);
-      if (0 >= done.Count) return;
-      Objectives.RemoveAll(done.Contains);
-      FOVevents.RemoveAll(w => w is Objective o && done.Contains(o));
     }
 
 #region JSON save/load
