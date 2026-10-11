@@ -2142,8 +2142,8 @@ retry:
     /// <summary>Would an activated trap at pos leave some building with no way in, or out, that pathing accepts?
     /// A building is a connected region of inside tiles (InsideHullOf: a shop's floor, a house's rooms and inner walls).  Its accesses
     /// are the openings in the ring around it (a ring tile whose tile is walkable: a doorway, a window, a gap) and the exits within it.
-    /// An access is blocked by a trap on it, on every walkable tile beside it in the region, or on every walkable tile beside it past
-    /// the ring; another opening beside it is not a way out.
+    /// An access is blocked by a trap on it, on every tile a civilian could enter beside it in the region, or on every such tile
+    /// beside it past the ring; another opening beside it is not a way out.
     /// Only an access that pos is on, or beside, can be blocked by the trap; a trap elsewhere seals nothing.
     /// 2026-10-10: bear traps on all three doors of a shop (no windows) made it unreachable, and the AI's pathing could not cope.</summary>
     public bool TrapWouldSealBuilding(Point pos)
@@ -2159,6 +2159,8 @@ retry:
       if (1 != District.UsesCrossDistrictView(this)) return false;
 
       bool trapped(Point pt) => pt == pos || HasBlockingTrapAt(pt);
+      var pathing = Gameplay.GameActors.MaleCivilian;   // who has to get through: an actor that pathfinds, and can open a door
+      bool enterable(Point pt) => pathing.CanEnter(new Location(this, pt));
 
       var test = InsideHullOf(pos, BUILDING_LIMIT);
       if (test is null) return false;
@@ -2178,7 +2180,7 @@ retry:
         bool inside_open = false;
         bool outside_open = is_exit;   // an exit leads elsewhere: only its inside matters
         foreach (var pt in access.Adjacent()) {
-          if (!IsWalkable(pt) || trapped(pt)) continue;   // walkable: a car, or a closed door, in the way is not a way
+          if (!enterable(pt) || trapped(pt)) continue;   // a burning car in the way is not a way; a closed door is, since a civilian opens it
           if (region.Contains(pt)) inside_open = true;
           else if (beyond(pt)) outside_open = true;   // another opening in the ring is not a way out
         }
