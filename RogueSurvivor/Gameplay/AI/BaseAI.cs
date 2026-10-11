@@ -529,6 +529,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         else if (map.HasExitAt(in pos)) reason = "protecting the exit with";
       }
       if (string.IsNullOrEmpty(reason)) return false;
+      if (map.TrapWouldSealBuilding(pos)) return false;   // not the last way in, or out: pathing could not cope
       var itemsAt = loc.Items;
       if (itemsAt is null) return true;
       return 3 >= itemsAt.Count(it => it is ItemTrap trap && trap.IsActivated);

@@ -2096,6 +2096,63 @@ retry:
     // this will need rethinking when off-ground inventory (chairs, tables) happens
     public bool IsTrapCoveringMapObjectAt(Point pos) { return GetMapObjectAt(pos)?.CoversTraps ?? false; }
 
+    /// <summary>an activated trap that hurts: pathing avoids it</summary>
+    private bool HasBlockingTrapAt(Point pos) => !IsTrapCoveringMapObjectAt(pos) && (GetItemsAt(pos)?.Has<Engine.Items.ItemTrap>(trap => trap.IsActivated && 0 < trap.Model.Damage) ?? false);
+
+    /// <summary>Would an activated trap at pos leave some building with no way in, or out, that pathing accepts?
+    /// A building is a $Inside zone.  Its accesses are the doors and windows in the wall ring around it, and the exits within it.
+    /// An access is blocked by a trap on it, on every walkable tile beside it inside, or on every walkable tile beside it outside.
+    /// Only an access that pos is on, or beside, can be blocked by the trap; a trap elsewhere seals nothing.
+    /// 2026-10-10: bear traps on all three doors of a shop (no windows) made it unreachable, and the AI's pathing could not cope.</summary>
+    public bool TrapWouldSealBuilding(Point pos)
+    {
+      bool trapped(Point pt) => pt == pos || HasBlockingTrapAt(pt);
+
+      List<Zone>? buildings = null;
+      void consider(Point pt) {
+        if (!IsInBounds(pt)) return;
+        var zones = GetZonesAt(pt);
+        if (null == zones) return;
+        foreach (var z in zones) {
+          if ("$Inside" != z.Name) continue;
+          if (null == buildings) buildings = new();
+          else if (buildings.Contains(z)) continue;
+          buildings.Add(z);
+        }
+      }
+      consider(pos);
+      foreach (var pt in pos.Adjacent()) consider(pt);
+      if (null == buildings) return false;
+
+      foreach (var b in buildings) {
+        var inside = b.Bounds;
+        var ring = ext_Vector.FromLTRB_short(inside.Left - 1, inside.Top - 1, inside.Right + 1, inside.Bottom + 1);
+
+        bool blocked(Point access, bool is_exit) {
+          if (trapped(access)) return true;
+          bool inside_open = false;
+          bool outside_open = is_exit;   // an exit leads elsewhere: only its inside matters
+          foreach (var pt in access.Adjacent()) {
+            if (!IsWalkable(pt) || trapped(pt)) continue;
+            if (inside.Contains(pt)) inside_open = true;
+            else if (!ring.Contains(pt)) outside_open = true;
+          }
+          return !inside_open || !outside_open;
+        }
+
+        bool affected = false;
+        bool any_open = false;
+        void access(Point pt, bool is_exit) {
+          if (1 >= Math.Abs(pt.X - pos.X) && 1 >= Math.Abs(pt.Y - pos.Y)) affected = true;
+          if (!blocked(pt, is_exit)) any_open = true;
+        }
+        ring.DoForEachOnEdge(pt => { if (GetMapObjectAt(pt) is Engine.MapObjects.DoorWindow) access(pt, false); });
+        inside.DoForEach(pt => { if (HasExitAt(in pt)) access(pt, true); });
+        if (affected && !any_open) return true;
+      }
+      return false;
+    }
+
     public int TrapsUnavoidableMaxDamageAtFor(Point pos, Actor a) {
       if (IsTrapCoveringMapObjectAt(pos)) return 0;
       return GetItemsAt(pos)?.TrapsMaxDamageFor(a) ?? 0;

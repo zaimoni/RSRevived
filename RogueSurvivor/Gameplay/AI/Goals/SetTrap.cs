@@ -76,6 +76,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 }
             }
             if (string.IsNullOrEmpty(reason)) return false;  // prescreen failed
+            if (loc.Map.TrapWouldSealBuilding(loc.Position)) return false;   // not the last way in, or out: pathing could not cope
 
             // do not feed the Z.  (VAPORWARE: This would not apply to a grenade boobytrap.)
             if (loc.Map.HasCorpsesAt(loc.Position)) return false;
