@@ -5527,16 +5527,6 @@ restart_chokepoints:
             else return new ActionUseItem(m_Actor, it);
           }
         }
-// does not work: infinite recursion issue, too vague
-#if OBSOLETE_PROTOTYPE
-      if (!(it is ItemTrap)) {  // traps: try to use them explicitly
-        var use_trap = new Gameplay.AI.Goals.SetTrap(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor);
-        if (use_trap.UrgentAction(out var ret) && null!=ret) {
-          SetObjective(use_trap);
-          return ret;
-        }
-      }
-#endif
         return null;
     }
 
@@ -6399,17 +6389,6 @@ restart_chokepoints:
         if (null != armor && armor.Rating < old_armor.Rating) return _BehaviorDropOrExchange(armor, it, stack, use_ok);
       }
 
-// does not work: infinite recursion
-#if PROTOTYPE
-      if (use_ok && !(it is ItemTrap)) {  // traps: try to use them explicitly
-        var use_trap = new Gameplay.AI.Goals.SetTrap(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor);
-        if (use_trap.UrgentAction(out var ret) && null!=ret) {
-          SetObjective(use_trap);
-          return ret;
-        }
-      }
-#endif
-
       // medicine glut ... drop it
       foreach(var x in GameItems.medicine) {
         if (it.ModelID == x) continue;
@@ -6811,17 +6790,6 @@ restart_chokepoints:
         var armor = m_Actor.GetBestBodyArmor();
         if (null != armor && armor.Rating < old_armor.Rating) return _BehaviorDropOrExchange(armor, it, position, use_ok);
       }
-
-// does not work: infinite recursion
-#if PROTOTYPE
-      if (use_ok && !(it is ItemTrap)) {  // traps: try to use them explicitly
-        var use_trap = new Gameplay.AI.Goals.SetTrap(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor);
-        if (use_trap.UrgentAction(out var ret) && null!=ret) {
-          SetObjective(use_trap);
-          return ret;
-        }
-      }
-#endif
 
       // medicine glut ... drop it
       foreach(var x in GameItems.medicine) {
