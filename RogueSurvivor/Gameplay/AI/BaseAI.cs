@@ -497,21 +497,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorBuildTrap()
     {
-      var itemTrap = m_Actor.Inventory.GetFirst<ItemTrap>();
-      if (itemTrap == null) return null;
-      if (!IsGoodTrapSpot(m_Actor.Location.Map, m_Actor.Location.Position, out string reason)) return null;
-      if (!itemTrap.IsActivated && !itemTrap.Model.ActivatesWhenDropped)
-        return new ActionUseItem(m_Actor, itemTrap);
-      RogueGame.Game.DoEmote(m_Actor, string.Format("{0} {1}!", reason, itemTrap.AName), true);
-      return new ActionDropItem(m_Actor, itemTrap);
+      var trap = m_Actor.Inventory.GetFirst<ItemTrap>();
+      if (trap is null) return null;
+
+      if (!IsGoodTrapSpot(m_Actor.Location, out string reason)) return null;
+
+      if (!trap.IsActivated && !trap.Model.ActivatesWhenDropped) return new ActionUseItem(m_Actor, trap);
+      RogueGame.Game.DoEmote(m_Actor, string.Format("{0} {1}!", reason, trap.AName), true);
+      return new ActionDropItem(m_Actor, trap);
     }
 
 #nullable enable
-    protected bool IsGoodTrapSpot(Map map, Point pos, out string reason)
+    private bool IsGoodTrapSpot(Location loc, out string reason)
     {
       reason = "";
-      if (map.IsTrapCoveringMapObjectAt(pos)) return false; // if it won't trigger, waste of a trap.  Other two calls don't have a corresponding object re-fetch.
-      bool isInside = map.IsInsideAt(pos);
+
+      // backward compatibility
+      var map = loc.Map;
+      var pos = loc.Position;
+
+      if (map.IsTrapCoveringMapObjectAt(pos)) return false; // if it won't trigger, waste of a trap.
+      bool isInside = loc.IsInside;
       // not really ... z just heals up on the corpse
       if (!isInside && map.HasCorpsesAt(pos)) reason = "that corpse will serve as a bait for";
       // These all have the same problem: z will wander right over the trap no matter what when scent-tracking.
@@ -519,13 +525,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // single spikes are ok as proporty markers, but the more damaging traps are all problematic.
       else if (m_prevLocation.IsInside != isInside) reason = "protecting the building with";
       else {
-        if (map.GetMapObjectAt(pos) is DoorWindow) reason = "protecting the doorway with";
+        if (loc.MapObject is DoorWindow) reason = "protecting the doorway with";
         else if (map.HasExitAt(in pos)) reason = "protecting the exit with";
       }
       if (string.IsNullOrEmpty(reason)) return false;
-      var itemsAt = map.GetItemsAt(pos);
-      if (null == itemsAt) return true;
-      return 3 >= itemsAt.Count(it => it is ItemTrap itemTrap && itemTrap.IsActivated);
+      var itemsAt = loc.Items;
+      if (itemsAt is null) return true;
+      return 3 >= itemsAt.Count(it => it is ItemTrap trap && trap.IsActivated);
     }
 
     protected ActorAction? BehaviorAttackBarricade()
