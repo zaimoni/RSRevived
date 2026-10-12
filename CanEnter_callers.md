@@ -37,10 +37,10 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | caller | site | status | note |
 |---|---|---|---|
 | Map.TrapWouldSealBuilding | Data/Map.cs:2163 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
-| Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | unreviewed | origin; was Actor.CanEnter until 81a9544a |
-| Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | unreviewed | destination; was Actor.CanEnter until 81a9544a |
-| _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:176 | unreviewed | destination; was Actor.CanEnter until 81a9544a |
-| _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:177 | unreviewed | origin; was Actor.CanEnter until 81a9544a |
+| Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | ok | origin; was Actor.CanEnter until 81a9544a |
+| Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
+| _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:176 | ok | destination; was Actor.CanEnter until 81a9544a |
+| _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:177 | ok | origin; was Actor.CanEnter until 81a9544a |
 
 ## Actor.CanEnter
 
