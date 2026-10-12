@@ -2892,8 +2892,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction? DecideMove(Dictionary<Location,int> src)
 	{
-      if (null == src) return null; // does happen
-      var legal_steps = m_Actor.OnePathRange(m_Actor.Location); // other half
+      if (src is null) return null; // does happen
+      var legal_steps = m_Actor.OnePathRange(); // other half
       legal_steps.OnlyIf(action => action.IsPerformable() && !VetoAction(action));
       src.OnlyIf(loc => legal_steps.ContainsKey(loc));
       if (0 >= src.Count) return null;
@@ -4110,7 +4110,7 @@ retry:
 #if DEBUG
       if (0 >= (move_scores?.Count ?? 0)) throw new ArgumentNullException(nameof(move_scores));
 #endif
-      var legal_steps = m_Actor.OnePathRange(m_Actor.Location); // mirror DecideMove so we don't error out
+      var legal_steps = m_Actor.OnePathRange(); // mirror DecideMove so we don't error out
       legal_steps.OnlyIf(action => action.IsPerformable() && !VetoAction(action));
       if (0 >= legal_steps.Count) return null;
       move_scores.OnlyIf(loc => legal_steps.ContainsKey(loc));

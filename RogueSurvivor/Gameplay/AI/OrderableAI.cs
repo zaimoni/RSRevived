@@ -566,12 +566,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(var x in _target_locs) {
           if (x.Value.Contains(x.Key.Location)) continue;
           if (x.Key.Controller is ObjectiveAI) {
-            var candidates = x.Key.OnePathRange(x.Key.Location);  // XXX fails for Z
-            if (null == candidates) x.Value.Clear();
+            var candidates = x.Key.OnePathRange();  // XXX fails for Z
+            if (candidates is null) x.Value.Clear();
             else x.Value.IntersectWith(candidates.Keys);
           } else {
-            var candidates = x.Key.OneStepRange(x.Key.Location);
-            if (null == candidates) x.Value.Clear();
+            var candidates = x.Key.OneStepRange();
+            if (candidates is null) x.Value.Clear();
             else x.Value.IntersectWith(candidates);
           }
           // XXX \todo would like a little more fuzz in the results, but need CPU down first (start-game less than 1 second?)
@@ -3176,8 +3176,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0 >= final_range.Count) return null;
       range = final_range;
 
-      var adjacent = m_Actor.OnePathRange(m_Actor.Location);
-      if (null == adjacent) return null;
+      var adjacent = m_Actor.OnePathRange();
+      if (adjacent is null) return null;
       adjacent.OnlyIf((Predicate<ActorAction>)(action => (action is ActorDest || action is ActionOpenDoor) && action.IsPerformable() && !VetoAction(action)));  // only allow actions that prefigure moving to destination quickly
       if (0 >= adjacent.Count) return null;
       adjacent.OnlyIf(loc => range.ContainsKey(loc));

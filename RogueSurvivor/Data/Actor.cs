@@ -2012,17 +2012,15 @@ namespace djack.RogueSurvivor.Data
       return _MinStepPathTo(in origin, in target);
     }
 
-    public List<Location>? OneStepRange(Location loc)
+    // 3036-20-23: hard-coded to actor's own location, to prevent misuse
+    public List<Location>? OneStepRange()
     {
+      var loc = m_Location;
       var ret = new List<Location>();
       foreach(Direction dir in Direction.COMPASS) {
         Location test = loc+dir;
-        if (!test.Map.IsWalkableFor(test.Position, this)) continue;
-#if MAPGEN_OK
-        if (!Map.Canonical(ref test)) throw new InvalidProgramException("exit leading out of world");    // problem is in map generation: RogueGame::GenerateWorld
-#else
         if (!Map.Canonical(ref test)) continue;
-#endif
+        if (!test.IsWalkableFor(this)) continue;
         ret.Add(test);
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
@@ -2108,19 +2106,17 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
-    public Dictionary<Location,ActorAction>? OnePathRange(in Location loc)
+    // 3036-20-23: hard-coded to actor's own location, to prevent misuse
+    public Dictionary<Location,ActorAction>? OnePathRange()
     {
+      var loc = m_Location;
       var no_path = (Controller as Gameplay.AI.ObjectiveAI)?.Goal<Engine.Goal.DeathTrapped>();
       var ret = new Dictionary<Location,ActorAction>();
       foreach(Direction dir in Direction.COMPASS) {
         Location test = loc+dir;
         ActorAction tmp = Rules.IsPathableFor(this, in test);
         if (null == tmp) continue;
-#if MAPGEN_OK
-        if (!Map.Canonical(ref test)) throw new InvalidProgramException("exit leading out of world");    // problem is in map generation: RogueGame::GenerateWorld
-#else
         if (!Map.Canonical(ref test)) continue;
-#endif
         if (null != no_path && no_path.IsBanned(test)) continue;
         ret.Add(test, tmp);
       }
