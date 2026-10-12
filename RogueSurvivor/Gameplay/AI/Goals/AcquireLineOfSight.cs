@@ -43,7 +43,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public AcquireLineOfSight(Actor who, in Location loc) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
 #if DEBUG
-            if (!who.CanEnter(loc)) throw who.Spotlight(new InvalidOperationException("unpathable"));
+            if (!who.Model.CanEnter(loc)) throw who.Spotlight(new InvalidOperationException("unpathable"));
 #endif
             _locs = new HashSet<Location> { loc };
             OnDeserialized();
@@ -52,7 +52,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public AcquireLineOfSight(Actor who, IEnumerable<Location> locs) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
             _locs = new HashSet<Location>(locs);
-            _locs.RemoveWhere(goal => !who.CanEnter(goal));
+            _locs.RemoveWhere(goal => !who.Model.CanEnter(goal));
 #if DEBUG
             if (0 >= _locs.Count) throw new ArgumentNullException(nameof(locs));
 #endif
@@ -62,7 +62,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public AcquireLineOfSight(Actor who, HashSet<Location> locs) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
             _locs = locs; // intentional by-reference assignment
-            _locs.RemoveWhere(goal => !who.CanEnter(goal));
+            _locs.RemoveWhere(goal => !who.Model.CanEnter(goal));
 #if DEBUG
             if (0 >= _locs.Count) throw new ArgumentNullException(nameof(locs));
 #endif
