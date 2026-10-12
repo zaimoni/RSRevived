@@ -104,8 +104,8 @@ namespace djack.RogueSurvivor.Data
         if (2> Engine.Rules.GridDistance(in loc, viewpoint.Location)) continue;
         var a = loc.Actor;
         if (null == a || a.IsEnemyOf(viewpoint)) continue;
-        var steps = a.LegalSteps;
-        if (null == steps || 1>=steps.Count) return true;
+        var steps = a.OneStepRange();
+        if (steps is null || 1>=steps.Count) return true;
         // \todo: educated guess based on last known move
       }
 

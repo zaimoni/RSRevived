@@ -344,6 +344,20 @@ namespace djack.RogueSurvivor.Data
           }
         }
 
+        public void RecordTaint(Actor a, IEnumerable<Location> src)
+        {
+          lock (_ThreatWhere_cache) {
+            foreach(var loc in src) {
+              _ThreatWhere_cache.Remove(loc.Map); // XXX could be more selective
+		      lock(_threats) {
+                if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new());
+                if (cache.TryGetValue(loc.Map, out var cache2)) cache2.Add(loc.Position);
+                else cache.Add(loc.Map, new(){ loc.Position });
+		      }
+            }
+          }
+        }
+
         public void RecordTaint(Actor a, Map m, Point p)
         {
           lock (_ThreatWhere_cache) {
@@ -559,9 +573,9 @@ namespace djack.RogueSurvivor.Data
           private void HandleMove(object sender, EventArgs e)
           {
             Actor moving = (sender as Actor);
-            var tmp = moving.LegalSteps;
-            if (null == tmp) return;
-            tmp.Add(moving.Location.Position);
+            var tmp = moving.OneStepRange();
+            if (tmp is null) return;
+            tmp.Add(moving.Location);
 
             lock (_ThreatWhere_cache) {
                 lock (_threats) {
@@ -569,9 +583,7 @@ namespace djack.RogueSurvivor.Data
                     // we don't have the CPU to do this right (that is, expand out legal steps from all current candidate locations)
 
                     bool new_mark = false;
-                    foreach (var pt in tmp) {
-                        Location loc = new(moving.Location.Map, pt);
-                        if (!Map.Canonical(ref loc)) continue;
+                    foreach (var loc in tmp) {
                         if (!_anyThreatAt(loc)) {
                             new_mark = true;
                             break;
@@ -598,7 +610,7 @@ namespace djack.RogueSurvivor.Data
                     }
                 }
             }
-            RecordTaint(moving, moving.Location.Map, tmp);
+            RecordTaint(moving, tmp);
         }
     }   // end ThreatTracking definition
 
