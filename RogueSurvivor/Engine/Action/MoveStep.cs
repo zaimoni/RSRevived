@@ -42,7 +42,7 @@ namespace djack.RogueSurvivor.Engine.Op
         }
         #endregion
 
-        public MoveStep(Location from, Location to, bool run)
+        private MoveStep(Location from, Location to, bool run)
         {
             m_NewLocation = to;
             m_Origin = from;
@@ -90,8 +90,8 @@ namespace djack.RogueSurvivor.Engine.Op
 
         static public MoveStep? ScheduleCast(Location from, Location to, bool run, Actor actor) {
             if (1 != Rules.InteractionDistance(in from, in to)) return null;
-            if (!actor.CanEnter(from)) return null;
-            if (!actor.CanEnter(to)) return null;
+            if (!actor.Model.CanEnter(from)) return null;
+            if (!actor.Model.CanEnter(to)) return null;
             if (run && !actor.Model.Abilities.CanRun) return null;
             return new MoveStep(from, to, run);
         }
@@ -152,8 +152,11 @@ namespace djack.RogueSurvivor.Engine._Action
         public override bool IsLegal() { return true; }
 
         public override bool IsPerformable() {
-            if (m_Actor.Location != m_Origin) return false;
-            if (is_running && !m_Actor.CanRun()) return false;
+            if (m_Actor.Location != m_Origin) {
+                m_FailReason = "not at origin";
+                return false;
+            }
+            if (is_running && !m_Actor.CanRun(out m_FailReason)) return false;
             return m_NewLocation.IsWalkableFor(m_Actor, out m_FailReason);
         }
 
@@ -170,8 +173,8 @@ namespace djack.RogueSurvivor.Engine._Action
 
         static public MoveStep? ScheduleCast(Location from, Location to, bool run, Actor actor) {
             if (1 != Rules.InteractionDistance(in from, in to)) return null;
-            if (!actor.CanEnter(to)) return null;
-            if (!actor.CanEnter(from)) return null;
+            if (!actor.Model.CanEnter(to)) return null;
+            if (!actor.Model.CanEnter(from)) return null;
             if (run && !actor.Model.Abilities.CanRun) return null;
             return new MoveStep(from, to, run, actor);
         }
