@@ -1,6 +1,6 @@
 # Callers of the CanEnter families
 
-Seeded 2026-10-12 from master at 71cc05b3. Companion to `IsLegal_vs_IsPerformable.md`.
+Seeded 2026-10-12 from master at 71cc05b3; refreshed 2026-10-12 at 81a9544a. Companion to `IsLegal_vs_IsPerformable.md`.
 
 Three predicates share the name. Each root below lists its callers, one row per call site.
 
@@ -37,6 +37,10 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | caller | site | status | note |
 |---|---|---|---|
 | Map.TrapWouldSealBuilding | Data/Map.cs:2163 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
+| Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | unreviewed | origin; was Actor.CanEnter until 81a9544a |
+| Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | unreviewed | destination; was Actor.CanEnter until 81a9544a |
+| _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:176 | unreviewed | destination; was Actor.CanEnter until 81a9544a |
+| _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:177 | unreviewed | origin; was Actor.CanEnter until 81a9544a |
 
 ## Actor.CanEnter
 
@@ -59,14 +63,10 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2912 | unreviewed | |
 | Actor.MutuallyAdjacentFor | Data/Actor.cs:2928 | unreviewed | by ref |
 | Map.WouldBlacklistFor | Data/Map.cs:1170 | unreviewed | receiver is the actor parameter |
-| Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | unreviewed | origin |
-| Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | unreviewed | destination |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | unreviewed | throws on the destination |
 | _Action.MoveStep..ctor | Engine/Action/MoveStep.cs:148 | unreviewed | throws on the origin |
-| _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:173 | unreviewed | destination |
-| _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:174 | unreviewed | origin |
-| _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:187 | unreviewed | origin |
-| _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:193 | unreviewed | each candidate destination, by ref |
+| _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:190 | unreviewed | origin |
+| _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:196 | unreviewed | each candidate destination, by ref |
 | _Action.PushOnto._Ok | Engine/Action/PushOnto.cs:224 | unreviewed | throws on the origin |
 | _Action.PushOnto._Ok | Engine/Action/PushOnto.cs:225 | unreviewed | throws on the destination |
 | _Action.PushOnto._CanConstruct | Engine/Action/PushOnto.cs:236 | unreviewed | origin |
