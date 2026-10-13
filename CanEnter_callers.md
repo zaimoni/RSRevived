@@ -48,6 +48,9 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | AcquireLineOfSight..ctor(Actor, in Location) | Gameplay/AI/Goals/AcquireLineOfSight.cs:46 | ok | throws via Spotlight: "unpathable"; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, IEnumerable) | Gameplay/AI/Goals/AcquireLineOfSight.cs:55 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:65 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4795 | ok | two calls: N and S of the trap |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4798 | ok | two calls: E and W of the trap |
+| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4838 | ok | by ref |
 
 ## Actor.CanEnter
 
@@ -86,18 +89,15 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Rules.IsBumpableFor | Engine/Rules.cs:220 | ok | by ref |
 | ClearZone..ctor | Gameplay/AI/Goals/ClearZone.cs:84 | unreviewed | Where lambda over the zone; comment says "todo? eliminate" |
 | SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:104 | unreviewed | RemoveWhere lambda; comment says it matters for burning cars |
-| ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:1115 | unreviewed | comment: generators are pathable but not enterable |
+| ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:1115 | ok | comment: generators are pathable but not enterable |
 | ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:1120 | unreviewed | |
-| ObjectiveAI.UsePreexistingPath(List<List<Location>>, ...) | Gameplay/AI/ObjectiveAI.cs:1174 | unreviewed | comment: generators are pathable but not enterable |
+| ObjectiveAI.UsePreexistingPath(List<List<Location>>, ...) | Gameplay/AI/ObjectiveAI.cs:1174 | ok | comment: generators are pathable but not enterable |
 | ObjectiveAI.UsePreexistingPath(List<List<Location>>, ...) | Gameplay/AI/ObjectiveAI.cs:1178 | unreviewed | |
 | ObjectiveAI.WantToGoHere | Gameplay/AI/ObjectiveAI.cs:1412 | unreviewed | by ref |
 | ObjectiveAI.destination_melee_safe | Gameplay/AI/ObjectiveAI.cs:3280 | unreviewed | |
 | ObjectiveAI.install_moves | Gameplay/AI/ObjectiveAI.cs:3335 | unreviewed | |
 | ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4247 | unreviewed | by ref |
 | ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4538 | unreviewed | |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4795 | unreviewed | two calls: N and S of the trap |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4798 | unreviewed | two calls: E and W of the trap |
-| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4838 | unreviewed | by ref |
 | ObjectiveAI.GetInterestingInventoryStacks | Gameplay/AI/ObjectiveAI.cs:5309 | unreviewed | comment: ignore buggy stack placement |
 | Goal_PathToStack._removeInvalidStacks | Gameplay/AI/OrderableAI.cs:823 | unreviewed | |
 | OrderableAI._closeIn | Gameplay/AI/OrderableAI.cs:2827 | unreviewed | Adjacent lambda |

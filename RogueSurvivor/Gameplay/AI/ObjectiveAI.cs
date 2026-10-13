@@ -4792,10 +4792,10 @@ restart_chokepoints:
 
           bool bypassable = null == loc.Exit;
           if (bypassable) {
-            if (!m_Actor.CanEnter(loc + Direction.N) && !m_Actor.CanEnter(loc + Direction.S)) bypassable = false;
+            if (!m_Actor.Model.CanEnter(loc + Direction.N) && !m_Actor.Model.CanEnter(loc + Direction.S)) bypassable = false;
           }
           if (bypassable) {
-            if (!m_Actor.CanEnter(loc + Direction.E) && !m_Actor.CanEnter(loc + Direction.W)) bypassable = false;
+            if (!m_Actor.Model.CanEnter(loc + Direction.E) && !m_Actor.Model.CanEnter(loc + Direction.W)) bypassable = false;
           }
           if (!bypassable) ret.Add(loc, fatal_in);
         }
@@ -4835,7 +4835,7 @@ restart_chokepoints:
               var act_scan = new List<WorldUpdate>(); // new List<Engine.Op.PushOnto>();, but this fails at Join
               foreach (var pt in loc.Position.Adjacent()) {
                 var test = new Location(loc.Map, pt);
-                if (!m_Actor.CanEnter(ref test)) continue;
+                if (!m_Actor.Model.CanEnter(ref test)) continue;
                 if (now.Contains(test)) continue;
                 if (working.Contains(test)) continue;
                 if (!Engine.Op.PushOnto._CanConstruct(test, loc)) continue;
