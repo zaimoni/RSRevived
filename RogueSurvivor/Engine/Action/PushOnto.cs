@@ -144,10 +144,7 @@ namespace djack.RogueSurvivor.Engine.Op
             return null != a.Controller.enemies_in_FOV;
         }
 
-        public override ActorAction? Bind(Actor src) {
-            var act = new _Action.PushOnto(src, m_From, m_NewLocation);
-            return act.IsPerformable() ? act : null;
-        }
+        public override ActorAction? Bind(Actor src) => _Action.PushOnto.create(src, m_From, m_NewLocation);
 
         public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
         {
@@ -206,29 +203,6 @@ namespace djack.RogueSurvivor.Engine._Action
         public Location obj_origin { get { return m_Origin; } }
         public Location obj_dest { get { return m_NewLocation; } }
 
-        [Conditional("DEBUG")]
-        static public void _Ok(Location origin, Location dest, Actor actor, MapObject? obj = null)
-        {
-            if (1 != Rules.InteractionDistance(in origin, in dest)) throw new InvalidOperationException("move delta must be adjacent");
-            if (!actor.CanEnter(ref origin)) throw new InvalidOperationException("must be able to exist at the origin");
-            if (!actor.CanEnter(ref dest)) throw new InvalidOperationException("must be able to exist at the destination");
-            if (!dest.TileModel.IsWalkable) throw new InvalidOperationException("destination must allow map objects");
-            if (null == obj) obj = origin.MapObject;
-            if (null == obj) throw new ArgumentNullException(nameof(obj));
-        }
-
-        static public MapObject? _CanConstruct(Location from, Location to, bool run, Actor actor, MapObject? obj = null)
-        {
-#if DEBUG
-            if (1 != Rules.InteractionDistance(in from, in to)) return null;
-#endif
-            if (!actor.CanEnter(ref from)) return null;
-            if (!actor.CanEnter(ref to)) return null;
-            if (!to.TileModel.IsWalkable) return null;
-            if (null == obj) return from.MapObject;
-            return obj;
-        }
-
         #region JSON save/load
         private PushOnto(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
         {
@@ -250,12 +224,11 @@ namespace djack.RogueSurvivor.Engine._Action
         }
         #endregion
 
-        public PushOnto(Actor actor, Location from, Location to, MapObject? obj = null) : base(actor)
+        private PushOnto(Actor actor, Location from, Location to, MapObject obj) : base(actor)
         {
-            _Ok(from, to, actor, obj);
             m_NewLocation = to;
             m_Origin = from;
-            m_Object = obj ?? from.MapObject ?? throw new ArgumentNullException(nameof(obj));
+            m_Object = obj;
         }
 
         public override bool IsLegal()
@@ -294,6 +267,23 @@ namespace djack.RogueSurvivor.Engine._Action
             } else { // push
                 RogueGame.Game.DoPush(m_Actor, m_Object, in m_NewLocation);
             }
+        }
+
+        static public PushOnto? create(Actor actor, Location from, Location to) {
+            var ret = schedule(actor, from, to);
+            if (ret is null || !ret.IsPerformable()) return null;
+            return ret;
+        }
+
+        static public PushOnto? schedule(Actor actor, Location from, Location to) {
+            if (1 != Rules.InteractionDistance(in from, in to)) return null;
+            if (!actor.Model.CanEnter(ref from)) return null;
+            if (!actor.Model.CanEnter(ref to)) return null;
+            if (!to.TileModel.IsWalkable) return null;
+            var obj = from.MapObject;
+            if (obj is null) return null;
+
+            return new(actor, from, to, obj);
         }
     }
 }

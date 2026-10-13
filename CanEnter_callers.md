@@ -39,6 +39,8 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
 | _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:176 | ok | destination; was Actor.CanEnter until 81a9544a |
 | _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:177 | ok | origin; was Actor.CanEnter until 81a9544a |
+| _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:280 | ok | origin |
+| _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:281 | ok | destination |
 | ActionMoveStep.schedule(Actor, Location) | Engine/Actions/ActionMoveStep.cs:53 | ok | |
 | ActionMoveStep.schedule(Actor, Point) | Engine/Actions/ActionMoveStep.cs:58 | ok | |
 | RogueGame.HandleItemInfo | Engine/RogueGame.cs:4196 | ok | local function `details`; receiver Player |
@@ -78,10 +80,6 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | _Action.MoveStep..ctor | Engine/Action/MoveStep.cs:148 | unreviewed | throws on the origin |
 | _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:190 | unreviewed | origin |
 | _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:196 | unreviewed | each candidate destination, by ref |
-| _Action.PushOnto._Ok | Engine/Action/PushOnto.cs:213 | unreviewed | throws on the origin |
-| _Action.PushOnto._Ok | Engine/Action/PushOnto.cs:214 | unreviewed | throws on the destination |
-| _Action.PushOnto._CanConstruct | Engine/Action/PushOnto.cs:225 | unreviewed | origin |
-| _Action.PushOnto._CanConstruct | Engine/Action/PushOnto.cs:226 | unreviewed | destination |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:276 | ok | |
 | UpdateMoveDelta.Bind | Engine/Actions/ActionMoveDelta.cs:291 | unreviewed | the bound actor, new location |
 | UpdateMoveDelta.Bind | Engine/Actions/ActionMoveDelta.cs:292 | unreviewed | the bound actor, origin |
