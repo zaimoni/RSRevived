@@ -1046,11 +1046,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (act is ActorDest dest && 1==Rules.InteractionDistance(m_Actor.Location,dest.dest)) {  // a movement-type action
         // the one type that actually knows the origin; the legacy actions don't.
-        if (!(act is ActionMoveDelta record)) record = new ActionMoveDelta(m_Actor,dest.dest);
+        if (!(act is ActionMoveDelta record)) {
+          record = ActionMoveDelta.schedule(m_Actor,dest.dest);
+        }
         _last_move = record;
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget)  Logger.WriteLine(Logger.Stage.RUN_MAIN, "recording "+record+" for "+act);
-#endif
         return;
       }
       if (act is ActorTake || act is ActionTrade) {
@@ -1058,9 +1057,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _last_move = null;
         return;
       }
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget)  Logger.WriteLine(Logger.Stage.RUN_MAIN, "non-move "+act+" not recorded, leaving "+(_last_move?.ToString() ?? "null")+" in place");
-#endif
     }
 
     public int RiskAt(in Location loc) {
@@ -1115,11 +1111,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (!m_Actor.CanEnter(loc)) continue;  // generators are pathable but not enterable
                 if (1 >= FastestTrapKill(in loc)) continue;
                 foreach(var pt2 in depth2) {
-                  if (1!=Rules.GridDistance(in pt,in pt2)) continue;
-                  var loc2 = new Location(m_Actor.Location.Map, pt2);
-                  if (!m_Actor.CanEnter(loc2)) continue;
-                  if (1 >= FastestTrapKill(in loc2)) continue;
-                  var act = new ActionMoveDelta(m_Actor, in loc2, in loc);
+                  var act = ActionMoveDelta.schedule(m_Actor, new(m_Actor.Location.Map, pt2), loc);
+                  if (act is null) continue;
+                  if (1 >= FastestTrapKill(act.dest)) continue;
                   if (act.IsLegal()) stage2.Add(act);
                 }
               }
@@ -1174,11 +1168,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (!m_Actor.CanEnter(pt)) continue;  // generators are pathable but not enterable
                 if (1 >= FastestTrapKill(in pt)) continue;
                 foreach(var pt2 in depth2) {
-                  if (1!=Rules.GridDistance(in pt, in pt2)) continue;
-                  if (!m_Actor.CanEnter(pt2)) continue;
                   if (1 >= FastestTrapKill(in pt2)) continue;
-                  var act = new ActionMoveDelta(m_Actor, in pt2, in pt);
-                  if (act.IsLegal()) stage2.Add(act);
+                  var act = ActionMoveDelta.schedule(m_Actor, pt2, pt);
+                  if (act is not null) stage2.Add(act);
                 }
               }
               } // end scope brace for depth2
@@ -3340,11 +3332,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         } else move_plans[loc] = (cache = new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(0,new Dictionary<Location, ActionMoveDelta>()));
         // generate logical moves
         foreach(var pt in loc.Position.Adjacent()) {
-          var loc2 = new Location(loc.Map,pt);
-          if (!Map.Canonical(ref loc2)) continue;
-          if (!destination_melee_safe(in loc2, depth)) continue;
-          var delta = new ActionMoveDelta(m_Actor, in loc2, in loc);
-          if (delta.IsLegal()) {
+          var delta = ActionMoveDelta.schedule(m_Actor, new(loc.Map, pt), loc);
+          if (delta is not null) {
+           var loc2 = delta.dest;  // backward compatibility
+            if (!destination_melee_safe(loc2, depth)) continue;
             cache.Value.Add(loc2, delta);
             move_plans.Add(loc2, new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(depth,new Dictionary<Location, ActionMoveDelta>()));
             if (inverted_move_plans.TryGetValue(loc2,out var origins)) origins.Add(loc, delta);
@@ -3356,8 +3347,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != e) {
             var loc2 = e.Location;
             if (destination_melee_safe(in loc2, depth)) {
-              var delta = new ActionMoveDelta(m_Actor, in loc2, in loc);
-              if (delta.IsLegal()) {
+              var delta = ActionMoveDelta.schedule(m_Actor, loc2, loc);
+              if (delta is not null && delta.IsLegal()) {
                 cache.Value.Add(loc2, delta);
                 move_plans.Add(loc2, new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(depth,new Dictionary<Location, ActionMoveDelta>()));
                 if (inverted_move_plans.TryGetValue(loc2,out var origins)) origins.Add(loc, delta);
@@ -3492,9 +3483,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
               } else exit_veto.Blacklist(e);
             }
           } else {
-            var move = new ActionMoveDelta(m_Actor, e.Location, loc);
-            int cost = Map.PathfinderMoveCosts(move) + Map.TrapMoveCostFor(move, m_Actor);
-            if (short.MaxValue-cost > dists.Y) waypoint_dist[e.Location] = dists + new Point((short)cost, (short)cost);
+            var move = ActionMoveDelta.schedule(m_Actor, e.Location, loc);
+            if (move is not null) {
+              int cost = Map.PathfinderMoveCosts(move) + Map.TrapMoveCostFor(move, m_Actor);
+              if (short.MaxValue-cost > dists.Y) waypoint_dist[e.Location] = dists + new Point((short)cost, (short)cost);
+            }
           }
         }
       }

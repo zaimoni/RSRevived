@@ -55,16 +55,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
     #endregion
 
-    public ActionMoveDelta(Actor actor, Location to) : base(actor)
-    {
-      m_NewLocation = to;
-      m_Origin = m_Actor.Location;
-#if DEBUG
-      if (1!=Rules.InteractionDistance(m_NewLocation,m_Origin)) throw new InvalidOperationException("move delta must be adjacent");
-#endif
-    }
-
-    public ActionMoveDelta(Actor actor, in Location to, in Location from) : base(actor)
+    private ActionMoveDelta(Actor actor, in Location to, in Location from) : base(actor)
     {
       _Action.MoveStep._Ok(in from, in to, actor);
       m_NewLocation = to;
@@ -73,18 +64,13 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      var exit = m_Origin.Exit;
-      if (null != exit && exit.Location == m_NewLocation) { // may want to cache this: non-null if needed
-        if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return false;
-      }
       if (1!=Rules.InteractionDistance(m_Actor.Location, in m_NewLocation)) return true;
       return (_result ??= _resolve())?.IsLegal() ?? false;
     }
 
     public override bool IsPerformable()
     {
-      if (1!=Rules.InteractionDistance(m_Actor.Location, in m_NewLocation)) return false;
-      if (!base.IsPerformable()) return false;
+      if (!IsLegal()) return false;
       return (_result ??= _resolve())?.IsPerformable() ?? false;
     }
 
@@ -234,6 +220,46 @@ namespace djack.RogueSurvivor.Engine.Actions
       return working;
     }
 
+    static public ActionMoveDelta? create(Actor actor, in Location to, in Location from)
+    {
+        var ret = schedule(actor, to, from);
+        return (ret is not null && ret.IsPerformable()) ? ret : null;
+    }
+
+    static public ActionMoveDelta? create(Actor actor, in Location to)
+    {
+        var ret = schedule(actor, to);
+        return (ret is not null && ret.IsPerformable()) ? ret : null;
+    }
+
+    static public ActionMoveDelta? schedule(Actor actor, Location to, Location from)
+    {
+      if (!actor.Model.CanEnter(ref to)) return null;
+      if (!actor.Model.CanEnter(ref from)) return null;
+      var exit = from.Exit;
+      if (exit is not null && exit.Location == to) { // may want to cache this: non-null if needed
+        if (!actor.Model.Abilities.AI_CanUseAIExits) return null;
+      }
+      if (1!=Rules.InteractionDistance(from, in to)) return null;
+
+      ActionMoveDelta ret = new(actor, to, from);
+      return ret.IsLegal() ? ret : null;
+    }
+
+    static public ActionMoveDelta? schedule(Actor actor, Location to)
+    {
+      var from = actor.Location;  // backward compatibility
+      var exit = from.Exit;
+      if (exit is not null && exit.Location == to) { // may want to cache this: non-null if needed
+        if (!actor.Model.Abilities.AI_CanUseAIExits) return null;
+      }
+      if (!actor.Model.CanEnter(ref to)) return null;
+      if (1!=Rules.InteractionDistance(from, in to)) return null;
+
+      ActionMoveDelta ret = new(actor, to, from);
+      return ret.IsLegal() ? ret : null;
+    }
+
     public override string ToString()
     {
        return "moving: " + m_Origin + " to " + m_NewLocation;
@@ -287,12 +313,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public bool IsCompleted(Actor src) { return m_NewLocation == src.Location; }
 
-        public override ActorAction? Bind(Actor src) {
-            if (!src.CanEnter(m_NewLocation)) return null;
-            if (!src.CanEnter(m_Origin)) return null;
-            var act = new ActionMoveDelta(src, in m_NewLocation, in m_Origin);
-            return act.IsPerformable() ? act : null;
-        }
+        public override ActorAction? Bind(Actor src) => ActionMoveDelta.create(src, in m_NewLocation, in m_Origin);
 
         public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
         {

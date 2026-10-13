@@ -24,16 +24,17 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Location.ForEachAdjacent | Data/Location.cs:76 | ok | filters the neighbours handed to the callback |
 | Op.PushOnto.schedule | Engine/Action/PushOnto.cs:187 | ok | origin |
 | Op.PushOnto.schedule | Engine/Action/PushOnto.cs:188 | ok | destination |
-| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:273 | ok | throws on the origin |
-| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:274 | ok | throws on the destination |
-| UpdateMoveDelta.toDest | Engine/Actions/ActionMoveDelta.cs:308 | ok | |
-| UpdateMoveDelta.fromOrigin | Engine/Actions/ActionMoveDelta.cs:315 | ok | |
+| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:301 | ok | throws on the origin |
+| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:302 | ok | throws on the destination |
+| UpdateMoveDelta.toDest | Engine/Actions/ActionMoveDelta.cs:331 | ok | |
+| UpdateMoveDelta.fromOrigin | Engine/Actions/ActionMoveDelta.cs:338 | ok | |
 | PathToTarget.Unstage | Gameplay/AI/Goals/Objective.cs:193 | ok | |
 
 ## ActorModel.CanEnter
 
 | caller | site | status | note |
 |---|---|---|---|
+| Actor.MovesTo | Data/Actor.cs:2055 | ok (move) | the destination itself |
 | Map.TrapWouldSealBuilding | Data/Map.cs:2163 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | ok | origin; was Actor.CanEnter until 81a9544a |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
@@ -41,6 +42,9 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:177 | ok | origin; was Actor.CanEnter until 81a9544a |
 | _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:280 | ok | origin |
 | _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:281 | ok | destination |
+| ActionMoveDelta.schedule | Engine/Actions/ActionMoveDelta.cs:241 | ok (move) | the bound actor, new location |
+| ActionMoveDelta.schedule | Engine/Actions/ActionMoveDelta.cs:242 | ok (move) | the bound actor, origin |
+| ActionMoveDelta.schedule | Engine/Actions/ActionMoveDelta.cs:259 | ok (move) | the bound actor, new location |
 | ActionMoveStep.schedule(Actor, Location) | Engine/Actions/ActionMoveStep.cs:53 | ok | |
 | ActionMoveStep.schedule(Actor, Point) | Engine/Actions/ActionMoveStep.cs:58 | ok | |
 | RogueGame.HandleItemInfo | Engine/RogueGame.cs:4196 | ok | local function `details`; receiver Player |
@@ -59,17 +63,9 @@ Three predicates share the name. Each root below lists its callers, one row per 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MovesTo | Data/Actor.cs:2055 | unreviewed | the destination itself |
-| Actor.MovesTo | Data/Actor.cs:2058 | unreviewed | each adjacent source, by ref |
-| Actor.MovesTo | Data/Actor.cs:2062 | unreviewed | an exit's location, same district |
-| Actor.MovesFrom | Data/Actor.cs:2074 | unreviewed | the source itself |
-| Actor.MovesFrom | Data/Actor.cs:2077 | unreviewed | each adjacent destination, by ref |
-| Actor.MovesFrom | Data/Actor.cs:2081 | unreviewed | an exit's location, same district |
 | Actor.ReachableFrom | Data/Actor.cs:2092 | unreviewed | the source itself |
 | Actor.ReachableFrom | Data/Actor.cs:2095 | unreviewed | each adjacent destination, by ref |
 | Actor.ReachableFrom | Data/Actor.cs:2099 | unreviewed | an exit's location, same district |
-| Actor.OnePath(in Location, ...) | Data/Actor.cs:2164 | unreviewed | fallback after Rules.IsPathableFor |
-| Actor.OnePath(Map, in Point, ...) | Data/Actor.cs:2214 | unreviewed | fallback after Rules.IsPathableFor |
 | Actor.CastToBumpableDestinations | Data/Actor.cs:2889 | unreviewed | |
 | Actor.CastToBumpableDestinations | Data/Actor.cs:2891 | unreviewed | |
 | Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2907 | unreviewed | excludes shelf-like objects separately |
@@ -81,18 +77,13 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:190 | unreviewed | origin |
 | _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:196 | unreviewed | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:276 | ok | |
-| UpdateMoveDelta.Bind | Engine/Actions/ActionMoveDelta.cs:291 | unreviewed | the bound actor, new location |
-| UpdateMoveDelta.Bind | Engine/Actions/ActionMoveDelta.cs:292 | unreviewed | the bound actor, origin |
 | Rules.IsBumpableFor | Engine/Rules.cs:220 | ok | by ref |
 | ClearZone..ctor | Gameplay/AI/Goals/ClearZone.cs:84 | unreviewed | Where lambda over the zone; comment says "todo? eliminate" |
 | SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:104 | unreviewed | RemoveWhere lambda; comment says it matters for burning cars |
 | ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:1115 | ok | comment: generators are pathable but not enterable |
-| ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:1120 | unreviewed | |
 | ObjectiveAI.UsePreexistingPath(List<List<Location>>, ...) | Gameplay/AI/ObjectiveAI.cs:1174 | ok | comment: generators are pathable but not enterable |
-| ObjectiveAI.UsePreexistingPath(List<List<Location>>, ...) | Gameplay/AI/ObjectiveAI.cs:1178 | unreviewed | |
 | ObjectiveAI.WantToGoHere | Gameplay/AI/ObjectiveAI.cs:1412 | unreviewed | by ref |
 | ObjectiveAI.destination_melee_safe | Gameplay/AI/ObjectiveAI.cs:3280 | unreviewed | |
-| ObjectiveAI.install_moves | Gameplay/AI/ObjectiveAI.cs:3335 | unreviewed | |
 | ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4247 | unreviewed | by ref |
 | ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4538 | unreviewed | |
 | ObjectiveAI.GetInterestingInventoryStacks | Gameplay/AI/ObjectiveAI.cs:5309 | unreviewed | comment: ignore buggy stack placement |

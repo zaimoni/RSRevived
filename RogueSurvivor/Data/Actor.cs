@@ -2052,59 +2052,20 @@ namespace djack.RogueSurvivor.Data
 
     public Dictionary<Location, ActionMoveDelta>? MovesTo(in Location dest) {
       var ret = new Dictionary<Location, ActionMoveDelta>();
-      if (CanEnter(dest)) {
+      if (Model.CanEnter(dest)) {
         foreach(var pt in dest.Position.Adjacent()) {
-          Location src = new Location(dest.Map, pt);
-          if (!CanEnter(ref src)) continue;
-          ret[src] = new ActionMoveDelta(this, dest, src);
+            var act = ActionMoveDelta.schedule(this, dest, new(dest.Map, pt));
+            if (act is not null) ret[act.origin] = act;
         }
-        var e = Model.Abilities.AI_CanUseAIExits ? dest.Exit : null;
-        if (null != e && e.ToMap.DistrictPos == dest.Map.DistrictPos && CanEnter(e.Location)) {
-          // we are assuming this is a two-way exit.  \todo fix when introducing rooftops, e.g. helipads
-          ret[e.Location] = new ActionMoveDelta(this, dest, e.Location);
-        }
-      }
-      // tentatively not handling generators, etc. here
-      return 0 < ret.Count ? ret : null;
-    }
-
-#if PROTOTYPE
-    public Dictionary<Location, ActionMoveDelta>? MovesFrom(in Location src) {
-      var ret = new Dictionary<Location, ActionMoveDelta>();
-      if (CanEnter(src)) {
-        foreach(var pt in src.Position.Adjacent()) {
-          Location dest = new Location(src.Map, pt);
-          if (!CanEnter(ref dest)) continue;
-          ret[dest] = new ActionMoveDelta(this, dest, src);
-        }
-        var e = Model.Abilities.AI_CanUseAIExits ? src.Exit : null;
-        if (null != e && e.ToMap.DistrictPos == src.Map.DistrictPos && CanEnter(e.Location)) {
-          // this would work with a one-way exit.  \todo review when introducing rooftops, e.g. helipads
-          ret[e.Location] = new ActionMoveDelta(this, e.Location, src);
+        var e = dest.Exit;
+        if (e is not null) {
+            var act = ActionMoveDelta.schedule(this, dest, e.Location);
+            if (act is not null) ret[e.Location] = act;
         }
       }
       // tentatively not handling generators, etc. here
       return 0 < ret.Count ? ret : null;
     }
-
-    public List<Location>? ReachableFrom(in Location src) {
-      var ret = new List<Location>();
-      if (CanEnter(src)) {
-        foreach(var pt in src.Position.Adjacent()) {
-          Location dest = new Location(src.Map, pt);
-          if (!CanEnter(ref dest)) continue;
-          ret.Add(dest);
-        }
-        var e = Model.Abilities.AI_CanUseAIExits ? src.Exit : null;
-        if (null != e && e.ToMap.DistrictPos == src.Map.DistrictPos && CanEnter(e.Location)) {
-          // this would work with a one-way exit.  \todo review when introducing rooftops, e.g. helipads
-          ret.Add(e.Location);
-        }
-      }
-      // tentatively not handling generators, etc. here
-      return 0 < ret.Count ? ret : null;
-    }
-#endif
 
     // 3036-20-23: hard-coded to actor's own location, to prevent misuse
     public Dictionary<Location,ActorAction>? OnePathRange()
@@ -2161,7 +2122,7 @@ namespace djack.RogueSurvivor.Data
         if (null != no_path && no_path.IsBanned(dest)) continue;
         // 2020-03-19 This is multi-threading sensitive -- the Sokoban preventer may have to reach across threads
         // generators fail CanEnter but can be pathable so that would have to be accounted for
-        if (null != (relay = Rules.IsPathableFor(this, in dest) ?? (CanEnter(dest) ? new ActionMoveDelta(this, in dest, in loc) : null))) ret.Add(dest, relay);
+        if (null != (relay = Rules.IsPathableFor(this, in dest) ?? ActionMoveDelta.schedule(this, dest, loc))) ret.Add(dest, relay);
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) { // the pathable check also handles death-trapping, but exits don't check for that
@@ -2210,9 +2171,8 @@ namespace djack.RogueSurvivor.Data
           ret[pt] = ActionMoveStep.schedule(this, dest)!;
           continue;
         }
-        ActorAction tmp = Rules.IsPathableFor(this, in dest);
-        if (null == tmp && CanEnter(dest)) tmp = new ActionMoveDelta(this, in dest, new Location(m,p));
-        if (null != tmp) ret[pt] = tmp;
+        ActorAction tmp = Rules.IsPathableFor(this, in dest) ?? ActionMoveDelta.schedule(this, dest, new Location(m, p));
+        if (tmp is not null) ret[pt] = tmp;
       }
       return ret;
     }
