@@ -41,6 +41,10 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
 | _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:176 | ok | destination; was Actor.CanEnter until 81a9544a |
 | _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:177 | ok | origin; was Actor.CanEnter until 81a9544a |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13489 | ok | receiver a follower, chosen by index |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13514 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13522 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13544 | ok | receiver Player |
 | AcquireLineOfSight..ctor(Actor, in Location) | Gameplay/AI/Goals/AcquireLineOfSight.cs:46 | ok | throws via Spotlight: "unpathable"; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, IEnumerable) | Gameplay/AI/Goals/AcquireLineOfSight.cs:55 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:65 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
@@ -79,11 +83,7 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | UpdateMoveDelta.Bind | Engine/Actions/ActionMoveDelta.cs:292 | unreviewed | the bound actor, origin |
 | ActionMoveStep.IsLegal | Engine/Actions/ActionMoveStep.cs:31 | unreviewed | an IsLegal that asks the performability family |
 | RogueGame.HandleItemInfo | Engine/RogueGame.cs:4196 | unreviewed | local function `details`; receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13489 | unreviewed | receiver a follower, chosen by index |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13514 | unreviewed | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13522 | unreviewed | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13544 | unreviewed | receiver Player |
-| Rules.IsBumpableFor | Engine/Rules.cs:220 | unreviewed | by ref |
+| Rules.IsBumpableFor | Engine/Rules.cs:220 | ok | by ref |
 | ClearZone..ctor | Gameplay/AI/Goals/ClearZone.cs:84 | unreviewed | Where lambda over the zone; comment says "todo? eliminate" |
 | SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:104 | unreviewed | RemoveWhere lambda; comment says it matters for burning cars |
 | ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:1115 | unreviewed | comment: generators are pathable but not enterable |

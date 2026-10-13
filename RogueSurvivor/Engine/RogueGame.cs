@@ -13486,7 +13486,7 @@ restart:
 
       bool details_follower(int index) {
         var oai = available_followers[index].Controller as ObjectiveAI;
-        if (available_followers[index].CanEnter(viewpoint)) {
+        if (available_followers[index].Model.CanEnter(viewpoint)) {
           oai.WalkTo(in viewpoint);
           ClearOverlays();
           PanViewportTo(Player.Location);
@@ -13511,7 +13511,7 @@ restart:
             PanViewportTo(Player.Location);
             return null;
           case Keys.R:  // run to ...
-            if (Player.CanEnter(viewpoint)) {
+            if (Player.Model.CanEnter(viewpoint)) {
               pc.RunTo(in viewpoint);
               ClearOverlays();
               PanViewportTo(Player.Location);
@@ -13519,7 +13519,7 @@ restart:
             }
             break;  // XXX \todo be somewhat more informative
           case Keys.W:  // walk to ...
-            if (Player.CanEnter(viewpoint)) {
+            if (Player.Model.CanEnter(viewpoint)) {
               pc.WalkTo(in viewpoint);
               ClearOverlays();
               PanViewportTo(Player.Location);
@@ -13541,7 +13541,7 @@ restart:
           case Keys.D7:
           case Keys.D8:
           case Keys.D9:
-            if (Player.CanEnter(viewpoint)) {
+            if (Player.Model.CanEnter(viewpoint)) {
               pc.WalkTo(in viewpoint, (int)key.KeyCode - (int)Keys.D0);
               pc.AddWaypoint(viewpoint, "manual: T"+viewpoint.Map.LocalTime.TurnCounter.ToString());
               ClearOverlays();
