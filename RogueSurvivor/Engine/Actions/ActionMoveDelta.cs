@@ -267,12 +267,12 @@ namespace djack.RogueSurvivor.Engine.Actions
         }
         #endregion
 
-        public UpdateMoveDelta(Location from, Location to) {
+        private UpdateMoveDelta(Location from, Location to) {
 #if DEBUG
             if (1 != Rules.InteractionDistance(in from, in to)) throw new InvalidOperationException("move delta must be adjacent");
-#endif
             if (!Map.CanEnter(ref from)) throw new InvalidOperationException("must be able to exist at the origin");
             if (!Map.CanEnter(ref to)) throw new InvalidOperationException("must be able to exist at the destination");
+#endif
             m_NewLocation = to;
             m_Origin = from;
         }

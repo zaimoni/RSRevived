@@ -21,15 +21,15 @@ Three predicates share the name. Each root below lists its callers, one row per 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Location.ForEachAdjacent | Data/Location.cs:76 | unreviewed | filters the neighbours handed to the callback |
+| Location.ForEachAdjacent | Data/Location.cs:76 | ok | filters the neighbours handed to the callback |
 | Op.PushOnto._Ok | Engine/Action/PushOnto.cs:28 | unreviewed | throws on the origin |
 | Op.PushOnto._Ok | Engine/Action/PushOnto.cs:29 | unreviewed | throws on the destination |
 | Op.PushOnto._CanConstruct | Engine/Action/PushOnto.cs:38 | unreviewed | origin |
 | Op.PushOnto._CanConstruct | Engine/Action/PushOnto.cs:39 | unreviewed | destination |
-| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:274 | unreviewed | throws on the origin |
-| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:275 | unreviewed | throws on the destination |
-| UpdateMoveDelta.toDest | Engine/Actions/ActionMoveDelta.cs:308 | unreviewed | |
-| UpdateMoveDelta.fromOrigin | Engine/Actions/ActionMoveDelta.cs:315 | unreviewed | |
+| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:273 | ok | throws on the origin |
+| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:274 | ok | throws on the destination |
+| UpdateMoveDelta.toDest | Engine/Actions/ActionMoveDelta.cs:308 | ok | |
+| UpdateMoveDelta.fromOrigin | Engine/Actions/ActionMoveDelta.cs:315 | ok | |
 | PathToTarget.Unstage | Gameplay/AI/Goals/Objective.cs:193 | unreviewed | comment says never on a map edge |
 
 ## ActorModel.CanEnter
