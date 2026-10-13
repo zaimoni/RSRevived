@@ -2155,7 +2155,7 @@ namespace djack.RogueSurvivor.Data
           continue;
         }
         if (Location==dest) {
-          ret.Add(dest, new ActionMoveStep(this, dest.Position));
+          ret.Add(dest, ActionMoveStep.schedule(this, dest)!);
           continue;
         }
         if (null != no_path && no_path.IsBanned(dest)) continue;
@@ -2207,7 +2207,7 @@ namespace djack.RogueSurvivor.Data
         Location dest = new Location(m,pt);
         if (!Map.Canonical(ref dest)) continue;
         if (Location==dest) {
-          ret[pt] = new ActionMoveStep(this, in pt);
+          ret[pt] = ActionMoveStep.schedule(this, dest)!;
           continue;
         }
         ActorAction tmp = Rules.IsPathableFor(this, in dest);

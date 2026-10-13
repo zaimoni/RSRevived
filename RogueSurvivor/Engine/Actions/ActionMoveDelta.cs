@@ -120,7 +120,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       }
       }
 
-      if (m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model, out m_FailReason)) working = new ActionMoveStep(m_Actor, in m_NewLocation);
+      if (m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model, out m_FailReason)) working = ActionMoveStep.schedule(m_Actor, m_NewLocation);
 
       if (null != actorAt) {
         if (m_Actor.IsEnemyOf(actorAt)) return null; // should be in combat processing
@@ -166,7 +166,7 @@ namespace djack.RogueSurvivor.Engine.Actions
                var considering = m_Actor.MutuallyAdjacentFor(m_Actor.Location,actorAt.Location);
                if (null != considering) {
                  considering = considering.FindAll(pt => pt.IsWalkableFor(m_Actor));
-                 if (0 < considering.Count) return new ActionMoveStep(m_Actor, rules.DiceRoller.Choose(considering));
+                 if (0 < considering.Count) return ActionMoveStep.schedule(m_Actor, rules.DiceRoller.Choose(considering));
                }
              }
 

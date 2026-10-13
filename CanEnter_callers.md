@@ -41,6 +41,8 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
 | _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:176 | ok | destination; was Actor.CanEnter until 81a9544a |
 | _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:177 | ok | origin; was Actor.CanEnter until 81a9544a |
+| ActionMoveStep.schedule(Actor, Location) | Engine/Actions/ActionMoveStep.cs:53 | ok | |
+| ActionMoveStep.schedule(Actor, Point) | Engine/Actions/ActionMoveStep.cs:58 | ok | |
 | RogueGame.HandleItemInfo | Engine/RogueGame.cs:4196 | ok | local function `details`; receiver Player |
 | RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13489 | ok | receiver a follower, chosen by index |
 | RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13514 | ok | receiver Player |
@@ -85,7 +87,6 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:287 | unreviewed | |
 | UpdateMoveDelta.Bind | Engine/Actions/ActionMoveDelta.cs:291 | unreviewed | the bound actor, new location |
 | UpdateMoveDelta.Bind | Engine/Actions/ActionMoveDelta.cs:292 | unreviewed | the bound actor, origin |
-| ActionMoveStep.IsLegal | Engine/Actions/ActionMoveStep.cs:31 | unreviewed | an IsLegal that asks the performability family |
 | Rules.IsBumpableFor | Engine/Rules.cs:220 | ok | by ref |
 | ClearZone..ctor | Gameplay/AI/Goals/ClearZone.cs:84 | unreviewed | Where lambda over the zone; comment says "todo? eliminate" |
 | SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:104 | unreviewed | RemoveWhere lambda; comment says it matters for burning cars |

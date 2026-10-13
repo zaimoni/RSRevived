@@ -16,20 +16,17 @@ namespace djack.RogueSurvivor.Engine.Actions
 
 	public Location dest { get { return m_NewLocation; } }
 
-    public ActionMoveStep(Actor actor, in Point to) : base(actor)
+    private ActionMoveStep(Actor actor, in Point to) : base(actor)
     {
       m_NewLocation = new Location(actor.Location.Map, to);
     }
 
-    public ActionMoveStep(Actor actor, in Location to) : base(actor)
+    private ActionMoveStep(Actor actor, in Location to) : base(actor)
     {
       m_NewLocation = to;
     }
 
-    public override bool IsLegal()
-    {
-      return m_Actor.CanEnter(m_NewLocation);
-    }
+    public override bool IsLegal() => true;
 
     public override bool IsPerformable()
     {
@@ -49,5 +46,28 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       return "step: "+m_Actor.Location+" to "+m_NewLocation;
     }
+
+    static public ActionMoveStep? schedule(Actor actor, Location to)
+    {
+      if (!actor.Model.CanEnter(ref to)) return null;
+      return new(actor, to);
+    }
+
+    static public ActionMoveStep? schedule(Actor actor, Point to) {
+      Location test = new(actor.Location.Map, to);
+      if (!actor.Model.CanEnter(ref test)) return null;
+      return new(actor, to);
+    } 
+
+    static public ActionMoveStep? create(Actor actor, Location to)
+    {
+      var ret = schedule(actor, to);
+      return ret.IsPerformable() ? ret : null;
+    }
+
+    static public ActionMoveStep? create(Actor actor, Point to) {
+      var ret = schedule(actor, to);
+      return ret.IsPerformable() ? ret : null;
+    } 
   }
 }
