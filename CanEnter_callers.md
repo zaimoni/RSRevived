@@ -22,10 +22,8 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | caller | site | status | note |
 |---|---|---|---|
 | Location.ForEachAdjacent | Data/Location.cs:76 | ok | filters the neighbours handed to the callback |
-| Op.PushOnto._Ok | Engine/Action/PushOnto.cs:28 | unreviewed | throws on the origin |
-| Op.PushOnto._Ok | Engine/Action/PushOnto.cs:29 | unreviewed | throws on the destination |
-| Op.PushOnto._CanConstruct | Engine/Action/PushOnto.cs:38 | unreviewed | origin |
-| Op.PushOnto._CanConstruct | Engine/Action/PushOnto.cs:39 | unreviewed | destination |
+| Op.PushOnto.schedule | Engine/Action/PushOnto.cs:187 | ok | origin |
+| Op.PushOnto.schedule | Engine/Action/PushOnto.cs:188 | ok | destination |
 | UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:273 | ok | throws on the origin |
 | UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:274 | ok | throws on the destination |
 | UpdateMoveDelta.toDest | Engine/Actions/ActionMoveDelta.cs:308 | ok | |
@@ -80,11 +78,11 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | _Action.MoveStep..ctor | Engine/Action/MoveStep.cs:148 | unreviewed | throws on the origin |
 | _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:190 | unreviewed | origin |
 | _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:196 | unreviewed | each candidate destination, by ref |
-| _Action.PushOnto._Ok | Engine/Action/PushOnto.cs:224 | unreviewed | throws on the origin |
-| _Action.PushOnto._Ok | Engine/Action/PushOnto.cs:225 | unreviewed | throws on the destination |
-| _Action.PushOnto._CanConstruct | Engine/Action/PushOnto.cs:236 | unreviewed | origin |
-| _Action.PushOnto._CanConstruct | Engine/Action/PushOnto.cs:237 | unreviewed | destination |
-| _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:287 | unreviewed | |
+| _Action.PushOnto._Ok | Engine/Action/PushOnto.cs:213 | unreviewed | throws on the origin |
+| _Action.PushOnto._Ok | Engine/Action/PushOnto.cs:214 | unreviewed | throws on the destination |
+| _Action.PushOnto._CanConstruct | Engine/Action/PushOnto.cs:225 | unreviewed | origin |
+| _Action.PushOnto._CanConstruct | Engine/Action/PushOnto.cs:226 | unreviewed | destination |
+| _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:276 | ok | |
 | UpdateMoveDelta.Bind | Engine/Actions/ActionMoveDelta.cs:291 | unreviewed | the bound actor, new location |
 | UpdateMoveDelta.Bind | Engine/Actions/ActionMoveDelta.cs:292 | unreviewed | the bound actor, origin |
 | Rules.IsBumpableFor | Engine/Rules.cs:220 | ok | by ref |

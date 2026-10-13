@@ -4193,7 +4193,7 @@ namespace djack.RogueSurvivor.Engine
 
         List<KeyValuePair<Location, int> > tmp_where = new();
         foreach(var loc_qty in catalog) {
-          if (Player.Nodel.CanEnter(loc_qty.Key)) tmp_where.Add(loc_qty);
+          if (Player.Model.CanEnter(loc_qty.Key)) tmp_where.Add(loc_qty);
           else {
             var obj = loc_qty.Key.MapObject as ShelfLike;
             if (null != obj) tmp_where.Add(loc_qty);

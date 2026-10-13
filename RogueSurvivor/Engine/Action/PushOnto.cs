@@ -21,26 +21,6 @@ namespace djack.RogueSurvivor.Engine.Op
         public Location obj_origin { get { return m_From; } }
         public Location obj_dest { get { return m_NewLocation; } }
 
-        [Conditional("DEBUG")]
-        static public void _Ok(Location origin, Location dest)
-        {
-            if (1 != Rules.InteractionDistance(in origin, in dest)) throw new InvalidOperationException("move delta must be adjacent");
-            if (!Map.CanEnter(ref origin)) throw new InvalidOperationException("must be able to exist at the origin");
-            if (!Map.CanEnter(ref dest)) throw new InvalidOperationException("must be able to exist at the destination");
-            if (!dest.TileModel.IsWalkable) throw new InvalidOperationException("destination must allow map objects");
-        }
-
-        static public bool _CanConstruct(Location from, Location to)
-        {
-#if DEBUG
-            if (1 != Rules.InteractionDistance(in from, in to)) return false;
-#endif
-            if (!Map.CanEnter(ref from)) return false;
-            if (!Map.CanEnter(ref to)) return false;
-            if (!to.TileModel.IsWalkable) return false;
-            return true;
-        }
-
         #region JSON save/load
         private PushOnto(JsonElement src, JsonSerializerOptions options)
         {
@@ -61,9 +41,8 @@ namespace djack.RogueSurvivor.Engine.Op
         }
         #endregion
 
-        public PushOnto(Location from, Location to, int code)
+        private PushOnto(Location from, Location to, int code)
         {
-            _Ok(from, to);
             m_NewLocation = to;
             m_From = from;
             m_ObjCode = code;
@@ -200,6 +179,16 @@ namespace djack.RogueSurvivor.Engine.Op
                 }
                 return ret.ToArray();
             }
+        }
+
+        // \todo fix this and users so that return value is IsLegal()
+        static public PushOnto? schedule(Location from, Location to, int code) {
+            if (1 != Rules.InteractionDistance(in from, in to)) return null;
+            if (!Map.CanEnter(ref from)) return null;
+            if (!Map.CanEnter(ref to)) return null;
+            if (!to.TileModel.IsWalkable) return null;
+
+            return new PushOnto(from, to, code);
         }
     }
 }

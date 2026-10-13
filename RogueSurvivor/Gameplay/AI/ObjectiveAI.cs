@@ -4838,8 +4838,8 @@ restart_chokepoints:
                 if (!m_Actor.Model.CanEnter(ref test)) continue;
                 if (now.Contains(test)) continue;
                 if (working.Contains(test)) continue;
-                if (!Engine.Op.PushOnto._CanConstruct(test, loc)) continue;
-                var staging = new Engine.Op.PushOnto(test, loc, disarm_code);
+                var staging = Engine.Op.PushOnto.schedule(test, loc, disarm_code);
+                if (staging is null) continue;
                 if (!staging.IsLegal()) continue;
                 act_scan.Add(staging);
                 next.Add(test);
