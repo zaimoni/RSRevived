@@ -2877,12 +2877,13 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public List<Location>? MutuallyAdjacentFor(Location a, Location b)
+    public List<Location>? MutuallyAdjacentFor(Location b)
     {
+      var a = m_Location;   // backward compatibility
       if (3 <= Rules.InteractionDistance(in a, in b)) return null;
       var e = a.Exit;
-      if (null != e && e.Location==b) return null;  // may not be true indefinitely (helicopters and/or building roofs)
-      var ret = new List<Location>();
+      if (e is not null && e.Location==b) return null;  // may not be true indefinitely (helicopters and/or building roofs)
+      List<Location> ret = new();
       foreach(var dir in Direction.COMPASS) {
         var loc = a+dir;
         if (CanEnter(ref loc) && 1 == Rules.GridDistance(in loc, in b)) ret.Add(loc);

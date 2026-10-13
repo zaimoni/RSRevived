@@ -429,7 +429,7 @@ namespace djack.RogueSurvivor.Engine
              if (null == candidates && !i_am_in_his_way && i_can_help && test.Key.Any()) candidates = test.Key.ToList();
              if (null == candidates && i_am_in_his_way) {
                // HMM...maybe step aside instead?
-               var considering = actor.MutuallyAdjacentFor(actor.Location,actorAt.Location);
+               var considering = actor.MutuallyAdjacentFor(actorAt.Location);
                if (null != considering) {
                  considering = considering.FindAll(pt => pt.IsWalkableFor(actor));
                  if (0 < considering.Count) return ActionMoveStep.schedule(actor, Get.DiceRoller.Choose(considering));

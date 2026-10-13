@@ -67,7 +67,7 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Actor.CastToBumpableDestinations | Data/Actor.cs:2851 | unreviewed | |
 | Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2867 | unreviewed | excludes shelf-like objects separately |
 | Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2872 | unreviewed | |
-| Actor.MutuallyAdjacentFor | Data/Actor.cs:2888 | unreviewed | by ref |
+| Actor.MutuallyAdjacentFor | Data/Actor.cs:2888 | ok | by ref |
 | Map.WouldBlacklistFor | Data/Map.cs:1170 | unreviewed | receiver is the actor parameter |
 | Map.PathfindLocSteps | Data/Map.cs:1184 | unreviewed | StrictCanEnter, in the flood-fill's lambda; receiver is the actor parameter |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | unreviewed | throws on the destination |
