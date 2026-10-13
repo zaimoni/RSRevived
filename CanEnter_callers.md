@@ -30,7 +30,7 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:274 | ok | throws on the destination |
 | UpdateMoveDelta.toDest | Engine/Actions/ActionMoveDelta.cs:308 | ok | |
 | UpdateMoveDelta.fromOrigin | Engine/Actions/ActionMoveDelta.cs:315 | ok | |
-| PathToTarget.Unstage | Gameplay/AI/Goals/Objective.cs:193 | unreviewed | comment says never on a map edge |
+| PathToTarget.Unstage | Gameplay/AI/Goals/Objective.cs:193 | ok | |
 
 ## ActorModel.CanEnter
 
