@@ -2687,8 +2687,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     static public bool VetoExit(Actor a, Exit? e) {
-      if (a.Model.Abilities.AI_CanUseAIExits && null != e) {
-        if (null != Gameplay.AI.ObjectiveAI.NeedsAir(e.Location, a)) return true;    // too crowded?
+      if (e is null) return true;
+      if (a.Model.Abilities.AI_CanUseAIExits) {
+        if (Gameplay.AI.ObjectiveAI.NeedsAir(e.Location, a) is not null) return true;    // too crowded?
 #if PROTOTYPE
         var leader = actor.LiveLeader;
         if (null != leader && leader.ClanIsDisrupted(2).Key) return true;    // civilian AI value; others don't use exits
