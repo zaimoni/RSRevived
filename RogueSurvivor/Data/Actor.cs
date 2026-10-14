@@ -3500,14 +3500,6 @@ final_exit:
       return false;
     }
 
-    public bool MayTakeFromStackAt(in Location loc)
-    {
-      if (Location == loc) return true;
-      if (1 != Rules.GridDistance(in m_Location, in loc)) return false; // Rules.IsAdjacent would also check the other side of the stairs
-      // currently all containers are not-walkable for UI reasons.
-      return loc.Map.GetMapObjectAt(loc.Position) is ShelfLike;
-    }
-
     public bool StackIsBlocked(in Location loc)
     {
       if (Location == loc) return false;

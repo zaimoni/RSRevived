@@ -3920,15 +3920,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction? BehaviorWouldGrabFrom(in Location loc)
     {
       var stack = loc.Items;
-      if (null == stack || stack.IsEmpty) return null;
-      return BehaviorGrabFromStack(in loc, loc.Items, false);
+      return (stack is not null && !stack.IsEmpty) ? BehaviorGrabFromStack(new(loc), false) : null;
     }
 
     protected override ActorAction? BehaviorWouldGrabFrom(ShelfLike obj)
     {
       var inv = obj.NonEmptyInventory;
-      if (null == inv) return null;
-      return BehaviorGrabFromStack(obj.Location, inv, false);
+      return inv is not null ? BehaviorGrabFromStack(new(obj), false) : null;
     }
 
     public bool WouldGrabFromStack(in Data.Model.InvOrigin src)
@@ -3984,7 +3982,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
 #if DEBUG
-        if (is_real && !m_Actor.MayTakeFromStackAt(in loc)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + loc + " at " + m_Actor.Location));
+        if (is_real && !m_Actor.MayTakeFrom(invsrc)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name + " attempted telekinetic take from " + loc + " at " + m_Actor.Location));
 #endif
         var tmp = new Engine._Action.TakeItem(m_Actor, in invsrc, obj);
         if (tmp.IsLegal()) return tmp; // in case this is the biker/trap pickup crash [cairo123]
@@ -4083,8 +4081,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #nullable restore
 
-    protected ActorAction? BehaviorGrabFromStack(in Location loc, Inventory? stack, bool is_real = true)
+    protected ActorAction? BehaviorGrabFromStack(Data.Model.InvOrigin origin, bool is_real = true)
     {
+      var loc = origin.Location;
+      var stack = origin.Inventory;
+
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
@@ -4124,7 +4125,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // the get item checks do not validate that inventory is not full
       ActorAction tmp = null;
       // XXX ActionGetFromContainer is obsolete.  Bypass BehaviorIntelligentBumpToward for containers.
-      bool may_take = is_real ? m_Actor.MayTakeFromStackAt(in loc) : true;
+      bool may_take = is_real ? m_Actor.MayTakeFrom(origin) : true;
 
       if (may_take) {
         tmp = _takeThis(in loc, obj, recover, is_real);
@@ -4286,7 +4287,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           stacks.SortIncreasing(stack => Rules.InteractionStdDistance(m_Actor.Location, stack.Location));
           while(0 < stacks.Count) {
             m_LastItemsSaw = new Percept(stacks[0].Inventory, m_Actor.Location.Map.LocalTime.TurnCounter, stacks[0].Location);
-            tmpAction = BehaviorGrabFromStack(stacks[0].Location, stacks[0].Inventory);
+            tmpAction = BehaviorGrabFromStack(stacks[0]);
             if (tmpAction?.IsPerformable() ?? false) {
 #if TRACE_SELECTACTION
               if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking from stack");
