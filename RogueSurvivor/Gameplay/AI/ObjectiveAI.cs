@@ -5300,7 +5300,7 @@ restart_chokepoints:
           continue;
         }
         if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
-        if (!m_Actor.CanEnter(x.Key)) continue;    // XXX ignore buggy stack placement (works because all Shelf-like mapobjects are pushable)
+        if (!m_Actor.HasAnyInventoryAccessibleDestinations(x.Value)) continue;
         var act = BehaviorWouldGrabFrom(x.Value);
         if (!act?.IsLegal() ?? true) {
           if (tracing) {

@@ -819,12 +819,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         i = _stacks.Count;
         while(0 < i--) {
-          var loc = _stacks[i].Location;
-          if (!m_Actor.CanEnter(loc)) {
+          if (!m_Actor.HasAnyInventoryAccessibleDestinations(_stacks[i])) {
             _stacks.RemoveAt(i);
             ordai.ClearLastMove();
             continue;
           }
+          var loc = _stacks[i].Location;
           if (m_Actor.Controller.CanSee(loc) && m_Actor.StackIsBlocked(loc)) {
               _stacks.RemoveAt(i);
               ordai.ClearLastMove();

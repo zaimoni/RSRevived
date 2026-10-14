@@ -37,6 +37,8 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Actor.MovesTo | Data/Actor.cs:2055 | ok | the destination itself |
 | Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2868 | ok | excludes shelf-like objects separately |
 | Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2871 | ok | |
+| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2884 | ok | excludes shelf-like objects separately |
+| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2890 | ok | |
 | Map.TrapWouldSealBuilding | Data/Map.cs:2163 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | ok | origin; was Actor.CanEnter until 81a9544a |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
@@ -85,8 +87,6 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3328 | unreviewed | local function install_moves; its row had gone missing |
 | ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4241 | unreviewed | by ref |
 | ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4532 | unreviewed | |
-| ObjectiveAI.GetInterestingInventoryStacks | Gameplay/AI/ObjectiveAI.cs:5303 | unreviewed | comment: ignore buggy stack placement |
-| Goal_PathToStack._removeInvalidStacks | Gameplay/AI/OrderableAI.cs:823 | unreviewed | |
 | OrderableAI._closeIn | Gameplay/AI/OrderableAI.cs:2827 | unreviewed | Adjacent lambda |
 | OrderableAI._chargeTowards | Gameplay/AI/OrderableAI.cs:2875 | unreviewed | Adjacent lambda |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:71 | unreviewed | throws via Spotlight on the origin |

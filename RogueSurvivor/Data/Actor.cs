@@ -2875,6 +2875,29 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    // 2026-10-14: The data design that allows this to transtion from true to false is in,
+    // but it's not used.
+    public bool HasAnyInventoryAccessibleDestinations(Data.Model.InvOrigin origin) {
+      var loc = origin.Location;
+      if (origin.obj_owner is not null) {
+        foreach(var pt2 in loc.Position.Adjacent()) {
+          if (Model.CanEnter(new(loc.Map, pt2))) return true;
+        }
+        return false;
+      }
+      if (origin.loc is null) return false; // we don't handle actor inventories
+
+      if (Model.CanEnter(loc)) return true;
+
+      var obj = loc.MapObject;
+      if (obj is null || !obj.BlocksReachInto()) {
+        foreach(var pt2 in loc.Position.Adjacent()) {
+          if (Model.CanEnter(new(loc.Map, pt2))) return true;
+        }
+      }
+      return false;
+    }
+
     public List<Location>? MutuallyAdjacentFor(Location b)
     {
       var a = m_Location;   // backward compatibility
