@@ -811,13 +811,11 @@ namespace djack.RogueSurvivor.Data
 
         static public Model.InvOrigin? InventoryAtFeet(this Location origin)
         {
-            var shelf = origin.MapObject as ShelfLike;
-            if (null != shelf && shelf.IsJumpable) {
-                // shelf is our ground level
-                if (null != shelf?.NonEmptyInventory) return new(shelf);
-            } else {
-                if (null != origin.Items) return new(origin);
-            }
+            var obj = origin.MapObject;
+            if (obj is null) return new(origin);
+
+            var shelf = obj as ShelfLike;
+            if (obj.IsJumpable && shelf is not null) return new(shelf);
             return null;
         }
 
