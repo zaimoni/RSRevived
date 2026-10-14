@@ -2280,8 +2280,8 @@ retry:
     {
       List<Model.InvOrigin> ret = new();
 
-      var g_inv = origin.InventoryAtFeet();
-      if (null != g_inv) ret.Add(g_inv.Value);
+      var g_inv = origin.InventoryAtFeet();   // since 95828fbd: where items at the feet would go, which may hold nothing yet
+      if (g_inv is not null && !(g_inv.Value.Inventory?.IsEmpty ?? true)) ret.Add(g_inv.Value);
 
       adjacentInventoryOrigins(ret, in origin);
 
