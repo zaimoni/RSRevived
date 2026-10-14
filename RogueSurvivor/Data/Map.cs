@@ -2363,19 +2363,6 @@ retry:
       return 0<ret.Count ? ret : null;
     }
 
-    // Clairvoyant.  Useful for fine-tuning map generation and little else
-    public Data.Model.InvOrigin? GetInventoryHaving(Gameplay.Item_IDs id)
-    {
-      if (District.Maps.Contains(this)) throw new InvalidOperationException("do not use GetInventoryHaving except during map generation");
-      foreach (var x in m_GroundItemsByPosition) if (x.Value.Has(id)) return new(new Location(this, x.Key));
-      foreach (var x in m_MapObjectsByPosition) {
-         var shelf = x.Value as ShelfLike;
-         var obj_inv = shelf?.NonEmptyInventory;
-         if (null != obj_inv && obj_inv.Has(id)) return new(shelf);
-      }
-      return null;
-    }
-
     public void DropItemAt(Item it, in Point position)
     {
 #if DEBUG
@@ -2465,41 +2452,6 @@ retry:
       }
       Location? remap = _Normalize(position);
       if (null != remap) remap.Value.Map.RemoveAt(test, remap.Value.Position);
-    }
-
-    // Clairvoyant.
-    public bool TakeItemType(Gameplay.Item_IDs id, Data.Model.InvOrigin dest)
-    {
-      var src = GetInventoryHaving(id);
-      if (null == src) return false;
-      var it = src.Value.GetFirst(id);
-      if (null == it) return false;
-      src.Value.Transfer(it, dest);
-      return true;
-    }
-
-    // Clairvoyant.
-    public bool SwapItemTypes(Gameplay.Item_IDs want, Gameplay.Item_IDs donate, Data.Model.InvOrigin dest)
-    {
-      var giving = dest.GetFirst(donate);
-      if (null == giving) return TakeItemType(want, dest);
-
-      var src = GetInventoryHaving(want);
-      if (null == src) return false;
-      var it = src.Value.GetFirst(want);
-      if (null == it) return false;
-      it.Unequip();
-
-      src.Value.Remove(it);
-      dest.Remove(giving);
-      src.Value.Take(giving);
-      dest.Take(it);
-
-      src.Value.RejectCrossLink(dest);
-      src.Value.RejectCrossLink(dest.Location.Items);
-      dest.RejectCrossLink(dest.Location.Items);
-
-      return true;
     }
 
     // Panoptic.
