@@ -35,6 +35,8 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | caller | site | status | note |
 |---|---|---|---|
 | Actor.MovesTo | Data/Actor.cs:2055 | ok | the destination itself |
+| Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2868 | ok | excludes shelf-like objects separately |
+| Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2874 | ok | |
 | Map.TrapWouldSealBuilding | Data/Map.cs:2163 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | ok | origin; was Actor.CanEnter until 81a9544a |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
@@ -65,8 +67,6 @@ Three predicates share the name. Each root below lists its callers, one row per 
 |---|---|---|---|
 | Actor.CastToBumpableDestinations | Data/Actor.cs:2849 | unreviewed | |
 | Actor.CastToBumpableDestinations | Data/Actor.cs:2851 | unreviewed | |
-| Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2867 | unreviewed | excludes shelf-like objects separately |
-| Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2872 | unreviewed | |
 | Actor.MutuallyAdjacentFor | Data/Actor.cs:2889 | ok | by ref |
 | Map.WouldBlacklistFor | Data/Map.cs:1170 | unreviewed | receiver is the actor parameter |
 | Map.PathfindLocSteps | Data/Map.cs:1184 | unreviewed | StrictCanEnter, in the flood-fill's lambda; receiver is the actor parameter |

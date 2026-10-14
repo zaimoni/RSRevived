@@ -2859,19 +2859,20 @@ namespace djack.RogueSurvivor.Data
     }
 
     // likewise inventories
+    // while the caller only sends in-bounds src, the return value can be "off-map-edge" out of bounds
     public HashSet<Point> CastToInventoryAccessibleDestinations(Map m,IEnumerable<Point>? src) {
       var ret = new HashSet<Point>();
       if (null!=src) foreach(var pt in src) {
         var loc = new Location(m, pt);
         var obj = loc.MapObject;
-        if (CanEnter(loc) && !(obj is ShelfLike)) {
+        if (Model.CanEnter(loc) && !(obj is ShelfLike)) {
           ret.Add(pt);
           continue;
-        } else {
+        }
+        if (obj is null || (obj is ShelfLike || !obj.BlocksReachInto())) {
           foreach(var pt2 in pt.Adjacent()) {
-            if (CanEnter(new Location(m, pt2))) ret.Add(pt2);
+            if (Model.CanEnter(new(m, pt2))) ret.Add(pt2);
           }
-          continue;
         }
       }
       return ret;
