@@ -1,6 +1,6 @@
 # Callers of the CanEnter families
 
-Seeded 2026-10-12 from master at 71cc05b3; refreshed 2026-10-14 at 91454876. Companion to `IsLegal_vs_IsPerformable.md`.
+Seeded 2026-10-12 from master at 71cc05b3; refreshed 2026-10-14 at 541ab1a5. Companion to `IsLegal_vs_IsPerformable.md`.
 
 Three predicates share the name. Each root below lists its callers, one row per call site.
 
@@ -67,7 +67,7 @@ Three predicates share the name. Each root below lists its callers, one row per 
 |---|---|---|---|
 | Actor.CastToBumpableDestinations | Data/Actor.cs:2849 | unreviewed | |
 | Actor.CastToBumpableDestinations | Data/Actor.cs:2851 | unreviewed | |
-| Actor.MutuallyAdjacentFor | Data/Actor.cs:2890 | ok | by ref |
+| Actor.MutuallyAdjacentFor | Data/Actor.cs:2887 | ok | by ref |
 | Map.WouldBlacklistFor | Data/Map.cs:1170 | unreviewed | receiver is the actor parameter |
 | Map.PathfindLocSteps | Data/Map.cs:1184 | unreviewed | StrictCanEnter, in the flood-fill's lambda; receiver is the actor parameter |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | unreviewed | throws on the destination |
