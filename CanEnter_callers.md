@@ -1,6 +1,6 @@
 # Callers of the CanEnter families
 
-Seeded 2026-10-12 from master at 71cc05b3; refreshed 2026-10-13 at 821c2f7f. Companion to `IsLegal_vs_IsPerformable.md`.
+Seeded 2026-10-12 from master at 71cc05b3; refreshed 2026-10-13 at 67112956. Companion to `IsLegal_vs_IsPerformable.md`.
 
 Three predicates share the name. Each root below lists its callers, one row per call site.
 
@@ -55,9 +55,9 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | AcquireLineOfSight..ctor(Actor, in Location) | Gameplay/AI/Goals/AcquireLineOfSight.cs:46 | ok | throws via Spotlight: "unpathable"; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, IEnumerable) | Gameplay/AI/Goals/AcquireLineOfSight.cs:55 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:65 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4788 | ok | two calls: N and S of the trap |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4791 | ok | two calls: E and W of the trap |
-| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4831 | ok | by ref |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4789 | ok | two calls: N and S of the trap |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4792 | ok | two calls: E and W of the trap |
+| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4832 | ok | by ref |
 
 ## Actor.CanEnter
 
@@ -67,7 +67,7 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Actor.CastToBumpableDestinations | Data/Actor.cs:2851 | unreviewed | |
 | Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2867 | unreviewed | excludes shelf-like objects separately |
 | Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2872 | unreviewed | |
-| Actor.MutuallyAdjacentFor | Data/Actor.cs:2888 | ok | by ref |
+| Actor.MutuallyAdjacentFor | Data/Actor.cs:2889 | ok | by ref |
 | Map.WouldBlacklistFor | Data/Map.cs:1170 | unreviewed | receiver is the actor parameter |
 | Map.PathfindLocSteps | Data/Map.cs:1184 | unreviewed | StrictCanEnter, in the flood-fill's lambda; receiver is the actor parameter |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | unreviewed | throws on the destination |
@@ -81,11 +81,11 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:1111 | ok | comment: generators are pathable but not enterable |
 | ObjectiveAI.UsePreexistingPath(List<List<Location>>, ...) | Gameplay/AI/ObjectiveAI.cs:1168 | ok | comment: generators are pathable but not enterable |
 | ObjectiveAI.WantToGoHere | Gameplay/AI/ObjectiveAI.cs:1404 | unreviewed | by ref |
-| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3272 | unreviewed | local function destination_melee_safe |
-| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3327 | unreviewed | local function install_moves; its row had gone missing |
-| ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4240 | unreviewed | by ref |
-| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4531 | unreviewed | |
-| ObjectiveAI.GetInterestingInventoryStacks | Gameplay/AI/ObjectiveAI.cs:5302 | unreviewed | comment: ignore buggy stack placement |
+| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3273 | unreviewed | local function destination_melee_safe |
+| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3328 | unreviewed | local function install_moves; its row had gone missing |
+| ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4241 | unreviewed | by ref |
+| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4532 | unreviewed | |
+| ObjectiveAI.GetInterestingInventoryStacks | Gameplay/AI/ObjectiveAI.cs:5303 | unreviewed | comment: ignore buggy stack placement |
 | Goal_PathToStack._removeInvalidStacks | Gameplay/AI/OrderableAI.cs:823 | unreviewed | |
 | OrderableAI._closeIn | Gameplay/AI/OrderableAI.cs:2827 | unreviewed | Adjacent lambda |
 | OrderableAI._chargeTowards | Gameplay/AI/OrderableAI.cs:2875 | unreviewed | Adjacent lambda |
