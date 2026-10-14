@@ -2231,29 +2231,33 @@ retry:
     }
 
     /// <summary>
-    /// All inventories at that position, regardless of type.  Actors are not meant to be equally efficient at noticing inventories.
+    /// All inventories at that position, regardless of type.
+    /// Actors are not meant to be equally efficient at noticing inventories.
     /// </summary>
     static public List<Model.InvOrigin>? AllItemsAt(Location loc, Actor? a=null)
     {
        if (!Map.Canonical(ref loc)) return null;  // \todo? precondition
-       List<Model.InvOrigin>? ret = null;
-       var stage = loc.GroundInv();
-       if (null != stage) (ret ??= new()).Add(stage.Value);
-       stage = loc.ShelfInv();
-       if (null != stage) (ret ??= new()).Add(stage.Value);
-       return ret;
+       List<Model.InvOrigin>? ret = new();
+       var stage = loc.ShelfInv();
+       if (stage is not null) ret.Add(stage.Value);
+       stage = loc.GroundInv();
+       if (stage is not null) ret.Add(stage.Value);
+       return 0<ret.Count ? ret : null;
     }
 
+    /// <summary>
+    /// All inventories that are physicaly accessible; 
+    /// Actors are not meant to be equally efficient at noticing inventories.
+    /// </summary>
     static public List<Model.InvOrigin>? AllInventoriesAt(Location loc, Actor? a=null)
     {
-       if (!Map.Canonical(ref loc)) return null;  // \todo? precondition
+       if (!Canonical(ref loc)) return null;  // \todo? precondition
        if (!loc.TileModel.IsWalkable) return null;
-       List<Model.InvOrigin>? ret = null;
+       List<Model.InvOrigin>? ret = new();
        var obj = loc.MapObject;
-       var shelf = obj as ShelfLike;
-       if (null != shelf) (ret ??= new()).Add(new(shelf));
-       if (null == obj || !obj.BlocksReachInto()) (ret ??= new()).Add(new(loc));
-       return ret;
+       if (obj is ShelfLike shelf) ret.Add(new(shelf));
+       if (obj is null || !obj.BlocksReachInto()) ret.Add(new(loc));
+       return 0<ret.Count ? ret : null;
     }
 
     private static void adjacentInventoryOrigins(List<Model.InvOrigin> ret, in Location origin) {

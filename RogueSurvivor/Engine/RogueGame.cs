@@ -5143,7 +5143,7 @@ namespace djack.RogueSurvivor.Engine
           }
           var loc = player.Location + dir;
           if (!Map.Canonical(ref loc)) return null;
-          var candidates = Map.AllItemsAt(loc);
+          var candidates = Map.AllInventoriesAt(loc);
           if (null == candidates) return null;
           return candidates[0];
         }
@@ -5202,7 +5202,7 @@ namespace djack.RogueSurvivor.Engine
           }
           var loc = player.Location + dir;
           if (!Map.Canonical(ref loc)) return null;
-          var candidates = Map.AllItemsAt(loc);
+          var candidates = Map.AllInventoriesAt(loc);
           if (null == candidates) return null;
           return candidates[0];
         }
