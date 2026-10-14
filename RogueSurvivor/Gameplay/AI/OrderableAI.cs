@@ -4069,7 +4069,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmp;
       }
       if (null == _legal_steps) return null;
-      return BehaviorPathTo(in loc);
+      return BehaviorPathTo(m_Actor.CastToInventoryAccessibleDestinations(origin));
     }
 
     protected ActorAction BehaviorHeadForBestStack(List<Data.Model.InvOrigin> stacks)

@@ -2875,6 +2875,31 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    public HashSet<Location> CastToInventoryAccessibleDestinations(Data.Model.InvOrigin origin) {
+      HashSet<Location> ret = new();
+
+      var loc = origin.Location;
+      if (origin.obj_owner is not null) {
+        foreach(var pt2 in loc.Position.Adjacent()) {
+          Location dest = new(loc.Map, pt2);
+          if (Model.CanEnter(ref dest)) ret.Add(dest);
+        }
+        return ret;
+      }
+      if (origin.loc is null) return ret; // we don't handle actor inventories
+
+      if (Model.CanEnter(loc)) ret.Add(loc);
+
+      var obj = loc.MapObject;
+      if (obj is null || !obj.BlocksReachInto()) {
+        foreach(var pt2 in loc.Position.Adjacent()) {
+          Location dest = new(loc.Map, pt2);
+          if (Model.CanEnter(ref dest)) ret.Add(dest);
+        }
+      }
+      return ret;
+    }
+
     // 2026-10-14: The data design that allows this to transtion from true to false is in,
     // but it's not used.
     public bool HasAnyInventoryAccessibleDestinations(Data.Model.InvOrigin origin) {
