@@ -1,6 +1,6 @@
 # Callers of the CanEnter families
 
-Seeded 2026-10-12 from master at 71cc05b3; refreshed 2026-10-14 at 541ab1a5. Companion to `IsLegal_vs_IsPerformable.md`.
+Seeded 2026-10-12 from master at 71cc05b3; refreshed 2026-10-14 at 4d809e02. Companion to `IsLegal_vs_IsPerformable.md`.
 
 Three predicates share the name. Each root below lists its callers, one row per call site.
 
@@ -37,8 +37,9 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Actor.MovesTo | Data/Actor.cs:2055 | ok | the destination itself |
 | Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2868 | ok | excludes shelf-like objects separately |
 | Actor.CastToInventoryAccessibleDestinations | Data/Actor.cs:2871 | ok | |
-| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2884 | ok | excludes shelf-like objects separately |
-| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2890 | ok | |
+| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2884 | ok | a shelf: any neighbour |
+| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2890 | ok | a ground stack: the tile itself |
+| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2895 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
 | Map.TrapWouldSealBuilding | Data/Map.cs:2163 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | ok | origin; was Actor.CanEnter until 81a9544a |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
@@ -69,7 +70,7 @@ Three predicates share the name. Each root below lists its callers, one row per 
 |---|---|---|---|
 | Actor.CastToBumpableDestinations | Data/Actor.cs:2849 | unreviewed | |
 | Actor.CastToBumpableDestinations | Data/Actor.cs:2851 | unreviewed | |
-| Actor.MutuallyAdjacentFor | Data/Actor.cs:2887 | ok | by ref |
+| Actor.MutuallyAdjacentFor | Data/Actor.cs:2910 | ok | by ref |
 | Map.WouldBlacklistFor | Data/Map.cs:1170 | unreviewed | receiver is the actor parameter |
 | Map.PathfindLocSteps | Data/Map.cs:1184 | unreviewed | StrictCanEnter, in the flood-fill's lambda; receiver is the actor parameter |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | unreviewed | throws on the destination |
