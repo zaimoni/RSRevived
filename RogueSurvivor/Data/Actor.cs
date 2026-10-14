@@ -2865,10 +2865,7 @@ namespace djack.RogueSurvivor.Data
       if (null!=src) foreach(var pt in src) {
         var loc = new Location(m, pt);
         var obj = loc.MapObject;
-        if (Model.CanEnter(loc) && !(obj is ShelfLike)) {
-          ret.Add(pt);
-          continue;
-        }
+        if (Model.CanEnter(loc) && !(obj is ShelfLike)) ret.Add(pt);
         if (obj is null || (obj is ShelfLike || !obj.BlocksReachInto())) {
           foreach(var pt2 in pt.Adjacent()) {
             if (Model.CanEnter(new(m, pt2))) ret.Add(pt2);
