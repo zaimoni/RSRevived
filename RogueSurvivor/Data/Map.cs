@@ -1167,7 +1167,7 @@ namespace djack.RogueSurvivor.Data
           && oai.LegalPathingIsValid)
           return null == oai.LegalPathing(dest);
 
-      if (actor.CanEnter(dest)) return false;
+      if (actor.Model.CanEnter(dest)) return false;
       if (   is_adjacent // \todo is this morally dead code?
           && null == Engine.Rules.IsPathableFor(actor, dest)) return true;
       // generators may not be entered, but are still (unreliably) pathable
@@ -1181,7 +1181,7 @@ namespace djack.RogueSurvivor.Data
 
       Func<Location, Dictionary<Location, int>> fn = loc => OneStepForPathfinder(in loc, actor, already);
 
-	  var ret = new FloodfillPathfinder<Location>(fn, fn, loc => actor.StrictCanEnter(in loc));
+	  var ret = new FloodfillPathfinder<Location>(fn, fn, loc => actor.Model.StrictCanEnter(in loc));
       Rect.DoForEach(pt => ret.Blacklist(new Location(this, pt)), pt => WouldBlacklistFor(pt, actor));
       return ret;
     }

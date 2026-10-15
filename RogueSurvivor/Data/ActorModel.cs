@@ -220,6 +220,12 @@ namespace djack.RogueSurvivor.Data
       if (!Map.Canonical(ref loc)) return false;
       return _CanEnter(in loc);
     }
+
+    public bool StrictCanEnter(in Location loc)
+    {
+      if (!Location.IsInBounds(in loc)) return false;
+      return _CanEnter(in loc);
+    }
 #endregion
   }
 }

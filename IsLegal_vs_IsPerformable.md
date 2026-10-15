@@ -21,7 +21,7 @@ The root cause is older than the save format: RS Alpha 10 did not distinguish th
 Only the classes registered for the save matter here (the `[Serializable]` actions, the ones an objective may hold).
 
 | Action | What its `IsLegal` mixed in | Status |
-|---|---|---|
+|---|---|---|byu
 | `ActionMeleeAttack` | adjacency, stamina | **Split** (`f08fd53b`): legality is the target alive; `Actor.CanMeleeAttack` became `ActionMeleeAttack.Can`. |
 | `ActionRangedAttack` | equipped ranged weapon, range, ammo, line of fire | **Split** (`8994e578`): likewise; `ActionRangedAttack.Can`. |
 | `ActionTrade` | activity (fighting, fleeing), empty inventories, a mutually acceptable trade | **Split** (`a3cbab3a`, `f6f49cd3`, `6dee9430`); see issue 4. |

@@ -2835,12 +2835,6 @@ namespace djack.RogueSurvivor.Data
       return _CanEnter(in loc);
     }
 
-    public bool StrictCanEnter(in Location loc)
-    {
-      if (!Location.IsInBounds(in loc)) return false;
-      return _CanEnter(in loc);
-    }
-
     // generators work on point-based pathfinding
     public HashSet<Point> CastToBumpableDestinations(Map m,IEnumerable<Point> src) {
       var ret = new HashSet<Point>();
