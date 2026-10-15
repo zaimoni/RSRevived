@@ -1,6 +1,6 @@
 # Callers of the CanEnter families
 
-Seeded 2026-10-12 from master at 71cc05b3; refreshed 2026-10-14 at 425d663b. Companion to `IsLegal_vs_IsPerformable.md`.
+Seeded 2026-10-12 from master at 71cc05b3; refreshed 2026-10-15 at 8eb462da. Companion to `IsLegal_vs_IsPerformable.md`.
 
 Three predicates share the name. Each root below lists its callers, one row per call site.
 
@@ -36,10 +36,10 @@ Three predicates share the name. Each root below lists its callers, one row per 
 |---|---|---|---|
 | Actor.MovesTo | Data/Actor.cs:2055 | ok | the destination itself |
 | Actor.CastToBumpableDestinations | Data/Actor.cs:2843 | ok | |
-| Actor.CastToBumpableDestinations | Data/Actor.cs:2855 | ok | |
+| Actor.CastToBumpableDestinations | Data/Actor.cs:2845 | ok | |
 | Actor.CastToInventoryAccessibleDestinations(,) | Data/Actor.cs:2862 | ok | excludes shelf-like objects separately |
 | Actor.CastToInventoryAccessibleDestinations(,) | Data/Actor.cs:2865 | ok | |
-| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2849 | ok | a shelf: any neighbour |
+| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2879 | ok | a shelf: any neighbour |
 | Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2885 | ok | a ground stack: the tile itself |
 | Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2891 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
 | Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2903 | ok | a shelf: any neighbour |
@@ -50,10 +50,10 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Map.TrapWouldSealBuilding | Data/Map.cs:2163 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | ok | origin; was Actor.CanEnter until 81a9544a |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
-| _Action.MoveStep.schedule | Engine/Action/MoveStep.cs:176 | ok | destination; was Actor.CanEnter until 81a9544a |
-| _Action.MoveStep.schedule | Engine/Action/MoveStep.cs:177 | ok | origin; was Actor.CanEnter until 81a9544a |
-| _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:203 | ok | origin |
-| _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:209 | ok | each candidate destination, by ref |
+| _Action.MoveStep.schedule | Engine/Action/MoveStep.cs:173 | ok | destination; was Actor.CanEnter until 81a9544a |
+| _Action.MoveStep.schedule | Engine/Action/MoveStep.cs:174 | ok | origin; was Actor.CanEnter until 81a9544a |
+| _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:205 | ok | origin |
+| _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:211 | ok | each candidate destination, by ref |
 | _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:280 | ok | origin |
 | _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:281 | ok | destination |
 | ActionMoveDelta.schedule(Actor, Location, Location) | Engine/Actions/ActionMoveDelta.cs:237 | ok | destination |
