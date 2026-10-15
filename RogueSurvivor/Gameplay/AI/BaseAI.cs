@@ -870,7 +870,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (1 == best.Count) return best[0].Key.Value;
 
       // \todo --faust option effects
-      if (Engine.Session.Get.CMDoptionExists("faust")) {
+      if (false /* Engine.Session.Get.CMDoptionExists("faust") */) {
         var PCs = RogueGame.PCsNearby(m_Actor.Location, RogueGame.VIEW_RADIUS, TRUE);
         if (null != PCs) {
           RogueGame.FaustClairvoyance(m_Actor, PCs.Select(pc => pc.ControlledActor.Location));

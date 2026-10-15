@@ -4654,7 +4654,7 @@ namespace djack.RogueSurvivor.Engine
       string label(int index) { return orders[index].Key; }
       bool details(int index) { orders[index].Value(); return true; }
 
-      return PagedPopup("Ask the spirits for:", orders.Count, label, details);
+      return PagedPopup("Ask the spirits for:", orders.Count, label, details, false);
     }
 
     /// <summary>The Faust toggle menu: every PC and every NPC the spirits would ride, each toggled by its letter.  The menu
@@ -4674,8 +4674,10 @@ namespace djack.RogueSurvivor.Engine
       candidates.Sort((lhs, rhs) => {   // PCs first, then by district, then by name
         int cmp = rhs.IsPlayer.CompareTo(lhs.IsPlayer);
         if (0 != cmp) return cmp;
+#if PROTOTYPE
         cmp = string.CompareOrdinal(lhs.Location.Map.District.Name, rhs.Location.Map.District.Name);
         if (0 != cmp) return cmp;
+#endif
         return string.CompareOrdinal(lhs.UnmodifiedName, rhs.UnmodifiedName);
       });
 
@@ -4685,12 +4687,16 @@ namespace djack.RogueSurvivor.Engine
       }
       bool details(int index) {
         var a = candidates[index];
+        PanViewportTo(a);
         if (a == player_backup) AddMessage(new("The spirits will not unseat you in your own turn.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        else if (a.IsPlayer) AbandonPC(a);
-        else FaustMC(a);
+        else if (a.IsPlayer) {
+          if (YesNoPopup("become NPC")) AbandonPC(a);
+        } else {
+          if (YesNoPopup("become PC")) FaustMC(a);
+        }
         return false;   // stay open, relabelled
       }
-      PagedPopup("The spirits may ride:", candidates.Count, label, details);
+      PagedPopup("The spirits may ride:", candidates.Count, label, details, false);
       PanViewportTo(player_backup);
     }
 
@@ -4737,12 +4743,7 @@ namespace djack.RogueSurvivor.Engine
         if (x.Value.IsCarrying(GameItems.ammo)) return true;
       }
 
-#if PROTOTYPE
-      PanViewportTo(a);
-      return YesNoPopup("Make a PC");
-#else
       return false;
-#endif
     }
 
     private void FaustExamineLiving(Actor a) {
