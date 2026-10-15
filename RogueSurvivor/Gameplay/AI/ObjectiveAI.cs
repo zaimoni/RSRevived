@@ -2687,7 +2687,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     static public bool VetoExit(Actor a, Exit? e) {
-      if (e is null) return true;
+      if (e is null) return false;   // nothing to veto
       if (a.Model.Abilities.AI_CanUseAIExits) {
         if (Gameplay.AI.ObjectiveAI.NeedsAir(e.Location, a) is not null) return true;    // too crowded?
 #if PROTOTYPE
