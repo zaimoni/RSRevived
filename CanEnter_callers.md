@@ -37,9 +37,9 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Actor.MovesTo | Data/Actor.cs:2055 | ok | the destination itself |
 | Actor.CastToInventoryAccessibleDestinations(,) | Data/Actor.cs:2868 | ok | excludes shelf-like objects separately |
 | Actor.CastToInventoryAccessibleDestinations(,) | Data/Actor.cs:2871 | ok | |
-| Actor.HasAnyInventoryAccessibleDestinations() | Data/Actor.cs:2885 | ok | a shelf: any neighbour |
-| Actor.HasAnyInventoryAccessibleDestinations() | Data/Actor.cs:2891 | ok | a ground stack: the tile itself |
-| Actor.HasAnyInventoryAccessibleDestinations() | Data/Actor.cs:2897 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
+| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2885 | ok | a shelf: any neighbour |
+| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2891 | ok | a ground stack: the tile itself |
+| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2897 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
 | Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2909 | ok | a shelf: any neighbour |
 | Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2915 | ok | a ground stack: the tile itself |
 | Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2920 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |

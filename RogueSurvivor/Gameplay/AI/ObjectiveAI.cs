@@ -4391,13 +4391,9 @@ restart:
          _current_goals = goals;
          try {
            return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(Location.pos))),goals);
-         } catch (Pathfail) {
+         } catch (Pathfail e) {
 #if DEBUG
-           if (!RogueGame.IsSimulating) {
-             RogueGame.Game.PanViewportTo(m_Actor);
-             World.Get.DaimonMap();
-             RogueGame.Game.ErrorPopup("floodfill fail");
-           }
+           throw m_Actor.Spotlight(new InvalidOperationException("floodfill fail"));
 #endif
            return null;
          }
