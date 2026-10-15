@@ -9,6 +9,7 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
@@ -185,7 +186,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == map) throw new ArgumentNullException(nameof(map));
       if (null == actor) throw new ArgumentNullException(nameof(actor));
 #endif
-      List<Point> valid_spawn = rect.Where(pt => map.IsWalkableFor(pt, actor) && (goodPositionFn == null || goodPositionFn(pt)));
+      List<Point> valid_spawn = rect.Where(pt => map.IsWalkableFor(pt, actor) && (goodPositionFn == null || goodPositionFn(pt))).ToList();
       if (0>=valid_spawn.Count) return false;
       _actorPlace(actor, new(map, roller.Choose(valid_spawn)));
       return true;
@@ -237,9 +238,10 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null == createFn) throw new ArgumentNullException(nameof(createFn));
 #endif
-      rect.DoForEach(pt => {
+      foreach (var pt in rect) {
+        if (map.HasMapObjectAt(pt)) continue;
         createFn(pt)?.PlaceAt(map, in pt);   // XXX RNG potentially involved
-      }, pt => !map.HasMapObjectAt(pt));
+      }
     }
 
     public static void MapObjectPlaceInGoodPosition(Map map, Rectangle rect, Func<Point, bool> isGoodPosFn, DiceRoller roller, Func<Point, MapObject> createFn)
@@ -248,7 +250,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == createFn) throw new ArgumentNullException(nameof(createFn));
       if (null == isGoodPosFn) throw new ArgumentNullException(nameof(isGoodPosFn));
 #endif
-      List<Point> pointList = rect.Where(pt => isGoodPosFn(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt));
+      List<Point> pointList = rect.Where(pt => isGoodPosFn(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt)).ToList();
       if (0 >= pointList.Count) return;
       Point pt2 = roller.Choose(pointList);
       createFn(pt2)?.PlaceAt(map, in pt2);
@@ -260,7 +262,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null == createFn) throw new ArgumentNullException(nameof(createFn));
 #endif
-      rect.DoForEach(pt => createFn(pt)?.DropAt(map, pt), isGoodPositionFn);
+      foreach (var pt in rect) if (isGoodPositionFn(pt)) createFn(pt)?.DropAt(map, pt);
     }
 
     protected static void ClearRectangle(Map map, Rectangle rect, bool clearZones = true)

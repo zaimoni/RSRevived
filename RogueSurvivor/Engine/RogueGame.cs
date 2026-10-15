@@ -675,7 +675,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == s_RefugeeSpawnZones) {
          HashSet<Point> arrival(Rectangle arrived) {
            HashSet<Point> ret = new();
-           arrived.DoForEach(pt => ret.Add(pt));
+           foreach (var pt in arrived) ret.Add(pt);
            return ret;
          }
 
@@ -2661,7 +2661,8 @@ namespace djack.RogueSurvivor.Engine
       Rectangle survey = new Rectangle(dropPoint.Value - (Point)ARMY_SUPPLIES_SCATTER, (Point)(2 * ARMY_SUPPLIES_SCATTER + 1));
       map.TrimToBounds(ref survey);
       // finding the supply drop point does all of the legality testing -- the center must qualify, the edges need not
-      survey.DoForEach(pt => {
+      foreach (var pt in survey) {
+          if (!AirdropWithoutIncident(map, in pt)) continue;
           map.DropItemAt(GameItems.From(army_supply_drop_stock.UseRarityTable(Rules.Get.DiceRoller.Roll(0, army_supply_drop_checksum))).create(), in pt);
           Session.Get.Police.Investigate.Record(map, in pt);
           Location loc = new Location(map, pt);
@@ -2669,7 +2670,7 @@ namespace djack.RogueSurvivor.Engine
           var already_known = Session.Get.Police.ItemMemory.WhatIsAt(loc) ?? new();
           already_known.UnionWith(army_supply_drop_stock_domain);
           Session.Get.Police.ItemMemory.Set(loc, already_known, map.LocalTime.TurnCounter);
-        },pt => AirdropWithoutIncident(map, in pt));
+      }
 
       NotifyOrderablesAI(RaidType.ARMY_SUPLLIES, new Location(map, dropPoint.Value));
     }
@@ -2699,7 +2700,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Point? FindDropSuppliesPoint(Map map)
     {
-      var pts = map.Rect.Where(pt => IsSuitableDropSuppliesPoint(map, in pt));
+      var pts = map.Rect.Where(pt => IsSuitableDropSuppliesPoint(map, in pt)).ToList();
       if (0 >= pts.Count) return null;
       return Rules.Get.DiceRoller.Choose(pts);
     }
@@ -2956,7 +2957,7 @@ namespace djack.RogueSurvivor.Engine
         if (toSpawn.WouldBeAdjacentToEnemy(loc.Map, loc.Position)) return false;
         if (null != loc.Actor) return false;
         return true;
-      });
+      }).ToList();
       if (0 >= tmp.Count) return false;
       var loc = new Location(dest.m, Rules.Get.DiceRoller.Choose(tmp));
       if (!Map.Canonical(ref loc)) return false; // invariant failure
@@ -9205,8 +9206,7 @@ namespace djack.RogueSurvivor.Engine
         if (exit_to_surface.Y-2 <=p.Y && exit_to_surface.Y + 2 >= p.Y) return false;
         return true;
       }
-      m.Rect.DoForEach(pt=>Session.Get.Police.Investigate.Record(m, in pt),
-          pt => in_underground_base_room(pt));
+      foreach (var pt in m.Rect) if (in_underground_base_room(pt)) Session.Get.Police.Investigate.Record(m, in pt);
 #endregion
 #region 2) examine all CHAR offices
      World.Get.DoForAllDistricts(District.DamnCHAROfficesToPoliceInvestigation);
@@ -9973,14 +9973,14 @@ namespace djack.RogueSurvivor.Engine
 
       // eavesdropping
       var survey = new Rectangle(speaker.Location.Position+Rules.CHAT_RADIUS*Direction.NW, (Point)(2*Rules.CHAT_RADIUS+1));
-      survey.DoForEach(pt => {
-          if (pt == speaker.Location.Position) return;
+      foreach (var pt in survey) {
+          if (pt == speaker.Location.Position) continue;
           Location loc = new Location(speaker.Location.Map, pt);
           if (Map.Canonical(ref loc)) {
               var overhear = loc.Actor;
               if (null != overhear && target != overhear) op(overhear);
           }
-      });
+      }
       return true;
     }
 
@@ -9998,10 +9998,10 @@ namespace djack.RogueSurvivor.Engine
 
         var survey = new Rectangle(loc.Position+(short)radius*Direction.NW, (Point)(2*radius+1));
         // lambda function access of loc.Position prevents converting to member function
-        survey.DoForEach(pt => {
+        foreach (var pt in survey) {
           Location test = new Location(loc.Map, pt);
           if (Map.Canonical(ref test)) classify(test.Actor);
-        });
+        }
 
         var exit = loc.Exit;
         if (null != exit) classify(exit.Location.Actor);
@@ -10029,10 +10029,10 @@ namespace djack.RogueSurvivor.Engine
 
         var survey = new Rectangle(loc.Position+(short)radius*Direction.NW, (Point)(2*radius+1));
         // lambda function access of loc.Position prevents converting to member function
-        survey.DoForEach(pt => {
+        foreach (var pt in survey) {
           Location test = new Location(loc.Map, pt);
           if (Map.Canonical(ref test)) classify(test.Actor);
-        });
+        }
 
         var exit = loc.Exit;
         if (null != exit) classify(exit.Location.Actor);
@@ -12909,22 +12909,22 @@ restart:
         m_UI.UI_ClearMinimap(Color.Black);
 #region set visited tiles color.
         if (null == threats) {
-          view.DoForEach(pt => m_UI.UI_SetMinimapColor(pt.X - view.Left, pt.Y - view.Top, (map.HasExitAtExt(pt) ? Color.HotPink : map.GetTileModelAtExt(pt).MinimapColor)), pt => Player.Controller.IsKnown(new Location(map, pt)));
+          foreach (var pt in view) if (Player.Controller.IsKnown(new Location(map, pt))) m_UI.UI_SetMinimapColor(pt.X - view.Left, pt.Y - view.Top, (map.HasExitAtExt(pt) ? Color.HotPink : map.GetTileModelAtExt(pt).MinimapColor));
         } else {
           HashSet<Point> tainted = threats.ThreatWhere(map, view);
           HashSet<Point> tourism = sights_to_see.In(map, view);
-          view.DoForEach(pos => {
+          foreach (var pos in view) {
               if (tainted.Contains(pos)) {
                 m_UI.UI_SetMinimapColor(pos.X-view.Left, pos.Y-view.Top, Color.Maroon);
-                return;
+                continue;
               }
               if (tourism.Contains(pos)) {
                 m_UI.UI_SetMinimapColor(pos.X - view.Left, pos.Y - view.Top, Color.Magenta);
-                return;
+                continue;
               }
-              if (!Player.Controller.IsKnown(new Location(map, pos))) return;
+              if (!Player.Controller.IsKnown(new Location(map, pos))) continue;
               m_UI.UI_SetMinimapColor(pos.X - view.Left, pos.Y - view.Top, (map.HasExitAtExt(pos) ? Color.HotPink : map.GetTileModelAtExt(pos).MinimapColor));
-          });
+          }
         }
 #endregion
         m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
@@ -12932,7 +12932,8 @@ restart:
       var minimap_delta = (MapViewRect.Location-view.Location)*MINITILE_SIZE;
       m_UI.UI_DrawRect(Color.White, new GDI_Rectangle(MINIMAP_X + minimap_delta.X, MINIMAP_Y + minimap_delta.Y, MapViewRect.Width * MINITILE_SIZE, MapViewRect.Height * MINITILE_SIZE));
       if (s_Options.ShowPlayerTagsOnMinimap) {
-        view.DoForEach(pt => {
+        foreach (var pt in view) {
+            if (!Player.Controller.IsKnown(new Location(map, pt))) continue;
             string imageID = null;
             if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG1, in pt)) imageID = GameImages.MINI_PLAYER_TAG1;
             else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG2, in pt)) imageID = GameImages.MINI_PLAYER_TAG2;
@@ -12942,8 +12943,7 @@ restart:
               var delta = (pt - view.Location)* MINITILE_SIZE;
               m_UI.UI_DrawImage(imageID, MINIMAP_X + delta.X - 1, MINIMAP_Y + delta.Y - 1);
             }
-        },
-        pt => Player.Controller.IsKnown(new Location(map, pt)));
+        }
       }
       if (!Player.IsSleeping) {
         // if we see an ally, we should be able to "read off body language" who they are aiming at 2020-09-11 zaimoni
@@ -13030,7 +13030,12 @@ restart:
                 if (null != icons) DrawDetected(actor, icons.Value.Key, icons.Value.Value, view);
             });
         }
-        if (null != draw) view.DoForEach(draw, non_self);
+        if (null != draw) {
+          foreach (var pt in view) {
+            var actor = non_self(pt);
+            if (null != actor) draw(actor);
+          }
+        }
       }	// end if (!Player.IsSleeping)
       var denorm = map.Denormalize(Player.Location);
       if (null != denorm) {
@@ -14193,12 +14198,13 @@ restart:
           var zonesAt1 = entryMap.GetZonesAt(player.Location.Position);
           if (null == zonesAt1) continue;
           Zone zone = zonesAt1[0];
-          entryMap.Rect.DoForEach(pt => player.Controller.ForceKnown(pt),
-          pt => {
-            if (!entryMap.IsInsideAt(pt)) return true;
-            var zonesAt2 = entryMap.GetZonesAt(pt);
-            return null != zonesAt2 && zonesAt2[0] == zone;
-          });
+          foreach (var pt in entryMap.Rect) {
+            if (entryMap.IsInsideAt(pt)) {
+              var zonesAt2 = entryMap.GetZonesAt(pt);
+              if (null == zonesAt2 || zonesAt2[0] != zone) continue;
+            }
+            player.Controller.ForceKnown(pt);
+          }
         }
       }
 #if PRERELEASE_MOTHBALL
@@ -14961,10 +14967,10 @@ retry:
                 safe_zone.Add(pt);
               }
               var escapees = new List<Actor>();
-              (new Rectangle(1,4,17,1)).DoForEach(pt => {
+              foreach (var pt in new Rectangle(1,4,17,1)) {
                 Actor a = map.GetActorAt(pt);
                 if (null != a) escapees.Add(a);
-              });
+              }
               var escape = new Tasks.TaskEscapeNanny(escapees, safe_zone);
               escape.Trigger(dest);
               dest.AddTimer(escape);
@@ -15041,11 +15047,11 @@ retry:
         Session.Get.ScriptStage_HospitalPowerup = 3;    // hospital has regained power
         foreach(var z in storage.Zones) {
           if (!z.Name.StartsWith("storage@")) continue;
-          z.Bounds.DoForEach(pt => {
-            if (!storage.GetTileModelAt(pt).IsWalkable) return;  // storage.IsWalkable(pt) fails for intact containers
-            if (storage.AnyAdjacent<DoorWindow>(pt)) return;
+          foreach (var pt in z.Bounds) {
+            if (!storage.GetTileModelAt(pt).IsWalkable) continue;  // storage.IsWalkable(pt) fails for intact containers
+            if (storage.AnyAdjacent<DoorWindow>(pt)) continue;
             Session.Get.Police.Investigate.Record(storage, in pt);
-          });
+          }
         }
       }
     }
@@ -15355,13 +15361,13 @@ retry:
         List<Actor> ret = new();
         var survey = new Rectangle(loc.Position+(short)radius*Direction.NW, (Point)(2*radius+1));
         // lambda function access of loc.Position prevents converting to member function
-        survey.DoForEach(pt => {
+        foreach (var pt in survey) {
           Location test = new Location(loc.Map, pt);
           if (Map.Canonical(ref test)) {
               var actor = test.Actor;
               if (null != actor && !actor.IsDead && ok(actor)) ret.Add(actor);
           }
-        });
+        }
 
         var exit = loc.Exit;
         if (null != exit) {

@@ -502,12 +502,12 @@ namespace djack.RogueSurvivor.Data
                     var outside = GetZonesByPartialName("$Outside");
                     if (null != inside) {
                         foreach (var z in inside) {
-                            z.Bounds.DoForEach(pt => SetIsInsideAt(pt));
+                            foreach (var pt in z.Bounds) SetIsInsideAt(pt);
                         }
                     }
                     if (null != outside) {
                         foreach (var z in outside) {
-                            z.Bounds.DoForEach(pt => SetIsInsideAt(pt, false));
+                            foreach (var pt in z.Bounds) SetIsInsideAt(pt, false);
                         }
                     }
                 }
@@ -1182,7 +1182,7 @@ namespace djack.RogueSurvivor.Data
       Func<Location, Dictionary<Location, int>> fn = loc => OneStepForPathfinder(in loc, actor, already);
 
       var ret = new FloodfillPathfinder<Location>(fn, fn, loc => actor.Model.StrictCanEnter(in loc));
-      Rect.DoForEach(pt => ret.Blacklist(new Location(this, pt)), pt => WouldBlacklistFor(pt, actor));
+      foreach (var pt in Rect) if (WouldBlacklistFor(pt, actor)) ret.Blacklist(new Location(this, pt));
       return ret;
     }
 
@@ -1194,7 +1194,7 @@ namespace djack.RogueSurvivor.Data
       Func<Point, Dictionary<Point, int>> fn = pt => OneStepForPathfinder(pt, actor, already);
 
       var ret = new FloodfillPathfinder<Point>(fn, fn, (pt=> IsInBounds(pt)));
-      Rect.DoForEach(pt => ret.Blacklist(pt), pt => WouldBlacklistFor(pt, actor));
+      foreach (var pt in Rect) if (WouldBlacklistFor(pt, actor)) ret.Blacklist(pt);
       return ret;
     }
 

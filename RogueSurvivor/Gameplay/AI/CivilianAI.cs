@@ -159,7 +159,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var tourism = m_Actor.InterestingLocs;
           var map = m_Actor.Location.Map;
           m_Exploration.Update(m_Actor.Location,zone => {
-            zone.Rect.DoForEach(pt => { if (!_items.HaveEverSeen(new Location(map, pt))) tourism.Record(map, in pt); });
+            foreach (var pt in zone.Rect) if (!_items.HaveEverSeen(new Location(map, pt))) tourism.Record(map, in pt);
           });
         } else {
           m_Exploration.Update(m_Actor.Location);

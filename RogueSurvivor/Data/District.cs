@@ -55,16 +55,16 @@ namespace djack.RogueSurvivor.Data
         m_Name = value.Name;    // historical identity of district name and map name
         AddMap(value);
         // the police faction knows all outside squares (map revealing effect)
-        m_EntryMap.Rect.DoForEach(pt=> {
-          if (Gameplay.Generators.BaseTownGenerator.PoliceKnowAtGameStart(m_EntryMap,pt)) return;
+        foreach (var pt in m_EntryMap.Rect) {
+          if (Gameplay.Generators.BaseTownGenerator.PoliceKnowAtGameStart(m_EntryMap,pt)) continue;
           if (!m_EntryMap.IsInsideAt(pt)) {
             Engine.Session.Get.ForcePoliceKnown(new Location(m_EntryMap, pt));
-            return;
+            continue;
           }
           var loc = new Location(m_EntryMap, pt);
-          if (Engine.Session.Get.Police.Investigate.Contains(in loc)) return; // already known
+          if (Engine.Session.Get.Police.Investigate.Contains(in loc)) continue; // already known
           Engine.Session.Get.Police.Investigate.Record(in loc);
-        });
+        }
       }
     }
 
@@ -248,12 +248,12 @@ namespace djack.RogueSurvivor.Data
       if (!m_Maps.Contains(map)) m_Maps.Add(map);
 #if DEBUG
       // some algorithms assume everything is in at least one zone
-      map.Rect.DoForEach(pt => {
-        if (!map.IsWalkable(pt)) return;    // no problem if not-walkable point is unzoned
-        if (!map.IsInsideAt(pt)) return;    // currently we only care if inside points are zoned (could change)
+      foreach (var pt in map.Rect) {
+        if (!map.IsWalkable(pt)) continue;    // no problem if not-walkable point is unzoned
+        if (!map.IsInsideAt(pt)) continue;    // currently we only care if inside points are zoned (could change)
         var zones = map.GetZonesAt(pt);
         if (null == zones) throw new InvalidOperationException(map.Name+": unzoned "+pt.to_s());
-      });
+      }
       // we're bringing up containers
       map.DoForAllGroundInventories((loc,inv) => {
           var obj = loc.MapObject as ShelfLike;
@@ -480,10 +480,10 @@ namespace djack.RogueSurvivor.Data
        Map map = d.EntryMap;
        foreach(var zone in map.Zones) {
          if (!zone.Name.Contains("CHAR Office")) continue;
-         zone.Bounds.DoForEach(pt => {
+         foreach (var pt in zone.Bounds) {
              var loc = new Location(map, pt);
              if (!Engine.Session.Get.Police.ItemMemory.HaveEverSeen(loc)) Engine.Session.Get.Police.Investigate.Record(in loc);
-         });
+         }
        }
     }
 

@@ -67,10 +67,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       Rectangle survey = new Rectangle(actor.Location.Position+Direction.NW, 3, 3);
       Map map = actor.Location.Map;
       int turnCounter = map.LocalTime.TurnCounter;
-      survey.DoForEach(pt => {
+      foreach (var pt in survey) {
         var scentAt = map.GetScentByOdorAt(m_OdorToSmell, in pt); // 0 is the no-scent value
         if (scentAt >= num) m_List.Add(new(new AIScent(scentAt), turnCounter, new Location(map, pt)));
-      });
+      }
       return m_List;
     }
   }

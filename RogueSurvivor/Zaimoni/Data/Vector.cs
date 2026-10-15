@@ -437,30 +437,11 @@ namespace Zaimoni.Data
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => new Enumerator(this);
 
 #nullable enable
-        public Vector2D<T>? FirstOrDefault(Predicate<Vector2D<T>> testFn)
+        /// <summary>The allocation-free twin of LINQ's Any, which would box both this struct and its enumerator.</summary>
+        public bool Any(Predicate<Vector2D<T>> testFn)
         {
-            foreach (var pt in this) if (testFn(pt)) return pt;
-            return null;
-        }
-
-        public bool Any(Predicate<Vector2D<T>> testFn) => null != FirstOrDefault(testFn);
-
-        public void DoForEach(Action<Vector2D<T>> doFn, Predicate<Vector2D<T>> testFn)
-        {
-            foreach (var pt in this) if (testFn(pt)) doFn(pt);
-        }
-
-        public void DoForEach<U>(Action<U> doFn, Func<Vector2D<T>, U?> testFn) where U : class
-        {
-            foreach (var pt in this) {
-                var test = testFn(pt);
-                if (null != test) doFn(test);
-            }
-        }
-
-        public void DoForEach(Action<Vector2D<T>> doFn)
-        {
-            foreach (var pt in this) doFn(pt);
+            foreach (var pt in this) if (testFn(pt)) return true;
+            return false;
         }
 
         public void DoForEachOnEdge(Action<Vector2D<T>> doFn)
@@ -497,20 +478,6 @@ namespace Zaimoni.Data
                 pt.X = Right - T.One;
                 if (testFn(pt)) doFn(pt);
             }
-        }
-
-        public List<Vector2D<T>> Where(Predicate<Vector2D<T>> testFn)
-        {
-            List<Vector2D<T>> ret = new();
-            DoForEach(pt => ret.Add(pt), testFn);
-            return ret;
-        }
-
-        public List<Vector2D<T>> WhereOnEdge(Predicate<Vector2D<T>> testFn)
-        {
-            List<Vector2D<T>> ret = new();
-            DoForEachOnEdge(pt => ret.Add(pt), testFn);
-            return ret;
         }
 
         public void WhereOnEdge(ref Stack<Vector2D<T>> dest, Predicate<Vector2D<T>> testFn)

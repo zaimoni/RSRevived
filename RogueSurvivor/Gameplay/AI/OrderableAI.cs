@@ -3198,14 +3198,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int span = 2 * maxDist + 1;
         var rect = new Rectangle(other.Location.Position - (Point)maxDist, (Point)span);
         var goals = new HashSet<Location>();
-        rect.DoForEach(pt => {
+        foreach (var pt in rect) {
             var loc2 = new Location(other.Location.Map, pt);
-            if (!Map.Canonical(ref loc2)) return;
-            if (clan.Any(a => loc2 == a.Location)) return;
-            if (minDist > Rules.GridDistance(in loc2, other.Location)) return; // no-op if minDist is 1
-            if (!loc2.IsWalkableFor(m_Actor)) return;
+            if (!Map.Canonical(ref loc2)) continue;
+            if (clan.Any(a => loc2 == a.Location)) continue;
+            if (minDist > Rules.GridDistance(in loc2, other.Location)) continue; // no-op if minDist is 1
+            if (!loc2.IsWalkableFor(m_Actor)) continue;
             goals.Add(loc2);
-        });
+        }
         if (0 < goals.Count) {
              var act = BehaviorPathTo(goals);
           if (null == act || !act.IsPerformable()) return null; // direct-returned from SelectAction only

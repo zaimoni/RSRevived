@@ -212,7 +212,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
       var world = World.Get;
       var world_bounds = world.Extent;
-      world_bounds.DoForEach(pt => {
+      foreach (var pt in world_bounds) {
         if (0<world.SubwayLayout(pt)) {
           var working = new List<Point>();
           if (CanHaveSubwayStationBlocks(world.SubwayLayout(pt))) working.Add(pt);
@@ -226,7 +226,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #endif
           SubwayElectrifyPlans.Add(working);
         }
-      });
+      }
       // generally speaking:
       // police and hospital both strongly prefer one of shopping, business, or general districts and do not like residential or green
       // they also both like a central location
@@ -735,15 +735,15 @@ restart:
       // This stage empirically can infinite-loop.
       {
       var candidates = new List<Point>();
-      sewers.Rect.DoForEach(pt => {
-        if (!sewers.GetTileModelAt(pt).IsWalkable) return;
+      foreach (var pt in sewers.Rect) {
+        if (!sewers.GetTileModelAt(pt).IsWalkable) continue;
         Tile tileAt = surface.GetTileAt(pt);
-        if (!tileAt.Model.IsWalkable) return;
-        if (sewers.HasMapObjectAt(pt)) return;
-        if (tileAt.IsInside) return;
-        if (surface.HasMapObjectAt(pt)) return;
+        if (!tileAt.Model.IsWalkable) continue;
+        if (sewers.HasMapObjectAt(pt)) continue;
+        if (tileAt.IsInside) continue;
+        if (surface.HasMapObjectAt(pt)) continue;
         if (tileAt.Model == GameTiles.FLOOR_WALKWAY || tileAt.Model == GameTiles.FLOOR_GRASS) candidates.Add(pt);
-      });
+      }
       if (0 >= candidates.Count) goto restart;
 
       int countLinks = 0;
@@ -821,8 +821,7 @@ restart:
       Item sewers_stock() {
           return PostprocessQuantity(GameItems.From(sewer_stock.UseRarityTable(m_DiceRoller.Roll(0, sewer_checksum))).create());
       }
-      sewers.Rect.DoForEach(pt => sewers.DropItemAt(sewers_stock(), in pt),
-                            pt => sewers.IsWalkable(pt) && m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE));
+      foreach (var pt in sewers.Rect) if (sewers.IsWalkable(pt) && m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE)) sewers.DropItemAt(sewers_stock(), in pt);
 #endregion
 #if DEBUG
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #8 ok");
@@ -1204,10 +1203,10 @@ restart:
 #endregion
 
       // not practical to do this piecewise
-      subway.Rect.DoForEach(pt => {
+      foreach (var pt in subway.Rect) {
           if (subway.GetTileModelAt(pt).IsWalkable) Session.Get.ForcePoliceKnown(new Location(subway, pt));
           else if (subway.HasAnyAdjacentInMap(pt,pt2 => subway.GetTileModelAt(pt2).IsWalkable)) Session.Get.ForcePoliceKnown(new Location(subway, pt));
-      });
+      }
 
       return subway;
     }
@@ -1619,7 +1618,7 @@ restart:
         if (rect4.IsEmpty) continue;
         Rectangle rect5 = new Rectangle(tablePos + Direction.NW, 3, 3);
         rect5.Intersect(rect4);
-        rect5.DoForEach(pt=>chair_pos.Add(pt),pt=> map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt));    // table is already placed
+        foreach (var pt in rect5) if (map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt)) chair_pos.Add(pt);    // table is already placed
         if (2 >= chair_pos.Count) {
           foreach(Point pt in chair_pos) MakeObjChair(GameImages.OBJ_CHAR_CHAIR).PlaceAt(map, in pt);
           chair_pos.Clear();
@@ -1927,7 +1926,7 @@ restart:
             // a placement that says where it placed; the tiers are tried strictest first
             Point? place(Rectangle rect, Func<Point, MapObject> make, params Func<Point, bool>[] tiers) {
                 foreach (var ok in tiers) {
-                    var candidates = rect.Where(pt => free(pt) && ok(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt));
+                    var candidates = rect.Where(pt => free(pt) && ok(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt)).ToList();
                     if (0 >= candidates.Count) continue;
                     var pt = m_DiceRoller.Choose(candidates);
                     make(pt).PlaceAt(map, in pt);
@@ -2111,15 +2110,15 @@ restart:
       ///////////////////////////////////////
       bool hasOutsideDoor = false;
       var windows = new List<Point>();
-      b.BuildingRect.DoForEach(pt => {
-        if (map.IsInsideAt(pt)) return;
-        if (!(map.GetMapObjectAt(pt) is DoorWindow obj)) return;
+      foreach (var pt in b.BuildingRect) {
+        if (map.IsInsideAt(pt)) continue;
+        if (!(map.GetMapObjectAt(pt) is DoorWindow obj)) continue;
         if (obj.IsWindow) {
           windows.Add(pt);
-          return;
+          continue;
         }
         hasOutsideDoor = true;
-      });
+      }
       if (!hasOutsideDoor) {
         if (0 >= windows.Count) throw new InvalidOperationException("home w/o outside doors");
         var window_at = m_DiceRoller.Choose(windows);
@@ -2364,8 +2363,7 @@ restart:
 
         Rectangle platform = plat();
         TileFill(map, GameTiles.FLOOR_CONCRETE, platform);
-        platform.Edge((Compass.XCOMlike)(-direction).Index).DoForEach(pt => map.PlaceAt(MakeObjIronBench(), pt),
-            pt => (CountAdjWalls(map, pt) >= 3));
+        foreach (var pt in platform.Edge((Compass.XCOMlike)(-direction).Index)) if (CountAdjWalls(map, pt) >= 3) map.PlaceAt(MakeObjIronBench(), pt);
         DoForEachTile(platform, map, loc => Session.Get.ForcePoliceKnown(loc));
         map.AddZone(MakeUniqueZone("platform", platform));
         map.PlaceAt(MakeObjIronGate(), centralGateAt);
@@ -2868,7 +2866,7 @@ restart:
           if (pt.Y < basement.Rect.Height - 2) candidates_1x2.Add(pt);
       });
 #else
-      inner.DoForEach(pt => candidates.Add(pt));
+      foreach (var pt in inner) candidates.Add(pt);
 #endif
       bool walkable_loc(in Point test) {
         if (!basement.GetTileModelAt(test).IsWalkable) {
@@ -2976,7 +2974,7 @@ restart:
       TileFill(basement, GameTiles.FLOOR_CONCRETE, true);
       TileRectangle(basement, GameTiles.WALL_BRICK, basement.Rect);
       var candidates = new List<Point>();
-      buildingRect.DoForEach(pt => candidates.Add(pt), pt => map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt) && map.IsInsideAt(pt));
+      foreach (var pt in buildingRect) if (map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt) && map.IsInsideAt(pt)) candidates.Add(pt);
       Point point = m_DiceRoller.Choose(candidates);
       Point basementStairs = point - buildingRect.Location;
       AddExit(map, point, basement, basementStairs, GameImages.DECO_STAIRS_DOWN);
@@ -2995,11 +2993,11 @@ restart:
       while(!_ForceHouseBasementConnected(basement,basementStairs));
       // set up police investigation after floor layout is stable
       HashSet<Gameplay.Item_IDs> basement_items = new(construction_shop_stock.Select(item_spec => item_spec.Key));  // XXX \todo could be done early but only needed during world generation
-      basement.Rect.DoForEach(pt => {
-          if (!basement.GetTileModelAt(pt).IsWalkable) return;
+      foreach (var pt in basement.Rect) {
+          if (!basement.GetTileModelAt(pt).IsWalkable) continue;
           Session.Get.Police.Investigate.Record(basement, in pt);
           Session.Get.Police.ItemMemory.Set(new Location(basement,pt), basement_items, 0);   // basements generally are low-risk Day 0 for police so coming here when looking for huge hammers is sensible
-      });
+      }
       MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
       {
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_OBJECT_CHANCE_PER_TILE)) return null;
@@ -3084,7 +3082,7 @@ restart:
         }
         while (null == zone1);
         List<Point> candidates = new();
-        zone1.Bounds.DoForEach(pt => candidates.Add(pt),pt => surfaceMap.IsWalkable(pt));
+        foreach (var pt in zone1.Bounds) if (surfaceMap.IsWalkable(pt)) candidates.Add(pt);
         if (0 >= candidates.Count) continue;
         surfaceExit = m_DiceRoller.Choose(candidates);
         flag = true;
