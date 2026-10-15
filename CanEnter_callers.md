@@ -1,12 +1,13 @@
 # Callers of the CanEnter families
 
-Seeded 2026-10-12 from master at 71cc05b3; refreshed 2026-10-15 at 8eb462da. Companion to `IsLegal_vs_IsPerformable.md`.
+Seeded 2026-10-12 from master at 71cc05b3; refreshed 2026-10-15 at 0ecb8604. Companion to `IsLegal_vs_IsPerformable.md`.
 
-Three predicates share the name. Each root below lists its callers, one row per call site.
+Three predicates share the name, and a fourth chooses between two of them. Each root below lists its callers, one row per call site.
 
 - **`Map.CanEnter(ref Location)`** (static): canonicalises, then asks only whether the tile is walkable. "It is possible to configure an actor that can enter." Geometry alone.
 - **`ActorModel.CanEnter(Location)`**, `CanEnter(ref Location)`: the model's abilities, no skills, stamina or tiredness. Legality: an actor of this model could ever enter.
 - **`Actor.CanEnter(Location)`**, `CanEnter(ref Location)`: this actor, with its skills and stamina. Performability: it can enter now. `Actor.StrictCanEnter(in Location)` is the same test without canonicalising: out of bounds is a no. Its callers are listed under `Actor.CanEnter`.
+- **`Actor.MayEnter(Location)`**, `MayEnter(ref Location)`: the strictest answer the distance allows. The actor's own tile: yes. Adjacent (InteractionDistance one): `Actor.CanEnter`. Farther: `ActorModel.CanEnter`.
 
 ## How to read and maintain this file
 
@@ -24,10 +25,10 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Location.ForEachAdjacent | Data/Location.cs:76 | ok | filters the neighbours handed to the callback |
 | Op.PushOnto.schedule | Engine/Action/PushOnto.cs:184 | ok | origin |
 | Op.PushOnto.schedule | Engine/Action/PushOnto.cs:185 | ok | destination |
-| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:299 | ok | throws on the origin |
-| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:300 | ok | throws on the destination |
-| UpdateMoveDelta.toDest | Engine/Actions/ActionMoveDelta.cs:329 | ok | |
-| UpdateMoveDelta.fromOrigin | Engine/Actions/ActionMoveDelta.cs:336 | ok | |
+| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:298 | ok | throws on the origin |
+| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:299 | ok | throws on the destination |
+| UpdateMoveDelta.toDest | Engine/Actions/ActionMoveDelta.cs:328 | ok | |
+| UpdateMoveDelta.fromOrigin | Engine/Actions/ActionMoveDelta.cs:335 | ok | |
 | PathToTarget.Unstage | Gameplay/AI/Goals/Objective.cs:193 | ok | |
 
 ## ActorModel.CanEnter
@@ -35,16 +36,18 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | caller | site | status | note |
 |---|---|---|---|
 | Actor.MovesTo | Data/Actor.cs:2055 | ok | the destination itself |
-| Actor.CastToBumpableDestinations | Data/Actor.cs:2843 | ok | |
-| Actor.CastToBumpableDestinations | Data/Actor.cs:2845 | ok | |
-| Actor.CastToInventoryAccessibleDestinations(,) | Data/Actor.cs:2862 | ok | excludes shelf-like objects separately |
-| Actor.CastToInventoryAccessibleDestinations(,) | Data/Actor.cs:2865 | ok | |
-| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2879 | ok | a shelf: any neighbour |
-| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2885 | ok | a ground stack: the tile itself |
-| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2891 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
-| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2903 | ok | a shelf: any neighbour |
-| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2909 | ok | a ground stack: the tile itself |
-| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2914 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
+| Actor.MayEnter(Location) | Data/Actor.cs:2844 | unreviewed | beyond adjacency |
+| Actor.MayEnter(ref Location) | Data/Actor.cs:2853 | unreviewed | beyond adjacency |
+| Actor.CastToBumpableDestinations | Data/Actor.cs:2861 | ok | |
+| Actor.CastToBumpableDestinations | Data/Actor.cs:2863 | ok | |
+| Actor.CastToInventoryAccessibleDestinations(,) | Data/Actor.cs:2880 | ok | excludes shelf-like objects separately |
+| Actor.CastToInventoryAccessibleDestinations(,) | Data/Actor.cs:2883 | ok | |
+| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2897 | ok | a shelf: any neighbour |
+| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2903 | ok | a ground stack: the tile itself |
+| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2909 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
+| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2921 | ok | a shelf: any neighbour |
+| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2927 | ok | a ground stack: the tile itself |
+| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2932 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
 | Map.WouldBlacklistFor | Data/Map.cs:1170 | ok | receiver is the actor parameter |
 | Map.PathfindLocSteps | Data/Map.cs:1184 | ok | StrictCanEnter, in the flood-fill's lambda; receiver is actor.Model |
 | Map.TrapWouldSealBuilding | Data/Map.cs:2163 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
@@ -56,9 +59,9 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:211 | ok | each candidate destination, by ref |
 | _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:280 | ok | origin |
 | _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:281 | ok | destination |
-| ActionMoveDelta.schedule(Actor, Location, Location) | Engine/Actions/ActionMoveDelta.cs:237 | ok | destination |
-| ActionMoveDelta.schedule(Actor, Location, Location) | Engine/Actions/ActionMoveDelta.cs:238 | ok | origin |
-| ActionMoveDelta.schedule(Actor, Location) | Engine/Actions/ActionMoveDelta.cs:256 | ok | destination; the overload without an origin |
+| ActionMoveDelta.schedule(Actor, Location, Location) | Engine/Actions/ActionMoveDelta.cs:236 | ok | destination |
+| ActionMoveDelta.schedule(Actor, Location, Location) | Engine/Actions/ActionMoveDelta.cs:237 | ok | origin |
+| ActionMoveDelta.schedule(Actor, Location) | Engine/Actions/ActionMoveDelta.cs:255 | ok | destination; the overload without an origin |
 | ActionMoveStep.schedule(Actor, Location) | Engine/Actions/ActionMoveStep.cs:52 | ok | |
 | ActionMoveStep.schedule(Actor, Point) | Engine/Actions/ActionMoveStep.cs:58 | ok | |
 | RogueGame.HandleItemInfo | Engine/RogueGame.cs:4196 | ok | local function `details`; receiver Player |
@@ -77,7 +80,7 @@ Three predicates share the name. Each root below lists its callers, one row per 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MutuallyAdjacentFor | Data/Actor.cs:2929 | ok | by ref |
+| Actor.MutuallyAdjacentFor | Data/Actor.cs:2947 | ok | by ref |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | ok | throws on the destination |
 | _Action.MoveStep._runFrom | Engine/Action/MoveStep.cs:192 | ok | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:249 | ok | |
