@@ -591,7 +591,7 @@ namespace djack.RogueSurvivor.Data
                     }
                     if (new_mark) {
                         ZoneLoc near = new(moving.Location.Map, new Rectangle(moving.Location.Position + 2 * Direction.NW, new Point(5, 5)));
-                        var lockdown = near.ParsedListing;
+                        var lockdown = near.GroupBy(loc => loc.Map).ToDictionary(g => g.Key, g => g.Select(loc => loc.Position).ToHashSet());
                         if (_threats.TryGetValue(moving, out var cache)) {
                             List<Map> doomed = new();
                             foreach (var x in cache) {

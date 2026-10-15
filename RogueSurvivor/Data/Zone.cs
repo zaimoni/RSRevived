@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Data
   }
 
   [Serializable]    // just in case
-  public sealed record ZoneLoc : IMap
+  public sealed record ZoneLoc : IMap, IEnumerable<Location>
   {
     public readonly Map m;
     public readonly Rectangle Rect; // doesn't have to be normalized
@@ -162,8 +162,7 @@ namespace djack.RogueSurvivor.Data
           var locs = new HashSet<Location>();
           var walking = WalkOut();
           if (null != walking) locs.UnionWith(walking.Select(act => act.dest));
-          var vertical = grep(loc => null != loc.Exit);
-          if (null != vertical) locs.UnionWith(vertical.Select(loc => loc.Exit!.Location));
+          locs.UnionWith(this.Where(loc => null != loc.Exit).Select(loc => loc.Exit!.Location));
 #if DEBUG
           if (0 >= locs.Count) throw new InvalidOperationException("zone w/o exits");
 #endif
@@ -199,30 +198,48 @@ namespace djack.RogueSurvivor.Data
         };
     }
 
-    public Dictionary<Map, HashSet<Point>> ParsedListing {
-      get {
-        Dictionary<Map, HashSet<Point>> ret = new();
-        Rect.DoForEach(pt => {
-            Location loc = new(m, pt);
-            if (!Map.Canonical(ref loc)) return;
-            if (!ret.TryGetValue(loc.Map, out var cache)) ret.Add(loc.Map, cache = new());
-            cache.Add(loc.Position);
-        });
-        return ret;
+    /// <summary>The canonical locations of the rectangle, in the order Rect enumerates its points (X outer, Y inner).  A point that
+    /// does not normalize is skipped.  A struct, so foreach does not allocate.</summary>
+    public struct Enumerator : IEnumerator<Location>
+    {
+      private readonly Map m;
+      private Rectangle.Enumerator pts;
+      private Location current;
+
+      public Enumerator(ZoneLoc src)
+      {
+        m = src.m;
+        pts = src.Rect.GetEnumerator();
+        current = default;
       }
+
+      public Location Current => current;
+      object System.Collections.IEnumerator.Current => current;
+
+      public bool MoveNext()
+      {
+        while (pts.MoveNext()) {
+          var loc = new Location(m, pts.Current);
+          if (Map.Canonical(ref loc)) {
+            current = loc;
+            return true;
+          }
+        }
+        return false;
+      }
+
+      public void Reset()
+      {
+        pts.Reset();
+        current = default;
+      }
+
+      public void Dispose() { }
     }
 
-    public List<Location> Listing {
-      get {
-        List<Location> ret = new();
-        Rect.DoForEach(pt => {
-            Location loc = new(m, pt);
-            if (!Map.Canonical(ref loc)) return;
-            ret.Add(loc);
-        });
-        return ret;
-      }
-    }
+    public Enumerator GetEnumerator() => new(this);
+    IEnumerator<Location> IEnumerable<Location>.GetEnumerator() => new Enumerator(this);
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => new Enumerator(this);
 
 #nullable restore
 
@@ -261,50 +278,11 @@ namespace djack.RogueSurvivor.Data
     }
 #endregion
 
-    public List<Location>? Contains(IEnumerable<Location> src) {
-        var ret = new List<Location>();
-        foreach(var loc in src) if (Contains(in loc)) ret.Add(loc);
-        return (0 < ret.Count) ? ret : null;
-    }
     public bool Contains(in Location loc) { return m == loc.Map && Rect.Contains(loc.Position); }
     public bool ContainsExt(in Location loc) {
       if (m == loc.Map) return Rect.Contains(loc.Position);
       var test = m.Denormalize(in loc);
       return null!=test && Rect.Contains(test.Value.Position);
-    }
-
-    public void DoForEach(Action<Location> doFn) {
-      Point point = new Point();
-      for (point.X = Rect.Left; point.X < Rect.Right; ++point.X) {
-        for (point.Y = Rect.Top; point.Y < Rect.Bottom; ++point.Y) {
-          var loc = new Location(m,point);
-          if (Map.Canonical(ref loc)) doFn(loc);
-        }
-      }
-    }
-
-    public bool Any(Predicate<Location> ok) {
-      var ret = new List<Location>();
-      Point point = new Point();
-      for (point.X = Rect.Left; point.X < Rect.Right; ++point.X) {
-        for (point.Y = Rect.Top; point.Y < Rect.Bottom; ++point.Y) {
-          var loc = new Location(m,point);
-          if (Map.Canonical(ref loc) && ok(loc)) return true;
-        }
-      }
-      return false;
-    }
-
-    public List<Location>? grep(Predicate<Location> ok) {
-      var ret = new List<Location>();
-      Point point = new Point();
-      for (point.X = Rect.Left; point.X < Rect.Right; ++point.X) {
-        for (point.Y = Rect.Top; point.Y < Rect.Bottom; ++point.Y) {
-          var loc = new Location(m,point);
-          if (Map.Canonical(ref loc) && ok(loc)) ret.Add(loc);
-        }
-      }
-      return 0 < ret.Count ? ret : null;
     }
 
     public Location Center { get { return new Location(m, Rect.Location + Rect.Size / 2); } }
@@ -459,7 +437,7 @@ namespace djack.RogueSurvivor.Data
     } }
 #nullable restore
 
-    public List<UpdateMoveDelta>? WalkOut() {
+    private List<UpdateMoveDelta>? WalkOut() {
       var ret = new List<UpdateMoveDelta>();
       Rect.DoForEachOnEdge(pt => {
           var test = UpdateMoveDelta.fromOrigin(new Location(m, pt), loc => !Contains(loc));

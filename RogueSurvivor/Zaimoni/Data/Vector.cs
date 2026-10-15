@@ -264,7 +264,7 @@ namespace Zaimoni.Data
     }
 
     [Serializable]
-    public record struct Box2D<T> : Fn_to_s
+    public record struct Box2D<T> : Fn_to_s, IEnumerable<Vector2D<T>>
         where T : IConvertible,
                   IComparable<T>,
                   System.Numerics.INumberBase<T>,
@@ -394,15 +394,52 @@ namespace Zaimoni.Data
             return ret;
         }
 
+        /// <summary>The points of the box, X outer and Y inner: the order DoForEach has always used.  A struct, so foreach does not allocate.</summary>
+        public struct Enumerator : IEnumerator<Vector2D<T>>
+        {
+            private readonly Box2D<T> _box;
+            private Vector2D<T> _next;
+            private Vector2D<T> _current;
+
+            public Enumerator(Box2D<T> src)
+            {
+                _box = src;
+                _next = src.Location;
+                _current = default;
+            }
+
+            public Vector2D<T> Current => _current;
+            object System.Collections.IEnumerator.Current => _current;
+
+            public bool MoveNext()
+            {
+                if (0 <= _next.X.CompareTo(_box.Right) || 0 <= _next.Y.CompareTo(_box.Bottom)) return false;
+                _current = _next;
+                ++_next.Y;
+                if (0 <= _next.Y.CompareTo(_box.Bottom)) {
+                    _next.Y = _box.Top;
+                    ++_next.X;
+                }
+                return true;
+            }
+
+            public void Reset()
+            {
+                _next = _box.Location;
+                _current = default;
+            }
+
+            public void Dispose() { }
+        }
+
+        public Enumerator GetEnumerator() => new(this);
+        IEnumerator<Vector2D<T>> IEnumerable<Vector2D<T>>.GetEnumerator() => new Enumerator(this);
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => new Enumerator(this);
+
 #nullable enable
         public Vector2D<T>? FirstOrDefault(Predicate<Vector2D<T>> testFn)
         {
-            Vector2D<T> pt = new();
-            for (pt.X = Left; 0 > pt.X.CompareTo(Right); ++pt.X) {
-                for (pt.Y = Top; 0 > pt.Y.CompareTo(Bottom); ++pt.Y) {
-                    if (testFn(pt)) return pt;
-                }
-            }
+            foreach (var pt in this) if (testFn(pt)) return pt;
             return null;
         }
 
@@ -410,33 +447,20 @@ namespace Zaimoni.Data
 
         public void DoForEach(Action<Vector2D<T>> doFn, Predicate<Vector2D<T>> testFn)
         {
-            Vector2D<T> pt = new();
-            for (pt.X = Left; 0 > pt.X.CompareTo(Right); ++pt.X) {
-                for (pt.Y = Top; 0 > pt.Y.CompareTo(Bottom); ++pt.Y) {
-                    if (testFn(pt)) doFn(pt);
-                }
-            }
+            foreach (var pt in this) if (testFn(pt)) doFn(pt);
         }
 
         public void DoForEach<U>(Action<U> doFn, Func<Vector2D<T>, U?> testFn) where U : class
         {
-            Vector2D<T> pt = new();
-            for (pt.X = Left; 0 > pt.X.CompareTo(Right); ++pt.X) {
-                for (pt.Y = Top; 0 > pt.Y.CompareTo(Bottom); ++pt.Y) {
-                    var test = testFn(pt);
-                    if (null != test) doFn(test);
-                }
+            foreach (var pt in this) {
+                var test = testFn(pt);
+                if (null != test) doFn(test);
             }
         }
 
         public void DoForEach(Action<Vector2D<T>> doFn)
         {
-            Vector2D<T> pt = new();
-            for (pt.X = Left; 0 > pt.X.CompareTo(Right); ++pt.X) {
-                for (pt.Y = Top; 0 > pt.Y.CompareTo(Bottom); ++pt.Y) {
-                    doFn(pt);
-                }
-            }
+            foreach (var pt in this) doFn(pt);
         }
 
         public void DoForEachOnEdge(Action<Vector2D<T>> doFn)

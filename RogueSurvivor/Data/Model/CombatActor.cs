@@ -94,7 +94,7 @@ namespace djack.RogueSurvivor.Data.Model
             List<KeyValuePair<Engine._Action.MoveStep, Engine.Actions.CombatAction>> dash_attack = new();
             List<KeyValuePair<Engine.Actions.CombatAction, Engine._Action.MoveStep>> potshot = new();
 
-            var domain = runaway.Listing;
+            var domain = runaway.ToList();
 
             foreach (var en in others) {
                 if (!who.IsEnemyOf(en.who)) continue;

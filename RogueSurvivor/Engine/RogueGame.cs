@@ -2728,14 +2728,12 @@ namespace djack.RogueSurvivor.Engine
 
     static private bool LZ_is_clear(ZoneLoc landing_zone, Faction friendly)
     {
-        var scan = landing_zone.Listing;
-        foreach(var loc in scan) if (null != loc.Actor) return false;
+        foreach(var loc in landing_zone) if (null != loc.Actor) return false;
         short radius = (short)Actor.MaxLivingFOV(landing_zone.m);
         // cut some corners re FOV calculations
         var LoS_zone = new ZoneLoc(landing_zone.m, new Rectangle(landing_zone.Rect.Location-radius*Direction.NW, landing_zone.Rect.Size+2*Direction.SE));
-        var scan2 = LoS_zone.Listing;
-        foreach(var loc in scan2) {
-          if (scan.Contains(loc)) continue;
+        foreach(var loc in LoS_zone) {
+          if (landing_zone.ContainsExt(in loc)) continue;
           var a = loc.Actor;
           if (null != a && a.Faction.IsEnemyOf(friendly)) return false;
         }
@@ -2785,7 +2783,7 @@ namespace djack.RogueSurvivor.Engine
       party[BIKERS_RAID_SIZE - 1] = party[(BIKERS_RAID_SIZE - 1)/2];
       party[(BIKERS_RAID_SIZE - 1)/2] = leader;
 
-      var lz = landing_zones[n].Value.Key.Listing;
+      var lz = landing_zones[n].Value.Key.ToArray();
       i = BIKERS_RAID_SIZE;
       while(0 <= --i) lz[i].Place(party[i]);
 
@@ -2846,7 +2844,7 @@ namespace djack.RogueSurvivor.Engine
 
       // \todo postprocess: firearms on edge
 
-      var lz = landing_zones[n].Value.Key.Listing;
+      var lz = landing_zones[n].Value.Key.ToArray();
       i = GANGSTAS_RAID_SIZE;
       while(0 <= --i) lz[i].Place(party[i]);
 
@@ -2918,7 +2916,7 @@ namespace djack.RogueSurvivor.Engine
       // 2022-06-06: Survivors don't have a guaranteed leader(???).
       // \todo pre-lead like we do civilians
 
-      var lz = landing_zones[n].Value.Key.Listing;
+      var lz = landing_zones[n].Value.Key.ToArray();
       i = SURVIVORS_BAND_SIZE + 1;
       while(0 <= --i) lz[i].Place(party[i]);
 

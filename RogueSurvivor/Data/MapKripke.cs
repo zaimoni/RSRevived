@@ -26,10 +26,10 @@ namespace djack.RogueSurvivor.Data
             _viewpoint = viewpoint;
             if (null != viewpoint) update(viewpoint.Controller.FOVloc);  // AI
             else { // Socrates' Daimon
-                m_Domain.DoForEach(loc => {
+                foreach (var loc in m_Domain) {
                     var obj = loc.MapObject;
                     if (null != obj) (_knownMapObjects ??= new Dictionary<Location,MapObject>()).Add(loc, obj);
-                });
+                }
             }
         }
 

@@ -1497,7 +1497,7 @@ retry:
         }
 
         var audit = new ZoneLoc(this, Rect);
-        var naked = audit.grep(needs_zone);
+        var naked = audit.Where(needs_zone).ToList();
 
         // closely related to compass rose ordering
         int expansion_code(in Rectangle src) {
@@ -1611,7 +1611,7 @@ retry:
             return src[0].Position;
         }
 
-        while (null != naked) {
+        while (0 < naked.Count) {
           var extent = new Rectangle(zone_anchor(naked), (Point)1);
           var code = expansion_code(in extent);
           while (0 < code) {
@@ -1634,7 +1634,7 @@ retry:
           var z = new Zone("interpolated", extent);
           var zl = new ZoneLoc(this, z);
           m_ClearableZones.Add(extent, zl);
-          naked = audit.grep(needs_zone);
+          naked = audit.Where(needs_zone).ToList();
         }
     }
 
