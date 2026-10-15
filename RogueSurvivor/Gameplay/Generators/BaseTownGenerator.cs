@@ -1859,9 +1859,6 @@ restart:
             var apartementsWingOne = MakeRoomsPlan(map, wingOne, apartmentMinXSize, apartmentMinYSize);
             var apartementsWingTwo = MakeRoomsPlan(map, wingTwo, apartmentMinXSize, apartmentMinYSize);
 
-            List<Rectangle> allApartments = new(apartementsWingOne.Count + apartementsWingTwo.Count);
-            allApartments.AddRange(apartementsWingOne);
-            allApartments.AddRange(apartementsWingTwo);
 
             foreach (Rectangle apartRect in apartementsWingOne)
                 TileRectangle(map, GameTiles.WALL_BRICK, apartRect);
@@ -1869,44 +1866,26 @@ restart:
                 TileRectangle(map, GameTiles.WALL_BRICK, roomRect);
 
             // put door leading to corridor; and an opposite window if outer wall / a door if inside
+            List<(Rectangle rect, Point door, Point window)> apartments = new(apartementsWingOne.Count + apartementsWingTwo.Count);
             foreach (Rectangle apartRect in apartementsWingOne)
             {
-                if (horizontalCorridor)
-                {
-                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.S), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.N), GameTiles.FLOOR_PLANKS, MakeObjWindow());
-                }
-                else
-                {
-                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.E), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_PLANKS, MakeObjWindow());
-                }
+                Point doorAt = apartRect.Anchor(horizontalCorridor ? Compass.XCOMlike.S : Compass.XCOMlike.E);
+                Point windowAt = apartRect.Anchor(horizontalCorridor ? Compass.XCOMlike.N : Compass.XCOMlike.W);
+                PlaceDoor(map, doorAt, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                PlaceDoor(map, windowAt, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                apartments.Add((apartRect, doorAt, windowAt));
             }
             foreach (Rectangle apartRect in apartementsWingTwo)
             {
-                if (horizontalCorridor)
-                {
-                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.N), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.S), GameTiles.FLOOR_PLANKS, MakeObjWindow());
-                }
-                else
-                {
-                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    PlaceDoor(map, apartRect.Anchor(Compass.XCOMlike.E), GameTiles.FLOOR_PLANKS, MakeObjWindow());
-                }
+                Point doorAt = apartRect.Anchor(horizontalCorridor ? Compass.XCOMlike.N : Compass.XCOMlike.W);
+                Point windowAt = apartRect.Anchor(horizontalCorridor ? Compass.XCOMlike.S : Compass.XCOMlike.E);
+                PlaceDoor(map, doorAt, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                PlaceDoor(map, windowAt, GameTiles.FLOOR_PLANKS, MakeObjWindow());
+                apartments.Add((apartRect, doorAt, windowAt));
             }
-
             // fill appartements with furniture and items
             // an "apartement" is one big room that fits all the housing roles: bedroom, kitchen and living room.
-            foreach (Rectangle apartRect in allApartments)
-            {
-                // bedroom
-                FillHousingRoomContents(map, apartRect, 0);
-                // kitchen
-                FillHousingRoomContents(map, apartRect, 8);
-                // living room
-                FillHousingRoomContents(map, apartRect, 5);
-            }
+            foreach (var x in apartments) FillApartmentContents(map, x.rect, x.door, x.window);
 #endregion
 
             ///////////
@@ -1918,6 +1897,104 @@ restart:
 
             // done
             return true;
+        }
+
+        /// <summary>An apartment is one room that fits every housing role.  Guaranteed: a path from the window to the corridor
+        /// door that needs no jumping, pushing or pulling (a jumpable object is not walkable here, Map.IsWalkable agrees); a bed;
+        /// a kitchen object; and a bedroom object that is not a bed.  The path is reserved before anything is placed, so no
+        /// placement can block it.  2026-10-15</summary>
+        protected virtual void FillApartmentContents(Map map, Rectangle apartRect, Point doorAt, Point windowAt)
+        {
+            Rectangle insideRoom = new Rectangle(apartRect.Location + Direction.SE, apartRect.Size + 2 * Direction.NW);
+
+            // the tile inside the room beside an opening in its wall
+            Point inward(Point wall) {
+                if (wall.Y == apartRect.Top) return wall + Direction.S;
+                if (wall.Y == apartRect.Bottom - 1) return wall + Direction.N;
+                if (wall.X == apartRect.Left) return wall + Direction.E;
+                return wall + Direction.W;
+            }
+
+            // reserve the path: straight, bending once where the window and the door are not aligned
+            var from = inward(windowAt);
+            var to = inward(doorAt);
+            HashSet<Point> reserved = new() { from };
+            var walk = from;
+            while (walk.X != to.X) { walk = walk + (walk.X < to.X ? Direction.E : Direction.W); reserved.Add(walk); }
+            while (walk.Y != to.Y) { walk = walk + (walk.Y < to.Y ? Direction.S : Direction.N); reserved.Add(walk); }
+            bool free(Point pt) => !reserved.Contains(pt);
+
+            // a placement that says where it placed; the tiers are tried strictest first
+            Point? place(Rectangle rect, Func<Point, MapObject> make, params Func<Point, bool>[] tiers) {
+                foreach (var ok in tiers) {
+                    var candidates = rect.Where(pt => free(pt) && ok(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt));
+                    if (0 >= candidates.Count) continue;
+                    var pt = m_DiceRoller.Choose(candidates);
+                    make(pt).PlaceAt(map, in pt);
+                    return pt;
+                }
+                return null;
+            }
+            bool quiet(Point pt) => !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+
+            // the bed
+            var bed = place(insideRoom, pt => MakeObjBed(GameImages.OBJ_BED),
+                            pt => CountAdjWalls(map, pt) >= 3 && quiet(pt),
+                            pt => CountAdjWalls(map, pt) >= 2 && quiet(pt),
+                            pt => CountAdjWalls(map, pt) >= 1 && quiet(pt),
+                            pt => true);
+
+            // a bedroom object that is not a bed: a night table beside the bed, else a wardrobe or drawer by a wall
+            Point? bedroom = null;
+            if (bed is not null) {
+                Rectangle beside = new Rectangle(bed.Value + Direction.NW, 3, 3);
+                beside = beside.Intersect(insideRoom);
+                bedroom = place(beside, pt => {
+                    var table = MakeObjNightTable(GameImages.OBJ_NIGHT_TABLE);
+                    table.Inventory.AddAll(MakeRandomBedroomItem());
+                    Session.Get.Police.Investigate.Record(map, in pt);
+                    return table;
+                }, pt => CountAdjWalls(map, pt) > 0 && quiet(pt), pt => quiet(pt));
+            }
+            bedroom ??= place(insideRoom, pt => {
+                    var drawer = (m_DiceRoller.RollChance(50) ? MakeObjWardrobe(GameImages.OBJ_WARDROBE) : MakeObjDrawer());
+                    drawer.Inventory.AddAll(MakeRandomBedroomItem());
+                    Session.Get.Police.Investigate.Record(map, in pt);
+                    return drawer;
+                }, pt => CountAdjWalls(map, pt) >= 2 && quiet(pt), pt => CountAdjWalls(map, pt) >= 1 && quiet(pt), pt => true);
+
+            // a kitchen object: the fridge
+            var kitchen = place(insideRoom, pt => {
+                    var fridge = MakeObjFridge();
+                    for (int index = 0; index < HOUSE_KITCHEN_ITEMS_IN_FRIDGE; ++index) fridge.Inventory.AddAll(MakeRandomKitchenItem());
+                    Session.Get.Police.Investigate.Record(map, in pt);
+                    return fridge;
+                }, pt => CountAdjWalls(map, pt) >= 2 && quiet(pt), pt => CountAdjWalls(map, pt) >= 1 && quiet(pt), pt => true);
+
+            // the rest as before, kept off the path
+            FillHousingRoomContents(map, apartRect, 0, free);   // bedroom
+            FillHousingRoomContents(map, apartRect, 8, free);   // kitchen
+            FillHousingRoomContents(map, apartRect, 5, free);   // living room
+
+#if DEBUG
+            // the reserved path is walkable by construction; this says so
+            HashSet<Point> seen = new() { from };
+            List<Point> pending = new() { from };
+            bool reached = false;
+            while (0 < pending.Count && !reached) {
+                var pt = pending[pending.Count - 1];
+                pending.RemoveAt(pending.Count - 1);
+                if (pt == to) { reached = true; break; }
+                foreach (var pt2 in pt.Adjacent()) {
+                    if (!insideRoom.Contains(pt2) || !map.IsWalkable(pt2) || !seen.Add(pt2)) continue;
+                    pending.Add(pt2);
+                }
+            }
+            if (!reached) throw new InvalidOperationException("apartment: no walkable path from the window to the door: " + apartRect.to_s());
+            if (bed is null) throw new InvalidOperationException("apartment: no bed: " + apartRect.to_s());
+            if (bedroom is null) throw new InvalidOperationException("apartment: no bedroom object: " + apartRect.to_s());
+            if (kitchen is null) throw new InvalidOperationException("apartment: no kitchen object: " + apartRect.to_s());
+#endif
         }
 
     // alpha10.1 pre alpha10.1 regular houses
@@ -2399,11 +2476,12 @@ restart:
     // alpha10.1 can force room role (optional param)
     // FIXME -- room role should be an enum and not hardcoded numbers -_-
     /// <param name="role">-1 roll at random; 0-4 bedroom, 5-7 living room, 8-9 kitchen</param>
-    protected virtual void FillHousingRoomContents(Map map, Rectangle roomRect, int role = -1)
+    protected virtual void FillHousingRoomContents(Map map, Rectangle roomRect, int role = -1, Func<Point, bool> free = null)
     {
       Rectangle insideRoom = new Rectangle(roomRect.Location + Direction.SE, roomRect.Size + 2 * Direction.NW);
 
       if (-1 == role) role = m_DiceRoller.Roll(0, 10);  // alpha10.1 roll room role if not set
+      bool ok(Point pt) => null == free || free(pt);   // a reserved tile takes nothing
 
       // alpha10.1 added restriction to not place a mapobj if adj to at least 5 mapobj as to not cramp apartements
       switch (role)
@@ -2417,14 +2495,14 @@ restart:
           for (int index = 0; index < num1; ++index)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt) >= 3 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+              return ok(pt) && CountAdjWalls(map, pt) >= 3 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               Rectangle rect = new Rectangle(pt + Direction.NW, 3, 3);
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
-                return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) &&  CountAdjWalls(map, pt2) > 0 && map.CountAdjacent<MapObject>(pt2) < 5;
+                return ok(pt2) && pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) &&  CountAdjWalls(map, pt2) > 0 && map.CountAdjacent<MapObject>(pt2) < 5;
               }), m_DiceRoller, (Func<Point, MapObject>) (pt2 =>
               {
                 var table = MakeObjNightTable(GameImages.OBJ_NIGHT_TABLE);
@@ -2438,7 +2516,7 @@ restart:
           for (int index = 0; index < num2; ++index)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+              return ok(pt) && CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               var drawer = (m_DiceRoller.RollChance(50) ? MakeObjWardrobe(GameImages.OBJ_WARDROBE) : MakeObjDrawer());
@@ -2454,7 +2532,7 @@ restart:
           for (int index1 = 0; index1 < num3; ++index1)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt) == 0 &&  !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+              return ok(pt) && CountAdjWalls(map, pt) == 0 &&  !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               var table = MakeObjTable(GameImages.OBJ_TABLE);
@@ -2466,7 +2544,7 @@ restart:
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
-                return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) && map.CountAdjacent<MapObject>(pt2) < 5;
+                return ok(pt2) && pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) && map.CountAdjacent<MapObject>(pt2) < 5;
               }), m_DiceRoller, pt2 => MakeObjChair(GameImages.OBJ_CHAIR));
               return table;
             }));
@@ -2474,14 +2552,14 @@ restart:
           for (int index = 0; index < num4; ++index)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+              return ok(pt) && CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjDrawer()));
           break;
         case 8:
         case 9:
           MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
           {
-            return CountAdjWalls(map, pt) == 0 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+            return ok(pt) && CountAdjWalls(map, pt) == 0 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
             var table = MakeObjTable(GameImages.OBJ_TABLE);
@@ -2491,13 +2569,13 @@ restart:
             Session.Get.Police.Investigate.Record(map, in pt);
             MapObjectPlaceInGoodPosition(map, new Rectangle(pt + Direction.NW, 3, 3), (Func<Point, bool>) (pt2 =>
             {
-              return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) && map.CountAdjacent<MapObject>(pt2) < 5;
+              return ok(pt2) && pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) && map.CountAdjacent<MapObject>(pt2) < 5;
             }), m_DiceRoller, pt2 => MakeObjChair(GameImages.OBJ_CHAIR));
             return table;
           }));
           MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
           {
-            return CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
+            return ok(pt) && CountAdjWalls(map, pt) >= 2 && !map.AnyAdjacent<DoorWindow>(pt) && map.CountAdjacent<MapObject>(pt) < 5;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
             var fridge = MakeObjFridge();
