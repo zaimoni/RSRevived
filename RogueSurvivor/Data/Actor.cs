@@ -2840,9 +2840,9 @@ namespace djack.RogueSurvivor.Data
       var ret = new HashSet<Point>();
       foreach(var pt in src) {
         var loc = new Location(m, pt);
-        if (!CanEnter(loc)) {
+        if (!Model.CanEnter(loc)) {
           foreach(var pt2 in pt.Adjacent()) {
-            if (CanEnter(new Location(m, pt2))) ret.Add(pt2);
+            if (Model.CanEnter(new Location(m, pt2))) ret.Add(pt2);
           }
           continue;
         }
