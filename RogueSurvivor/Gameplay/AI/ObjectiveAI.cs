@@ -1401,7 +1401,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int origin = -1;
         foreach(var dir in Direction.COMPASS) {
           var test = _last_move.dest + dir;
-          if (!m_Actor.CanEnter(ref test)) continue;
+          if (!m_Actor.MayEnter(ref test)) continue;
           can_enter[dir.Index] = true;
           if (test == _last_move.origin) origin = dir.Index;
           else domain[dir.Index]=test;
@@ -3270,7 +3270,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // local functions
       bool destination_melee_safe(in Location loc,int depth) {
-        if (!m_Actor.CanEnter(loc)) return false;
+        if (!m_Actor.MayEnter(loc)) return false;
         if (move_plans.ContainsKey(loc)) return false;
         if (working_fear.ContainsKey(loc)) return false;
         if (blacklist.Contains(loc)) return false;
@@ -3325,7 +3325,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       void install_moves(in Location loc) {
-        if (!m_Actor.CanEnter(loc)) return;
+        if (!m_Actor.MayEnter(loc)) return;
         int depth = 0;
         if (move_plans.TryGetValue(loc,out var cache)) {
           depth = cache.Key+1;
@@ -4238,7 +4238,7 @@ restart:
           if (null != exit && exit.Location == working) working = m_Actor.Location;
           foreach(var pt in working.Position.Adjacent()) {
             var loc = new Location(working.Map,pt);
-            if (!m_Actor.CanEnter(ref loc)) continue;
+            if (!m_Actor.MayEnter(ref loc)) continue;
             if (null!=preblacklist && preblacklist(loc.Map)) continue;
             if (ever_rude.Contains(loc)) continue;
             if (rude_goal(loc)) {
@@ -4525,7 +4525,7 @@ restart_chokepoints:
           var relocate_to = bounce_out.Exits;
           var relocate_from = goals.Where(loc => bounce_out.Contains(loc)).ToArray(); // has to be value copy
           foreach(var dest in relocate_to) {
-            if (!m_Actor.CanEnter(dest)) continue;
+            if (!m_Actor.MayEnter(dest)) continue;
             var cost = relocate_from.Min(src => Rules.JumpPoint_Distance(dest, src)+goal_costs[src]);
             if (goal_costs.TryGetValue(dest, out var old_cost)) {
               // tried to jump to something that already had an estimate

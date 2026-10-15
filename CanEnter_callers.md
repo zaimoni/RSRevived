@@ -78,19 +78,29 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | caller | site | status | note |
 |---|---|---|---|
 | Actor.MutuallyAdjacentFor | Data/Actor.cs:2929 | ok | by ref |
-| _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | unreviewed | throws on the destination |
+| _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | ok | throws on the destination |
 | _Action.MoveStep._runFrom | Engine/Action/MoveStep.cs:192 | ok | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:249 | ok | |
 | Rules.IsBumpableFor | Engine/Rules.cs:220 | ok | by ref |
-| SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:104 | unreviewed | RemoveWhere lambda; comment says it matters for burning cars |
 | ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:1111 | ok | comment: generators are pathable but not enterable |
 | ObjectiveAI.UsePreexistingPath(List<List<Location>>, ...) | Gameplay/AI/ObjectiveAI.cs:1168 | ok | comment: generators are pathable but not enterable |
-| ObjectiveAI.WantToGoHere | Gameplay/AI/ObjectiveAI.cs:1404 | unreviewed | by ref |
-| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3273 | unreviewed | local function destination_melee_safe |
-| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3328 | unreviewed | local function install_moves; its row had gone missing |
-| ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4241 | unreviewed | by ref |
-| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4528 | unreviewed | |
 | OrderableAI._closeIn | Gameplay/AI/OrderableAI.cs:2827 | ok | Adjacent lambda |
 | OrderableAI._chargeTowards | Gameplay/AI/OrderableAI.cs:2875 | ok | Adjacent lambda |
-| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:71 | unreviewed | throws via Spotlight on the origin |
-| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:72 | unreviewed | throws via Spotlight on the destination |
+
+## Actor.MayEnter
+
+| caller | site | status | note |
+|---|---|---|---|
+| SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:104 | ok | RemoveWhere lambda; comment says it matters for burning cars |
+| ObjectiveAI.WantToGoHere | Gameplay/AI/ObjectiveAI.cs:1404 | ok | by ref |
+| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3273 | ok | local function destination_melee_safe |
+| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3328 | ok | local function install_moves; its row had gone missing |
+| ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4241 | ok | by ref |
+| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4528 | ok | |
+| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:71 | ok | throws via Spotlight on the origin |
+| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:72 | ok | throws via Spotlight on the destination |
+
+# cleanup tasks
+
+* VetoExit call site micro-optimization for CPU
+* Law of Demeter: Actor -> ActorModel member functions

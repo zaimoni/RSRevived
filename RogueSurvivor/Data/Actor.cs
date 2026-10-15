@@ -2835,6 +2835,24 @@ namespace djack.RogueSurvivor.Data
       return _CanEnter(in loc);
     }
 
+    public bool MayEnter(Location loc)
+    {
+      if (!Map.Canonical(ref loc)) return false;
+      if (Location == loc) return true;
+      var dist = Rules.InteractionDistance(Location, loc);
+      if (1 >= dist) return _CanEnter(in loc);
+      return Model.CanEnter(loc);
+    }
+
+    public bool MayEnter(ref Location loc)
+    {
+      if (!Map.Canonical(ref loc)) return false;
+      if (Location == loc) return true;
+      var dist = Rules.InteractionDistance(Location, loc);
+      if (1 >= dist) return _CanEnter(in loc);
+      return Model.CanEnter(loc);
+    }
+
     // generators work on point-based pathfinding
     public HashSet<Point> CastToBumpableDestinations(Map m,IEnumerable<Point> src) {
       var ret = new HashSet<Point>();

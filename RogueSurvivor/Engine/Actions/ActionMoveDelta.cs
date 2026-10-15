@@ -57,7 +57,6 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     private ActionMoveDelta(Actor actor, in Location to, in Location from) : base(actor)
     {
-      _Action.MoveStep._Ok(in from, in to, actor);
       m_NewLocation = to;
       m_Origin = from;
     }

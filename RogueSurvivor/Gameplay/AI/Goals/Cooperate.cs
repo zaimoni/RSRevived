@@ -101,7 +101,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             var ret = new HashSet<Location>();
             m_Plan.Goals(ret);
             m_Plan.Blacklist(ret);
-            ret.RemoveWhere(loc => !actor.CanEnter(loc)); // matters for burning cars
+            ret.RemoveWhere(loc => !actor.MayEnter(loc)); // matters for burning cars
             // goal locations should make actions relevant.  If we are *at* a goal location already,
             // bail so we don't self-path.
             if (ret.Contains(actor.Location)) return null;
