@@ -82,7 +82,6 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:196 | unreviewed | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:249 | ok | |
 | Rules.IsBumpableFor | Engine/Rules.cs:220 | ok | by ref |
-| ClearZone..ctor | Gameplay/AI/Goals/ClearZone.cs:84 | unreviewed | Where lambda over the zone; comment says "todo? eliminate" |
 | SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:104 | unreviewed | RemoveWhere lambda; comment says it matters for burning cars |
 | ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:1111 | ok | comment: generators are pathable but not enterable |
 | ObjectiveAI.UsePreexistingPath(List<List<Location>>, ...) | Gameplay/AI/ObjectiveAI.cs:1168 | ok | comment: generators are pathable but not enterable |
@@ -91,7 +90,7 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3328 | unreviewed | local function install_moves; its row had gone missing |
 | ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4241 | unreviewed | by ref |
 | ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4528 | unreviewed | |
-| OrderableAI._closeIn | Gameplay/AI/OrderableAI.cs:2827 | unreviewed | Adjacent lambda |
-| OrderableAI._chargeTowards | Gameplay/AI/OrderableAI.cs:2875 | unreviewed | Adjacent lambda |
+| OrderableAI._closeIn | Gameplay/AI/OrderableAI.cs:2827 | ok | Adjacent lambda |
+| OrderableAI._chargeTowards | Gameplay/AI/OrderableAI.cs:2875 | ok | Adjacent lambda |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:71 | unreviewed | throws via Spotlight on the origin |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:72 | unreviewed | throws via Spotlight on the destination |

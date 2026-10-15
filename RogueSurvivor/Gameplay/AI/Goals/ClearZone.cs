@@ -78,12 +78,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             Func<Point,bool> ok = pt => m_Zone.Rect.Contains(pt);
             m_Unverified.UnionWith(threats.ThreatWhere(dest.m).Where(ok));
             m_Unverified.UnionWith(tourism.In(dest.m).Where(ok));
-#if OBSOLETE
-            // the civilian case
-            if (null == threats && null == sights_to_see) {
-                m_Unverified.UnionWith(m_Zone.Rect.Where(pt => who.CanEnter(new Location(m_Zone.m, pt)))); // \todo? eliminate GC thrashing
-            }
-#endif
             // nonserialized fields
             oai = (m_Actor.Controller as ObjectiveAI)
 #if DEBUG
