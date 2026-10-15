@@ -209,11 +209,7 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    public bool CanEnter(Location loc)
-    {
-      if (!Map.Canonical(ref loc)) return false;
-      return _CanEnter(in loc);
-    }
+    public bool CanEnter(Location loc) => CanEnter(ref loc);
 
     public bool CanEnter(ref Location loc)
     {

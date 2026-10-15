@@ -2823,11 +2823,7 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    public bool CanEnter(Location loc)
-    {
-      if (!Map.Canonical(ref loc)) return false;
-      return _CanEnter(in loc);
-    }
+    public bool CanEnter(Location loc) => CanEnter(ref loc);
 
     public bool CanEnter(ref Location loc)
     {
@@ -2835,14 +2831,7 @@ namespace djack.RogueSurvivor.Data
       return _CanEnter(in loc);
     }
 
-    public bool MayEnter(Location loc)
-    {
-      if (!Map.Canonical(ref loc)) return false;
-      if (Location == loc) return true;
-      var dist = Rules.InteractionDistance(Location, loc);
-      if (1 >= dist) return _CanEnter(in loc);
-      return Model.CanEnter(loc);
-    }
+    public bool MayEnter(Location loc) => MayEnter(ref loc);
 
     public bool MayEnter(ref Location loc)
     {

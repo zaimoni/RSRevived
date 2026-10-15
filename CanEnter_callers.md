@@ -36,18 +36,17 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | caller | site | status | note |
 |---|---|---|---|
 | Actor.MovesTo | Data/Actor.cs:2055 | ok | the destination itself |
-| Actor.MayEnter(Location) | Data/Actor.cs:2844 | unreviewed | beyond adjacency |
-| Actor.MayEnter(ref Location) | Data/Actor.cs:2853 | unreviewed | beyond adjacency |
-| Actor.CastToBumpableDestinations | Data/Actor.cs:2861 | ok | |
-| Actor.CastToBumpableDestinations | Data/Actor.cs:2863 | ok | |
-| Actor.CastToInventoryAccessibleDestinations(,) | Data/Actor.cs:2880 | ok | excludes shelf-like objects separately |
-| Actor.CastToInventoryAccessibleDestinations(,) | Data/Actor.cs:2883 | ok | |
-| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2897 | ok | a shelf: any neighbour |
-| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2903 | ok | a ground stack: the tile itself |
-| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2909 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
-| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2921 | ok | a shelf: any neighbour |
-| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2927 | ok | a ground stack: the tile itself |
-| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2932 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
+| Actor.MayEnter(ref Location) | Data/Actor.cs:2842 | ok | beyond adjacency |
+| Actor.CastToBumpableDestinations | Data/Actor.cs:2850 | ok | |
+| Actor.CastToBumpableDestinations | Data/Actor.cs:2852 | ok | |
+| Actor.CastToInventoryAccessibleDestinations(,) | Data/Actor.cs:2869 | ok | excludes shelf-like objects separately |
+| Actor.CastToInventoryAccessibleDestinations(,) | Data/Actor.cs:2871 | ok | |
+| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2886 | ok | a shelf: any neighbour |
+| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2892 | ok | a ground stack: the tile itself |
+| Actor.CastToInventoryAccessibleDestinations() | Data/Actor.cs:2898 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
+| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2910 | ok | a shelf: any neighbour |
+| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2916 | ok | a ground stack: the tile itself |
+| Actor.HasAnyInventoryAccessibleDestinations | Data/Actor.cs:2921 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
 | Map.WouldBlacklistFor | Data/Map.cs:1170 | ok | receiver is the actor parameter |
 | Map.PathfindLocSteps | Data/Map.cs:1184 | ok | StrictCanEnter, in the flood-fill's lambda; receiver is actor.Model |
 | Map.TrapWouldSealBuilding | Data/Map.cs:2163 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
