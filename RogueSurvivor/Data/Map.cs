@@ -1157,7 +1157,7 @@ namespace djack.RogueSurvivor.Data
       if (pt == actor.Location.Position && this == actor.Location.Map) return false;
       if (   actor.Model.Abilities.AI_CanUseAIExits
           && 3>=Rules.GridDistance(actor.Location.Position, pt) // 2023-12-17: only worry about exits close to us
-          && Gameplay.AI.ObjectiveAI.VetoExit(actor, GetExitAt(pt)))   // VetoExit answers true for no exit at all: that is not a blacklist
+          && Gameplay.AI.ObjectiveAI.VetoExit(actor, GetExitAt(pt)))   // no exit: nothing to veto
           return true;
 
       var dest = new Location(this, pt);
