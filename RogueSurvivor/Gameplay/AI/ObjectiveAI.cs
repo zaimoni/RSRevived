@@ -4393,7 +4393,7 @@ restart:
            return _recordPathfinding(BehaviorPathTo(PathfinderFor(goals.Select(Location.pos))),goals);
          } catch (Pathfail e) {
 #if DEBUG
-           throw m_Actor.Spotlight(new InvalidOperationException("floodfill fail"));
+           throw m_Actor.Spotlight(new InvalidOperationException("floodfill fail: " + e.Message + "; " + m_Actor.Name + " at " + m_Actor.Location + " to " + goals.to_s(), e));
 #endif
            return null;
          }
