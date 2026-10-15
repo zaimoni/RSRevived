@@ -48,6 +48,8 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
 | _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:176 | ok | destination; was Actor.CanEnter until 81a9544a |
 | _Action.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:177 | ok | origin; was Actor.CanEnter until 81a9544a |
+| _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:203 | ok | origin |
+| _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:209 | ok | each candidate destination, by ref |
 | _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:280 | ok | origin |
 | _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:281 | ok | destination |
 | ActionMoveDelta.schedule(Actor, Location, Location) | Engine/Actions/ActionMoveDelta.cs:237 | ok | destination |
@@ -77,9 +79,7 @@ Three predicates share the name. Each root below lists its callers, one row per 
 | Map.WouldBlacklistFor | Data/Map.cs:1170 | unreviewed | receiver is the actor parameter |
 | Map.PathfindLocSteps | Data/Map.cs:1184 | unreviewed | StrictCanEnter, in the flood-fill's lambda; receiver is the actor parameter |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | unreviewed | throws on the destination |
-| _Action.MoveStep..ctor | Engine/Action/MoveStep.cs:148 | unreviewed | throws on the origin |
-| _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:190 | unreviewed | origin |
-| _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:196 | unreviewed | each candidate destination, by ref |
+| _Action.MoveStep._runFrom | Engine/Action/MoveStep.cs:192 | ok | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:249 | ok | |
 | Rules.IsBumpableFor | Engine/Rules.cs:220 | ok | by ref |
 | SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:104 | unreviewed | RemoveWhere lambda; comment says it matters for burning cars |

@@ -1216,7 +1216,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           if (motive && 0<escape.Count) {
             // breaching objects is expensive in stamina, so force walking.
-            ret = Engine._Action.MoveStep.Cast(m_Actor.Location, Rules.Get.DiceRoller.Choose(escape), false, m_Actor);
+            ret = Engine._Action.MoveStep.create(m_Actor.Location, Rules.Get.DiceRoller.Choose(escape), false, m_Actor);
             return true;
           }
 

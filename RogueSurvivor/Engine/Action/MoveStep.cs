@@ -61,7 +61,7 @@ namespace djack.RogueSurvivor.Engine.Op
 
         /// <returns>null, or a Performable action</returns>
         public override _Action.MoveStep? Bind(Actor src) {
-            return _Action.MoveStep.Cast(m_Origin, m_NewLocation, is_running, src);
+            return _Action.MoveStep.create(m_Origin, m_NewLocation, is_running, src);
         }
 
         public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
@@ -144,9 +144,6 @@ namespace djack.RogueSurvivor.Engine._Action
             m_NewLocation = to;
             m_Origin = from;
             is_running = run;
-#if DEBUG
-            if (!m_Actor.CanEnter(m_Origin)) throw new InvalidOperationException("must be able to exist at the origin");
-#endif
         }
 
         public override bool IsLegal() { return true; }
@@ -171,24 +168,23 @@ namespace djack.RogueSurvivor.Engine._Action
             } else RogueGame.Game.DoLeaveMap(m_Actor, m_Actor.Location.Position);
         }
 
-        static public MoveStep? ScheduleCast(Location from, Location to, bool run, Actor actor) {
+        static public MoveStep? schedule(Location from, Location to, bool run, Actor actor) {
             if (1 != Rules.InteractionDistance(in from, in to)) return null;
             if (!actor.Model.CanEnter(to)) return null;
             if (!actor.Model.CanEnter(from)) return null;
             if (run && !actor.Model.Abilities.CanRun) return null;
-            return new MoveStep(from, to, run, actor);
+            return new(from, to, run, actor);
         }
 
-        static public MoveStep? Cast(Location from, Location to, bool run, Actor actor)
+        static public MoveStep? create(Location from, Location to, bool run, Actor actor)
         {
-            var ret = ScheduleCast(from, to, run, actor);
-            if (null != ret && ret.IsPerformable()) return ret;
-            return null;
+            var ret = schedule(from, to, run, actor);
+            return (ret is not null && ret.IsPerformable()) ? ret : null;
         }
 
-        static public List<MoveStep>? RunFrom(Location from, Actor actor) {
-            if (!actor.CanEnter(from)) return null;
-            if (!actor.Model.Abilities.CanRun) return null;
+        static private List<MoveStep>? _runFrom(Actor actor) {
+            var from = actor.Location;
+            if (!actor.CanRun()) return null;
 
             List<MoveStep> ret = new();
             foreach (var dir in Direction.COMPASS) {
@@ -197,6 +193,23 @@ namespace djack.RogueSurvivor.Engine._Action
                 var move = new MoveStep(from, to, true, actor);
                 if (!move.IsPerformable()) continue;
                 ret.Add(move);
+            }
+            return 0<ret.Count ? ret : null;
+        }
+
+        /// <returns>null, or a list of legal run actions.  If from == actor.Location,
+        /// the list of actions is performable.</returns>
+        static public List<MoveStep>? RunFrom(in Location from, Actor actor) {
+            if (from == actor.Location) return _runFrom(actor);
+
+            if (!actor.Model.CanEnter(from)) return null;
+            if (!actor.Model.Abilities.CanRun) return null;
+
+            List<MoveStep> ret = new();
+            foreach (var dir in Direction.COMPASS) {
+                var to = from + dir;
+                if (!actor.Model.CanEnter(ref to)) continue;
+                ret.Add(new(from, to, true, actor));
             }
             return 0<ret.Count ? ret : null;
         }
