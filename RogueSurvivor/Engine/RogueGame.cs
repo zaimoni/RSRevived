@@ -4110,7 +4110,13 @@ namespace djack.RogueSurvivor.Engine
           int choiceNumber = KeyToExtendedChoiceNumber(key.KeyCode);
           if (choiceNumber >= 0 && choiceNumber < delta) {
             int index = num1 + choiceNumber;
-            if (strict_ub > index && details(index)) return true;
+            if (strict_ub > index) {
+              if (details(index)) return true;
+              all_labels[index] = label(index);   // the entry stays, relabelled: a toggle
+              RemoveOverlay(working);
+              working = null;
+              display();
+            }
           }
         } else display();
         return null;
@@ -4643,11 +4649,57 @@ namespace djack.RogueSurvivor.Engine
 
       List<KeyValuePair<string, Action>> orders = new();
       orders.Add(new(s_FaustPC ? "Ignore new livings" : "Examine new livings", ToggleFaust));
+      orders.Add(new("Choose who the spirits ride", HandleFaustToggle));
 
       string label(int index) { return orders[index].Key; }
       bool details(int index) { orders[index].Value(); return true; }
 
       return PagedPopup("Ask the spirits for:", orders.Count, label, details);
+    }
+
+    /// <summary>The Faust toggle menu: every PC and every NPC the spirits would ride, each toggled by its letter.  The menu
+    /// stays open and relabels; ESC leaves it.  The actor whose turn it is cannot be unseated from inside its own turn.</summary>
+    private void HandleFaustToggle()
+    {
+      var player_backup = Player;
+      List<Actor> candidates = new();
+      World.Get.DoForAllActors(a => {
+        if (a.IsDead) return;
+        if (a.IsPlayer || FaustNominates(a)) candidates.Add(a);
+      });
+      if (0 >= candidates.Count) {
+        ErrorPopup("The spirits see no one.");
+        return;
+      }
+      candidates.Sort((lhs, rhs) => {   // PCs first, then by district, then by name
+        int cmp = rhs.IsPlayer.CompareTo(lhs.IsPlayer);
+        if (0 != cmp) return cmp;
+        cmp = string.CompareOrdinal(lhs.Location.Map.District.Name, rhs.Location.Map.District.Name);
+        if (0 != cmp) return cmp;
+        return string.CompareOrdinal(lhs.UnmodifiedName, rhs.UnmodifiedName);
+      });
+
+      string label(int index) {
+        var a = candidates[index];
+        return (a.IsPlayer ? "PC  " : "NPC ") + a.UnmodifiedName + " (" + a.Model.Name + ") " + a.Location.Map.Name;
+      }
+      bool details(int index) {
+        var a = candidates[index];
+        if (a == player_backup) AddMessage(new("The spirits will not unseat you in your own turn.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+        else if (a.IsPlayer) AbandonPC(a);
+        else FaustMC(a);
+        return false;   // stay open, relabelled
+      }
+      PagedPopup("The spirits may ride:", candidates.Count, label, details);
+      PanViewportTo(player_backup);
+    }
+
+    /// <summary>A PC becomes its NPC self again, as do its PC followers.  HandleAbandonPC is this with a confirmation each.</summary>
+    private void AbandonPC(Actor player)
+    {
+      player.RevertToAI();
+      Session.Get.Scoring.Deincarnate();
+      player.DoForAllFollowers(fo => { if (fo.IsPlayer) AbandonPC(fo); });
     }
 
     private void FaustMC(Actor a) {
@@ -4657,61 +4709,44 @@ namespace djack.RogueSurvivor.Engine
         var followers = a.Followers;
         if (null != followers) foreach(var fo in followers) FaustMC(fo);
     }
-    private void FaustExamineLiving(Actor a) {
-      if (a.Controller is not OrderableAI ordai) return;
-      if (null != a.LiveLeader) return;
+    /// <summary>The Faust pre-screen: who the spirits would ride.  The conversion is FaustMC.</summary>
+    private bool FaustNominates(Actor a) {
+      if (a.Controller is not OrderableAI) return false;
+      if (null != a.LiveLeader) return false;
 
-      if (a.Model.Abilities.IsLawEnforcer) {
-        FaustMC(a);
-        return;
-      }
-      if (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {
-        FaustMC(a);
-        return;
-      }
-      if (a.IsSleeping) return;
-      if (a.Location.Map.HasZonePrefixNamedAt(a.Location.Position, "Shed")) return;
+      if (a.Model.Abilities.IsLawEnforcer) return true;
+      if (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) return true;
+      if (a.IsSleeping) return false;
+      if (a.Location.Map.HasZonePrefixNamedAt(a.Location.Position, "Shed")) return false;
 
       var in_store = BaseTownGenerator.InStore(a.Location);
-      if (null != in_store) {
-        if ("Grocery" == in_store) return;
-        FaustMC(a);
-        return;
-      }
+      if (null != in_store) return "Grocery" != in_store;
 
-      if (a.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap) return;
-      if (a.Location.Map == Session.Get.UniqueMaps.Hospital_Admissions.TheMap) return;
-      if (a.Location.Map == Session.Get.UniqueMaps.Hospital_Offices.TheMap) return;
-      if (a.Location.Map == Session.Get.UniqueMaps.Hospital_Patients.TheMap) return;
-      if (a.Location.Map == a.Location.Map.District.SewersMap) {
-        FaustMC(a);
-        return;
-      }
+      if (a.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap) return false;
+      if (a.Location.Map == Session.Get.UniqueMaps.Hospital_Admissions.TheMap) return false;
+      if (a.Location.Map == Session.Get.UniqueMaps.Hospital_Offices.TheMap) return false;
+      if (a.Location.Map == Session.Get.UniqueMaps.Hospital_Patients.TheMap) return false;
+      if (a.Location.Map == a.Location.Map.District.SewersMap) return true;
       a.Controller.UpdateSensors();
-      if (null == a.Controller.items_in_FOV) return;
-      if (null != a.Controller.friends_in_FOV) return;
+      if (null == a.Controller.items_in_FOV) return false;
+      if (null != a.Controller.friends_in_FOV) return false;
 
       foreach(var x in a.Controller.items_in_FOV) {
-        if (x.Value.IsCarrying(GameItems.melee)) {
-          FaustMC(a);
-          return;
-        }
-        if (x.Value.IsCarrying(GameItems.ranged)) {
-          FaustMC(a);
-          return;
-        }
-        if (x.Value.IsCarrying(GameItems.ammo)) {
-          FaustMC(a);
-          return;
-        }
+        if (x.Value.IsCarrying(GameItems.melee)) return true;
+        if (x.Value.IsCarrying(GameItems.ranged)) return true;
+        if (x.Value.IsCarrying(GameItems.ammo)) return true;
       }
 
 #if PROTOTYPE
       PanViewportTo(a);
-      if (YesNoPopup("Make a PC")) {
-        FaustMC(a);
-      }
+      return YesNoPopup("Make a PC");
+#else
+      return false;
 #endif
+    }
+
+    private void FaustExamineLiving(Actor a) {
+      if (FaustNominates(a)) FaustMC(a);
     }
 
     /// not really; just need to block the other manual handlers from triggering
