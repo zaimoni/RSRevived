@@ -575,12 +575,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null == gens) return new HashSet<Point>();
           if (WantToRecharge()) {
             update_path.StageGenerators(gens);
-            return m_Actor.CastToBumpableDestinations(m,gens.Select(obj => obj.Location.Position));
+            return m_Actor.Model.CastToBumpableDestinations(m,gens.Select(obj => obj.Location.Position));
           }
           var gens_off = gens.Where(obj => !obj.IsOn);
           if (gens_off.Any()) {
             update_path.StageGenerators(gens_off);
-            return m_Actor.CastToBumpableDestinations(m, gens_off.Select(obj => obj.Location.Position));   // XXX should be for map
+            return m_Actor.Model.CastToBumpableDestinations(m, gens_off.Select(obj => obj.Location.Position));   // XXX should be for map
           }
           return new HashSet<Point>();
         }
@@ -591,7 +591,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
           var ret = WhereIs(want, m);
           if (0 < ret.Count) update_path.StageInventory(m,ret);
-          return m_Actor.CastToInventoryAccessibleDestinations(m,ret);
+          return m_Actor.Model.CastToInventoryAccessibleDestinations(m,ret);
         }
 
         if (0 < want.Count) pathing_targets = pathing_targets.Union(resupply_want);

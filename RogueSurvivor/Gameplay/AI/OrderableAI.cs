@@ -819,7 +819,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         i = _stacks.Count;
         while(0 < i--) {
-          if (!m_Actor.HasAnyInventoryAccessibleDestinations(_stacks[i])) {
+          if (!m_Actor.Model.HasAnyInventoryAccessibleDestinations(_stacks[i])) {
             _stacks.RemoveAt(i);
             ordai.ClearLastMove();
             continue;
@@ -4069,7 +4069,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmp;
       }
       if (null == _legal_steps) return null;
-      return BehaviorPathTo(m_Actor.CastToInventoryAccessibleDestinations(origin));
+      return BehaviorPathTo(m_Actor.Model.CastToInventoryAccessibleDestinations(origin));
     }
 
     protected ActorAction BehaviorHeadForBestStack(List<Data.Model.InvOrigin> stacks)

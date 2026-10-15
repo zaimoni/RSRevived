@@ -1456,7 +1456,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       _caller = CallChain.SelectAction_LambdaPath;
       var old_goals = GetPreviousGoals()?.ToHashSet();
-      act = BehaviorPathTo(m => m_Actor.CastToInventoryAccessibleDestinations(m,inv_dests(m)));
+      act = BehaviorPathTo(m => m_Actor.Model.CastToInventoryAccessibleDestinations(m,inv_dests(m)));
       if (null != old_goals && !old_goals.Contains(m_Actor.Location)) {
         var now_goals = GetPreviousGoals();
         if (null!=now_goals) {
@@ -5296,7 +5296,7 @@ restart_chokepoints:
           continue;
         }
         if (m_Actor.StackIsBlocked(x.Key)) continue; // XXX ignore items under barricades or fortifications
-        if (!m_Actor.HasAnyInventoryAccessibleDestinations(x.Value)) continue;
+        if (!m_Actor.Model.HasAnyInventoryAccessibleDestinations(x.Value)) continue;
         var act = BehaviorWouldGrabFrom(x.Value);
         if (!act?.IsLegal() ?? true) {
           if (tracing) {

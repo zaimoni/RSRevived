@@ -5,8 +5,11 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
+
+using Point = Zaimoni.Data.Vector2D<short>;
 
 #nullable enable
 
@@ -221,6 +224,88 @@ namespace djack.RogueSurvivor.Data
     {
       if (!Location.IsInBounds(in loc)) return false;
       return _CanEnter(in loc);
+    }
+
+    // generators work on point-based pathfinding
+    public HashSet<Point> CastToBumpableDestinations(Map m,IEnumerable<Point> src) {
+      var ret = new HashSet<Point>();
+      foreach(var pt in src) {
+        var loc = new Location(m, pt);
+        if (!CanEnter(loc)) {
+          foreach(var pt2 in pt.Adjacent()) {
+            if (CanEnter(new Location(m, pt2))) ret.Add(pt2);
+          }
+          continue;
+        }
+        // containers are also usually best to target adjacent, but usually getting within 1 triggers alternate behavior
+        ret.Add(pt);
+      }
+      return ret;
+    }
+
+    // likewise inventories
+    // while the caller only sends in-bounds src, the return value can be "off-map-edge" out of bounds
+    public HashSet<Point> CastToInventoryAccessibleDestinations(Map m,IEnumerable<Point>? src) {
+      var ret = new HashSet<Point>();
+      if (null!=src) foreach(var pt in src) {
+        var loc = new Location(m, pt);
+        var obj = loc.MapObject;
+        if (CanEnter(loc) && !(obj is ShelfLike)) ret.Add(pt);
+        if (obj is null || (obj is ShelfLike || !obj.BlocksReachInto())) {
+          foreach(var pt2 in pt.Adjacent()) {
+            if (CanEnter(new(m, pt2))) ret.Add(pt2);
+          }
+        }
+      }
+      return ret;
+    }
+
+    public HashSet<Location> CastToInventoryAccessibleDestinations(Data.Model.InvOrigin origin) {
+      HashSet<Location> ret = new();
+
+      var loc = origin.Location;
+      if (origin.obj_owner is not null) {
+        foreach(var pt2 in loc.Position.Adjacent()) {
+          Location dest = new(loc.Map, pt2);
+          if (CanEnter(ref dest)) ret.Add(dest);
+        }
+        return ret;
+      }
+      if (origin.loc is null) return ret; // we don't handle actor inventories
+
+      if (CanEnter(loc)) ret.Add(loc);
+
+      var obj = loc.MapObject;
+      if (obj is null || !obj.BlocksReachInto()) {
+        foreach(var pt2 in loc.Position.Adjacent()) {
+          Location dest = new(loc.Map, pt2);
+          if (CanEnter(ref dest)) ret.Add(dest);
+        }
+      }
+      return ret;
+    }
+
+    // 2026-10-14: The data design that allows this to transtion from true to false is in,
+    // but it's not used.
+    public bool HasAnyInventoryAccessibleDestinations(Data.Model.InvOrigin origin) {
+      var loc = origin.Location;
+      if (origin.obj_owner is not null) {
+        foreach(var pt2 in loc.Position.Adjacent()) {
+          if (CanEnter(new(loc.Map, pt2))) return true;
+        }
+        return false;
+      }
+      if (origin.loc is null) return false; // we don't handle actor inventories
+
+      if (CanEnter(loc)) return true;
+
+      var obj = loc.MapObject;
+      if (obj is null || !obj.BlocksReachInto()) {
+        foreach(var pt2 in loc.Position.Adjacent()) {
+          if (CanEnter(new(loc.Map, pt2))) return true;
+        }
+      }
+      return false;
     }
 #endregion
   }
