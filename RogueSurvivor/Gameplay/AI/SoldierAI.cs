@@ -199,7 +199,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // all free actions have to be before targeting enemies
 
-	  var friends = FilterNonEnemies(_all);
+      var friends = FilterNonEnemies(_all);
       if (null != _enemies) {
         if (null != friends) {
           var nearest_enemy = FilterNearest(_enemies);

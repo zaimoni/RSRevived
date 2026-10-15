@@ -589,58 +589,58 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanShout(out string reason)
     {
-	  reason = ReasonCantShout();
-	  return string.IsNullOrEmpty(reason);
+      reason = ReasonCantShout();
+      return string.IsNullOrEmpty(reason);
     }
 
 #if DEAD_FUNC
     public bool CanShout()
     {
-	  return string.IsNullOrEmpty(ReasonCantShout());
+      return string.IsNullOrEmpty(ReasonCantShout());
     }
 #endif
 
-	private string ReasonCantChatWith(Actor target)
-	{
+    private string ReasonCantChatWith(Actor target)
+    {
       if (!Model.Abilities.CanTalk) return "can't talk";
       if (!target.Model.Abilities.CanTalk) return string.Format("{0} can't talk", target.TheName);
       if (target.IsSleeping) return string.Format("{0} is sleeping", target.TheName);
       return "";
-	}
+    }
 
     public bool CanChatWith(Actor target, out string reason)
     {
-	  reason = ReasonCantChatWith(target);
-	  return string.IsNullOrEmpty(reason);
+      reason = ReasonCantChatWith(target);
+      return string.IsNullOrEmpty(reason);
     }
 
 #if DEAD_FUNC
     public bool CanChatWith(Actor target)
     {
-	  return string.IsNullOrEmpty(ReasonCantChatWith(target));
+      return string.IsNullOrEmpty(ReasonCantChatWith(target));
     }
 #endif
 #nullable restore
 
-	private string ReasonCantSwitchPlaceWith(Actor target)
-	{
+    private string ReasonCantSwitchPlaceWith(Actor target)
+    {
 #if DEBUG
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
       if (target.Leader != this) return "not your follower";
       if (target.IsSleeping) return "sleeping";
       return "";
-	}
+    }
 
     public bool CanSwitchPlaceWith(Actor target, out string reason)
     {
-	  reason = ReasonCantSwitchPlaceWith(target);
-	  return string.IsNullOrEmpty(reason);
+      reason = ReasonCantSwitchPlaceWith(target);
+      return string.IsNullOrEmpty(reason);
     }
 
     public bool CanSwitchPlaceWith(Actor target)
     {
-	  return string.IsNullOrEmpty(ReasonCantSwitchPlaceWith(target));
+      return string.IsNullOrEmpty(ReasonCantSwitchPlaceWith(target));
     }
 
     // aggression statistics, etc.
@@ -1090,7 +1090,7 @@ namespace djack.RogueSurvivor.Data
       if (null == m_Controller) Controller = Model.InstanciateController(this);
     }
 
-	public void PrefixName(string prefix) => m_Name = prefix+" "+m_Name;
+    public void PrefixName(string prefix) => m_Name = prefix+" "+m_Name;
 
     public int DamageBonusVsUndeads {
       get {
@@ -1183,17 +1183,17 @@ namespace djack.RogueSurvivor.Data
     }
 
 #if DEAD_FUNC
-	public bool CanContrafactualFireAt(Actor target, Point p, out string reason)
-	{
-	  reason = ReasonCantContrafactualFireAt(target, in p);
-	  return string.IsNullOrEmpty(reason);
-	}
+    public bool CanContrafactualFireAt(Actor target, Point p, out string reason)
+    {
+      reason = ReasonCantContrafactualFireAt(target, in p);
+      return string.IsNullOrEmpty(reason);
+    }
 #endif
 
     public bool CanContrafactualFireAt(Actor target, Point p)
-	{
-	  return string.IsNullOrEmpty(ReasonCantContrafactualFireAt(target, in p));
-	}
+    {
+      return string.IsNullOrEmpty(ReasonCantContrafactualFireAt(target, in p));
+    }
 
 #if B_MOVIE_MARTIAL_ARTS
     public int UsingPolearmInBMovie {
@@ -1955,7 +1955,7 @@ namespace djack.RogueSurvivor.Data
 
     public void OnEnterTile()
     {
-	  Session.Get.Police.TrackThroughExitSpawn(this);
+      Session.Get.Police.TrackThroughExitSpawn(this);
       (Controller as Gameplay.AI.ObjectiveAI)?.OnMove();  // 2019-08-24: both calls required to pass regression test
       // inline Map::IsTrapCoveringMapObjectAt
       var obj = Location.MapObject;
@@ -2448,34 +2448,34 @@ namespace djack.RogueSurvivor.Data
     }
 
     private string ReasonCantBash(DoorWindow door)
-	{
+    {
       if (!Model.Abilities.CanBashDoors) return "can't bash doors";
       if (IsTired) return "tired";
       if (door.BreakState != MapObject.Break.BREAKABLE && !door.IsBarricaded) return "can't break this object";
       return "";
-	}
+    }
 
 #if DEAD_FUNC
     public bool CanBash(DoorWindow door, out string reason)
     {
-	  reason = ReasonCantBash(door);
-	  return string.IsNullOrEmpty(reason);
+      reason = ReasonCantBash(door);
+      return string.IsNullOrEmpty(reason);
     }
 #endif
     public bool CanBash(DoorWindow door) => string.IsNullOrEmpty(ReasonCantBash(door));
 
-	private string ReasonCantOpen(DoorWindow door)
-	{
+    private string ReasonCantOpen(DoorWindow door)
+    {
       if (!Model.Abilities.CanUseMapObjects) return "no ability to open";
-	  if (door.BarricadePoints > 0) return "is barricaded";
+      if (door.BarricadePoints > 0) return "is barricaded";
       if (!door.IsClosed) return "not closed";
       return "";
-	}
+    }
 
     public bool CanOpen(DoorWindow door, out string reason)
     {
-	  reason = ReasonCantOpen(door);
-	  return string.IsNullOrEmpty(reason);
+      reason = ReasonCantOpen(door);
+      return string.IsNullOrEmpty(reason);
     }
 
     public bool CanOpen(DoorWindow door) => string.IsNullOrEmpty(ReasonCantOpen(door));
@@ -2500,13 +2500,13 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanBuildFortification(Point pos, bool isLarge, out string reason)
     {
-	  reason = ReasonCantBuildFortification(pos,isLarge);
-	  return string.IsNullOrEmpty(reason);
+      reason = ReasonCantBuildFortification(pos,isLarge);
+      return string.IsNullOrEmpty(reason);
     }
 
     public bool CanBuildFortification(in Point pos, bool isLarge)
     {
-	  return string.IsNullOrEmpty(ReasonCantBuildFortification(pos,isLarge));
+      return string.IsNullOrEmpty(ReasonCantBuildFortification(pos,isLarge));
     }
 
     // keep the unused parameter -- would need it if alternate materials possible
@@ -2519,35 +2519,35 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanRepairFortification(Fortification fort, out string reason)
     {
-	  reason = ReasonCantRepairFortification(fort);
-	  return string.IsNullOrEmpty(reason);
+      reason = ReasonCantRepairFortification(fort);
+      return string.IsNullOrEmpty(reason);
     }
 
 #if DEAD_FUNC
     public bool CanRepairFortification(Fortification fort)
     {
-	  return string.IsNullOrEmpty(ReasonCantRepairFortification(fort));
+      return string.IsNullOrEmpty(ReasonCantRepairFortification(fort));
     }
 #endif
 
     // leave the dead parameter in there, for now.
     // E.g., non-CHAR power generators might actually *need fuel*
     private string ReasonCantSwitch(PowerGenerator powGen)
-	{
+    {
       if (!Model.Abilities.CanUseMapObjects) return "cannot use map objects";
       return "";
-	}
+    }
 
     public bool CanSwitch(PowerGenerator powGen, out string reason)
     {
-	  reason = ReasonCantSwitch(powGen);
-	  return string.IsNullOrEmpty(reason);
+      reason = ReasonCantSwitch(powGen);
+      return string.IsNullOrEmpty(reason);
     }
 
 #if DEAD_FUNC
     public bool CanSwitch(PowerGenerator powGen)
     {
-	  return string.IsNullOrEmpty(ReasonCantSwitch(powGen));
+      return string.IsNullOrEmpty(ReasonCantSwitch(powGen));
     }
 #endif
 
@@ -2739,10 +2739,10 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantRun());
     }
 
-	public bool RunIsFreeMove { get { return BASE_ACTION_COST/2 < m_ActionPoints; } }
-	public bool WalkIsFreeMove { get { return BASE_ACTION_COST < m_ActionPoints; } }
+    public bool RunIsFreeMove { get { return BASE_ACTION_COST/2 < m_ActionPoints; } }
+    public bool WalkIsFreeMove { get { return BASE_ACTION_COST < m_ActionPoints; } }
     public int EnergyDrain { get { return BASE_ACTION_COST - Model.DollBody.Speed; } }
-	public bool NextMoveLostWithoutRunOrWait { get { return EnergyDrain >= m_ActionPoints; } }
+    public bool NextMoveLostWithoutRunOrWait { get { return EnergyDrain >= m_ActionPoints; } }
 
     /// <returns>0 have move, 1 would have move with one walk replaced by run, 2 no move</returns>
     public int MoveLost(int turns, int walk, int run) {
@@ -2781,24 +2781,24 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 
-	// Ultimately, we do plan to allow the AI to cross district boundaries
-	private string ReasonCantLeaveMap(Point dest)
-	{
+    // Ultimately, we do plan to allow the AI to cross district boundaries
+    private string ReasonCantLeaveMap(Point dest)
+    {
       var exitAt = Location.Map.GetExitAt(dest);
       if (null == exitAt) return "no exit to leave map with";
       return exitAt.ReasonIsBlocked(this);
-	}
+    }
 
     public bool CanLeaveMap(Point dest, out string reason)
     {
-	  reason = ReasonCantLeaveMap(dest);
-	  return string.IsNullOrEmpty(reason);
+      reason = ReasonCantLeaveMap(dest);
+      return string.IsNullOrEmpty(reason);
     }
 
 #if DEAD_FUNC
     public bool CanLeaveMap(Point dest)
     {
-	  return string.IsNullOrEmpty(ReasonCantLeaveMap(dest));
+      return string.IsNullOrEmpty(ReasonCantLeaveMap(dest));
     }
 #endif
 
@@ -4042,7 +4042,7 @@ final_exit:
     public override string ToString() { return Name; }
 
 #region IEquatable<>
-	// C# docs indicate using Actor as a key wants these
+    // C# docs indicate using Actor as a key wants these
     public bool Equals(Actor? x)
     {
       if (null == x) return false;

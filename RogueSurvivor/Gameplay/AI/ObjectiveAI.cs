@@ -1567,7 +1567,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected void ETAToKill(Actor en, int dist, ItemRangedWeapon rw, Dictionary<Actor, int> best_weapon_ETAs, Dictionary<Actor, ItemRangedWeapon> best_weapons=null)
     {
       Attack tmp = m_Actor.HypotheticalRangedAttack(rw.Model.Attack, dist, en);
-	  int a_dam = tmp.DamageValue - en.CurrentDefence.Protection_Shot;
+      int a_dam = tmp.DamageValue - en.CurrentDefence.Protection_Shot;
       if (0 >= a_dam) return;   // do not update ineffective weapons
       int a_kill_b_in = ((8*en.HitPoints)/(5*a_dam))+2;	// assume bad luck when attacking.
       // Also, assume one fluky miss and compensate for overkill returning 0 rather than 1 attacks.
@@ -2005,7 +2005,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == avoid) return src;
       IEnumerable<Point> ok = src.Except(avoid);
-	  int new_dest = ok.Count();
+      int new_dest = ok.Count();
       return ((0 < new_dest && new_dest < src.Count) ? ok.ToList() : src);
     }
 
@@ -2018,7 +2018,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != test && avoid.Contains(test.Value.Position)) continue;  // null is expected for using a same-district exit
         ok.Add(loc);
       }
-	  int new_dest = ok.Count;
+      int new_dest = ok.Count;
       return ((0 < new_dest && new_dest < src.Count) ? ok : src);
     }
 
@@ -2031,7 +2031,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != test && avoid.Contains(test.Value.Position)) continue;  // null is expected for using a same-district exit
         ok.Add(loc.Key,loc.Value);
       }
-	  int new_dest = ok.Count;
+      int new_dest = ok.Count;
       return ((0 < new_dest && new_dest < src.Count) ? ok : src);
     }
 
@@ -2041,14 +2041,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var tmp2 = m_Actor.Location.Map.GetMapObjectAt(pt);
           return !tmp2?.IsJumpable ?? true;
       });
-	  int new_dest = no_jump.Count();
+      int new_dest = no_jump.Count();
       return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
     }
 
     private static List<Location> DecideMove_NoJump(List<Location> src)
     {
       IEnumerable<Location> no_jump = src.Where(Location.NoJump);
-	  int new_dest = no_jump.Count();
+      int new_dest = no_jump.Count();
       return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
     }
 
@@ -2074,7 +2074,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private static List<T> DecideMove_NoShove<T>(List<T> src, Dictionary<T, ActorAction> legal_steps)
     {
       IEnumerable<T> no_shove = src.Where(loc=> !(legal_steps[loc] is ActionShove));
-	  int new_dest = no_shove.Count();
+      int new_dest = no_shove.Count();
       return ((0 < new_dest && new_dest < src.Count) ? no_shove.ToList() : src);
     }
 
@@ -2086,7 +2086,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private static List<T> DecideMove_NoPush<T>(List<T> src, Dictionary<T, ActorAction> legal_steps)
     {
       IEnumerable<T> no_push = src.Where(loc => !(legal_steps[loc] is ActionPush));
-	  int new_dest = no_push.Count();
+      int new_dest = no_push.Count();
       return ((0 < new_dest && new_dest < src.Count) ? no_push.ToList() : src);
     }
 
@@ -2159,7 +2159,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction? _finalDecideMove(List<Point> tmp, Dictionary<Point,ActorAction> legal_steps)
     {
-	  var secondary = new List<ActorAction>();
+      var secondary = new List<ActorAction>();
       bool prefer_cardinal(Point pt) {
         if (m_Actor.Location.Position.X == pt.X) return true;
         if (m_Actor.Location.Position.Y == pt.Y) return true;
@@ -2171,8 +2171,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // we can prefer cardinal directions to diagonal directions safely at this point (all tactical considerations were supposed to have
       // been applied first)
       Actor? shove_target;
-	  while(0<tmp.Count) {
-		ActorAction ret = legal_steps[Rules.Get.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal)];
+      while(0<tmp.Count) {
+        ActorAction ret = legal_steps[Rules.Get.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal)];
         if (ret is ActionShove shove && (shove_target = shove.Target).Controller is ObjectiveAI ai) {
            var ok_dests = ai.WantToGoHere(shove_target.Location);
            if (Rules.IsAdjacent(shove.a_dest, m_Actor.Location)) {
@@ -2191,32 +2191,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 continue;
                 }
         }
-		return ret;
-	  }
+        return ret;
+      }
       return 0 < secondary.Count ? Rules.Get.DiceRoller.Choose(secondary) : null;
     }
 
-	protected HashSet<Point> FriendsLoF()
-	{
+    protected HashSet<Point> FriendsLoF()
+    {
       var enemies = enemies_in_FOV;
-	  if (null == enemies) return null;
+      if (null == enemies) return null;
       var friends = friends_in_FOV;
-	  if (null == friends) return null;
-	  var tmp = new HashSet<Point>();
+      if (null == friends) return null;
+      var tmp = new HashSet<Point>();
       short range;
-	  foreach(var f in friends.Values) {
+      foreach(var f in friends.Values) {
         if (!f.HasEquipedRangedWeapon()) continue;
         range = f.CurrentRangedAttack.Range;
         var f_loc = f.Location;
-	    foreach(var e in enemies.Values) {
+        foreach(var e in enemies.Values) {
           var e_loc = e.Location;
-		  if (range < Rules.GridDistance(f_loc, e_loc)) continue;
-		  List<Point> line = new();
-	      if (LOS.CanTraceViewLine(f_loc, e_loc, range, line)) tmp.UnionWith(line);
-		}
-	  }
-	  return (0<tmp.Count ? tmp : null);
-	}
+          if (range < Rules.GridDistance(f_loc, e_loc)) continue;
+          List<Point> line = new();
+          if (LOS.CanTraceViewLine(f_loc, e_loc, range, line)) tmp.UnionWith(line);
+        }
+      }
+      return (0<tmp.Count ? tmp : null);
+    }
 
     // this assumes conditions like "everything is in FOV" so that a floodfill pathfinding is not needed.
     // we also assume no enemies in sight.
@@ -2329,7 +2329,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (0 >= ok_steps.Count) return null;
       if (1 == ok_steps.Count) {
-  	    var act = DecideMove(ok_steps);
+          var act = DecideMove(ok_steps);
         if (null != act) {
           if (act is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
           m_Actor.Activity = Activity.IDLE;
@@ -2386,7 +2386,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ok_steps.Clear();
         foreach(var x in staging) ok_steps.Add(m_Actor.Location.Position + Direction.COMPASS[(int)x.Key]);
         if (1 == ok_steps.Count) {
-    	  var act = DecideMove(ok_steps);
+          var act = DecideMove(ok_steps);
           if (null != act) {
             if (act is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
             m_Actor.Activity = Activity.IDLE;
@@ -2443,7 +2443,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (only_cardinal.Any() && only_cardinal.Count()<legal_steps.Count) legal_steps = only_cardinal.ToList();
 #endif
 
-	  var tmpAction = DecideMove(legal_steps);
+      var tmpAction = DecideMove(legal_steps);
       if (null != tmpAction) {
         if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
         m_Actor.Activity = Activity.IDLE;
@@ -2453,7 +2453,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     protected ActorAction? DecideMove(IEnumerable<Point> src)
-	{
+    {
 #if DEBUG
       if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
@@ -2461,30 +2461,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var legal_steps = m_Actor.OnePathPt(m_Actor.Location); // other half
       legal_steps.OnlyIf(action => action.IsPerformable() && !VetoAction(action));
 
-	  List<Point> tmp = src.Where(pt => legal_steps.ContainsKey(pt)).ToList();
+      List<Point> tmp = src.Where(pt => legal_steps.ContainsKey(pt)).ToList();
       if (0 >= tmp.Count) return null;
       if (1 >= tmp.Count) return _finalDecideMove(tmp, legal_steps);
 
-	  // do not get in the way of allies' line of fire
-	  tmp = DecideMove_Avoid(tmp, FriendsLoF());
+      // do not get in the way of allies' line of fire
+      tmp = DecideMove_Avoid(tmp, FriendsLoF());
       if (1 >= tmp.Count) return _finalDecideMove(tmp, legal_steps);
 
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  var threats = m_Actor.Threats;
-	  var sights_to_see = m_Actor.InterestingLocs;
+      var threats = m_Actor.Threats;
+      var sights_to_see = m_Actor.InterestingLocs;
       Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
       HashSet<Point>? new_los = null;
 
       if (null != threats || null != sights_to_see) {
         hypothetical_los = new Dictionary<Point, HashSet<Point>>();
         new_los = new HashSet<Point>();
-	    // only need points newly in FOV that aren't currently
-	    foreach(Point pt in tmp) {
-	      hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt)).Except(FOV));
+        // only need points newly in FOV that aren't currently
+        foreach(Point pt in tmp) {
+          hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt)).Except(FOV));
           new_los.UnionWith(hypothetical_los[pt]);
-	    }
+        }
         // only need to check if new locations seen
         if (0 >= new_los.Count) {
           threats = null;
@@ -2498,12 +2498,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != threats) {
         tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
         if (1 >= tmp.Count) return _finalDecideMove(tmp, legal_steps);
-	  }
-	  if (null != sights_to_see) {
+      }
+      if (null != sights_to_see) {
         HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map, view);
         if (null!=inspect) tmp = DecideMove_maximize_visibility(tmp, inspect, new_los, hypothetical_los);
         if (1 >= tmp.Count) return _finalDecideMove(tmp, legal_steps);
-	  }
+      }
 
       // weakly prefer not to shove
       tmp = DecideMove_NoShove(tmp, legal_steps);
@@ -2516,19 +2516,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (CallChain.ManageMeleeRisk == _caller) tmp = DecideMove_LongPath(tmp);
       return _finalDecideMove(tmp, legal_steps);
-	}
+    }
 
 #nullable enable
     private ActorAction? _finalDecideMove(List<Location> tmp, Dictionary<Location, ActorAction> legal_steps)
     {
-	  var secondary = new List<ActorAction>();
+      var secondary = new List<ActorAction>();
       bool prefer_cardinal(Location loc) {
         if (m_Actor.Location.Position.X == loc.Position.X) return true;
         if (m_Actor.Location.Position.Y == loc.Position.Y) return true;
         return false;
       }
       Actor? shove_target;
-	  while(0<tmp.Count) {
+      while(0<tmp.Count) {
         var dest = Rules.Get.DiceRoller.ChooseWithoutReplacement(tmp, prefer_cardinal);
         var ret = legal_steps[dest];    // sole caller guarantees exists and is legal
         if (ret is ActionUseExit use_exit && use_exit.IsNotBlocked) continue;
@@ -2550,8 +2550,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 continue;
                 }
         }
-		return ret;
-	  }
+        return ret;
+      }
       return 0 < secondary.Count ? Rules.Get.DiceRoller.Choose(secondary) : null;
     }
 
@@ -2870,21 +2870,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected void DecideMove_WaryOfTraps<T>(Dictionary<Location, T> src)
     {
-	  var trap_damage_field = new Dictionary<Location,int>();
-	  foreach (var x in src) trap_damage_field.Add(x.Key,x.Key.Map.TrapsUnavoidableMaxDamageAtFor(x.Key.Position,m_Actor));
+      var trap_damage_field = new Dictionary<Location,int>();
+      foreach (var x in src) trap_damage_field.Add(x.Key,x.Key.Map.TrapsUnavoidableMaxDamageAtFor(x.Key.Position,m_Actor));
 
-	  var safe = src.Keys.Where(x => 0>=trap_damage_field[x]);
-	  int new_dest = safe.Count();
+      var safe = src.Keys.Where(x => 0>=trap_damage_field[x]);
+      int new_dest = safe.Count();
       if (0 == new_dest) {
-		safe = src.Keys.Where(x => m_Actor.HitPoints>trap_damage_field[x]);
-		new_dest = safe.Count();
+        safe = src.Keys.Where(x => m_Actor.HitPoints>trap_damage_field[x]);
+        new_dest = safe.Count();
       }
       if (0 >= new_dest || new_dest >= src.Count) return;
       src.OnlyIf(x => safe.Contains(x));
     }
 
     protected ActorAction? DecideMove(Dictionary<Location,int> src)
-	{
+    {
       if (src is null) return null; // does happen
       var legal_steps = m_Actor.OnePathRange(); // other half
       legal_steps.OnlyIf(action => action.IsPerformable() && !VetoAction(action));
@@ -2898,31 +2898,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Location> tmp = src.Keys.ToList();
       if (1 >= tmp.Count) return _finalDecideMove(tmp,legal_steps);
 
-	  // do not get in the way of allies' line of fire
-	  tmp = DecideMove_Avoid(tmp, FriendsLoF());
+      // do not get in the way of allies' line of fire
+      tmp = DecideMove_Avoid(tmp, FriendsLoF());
       if (1 >= tmp.Count) return _finalDecideMove(tmp,legal_steps);
 
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  var threats = m_Actor.Threats;
-	  var sights_to_see = m_Actor.InterestingLocs;
-	  Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
+      var threats = m_Actor.Threats;
+      var sights_to_see = m_Actor.InterestingLocs;
+      Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
       HashSet<Point>? new_los = null;
 
       if (null != threats || null != sights_to_see) {
-	    hypothetical_los = new Dictionary<Point,HashSet<Point>>();
+        hypothetical_los = new Dictionary<Point,HashSet<Point>>();
         new_los = new HashSet<Point>();
 
-	    // only need points newly in FOV that aren't currently
-	    foreach(var x in tmp) {
+        // only need points newly in FOV that aren't currently
+        foreach(var x in tmp) {
           if (!legal_steps.ContainsKey(x)) continue;
           if (legal_steps[x] is ActionUseExit) continue;
           Location? test = m_Actor.Location.Map.Denormalize(in x);
           if (null == test) throw new ArgumentNullException(nameof(test));
-	      hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
+          hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
           new_los.UnionWith(hypothetical_los[test.Value.Position]);
-	    }
+        }
 
         // only need to check if new locations seen
         if (0 >= new_los.Count) {
@@ -2937,14 +2937,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != threats) {
         tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
         if (1 >= tmp.Count) return _finalDecideMove(tmp,legal_steps);
-	  }
-	  if (null != sights_to_see) {
+      }
+      if (null != sights_to_see) {
         HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map, view);
         if (null!=inspect) {
           tmp = DecideMove_maximize_visibility(tmp, inspect, new_los, hypothetical_los);
           if (1 >= tmp.Count) return _finalDecideMove(tmp,legal_steps);
         }
-	  }
+      }
 
       // weakly prefer not to shove
       tmp = DecideMove_NoShove(tmp, legal_steps);
@@ -2955,10 +2955,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // weakly prefer not to jump
       tmp = DecideMove_NoJump(tmp);
       return _finalDecideMove(tmp,legal_steps);
-	}
+    }
 
     protected ActorAction DecideMove(Dictionary<Location,ActorAction> src)
-	{
+    {
       if (null == src) return null; // does happen
       src.OnlyIf(loc => 1==Rules.InteractionDistance(m_Actor.Location,in loc));
       if (0 >= src.Count) return null;
@@ -2968,30 +2968,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX \todo if there are maps we do not want to path to, screen those here
       if (1 >= src.Count) return _finalDecideMove(src);
 
-	  // do not get in the way of allies' line of fire
-	  src = DecideMove_Avoid(src, FriendsLoF());
+      // do not get in the way of allies' line of fire
+      src = DecideMove_Avoid(src, FriendsLoF());
       if (1 >= src.Count) return _finalDecideMove(src);
 
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  var threats = m_Actor.Threats;
-	  var sights_to_see = m_Actor.InterestingLocs;
-	  Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
+      var threats = m_Actor.Threats;
+      var sights_to_see = m_Actor.InterestingLocs;
+      Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
       HashSet<Point>? new_los = null;
 
       if (null != threats || null != sights_to_see) {
-	    hypothetical_los = new Dictionary<Point,HashSet<Point>>();
+        hypothetical_los = new Dictionary<Point,HashSet<Point>>();
         new_los = new HashSet<Point>();
 
-	    // only need points newly in FOV that aren't currently
-	    foreach(var x in src) {
+        // only need points newly in FOV that aren't currently
+        foreach(var x in src) {
           if (x.Value is ActionUseExit) continue;
           Location? test = m_Actor.Location.Map.Denormalize(x.Key);
           if (null == test) throw new ArgumentNullException(nameof(test));
-	      hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
+          hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
           new_los.UnionWith(hypothetical_los[test.Value.Position]);
-	    }
+        }
 
         // only need to check if new locations seen
         if (0 >= new_los.Count) {
@@ -3006,14 +3006,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != threats) {
         src = DecideMove_maximize_visibility(src, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
         if (1 >= src.Count) return _finalDecideMove(src);
-	  }
-	  if (null != sights_to_see) {
+      }
+      if (null != sights_to_see) {
         HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map, view);
         if (null!=inspect) {
           src = DecideMove_maximize_visibility(src, inspect, new_los, hypothetical_los);
           if (1 >= src.Count) return _finalDecideMove(src);
         }
-	  }
+      }
 
       // weakly prefer not to shove
       DecideMove_NoShove(src);
@@ -3026,11 +3026,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // weakly prefer not to jump
       DecideMove_NoJump(src);
       return _finalDecideMove(src);
-	}
+    }
 
 #nullable enable
     protected ActorAction? DecideMove(Dictionary<Location, KeyValuePair<ActorAction, int>> dests)
-	{
+    {
       if (0 >= dests.Count) return null;
       dests.Minimize(x => x.Value.Value);
       if (1 == dests.Count) return dests.First().Value.Key;   // intentionally allow non-moving shove through to simulate panic
@@ -3041,30 +3041,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       DecideMove_WaryOfTraps(_dests);
       if (1 == _dests.Count) return _dests.First().Value;
 
-	  // do not get in the way of allies' line of fire
-	  _dests = DecideMove_Avoid(_dests, FriendsLoF());
+      // do not get in the way of allies' line of fire
+      _dests = DecideMove_Avoid(_dests, FriendsLoF());
       if (1 == _dests.Count) return _dests.First().Value;
 
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  var threats = m_Actor.Threats;
-	  var sights_to_see = m_Actor.InterestingLocs;
-	  Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
+      var threats = m_Actor.Threats;
+      var sights_to_see = m_Actor.InterestingLocs;
+      Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
       HashSet<Point>? new_los = null;
 
       if (null != threats || null != sights_to_see) {
-	    hypothetical_los = new Dictionary<Point,HashSet<Point>>();
+        hypothetical_los = new Dictionary<Point,HashSet<Point>>();
         new_los = new HashSet<Point>();
 
-	    // only need points newly in FOV that aren't currently
-	    foreach(var x in dests) {
+        // only need points newly in FOV that aren't currently
+        foreach(var x in dests) {
           if (x.Value.Key is ActionUseExit) continue;
           Location? test = m_Actor.Location.Map.Denormalize(x.Key);
           if (null == test) throw new ArgumentNullException(nameof(test));
-	      hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
+          hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
           new_los.UnionWith(hypothetical_los[test.Value.Position]);
-	    }
+        }
 
         // only need to check if new locations seen
         if (0 >= new_los.Count) {
@@ -3079,14 +3079,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != threats) {
         _dests = DecideMove_maximize_visibility(_dests, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
         if (1 == _dests.Count) return _dests.First().Value;
-	  }
-	  if (null != sights_to_see) {
+      }
+      if (null != sights_to_see) {
         HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map, view);
         if (null!=inspect) {
           _dests = DecideMove_maximize_visibility(_dests, inspect, new_los, hypothetical_los);
           if (1 == _dests.Count) return _dests.First().Value;
         }
-	  }
+      }
 
       // weakly prefer not to shove
       DecideMove_NoShove(_dests);
@@ -3099,7 +3099,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // weakly prefer not to jump
       DecideMove_NoJump(_dests);
       return _finalDecideMove(_dests);
-	}
+    }
 #nullable restore
 
     private ActionMoveStep? _finalDecideMove(IEnumerable<Point> src, List<Point> tmp2)
@@ -3140,41 +3140,41 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return step;
         }
       }
-	  return null;
+      return null;
     }
 
     // src_r2 is the desired destination list
     // src are legal steps
     protected ActionMoveStep DecideMove(IEnumerable<Point> src, IEnumerable<Point> src_r2)
-	{
+    {
 #if DEBUG
       if (null == src) throw new ArgumentNullException(nameof(src));
       if (null == src_r2) throw new ArgumentNullException(nameof(src_r2));
 #endif
-	  List<Point> tmp2 = src_r2.ToList();
+      List<Point> tmp2 = src_r2.ToList();
       if (1 >= tmp2.Count) return _finalDecideMove(src, tmp2);
 
-	  // do not get in the way of allies' line of fire
-	  tmp2 = DecideMove_Avoid(tmp2, FriendsLoF());
+      // do not get in the way of allies' line of fire
+      tmp2 = DecideMove_Avoid(tmp2, FriendsLoF());
       if (1 >= tmp2.Count) return _finalDecideMove(src, tmp2);
 
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
       // XXX if we have item memory, maximize "update"
-	  var threats = m_Actor.Threats;
-	  var sights_to_see = m_Actor.InterestingLocs;
-	  Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
+      var threats = m_Actor.Threats;
+      var sights_to_see = m_Actor.InterestingLocs;
+      Dictionary<Point,HashSet<Point>>? hypothetical_los = null;
       HashSet<Point>? new_los = null;
 
       if (null != threats || null != sights_to_see) {
-  	    hypothetical_los = new Dictionary<Point,HashSet<Point>>();
+          hypothetical_los = new Dictionary<Point,HashSet<Point>>();
         new_los = new HashSet<Point>();
 
-	    // only need points newly in FOV that aren't currently
-	    foreach(Point pt in tmp2) {
-	      hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt)).Except(FOV));
+        // only need points newly in FOV that aren't currently
+        foreach(Point pt in tmp2) {
+          hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt)).Except(FOV));
           new_los.UnionWith(hypothetical_los[pt]);
-	    }
+        }
         // only need to check if new locations seen
         if (0 >= new_los.Count) {
           threats = null;
@@ -3185,35 +3185,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather) + 2;
       Rectangle view = new Rectangle(m_Actor.Location.Position - (Point)tmp_LOSrange, (Point)(2*tmp_LOSrange+1));
 
-	  if (null != threats) {
+      if (null != threats) {
         tmp2 = DecideMove_maximize_visibility(tmp2, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
         if (1 >= tmp2.Count) return _finalDecideMove(src, tmp2);
-	  }
-	  if (null != sights_to_see && 2<=tmp2.Count) {
+      }
+      if (null != sights_to_see && 2<=tmp2.Count) {
         HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map, view);
         if (null!=inspect) {
           tmp2 = DecideMove_maximize_visibility(tmp2, inspect, new_los, hypothetical_los);
           if (1 >= tmp2.Count) return _finalDecideMove(src, tmp2);
         }
-	  }
+      }
 
       // weakly prefer not to jump
       tmp2 = DecideMove_NoJump(tmp2);
 
       return _finalDecideMove(src,tmp2);
-	}
+    }
 
     protected List<Point> DecideMove_WaryOfTraps(List<Point> src)
     {
-	  Dictionary<Point,int> trap_damage_field = new Dictionary<Point,int>();
-   	  foreach (Point pt in src) {
-		trap_damage_field[pt] = m_Actor.Location.Map.TrapsUnavoidableMaxDamageAtFor(pt,m_Actor);
-	  }
-	  IEnumerable<Point> safe = src.Where(pt => 0>=trap_damage_field[pt]);
-	  int new_dest = safe.Count();
+      Dictionary<Point,int> trap_damage_field = new Dictionary<Point,int>();
+         foreach (Point pt in src) {
+        trap_damage_field[pt] = m_Actor.Location.Map.TrapsUnavoidableMaxDamageAtFor(pt,m_Actor);
+      }
+      IEnumerable<Point> safe = src.Where(pt => 0>=trap_damage_field[pt]);
+      int new_dest = safe.Count();
       if (0 == new_dest) {
-		safe = src.Where(pt => m_Actor.HitPoints>trap_damage_field[pt]);
-		new_dest = safe.Count();
+        safe = src.Where(pt => m_Actor.HitPoints>trap_damage_field[pt]);
+        new_dest = safe.Count();
       }
       return ((0 < new_dest && new_dest < src.Count) ? safe.ToList() : src);
     }
@@ -5548,8 +5548,8 @@ restart_chokepoints:
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
 #endif
-	  if (it.IsForbiddenToAI) return true;
-	  if (it is ItemSprayPaintModel) return true;
+      if (it.IsForbiddenToAI) return true;
+      if (it is ItemSprayPaintModel) return true;
       if (it is Data.Model.PrimedExplosive) return true;
 
       // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue; unsure about why gangsters dont)

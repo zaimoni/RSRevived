@@ -339,10 +339,10 @@ namespace djack.RogueSurvivor.Engine
       Point start = fromLocation.Position;
       return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt =>
             {
-				if (pt == start) return true;
-				if (pt == toPosition) return true;
-				if (pt == shooter.Location.Position) return true;  // testing whether can fire from FromLocation, so not really here
-				return !map.IsBlockingFire(pt);
+                if (pt == start) return true;
+                if (pt == toPosition) return true;
+                if (pt == shooter.Location.Position) return true;  // testing whether can fire from FromLocation, so not really here
+                return !map.IsBlockingFire(pt);
             }, line);
     }
 
@@ -541,7 +541,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static HashSet<Point> ComputeFOVFor(Actor actor)
     {
-	  return ComputeFOVFor(actor, actor.Location);
+      return ComputeFOVFor(actor, actor.Location);
     }
 #nullable restore
   }

@@ -1815,7 +1815,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (   WillTireAfterAttack(m_Actor) // need stamina to melee: slow retreat ok
             || null != _slow_melee_threat) {    // have slow enemies nearby
           _caller = CallChain.ManageMeleeRisk;
-	      tmpAction = DecideMove(_retreat);
+          tmpAction = DecideMove(_retreat);
           _caller = CallChain.NONE;
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FLEEING;
@@ -1974,10 +1974,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == en_in_range && null != _legal_steps) {
         var percepts2 = FilterPossibleFireTargets(_enemies);
-		if (null != percepts2) {
-		  IEnumerable<Point> tmp = _legal_steps.Where(p=>AnyContrafactualFireTargets(percepts2,p));
-		  if (tmp.Any()) {
-	        tmpAction = DecideMove(tmp);
+        if (null != percepts2) {
+          IEnumerable<Point> tmp = _legal_steps.Where(p=>AnyContrafactualFireTargets(percepts2,p));
+          if (tmp.Any()) {
+            tmpAction = DecideMove(tmp);
             if (null != tmpAction) {
               m_Actor.Activity = Activity.FIGHTING;
               if (tmpAction is ActionMoveStep test) {
@@ -1993,7 +1993,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               }
               return tmpAction;
             }
-		  }
+          }
         }
 
         // XXX need to use floodfill pathfinder
@@ -2954,7 +2954,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, in e_loc))
           decideToFlee = true;
         else if (m_Actor.Leader != null && ActorCourage.COURAGEOUS == courage) {
-	      decideToFlee = false;
+          decideToFlee = false;
         } else if (ActorCourage.COWARD == courage) {
           decideToFlee = true;
           doRun = true;
@@ -3142,10 +3142,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public ActorAction? BehaviorUseAdjacentStack() { return WouldUseAccessibleStack(m_Actor.Location, true); }
 #nullable restore
-	protected ActorAction BehaviorPathTo(in Location dest) { return BehaviorPathTo(new HashSet<Location> { dest }); }
+    protected ActorAction BehaviorPathTo(in Location dest) { return BehaviorPathTo(new HashSet<Location> { dest }); }
 
-	protected ActorAction BehaviorPathToAdjacent(Location dest)
-	{
+    protected ActorAction BehaviorPathToAdjacent(Location dest)
+    {
       var seen = new HashSet<Location> { dest };
       Dictionary<Location, ActionMoveDelta> final_range = new();
 
@@ -3184,7 +3184,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0 < adjacent.Count) return DecideMove(adjacent.CloneOnlyMinimal(act => Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor)));
 
       return BehaviorPathTo(new HashSet<Location>(range.Keys));
-	}
+    }
 
     protected ActorAction BehaviorHangAroundActor(Actor other, int minDist, int maxDist)
     {
@@ -3207,7 +3207,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             goals.Add(loc2);
         });
         if (0 < goals.Count) {
-       	  var act = BehaviorPathTo(goals);
+             var act = BehaviorPathTo(goals);
           if (null == act || !act.IsPerformable()) return null; // direct-returned from SelectAction only
           if (act is ActionMoveStep step) m_Actor.IsRunning = RunIfAdvisable(step.dest);
           return act;
@@ -3233,12 +3233,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       while(!loc.IsWalkableFor(m_Actor) || Rules.GridDistance(in loc,other.Location) < minDist);
       _last_move = null;    // very random if we reach this point, expected to false-positive
 
-	  ActorAction actorAction = BehaviorPathTo(in loc);
+      ActorAction actorAction = BehaviorPathTo(in loc);
       if (!actorAction?.IsPerformable() ?? true) return null;   // direct-returned from SelectAction only
       if (actorAction is ActionMoveStep tmp) {
         if (Rules.GridDistance(m_Actor.Location, tmp.dest) > maxDist)   // no-op by construction; retaining this as placeholder for run logic refinement
            m_Actor.IsRunning = RunIfAdvisable(tmp.dest);
-	  }
+      }
       return actorAction;
     }
 
@@ -3255,13 +3255,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           RecordCloseToActor(other, maxDist);
           return new ActionWait(m_Actor);
       }
-	  ActorAction actorAction = BehaviorPathToAdjacent(other.Location); // can null out from traffic jam
+      ActorAction actorAction = BehaviorPathToAdjacent(other.Location); // can null out from traffic jam
       if (!actorAction?.IsPerformable() ?? true) return null;
       if (actorAction is ActionMoveStep tmp) {
         if (  Rules.GridDistance(m_Actor.Location.Position, tmp.dest.Position) > maxDist
            || other.Location.Map != m_Actor.Location.Map)
            m_Actor.IsRunning = RunIfAdvisable(tmp.dest);
-	  }
+      }
       return actorAction;
     }
 
@@ -3855,9 +3855,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorGoReviveCorpse(List<Percept>? percepts)
     {
 #if false
-	  if (!Session.Get.HasCorpses) return null;
+      if (!Session.Get.HasCorpses) return null;
 #else
-	  if (!Session.HasCorpses) return null;
+      if (!Session.HasCorpses) return null;
 #endif
       if (0 == m_Actor.MySkills.GetSkillLevel(Skills.IDs.MEDIC)) return null;
       if (!m_Actor.HasItemOfModel(GameItems.MEDIKIT)) return null;
@@ -3871,12 +3871,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
       if (null == corpsePercepts) return null;
       var percept = FilterNearest(corpsePercepts);
-	  if (m_Actor.Location.Position==percept.Location.Position) {
+      if (m_Actor.Location.Position==percept.Location.Position) {
         foreach (Corpse corpse in (percept.Percepted as List<Corpse>)) {
           if (m_Actor.CanRevive(corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
             return new ActionReviveCorpse(m_Actor, corpse);
         }
-	  }
+      }
       return BehaviorHeadFor(percept.Location,false,false);
     }
 #nullable restore

@@ -211,10 +211,10 @@ namespace djack.RogueSurvivor.Gameplay
       m_Models[(int) model.ID] = model;
     }
 
-	public static _T_ Cast<_T_>(int id) where _T_:Data.Model.Item
-	{
-	  return m_Models[id] as _T_;
-	}
+    public static _T_ Cast<_T_>(int id) where _T_:Data.Model.Item
+    {
+      return m_Models[id] as _T_;
+    }
 
     static public ItemMedicineModel BANDAGE {
       get {

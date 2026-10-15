@@ -193,7 +193,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // at this point, even if enemies are in sight we have no useful direct combat action
 
       // Secure CHAR property
-	  var friends = FilterNonEnemies(_all);
+      var friends = FilterNonEnemies(_all);
       if (null != friends) {
         var percepts3 = friends?.Filter(p =>
         {

@@ -24,12 +24,12 @@ namespace djack.RogueSurvivor.Engine
     }
 
     public UniqueActor(Actor a, bool spawn_now, bool refugee=false, string music=null, string msg=null)
-	{
-	  m_Spawned = spawn_now;
-	  TheActor = a;
-	  IsWithRefugees = refugee;
-	  EventThemeMusic = music;
-	  EventMessage = msg;
-	}
+    {
+      m_Spawned = spawn_now;
+      TheActor = a;
+      IsWithRefugees = refugee;
+      EventThemeMusic = music;
+      EventMessage = msg;
+    }
   }
 }

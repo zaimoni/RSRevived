@@ -57,11 +57,11 @@ namespace djack.RogueSurvivor.Data
 #nullable enable
     public readonly string BgMusic;  // alpha10
     private Lighting m_Lighting;
-	public readonly WorldTime LocalTime;
+    public readonly WorldTime LocalTime;
     public readonly Size Extent;
-	public short Width { get {return Extent.X;} }
-	public short Height { get {return Extent.Y;} }
-	[NonSerialized] public readonly Rectangle Rect;
+    public short Width { get {return Extent.X;} }
+    public short Height { get {return Extent.Y;} }
+    [NonSerialized] public readonly Rectangle Rect;
     public Point Origin { get { return Rect.Location; } }
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;
@@ -173,7 +173,7 @@ namespace djack.RogueSurvivor.Data
       ;
       BgMusic = music;
       Extent = new Size(width,height);
-	  m_District = d;
+      m_District = d;
       DistrictPos = d.WorldPosition;
       RepairHash(ref _hash);
 
@@ -1098,7 +1098,7 @@ namespace djack.RogueSurvivor.Data
     public static int PathfinderMoveCosts(ActorAction act)
     {
         static int teardown_turns(MapObject obj) {
-		    int cost = 1;
+            int cost = 1;
             if (obj is DoorWindow door && 0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina
             else cost += (obj.HitPoints+7)/8;	// time cost to break, as per barricade
             return cost;
@@ -1130,26 +1130,26 @@ namespace djack.RogueSurvivor.Data
     }
 
     private static Dictionary<Location,int> OneStepForPathfinder(in Location loc, Actor a, Dictionary<Location,ActorAction> already)
-	{
-	  var ret = new Dictionary<Location, int>();
+    {
+      var ret = new Dictionary<Location, int>();
       foreach(var move in a.OnePath(in loc, already)) {
         var pt = move.Key;
         if (1>= a.Controller.FastestTrapKill(in pt)) continue;
         ret.Add(pt, PathfinderMoveCosts(move.Value) + TrapMoveCostFor(move.Value, a));
       }
-	  return ret;
-	}
+      return ret;
+    }
 
     private Dictionary<Point,int> OneStepForPathfinder(Point pt, Actor a, Dictionary<Point,ActorAction> already)
-	{
-	  var ret = new Dictionary<Point, int>();
+    {
+      var ret = new Dictionary<Point, int>();
       foreach(var move in a.OnePath(this, in pt, already)) {
         var pt2 = move.Key;
         if (1>= a.Controller.FastestTrapKill(new Location(a.Location.Map, pt2))) continue;
         ret.Add(pt2, PathfinderMoveCosts(move.Value) + TrapMoveCostFor(move.Value, a));
       }
-	  return ret;
-	}
+      return ret;
+    }
 #nullable restore
 
     public bool WouldBlacklistFor(Point pt,Actor actor)
@@ -1175,25 +1175,25 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
-	public FloodfillPathfinder<Location> PathfindLocSteps(Actor actor)
-	{
+    public FloodfillPathfinder<Location> PathfindLocSteps(Actor actor)
+    {
       var already = new Dictionary<Location,ActorAction>();
 
       Func<Location, Dictionary<Location, int>> fn = loc => OneStepForPathfinder(in loc, actor, already);
 
-	  var ret = new FloodfillPathfinder<Location>(fn, fn, loc => actor.Model.StrictCanEnter(in loc));
+      var ret = new FloodfillPathfinder<Location>(fn, fn, loc => actor.Model.StrictCanEnter(in loc));
       Rect.DoForEach(pt => ret.Blacklist(new Location(this, pt)), pt => WouldBlacklistFor(pt, actor));
       return ret;
     }
 
     // Default pather.  Recovery options would include allowing chat, and allowing pushing.
-	public FloodfillPathfinder<Point> PathfindSteps(Actor actor)
-	{
+    public FloodfillPathfinder<Point> PathfindSteps(Actor actor)
+    {
       var already = new Dictionary<Point,ActorAction>();
 
       Func<Point, Dictionary<Point, int>> fn = pt => OneStepForPathfinder(pt, actor, already);
 
-	  var ret = new FloodfillPathfinder<Point>(fn, fn, (pt=> IsInBounds(pt)));
+      var ret = new FloodfillPathfinder<Point>(fn, fn, (pt=> IsInBounds(pt)));
       Rect.DoForEach(pt => ret.Blacklist(pt), pt => WouldBlacklistFor(pt, actor));
       return ret;
     }
@@ -1201,9 +1201,9 @@ namespace djack.RogueSurvivor.Data
     // for AI pathing, currently.
     private HashSet<Map> _PathTo(Map dest, out HashSet<Exit> exits)
     { // disallow secret maps
-	  // should be at least one by construction
-	  exits = new HashSet<Exit>(m_Exits.Values.Where(e => e.IsNotBlocked()));
-	  var exit_maps = new HashSet<Map>(destination_maps.Get);
+      // should be at least one by construction
+      exits = new HashSet<Exit>(m_Exits.Values.Where(e => e.IsNotBlocked()));
+      var exit_maps = new HashSet<Map>(destination_maps.Get);
       if (1>=exit_maps.Count) return exit_maps;
 retry:
       if (exit_maps.Contains(dest)) {
@@ -1216,7 +1216,7 @@ retry:
       exits.RemoveWhere(e => !exit_maps.Contains(e.ToMap));
       if (1>=exit_maps.Count) return exit_maps;
 
-	  var dest_exit_maps = new HashSet<Map>(dest.destination_maps.Get);
+      var dest_exit_maps = new HashSet<Map>(dest.destination_maps.Get);
       if (1 == dest_exit_maps.Count) {
         dest = dest_exit_maps.ToList()[0];
         goto retry;

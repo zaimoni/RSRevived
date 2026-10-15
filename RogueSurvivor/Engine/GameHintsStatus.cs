@@ -71,7 +71,7 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints...");
-	  filepath.JsonSerialize(hints);
+      filepath.JsonSerialize(hints);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints... done!");
     }
 
@@ -83,7 +83,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hints...");
       GameHintsStatus gameHintsStatus;
       try {
-	    gameHintsStatus = filepath.JsonDeserialize<GameHintsStatus>();
+        gameHintsStatus = filepath.JsonDeserialize<GameHintsStatus>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hints (first run?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));

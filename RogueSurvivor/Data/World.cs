@@ -108,7 +108,7 @@ namespace djack.RogueSurvivor.Data
         if (Extent.Right - 1 <= d.WorldPosition.X) ret |= 2;
         if (Extent.Bottom - 1 <= d.WorldPosition.Y) ret |= 4;
         if (Extent.Left >= d.WorldPosition.X) ret |= 8;
-	    return ret;
+        return ret;
     }
 
     // static bool WithinCityLimits(Point pos) { return true; }  // VAPORWARE

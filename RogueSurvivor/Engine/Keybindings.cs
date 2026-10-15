@@ -161,7 +161,7 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings...");
-	  filepath.JsonSerialize(this);
+      filepath.JsonSerialize(this);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings... done!");
     }
 
@@ -173,7 +173,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings... ("+filepath+")");
       Keybindings keybindings;
       try {
-	    keybindings = filepath.JsonDeserialize<Keybindings>();
+        keybindings = filepath.JsonDeserialize<Keybindings>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load keybindings (first run?), using defaults.");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));

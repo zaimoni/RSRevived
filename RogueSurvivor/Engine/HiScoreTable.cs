@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void Clear()
     {
-	  m_Table.Clear();
+      m_Table.Clear();
       for (int index = 0; index < m_MaxEntries; ++index)
         m_Table.Add(new HiScore());
     }
@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Engine
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table...");
-	  filepath.JsonSerialize(table);
+      filepath.JsonSerialize(table);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table... done!");
     }
 
@@ -90,7 +90,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table...");
       HiScoreTable hiScoreTable;
       try {
-	    hiScoreTable = filepath.JsonDeserialize<HiScoreTable>();
+        hiScoreTable = filepath.JsonDeserialize<HiScoreTable>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hiscore table (no hiscores?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));

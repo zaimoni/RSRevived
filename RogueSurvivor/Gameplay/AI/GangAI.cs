@@ -190,7 +190,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("equip weapon: "+tmpAction.ToString());
       if (null != tmpAction) return tmpAction;
 
-	  var friends = FilterNonEnemies(_all);
+      var friends = FilterNonEnemies(_all);
       if (null != _enemies) {
         if (null != friends) {
           var nearest_enemy = FilterNearest(_enemies);

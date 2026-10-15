@@ -8,8 +8,8 @@ namespace Zaimoni.Data
 {
     public static class Compass
     {
-    	// 2-dimensional compass rose
-	    public enum XCOMlike : byte
+        // 2-dimensional compass rose
+        public enum XCOMlike : byte
         {
             N = 0,
             NE,

@@ -35,10 +35,10 @@ namespace djack.RogueSurvivor.Engine
 #endif
       try {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("Loading text file {0}...", (object) fileName));
-		using (StreamReader streamReader = File.OpenText(fileName)) {
-	      m_RawLines.Clear();
-		  while (!streamReader.EndOfStream) m_RawLines.Add(streamReader.ReadLine());
-		}
+        using (StreamReader streamReader = File.OpenText(fileName)) {
+          m_RawLines.Clear();
+          while (!streamReader.EndOfStream) m_RawLines.Add(streamReader.ReadLine());
+        }
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "done!");
         return true;
       } catch (Exception ex) {
@@ -69,7 +69,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (m_RawLines.Count == 0) return;
       m_FormatedLines.Clear();
-	  m_FormatedLines.Capacity = m_RawLines.Count;
+      m_FormatedLines.Capacity = m_RawLines.Count;
       for (int index = 0; index < m_RawLines.Count; ++index) {
         string str1;
         string str2;

@@ -918,15 +918,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorGoEatCorpse(List<Percept>? percepts)
     {
 #if false
-	  if (!Session.Get.HasCorpses || !ActionEatCorpse.WantTo(m_Actor)) return null;
+      if (!Session.Get.HasCorpses || !ActionEatCorpse.WantTo(m_Actor)) return null;
 #else
-	  if (!Session.HasCorpses || !ActionEatCorpse.WantTo(m_Actor)) return null;
+      if (!Session.HasCorpses || !ActionEatCorpse.WantTo(m_Actor)) return null;
 #endif
             var corpsesPercepts = percepts?.FilterCast<List<Corpse>>();
-	  if (null == corpsesPercepts) return null;
+      if (null == corpsesPercepts) return null;
       m_Actor.Activity = Activity.IDLE;
       var percept = FilterNearest(corpsesPercepts);
-	  if (m_Actor.Location == percept.Location) return new ActionEatCorpse(m_Actor, percept.Percepted[0]);
+      if (m_Actor.Location == percept.Location) return new ActionEatCorpse(m_Actor, percept.Percepted[0]);
       return BehaviorHeadFor(percept.Location,true,true);
     }
 #nullable restore
@@ -1162,21 +1162,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private static Actor? FindWeakerInMelee(Actor a, Actor b)
     {
-	  int a_dam = a.MeleeAttack(b).DamageValue - b.CurrentDefence.Protection_Hit;
-	  int b_dam = b.MeleeAttack(a).DamageValue - a.CurrentDefence.Protection_Hit;
+      int a_dam = a.MeleeAttack(b).DamageValue - b.CurrentDefence.Protection_Hit;
+      int b_dam = b.MeleeAttack(a).DamageValue - a.CurrentDefence.Protection_Hit;
       if (Actor.STAMINA_MIN_FOR_ACTIVITY > a.StaminaPoints && Actor.STAMINA_MIN_FOR_ACTIVITY <= b.StaminaPoints) a_dam = 0;
       if (Actor.STAMINA_MIN_FOR_ACTIVITY > b.StaminaPoints && Actor.STAMINA_MIN_FOR_ACTIVITY <= a.StaminaPoints) b_dam = 0;
-	  if (0 >= a_dam) return a;
-	  if (0 >= b_dam) return b;
+      if (0 >= a_dam) return a;
+      if (0 >= b_dam) return b;
       int speed_factor = a.HowManyTimesOtherActs(1, b);
       if (1 < speed_factor) b_dam *= a.HowManyTimesOtherActs(1, b);
       else if (1 > speed_factor) a_dam *= 2;    // usually double-move
-	  if (a_dam/2 >= b.HitPoints) return b;	// one-shot if hit
-	  if (b_dam >= a.HitPoints) return a; // could die if hit
-	  int a_kill_b_in = ((8*b.HitPoints)/(5*a_dam));	// assume bad luck when attacking
-	  int b_kill_a_in = ((8*a.HitPoints)/(7*b_dam));	// assume bad luck when defending
-	  if (a_kill_b_in < b_kill_a_in) return b;
-	  if (a_kill_b_in > b_kill_a_in) return a;
+      if (a_dam/2 >= b.HitPoints) return b;	// one-shot if hit
+      if (b_dam >= a.HitPoints) return a; // could die if hit
+      int a_kill_b_in = ((8*b.HitPoints)/(5*a_dam));	// assume bad luck when attacking
+      int b_kill_a_in = ((8*a.HitPoints)/(7*b_dam));	// assume bad luck when defending
+      if (a_kill_b_in < b_kill_a_in) return b;
+      if (a_kill_b_in > b_kill_a_in) return a;
 //	  int num1 = a.HitPoints + a.MeleeAttack(b).DamageValue;
 //      int num2 = b.HitPoints + b.MeleeAttack(a).DamageValue;
 //      if (num1 < num2) return a;

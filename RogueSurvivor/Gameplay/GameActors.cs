@@ -365,10 +365,10 @@ to transform from MALE_CIVILIAN to POLICEMAN:
     }
   }
 
-	internal static class ID_ext
-	{
-	  internal static GameActors.IDs NextUndeadEvolution(this GameActors.IDs from)
-	  {
+    internal static class ID_ext
+    {
+      internal static GameActors.IDs NextUndeadEvolution(this GameActors.IDs from)
+      {
 #if DEBUG
         if (!RogueGame.Options.AllowUndeadsEvolution || !Session.Get.HasEvolution) throw new InvalidOperationException("game options disallow undead evolution");
 #endif
@@ -385,7 +385,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           case GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE: return GameActors.IDs.UNDEAD_FEMALE_DISCIPLE;
           default: return from;
         }
-	  }
+      }
 
       internal static bool IsFemale(this GameActors.IDs x)
       {
@@ -399,5 +399,5 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           default: return false;
         }
       }
-	}
+    }
 }

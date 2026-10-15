@@ -235,8 +235,8 @@ namespace djack.RogueSurvivor.Engine
       var melee = actors_in_way.CanBumpMelee(actor, point, out reason);
       if (null != melee) return melee;
       if (actors_in_way.TryGetValue(point,out Actor actorAt)) {
-		// player as leader should be able to switch with player as follower
-		// NPCs shouldn't be leading players anyway
+        // player as leader should be able to switch with player as follower
+        // NPCs shouldn't be leading players anyway
         if ((actor.IsPlayer || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))
           return new ActionSwitchPlace(actor, actorAt);
         if (!actor.CanChatWith(actorAt, out reason)) return null;
@@ -260,7 +260,7 @@ namespace djack.RogueSurvivor.Engine
             return new Choice(actor, stage);
           }
         }
-	    return new ActionLeaveMap(actor, in point);
+        return new ActionLeaveMap(actor, in point);
       }
       var actionMoveStep = ActionMoveStep.schedule(actor, point);
       if (actionMoveStep.IsPerformable()) {
@@ -366,7 +366,7 @@ namespace djack.RogueSurvivor.Engine
       var map = loc.Map;
       var point = loc.Position;
       if (!map.IsInBounds(point)) {
-	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, in point) : null);
+        return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, in point) : null);
       }
       if (loc.IsWalkableFor(actor, out reason)) {
         var actionMoveStep = ActionMoveStep.schedule(actor, loc);
@@ -390,8 +390,8 @@ namespace djack.RogueSurvivor.Engine
         if (actor.IsEnemyOf(actorAt)) {
           return (ActionMeleeAttack.Can(actor, actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
         }
-		// player as leader should be able to switch with player as follower
-		// NPCs shouldn't be leading players anyway
+        // player as leader should be able to switch with player as follower
+        // NPCs shouldn't be leading players anyway
         if (actor.IsPlayer || !actorAt.IsPlayer) {
           if (actor.CanSwitchPlaceWith(actorAt, out reason)) return new ActionSwitchPlace(actor, actorAt);
         }

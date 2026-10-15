@@ -16,8 +16,8 @@ namespace djack.RogueSurvivor.Data
     {
         // The first iteration of this cost 39MB of savefile size for a full probability analysis.
 
-		// The second iteration of this took 42MB when trying to be realistic at the start of the game, for taint checking.  Conjecture is that storing full locations is
-		// expensive compared to map with points within the map.
+        // The second iteration of this took 42MB when trying to be realistic at the start of the game, for taint checking.  Conjecture is that storing full locations is
+        // expensive compared to map with points within the map.
 
         // As we actually have to iterate over the keys of _threats in a multi-threaded situation, just lock it when using.
         private readonly Dictionary<Actor, Dictionary<Map, HashSet<Point>>> _threats = new Dictionary<Actor, Dictionary<Map, HashSet<Point>>>();
@@ -96,22 +96,22 @@ namespace djack.RogueSurvivor.Data
 
 #nullable enable
         public List<Actor> ThreatAt(in Location loc)
-		{
+        {
           var ret = new List<Actor>();
-		  lock(_threats) {
+          lock(_threats) {
             foreach(var x in _threats) {
               if (!x.Value.TryGetValue(loc.Map,out var cache)) continue;
               if (!cache.Contains(loc.Position)) continue;
               ret.Add(x.Key);
             }
-		  }
+          }
           return ret;
-		}
+        }
 
         private void threatAt(ZoneLoc zone, Dictionary<Actor, Dictionary<Map, Point[]>> catalog, Func<Actor, bool> pred)
         {
           Func<Point,bool> ok = pt => zone.Rect.Contains(pt);
-		  lock(_threats) {
+          lock(_threats) {
             foreach(var x in _threats) {
               if (!pred(x.Key)) continue;
               if (!x.Value.TryGetValue(zone.m,out var cache)) continue;
@@ -119,11 +119,11 @@ namespace djack.RogueSurvivor.Data
               if (!catalog.TryGetValue(x.Key, out var cache2)) catalog.Add(x.Key, cache2 = new());
               cache2.Add(zone.m, cache.Where(ok).ToArray());
             }
-		  }
+          }
         }
 
         public Dictionary<Actor, Dictionary<Map, Point[]>> ThreatAt(ZoneLoc zone, Func<Actor, bool> pred)
-		{
+        {
           var catalog = new Dictionary<Actor, Dictionary<Map, Point[]>>();
           var canon = zone.GetCanonical;
           if (null == canon) {
@@ -132,12 +132,12 @@ namespace djack.RogueSurvivor.Data
             foreach(var z in canon) threatAt(z, catalog, pred);
           }
           return catalog;
-		}
+        }
 
         private void imageThreat(ZoneLoc zone, Dictionary<Map, Point[]> catalog, Func<Actor, bool> pred)
         {
           Func<Point,bool> ok = pt => zone.Rect.Contains(pt);
-		  lock(_threats) {
+          lock(_threats) {
             var staging = new HashSet<Point>();
             foreach(var x in _threats) {
               if (!pred(x.Key)) continue;
@@ -146,7 +146,7 @@ namespace djack.RogueSurvivor.Data
               staging.UnionWith(cache.Where(ok));
             }
             catalog.Add(zone.m, staging.ToArray());
-		  }
+          }
         }
 
         public List<KeyValuePair<Map, Point[]>>? ImageThreat(ZoneLoc zone, Func<Actor, bool> pred)
@@ -165,14 +165,14 @@ namespace djack.RogueSurvivor.Data
         private HashSet<Point> _ThreatWhere(Map map)    // needs lock against _ThreatWhere_cache
         {
           var ret = new HashSet<Point>();
-		  lock(_threats) {
+          lock(_threats) {
             foreach (var x in _threats) {
               if (x.Value.TryGetValue(map, out var src)) ret.UnionWith(src);
             }
             _ThreatWhere_cache.Add(map, ret);
-		  }
-		  return ret;
-		}
+          }
+          return ret;
+        }
 
         private bool _anyThreatAt(in Location loc) {
             if (_ThreatWhere_cache.TryGetValue(loc.Map, out var cache2)) return cache2.Contains(loc.Position);
@@ -180,14 +180,14 @@ namespace djack.RogueSurvivor.Data
         }
 
         public bool AnyThreatAt(in Location loc)
-		{
+        {
           lock(_ThreatWhere_cache) {
             return _anyThreatAt(in loc);
           }
         }
 
         public bool AnyThreatAt(ZoneLoc loc)
-		{
+        {
           Func<Point,bool> ok = pt => loc.Rect.Contains(pt);
           lock(_ThreatWhere_cache) {
             if (_ThreatWhere_cache.TryGetValue(loc.m, out var cache2)) return cache2.Any(ok);
@@ -197,8 +197,8 @@ namespace djack.RogueSurvivor.Data
 
         [NonSerialized] Dictionary<Map, HashSet<Point>> _ThreatWhere_cache = new Dictionary<Map, HashSet<Point>>();
         /// <remarks>Both callers only use the value in read-only ways so correctness-required value copy is omitted</remarks>
-		public HashSet<Point> ThreatWhere(Map map)
-		{
+        public HashSet<Point> ThreatWhere(Map map)
+        {
           lock(_ThreatWhere_cache) {
             if (_ThreatWhere_cache.TryGetValue(map, out var cache)) return cache;
             return _ThreatWhere(map);
@@ -206,7 +206,7 @@ namespace djack.RogueSurvivor.Data
         }
 
         public HashSet<Point> ThreatWhere(Map map, Rectangle view)  // we exploit Rectangle being value-copied rather than reference-copied here
-		{
+        {
           var ret = new HashSet<Point>();
           if (null == map) return ret;
           var crossdistrict_ok = District.UsesCrossDistrictView(map);
@@ -249,22 +249,22 @@ namespace djack.RogueSurvivor.Data
               }
               view.Height = new_height;
             }
-	      }
+          }
           var tmp = new HashSet<Point>();
-    	  lock(_threats) {
+          lock(_threats) {
             foreach (var x in _threats) {
               if (!x.Value.TryGetValue(map, out var src)) continue;
               tmp.UnionWith(src);
             }
-		  }
+          }
           if (!view.Contains(map.Rect)) tmp.RemoveWhere(pt => !view.Contains(pt));
           if (0 >= ret.Count) ret = tmp;
           else ret.UnionWith(tmp);
-		  return ret;
-		}
+          return ret;
+        }
 
-		public bool AnyThreatIn(Map map, Rectangle view)  // we exploit Rectangle being value-copied rather than reference-copied here
-		{
+        public bool AnyThreatIn(Map map, Rectangle view)  // we exploit Rectangle being value-copied rather than reference-copied here
+        {
           if (null == map) return false;
           var crossdistrict_ok = District.UsesCrossDistrictView(map);
           if (0 < crossdistrict_ok) {
@@ -302,24 +302,24 @@ namespace djack.RogueSurvivor.Data
               }
               view.Height = new_height;
             }
-	      }
+          }
           var tmp = new HashSet<Point>();
-    	  lock(_threats) {
+          lock(_threats) {
             foreach (var x in _threats) {
               if (!x.Value.TryGetValue(map, out var src)) continue;
               tmp.UnionWith(src);
             }
-		  }
+          }
           if (!view.Contains(map.Rect)) tmp.RemoveWhere(pt => !view.Contains(pt));
           return 0<tmp.Count;
-		}
+        }
 
         public List<Actor> ThreatIn(Map map)
-		{
-		  lock(_threats) {
-			return _threats.Keys.Where(a=>_threats[a].Keys.Contains(map)).ToList();
-		  }
-		}
+        {
+          lock(_threats) {
+            return _threats.Keys.Where(a=>_threats[a].Keys.Contains(map)).ToList();
+          }
+        }
 
         public void RecordSpawn(Actor a, Map m, IEnumerable<Point> pts)
         {
@@ -327,7 +327,7 @@ namespace djack.RogueSurvivor.Data
             _ThreatWhere_cache.Remove(m);
             lock(_threats) {
               if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new());
-		      cache.Add(m, new(pts));
+              cache.Add(m, new(pts));
             }
           }
         }
@@ -336,11 +336,11 @@ namespace djack.RogueSurvivor.Data
         {
           lock (_ThreatWhere_cache) {
             _ThreatWhere_cache.Remove(loc.Map); // XXX could be more selective
-		    lock(_threats) {
+            lock(_threats) {
               if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new());
               if (cache.TryGetValue(loc.Map, out var cache2)) cache2.Add(loc.Position);
               else cache.Add(loc.Map, new(){ loc.Position });
-		    }
+            }
           }
         }
 
@@ -349,11 +349,11 @@ namespace djack.RogueSurvivor.Data
           lock (_ThreatWhere_cache) {
             foreach(var loc in src) {
               _ThreatWhere_cache.Remove(loc.Map); // XXX could be more selective
-		      lock(_threats) {
+              lock(_threats) {
                 if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new());
                 if (cache.TryGetValue(loc.Map, out var cache2)) cache2.Add(loc.Position);
                 else cache.Add(loc.Map, new(){ loc.Position });
-		      }
+              }
             }
           }
         }
@@ -362,11 +362,11 @@ namespace djack.RogueSurvivor.Data
         {
           lock (_ThreatWhere_cache) {
             _ThreatWhere_cache.Remove(m); // XXX could be more selective
-		    lock(_threats) {
+            lock(_threats) {
               if (!_threats.TryGetValue(a,out var cache)) _threats.Add(a, cache = new Dictionary<Map, HashSet<Point>>());
               if (cache.TryGetValue(m, out var cache2)) cache2.Add(p);
               else cache.Add(m, new HashSet<Point> { p });
-		    }
+            }
           }
         }
 
@@ -379,11 +379,11 @@ namespace djack.RogueSurvivor.Data
           }
           lock (_ThreatWhere_cache) {
             _ThreatWhere_cache.Remove(m); // XXX could be more selective
-		    lock(_threats) {
+            lock(_threats) {
               if (!_threats.TryGetValue(a,out var map_cache)) _threats.Add(a,map_cache = new());
               if (!map_cache.TryGetValue(m,out var cache)) map_cache.Add(m,cache = new());
               cache.UnionWith(local);
-		    }
+            }
           }
           if (null == other) return;
           var remap = new Dictionary<Map,List<Point>>();
@@ -644,7 +644,7 @@ namespace djack.RogueSurvivor.Data
       {
         Func<Point,bool> ok = pt => loc.Rect.Contains(pt);
         return Range(loc.m)?.Any(ok) ?? false;
-	  }
+      }
 
 //    public IEnumerable<Point>? In(Map map) => Range(map);
       public HashSet<Point> In(Map map) {
@@ -653,7 +653,7 @@ namespace djack.RogueSurvivor.Data
       }
 
       public HashSet<Point> In(Map map, Rectangle view)
-	  {
+      {
           var ret = new HashSet<Point>();
           if (null == map) return ret;
           var crossdistrict_ok = District.UsesCrossDistrictView(map);
@@ -698,7 +698,7 @@ namespace djack.RogueSurvivor.Data
           HashSet<Point> stage = new(tmp2);
           if (0 >= ret.Count) ret = stage;
           else ret.UnionWith(stage);
-		  return ret;
+          return ret;
       }
 
       public List<Location>? All() {

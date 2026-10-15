@@ -123,7 +123,7 @@ namespace djack.RogueSurvivor.Data
     // A JSON load parks the counted command here (RogueGame's is the live game's); TakeControl installs it when the loaded session goes live.
     [NonSerialized] private KeyValuePair<int, PlayerCommand>? m_JsonCountedCommand = null;
 
-	public PlayerController(Actor src, PlayerController? upgrading = null) : base(src) {
+    public PlayerController(Actor src, PlayerController? upgrading = null) : base(src) {
       m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES(), src);   // deal with vision capabilities
       m_itemMemory = m_Actor.IsFaction(GameFactions.IDs.ThePolice) ? (Session.Loading ?? Session.Get).Police.ItemMemory
                                                                    : new();
@@ -380,33 +380,33 @@ namespace djack.RogueSurvivor.Data
     }
 
 
-	private Gameplay.AI.Sensors.LOSSensor.SensingFilter VISION_SEES() {
-	  switch(m_Actor.Model.DefaultController.Name)
-	  {
-	  case nameof(CHARGuardAI): return Gameplay.AI.CHARGuardAI.VISION_SEES;
-	  case nameof(CivilianAI): return Gameplay.AI.CivilianAI.VISION_SEES;
-	  case nameof(FeralDogAI): return Gameplay.AI.FeralDogAI.VISION_SEES;
-	  case nameof(GangAI): return Gameplay.AI.GangAI.VISION_SEES;
-	  case nameof(InsaneHumanAI): return Gameplay.AI.InsaneHumanAI.VISION_SEES;
-	  case nameof(RatAI): return Gameplay.AI.RatAI.VISION_SEES;
-	  case nameof(SewersThingAI): return Gameplay.AI.SewersThingAI.VISION_SEES;
-	  case nameof(SkeletonAI): return Gameplay.AI.SkeletonAI.VISION_SEES;
-	  case nameof(SoldierAI): return Gameplay.AI.SoldierAI.VISION_SEES;
-	  case nameof(ZombieAI): return Gameplay.AI.ZombieAI.VISION_SEES;
+    private Gameplay.AI.Sensors.LOSSensor.SensingFilter VISION_SEES() {
+      switch(m_Actor.Model.DefaultController.Name)
+      {
+      case nameof(CHARGuardAI): return Gameplay.AI.CHARGuardAI.VISION_SEES;
+      case nameof(CivilianAI): return Gameplay.AI.CivilianAI.VISION_SEES;
+      case nameof(FeralDogAI): return Gameplay.AI.FeralDogAI.VISION_SEES;
+      case nameof(GangAI): return Gameplay.AI.GangAI.VISION_SEES;
+      case nameof(InsaneHumanAI): return Gameplay.AI.InsaneHumanAI.VISION_SEES;
+      case nameof(RatAI): return Gameplay.AI.RatAI.VISION_SEES;
+      case nameof(SewersThingAI): return Gameplay.AI.SewersThingAI.VISION_SEES;
+      case nameof(SkeletonAI): return Gameplay.AI.SkeletonAI.VISION_SEES;
+      case nameof(SoldierAI): return Gameplay.AI.SoldierAI.VISION_SEES;
+      case nameof(ZombieAI): return Gameplay.AI.ZombieAI.VISION_SEES;
 #if DEBUG
-	  default: throw new InvalidOperationException("unhandled case");
+      default: throw new InvalidOperationException("unhandled case");
 #else
-	  default: return Gameplay.AI.Sensors.LOSSensor.SensingFilter.ACTORS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.ITEMS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.CORPSES;
+      default: return Gameplay.AI.Sensors.LOSSensor.SensingFilter.ACTORS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.ITEMS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.CORPSES;
 #endif
       }
-	}
+    }
 
     public void InstallHandlers()
     {
       Actor.Says += HandleSay;
     }
 
-	public override void TakeControl()
+    public override void TakeControl()
     {
       base.TakeControl();
       Actor.Says += HandleSay;
@@ -564,10 +564,10 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
-	public bool CanGetFromContainer(Point position)
-	{
-	  return string.IsNullOrEmpty(ReasonCantGetFromContainer(new Location(m_Actor.Location.Map, position)));
-	}
+    public bool CanGetFromContainer(Point position)
+    {
+      return string.IsNullOrEmpty(ReasonCantGetFromContainer(new Location(m_Actor.Location.Map, position)));
+    }
 
     public bool AutoPilotIsOn { get { return 0 < Objectives.Count;  } }
 

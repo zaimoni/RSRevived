@@ -14,7 +14,7 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   public readonly struct UniqueMap
   {
-	public readonly Map TheMap;
-	public UniqueMap(Map src) { TheMap = src; }
+    public readonly Map TheMap;
+    public UniqueMap(Map src) { TheMap = src; }
   }
 }

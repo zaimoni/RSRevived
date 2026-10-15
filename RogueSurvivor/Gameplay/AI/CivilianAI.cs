@@ -271,7 +271,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
 
-	  var friends = FilterNonEnemies(current);
+      var friends = FilterNonEnemies(current);
       if (null != _enemies) {
         if (null != friends) {
           var nearest_enemy = FilterNearest(_enemies);
@@ -730,7 +730,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 #endregion
 
-	  if (null != friends) {
+      if (null != friends) {
         if (m_LastRaidHeard != null) {
           tmpAction = BehaviorTellFriendAboutPercept(m_LastRaidHeard, TELL_FRIEND_ABOUT_RAID_CHANCE);
           if (null != tmpAction) {
@@ -763,7 +763,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return tmpAction;
           }
         }
-	  }
+      }
 
       if (m_Actor.CountFollowers > 0) {
         tmpAction = BehaviorDontLeaveFollowersBehind(2, out Actor target);

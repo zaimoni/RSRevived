@@ -32,8 +32,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Location m_Origin;
     [NonSerialized] private ActorAction _result;    // make this non-serialized if we need to serialize this
 
-	public Location dest { get { return m_NewLocation; } }  // of m_Actor
-	public Location origin { get { return m_Origin; } }
+    public Location dest { get { return m_NewLocation; } }  // of m_Actor
+    public Location origin { get { return m_Origin; } }
     public ActorAction ConcreteAction { get { return _result ?? _resolve(); } }
 
     #region JSON save/load
@@ -109,8 +109,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 
       if (null != actorAt) {
         if (m_Actor.IsEnemyOf(actorAt)) return null; // should be in combat processing
-		// player as leader should be able to switch with player as follower
-		// NPCs shouldn't be leading players anyway
+        // player as leader should be able to switch with player as follower
+        // NPCs shouldn't be leading players anyway
         if (m_Actor.IsPlayer || !actorAt.IsPlayer) {
           if (m_Actor.CanSwitchPlaceWith(actorAt, out m_FailReason)) return new ActionSwitchPlace(m_Actor, actorAt);
         }

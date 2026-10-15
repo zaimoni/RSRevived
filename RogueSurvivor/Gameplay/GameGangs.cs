@@ -10,7 +10,7 @@ namespace djack.RogueSurvivor.Gameplay
 {
   public static class GameGangs
   {
-	private const int MAX_GANGS = (int)IDs.GANGSTA_FLOODS+1;
+    private const int MAX_GANGS = (int)IDs.GANGSTA_FLOODS+1;
 
     public static readonly IDs[] GANGSTAS = new IDs[2]
     {

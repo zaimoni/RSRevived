@@ -2944,9 +2944,9 @@ namespace djack.RogueSurvivor.Engine
 
     static private int DistanceToPlayer(Map map, Point pos)
     {
-	  var players = map.Players.Get;
-	  if (0 >= players.Count) return int.MaxValue;  // 2020-01-27 optimizer is catching this
-	  return players.Min(p=> Rules.GridDistance(p.Location.Position, pos));
+      var players = map.Players.Get;
+      if (0 >= players.Count) return int.MaxValue;  // 2020-01-27 optimizer is catching this
+      return players.Min(p=> Rules.GridDistance(p.Location.Position, pos));
     }
 
     private bool SpawnIn(Actor toSpawn, ZoneLoc dest, int minDistToPlayer) {
@@ -3884,10 +3884,10 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
             throw new ArgumentOutOfRangeException("unhandled district kind");
 #else
-		    return new ColorString(Color.Blue, "BUG");
+            return new ColorString(Color.Blue, "BUG");
 #endif
         }
-	  }
+      }
 
       int num3 = gy + BOLD_LINE_SPACING;
       const int num4 = 32;
@@ -8202,18 +8202,18 @@ namespace djack.RogueSurvivor.Engine
       return lines;
     }
 
-	// UI functions ... do not belong in Corpse class for now
+    // UI functions ... do not belong in Corpse class for now
     static private string[] DescribeCorpseLong(Corpse c, bool isInPlayerTile)
     {
-	  static string DescribeCorpseLong_DescInfectionPercent(int num) {
-	    return num != 0 ? (num >= 5 ? (num >= 15 ? (num >= 30 ? (num >= 55 ? (num >= 70 ? (num >= 99 ? "7/7 - total" : "6/7 - great") : "5/7 - important") : "4/7 - average") : "3/7 - low") : "2/7 - minor") : "1/7 - traces") : "0/7 - none";
-	  }
+      static string DescribeCorpseLong_DescInfectionPercent(int num) {
+        return num != 0 ? (num >= 5 ? (num >= 15 ? (num >= 30 ? (num >= 55 ? (num >= 70 ? (num >= 99 ? "7/7 - total" : "6/7 - great") : "5/7 - important") : "4/7 - average") : "3/7 - low") : "2/7 - minor") : "1/7 - traces") : "0/7 - none";
+      }
 
- 	  static string DescribeCorpseLong_DescRiseProbability(int num) {
-	    return num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely";
-	  }
+       static string DescribeCorpseLong_DescRiseProbability(int num) {
+        return num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely";
+      }
 
-	  static string DescribeCorpseLong_DescRotLevel(int num) {
+      static string DescribeCorpseLong_DescRotLevel(int num) {
         switch (num)
         {
         case 0: return "The corpse looks fresh.";
@@ -8226,14 +8226,14 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
           throw new ArgumentOutOfRangeException(nameof(num),num,"must be in 0..5");
 #else
-		  return "The corpse is infested with software bugs.";
+          return "The corpse is infested with software bugs.";
 #endif
         }
-	  }
+      }
 
-	  static string DescribeCorpseLong_DescReviveChance(int num) {
-		 return num != 0 ? (num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely") : "impossible";
-	  }
+      static string DescribeCorpseLong_DescReviveChance(int num) {
+         return num != 0 ? (num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely") : "impossible";
+      }
 
       var skills = Player.MySkills;
       int skillLevel = skills.GetSkillLevel(Skills.IDs.NECROLOGY);
@@ -8244,7 +8244,7 @@ namespace djack.RogueSurvivor.Engine
         string.Format("Infection : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_INFECTION ? DescribeCorpseLong_DescInfectionPercent(c.DeadGuy.InfectionPercent) : "???")),
         string.Format("Rise      : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE ? DescribeCorpseLong_DescRiseProbability(2 * c.ZombifyChance(c.DeadGuy.Location.Map.LocalTime, false)) : "???")),
         " ",
-	    DescribeCorpseLong_DescRotLevel(c.RotLevel),
+        DescribeCorpseLong_DescRotLevel(c.RotLevel),
         string.Format("Revive    : {0}.", (skills.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? DescribeCorpseLong_DescReviveChance(Player.ReviveChance(c)) : "???"))
       };
       if (isInPlayerTile) {
@@ -8711,9 +8711,9 @@ namespace djack.RogueSurvivor.Engine
       }
       Location location = actor.Location;
       if (location.Map != newLocation.Map) throw new NotImplementedException("DoMoveActor : illegal to change map.");
-	  // committed to move now
+      // committed to move now
       actor.StandUp();  // movement cancels crouching, for now (duck walk very low priority to implement)
-	  actor.Moved();
+      actor.Moved();
       newLocation.Place(actor);
       var a_witness = actor.PlayersInLOS();
       var d_witness = PlayersInLOS(location);
@@ -11276,7 +11276,7 @@ restart:
       var police_targeted = Session.Get.Police.IsTargeted(deadGuy);
 
       var isMurder = new const_<bool>(Rules.IsMurder(killer, deadGuy));  // record this before it's invalidated (in POLICE_NO_QUESTIONS_ASKED build)
-	  deadGuy.Killed(reason);
+      deadGuy.Killed(reason);
       deadGuy.StopDraggingCorpse();
       deadGuy.Location.Items?.UntriggerAllTraps();
       if (killer != null && !killer.Model.Abilities.IsUndead && deadGuy_isUndead.cache)
@@ -11521,7 +11521,7 @@ restart:
     static private ActorModel? CheckUndeadEvolution(Actor undead)
     {
       if (!s_Options.AllowUndeadsEvolution || !Session.Get.HasEvolution) return null;
-	  // anything not whitelisted to evolve, doesn't
+      // anything not whitelisted to evolve, doesn't
       switch (undead.Model.ID)
       {
         case GameActors.IDs.UNDEAD_SKELETON:
@@ -11555,7 +11555,7 @@ restart:
           return null;
       }
       GameActors.IDs index = undead.Model.ID.NextUndeadEvolution();
-	  return (index != undead.Model.ID ? GameActors.From(index) : null);
+      return (index != undead.Model.ID ? GameActors.From(index) : null);
     }
 
     static private void SplatterBlood(Map map, Point position)
@@ -11831,8 +11831,8 @@ restart:
     private void HandleNewNight(Actor victor)
     {
       if (!victor.Model.Abilities.IsUndead) return;
-	  // Proboards leonelhenry: PC should be on the same options as undead
-	  if (s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(s_Options.ZombifiedsUpgradeDays, victor.Location.Map.LocalTime.Day)) return;
+      // Proboards leonelhenry: PC should be on the same options as undead
+      if (s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(s_Options.ZombifiedsUpgradeDays, victor.Location.Map.LocalTime.Day)) return;
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(victor.Model)) return;
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.RatsUpgrade) && GameActors.IsRatBranch(victor.Model)) return;
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(victor.Model)) return;
@@ -11903,8 +11903,8 @@ restart:
             var sk = upgrade[choiceNumber - 1];
             upgradeActor.SkillUpgrade(sk);
             int skill_level = skills.GetSkillLevel(sk);
-		    string msg = (1 == skill_level ? string.Format("{0} learned skill {1}.", upgradeActor.Name, Skills.Name(sk))
-			            : string.Format("{0} improved skill {1} to level {2}.", upgradeActor.Name, Skills.Name(sk), skill_level));
+            string msg = (1 == skill_level ? string.Format("{0} learned skill {1}.", upgradeActor.Name, Skills.Name(sk))
+                        : string.Format("{0} improved skill {1} to level {2}.", upgradeActor.Name, Skills.Name(sk), skill_level));
             upgradeActor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, msg);
             RemoveOverlay(popup);
             pc.AddMessageForceRead(new(msg, Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -12132,7 +12132,7 @@ restart:
       }
       if (!isStartingGame) {
         deadVictim.Location.Place(actor);
-	    Session.Get.Police.TrackThroughExitSpawn(actor);
+        Session.Get.Police.TrackThroughExitSpawn(actor);
       }
       var skillTable = deadVictim.MySkills;
       var skill_count = skillTable.CountSkills;
@@ -12855,7 +12855,7 @@ restart:
         if (null == test) return;   // XXX invariant failure
         loc = test.Value;
       }
-	  m_UI.UI_SetMinimapColor((loc.Position.X - view.Left), (loc.Position.Y - view.Top), minimap_color);
+      m_UI.UI_SetMinimapColor((loc.Position.X - view.Left), (loc.Position.Y - view.Top), minimap_color);
       if (IsInViewRect(actor.Location) && !IsVisibleToPlayer(actor)) {
         var screen = MapToScreen(loc);
         m_UI.UI_DrawImage(map_img, screen.X, screen.Y);
@@ -12871,12 +12871,12 @@ restart:
       var threats = Player.Threats;    // these two should agree on whether they're null or not
       var sights_to_see = Player.InterestingLocs;
 
-	  if (s_Options.IsMinimapOn) {
+      if (s_Options.IsMinimapOn) {
         m_UI.UI_ClearMinimap(Color.Black);
 #region set visited tiles color.
-		if (null == threats) {
+        if (null == threats) {
           view.DoForEach(pt => m_UI.UI_SetMinimapColor(pt.X - view.Left, pt.Y - view.Top, (map.HasExitAtExt(pt) ? Color.HotPink : map.GetTileModelAtExt(pt).MinimapColor)), pt => Player.Controller.IsKnown(new Location(map, pt)));
-		} else {
+        } else {
           HashSet<Point> tainted = threats.ThreatWhere(map, view);
           HashSet<Point> tourism = sights_to_see.In(map, view);
           view.DoForEach(pos => {
@@ -12891,7 +12891,7 @@ restart:
               if (!Player.Controller.IsKnown(new Location(map, pos))) return;
               m_UI.UI_SetMinimapColor(pos.X - view.Left, pos.Y - view.Top, (map.HasExitAtExt(pos) ? Color.HotPink : map.GetTileModelAtExt(pos).MinimapColor));
           });
-		}
+        }
 #endregion
         m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
       }
@@ -12933,7 +12933,7 @@ restart:
           }
         }
 
-	    // normal detectors/lights
+        // normal detectors/lights
         Span<bool> find_us = stackalloc bool[(int)ItemTrackerModel.TrackingOffset.STRICT_UB];
         Player.Tracks(ref find_us);
 
