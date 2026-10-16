@@ -420,15 +420,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #if DEBUG
       if (null == decoFn) throw new ArgumentNullException(nameof(decoFn));
 #endif
-      for (var left = rect.Left; left < rect.Right; ++left) {
-        for (var top = rect.Top; top < rect.Bottom; ++top) {
-          Point pt = new Point(left,top);
-          Tile tileAt = map.GetTileAt(pt);
-          if (!tileAt.Model.IsWalkable && !tileAt.IsInside) {
-            string imageID = decoFn(pt);
-            if (imageID != null)
-              tileAt.AddDecoration(imageID);
-          }
+      foreach (var pt in rect) {
+        Tile tileAt = map.GetTileAt(pt);
+        if (!tileAt.Model.IsWalkable && !tileAt.IsInside) {
+          string imageID = decoFn(pt);
+          if (imageID != null)
+            tileAt.AddDecoration(imageID);
         }
       }
     }

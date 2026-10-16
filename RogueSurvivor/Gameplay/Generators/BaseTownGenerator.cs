@@ -828,13 +828,10 @@ restart:
 #endif
 
 #region 9. Tags.
-      for (short x = 0; x < sewers.Width; ++x) {    // \todo convert this iteration to a stack point?
-        for (short y = 0; y < sewers.Height; ++y) {
-          Point pt = new Point(x,y);
-          Tile tileAt = sewers.GetTileAt(pt);
-          if (!tileAt.Model.IsWalkable && CountAdjWalkables(sewers, pt) >= 2 && m_DiceRoller.RollChance(SEWERS_TAG_CHANCE)) {
-            tileAt.AddDecoration(m_DiceRoller.Choose(TAGS));
-          }
+      foreach (var pt in sewers.Rect) {
+        Tile tileAt = sewers.GetTileAt(pt);
+        if (!tileAt.Model.IsWalkable && CountAdjWalkables(sewers, pt) >= 2 && m_DiceRoller.RollChance(SEWERS_TAG_CHANCE)) {
+          tileAt.AddDecoration(m_DiceRoller.Choose(TAGS));
         }
       }
 #endregion
@@ -1190,14 +1187,11 @@ restart:
       }
 #endregion
 #region 4. Tags & Posters almost everywhere.
-      for (short x2 = 0; x2 < subway.Width; ++x2) {    // \todo convert this iteration to a stack point?
-        for (short y2 = 0; y2 < subway.Height; ++y2) {
-          Point pt = new Point(x2,y2);
-          Tile tileAt = subway.GetTileAt(pt);
-          if (!tileAt.Model.IsWalkable && CountAdjWalkables(subway, in pt) >= 2 && m_DiceRoller.RollChance(SUBWAY_TAGS_POSTERS_CHANCE)) {
-            if (m_DiceRoller.RollChance(50)) tileAt.AddDecoration(m_DiceRoller.Choose(POSTERS));
-            if (m_DiceRoller.RollChance(50)) tileAt.AddDecoration(m_DiceRoller.Choose(TAGS));
-          }
+      foreach (var pt in subway.Rect) {
+        Tile tileAt = subway.GetTileAt(pt);
+        if (!tileAt.Model.IsWalkable && CountAdjWalkables(subway, in pt) >= 2 && m_DiceRoller.RollChance(SUBWAY_TAGS_POSTERS_CHANCE)) {
+          if (m_DiceRoller.RollChance(50)) tileAt.AddDecoration(m_DiceRoller.Choose(POSTERS));
+          if (m_DiceRoller.RollChance(50)) tileAt.AddDecoration(m_DiceRoller.Choose(TAGS));
         }
       }
 #endregion
@@ -2143,10 +2137,7 @@ restart:
     {
       if (!isSurface) TileFill(map, GameTiles.FLOOR_CONCRETE, b.InsideRect);
       TileRectangle(map, GameTiles.WALL_SEWER, b.BuildingRect);
-      for (int left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
-        for (int top = b.InsideRect.Top; top < b.InsideRect.Bottom; ++top)
-          map.SetIsInsideAt(left, top);
-      }
+      foreach (var pt in b.InsideRect) map.SetIsInsideAt(pt);
       map.AddZone(new Zone("$Inside", b.InsideRect));
 
       Direction direction = m_DiceRoller.Choose(Direction.COMPASS_4);   // \todo CHAR zoning
@@ -3170,17 +3161,15 @@ restart:
       underground.AddZone(MakeUniqueZone("north-south hallway", new Rectangle(entrance_foyer_anchor.X, 0, 3, BASE_HEIGHT)));
       underground.AddZone(MakeUniqueZone("east-west hallway", new Rectangle(0, entrance_foyer_anchor.Y, BASE_WIDTH, 3)));
 
-      for (short x = 0; x < underground.Width; ++x) {
-        for (short y = 0; y < underground.Height; ++y) {
-          if (m_DiceRoller.RollChance(25)) {    // \todo map generation break: optimize RNG usage
-            Tile tileAt = underground.GetTileAt(x, y);
-            if (tileAt.Model.IsWalkable) continue;
-            tileAt.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS));
-          }
-          if (m_DiceRoller.RollChance(20)) {
-            Tile tileAt = underground.GetTileAt(x, y);
-            tileAt.AddDecoration(tileAt.Model.IsWalkable ? GameImages.DECO_BLOODIED_FLOOR : GameImages.DECO_BLOODIED_WALL);
-          }
+      foreach (var pt in underground.Rect) {
+        if (m_DiceRoller.RollChance(25)) {    // \todo map generation break: optimize RNG usage
+          Tile tileAt = underground.GetTileAt(pt);
+          if (tileAt.Model.IsWalkable) continue;
+          tileAt.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS));
+        }
+        if (m_DiceRoller.RollChance(20)) {
+          Tile tileAt = underground.GetTileAt(pt);
+          tileAt.AddDecoration(tileAt.Model.IsWalkable ? GameImages.DECO_BLOODIED_FLOOR : GameImages.DECO_BLOODIED_WALL);
         }
       }
 
@@ -3248,12 +3237,9 @@ restart:
         if (!m_DiceRoller.RollChance(50)) return null;
         return (m_DiceRoller.RollChance(50) ? MakeObjJunk() : MakeObjBarrels());
       }));
-      for (var left = roomRect.Left; left < roomRect.Right; ++left) {
-        for (var top = roomRect.Top; top < roomRect.Bottom; ++top) {
-          Point pt = new Point(left,top);
-          if (CountAdjWalls(map, pt) <= 0 && !map.HasMapObjectAt(pt))
-            map.DropItemAt(MakeShopConstructionItem(), in pt);
-        }
+      foreach (var pt in roomRect) {
+        if (CountAdjWalls(map, pt) <= 0 && !map.HasMapObjectAt(pt))
+          map.DropItemAt(MakeShopConstructionItem(), in pt);
       }
     }
 

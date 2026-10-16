@@ -252,18 +252,15 @@ namespace djack.RogueSurvivor.Engine
 
     protected static void ClearRectangle(Map map, Rectangle rect, bool clearZones = true)
     {
-      for (var left = rect.Left; left < rect.Right; ++left) {
-        for (var top = rect.Top; top < rect.Bottom; ++top) {
-          var pt = new Point(left, top);
-          map.RemoveMapObjectAt(pt);
-          map.RemoveAllItemsAt(pt);
-          map.RemoveAllDecorationsAt(pt);
-          if (clearZones) map.RemoveAllZonesAt(pt);
-          var actor = map.GetActorAt(pt);
-          if (null != actor) {
-            actor.RemoveFromMap();
-            Session.Get.Police.Threats.Cleared(actor);  // cf. _actorPlace.  It is not dying, so nothing else makes the police forget it.
-          }
+      foreach (var pt in rect) {
+        map.RemoveMapObjectAt(pt);
+        map.RemoveAllItemsAt(pt);
+        map.RemoveAllDecorationsAt(pt);
+        if (clearZones) map.RemoveAllZonesAt(pt);
+        var actor = map.GetActorAt(pt);
+        if (null != actor) {
+          actor.RemoveFromMap();
+          Session.Get.Police.Threats.Cleared(actor);  // cf. _actorPlace.  It is not dying, so nothing else makes the police forget it.
         }
       }
     }
