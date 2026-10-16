@@ -2260,6 +2260,19 @@ retry:
        return 0<ret.Count ? ret : null;
     }
 
+    static public List<Model.InvOrigin>? AllNonemptyInventoriesAt(Location loc, Actor? a=null)
+    {
+       if (!Canonical(ref loc)) return null;  // \todo? precondition
+       if (!loc.TileModel.IsWalkable) return null;
+       List<Model.InvOrigin>? ret = new();
+       var obj = loc.MapObject;
+       if (obj is ShelfLike shelf && shelf.NonEmptyInventory is not null) ret.Add(new(shelf));
+       if (obj is null || !obj.BlocksReachInto()) {
+         if (loc.Items is not null) ret.Add(new(loc));
+       }
+       return 0<ret.Count ? ret : null;
+    }
+
     private static void adjacentInventoryOrigins(List<Model.InvOrigin> ret, in Location origin) {
       foreach(var adjacent in origin.Position.Adjacent()) {
         var loc = new Location(origin.Map, adjacent);
