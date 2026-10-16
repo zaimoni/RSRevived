@@ -126,22 +126,6 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-    protected static void DoForEachTile(Rectangle rect, Action<Point> doFn)
-    {
-#if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-#endif
-      foreach (var pt in rect) doFn(pt);
-    }
-
-    protected static void DoForEachTile(Rectangle rect, Map m, Action<Location> doFn)
-    {
-#if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-#endif
-      foreach (var pt in rect) doFn(new Location(m, pt));
-    }
-
     protected static bool CheckForEachTile(Rectangle rect, Predicate<Point> predFn)
     {
 #if DEBUG

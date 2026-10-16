@@ -420,21 +420,21 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (geometry.ContainsLineSegment(N_S) && !circling_NS) {
              exclude_QuadSplit_width = new Point(rail.X, (short)(rail.X + height));
              TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X, 0, map.Height);
-             DoForEachTile(new Rectangle((short)(rail.X+1), 0, height-2, map.Height), lay_NS_road);
+             foreach (var pt in new Rectangle((short)(rail.X+1), 0, height-2, map.Height)) lay_NS_road(pt);
              TileVLine(map, GameTiles.FLOOR_CONCRETE, (short)(rail.X + 5), 0, map.Height);
              have_NS = true;
         }
         if (geometry.ContainsLineSegment(E_W)) {
              exclude_QuadSplit_height = new Point(rail.Y, (short)(rail.Y + height));
              TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, rail.Y, map.Width);
-             DoForEachTile(new Rectangle(0, (short)(rail.Y+1), map.Width, height - 2), lay_EW_road);
+             foreach (var pt in new Rectangle(0, (short)(rail.Y+1), map.Width, height - 2)) lay_EW_road(pt);
              TileHLine(map, GameTiles.FLOOR_CONCRETE, 0, (short)(rail.Y + 5), map.Width);
              have_EW = true;
         }
         if (geometry.ContainsLineSegment(N_S) && circling_NS) {
              exclude_QuadSplit_width = new Point(rail.X, (short)(rail.X + height));
              TileVLine(map, GameTiles.FLOOR_CONCRETE, rail.X, 0, map.Height);
-             DoForEachTile(new Rectangle((short)(rail.X+1), 0, height-2, map.Height), lay_NS_road);
+             foreach (var pt in new Rectangle((short)(rail.X+1), 0, height-2, map.Height)) lay_NS_road(pt);
              TileVLine(map, GameTiles.FLOOR_CONCRETE, (short)(rail.X + 5), 0, map.Height);
              have_NS = true;
         }
@@ -1051,50 +1051,50 @@ restart:
       if (geometry.ContainsLineSegment(N_S)) {
         have_NS = true;
         Rectangle tmp = new Rectangle(rail.X, 0, height, subway.Height); // start as rails
-        DoForEachTile(tmp, lay_NS_rail);
+        foreach (var pt in tmp) lay_NS_rail(pt);
         subway.AddZone(MakeUniqueZone("rails", tmp));
-        DoForEachTile(new Rectangle((short)(rail.X-1), 0, height+2, subway.Height), PoliceEnlightenment);
+        foreach (var pt in new Rectangle((short)(rail.X-1), 0, height+2, subway.Height)) PoliceEnlightenment(pt);
         foreach(int y in Enumerable.Range(10, subway.Height-20)) add_toolroomEWofNS(y);
       }
       if (geometry.ContainsLineSegment(E_W)) {
         have_EW = true;
         Rectangle tmp = new Rectangle(0, rail.Y, subway.Width, height); // start as rails
-        DoForEachTile(tmp, lay_EW_rail);
+        foreach (var pt in tmp) lay_EW_rail(pt);
         subway.AddZone(MakeUniqueZone("rails", tmp));
-        DoForEachTile(new Rectangle(0, (short)(rail.Y-1), subway.Width, height+2), PoliceEnlightenment);
+        foreach (var pt in new Rectangle(0, (short)(rail.Y-1), subway.Width, height+2)) PoliceEnlightenment(pt);
         foreach(int x in Enumerable.Range(10, subway.Width-20)) add_toolroomNSofEW(x);
       }
       if (have_EW && !have_NS) {
         if (geometry.ContainsLineSegment(N_NEUTRAL)) {
           Rectangle tmp = new Rectangle(rail.X, 0, height, rail.Y); // start as rails
-          DoForEachTile(tmp, lay_NS_rail);
+          foreach (var pt in tmp) lay_NS_rail(pt);
           subway.AddZone(MakeUniqueZone("rails", tmp));
-          DoForEachTile(new Rectangle((short)(rail.X-1), 0, height+2, rail.Y), PoliceEnlightenment);
+          foreach (var pt in new Rectangle((short)(rail.X-1), 0, height+2, rail.Y)) PoliceEnlightenment(pt);
           foreach(int y in Enumerable.Range(10, rail.Y - toolsRoomHeight / 2 - 10)) add_toolroomEWofNS(y);
         } else if (geometry.ContainsLineSegment(S_NEUTRAL)) {
           short origin_y = (short)(rail.Y + height);
           short extent_y = (short)(subway.Height - origin_y);
           Rectangle tmp = new Rectangle(rail.X, origin_y, height, extent_y); // start as rails
-          DoForEachTile(tmp, lay_NS_rail);
+          foreach (var pt in tmp) lay_NS_rail(pt);
           subway.AddZone(MakeUniqueZone("rails", tmp));
-          DoForEachTile(new Rectangle((short)(rail.X-1), origin_y, height+2, extent_y), PoliceEnlightenment);
+          foreach (var pt in new Rectangle((short)(rail.X-1), origin_y, height+2, extent_y)) PoliceEnlightenment(pt);
           foreach(int y in Enumerable.Range(rail.Y + height + toolsRoomHeight / 2, subway.Height - 10)) add_toolroomEWofNS(y);
         }
       }
       if (have_NS && !have_EW) {
         if (geometry.ContainsLineSegment(W_NEUTRAL)) {
           Rectangle tmp = new Rectangle(0, rail.Y, rail.X, height); // start as rails
-          DoForEachTile(tmp, lay_EW_rail);
+          foreach (var pt in tmp) lay_EW_rail(pt);
           subway.AddZone(MakeUniqueZone("rails", tmp));
-          DoForEachTile(new Rectangle(0, (short)(rail.Y - 1), rail.X, height+2), PoliceEnlightenment);
+          foreach (var pt in new Rectangle(0, (short)(rail.Y - 1), rail.X, height+2)) PoliceEnlightenment(pt);
           foreach(int x in Enumerable.Range(10, rail.X- toolsRoomWidth / 2-10)) add_toolroomNSofEW(x);
         } else if (geometry.ContainsLineSegment(E_NEUTRAL)) {
           short origin_x = (short)(rail.X + height);
           short extent_y = (short)(subway.Width - origin_x);
           Rectangle tmp = new Rectangle(origin_x, rail.Y, extent_y, height); // start as rails
-          DoForEachTile(tmp, lay_EW_rail);
+          foreach (var pt in tmp) lay_EW_rail(pt);
           subway.AddZone(MakeUniqueZone("rails", tmp));
-          DoForEachTile(new Rectangle(origin_x, (short)(rail.Y - 1), extent_y, height+2), PoliceEnlightenment);
+          foreach (var pt in new Rectangle(origin_x, (short)(rail.Y - 1), extent_y, height+2)) PoliceEnlightenment(pt);
           foreach(int x in Enumerable.Range(origin_x + toolsRoomWidth / 2, subway.Width-10)) add_toolroomNSofEW(x);
         }
       }
@@ -1177,12 +1177,12 @@ restart:
         var door = m_DiceRoller.Choose(doors);
         PlaceDoor(subway, door, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
         subway.AddZone(MakeUniqueZone("tools room", rect));
-        DoForEachTile(rect, pt => {
-          if (!subway.IsWalkable(pt) || CountAdjWalls(subway, pt) == 0 || subway.AnyAdjacent<DoorWindow>(pt)) return;
+        foreach (var pt in rect) {
+          if (!subway.IsWalkable(pt) || CountAdjWalls(subway, pt) == 0 || subway.AnyAdjacent<DoorWindow>(pt)) continue;
           var shelf = MakeObjShelf();
           subway.PlaceAt(shelf, pt);
           shelf.Inventory.AddAll(MakeShopConstructionItem());
-        });
+        }
         break;
       }
 #endregion
@@ -1211,7 +1211,7 @@ restart:
       int railY = subway.Width / 2 - 1; // XXX fortunately width=height
       const int height = 4;
       Rectangle tmp = new Rectangle(0, railY, subway.Width, height); // start as rails
-      DoForEachTile(tmp, (Action<Point>)(pt => { subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_EW); }));
+      foreach (var pt in tmp) subway.SetTileModelAt(pt.X, pt.Y, GameTiles.RAIL_EW);
       subway.AddZone(MakeUniqueZone("rails", tmp));
 
         const int minDistToRails = 8;
@@ -1371,7 +1371,7 @@ restart:
       }, pt => MakeRandomShopItem(shopType));
       map.AddZone(MakeUniqueZone(shop_name_image.Key, b.BuildingRect));
       MakeWalkwayZones(map, b);
-      DoForEachTile(b.BuildingRect, map, loc => Session.Get.ForcePoliceKnown(loc)); // XXX exceptionally cheating police AI
+      foreach (var pt in b.BuildingRect) Session.Get.ForcePoliceKnown(new Location(map, pt)); // XXX exceptionally cheating police AI
       if (m_DiceRoller.RollChance(SHOP_BASEMENT_CHANCE)) {
         int seed = map.Seed << 1 ^ shop_name_image.Key.GetHashCode();
         var d = map.District;
@@ -1381,10 +1381,9 @@ restart:
         TileFill(shopBasement, GameTiles.FLOOR_CONCRETE, true);
         TileRectangle(shopBasement, GameTiles.WALL_BRICK, shopBasement.Rect);
         shopBasement.AddZone(MakeUniqueZone("basement", shopBasement.Rect));
-        DoForEachTile(shopBasement.Rect, (Action<Point>) (pt =>
-        {
+        foreach (var pt in shopBasement.Rect) {
           Session.Get.Police.Investigate.Record(shopBasement, in pt);
-          if (!shopBasement.IsWalkable(pt) || shopBasement.HasExitAt(in pt)) return;
+          if (!shopBasement.IsWalkable(pt) || shopBasement.HasExitAt(in pt)) continue;
           if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE)) {
             shopBasement.PlaceAt(MakeObjShelf(), pt);
             if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF)) {
@@ -1392,9 +1391,9 @@ restart:
               MakeRandomShopItem(shopType)?.DropAt(shopBasement, in pt);
             }
           }
-          if (!Session.Get.HasZombiesInBasements || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
+          if (!Session.Get.HasZombiesInBasements || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE)) continue;
           shopBasement.PlaceAt(CreateNewBasementRatZombie(0), in pt);
-        }));
+        }
 
         Point basementCorner = new Point((short)(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2), (short)(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2));
         rectangle = b.InsideRect;
@@ -1745,11 +1744,10 @@ restart:
       map.RemoveMapObjectAt(doorFront);
 
       // mark as inside and add shelves with tools
-      DoForEachTile(shedInsideRect, (pt) =>
-      {
-        if (!map.IsWalkable(pt)) return;
-        if (0 < map.CountAdjacent<DoorWindow>(pt)) return;
-        if (0 == CountAdjWalls(map, pt)) return;
+      foreach (var pt in shedInsideRect) {
+        if (!map.IsWalkable(pt)) continue;
+        if (0 < map.CountAdjacent<DoorWindow>(pt)) continue;
+        if (0 == CountAdjWalls(map, pt)) continue;
 
         // shelf.
         var shelf = MakeObjShelf();
@@ -1760,7 +1758,7 @@ restart:
         if (it.Model.IsStackable) it.Quantity = it.Model.StackingLimit;
         shelf.Inventory.AddAll(it);
         Session.Get.Police.Investigate.Record(map, in pt);
-      });
+      }
     }
 
         // alpha10.1 makes apartements or vanilla house
@@ -2031,7 +2029,7 @@ restart:
         Rectangle roomRect = roomsList[i];
         if (iOutsideRoom == i) {
           // make sure all tiles are marked as outside
-          DoForEachTile(roomRect, (pt) => map.SetIsInsideAt(pt,false));
+          foreach (var pt in roomRect) map.SetIsInsideAt(pt,false);
           map.AddZone(new Zone("$Outside", roomRect));
 
           // then shrink it properly so we dont overlap with tiles from other rooms and mess things up.
@@ -2050,17 +2048,17 @@ restart:
           switch (outsideRoom) {
             case HouseOutsideRoomType.GARDEN:
               TileFill(map, GameTiles.FLOOR_GRASS, roomRect);
-              DoForEachTile(roomRect, (pos) => {
+              foreach (var pos in roomRect) {
                 if (map.GetTileModelAt(pos) == GameTiles.FLOOR_GRASS && m_DiceRoller.RollChance(HOUSE_GARDEN_TREE_CHANCE))
                   map.PlaceAt(MakeObjTree(), pos);
-              });
+              }
               break;
             case HouseOutsideRoomType.PARKING_LOT:
               TileFill(map, GameTiles.FLOOR_ASPHALT, roomRect);
-              DoForEachTile(roomRect, (pos) => {
+              foreach (var pos in roomRect) {
                 if (map.GetTileModelAt(pos) == GameTiles.FLOOR_ASPHALT && m_DiceRoller.RollChance(HOUSE_PARKING_LOT_CAR_CHANCE))
                   map.PlaceAt(MakeObjWreckedCar(m_DiceRoller), pos);
-              });
+              }
               break;
             default: throw new InvalidOperationException("unhandled room type");
           }
@@ -2075,23 +2073,23 @@ restart:
         Rectangle roomRect = roomsList[iOutsideRoom];
         switch (outsideRoom) {
           case HouseOutsideRoomType.GARDEN:
-            DoForEachTile(roomRect, (pos) => {
+            foreach (var pos in roomRect) {
               if (   (pos.X == roomRect.Left || pos.X == roomRect.Right - 1 || pos.Y == roomRect.Top || pos.Y == roomRect.Bottom - 1)
                   && map.GetTileModelAt(pos) == GameTiles.FLOOR_GRASS) {
                 map.RemoveMapObjectAt(pos); // make sure trees are removed
                 map.PlaceAt(MakeObjGardenFence(), pos);
               }
-            });
+            }
             break;
           case HouseOutsideRoomType.PARKING_LOT:
-            DoForEachTile(roomRect, (pos) => {
+            foreach (var pos in roomRect) {
               bool isLotEntry = (pos.X == roomRect.Left + roomRect.Width / 2) || (pos.Y == roomRect.Top + roomRect.Height / 2);
               if (  !isLotEntry && ((pos.X == roomRect.Left || pos.X == roomRect.Right - 1 || pos.Y == roomRect.Top || pos.Y == roomRect.Bottom - 1)
                   && map.GetTileModelAt(pos) == GameTiles.FLOOR_ASPHALT)) {
                 map.RemoveMapObjectAt(pos); // make sure cars are removed
                 map.PlaceAt(MakeObjWireFence(), pos);
               }
-            });
+            }
             break;
           default: throw new InvalidOperationException("unhandled room type");
         }
@@ -2193,12 +2191,13 @@ restart:
       if (!isSurface) TileFill(map, GameTiles.FLOOR_CONCRETE, b.InsideRect, true);
       if (isSurface) TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_SUBWAY, b.BuildingRect);
-      DoForEachTile(b.BuildingRect, map, loc => {
+      foreach (var pt in b.BuildingRect) {
+          var loc = new Location(map, pt);
           Session.Get.ForcePoliceKnown(loc);
           Session.Get.Police.Investigate.Seen(in loc);
           loc.Map.SetIsInsideAt(loc.Position);    // XXX this is a severe change -- combined with the early generation,
           // it guarantees the subway is inside when the NPCs are placed.  With late generation, it was possible to overwrite a park
-      });
+      }
       map.AddZone(new Zone("$Inside", b.BuildingRect));
 
       const int height = 4;
@@ -2259,7 +2258,7 @@ restart:
           map.SetTileModelAt(p - orthogonal, GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p - x2orthogonal, GameTiles.WALL_STONE);
           map.SetTileModelAt(p + x2orthogonal, GameTiles.WALL_STONE);
-          DoForEachTile(new Rectangle(p+2*Direction.N, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
+          foreach (var pt in new Rectangle(p+2*Direction.N, 5,1)) Session.Get.ForcePoliceKnown(new Location(map, pt));
           p += direction;
         }
         Point centralGateAt = p - 4*direction;
@@ -2355,7 +2354,7 @@ restart:
         Rectangle platform = plat();
         TileFill(map, GameTiles.FLOOR_CONCRETE, platform);
         foreach (var pt in platform.Edge((Compass.XCOMlike)(-direction).Index)) if (CountAdjWalls(map, pt) >= 3) map.PlaceAt(MakeObjIronBench(), pt);
-        DoForEachTile(platform, map, loc => Session.Get.ForcePoliceKnown(loc));
+        foreach (var pt in platform) Session.Get.ForcePoliceKnown(new Location(map, pt));
         map.AddZone(MakeUniqueZone("platform", platform));
         map.PlaceAt(MakeObjIronGate(), centralGateAt);
         map.PlaceAt(MakeObjIronGate(), centralGateAt + orthogonal);
@@ -2386,7 +2385,7 @@ restart:
           if (CountAdjWalls(map, pt) < 3 || map.AnyAdjacent<DoorWindow>(pt)) return null;
           return MakeObjPowerGenerator();
         });
-        DoForEachTile(rect2, map, loc => Session.Get.ForcePoliceKnown(loc));
+        foreach (var pt in rect2) Session.Get.ForcePoliceKnown(new Location(map, pt));
       }
       for (short left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
         for (short y = (short)(b.InsideRect.Top + 1); y < b.InsideRect.Bottom - 1; ++y) {
@@ -2970,16 +2969,15 @@ restart:
       Point basementStairs = point - buildingRect.Location;
       AddExit(map, point, basement, basementStairs, GameImages.DECO_STAIRS_DOWN);
       AddExit(basement, basementStairs, map, point, GameImages.DECO_STAIRS_UP);
-      DoForEachTile(basement.Rect, (Action<Point>) (pt =>
-      {
-        if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_PILAR_CHANCE) || pt == basementStairs) return;
-        if (GameTiles.WALL_BRICK == basement.GetTileModelAt(pt)) return; // already wall
+      foreach (var pt in basement.Rect) {
+        if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_PILAR_CHANCE) || pt == basementStairs) continue;
+        if (GameTiles.WALL_BRICK == basement.GetTileModelAt(pt)) continue; // already wall
         // We are iterating all rows Y in each column X
         // XXX so if we end up disconnecting we find out vertically
         // basement.Rect.Top and basement.Rect.Left are hardcoded 0
         // coordinates 0, width-1, height-1 are already brick walls
         basement.SetTileModelAt(pt, GameTiles.WALL_BRICK);
-      }));
+      }
       // Tourism will fail if not all targets are accessible from the exit.  Transposing should be safe here.
       while(!_ForceHouseBasementConnected(basement,basementStairs));
       // set up police investigation after floor layout is stable
@@ -3021,11 +3019,10 @@ restart:
         }
       }));
       if (Session.Get.HasZombiesInBasements)
-        DoForEachTile(basement.Rect, (Action<Point>) (pt =>
-        {
-          if (!basement.IsWalkable(pt) || basement.HasExitAt(in pt) || !m_DiceRoller.RollChance(HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
+        foreach (var pt in basement.Rect) {
+          if (!basement.IsWalkable(pt) || basement.HasExitAt(in pt) || !m_DiceRoller.RollChance(HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE)) continue;
           basement.PlaceAt(CreateNewBasementRatZombie(0), in pt);
-        }));
+        }
       if (m_DiceRoller.RollChance(HOUSE_BASEMENT_WEAPONS_CACHE_CHANCE))
         MapObjectPlaceInGoodPosition(basement, basement.Rect, (Func<Point, bool>) (pt => !basement.HasExitAt(in pt) && basement.IsWalkable(pt) && (!basement.HasMapObjectAt(pt) && !basement.HasItemsAt(pt))), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         { // survivalist weapons cache.  Grenades were not acquired locally.  Guaranteed usable.
@@ -3087,13 +3084,13 @@ restart:
       TileFill(underground, GameTiles.FLOOR_OFFICE, true);
       TileRectangle(underground, GameTiles.WALL_CHAR_OFFICE, underground.Rect);
 
-      DoForEachTile(zone1.Bounds, pt => {
-        if (!(surfaceMap.GetMapObjectAt(pt) is DoorWindow)) return;
+      foreach (var pt in zone1.Bounds) {
+        if (!(surfaceMap.GetMapObjectAt(pt) is DoorWindow)) continue;
         surfaceMap.RemoveMapObjectAt(pt);
         DoorWindow doorWindow = MakeObjIronDoor();
         doorWindow.Barricade(Rules.BARRICADING_MAX);
         surfaceMap.PlaceAt(doorWindow, pt);
-      });
+      }
       Point point2 = underground.Rect.Size/2;
       AddExit(underground, point2, surfaceMap, surfaceExit, GameImages.DECO_STAIRS_UP);
       AddExit(surfaceMap, surfaceExit, underground, point2, GameImages.DECO_STAIRS_DOWN);
@@ -3280,9 +3277,8 @@ restart:
     private static void MakeCHARPowerRoom(Map map, Rectangle wallsRect, Rectangle roomRect)
     {
       TileFill(map, GameTiles.FLOOR_CONCRETE, roomRect);
-      DoForEachTile(wallsRect, (Action<Point>) (pt =>
-      {
-        if (!(map.GetMapObjectAt(pt) is DoorWindow)) return;
+      foreach (var pt in wallsRect) {
+        if (!(map.GetMapObjectAt(pt) is DoorWindow)) continue;
         map.ForEachAdjacent(pt, (Action<Point>) (ptAdj =>
         {
           Tile tileAt = map.GetTileAt(ptAdj);
@@ -3290,12 +3286,11 @@ restart:
           tileAt.RemoveAllDecorations();
           tileAt.AddDecoration(GameImages.DECO_POWER_SIGN_BIG);
         }));
-      }));
-      DoForEachTile(roomRect, (Action<Point>) (pt =>
-      {
-        if (!map.GetTileModelAt(pt).IsWalkable || map.HasExitAt(in pt) || CountAdjWalls(map, pt) < 3) return;
+      }
+      foreach (var pt in roomRect) {
+        if (!map.GetTileModelAt(pt).IsWalkable || map.HasExitAt(in pt) || CountAdjWalls(map, pt) < 3) continue;
         map.PlaceAt(MakeObjPowerGenerator(), pt);
-      }));
+      }
     }
 
     private void MakePoliceStation(Map map, List<Block> freeBlocks)
@@ -3320,7 +3315,7 @@ restart:
       TileFill(surfaceMap, GameTiles.FLOOR_TILES, policeBlock.InsideRect, true);
       TileRectangle(surfaceMap, GameTiles.WALL_POLICE_STATION, policeBlock.BuildingRect);
       TileRectangle(surfaceMap, GameTiles.FLOOR_WALKWAY, policeBlock.Rectangle);
-      DoForEachTile(policeBlock.InsideRect, surfaceMap, loc => Session.Get.ForcePoliceKnown(loc));
+      foreach (var pt in policeBlock.InsideRect) Session.Get.ForcePoliceKnown(new Location(surfaceMap, pt));
       Point entryDoorAt = policeBlock.BuildingRect.Anchor(Compass.XCOMlike.S);
       surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, entryDoorAt+Direction.W);
       surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, entryDoorAt+Direction.E);
@@ -3330,11 +3325,11 @@ restart:
       Point restrictedDoorAt = rect.Anchor(Compass.XCOMlike.N);
       PlaceDoor(surfaceMap, restrictedDoorAt, GameTiles.FLOOR_TILES, MakeObjIronDoor());
       PlaceDoor(surfaceMap, entryDoorAt, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
-      DoForEachTile(rect, pt => {
+      foreach (var pt in rect) {
         if (!surfaceMap.IsWalkable(pt) || CountAdjWalls(surfaceMap, pt) == 0 || surfaceMap.AnyAdjacent<DoorWindow>(pt))
-          return;
+          continue;
         surfaceMap.PlaceAt(MakeObjBench(), pt);
-      });
+      }
       stairsToLevel1 = restrictedDoorAt+Direction.N;
       surfaceMap.AddZone(MakeUniqueZone("Police Station", policeBlock.BuildingRect));
       MakeWalkwayZones(surfaceMap, policeBlock);
@@ -3386,8 +3381,8 @@ restart:
         if (rect2.Right == map.Width) {
           TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
           PlaceDoor(map, rect2.Anchor(Compass.XCOMlike.W), GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
-          DoForEachTile(rect3, pt => {
-            if (!map.IsWalkable(pt) || CountAdjWalls(map, pt) == 0 || map.AnyAdjacent<DoorWindow>(pt)) return;
+          foreach (var pt in rect3) {
+            if (!map.IsWalkable(pt) || CountAdjWalls(map, pt) == 0 || map.AnyAdjacent<DoorWindow>(pt)) continue;
             var shelf = MakeObjShelf();
             map.PlaceAt(shelf, pt);
             if (new Point(18,18) == pt || new Point(17,18) == pt) {
@@ -3400,7 +3395,7 @@ restart:
               shelf.Inventory.AddAll(GameItems.AMMO_LIGHT_PISTOL.create());
             }
             else shelf.Inventory.AddAll(stock_armory());
-          });
+          }
           map.AddZone(MakeUniqueZone("security", rect3));
           if (rect3.Contains(new Point(18,18))) plot_anchor = rect3;
           continue;
@@ -3429,10 +3424,10 @@ restart:
         }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
         map.AddZone(MakeUniqueZone("office", rect3));
       }
-      DoForEachTile(new Rectangle(1, 1, 1, OFFICES_HEIGHT - 2), pt => {
-        if (pt.Y % 2 == 1 || !map.IsWalkable(pt) || CountAdjWalls(map, pt) != 3) return;
+      foreach (var pt in new Rectangle(1, 1, 1, OFFICES_HEIGHT - 2)) {
+        if (pt.Y % 2 == 1 || !map.IsWalkable(pt) || CountAdjWalls(map, pt) != 3) continue;
         map.PlaceAt(MakeObjIronBench(), pt);
-      });
+      }
       map.AddZone(MakeUniqueZone("west corridor", new Rectangle(0,0,3, OFFICES_HEIGHT)));
 
       Point[] ideal = new Point[5] { new Point(17, 2), new Point(16, 2), new Point(15, 2), new Point(14, 2), new Point(13, 2) };
@@ -3533,7 +3528,7 @@ restart:
         map.PlaceAt(typical[index], in ideal[index]);
       }
 
-      DoForEachTile(map.Rect, map, loc => Session.Get.ForcePoliceKnown(loc));
+      foreach (var pt in map.Rect) Session.Get.ForcePoliceKnown(new Location(map, pt));
       return map;
     }
 
@@ -3571,7 +3566,7 @@ restart:
         }
         map.PlaceAt(newCivilian, in dest);
       }
-      DoForEachTile(map.Rect, map, loc => Session.Get.ForcePoliceKnown(loc));
+      foreach (var pt in map.Rect) Session.Get.ForcePoliceKnown(new Location(map, pt));
       return map;
     }
 
@@ -3636,11 +3631,11 @@ restart:
       var rect = ext_Vector.FromLTRB_short(block.BuildingRect.Left, block.BuildingRect.Top, block.BuildingRect.Right, block.BuildingRect.Bottom);
       PlaceDoor(surfaceMap, point1, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
       PlaceDoor(surfaceMap, point2, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
-      DoForEachTile(rect, (pt => {
+      foreach (var pt in rect) {
         if (pt.Y == block.InsideRect.Top || (pt.Y == block.InsideRect.Bottom - 1 || !surfaceMap.IsWalkable(pt) || (CountAdjWalls(surfaceMap, pt) == 0 || surfaceMap.AnyAdjacent<DoorWindow>(pt))))
-          return;
+          continue;
         surfaceMap.PlaceAt(MakeObjIronBench(), pt);
-      }));
+      }
       surfaceMap.AddZone(MakeUniqueZone("Hospital", block.BuildingRect));
       MakeWalkwayZones(surfaceMap, block);
     }
@@ -3811,11 +3806,10 @@ restart:
         map.PlaceAt(MakeObjIronFence(), new Point(2, y));
       var room = ext_Vector.FromLTRB_short(3, 0, POWER_WIDTH, POWER_HEIGHT);
       map.AddZone(MakeUniqueZone("power room", room));
-      DoForEachTile(room, (Action<Point>) (pt =>
-      {
-        if (pt.X == room.Left || !map.IsWalkable(pt) || CountAdjWalls(map, pt) < 3) return;
+      foreach (var pt in room) {
+        if (pt.X == room.Left || !map.IsWalkable(pt) || CountAdjWalls(map, pt) < 3) continue;
         map.PlaceAt(MakeObjPowerGenerator(), pt);
-      }));
+      }
       Session.Get.UniqueActors.init_JasonMyers();
       map.PlaceAt(Session.Get.UniqueActors.JasonMyers.TheActor, new Point(POWER_WIDTH / 2, POWER_HEIGHT / 2));
       return map;
@@ -3909,14 +3903,14 @@ restart:
       TileRectangle(map, GameTiles.WALL_HOSPITAL, room);
       map.AddZone(MakeUniqueZone(baseZoneName, room));
       PlaceDoor(map, room.Anchor(Compass.XCOMlike.N), GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
-      DoForEachTile(room, pt => {
-        if (!map.IsWalkable(pt) || map.AnyAdjacent<DoorWindow>(pt)) return;
+      foreach (var pt in room) {
+        if (!map.IsWalkable(pt) || map.AnyAdjacent<DoorWindow>(pt)) continue;
         var shelf = MakeObjShelf();
         map.PlaceAt(shelf, pt);
         Item it = m_DiceRoller.RollChance(80) ? MakeHospitalItem() : MakeItemCannedFood();
         if (it.Model.IsStackable) it.Quantity = it.Model.StackingLimit;
         shelf.Inventory.AddAll(it);
-      });
+      }
     }
 
     static private readonly Item_IDs[] rare_random_item = new[] {

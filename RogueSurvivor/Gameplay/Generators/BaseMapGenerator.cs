@@ -456,7 +456,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected static void BarricadeDoors(Map map, Rectangle rect, int barricadeLevel)
     {
-      DoForEachTile(rect, pt => (map.GetMapObjectAt(pt) as DoorWindow)?.Barricade(barricadeLevel));
+      foreach (var pt in rect) (map.GetMapObjectAt(pt) as DoorWindow)?.Barricade(barricadeLevel);
     }
 
     // this is not a legitimate Zone constructor (signature conflict), it's a preprocessing.
