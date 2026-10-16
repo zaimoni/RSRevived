@@ -3901,14 +3901,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private Item MostInterestingItemInStack(Inventory stack)
     {
 #if DEBUG
-      if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
+      if (stack.IsEmpty()) throw new ArgumentNullException(nameof(stack));
 #endif
       var interesting = InterestingItems(stack);
-      if (null==interesting) return null;
+      if (interesting is null) return null;
 
       Item obj = null;
       foreach (Item it in interesting) {
-        if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
+        if (obj is null || RHSMoreInteresting(obj, it)) obj = it;
       }
       return obj;
     }
@@ -3916,8 +3916,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #nullable enable
     protected override ActorAction? BehaviorWouldGrabFrom(in Location loc)
     {
-      var stack = loc.Items;
-      return (stack is not null && !stack.IsEmpty) ? BehaviorGrabFromStack(new(loc), false) : null;
+      return !loc.Items.IsEmpty() ? BehaviorGrabFromStack(new(loc), false) : null;
     }
 
     protected override ActorAction? BehaviorWouldGrabFrom(ShelfLike obj)
@@ -3929,7 +3928,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public bool WouldGrabFromStack(in Data.Model.InvOrigin src)
     {
 #if DEBUG
-      if (src.Inventory?.IsEmpty ?? true) throw new ArgumentNullException(nameof(src));
+      if (src.IsEmpty) throw new ArgumentNullException(nameof(src));
 #endif
       if (m_Actor.StackIsBlocked(src.Location)) return false;
       return WouldGrabFromAccessibleStack(in src)?.IsLegal() ?? false;
@@ -4013,7 +4012,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var stack = origin.Inventory;
 
 #if DEBUG
-      if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
+      if (stack.IsEmpty()) throw new ArgumentNullException(nameof(stack));
 #endif
 
       const bool tracing = false;

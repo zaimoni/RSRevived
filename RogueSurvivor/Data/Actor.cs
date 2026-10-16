@@ -2429,7 +2429,7 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCouldntBarricade()
     {
       if (!Model.Abilities.CanBarricade) return "no ability to barricade";
-      if (m_Inventory == null || m_Inventory.IsEmpty) return "no items";
+      if (m_Inventory.IsEmpty()) return "no items";
       if (!m_Inventory.Has<ItemBarricadeMaterial>()) return "no barricading material";
       return "";
     }
@@ -3251,7 +3251,7 @@ final_exit:
 
     public int CountItemsOfSameType(Type tt)
     {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
+      if (m_Inventory.IsEmpty()) return 0;
       int num = 0;
       foreach (Item obj in m_Inventory) {
         if (obj.IsUseless) continue;
@@ -3266,7 +3266,7 @@ final_exit:
 
     public int CountItems<_T_>() where _T_ : Item
     {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
+      if (m_Inventory.IsEmpty()) return 0;
       return m_Inventory.Where(it=>it is _T_).Select(it => it.Quantity).Sum();
     }
 
@@ -3277,7 +3277,7 @@ final_exit:
 
     public bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
     {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
+      if (m_Inventory.IsEmpty()) return false;
       if (it.Model.IsStackable) return m_Inventory.CountQuantityOf(it.Model) >= n * it.Model.StackingLimit;
       return CountItemsOfSameType(it.GetType()) >= n;
     }
@@ -3309,7 +3309,7 @@ final_exit:
     public bool HasEnoughFoodFor(int nutritionNeed, ItemFood? exclude=null)
     {
       if (!_has_to_eat) return true;
-      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
+      if (m_Inventory.IsEmpty()) return false;
       var tmp = m_Inventory.GetItemsByType<ItemFood>();
       if (null == tmp) return false;
       int turnCounter = Location.Map.LocalTime.TurnCounter;

@@ -975,7 +975,7 @@ restart:
     private void _RejectActorActorInventoryCrossLink(List<string> errors, Actor origin)
     {
       var o_inv = origin.Inventory;
-      if (null == o_inv || o_inv.IsEmpty) return;
+      if (o_inv.IsEmpty()) return;
       DoForAllActors(a => {
         if (a == origin) return;
         var err = a.Inventory?._HasCrossLink(o_inv);
@@ -1011,7 +1011,7 @@ restart:
     private void _RejectActorGroundInventoryCrossLink(List<string> errors, Actor origin)
     {
       var o_inv = origin.Inventory;
-      if (null == o_inv || o_inv.IsEmpty) return;
+      if (o_inv.IsEmpty()) return;
       DoForAllGroundInventories((loc, inv) => {
         if (inv.IsEmpty) return;
         var err = inv._HasCrossLink(o_inv);

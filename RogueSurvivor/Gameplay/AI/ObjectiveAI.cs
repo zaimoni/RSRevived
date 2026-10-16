@@ -5258,17 +5258,11 @@ restart_chokepoints:
 
     public ActorAction? WouldGetFrom(ShelfLike? obj)
     {
-      var stack = obj?.NonEmptyInventory;
-      if (null == stack || stack.IsEmpty) return null;
+      if (obj?.NonEmptyInventory is null) return null;
       return BehaviorWouldGrabFrom(obj!);
     }
 
-    public ActorAction? WouldGetFrom(in Location loc)
-    {
-      var stack = loc.Items;
-      if (null == stack || stack.IsEmpty) return null;
-      return BehaviorWouldGrabFrom(loc);
-    }
+    public ActorAction? WouldGetFrom(in Location loc) => loc.Items.IsEmpty() ? null : BehaviorWouldGrabFrom(loc);
 
 #nullable restore
 
@@ -7607,7 +7601,7 @@ restart_chokepoints:
     public ItemRangedWeapon? GetBestRangedWeaponWithAmmo()
     {
       var inv = m_Actor.Inventory;  // PC zombies won't have inventory
-      if (null == inv || inv.IsEmpty) return null;
+      if (inv.IsEmpty()) return null;
       var rws = inv.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != inv.GetItemsByType<ItemAmmo>(am => am.AmmoType == rw.AmmoType));
       return rws?.Maximize(ScoreRangedWeapon);
     }
@@ -7634,9 +7628,9 @@ restart_chokepoints:
     public Dictionary<int,Attack>? GetBestRangedAttacks(Actor target)
     {
       var inv = m_Actor.Inventory;
-      if (null == inv || inv.IsEmpty) return null;  // PC zombies won't have inventory
+      if (inv.IsEmpty()) return null;  // PC zombies won't have inventory
       var rws = inv.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo|| null != inv.GetItemsByType<ItemAmmo>(am => am.AmmoType == rw.AmmoType));
-      if (null == rws) return null;
+      if (rws is null) return null;
       var ret = new Dictionary<int, Attack>();
       foreach(var w in rws) {
         int r = w.Model.Attack.Range;

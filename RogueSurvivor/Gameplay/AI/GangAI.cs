@@ -225,7 +225,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
         var mayStealFrom = FilterCurrent(_all).FilterT<Actor>(a =>
         {
-          if ((a.Inventory?.IsEmpty ?? true) || IsFriendOf(a)) return false;
+          if (a.Inventory.IsEmpty() || IsFriendOf(a)) return false;
           if (!a.IsUnsuspiciousFor(m_Actor)) return HasAnyInterestingItem(a.Inventory);
           game.DoEmote(a, string.Format("moves unnoticed by {0}.", m_Actor.Name));
           return false;

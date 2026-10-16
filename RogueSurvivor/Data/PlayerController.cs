@@ -558,9 +558,9 @@ namespace djack.RogueSurvivor.Data
     static private string ReasonCantGetFromContainer(Location loc)
     {
       var obj = loc.MapObject as ShelfLike;
-      if (null == obj) return "object is not a container";
+      if (obj is null) return "object is not a container";
       if (!obj.Inventory.IsEmpty) return "";
-      if (loc.Items?.IsEmpty ?? true) return "nothing to take there";
+      if (loc.Items.IsEmpty()) return "nothing to take there";
       return "";
     }
 

@@ -6995,8 +6995,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     private string? FollowerCannotGiveItems(Actor player, Actor follower) {
-      if (follower.Inventory == null || follower.Inventory.IsEmpty) 
-        return string.Format("{0} has no items to give.", follower.TheName);
+      if (follower.Inventory.IsEmpty()) return string.Format("{0} has no items to give.", follower.TheName);
       if (!Rules.IsAdjacent(player.Location, follower.Location))
         return string.Format("{0} is not next to you.", follower.TheName);
       return null;
@@ -7149,26 +7148,26 @@ namespace djack.RogueSurvivor.Engine
           return false;
         case AdvisorHint.ITEM_UNEQUIP:
           var inventory1 = Player.Inventory;
-          if (inventory1?.IsEmpty ?? true) return false;
+          if (inventory1.IsEmpty()) return false;
           foreach (Item it in inventory1) if (Player.CanUnequip(it)) return true;
           return false;
         case AdvisorHint.ITEM_EQUIP:
           var inventory2 = Player.Inventory;
-          if (inventory2?.IsEmpty ?? true) return false;
+          if (inventory2.IsEmpty()) return false;
           foreach (Item it in inventory2) if (!it.IsEquipped && Player.CanEquip(it)) return true;
           return false;
         case AdvisorHint.ITEM_TYPE_BARRICADING:
           var inventory3 = Player.Inventory;
-          if (inventory3?.IsEmpty ?? true) return false;
+          if (inventory3.IsEmpty()) return false;
           return inventory3.Has<ItemBarricadeMaterial>();
         case AdvisorHint.ITEM_DROP:
           var inventory4 = Player.Inventory;
-          if (inventory4?.IsEmpty ?? true) return false;
+          if (inventory4.IsEmpty()) return false;
           foreach (Item it in inventory4) if (Player.CanDrop(it)) return true;
           return false;
         case AdvisorHint.ITEM_USE:
           var inventory5 = Player.Inventory;
-          if (inventory5?.IsEmpty ?? true) return false;
+          if (inventory5.IsEmpty()) return false;
           foreach (Item it in inventory5) if (Player.CanUse(it)) return true;
           return false;
         case AdvisorHint.FLASHLIGHT: return Player.Inventory.Has<ItemLight>();
@@ -7180,7 +7179,7 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.WEAPON_RELOAD:
           if (!(Player.GetEquippedWeapon() is ItemRangedWeapon)) return false;
           var inventory6 = Player.Inventory;
-          if (inventory6?.IsEmpty ?? true) return false;
+          if (inventory6.IsEmpty()) return false;
           foreach (Item it in inventory6) if (it is ItemAmmo && Player.CanUse(it)) return true;
           return false;
         case AdvisorHint.GRENADE: return Player.Has<ItemGrenade>();
@@ -7210,7 +7209,7 @@ namespace djack.RogueSurvivor.Engine
              return ActionTrade.Can(Player, actorAt);
          });
         case AdvisorHint.NPC_GIVING_ITEM:
-          if (Player.Inventory?.IsEmpty ?? true) return false;
+          if (Player.Inventory.IsEmpty()) return false;
           return map.HasAnyAdjacentInMap(position, pt =>
          {
              Actor actorAt = map.GetActorAt(pt);
@@ -8084,7 +8083,7 @@ namespace djack.RogueSurvivor.Engine
 
       // 9. Inventory.
       var inv = actor.Inventory;
-      if (null != inv && !inv.IsEmpty) {
+      if (!inv.IsEmpty()) {
         lines.Add(string.Format("Items {0}/{1} : ", inv.Count(), actor.MaxInv));
         lines.AddRange(DescribeInventory(inv));
       }
@@ -9897,7 +9896,7 @@ namespace djack.RogueSurvivor.Engine
 #nullable enable
     static private void ExplosionChainReaction(Inventory? inv, in Location location)
     {
-      if (null == inv || inv.IsEmpty) return;
+      if (inv.IsEmpty()) return;
       List<ItemExplosive>? itemExplosiveList = null;
       List<Data._Item.PrimedExplosive>? itemPrimedExplosiveList = null;
       foreach (Item obj in inv) {
@@ -10467,8 +10466,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     public Item? Choose(Inventory? inv, string prompt) {
-      if (null == inv) return null;
-      if (inv.IsEmpty) return null;
+      if (inv.IsEmpty()) return null;
       if (2 > inv.Count()) return inv.TopItem!;
 
       Item? ret = null;
@@ -11372,7 +11370,7 @@ restart:
 
       Session.Get.Police.Threats.Audit(police_wanted); // cf. RadioFaction.Killed
 
-      if (!deadGuy.Inventory?.IsEmpty ?? false) {
+      if (!deadGuy.Inventory.IsEmpty()) {
         // the implicit police radio goes explicit on death, as a generic item
         if (deadGuy.IsFaction(GameFactions.IDs.ThePolice)) {
           var it = GameItems.POLICE_RADIO.instantiate();
@@ -11734,7 +11732,7 @@ restart:
       textFile.Append("> INVENTORY");
       {
       var inv = Player.Inventory;
-      if (null == inv || inv.IsEmpty) {
+      if (inv.IsEmpty()) {
         textFile.Append(string.Format("{0} was humble. Or dirt poor.", str1));
       } else {
         foreach (Item it in inv) {
@@ -14810,7 +14808,7 @@ retry:
         case 2: return ActionBreak.create(actor, (actor.Location + rules.RollDirection()).MapObject);
         case 3:
           var inventory = actor.Inventory;
-          if (null == inventory || inventory.IsEmpty) return null;
+          if (inventory.IsEmpty()) return null;
           Item it = rules.DiceRoller.Choose(inventory);
           var use = new ActionUseItem(actor, it);
           if (use.IsPerformable()) return use;

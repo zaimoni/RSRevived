@@ -39,7 +39,7 @@ namespace djack.RogueSurvivor.Data
             string[][] ascii_map = new string[Height][];
 
             void _process_inv(Inventory? inv, int x, int y) {
-                if (null != inv && !inv.IsEmpty) {
+                if (!inv.IsEmpty()) {
                     string p_txt = '(' + x.ToString() + ',' + y.ToString() + ')';
                     foreach (Item it in inv) {
                         inv_data.Add("<tr class='inv'><td>" + p_txt + "</td><td>" + it.ToString() + "</td></tr>");
@@ -211,7 +211,7 @@ namespace djack.RogueSurvivor.Data
                         if (0 < a.CountFollowers) actor_stats.Add("<span style='background-color:black; color:cyan'>L</span>");
                         if (null != a.LiveLeader) actor_stats.Add("<span style='background-color:black; color:cyan'>F:" + a.LiveLeader.Name + "</span>");
 
-                        actor_data.Add("<tr><td" + pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + string.Concat(actor_stats) + "</td><td>" + TurnOrderFor(a).ToString() + "</td><td>" + a.ActionPoints.ToString() + "</td><td>" + a.HitPoints.ToString() + "</td><td class='inv'>" + (null == a.Inventory ? "" : (a.Inventory.IsEmpty ? "" : a.Inventory.ToString())) + "</td></tr>");
+                        actor_data.Add("<tr><td" + pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + string.Concat(actor_stats) + "</td><td>" + TurnOrderFor(a).ToString() + "</td><td>" + a.ActionPoints.ToString() + "</td><td>" + a.HitPoints.ToString() + "</td><td class='inv'>" + (a.Inventory.IsEmpty() ? "" : a.Inventory.ToString()) + "</td></tr>");
                         ascii_map[y][x] = a_str;
                     }
 #endregion

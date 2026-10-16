@@ -34,7 +34,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         static private string ReasonCantGetFrom(in Data.Model.InvOrigin src)
         {
-            if (src.Inventory.IsEmpty) return "nothing to take there";
+            if (src.IsEmpty) return "nothing to take there";
             return "";
         }
 
@@ -48,7 +48,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         {
             if (!Map.Canonical(ref loc)) return null;
             var inv = loc.Items;
-            if (null == inv || inv.IsEmpty) return null;
+            if (inv.IsEmpty()) return null;
             var obj = loc.MapObject;
             if (null != obj && obj.BlocksReachInto()) return null;
             var player = pc.ControlledActor;

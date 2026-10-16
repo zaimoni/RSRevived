@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using Zaimoni.JSON;
@@ -785,15 +786,14 @@ namespace djack.RogueSurvivor.Data
         static public Model.InvOrigin? GroundInv(this Location loc)
         {
             var g_inv = loc.Items;
-            if (null != g_inv && !g_inv.IsEmpty) return new(loc);
+            if (!g_inv.IsEmpty()) return new(loc);
             return null;
         }
 
         static public Model.InvOrigin? ShelfInv(this Location loc)
         {
             var shelf = loc.MapObject as ShelfLike;
-            var o_inv = shelf?.NonEmptyInventory;
-            if (null != o_inv /* && !o_inv.IsEmpty */) return new(shelf!);
+            if (shelf?.NonEmptyInventory is not null) return new(shelf);
             return null;
         }
 
@@ -825,6 +825,8 @@ namespace djack.RogueSurvivor.Data
             if (null != shelf && shelf.IsJumpable) return new(shelf);
             return new(origin);
         }
+
+        static public bool IsEmpty([NotNullWhen(false)] this Inventory? inv) => inv is null || inv.IsEmpty;
     }
 
     // Angband-style inventory slots

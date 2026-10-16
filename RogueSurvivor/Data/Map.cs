@@ -1741,7 +1741,7 @@ retry:
       }
       foreach (var actor in m_ActorsList) {
         var inv = actor.Inventory;
-        if (null != inv && test(inv,actor.Location)) return true;
+        if (inv is not null && test(inv,actor.Location)) return true;
       }
       return false;
     }
@@ -2294,7 +2294,7 @@ retry:
       List<Model.InvOrigin> ret = new();
 
       var g_inv = origin.InventoryAtFeet();   // since 95828fbd: where items at the feet would go, which may hold nothing yet
-      if (g_inv is not null && !(g_inv.Value.Inventory?.IsEmpty ?? true)) ret.Add(g_inv.Value);
+      if (g_inv is not null && !g_inv.Value.IsEmpty) ret.Add(g_inv.Value);
 
       adjacentInventoryOrigins(ret, in origin);
 
@@ -2317,13 +2317,8 @@ retry:
       var origin = a.Location;
 
       if (Direction.NEUTRAL == dir) {
-        var standing_on = origin.MapObject as ShelfLike;
-        if (null != standing_on && standing_on.IsJumpable) {
-          // shelf is our ground level
-          if (null != standing_on?.NonEmptyInventory) ret.Add(new(standing_on));
-        } else {
-          if (null != origin.Items) ret.Add(new(origin));
-        }
+        var g_inv = origin.InventoryAtFeet();
+        if (g_inv is not null && !g_inv.Value.IsEmpty) ret.Add(g_inv.Value);
         return 0<ret.Count ? ret : null;
       }
 
@@ -2331,17 +2326,16 @@ retry:
       if (!Canonical(ref dest)) return null;
       var actor = dest.Actor;
       if (null != actor) {
-        var a_inv = actor.Inventory;
-        if (null != a_inv && !a_inv.IsEmpty && !a.IsEnemyOf(actor)) ret.Add(new(actor));
+        if (!actor.Inventory.IsEmpty() && !a.IsEnemyOf(actor)) ret.Add(new(actor));
         return 0<ret.Count ? ret : null;
       }
 
       var obj = dest.MapObject;
       var shelf = obj as ShelfLike;
-      if (null != shelf?.NonEmptyInventory) ret.Add(new(shelf));
+      if (shelf?.NonEmptyInventory is not null) ret.Add(new(shelf));
 
       var inv = dest.Items;
-      if (null != inv) {
+      if (inv is not null) {
         if (null == obj || !obj.BlocksReachInto()) ret.Add(new(dest));
       }
       return 0<ret.Count ? ret : null;
@@ -2439,7 +2433,7 @@ retry:
       if (!IsInBounds(pos)) throw new ArgumentOutOfRangeException(nameof(pos), pos, "!IsInBounds(pos)");
 #endif
       var itemsAt = GetItemsAt(pos);
-      if (null == itemsAt) return false;
+      if (itemsAt is null) return false;
       if (!itemsAt.Contains(doomed)) return false;
       itemsAt.RemoveAllQuantity(doomed);
       if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(pos);
@@ -2453,9 +2447,9 @@ retry:
       if (!IsInBounds(pos)) throw new ArgumentOutOfRangeException(nameof(pos), pos, "!IsInBounds(pos)");
 #endif
       var itemsAt = GetItemsAt(pos);
-      if (null == itemsAt) return false;
+      if (itemsAt is null) return false;
       var doomed = itemsAt.GetItemsByType(test);
-      if (null == doomed) return false;
+      if (doomed is null) return false;
       itemsAt.RemoveAllQuantity(doomed);
       if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(pos);
       return true;
@@ -2510,7 +2504,6 @@ retry:
         }
 
         return ret;
-//      return (0 < ret.Count) ? ret : null;
     }
 
     static public void InventoryCounts(Dictionary<Gameplay.Item_IDs, Dictionary<Point, List<Inventory>>> src, Span<int> dest) {
