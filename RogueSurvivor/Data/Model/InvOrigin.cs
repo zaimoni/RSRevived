@@ -73,22 +73,31 @@ namespace djack.RogueSurvivor.Data.Model
         }
 
         private Data.IInventory? IInv { get {
-          if (null != a_owner) return a_owner;
-          if (null != obj_owner) return obj_owner;
+          if (a_owner is not null) return a_owner;
+          if (obj_owner is not null) return obj_owner;
           return null;
         } }
 
         public Data.Inventory? Inventory { get {
-            if (null != a_owner) return a_owner.Inventory;
-            if (null != obj_owner) return obj_owner.Inventory;
-            if (null != loc) return loc.Value.Items;
+            if (a_owner is not null) return a_owner.Inventory;
+            if (obj_owner is not null) return obj_owner.Inventory;
+            if (loc is not null) return loc.Value.Items;
             throw new InvalidOperationException("tracing");
         } }
 
+        public bool IsEmpty { get {
+            if (a_owner is not null) return a_owner.Inventory.IsEmpty;
+            if (obj_owner is not null) return obj_owner.Inventory.IsEmpty;
+            if (loc is not null) {
+                 if (loc.Value.Items is not null) return loc.Value.Items.IsEmpty;
+            }
+            return true;
+        } }
+
         public Location Location { get {
-            if (null != loc) return loc.Value;
-            if (null != a_owner) return a_owner.Location;
-            if (null != obj_owner) return obj_owner.Location;
+            if (loc is not null) return loc.Value;
+            if (a_owner is not null) return a_owner.Location;
+            if (obj_owner is not null) return obj_owner.Location;
             throw new InvalidOperationException("tracing");
         } }
 

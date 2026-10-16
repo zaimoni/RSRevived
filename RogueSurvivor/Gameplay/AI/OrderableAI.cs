@@ -750,17 +750,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       [NonSerialized] private OrderableAI ordai;
       [NonSerialized] private List<KeyValuePair<Data.Model.InvOrigin, ActorAction>>? _inventory_actions = null;
 
-      public IEnumerable<Inventory> Inventories { get {
-        // our sole caller crashes if the inventory is null, and wants to bypass empty inventories as well
+      private void _flushEmpty() {
         // XXX telepathy
         int i = _stacks.Count;
-        while (0 < i--) {
-          var inv = _stacks[i].Inventory;
-          if (null == inv || inv.IsEmpty) {
-            _stacks.RemoveAt(i);
-            continue;
-          }
+        while (0 <= --i) {
+          if (_stacks[i].IsEmpty) _stacks.RemoveAt(i);
         }
+      }
+
+      public IEnumerable<Inventory> Inventories { get {
+        // our sole caller crashes if the inventory is null, and wants to bypass empty inventories as well
+        _flushEmpty();
 
         return _stacks.Select(p => p.Inventory);
       } }
@@ -806,7 +806,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _inventory_actions = null;
 
         const bool tracing = false;
-        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("in Goal_PathToStack::_removeInvalidStacks");
+        if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "in Goal_PathToStack::_removeInvalidStacks: " + m_Actor.Name + " " + _stacks.Count);
+
+        // 2026-10-16: OrderableAI::BehaviorWouldGrabFrom's call graph includes our Inventories due to evaluating
+        // whether ammo is interesting.  This prevents unexpected altering of _stacks during our countdown loops.
+        _flushEmpty();
 
         int i = _stacks.Count;
         while(0 < i--) {
@@ -834,12 +838,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           {
             var act = ordai.WouldGrabFromAccessibleStack(_stacks[i]);
             if (null == act || !act.IsLegal()) {
-              if (tracing && !Engine.RogueGame.IsSimulating) RogueGame.Game.InfoPopup("removing (illegal) "+ _stacks[i].to_s());
+              if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "removing (illegal) " + _stacks[i].to_s());
               _stacks.RemoveAt(i);
               continue;
             }
             if (m_Actor.MayTakeFrom(_stacks[i]) && act.IsPerformable()) {
-              if (tracing && !Engine.RogueGame.IsSimulating) RogueGame.Game.InfoPopup("want to do "+ act.ToString());
+              if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "want to do " + act.ToString());
               (_inventory_actions ??= new()).Add(new(_stacks[i], act));
             }
           }
@@ -847,24 +851,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return 0 >= _stacks.Count;
       }
 
-      public override bool UrgentAction_readonly(out ActorAction ret)
-
-      {
-
+      public override bool UrgentAction_readonly(out ActorAction ret) {
         ret = null;
 
-        _stacks.RemoveAll(stack => { var inv = stack.Inventory; return null == inv || inv.IsEmpty; });   // as the Inventories getter does
+        _flushEmpty();
 
         if (0 >= _stacks.Count) {
-
           _isExpired = true;
-
           return true;
-
         }
 
         return false;
-
       }
 
 
