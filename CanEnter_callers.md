@@ -64,10 +64,10 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ActionMoveStep.schedule(Actor, Location) | Engine/Actions/ActionMoveStep.cs:52 | ok | |
 | ActionMoveStep.schedule(Actor, Point) | Engine/Actions/ActionMoveStep.cs:58 | ok | |
 | RogueGame.HandleItemInfo | Engine/RogueGame.cs:4201 | ok | local function `details`; receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13528 | ok | receiver a follower, chosen by index |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13553 | ok | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13561 | ok | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13583 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13530 | ok | receiver a follower, chosen by index |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13555 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13563 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13585 | ok | receiver Player |
 | AcquireLineOfSight..ctor(Actor, in Location) | Gameplay/AI/Goals/AcquireLineOfSight.cs:46 | ok | throws via Spotlight: "unpathable"; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, IEnumerable) | Gameplay/AI/Goals/AcquireLineOfSight.cs:55 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:65 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
@@ -86,8 +86,8 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | Rules.IsBumpableFor | Engine/Rules.cs:220 | ok | by ref |
 | ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:1111 | ok | comment: generators are pathable but not enterable |
 | ObjectiveAI.UsePreexistingPath(List<List<Location>>, ...) | Gameplay/AI/ObjectiveAI.cs:1168 | ok | comment: generators are pathable but not enterable |
-| OrderableAI._closeIn | Gameplay/AI/OrderableAI.cs:2827 | ok | Adjacent lambda |
-| OrderableAI._chargeTowards | Gameplay/AI/OrderableAI.cs:2875 | ok | Adjacent lambda |
+| OrderableAI._closeIn | Gameplay/AI/OrderableAI.cs:2824 | ok | Adjacent lambda |
+| OrderableAI._chargeTowards | Gameplay/AI/OrderableAI.cs:2872 | ok | Adjacent lambda |
 
 ## Actor.MayEnter
 
