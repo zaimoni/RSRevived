@@ -4649,6 +4649,9 @@ namespace djack.RogueSurvivor.Engine
       List<KeyValuePair<string, Action>> orders = new();
       orders.Add(new(s_FaustPC ? "Ignore new livings" : "Examine new livings", ToggleFaust));
       orders.Add(new("Choose who the spirits ride", HandleFaustToggle));
+      orders.Add(new("Clairvoyance", () => {
+        Player.Location.View.DoForEach(loc => FaustClairvoyance(Player, new List<Location>() { loc }));
+      }));
 
       string label(int index) { return orders[index].Key; }
       bool details(int index) { orders[index].Value(); return true; }
