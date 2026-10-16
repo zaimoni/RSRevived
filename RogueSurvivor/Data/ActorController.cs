@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Data
 
     /// <summary>True if and only if we are indistinguishable, when saved, from what our actor's model would construct.
     /// Our actor then does not write us at all.</summary>
-    public bool IsJsonDefault { get => GetType() == m_Actor.Model.DefaultController && !HasJsonState; }
+    public bool IsJsonDefault { get => !HasJsonState && GetType() == m_Actor.Model.DefaultController; }
 #endregion
 
     public virtual void RepairLoad() { }

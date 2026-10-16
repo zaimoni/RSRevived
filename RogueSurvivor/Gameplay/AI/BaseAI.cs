@@ -64,7 +64,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (src.TryGetProperty("PrevLocation", out var x)) m_prevLocation = x.Deserialize<Location>(options);
     }
 
-    protected override bool HasJsonState { get => null != m_prevLocation.Map || base.HasJsonState; }
+    protected override bool HasJsonState => base.HasJsonState || m_prevLocation.Map is not null;
 #endregion
 
     public Location PrevLocation { get { return m_prevLocation; } }
