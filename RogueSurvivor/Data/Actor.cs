@@ -3981,7 +3981,7 @@ final_exit:
     }
   }
 
-  static internal class Actor_ext {
+  internal static partial class ext_RSRevived {
     public static int CountUndead(this IEnumerable<Actor> src)
     {
       return src.Count(a => a.Model.Abilities.IsUndead);

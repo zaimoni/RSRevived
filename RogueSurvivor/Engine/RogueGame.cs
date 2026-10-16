@@ -15225,7 +15225,7 @@ retry:
   }
 
 #nullable enable
-  static internal class RogueGame_ext {
+  internal static partial class ext_RSRevived {
     // These two are assumed to be working w/actor.VisibleIdentity
     // Using an extension function for the Verb class is intentional (same API as for raw strings)
     static public string Conjugate(this string verb, Actor actor)

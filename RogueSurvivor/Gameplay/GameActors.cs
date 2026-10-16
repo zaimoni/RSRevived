@@ -365,7 +365,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
     }
   }
 
-    internal static class ID_ext
+    internal static partial class ext_RSRevived
     {
       internal static GameActors.IDs NextUndeadEvolution(this GameActors.IDs from)
       {

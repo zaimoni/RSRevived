@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Data
     COURAGEOUS,
   }
 
-  internal static class ActorCourage_ext
+  internal static partial class ext_RSRevived
   {
     internal static string to_s(this ActorCourage c)
     {

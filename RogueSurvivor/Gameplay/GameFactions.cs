@@ -154,7 +154,7 @@ namespace djack.RogueSurvivor.Data
     }
   }
 
-  static internal class GameFactions_ext
+  internal static partial class ext_RSRevived
   {
     static public bool ExtortionIsAggression(this GameFactions.IDs x)
     {

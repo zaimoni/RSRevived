@@ -1077,7 +1077,7 @@ namespace djack.RogueSurvivor.Engine
     }
   }
 
-  internal static class GameOptions_ext
+  internal static partial class ext_RSRevived
   {
     public static bool HighDetail(this GameOptions.SimRatio x, int turn)
     {

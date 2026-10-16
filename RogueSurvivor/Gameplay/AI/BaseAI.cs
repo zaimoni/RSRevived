@@ -1260,7 +1260,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
   }
 
-  internal static class ext_BaseAI
+  internal static partial class ext_RSRevived
   {
 #nullable enable
     public static List<KeyValuePair<_T_, A>>? Candidates<_T_, A>(this IEnumerable<_T_> choices, Func<_T_,A?> interpret) where A:ActorAction

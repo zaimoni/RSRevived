@@ -165,7 +165,7 @@ namespace djack.RogueSurvivor.Data
     }
   }
 
-    static internal class WorldTime_ext
+    internal static partial class ext_RSRevived
     {
       static public string to_s(this DayPhase phase)
       {

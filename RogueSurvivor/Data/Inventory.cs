@@ -780,7 +780,7 @@ namespace djack.RogueSurvivor.Data
     }
   }
 
-    static internal class Inventory_ext
+    internal static partial class ext_RSRevived
     {
         static public Model.InvOrigin? GroundInv(this Location loc)
         {

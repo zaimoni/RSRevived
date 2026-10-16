@@ -765,7 +765,7 @@ retry:
   } // end Rules class
 
 // still want this
-  internal static class ext_Rules
+  internal static partial class ext_RSRevived
   {
     public static bool IsScheduledBefore(in this Point lhs, in Point rhs) { // Cf. ScheduleAdjacentForAdvancePlay.  Almost anti-symmetric, irreflexive relation
       if (lhs.X <= rhs.X && lhs.Y <= rhs.Y) return false;   // this quadrant comes after us.  Includes equality.

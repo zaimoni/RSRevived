@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Engine.Items
     _COUNT
   }
 
-  static internal class ExtensionAmmoType
+  internal static partial class ext_RSRevived
   {
     static internal string Singular(this AmmoType at)
     {

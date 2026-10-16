@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Data
     _COUNT = 4,
   }
 
-  public static class WeatherExtension
+  internal static partial class ext_RSRevived
   {
     internal static bool IsRain(this Weather w)
     {
