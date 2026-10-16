@@ -131,12 +131,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null == doFn) throw new ArgumentNullException(nameof(doFn));
 #endif
-      Point point = new Point();
-      for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
-        for (point.Y = rect.Top; point.Y < rect.Bottom; ++point.Y) {
-          doFn(point);
-        }
-      }
+      foreach (var pt in rect) doFn(pt);
     }
 
     protected static void DoForEachTile(Rectangle rect, Map m, Action<Location> doFn)
@@ -144,12 +139,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null == doFn) throw new ArgumentNullException(nameof(doFn));
 #endif
-      Point point = new Point();
-      for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
-        for (point.Y = rect.Top; point.Y < rect.Bottom; ++point.Y) {
-          doFn(new Location(m, point));
-        }
-      }
+      foreach (var pt in rect) doFn(new Location(m, pt));
     }
 
     protected static bool CheckForEachTile(Rectangle rect, Predicate<Point> predFn)
@@ -157,12 +147,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null == predFn) throw new ArgumentNullException(nameof(predFn));
 #endif
-      Point point = new Point();
-      for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
-        for (point.Y = rect.Top; point.Y < rect.Bottom; ++point.Y) {
-          if (!predFn(point)) return false;
-        }
-      }
+      foreach (var pt in rect) if (!predFn(pt)) return false;
       return true;
     }
 #endregion
