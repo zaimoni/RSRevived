@@ -4877,7 +4877,7 @@ namespace djack.RogueSurvivor.Engine
     private KeyValuePair<Data.Model.InventorySource<Item>, GDI_Point>? MouseToInventoryItem(GDI_Point screen)
     {
       var inventory = Player.Inventory;
-      if (null == inventory) return null;
+      if (inventory is null) return null;
       var inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen);
       int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
       if (index1 >= 0 && index1 < inventory.MaxCapacity) {
@@ -4885,9 +4885,10 @@ namespace djack.RogueSurvivor.Engine
         return new(new(new Data.Model.InvOrigin(Player), inventory[index1]), InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1));
       }
       var invspec = Player.Location.InventoryAtFeet();
-      if (null == invspec) return null;
+      if (invspec is null) return null;
 
-      var itemsAt = invspec.Value.Inventory!;
+      var itemsAt = invspec.Value.Inventory;
+      if (itemsAt is null) return null;
       var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen);
       int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
       if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
