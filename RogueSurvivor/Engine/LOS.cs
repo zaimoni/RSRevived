@@ -271,11 +271,11 @@ namespace djack.RogueSurvivor.Engine
       return AngbandlikeTrace(maxRange, fromLocation.Position, in toPosition, pt => map.IsTransparent(pt) || pt == toPosition, line);
     }
 
-    public static bool CanTraceViewLine(in Location from, in Location to, int maxRange = int.MaxValue, List<Point> line = null)
+    public static bool CanTraceViewLine(in Location from, in Location to, int maxRange = int.MaxValue, List<Point>? line = null)
     {
       if (from.Map == to.Map) return CanTraceViewLine(in from, to.Position, maxRange);
       Location? test = from.Map.Denormalize(in to);
-      if (null == test) return false;
+      if (test is null) return false;
       return CanTraceViewLine(in from, test.Value.Position, maxRange, line);
     }
 

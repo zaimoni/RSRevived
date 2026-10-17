@@ -30,13 +30,13 @@ namespace djack.RogueSurvivor.Engine
     }
     protected static void TileFill(Map map, TileModel model, bool inside) => TileFill(map, model, map.Rect, inside);
 
-    protected static void TileFill(Map map, TileModel model, Rectangle rect, Action<Tile, TileModel, short, short> decoratorFn=null)
+    protected static void TileFill(Map map, TileModel model, Rectangle rect, Action<Tile, TileModel, short, short>? decoratorFn=null)
     {
       TileFill(map, model, rect.Left, rect.Top, rect.Width, rect.Height, decoratorFn);
     }
-    protected static void TileFill(Map map, TileModel model, Action<Tile, TileModel, short, short> decoratorFn=null) => TileFill(map, model, map.Rect, decoratorFn);
+    protected static void TileFill(Map map, TileModel model, Action<Tile, TileModel, short, short>? decoratorFn=null) => TileFill(map, model, map.Rect, decoratorFn);
 
-    protected static void TileFill(Map map, TileModel model, short left, short top, int width, int height, Action<Tile, TileModel, short, short> decoratorFn=null)
+    protected static void TileFill(Map map, TileModel model, short left, short top, int width, int height, Action<Tile, TileModel, short, short>? decoratorFn=null)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));
@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Engine
         for (short y = top; y < top + height; ++y) {
           TileModel model1 = map.GetTileModelAt(x, y);
           map.SetTileModelAt(x, y, model);
-          decoratorFn?.Invoke(map.GetTileAt(x, y), model1, x, y);
+          if (decoratorFn is not null) decoratorFn(map.GetTileAt(x, y), model1, x, y);
         }
       }
     }
@@ -65,7 +65,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    protected static void TileHLine(Map map, TileModel model, int left, int top, int width, Action<Tile, TileModel, Point> decoratorFn=null)
+    protected static void TileHLine(Map map, TileModel model, int left, int top, int width, Action<Tile, TileModel, Point>? decoratorFn=null)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));
@@ -75,11 +75,11 @@ namespace djack.RogueSurvivor.Engine
         Point pt = new Point(x, (short)top);
         TileModel model1 = map.GetTileModelAt(pt);
         map.SetTileModelAt(pt, model);
-        decoratorFn?.Invoke(map.GetTileAt(pt), model1, pt);
+        if (decoratorFn is not null) decoratorFn(map.GetTileAt(pt), model1, pt);
       }
     }
 
-    protected static void TileVLine(Map map, TileModel model, int left, int top, int height, Action<Tile, TileModel, Point> decoratorFn=null)
+    protected static void TileVLine(Map map, TileModel model, int left, int top, int height, Action<Tile, TileModel, Point>? decoratorFn=null)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));
@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Engine
         Point pt = new Point((short)left, y);
         TileModel model1 = map.GetTileModelAt(pt);
         map.SetTileModelAt(pt, model);
-        decoratorFn?.Invoke(map.GetTileAt(pt), model1, pt);
+        if (decoratorFn is not null) decoratorFn(map.GetTileAt(pt), model1, pt);
       }
     }
 
@@ -98,7 +98,7 @@ namespace djack.RogueSurvivor.Engine
       TileRectangle(map, model, rect.Left, rect.Top, rect.Width, rect.Height);
     }
 
-    protected static void TileRectangle(Map map, TileModel model, short left, short top, int width, int height, Action<Tile, TileModel, Point> decoratorFn=null)
+    protected static void TileRectangle(Map map, TileModel model, short left, short top, int width, int height, Action<Tile, TileModel, Point>? decoratorFn=null)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));
@@ -143,13 +143,13 @@ namespace djack.RogueSurvivor.Engine
       if (Session.Get.Police.IsEnemy(actor)) Session.Get.Police.Threats.RecordTaint(actor, dest);
     }
 
-    public static bool ActorPlace(DiceRoller roller, Map map, Actor actor, Predicate<Point> goodPositionFn=null)
+    public static bool ActorPlace(DiceRoller roller, Map map, Actor actor, Predicate<Point>? goodPositionFn=null)
     {
       return ActorPlace(roller, map, actor, map.Rect, goodPositionFn);
     }
 
     // Formerly Las Vegas algorithm.
-    protected static bool ActorPlace(DiceRoller roller, Map map, Actor actor, Rectangle rect, Predicate<Point> goodPositionFn=null)
+    protected static bool ActorPlace(DiceRoller roller, Map map, Actor actor, Rectangle rect, Predicate<Point>? goodPositionFn=null)
     {
 #if DEBUG
       if (null == map) throw new ArgumentNullException(nameof(map));

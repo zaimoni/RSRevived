@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Location m_NewLocation;
     private readonly Location m_Origin;
-    [NonSerialized] private ActorAction _result;    // make this non-serialized if we need to serialize this
+    [NonSerialized] private ActorAction? _result;    // make this non-serialized if we need to serialize this
 
     public Location dest { get { return m_NewLocation; } }  // of m_Actor
     public Location origin { get { return m_Origin; } }

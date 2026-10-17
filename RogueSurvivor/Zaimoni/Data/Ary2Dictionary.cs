@@ -76,7 +76,7 @@ namespace Zaimoni.Data
             lock (_second_first_dict) { return new List<Key2>(_second_first_dict.Keys); }
         }
 
-        public void Set(Key1 key, IEnumerable<Key2> keys2, Range value) {
+        public void Set(Key1 key, IEnumerable<Key2>? keys2, Range value) {
             if (!keys2?.Any() ?? true) {
                 lock (_no_entries) {
                 lock (_first_second_dict) {

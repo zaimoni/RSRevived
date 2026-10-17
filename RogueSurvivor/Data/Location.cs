@@ -277,11 +277,7 @@ namespace djack.RogueSurvivor.Data
       return Map == x.Map && Position == x.Position;
     }
 
-    public override bool Equals(object obj)
-    {
-      var tmp = obj as Location?;
-      return null != tmp && Equals(tmp.Value);
-    }
+    public override bool Equals(object? obj) => obj is Location loc && Equals(loc);
 
     // note that System.Drawing.Point's hashcode implementation is XOR of coordinates
     // i.e. has a high collision rate.

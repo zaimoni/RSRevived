@@ -568,8 +568,8 @@ restart:
           var test = GetSubwayStationBlocks(map, subway_layout);
           if (null == test) goto restart;
         }
-        GenerateSubwayMap(map.Seed << 2 ^ map.Seed, map, out Block subway_station);
-        if (null != subway_station) {
+        GenerateSubwayMap(map.Seed << 2 ^ map.Seed, map, out var subway_station);
+        if (subway_station is not null) {
           blockList1.RemoveAll(b => b.Rectangle==subway_station.Rectangle);
           // maintain building plans:
           ForceSubwayStation.Remove(world_pos);
@@ -979,7 +979,7 @@ restart:
       return blockList;
     }
 
-    public Map GenerateSubwayMap(int seed, Map entryMap, out Block block)
+    public Map GenerateSubwayMap(int seed, Map entryMap, out Block? block)
     {
       block = null;
       District district = entryMap.District;

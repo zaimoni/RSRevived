@@ -6,7 +6,7 @@ namespace Zaimoni.Data
     [Serializable]
     class UntypedCache<K>
     {
-        private Dictionary<K, object> _map = null;
+        private Dictionary<K, object>? _map = null;
 
         // Create Read Update Delete API
         public bool Has(K key) { return _map?.ContainsKey(key) ?? false; }

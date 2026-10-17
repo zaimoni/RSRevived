@@ -1136,7 +1136,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // very hypothetical -- lack of ranged weapon validity checks
-    private string ReasonCantFireAt(Actor target, int range, List<Point> LoF)
+    private string ReasonCantFireAt(Actor target, int range, List<Point>? LoF)
     {
       LoF?.Clear();
       int dist = Rules.InteractionDistance(in m_Location, target.Location);

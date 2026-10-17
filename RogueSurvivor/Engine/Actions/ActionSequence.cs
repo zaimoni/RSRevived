@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         private readonly int _AP;
         private readonly int _turn;
         private readonly List<ZeroAryBehaviors> _handler_codes;
-        [NonSerialized] private ActorAction _result;
+        [NonSerialized] private ActorAction? _result;
 
         #region JSON save/load
         // the live constructor reads the actor's action points and clock: these are the saved ones

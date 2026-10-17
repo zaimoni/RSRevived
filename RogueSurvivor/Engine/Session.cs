@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine
         /// which is the live session, or a fresh default one when there is none (its constructor resets the World).</summary>
         public static Session? Loading { get => s_Loading; }
 
-        [NonSerialized] private Scoring_fatality m_Scoring_fatality = null;
+        [NonSerialized] private Scoring_fatality? m_Scoring_fatality = null;
         private Scoring m_Scoring = new();
         private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
         public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.Item_IDs.TRACKER_POLICE_RADIO);

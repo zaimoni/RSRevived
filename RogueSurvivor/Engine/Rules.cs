@@ -778,7 +778,7 @@ retry:
       }
     }
 
-    public static ActorAction? IsBumpableFor(this MapObject mapObjectAt, Actor actor,  out string reason) {
+    public static ActorAction? IsBumpableFor(this MapObject mapObjectAt, Actor actor,  out string? reason) {
       reason = null;
       if (mapObjectAt is DoorWindow door) {
           if (door.IsClosed) {
@@ -815,9 +815,9 @@ retry:
             return null;
         }
 
-    public static ActionMeleeAttack? CanBumpMelee(this Dictionary<Point, Actor> actors_in_way, Actor actor, Point point, out string reason) {
+    public static ActionMeleeAttack? CanBumpMelee(this Dictionary<Point, Actor> actors_in_way, Actor actor, Point point, out string? reason) {
 #if B_MOVIE_MARTIAL_ARTS
-      ActionMeleeAttack? find_target(Dictionary<Point, Actor> actors_in_way, Actor actorAt, out string reason) {
+      ActionMeleeAttack? find_target(Dictionary<Point, Actor> actors_in_way, Actor actorAt, out string? reason) {
           reason = null;
           Actor? target = null;
           foreach(var pt_actor in actors_in_way.Values) {
