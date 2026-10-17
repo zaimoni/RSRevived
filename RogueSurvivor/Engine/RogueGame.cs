@@ -2073,7 +2073,7 @@ namespace djack.RogueSurvivor.Engine
 
           foreach (var corpse in corpseList1) {
               if (!corpse.Location.StrictHasActorAt) {
-                Zombify(null, corpse.DeadGuy, false);
+                Zombify(corpse.DeadGuy);
                 var witnesses = _ForceVisibleToPlayer(corpse.Location);
                 if (null != witnesses) {
                     witnesses.RedrawPlayScreen(new("The " + corpse.ToString() + " rises again!!", map.LocalTime.TurnCounter, Color.Red));
@@ -2231,7 +2231,7 @@ namespace djack.RogueSurvivor.Engine
             KillActor(null, actor, "starvation");
             if (!actor.Model.Abilities.IsUndead && Session.Get.HasImmediateZombification && rules.RollChance(s_Options.StarvedZombificationChance)) {
               map.TryRemoveCorpseOf(actor);
-              Zombify(null, actor, false);
+              Zombify(actor);
               witnesses?.ImportantMessage(MakePanopticMessage(actor, string.Format("{0} into a Zombie!", "turn".Conjugate(actor))), DELAY_LONG);
             }
           }
@@ -9359,7 +9359,7 @@ namespace djack.RogueSurvivor.Engine
             if (Session.Get.HasImmediateZombification) {
               if (to_immediately_zombify) {
                 defender.Location.Map.TryRemoveCorpseOf(defender);
-                Zombify(attacker, defender, false);
+                Zombify(defender, attacker);
                 if (isDefVisible) {
                   ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, "turn".Conjugate(attacker), defender, " into a Zombie!"), DELAY_LONG);
                   d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, "turn".Conjugate(attacker), defender, " into a Zombie!"), DELAY_LONG);
@@ -12078,11 +12078,12 @@ restart:
       Player.ActorScoring.AddEvent(turn, string.Format("The weather changed to {0}.", DescribeWeather(world.Weather)));
     }
 
-    private Actor Zombify(Actor zombifier, Actor deadVictim, bool isStartingGame)
+    private Actor Zombify(Actor deadVictim, Actor? zombifier = null)
     {
+      bool isStartingGame = deadVictim.Location.Map is null;    // backward compability
 #if DEBUG
-      if (null == deadVictim) throw new ArgumentNullException(nameof(deadVictim));
-      if (isStartingGame && null!=zombifier) throw new InvalidOperationException(nameof(isStartingGame)+" && null!="+nameof(zombifier));
+      if (deadVictim is null) throw new ArgumentNullException(nameof(deadVictim));
+      if (isStartingGame && zombifier is not null) throw new InvalidOperationException(nameof(isStartingGame)+" && null!="+nameof(zombifier));
 #endif
       Actor actor = BaseTownGenerator.MakeZombified(zombifier, deadVictim, isStartingGame ? 0 : deadVictim.Location.Map.LocalTime.TurnCounter);
       if (deadVictim.IsPlayer) {
@@ -14180,7 +14181,7 @@ restart:
             Actor anonymous = (m_CharGen.UndeadModel.IsFemale() ? GameActors.FemaleCivilian : GameActors.MaleCivilian).CreateAnonymous(GameFactions.TheCivilians, 0);
             BaseMapGenerator.DressCivilian(roller, anonymous);
             BaseMapGenerator.GiveNameToActor(roller, anonymous);
-            actor = Zombify(null, anonymous, true);
+            actor = Zombify(anonymous);
             break;
           default:
             throw new ArgumentOutOfRangeException("unhandled undeadModel");
@@ -14499,7 +14500,7 @@ retry:
                 player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Learned the location of the CHAR Underground Facility.");
                 KillActor(null, prisoner, "transformation");
                 p_map.TryRemoveCorpseOf(prisoner);
-                Actor local_8 = Zombify(null, prisoner, false);
+                Actor local_8 = Zombify(prisoner);
                 if (Session.Get.HasAllZombies) local_8.Model =  GameActors.ZombiePrince;
                 local_8.APreset();   // this was warned, player should get the first move
                 player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", prisoner.Name, local_8.Model.Name));

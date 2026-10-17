@@ -1127,7 +1127,7 @@ crouching: #0000FF
 
     public static Image Get(string imageID)
     {
-      if (s_Images.TryGetValue(imageID, out Bitmap image)) return image;
+      if (s_Images.TryGetValue(imageID, out var image)) return image;
 #if DEBUG
       throw new InvalidOperationException("missing image '"+imageID+"'");
 #else
@@ -1137,7 +1137,7 @@ crouching: #0000FF
 
     public static Image GetGrayLevel(string imageID)
     {
-      if (s_GrayLevelImages.TryGetValue(imageID, out Bitmap image)) return image;
+      if (s_GrayLevelImages.TryGetValue(imageID, out var image)) return image;
 #if DEBUG
       throw new InvalidOperationException("missing image '"+imageID+"'");
 #else
