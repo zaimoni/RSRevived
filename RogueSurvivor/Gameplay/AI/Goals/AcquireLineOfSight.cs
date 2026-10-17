@@ -75,7 +75,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             else throw new ArgumentNullException(nameof(oai));
         }
 
-        public override bool UrgentAction(out ActorAction ret)
+        public override bool UrgentAction(out ActorAction? ret)
         {
             ret = null;
             if (IsExpired) return true;

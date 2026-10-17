@@ -154,7 +154,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             return ret;
         }
 
-        public override bool UrgentAction_readonly(out ActorAction ret)
+        public override bool UrgentAction_readonly(out ActorAction? ret)
 
         {
 
@@ -175,7 +175,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         }
 
 
-        public override bool UrgentAction(out ActorAction ret)
+        public override bool UrgentAction(out ActorAction? ret)
         {
             ret = null;
 

@@ -68,7 +68,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         turns = n;
       }
 
-      public override bool UrgentAction(out ActorAction ret)
+      public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
         if (_locs.Contains(m_Actor.Location) || 0 >= turns--) {

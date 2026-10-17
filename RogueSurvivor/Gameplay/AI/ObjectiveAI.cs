@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public Goal_RestRatherThanLoseturnWhenTired(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
 
-    public override bool UrgentAction(out ActorAction ret)
+    public override bool UrgentAction(out ActorAction? ret)
     {
       ret = null;
       if (!m_Actor.IsTired && !m_Actor.IsSleepy) {
@@ -92,7 +92,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       targetSTA = target;
     }
 
-    public override bool UrgentAction(out ActorAction ret)
+    public override bool UrgentAction(out ActorAction? ret)
     {
       ret = null;
       if (null != m_Actor.Controller.enemies_in_FOV) {
@@ -116,7 +116,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public Goal_MedicateSLP(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
 
-    public override bool UrgentAction(out ActorAction ret)
+    public override bool UrgentAction(out ActorAction? ret)
     {
       ret = null;
       if (null != m_Actor.Controller.enemies_in_FOV) {
@@ -140,7 +140,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public Goal_MedicateHP(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
 
-    public override bool UrgentAction(out ActorAction ret)
+    public override bool UrgentAction(out ActorAction? ret)
     {
       ret = null;
       if (null != m_Actor.Controller.enemies_in_FOV) {
@@ -164,7 +164,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public Goal_RechargeAll(Actor who) : base(Session.Get.WorldTime.TurnCounter, who) {}
 
-    public override bool UrgentAction_readonly(out ActorAction ret)
+    public override bool UrgentAction_readonly(out ActorAction? ret)
 
     {
 
@@ -175,7 +175,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 
-    public override bool UrgentAction(out ActorAction ret)
+    public override bool UrgentAction(out ActorAction? ret)
     {
       ret = null;
       if (null != m_Actor.Controller.enemies_in_FOV) {
@@ -235,7 +235,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ;
     }
 
-    public override bool UrgentAction(out ActorAction ret)
+    public override bool UrgentAction(out ActorAction? ret)
     {
       ret = null;
       if (null != m_Actor.Controller.enemies_in_FOV) {

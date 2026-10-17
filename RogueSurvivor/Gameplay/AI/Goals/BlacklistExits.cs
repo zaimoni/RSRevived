@@ -128,7 +128,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         }
 
         // this is an influence on behavior; never generates an action
-        public override bool UrgentAction(out ActorAction ret)
+        public override bool UrgentAction(out ActorAction? ret)
         {
             ret = null;
             var turn = Engine.Session.Get.WorldTime.TurnCounter;

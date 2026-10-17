@@ -90,7 +90,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // always execute.  Expire on execution
-      public override bool UrgentAction_readonly(out ActorAction ret)
+      public override bool UrgentAction_readonly(out ActorAction? ret)
       {
         ret = null;   // one-shot: UrgentAction expires us whether or not it hands over the intent.  Legal, not performable: a save is not now.
         if (!Intent.IsLegal() || Intent.Abort()) {
@@ -100,7 +100,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }
 
-      public override bool UrgentAction(out ActorAction ret)
+      public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
         if (!Intent.IsPerformable() || Intent.Abort()) {
@@ -181,7 +181,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         // always execute.  Expire on execution
-        public override bool UrgentAction_readonly(out ActorAction ret)
+        public override bool UrgentAction_readonly(out ActorAction? ret)
         {
           ret = null;   // one-shot: UrgentAction expires us whether or not it hands over an intent
           if ((Intent_engaged?.IsLegal() ?? false) || (Intent_disengaged?.IsLegal() ?? false)) return false;   // legal, not performable: a save is not now
@@ -189,7 +189,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
 
-        public override bool UrgentAction(out ActorAction ret)
+        public override bool UrgentAction(out ActorAction? ret)
         {
             ret = null;
             _isExpired = true;
@@ -247,7 +247,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // always execute.  Expire on inability to continue
-      public override bool UrgentAction_readonly(out ActorAction ret)
+      public override bool UrgentAction_readonly(out ActorAction? ret)
       {
         ret = null;   // legal, not performable: a save is not now
         if (Intent.IsLegal()) return false;
@@ -255,7 +255,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return true;
       }
 
-      public override bool UrgentAction(out ActorAction ret)
+      public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
         // XXX need some sense of what a combat action is
@@ -323,7 +323,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // expire when two turns old
       // we are an influence on behaviors so we don't actually execute
-      public override bool UrgentAction_readonly(out ActorAction ret)
+      public override bool UrgentAction_readonly(out ActorAction? ret)
       {
         ret = null;   // VetoAction is deliberation
         if (2 <= m_Actor.Location.Map.LocalTime.TurnCounter - TurnCounter) {
@@ -333,7 +333,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }
 
-      public override bool UrgentAction(out ActorAction ret)
+      public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
         if (2 <= m_Actor.Location.Map.LocalTime.TurnCounter - TurnCounter) {
@@ -386,13 +386,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // never execute, as we're an influence on another behavior.
-      public override bool UrgentAction_readonly(out ActorAction ret)
+      public override bool UrgentAction_readonly(out ActorAction? ret)
       {
         ret = null;   // asks what the AI needs and wants: deliberation, not stored state
         return false;
       }
 
-      public override bool UrgentAction(out ActorAction ret)
+      public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
         var dont_ignore_these = (m_Actor.Controller as ObjectiveAI).WhatDoINeedNow();
@@ -461,7 +461,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _locs = new HashSet<Location>(locs);
       }
 
-      public override bool UrgentAction_readonly(out ActorAction ret)
+      public override bool UrgentAction_readonly(out ActorAction? ret)
 
       {
 
@@ -472,7 +472,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
 
-      public override bool UrgentAction(out ActorAction ret)
+      public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
         var fov = m_Actor.Controller.FOVloc;
@@ -586,7 +586,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return ret;
       }
 
-      public override bool UrgentAction_readonly(out ActorAction ret)
+      public override bool UrgentAction_readonly(out ActorAction? ret)
 
       {
 
@@ -599,7 +599,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
 
-      public override bool UrgentAction(out ActorAction ret)
+      public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
         _target_locs.OnlyIf(a => !a.IsDead);
@@ -695,7 +695,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         turns = n;
       }
 
-      public override bool UrgentAction_readonly(out ActorAction ret)
+      public override bool UrgentAction_readonly(out ActorAction? ret)
 
       {
 
@@ -714,7 +714,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
 
-      public override bool UrgentAction(out ActorAction ret)
+      public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
         if (_locs.Contains(m_Actor.Location) || 0 >= turns--) {
@@ -851,7 +851,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return 0 >= _stacks.Count;
       }
 
-      public override bool UrgentAction_readonly(out ActorAction ret) {
+      public override bool UrgentAction_readonly(out ActorAction? ret) {
         ret = null;
 
         _flushEmpty();
@@ -865,7 +865,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
 
-      public override bool UrgentAction(out ActorAction ret)
+      public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
 
@@ -992,7 +992,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _when_at_target = at_target;
       }
 
-      public override bool UrgentAction_readonly(out ActorAction ret)
+      public override bool UrgentAction_readonly(out ActorAction? ret)
 
       {
 
@@ -1019,7 +1019,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
 
-      public override bool UrgentAction(out ActorAction ret)
+      public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
         if (turn < m_Actor.Location.Map.LocalTime.TurnCounter) { // deadline up
@@ -1118,7 +1118,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       public DoorWindow? Target { get { return _dest.MapObject as DoorWindow; } }
 
-      public override bool UrgentAction_readonly(out ActorAction ret)
+      public override bool UrgentAction_readonly(out ActorAction? ret)
 
       {
 
@@ -1157,7 +1157,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
 
-      public override bool UrgentAction(out ActorAction ret)
+      public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
         var door = Target;

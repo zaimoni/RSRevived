@@ -48,7 +48,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
       }
 
       // always execute.  Expire on execution
-      public override bool UrgentAction_readonly(out ActorAction ret)
+      public override bool UrgentAction_readonly(out ActorAction? ret)
       {
         ret = null;
         if (Intent.IsLegal() && !Intent.Abort()) return false;   // would be staged: keep.  Legal, not performable: a save is not now
@@ -56,7 +56,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         return true;
       }
 
-      public override bool UrgentAction(out ActorAction ret)
+      public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
         if (Intent.IsPerformable() && !Intent.Abort()) {

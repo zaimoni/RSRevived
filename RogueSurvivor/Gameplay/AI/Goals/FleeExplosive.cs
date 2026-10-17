@@ -57,7 +57,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         }
 
         // we are an influence on behaviors so we don't actually execute
-        public override bool UrgentAction(out ActorAction ret)
+        public override bool UrgentAction(out ActorAction? ret)
         {
             ret = null;
             return 0 >= m_Explosive.FuseTimeLeft; // has already exploded
