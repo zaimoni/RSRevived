@@ -189,13 +189,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(Objectives.Count.ToString() + " objectives");
       }
       if (0<Objectives.Count) {
-        ActorAction goal_action = null;
         foreach(Objective o in new List<Objective>(Objectives)) {
           if (tracing) {
             if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(o.ToString()+(o.IsExpired ? " : expired" : ""));
           }
           if (o.IsExpired) Remove(o);
-          else if (o.UrgentAction(out goal_action)) {
+          else if (o.UrgentAction(out var goal_action)) {
             if (tracing) {
               if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == goal_action ? "expiring by null"  : "proceeding : "+ goal_action.ToString());
             }

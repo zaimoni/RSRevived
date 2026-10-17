@@ -125,13 +125,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
       // New objectives system
       if (0<Objectives.Count) {
-        ActorAction goal_action = null;
         foreach(Objective o in new List<Objective>(Objectives)) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && !o.IsExpired)  Logger.WriteLine(Logger.Stage.RUN_MAIN, o.ToString());
 #endif
           if (o.IsExpired) Remove(o);
-          else if (o.UrgentAction(out goal_action)) {
+          else if (o.UrgentAction(out var goal_action)) {
             if (tracing) RogueGame.Game.InfoPopup(o.ToString()+": "+(goal_action?.ToString() ?? "null"));
 
             if (null==goal_action) Remove(o);

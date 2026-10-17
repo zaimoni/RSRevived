@@ -572,12 +572,11 @@ namespace djack.RogueSurvivor.Data
     public ActorAction AutoPilot()
     {
       if (0 >= Objectives.Count) return null;
-      ActorAction goal_action = null;
       _all = FilterSameMap(UpdateSensors());
       InitAICache(_all, _all);
       foreach(var o in Objectives.ToList()) {
         if (o.IsExpired) Remove(o);
-        else if (o.UrgentAction(out goal_action)) {
+        else if (o.UrgentAction(out var goal_action)) {
           if (null==goal_action) Remove(o);
 #if DEBUG
           else if (!goal_action.IsPerformable()) throw new InvalidOperationException("result of UrgentAction should be legal");
@@ -697,13 +696,13 @@ namespace djack.RogueSurvivor.Data
       }
 
       var medicate_slp = new Goal_MedicateSLP(m_Actor);
-      if (medicate_slp.UrgentAction(out var testAction) && null!=testAction) {
+      if (medicate_slp.UrgentAction(out var testAction) && testAction is not null) {
         ret.Add(new("Medicate sleep", () => {
             SetObjective(medicate_slp);
         }));
       }
       var medicate_hp = new Goal_MedicateHP(m_Actor);
-      if (medicate_hp.UrgentAction(out testAction) && null!=testAction) {
+      if (medicate_hp.UrgentAction(out testAction) && testAction is not null) {
         ret.Add(new("Medicate HP", () => {
             SetObjective(medicate_hp);
         }));

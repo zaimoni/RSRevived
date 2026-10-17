@@ -135,13 +135,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
 #endif
       if (0<Objectives.Count) {
-        ActorAction goal_action = null;
         foreach(Objective o in new List<Objective>(Objectives)) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && !o.IsExpired)  Logger.WriteLine(Logger.Stage.RUN_MAIN, o.ToString());
 #endif
           if (o.IsExpired) Remove(o);
-          else if (o.UrgentAction(out goal_action)) {
+          else if (o.UrgentAction(out var goal_action)) {
             if (null==goal_action) Remove(o);
 #if DEBUG
             else if (!goal_action.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("result of UrgentAction should be legal"));
