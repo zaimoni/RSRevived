@@ -130,13 +130,13 @@ namespace djack.RogueSurvivor.Engine
     }
 
     /// <returns>Key is towards surface; Value is deeper</returns>
-    public KeyValuePair<Map,Map>? NavigateHospital(Map x)
+    public (Map, Map?)? NavigateHospital(Map x)
     {
-      if (Hospital_Admissions.TheMap == x) return new KeyValuePair<Map,Map>(x.District.EntryMap, Hospital_Offices.TheMap);
-      if (Hospital_Offices.TheMap == x) return new KeyValuePair<Map,Map>(Hospital_Admissions.TheMap, Hospital_Patients.TheMap);
-      if (Hospital_Patients.TheMap == x) return new KeyValuePair<Map,Map>(Hospital_Offices.TheMap, Hospital_Storage.TheMap);
-      if (Hospital_Storage.TheMap == x) return new KeyValuePair<Map,Map>(Hospital_Patients.TheMap, Hospital_Power.TheMap);
-      if (Hospital_Power.TheMap == x) return new KeyValuePair<Map,Map>(Hospital_Storage.TheMap,null);
+      if (Hospital_Admissions.TheMap == x) return (x.District.EntryMap, Hospital_Offices.TheMap);
+      if (Hospital_Offices.TheMap == x) return (Hospital_Admissions.TheMap, Hospital_Patients.TheMap);
+      if (Hospital_Patients.TheMap == x) return (Hospital_Offices.TheMap, Hospital_Storage.TheMap);
+      if (Hospital_Storage.TheMap == x) return (Hospital_Patients.TheMap, Hospital_Power.TheMap);
+      if (Hospital_Power.TheMap == x) return (Hospital_Storage.TheMap,null);
       return null;
     }
 

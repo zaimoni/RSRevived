@@ -729,9 +729,8 @@ retry:
         return new Location(entry_e.Value.Value.Location.Map, entry_e.Value.Value.Location.Position + (loc.Position - entry_e.Value.Key));
       }
       // far from surface.  Currently one of hospital or police station
-      var in_hospital = Session.Get.UniqueMaps.NavigateHospital(loc.Map);
-      if (null != in_hospital) {
-        var e = loc.Map.FirstExitFor(in_hospital.Value.Key);
+      if (Session.Get.UniqueMaps.NavigateHospital(loc.Map) is (var before, var _)) {
+        var e = loc.Map.FirstExitFor(before);
 #if DEBUG
         if (null == e) throw new InvalidProgramException("should be able to ascend to surface");
 #endif

@@ -3605,15 +3605,15 @@ Restart:
         }
         if (m == m.District.EntryMap) return false; // surface map is always ok
         var unique_maps = Session.Get.UniqueMaps;
-        if (   null != unique_maps.NavigateHospital(src)
-            || null != unique_maps.NavigatePoliceStation(src)) return false;
+        if (   unique_maps.NavigateHospital(src) is not null
+            || unique_maps.NavigatePoliceStation(src) is not null) return false;
         foreach(var test in m.destination_maps.Get) {
           if (test == src) continue;
           if (   0 < obtain_goals(test).Count
               || test == test.District.EntryMap
               || test.destination_maps.Get.Contains(m.District.EntryMap)
-              || null != unique_maps.NavigateHospital(test)
-              || null != unique_maps.NavigatePoliceStation(test))
+              || unique_maps.NavigateHospital(test) is not null
+              || unique_maps.NavigatePoliceStation(test) is not null)
             return false;
         }
         return true;
@@ -3760,7 +3760,7 @@ Restart:
         required.Add(p_offices);
         required.Add(p_offices.District.EntryMap);
       }
-      var hospital = required_0.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigateHospital(m));
+      var hospital = required_0.HaveItBothWays(m => Session.Get.UniqueMaps.NavigateHospital(m) is null);
       var h_admissions = Session.Get.UniqueMaps.Hospital_Admissions.TheMap;
       if (!hospital.Value) excluded.Add(h_admissions);
       else if (!hospital.Key) excluded.Add(h_admissions.District.EntryMap);

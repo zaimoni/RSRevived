@@ -645,8 +645,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
               var e_for_surface = exit_for_here(e_map);
               if (m.destination_maps.Get.Contains(e_map)) return !m.AnyExits(e_for_surface);
               var unique_m = Session.Get.UniqueMaps;
-              if (null!= unique_m.NavigatePoliceStation(m)) return !unique_m.PoliceStation_OfficesLevel.TheMap.AnyExits(e_for_surface);
-              else if (null != unique_m.NavigateHospital(m)) return !unique_m.Hospital_Admissions.TheMap.AnyExits(e_for_surface);
+              if (unique_m.NavigatePoliceStation(m) is not null) return !unique_m.PoliceStation_OfficesLevel.TheMap.AnyExits(e_for_surface);
+              else if (unique_m.NavigateHospital(m) is not null) return !unique_m.Hospital_Admissions.TheMap.AnyExits(e_for_surface);
               return true;
             }
 

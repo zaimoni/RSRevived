@@ -1231,13 +1231,11 @@ retry:
         goto retry;
       }
       }
-      {
-      KeyValuePair<Map,Map>? src_alt = Engine.Session.Get.UniqueMaps.NavigateHospital(this);
-      KeyValuePair<Map,Map>? dest_alt = Engine.Session.Get.UniqueMaps.NavigateHospital(dest);
-      if (null != src_alt && null == dest_alt) {
-        dest = src_alt.Value.Key;
-        goto retry;
-      }
+      if (Session.Get.UniqueMaps.NavigateHospital(this) is (var before, var _)) {
+        if (Session.Get.UniqueMaps.NavigateHospital(dest) is null) {
+          dest = before;
+          goto retry;
+        }
       }
 
       if (dest.DistrictPos != DistrictPos) {
