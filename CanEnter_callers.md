@@ -36,7 +36,7 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | caller | site | status | note |
 |---|---|---|---|
 | Actor.MovesTo | Data/Actor.cs:2036 | ok | the destination itself |
-| Actor.MayEnter(ref Location) | Data/Actor.cs:2823 | ok | beyond adjacency |
+| Actor.MayEnter(ref Location) | Data/Actor.cs:2830 | ok | beyond adjacency |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:232 | ok | |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:234 | ok | |
 | ActorModel.CastToInventoryAccessibleDestinations(,) | Data/ActorModel.cs:251 | ok | excludes shelf-like objects separately |
@@ -49,7 +49,7 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:303 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
 | Map.WouldBlacklistFor | Data/Map.cs:1164 | ok | receiver is the actor parameter |
 | Map.PathfindLocSteps | Data/Map.cs:1178 | ok | StrictCanEnter, in the flood-fill's lambda; receiver is actor.Model |
-| Map.TrapWouldSealBuilding | Data/Map.cs:2156 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
+| Map.TrapWouldSealBuilding | Data/Map.cs:2152 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | ok | origin; was Actor.CanEnter until 81a9544a |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
 | _Action.MoveStep.schedule | Engine/Action/MoveStep.cs:173 | ok | destination; was Actor.CanEnter until 81a9544a |
@@ -79,7 +79,7 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MutuallyAdjacentFor | Data/Actor.cs:2835 | ok | by ref |
+| Actor.MutuallyAdjacentFor | Data/Actor.cs:2842 | ok | by ref |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | ok | throws on the destination |
 | _Action.MoveStep._runFrom | Engine/Action/MoveStep.cs:192 | ok | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:249 | ok | |
