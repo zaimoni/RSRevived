@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -289,6 +288,14 @@ namespace djack.RogueSurvivor.Data.Model
      }
 
     public override string ToString() => Origin.ToString() + " containing " + it.ToString();
+  }
+}
+
+namespace djack.RogueSurvivor.Data {
+  internal static partial class ext_RSRevived {
+    public static Model.InvOrigin? NullIfEmpty(this Model.InvOrigin src) {
+      return src.IsEmpty ? null : src;
+    }
   }
 }
 

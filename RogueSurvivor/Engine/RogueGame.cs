@@ -4850,17 +4850,16 @@ namespace djack.RogueSurvivor.Engine
         if (null == inventory[index1]) return null;
         return new(new(new Data.Model.InvOrigin(Player), inventory[index1]), InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1));
       }
-      var invspec = Player.Location.InventoryAtFeet();
-      if (invspec is null) return null;
 
-      var itemsAt = invspec.Value.Inventory;
-      if (itemsAt is null) return null;
+      if (Player.Location.InventoryAtFeet()?.NullIfEmpty() is not Data.Model.InvOrigin invspec) return null;
+
+      var itemsAt = invspec.Inventory;
       var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen);
       int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
       if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
-      if (null == itemsAt[index2]) return null;
+      if (itemsAt[index2] is null) return null;
       // hard crash if this inventory is flagged as seen by player
-      return new(new(invspec.Value, itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
+      return new(new(invspec, itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
     }
 
     private bool HandleMouseOverCorpses(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
@@ -5127,9 +5126,8 @@ namespace djack.RogueSurvivor.Engine
     }
 
     private bool HandlePlayerTakeItem(PlayerController pc) {
-        const string MODE_TEXT = "TRANSFER ITEM - directions to select inventories, ESC cancels";
+        const string MODE_TEXT = "TAKE ITEM - directions to select inventories, ESC cancels";
         const string SRC_TEXT = "Taking from:";
-        const string DEST_TEXT = "Putting in:";
         ClearOverlays();
         AddOverlay(new UI.OverlayPopup(MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
@@ -5139,7 +5137,7 @@ namespace djack.RogueSurvivor.Engine
 
         Data.Model.InvOrigin? take_from(Direction dir) {
           if (dir == Direction.NEUTRAL) {
-            return player.Location.InventoryAtFeet();
+            return player.Location.InventoryAtFeet()?.NullIfEmpty();
           }
           var loc = player.Location + dir;
           if (!Map.Canonical(ref loc)) return null;
@@ -5198,7 +5196,7 @@ namespace djack.RogueSurvivor.Engine
 
         Data.Model.InvOrigin? transfer_from(Direction dir) {
           if (dir == Direction.NEUTRAL) {
-            return player.Location.InventoryAtFeet();
+            return player.Location.InventoryAtFeet()?.NullIfEmpty();
           }
           var loc = player.Location + dir;
           if (!Map.Canonical(ref loc)) return null;

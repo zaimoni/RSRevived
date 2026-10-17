@@ -2286,8 +2286,7 @@ retry:
     {
       List<Model.InvOrigin> ret = new();
 
-      var g_inv = origin.InventoryAtFeet();   // since 95828fbd: where items at the feet would go, which may hold nothing yet
-      if (g_inv is not null && !g_inv.Value.IsEmpty) ret.Add(g_inv.Value);
+      if (origin.InventoryAtFeet()?.NullIfEmpty() is Model.InvOrigin inv_o) ret.Add(inv_o);
 
       adjacentInventoryOrigins(ret, in origin);
 
@@ -2310,8 +2309,7 @@ retry:
       var origin = a.Location;
 
       if (Direction.NEUTRAL == dir) {
-        var g_inv = origin.InventoryAtFeet();
-        if (g_inv is not null && !g_inv.Value.IsEmpty) ret.Add(g_inv.Value);
+        if (origin.InventoryAtFeet()?.NullIfEmpty() is Model.InvOrigin inv_o) ret.Add(inv_o);
         return 0<ret.Count ? ret : null;
       }
 
