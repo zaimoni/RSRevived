@@ -261,12 +261,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // critical item memory check goes here
 
       if (m_Actor.CountFollowers > 0) {
-        var kv = BehaviorDontLeaveFollowersBehind(3);
-        if (kv is not null) {
+        if (BehaviorDontLeaveFollowersBehind(3) is (var act, var target)) {
           if (Rules.Get.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
-            game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(kv.Value.Value), kv.Value.Value.Name));
+            game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));
           m_Actor.Activity = Activity.IDLE;
-          return kv.Value.Key;
+          return act;
         }
       }
 

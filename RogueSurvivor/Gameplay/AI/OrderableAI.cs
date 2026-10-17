@@ -2552,7 +2552,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected KeyValuePair<ActorAction, Actor>? BehaviorDontLeaveFollowersBehind(int distance)
+    protected (ActorAction act, Actor target)? BehaviorDontLeaveFollowersBehind(int distance)
     {
       // Scan the group:
       // - Find nearst member of the group that isn't near enough
@@ -2568,7 +2568,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var act = BehaviorPathToAdjacent(closest.Value.Location);
       if (act is null) return null;
-      return new(act, closest.Value);
+      return (act, closest.Value);
     }
 
     protected ActionUseItem? BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
