@@ -6,8 +6,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-#nullable enable
-
 namespace Zaimoni.JSON
 {
     static public class JSON_ext

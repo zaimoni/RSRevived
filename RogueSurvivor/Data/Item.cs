@@ -13,8 +13,6 @@ using Point = Zaimoni.Data.Vector2D<short>;
 using System.Text.Json;
 using Zaimoni.JSON;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data
 {
     /// <summary>

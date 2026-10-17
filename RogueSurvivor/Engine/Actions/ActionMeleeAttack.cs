@@ -11,8 +11,6 @@ using System;
 using System.Text.Json;
 using Zaimoni.JSON;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
   public interface CombatAction

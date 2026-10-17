@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-#nullable enable
-
 // namespace Action conflicts with C# STL Action<>
 namespace djack.RogueSurvivor.Engine._Action
 {

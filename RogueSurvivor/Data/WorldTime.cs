@@ -7,8 +7,6 @@
 using System;
 using System.Linq;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]

@@ -368,7 +368,6 @@ namespace Zaimoni.Data
       return dest;
     }
 
-#nullable enable
     public static Dictionary<U, Dictionary<T, V>> Invert<T,U,V>(this Dictionary<T,Dictionary<U,V>> src) where T:notnull where U:notnull
     {
         var ret = new Dictionary<U, Dictionary<T, V>>();
@@ -384,7 +383,6 @@ namespace Zaimoni.Data
         }
         return ret;
     }
-#nullable restore
 
     public static bool NontrivialFilter<T>(this IEnumerable<T> src, Predicate<T> test) {
       if (null == src) return false;
@@ -399,7 +397,6 @@ namespace Zaimoni.Data
       return false;
     }
 
-#nullable enable
     public static int ExcessTrue<T>(this IEnumerable<T> src, Predicate<T> test) {
       int ret = 0;
       foreach (var x in src) {
@@ -506,7 +503,6 @@ namespace Zaimoni.Data
       }
       return ret;
     }
-#nullable restore
 
     public static T Minimize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>
     {
@@ -605,7 +601,6 @@ namespace Zaimoni.Data
       return ret;
     }
 
-#nullable enable
     public static Dictionary<T,U> CloneOnly<T,U>(this Dictionary<T, U> src,Predicate<U> test) where T:notnull
     {
       if (1 >= src.Count) return src;
@@ -699,7 +694,6 @@ namespace Zaimoni.Data
     {
       foreach (T x in src) fn(x);
     }
-#nullable restore
 
     public static bool ValueEqual<T>(this List<T> lhs, List<T> rhs)
     {
@@ -818,7 +812,6 @@ namespace Zaimoni.Data
       return ret;
     }
 
-#nullable enable
     public static Action<T> Compose<T>(this Action<T>? rhs, Action<T>? lhs)
     {
       var l = lhs;  // local copies needed to get true lambda calculus
@@ -850,7 +843,6 @@ namespace Zaimoni.Data
       }
       return ret;
     }
-#nullable restore
 
     // function composition is right-associative in higher math
     // reverse parameter order here to make function call chaining clean

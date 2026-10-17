@@ -5,8 +5,6 @@ using djack.RogueSurvivor.Gameplay.AI;
 using System.Text.Json;
 using Zaimoni.JSON;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Goal
 {
     [Serializable]

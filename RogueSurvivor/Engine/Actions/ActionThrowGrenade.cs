@@ -13,8 +13,6 @@ using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 using PrimedExplosive = djack.RogueSurvivor.Data._Item.PrimedExplosive;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
   public sealed class ActionThrowGrenade : ActorAction, CombatAction, NotSchedulable

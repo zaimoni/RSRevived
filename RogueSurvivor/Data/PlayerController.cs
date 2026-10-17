@@ -422,7 +422,6 @@ namespace djack.RogueSurvivor.Data
       Actor.Says -= HandleSay;
     }
 
-#nullable enable
     public static void Reset()
     {
       s_BeforeAction = new List<EventUnconditional>{ // set up cosmetic UI handlers
@@ -514,7 +513,6 @@ namespace djack.RogueSurvivor.Data
     public override Dictionary<Location, Actor>? friends_in_FOV { get => m_LOSSensor.friends; }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get => m_LOSSensor.enemies; }
     public override Dictionary<Location, Data.Model.InvOrigin>? items_in_FOV { get => m_LOSSensor.items; }
-#nullable restore
 
     // if the underlying controller has a non-default behavior we do want that here
     // i.e. a full migration of legacy code merely ends up relocating the complexity; rationale needed to proceed
@@ -530,7 +528,6 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-#nullable enable
     public override ActorAction? GetAction() => throw new InvalidOperationException("do not call PlayerController.GetAction()");
     protected override ActorAction? SelectAction() => throw new InvalidOperationException("do not call PlayerController.SelectAction()");
 
@@ -551,8 +548,6 @@ namespace djack.RogueSurvivor.Data
 
     protected override Actor? RecruitLOSchoose(List<Actor> candidates) => RogueGame.Game.RecruitLOSchoose(SortByGridDistance(candidates));
     protected override Actor? RecruitRadioChoose(List<Actor> candidates) => RogueGame.Game.RecruitRadioChoose(SortByGridDistance(candidates));
-
-#nullable restore
 
     // originally in Actor
     static private string ReasonCantGetFromContainer(Location loc)
@@ -600,11 +595,9 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-#nullable enable
     // \todo? eliminate this in favor of something more secure
     public Objective[]? CurrentSelfOrders { get { return 0 >= Objectives.Count ? null : Objectives.ToArray(); }  }
     public void Countermand(Objective o) => Remove(o);
-#nullable restore
 
     public override void WalkTo(in Location loc, int n = int.MaxValue)
     {   // triggered from far look mode
@@ -785,7 +778,6 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
-#nullable enable
     protected override ActorAction? BehaviorWouldGrabFrom(in Location loc)
     {
       return Engine.Actions.PlayerTakeFrom.create(this, loc);
@@ -795,7 +787,6 @@ namespace djack.RogueSurvivor.Data
     {
       return Engine.Actions.PlayerTakeFrom.create(this, obj);
     }
-#nullable restore
 
     // while the following is "valid" for any actor, messages are shown *only* to the player
     public Message MakeCentricMessage(string eventText, in Location loc, Color? color=null)

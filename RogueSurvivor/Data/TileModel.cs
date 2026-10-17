@@ -6,8 +6,6 @@
 
 using Color = System.Drawing.Color;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data
 {
   public sealed class TileModel

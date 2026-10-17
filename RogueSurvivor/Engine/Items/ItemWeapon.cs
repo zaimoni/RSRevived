@@ -8,8 +8,6 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Text.Json;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]

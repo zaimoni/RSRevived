@@ -63,7 +63,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
     #endregion
 
-#nullable enable
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
     public override Location[] FOVloc { get { return m_LOSSensor.FOVloc; } }
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_LOSSensor.friends; } }
@@ -74,7 +73,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_LivingSmellSensor.Sense(m_Actor);
       return m_LOSSensor.Sense();
     }
-#nullable restore
 
     protected override ActorAction SelectAction()
     {

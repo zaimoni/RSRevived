@@ -94,7 +94,6 @@ namespace djack.RogueSurvivor.Data
           lock(_threats) { return 0<_threats.Count; }
         }
 
-#nullable enable
         public List<Actor> ThreatAt(in Location loc)
         {
           var ret = new List<Actor>();
@@ -160,7 +159,6 @@ namespace djack.RogueSurvivor.Data
           }
           return 0 < catalog.Count ? catalog.ToList() : null;
         }
-#nullable restore
 
         private HashSet<Point> _ThreatWhere(Map map)    // needs lock against _ThreatWhere_cache
         {
@@ -1020,7 +1018,6 @@ namespace djack.RogueSurvivor.Data
             (_handlers ??= new List<delete_from>()).Add(new delete_from(triggers, targets, this));
        }
 
-#nullable enable
        public Dictionary<Location, T> Within(ZoneLoc src)
        {
             var ret = new Dictionary<Location, T>();
@@ -1067,6 +1064,5 @@ namespace djack.RogueSurvivor.Data
 
             return goals;
        }
-#nullable restore
     }
 }

@@ -8,8 +8,6 @@ using System.Text.Json;
 using Zaimoni.JSON;
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 
-#nullable enable
-
 // Case study in Many-Worlds interpretation of Quantum Mechanics.
 
 // namespace Action conflicts with C# STL Action<>

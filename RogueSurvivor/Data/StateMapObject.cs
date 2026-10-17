@@ -7,8 +7,6 @@
 using System;
 using System.Text.Json;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data
 {
   // both use cases are "not that many states"

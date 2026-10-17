@@ -8,8 +8,6 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Items;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionBarricadeDoor : ActorAction,Target<DoorWindow>,Use<ItemBarricadeMaterial>

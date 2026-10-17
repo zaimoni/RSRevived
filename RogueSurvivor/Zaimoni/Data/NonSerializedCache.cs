@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#nullable enable
-
 namespace Zaimoni.Data
 {
     public sealed class NonSerializedCache<src,T,U> where src:class where U : class, IEnumerable<T>

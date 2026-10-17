@@ -13,8 +13,6 @@ using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 using Random = Microsoft.Random;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]

@@ -72,7 +72,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override bool UsesExplosives { get => false; }
 
-#nullable enable
     public override List<Percept> UpdateSensors() => m_MemLOSSensor.Sense();
     public override HashSet<Point> FOV { get => m_MemLOSSensor.Sensor.FOV; }
     public override Location[] FOVloc { get => m_MemLOSSensor.Sensor.FOVloc; }
@@ -91,7 +90,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return base.AggressedBy(aggressor);
     }
-#nullable restore
 
     protected override ActorAction SelectAction()
     {

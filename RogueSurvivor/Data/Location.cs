@@ -37,18 +37,15 @@ namespace djack.RogueSurvivor.Data
     public static Location operator +(Location lhs, Direction rhs) => new(lhs.Map, lhs.Position+rhs);
 
     // thin wrappers
-#nullable enable
     public MapObject? MapObject { get => Map.GetMapObjectAt(Position); }
     public bool HasMapObject { get => Map.HasMapObjectAt(Position); }
     public Actor? Actor { get => Map.GetActorAt(Position); }
     public bool StrictHasActorAt { get => Map.StrictHasActorAt(Position); }
-#nullable restore
     public void Place(Actor actor) => Map.PlaceAt(actor, in Position);
     public void Place(MapObject obj) => Map.PlaceAt(obj, Position);
     public void Drop(Item it) => Map.DropItemAt(it, in Position);
     public bool IsWalkableFor(Actor actor) => Map.IsWalkableFor(Position, actor);
     public bool IsWalkableFor(Actor actor, out string reason) => Map.IsWalkableFor(Position, actor, out reason);
-#nullable enable
     public Inventory? Items { get => Map.GetItemsAt(Position); }
     public Exit? Exit { get => Map.GetExitAt(Position); }
     public void SetExit(in Location dest) => Map.SetExitAt(Position, new Exit(dest));
@@ -56,16 +53,13 @@ namespace djack.RogueSurvivor.Data
     public Tile Tile { get => Map.GetTileAt(Position); }
     public TileModel TileModel { get => Map.GetTileModelAt(Position); }
     public bool IsInside => Map.IsInsideAt(Position);
-#nullable restore
     public int IsBlockedForPathing { get => Map.IsBlockedForPathing(Position); }
     public void AddDecoration(string imageID) => Map.AddDecorationAt(imageID, Position);
 
     static public bool IsInBounds(in Location loc) => loc.Map.IsInBounds(loc.Position);
-#nullable enable
     static public bool RequiresJump(in Location loc) => loc.MapObject?.IsJumpable ?? false;
     static public bool NoJump(Location loc) => !loc.MapObject?.IsJumpable ?? true;
     static public bool NoJump<T>(KeyValuePair<Location,T> loc_x) => !loc_x.Key.MapObject?.IsJumpable ?? true;
-#nullable restore
 
     // Map version is not cross-district
     public void ForEachAdjacent(Action<Location> op)
@@ -112,7 +106,6 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-#nullable enable
     public ZoneLoc? ClearableZone { get { return  Map.ClearableZoneAt(Position); } }
 
     public List<ZoneLoc>? ClearableZones { get {
@@ -131,7 +124,6 @@ namespace djack.RogueSurvivor.Data
       }
       return (0 < ret.Count) ? ret : null;
     } }
-#nullable restore
 
     public ZoneLoc LinfCircle(int radius) => new(Map, Position.LinfCircle(radius));
 
@@ -152,7 +144,6 @@ namespace djack.RogueSurvivor.Data
       return (0 == District.UsesCrossDistrictView(Map)) ? Map.Rect : ViewRect;
     } }
 
-#nullable enable
     public ZoneLoc[]? TrivialDistanceZones { get {
         var dest = new List<ZoneLoc>();
         var z = Map.TrivialPathingFor(Position);
@@ -212,8 +203,6 @@ namespace djack.RogueSurvivor.Data
       }
       return old_hp > cur_hp ? -1 : 1;
     }
-
-#nullable restore
 
     // alpha10
     public short OdorsDecay()

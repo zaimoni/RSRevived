@@ -7,8 +7,6 @@
 using djack.RogueSurvivor.Data;
 using Zaimoni.Data;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Items
 {
   public sealed class ItemMeleeWeaponModel : ItemWeaponModel

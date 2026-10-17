@@ -8,8 +8,6 @@ using djack.RogueSurvivor.Data;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionBuildFortification : ActorAction, NotSchedulable

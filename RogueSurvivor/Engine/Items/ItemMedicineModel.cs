@@ -6,8 +6,6 @@
 
 using djack.RogueSurvivor.Data;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Items
 {
   public sealed class ItemMedicineModel : Data.Model.Item

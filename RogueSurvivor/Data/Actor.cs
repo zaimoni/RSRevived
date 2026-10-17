@@ -131,7 +131,6 @@ namespace djack.RogueSurvivor.Data
     private Flags m_Flags;
     private GameActors.IDs m_ModelID;
     private GameFactions.IDs m_FactionID;
-#nullable enable
     private string m_Name;
     private ActorController m_Controller;   // use accessor rather than direct update; direct update causes null dereference crash in vision sensor
     private ActorController? m_Subconscious = null; // alternate
@@ -184,7 +183,6 @@ namespace djack.RogueSurvivor.Data
       get { return GetFlag(Flags.IS_UNIQUE); }
       set { SetFlag(Flags.IS_UNIQUE, value); }
     }
-#nullable restore
 
     public Faction Faction
     {
@@ -195,7 +193,6 @@ namespace djack.RogueSurvivor.Data
     public bool IsFaction(GameFactions.IDs f) { return m_FactionID == f; }
     public bool IsFaction(Actor other) { return m_FactionID == other.m_FactionID; }
 
-#nullable enable
     public string Name
     {
       get {
@@ -208,7 +205,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     public string UnmodifiedName { get { return m_Name; } }
-#nullable restore
 
     public bool IsProperName
     {
@@ -218,7 +214,6 @@ namespace djack.RogueSurvivor.Data
 
     // while a general noun interface would have to allow detection of singular vs plural naming, this would matter only for e.g. a swarm of rats.
 
-#nullable enable
     public string TheName
     {
       get {
@@ -245,7 +240,6 @@ namespace djack.RogueSurvivor.Data
     public string HimselfOrHerself {    // 3rd person "emphatic" pronoun e.g. "he himself"; translation target
        get { return Model.DollBody.IsMale ? "himself" : "herself"; }
     }
-#nullable restore
 
     public ActorController Controller
     {
@@ -302,7 +296,6 @@ namespace djack.RogueSurvivor.Data
     }
 
 
-#nullable enable
     public bool IsPlayer { get => Controller is PlayerController; }
 
     public GameGangs.IDs GangID { get { return m_Controller.GangID; } }
@@ -461,7 +454,6 @@ namespace djack.RogueSurvivor.Data
         }
         return ret;
     }
-#nullable restore
 
     public string ReasonCannotBeLed()
     {
@@ -560,7 +552,6 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonIllegalToLead(target));
     }
 
-#nullable enable
     private string ReasonCantCancelLead(Actor target)
     {
       if (target.Leader != this) return "not your follower";
@@ -620,7 +611,6 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantChatWith(target));
     }
 #endif
-#nullable restore
 
     private string ReasonCantSwitchPlaceWith(Actor target)
     {
@@ -646,7 +636,6 @@ namespace djack.RogueSurvivor.Data
     // aggression statistics, etc.
     public int KillsCount { get { return ActorScoring.KillsCount; } }
 
-#nullable enable
     public int MurdererSpottedByChance(Actor spotter)
     {
       const int MURDERER_SPOTTING_BASE_CHANCE = 5;
@@ -697,7 +686,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool IsUnsuspiciousFor(Actor observer) { return Rules.Get.RollChance(UnsuspicousForChance(observer)); }
-#nullable restore
 
     public bool IgnoredByPolice(Actor observer) {
       if (100 <= UnsuspicousForChance(observer)) return true;
@@ -741,7 +729,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     public int Infection { get { return m_Infection; } }
-#nullable enable
     // \todo build out living AI for dragging corpses
     public Corpse? DraggedCorpse { get { return m_DraggedCorpse; } }
 
@@ -759,7 +746,6 @@ namespace djack.RogueSurvivor.Data
         this.PlayersInLOS()?.RedrawPlayScreen(RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_STOP.Conjugate(this), dead_name)));
       }
     }
-#nullable restore
 
 #if TRACER
     private bool WantPConTop {
@@ -823,7 +809,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-#nullable enable
     public Actor(ActorModel model, Faction faction, int spawnTime, string name="")
     {
       m_ModelID = model.ID;
@@ -1761,7 +1746,6 @@ namespace djack.RogueSurvivor.Data
       // following *should* be symmetric
       return (m_AggressorOf?.Contains(other) ?? false) || (m_SelfDefenceFrom?.Contains(other) ?? false) || other.IsAggressorOf(this) || other.IsSelfDefenceFrom(this);
     }
-#nullable restore
 
     public bool AreIndirectEnemies(Actor other)
     {
@@ -1793,7 +1777,6 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-#nullable enable
     // not just our FoV.
     public List<Actor>? GetEnemiesInFov(Location[] fov)
     {
@@ -1886,7 +1869,6 @@ namespace djack.RogueSurvivor.Data
         }
         return ret;
     }
-#nullable restore
 
     // map-related, loosely
     public void RemoveFromMap()
@@ -1894,7 +1876,6 @@ namespace djack.RogueSurvivor.Data
       Location.Map?.Remove(this);   // DuckMan and other uniques start with null map before spawning
     }
 
-#nullable enable
     public bool WouldBeAdjacentToEnemy(Map map,Point p)
     {
       return map.HasAnyAdjacent(p, a => a.IsEnemyOf(this));
@@ -2900,8 +2881,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-#nullable restore
-
     public bool IsDisturbed { get => Model.Abilities.HasSanity && Sanity <= DisturbedLevel; }
 
     public int HoursUntilUnstable {
@@ -2956,7 +2935,6 @@ namespace djack.RogueSurvivor.Data
       m_FoodPoints = Math.Min(m_FoodPoints + BiteNutritionValue(f), MaxRot);
     }
 
-#nullable enable
     // theoretically should be returning an enumeration
     // 0: failed to start dragging
     // 1: ok to start dragging

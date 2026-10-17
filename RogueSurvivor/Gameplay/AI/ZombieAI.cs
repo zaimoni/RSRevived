@@ -77,7 +77,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override bool HasJsonState { get => (null != m_Exploration && !m_Exploration.IsEmpty) || base.HasJsonState; }
     #endregion
 
-#nullable enable
     public override List<Percept> UpdateSensors()
     {
       m_LivingSmellSensor.Sense(m_Actor);
@@ -89,7 +88,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override Location[] FOVloc { get { return m_MemLOSSensor.Sensor.FOVloc; } }
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_MemLOSSensor.Sensor.friends; } }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_MemLOSSensor.Sensor.enemies; } }
-#nullable restore
 
     protected override ActorAction SelectAction()
     {

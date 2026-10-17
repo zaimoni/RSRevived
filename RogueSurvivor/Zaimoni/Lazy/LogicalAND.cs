@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-#nullable enable
-
 namespace Zaimoni.Lazy
 {
     // use case: triggering cache variable update when data completely loads.

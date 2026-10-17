@@ -7,8 +7,6 @@
 using djack.RogueSurvivor.Data;
 using System;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal sealed class ItemSprayPaintModel : Data.Model.Item

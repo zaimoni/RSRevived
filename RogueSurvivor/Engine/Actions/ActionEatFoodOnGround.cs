@@ -7,8 +7,6 @@
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Items;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionEatFoodOnGround : ActorAction

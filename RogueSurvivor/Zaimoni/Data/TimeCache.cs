@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#nullable enable
-
 namespace Zaimoni.Data
 {
     public sealed class TimeCache<K,V> where K:notnull

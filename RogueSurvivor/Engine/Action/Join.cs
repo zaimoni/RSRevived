@@ -12,8 +12,6 @@ using Zaimoni.JSON;
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 using Goal_NextAction = djack.RogueSurvivor.Gameplay.AI.Goal_NextAction;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Op
 {
     [Serializable]

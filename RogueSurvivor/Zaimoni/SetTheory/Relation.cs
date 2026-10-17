@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-#nullable enable
-
 namespace Zaimoni.SetTheory
 {
     // An enumerated mathematical function is just a Dictionary

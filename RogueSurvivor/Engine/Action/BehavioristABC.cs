@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using Zaimoni.JSON;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine._Action
 {
     // monolith code...not ideal, but trying to manage save/load issues

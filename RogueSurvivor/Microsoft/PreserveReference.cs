@@ -14,8 +14,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Zaimoni.Data;
 
-#nullable enable
-
 namespace Zaimoni.JSON
 {
    internal sealed class PreserveReferenceResolver : ReferenceResolver

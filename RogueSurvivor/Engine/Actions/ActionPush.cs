@@ -46,8 +46,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (!Map.Canonical(ref m_To)) throw new InvalidOperationException("pushed off map");
     }
 
-#nullable enable
-
     public override bool IsLegal()
     {
       if (m_Actor.CanPush(m_Object))

@@ -1,8 +1,6 @@
 ﻿using System;
 using Zaimoni.Data;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine
 {
   /// <summary>Command line options that drive the program, rather than the game: how to start, and whether to stop as soon as a

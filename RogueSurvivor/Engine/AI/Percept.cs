@@ -83,7 +83,6 @@ namespace djack.RogueSurvivor.Engine.AI
     // in general, the tmp.Any() ? tmp.ToList() : null construct requires that the Any() call be de facto deterministic; RNG can easily break things
     internal static partial class ext_RSRevived
     {
-#nullable enable
     internal static List<_T_>? Filter<_T_>(this IEnumerable<_T_> percepts, Func<_T_,bool> predicateFn) where _T_:WhereWhen
     {
       if (!percepts.Any()) return null;
@@ -177,7 +176,6 @@ namespace djack.RogueSurvivor.Engine.AI
       foreach(var percept in percepts) if (predicateFn(percept)) return percept;
       return null;
     }
-#nullable restore
   }
 }
 

@@ -11,8 +11,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Zaimoni.JSON;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]

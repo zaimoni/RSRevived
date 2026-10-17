@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data.Model
 {
     [Serializable]

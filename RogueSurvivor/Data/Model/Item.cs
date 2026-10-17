@@ -1,7 +1,5 @@
 ﻿using System;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data.Model
 {
     public class Item : Zaimoni.Data.Factory<Data.Item>

@@ -22,7 +22,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
   [Serializable]
   internal class LOSSensor : Sensor
   {
-#nullable enable
     private Actor m_Actor;
     private readonly SensingFilter Filters;
     // Actor caches for AI purposes
@@ -124,8 +123,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       }
     }
 
-#nullable restore
-
     private void _seeItems(List<Percept> perceptList, Location[] normalized_FOV)
     {
       _items = null;
@@ -167,7 +164,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       }
     }
 
-#nullable enable
     private Action<List<Percept>, Location[]> HowToSense()
     {
       Action<List<Percept>, Location[]>? ret = null;

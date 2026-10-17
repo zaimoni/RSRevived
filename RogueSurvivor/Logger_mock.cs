@@ -5,8 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-#nullable enable
-
 namespace Zaimoni.Data
 {
     // Example of how to complete Zaimoni.Data.Logger

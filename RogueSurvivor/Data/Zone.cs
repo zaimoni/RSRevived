@@ -18,7 +18,6 @@ using Size = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Data
 {
-#nullable enable
   public struct AVtable // attribute-value table
   {
     private Dictionary<string, object>? m_Attributes;   // doesn't play nice with changing save/load implementations
@@ -56,7 +55,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
   }
-#nullable restore
 
   // not meant to be self-contained
   [Serializable]
@@ -107,7 +105,6 @@ namespace djack.RogueSurvivor.Data
     public bool Equals(ZoneLoc? other) => null != other && m == other.m && Rect == other.Rect;
     public override int GetHashCode() => HashCode.Combine(m, Rect);
 
-#nullable enable
     public Location[]? Exits { get {
         var z0 = Zone;
         if (null == z0) return null;
@@ -241,8 +238,6 @@ namespace djack.RogueSurvivor.Data
     IEnumerator<Location> IEnumerable<Location>.GetEnumerator() => new Enumerator(this);
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => new Enumerator(this);
 
-#nullable restore
-
 #region IMap implementation
     public short Height { get { return Rect.Height; } }
     public short Width { get { return Rect.Width; } }
@@ -287,7 +282,6 @@ namespace djack.RogueSurvivor.Data
 
     public Location Center { get { return new Location(m, Rect.Location + Rect.Size / 2); } }
 
-#nullable enable
     public List<ZoneLoc>? GetCanonical {
         get {
             var code = District.UsesCrossDistrictView(m);
@@ -435,7 +429,6 @@ namespace djack.RogueSurvivor.Data
         }
         return staging.ToArray();
     } }
-#nullable restore
 
     private List<UpdateMoveDelta>? WalkOut() {
       var ret = new List<UpdateMoveDelta>();

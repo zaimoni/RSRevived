@@ -11,8 +11,6 @@ using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data
 {
 // problems with prior ActorSheet class, and System.Runtime.Serialization.BinaryFormatter

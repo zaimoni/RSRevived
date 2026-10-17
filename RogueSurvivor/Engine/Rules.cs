@@ -94,7 +94,6 @@ namespace djack.RogueSurvivor.Engine
 //  public const int TRUST_REVIVE_BONUS = 12*WorldTime.TURNS_PER_HOUR;  // removed in RS Alpha 10
     public const int GIVE_RARE_ITEM_DAY = 7;
     public const int GIVE_RARE_ITEM_CHANCE = 5;
-#nullable enable
     private static Rules? s_Rules;
     private DiceRoller m_DiceRoller;
 
@@ -187,7 +186,6 @@ namespace djack.RogueSurvivor.Engine
       if (null == mapObjectAt) return null;
       return string.IsNullOrEmpty(mapObjectAt.ReasonCantPutItemIn(actor)) ? mapObjectAt : null;
     }
-#nullable restore
 
     static public bool CanActorEatFoodOnGround(Actor actor, Item it, out string reason)
     {
@@ -291,7 +289,6 @@ namespace djack.RogueSurvivor.Engine
       return IsBumpableFor(actor, location.Map, location.Position, out reason);
     }
 
-#nullable enable
     // Key is Adjacent, Value is non-Adjacent
     public static KeyValuePair<IEnumerable<KeyValuePair<Location, T>>, IEnumerable<KeyValuePair<Location, T>>> ClassifyAdjacent<T>(Dictionary<Location, T> src, Location origin)
     {
@@ -337,8 +334,6 @@ namespace djack.RogueSurvivor.Engine
         }
       }
     }
-
-#nullable restore
 
     // Pathfindability is not quite the same as bumpability
     // * ok to break barricaded doors on fastest path
@@ -578,7 +573,6 @@ namespace djack.RogueSurvivor.Engine
       return GridDistance(in locA, in locB);
     }
 
-#nullable enable
     // Euclidean plane distance
     public static double StdDistance(in Point from, in Point to) { return StdDistance(to - from); }
 
@@ -722,7 +716,6 @@ namespace djack.RogueSurvivor.Engine
       if (trap.IsSafeFor(a)) return true;  // alpha10
       return RollChance(trap.EscapeChanceFor(a));
     }
-#nullable restore
 
     // unsure where this should go...parking here for now
     public static Location PoliceRadioLocation(Location loc)

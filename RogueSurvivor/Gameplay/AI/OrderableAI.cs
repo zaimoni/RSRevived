@@ -1078,7 +1078,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       private readonly Location _dest;  // 2018-08-12: Using DoorWindow here doesn't work -- AI continues breaking the barricade even after it is gone
       private readonly Location[]? _alternates = null; // for when multiple doors are in a row
 
-#nullable enable
       #region JSON save/load
       private Goal_BreakBarricade(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src)
       {
@@ -1118,7 +1117,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       public DoorWindow? Target { get { return _dest.MapObject as DoorWindow; } }
-#nullable restore
 
       public override bool UrgentAction_readonly(out ActorAction ret)
 
@@ -1283,22 +1281,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int LAW_ENFORCE_CHANCE = 30;
     private const int IN_LEADER_LOF_SAFETY_PENALTY = 1;  // alpha10 int
 
-#nullable enable
     // taboos really belong here
     private List<Actor>? m_TabooTrades;
 
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
     private ActorDirective? m_Directive;
     private ActorOrder? m_Order;
-#nullable restore
     protected Percept_<ActorTag> m_LastEnemySaw;    // by tag: the actor may be long dead (savefile break 2026-10-04)
     protected Percept m_LastItemsSaw;
     protected Percept_<ActorTag> m_LastSoldierSaw;
     protected Percept m_LastRaidHeard;
-#nullable enable
     [NonSerialized] static private Percept? _lastRaidHeard; // staging for m_LastRaidHeard
     [NonSerialized] private List<Actor>? _adjacent_friends;    // cache variable for above four
-#nullable restore
     protected bool m_ReachedPatrolPoint;
     protected int m_ReportStage;
 
@@ -1370,7 +1364,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_LastItemsSaw?.Percepted is Inventory inv && inv.IsEmpty) m_LastItemsSaw = null;
     }
 
-#nullable enable
     public ActorDirective Directives { get => m_Directive ??= new(); }
     public ActorDirective? Directives_nocreate { get => m_Directive; }
     protected List<Actor>? TabooTrades { get => m_TabooTrades; }
@@ -1408,7 +1401,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return 0<_adjacent_friends.Count ? _adjacent_friends : null;
     }
-#nullable restore
 
     public override int FastestTrapKill(in Location loc)
     {
@@ -1629,7 +1621,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       dests.RemoveAll(pt => max_LoF>targets[pt]);
     }
 
-#nullable enable
     protected bool HasBehaviorThatRecallsToSurface {
       get {
         if (null != m_Actor.Threats) return true;   // hunting threat
@@ -1758,7 +1749,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       return null;
     }
-#nullable restore
 
     protected ActorAction ManageMeleeRisk(List<ItemRangedWeapon> available_ranged_weapons)
     {
@@ -2311,7 +2301,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj1;
     }
 
-#nullable enable
     protected ActorAction? BehaviorEat()
     {
       var bestEdibleItem = GetBestEdibleItem();
@@ -2325,7 +2314,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == bestEdibleItem) return null;
       return (m_Actor.CanUse(bestEdibleItem) ? new ActionUseItem(m_Actor, bestEdibleItem) : null);
     }
-#nullable restore
 
     /// <returns>true if and only if light should be equipped</returns>
     protected bool BehaviorEquipLight()
@@ -3124,7 +3112,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-#nullable enable
     public ActorAction? WouldUseAccessibleStack(in Location dest,bool is_real=false) {
       var stacks = Map.GetAccessibleInventoryOrigins(dest);
       if (null != stacks) {
@@ -3138,7 +3125,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     public ActorAction? BehaviorUseAdjacentStack() { return WouldUseAccessibleStack(m_Actor.Location, true); }
-#nullable restore
     protected ActorAction BehaviorPathTo(in Location dest) { return BehaviorPathTo(new HashSet<Location> { dest }); }
 
     protected ActorAction BehaviorPathToAdjacent(Location dest)
@@ -3848,7 +3834,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endregion
 
-#nullable enable
     protected ActorAction? BehaviorGoReviveCorpse(List<Percept>? percepts)
     {
 #if false
@@ -3876,7 +3861,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return BehaviorHeadFor(percept.Location,false,false);
     }
-#nullable restore
 
 #region ground inventory stacks
     private List<Item>? InterestingItems(IEnumerable<Item> Items)
@@ -3913,7 +3897,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj;
     }
 
-#nullable enable
     protected override ActorAction? BehaviorWouldGrabFrom(in Location loc)
     {
       return !loc.Items.IsEmpty() ? BehaviorGrabFromStack(new(loc), false) : null;
@@ -3933,7 +3916,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.StackIsBlocked(src.Location)) return false;
       return WouldGrabFromAccessibleStack(in src)?.IsLegal() ?? false;
     }
-#nullable restore
 
     private ActorAction? _takeThis(in Data.Model.InvOrigin stack, Item obj, ActorAction recover, bool is_real)
     {
@@ -3999,12 +3981,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmp;
     }
 
-#nullable enable
     public ActorAction? BehaviorGrabFromAccessibleStack(in Data.Model.InvOrigin stack)
     {
       return WouldGrabFromAccessibleStack(in stack, true);
     }
-#nullable restore
 
     protected ActorAction? BehaviorGrabFromStack(in Data.Model.InvOrigin origin, bool is_real = true)
     {
@@ -4228,7 +4208,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-#nullable enable
     private ActorAction? BehaviorFindStack(Predicate<Inventory> want_now) {
         if (null != Goal<PathToStack>()) return null; // direct-order to pick up pre-empts
         const bool tracing = false;
@@ -4249,7 +4228,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return null;
         }
     }
-#nullable restore
 
     private ActorAction BehaviorRequestCriticalFromGroup()
     {
@@ -4586,7 +4564,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return true;
     }
 
-#nullable enable
 /// <summary>
 /// Enemies check should have completed before this.
 /// </summary>
@@ -4662,7 +4639,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       return null;
     }
-#nullable restore
 
     // taboos
     public void MarkActorAsRecentTrade(Actor other)

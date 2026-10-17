@@ -6,8 +6,6 @@ using Zaimoni.Data;
 using System.Text.Json;
 using Zaimoni.JSON;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     // need this level of indirection so that all actors know about the plan's progress

@@ -30,7 +30,6 @@ namespace djack.RogueSurvivor.UI
     public const int LINE_SPACING = 12;
     public const int BOLD_LINE_SPACING = 14;
 
-#nullable enable
     // C# 8.0: cooperative almost-singleton now possible for interfaces
     static private IRogueUI? s_ooao = null;
 
@@ -43,17 +42,14 @@ namespace djack.RogueSurvivor.UI
     }
 
     static public bool IsConstructed { get { return null != s_ooao; } }
-#nullable restore
 
     IEnumerable<string> Mods { get; }
     Font NormalFont { get; }
     Font BoldFont { get; }
 
 #region Input
-#nullable enable
     KeyEventArgs UI_WaitKey();
     KeyValuePair<KeyValuePair<KeyEventArgs?, MouseButtons?>, KeyValuePair<int, int>> WaitKeyOrMouse();
-#nullable restore
 
     void UI_PostKey(KeyEventArgs e);
     void UI_PostMouseButtons(MouseButtons buttons);
@@ -68,9 +64,7 @@ namespace djack.RogueSurvivor.UI
     void WaitEnter();
     void WaitEscape();
     bool WaitEscape(Predicate<KeyEventArgs> ok);
-#nullable enable
     T? WaitEscape<T>(Func<KeyEventArgs, T?> ok) where T:class;
-#nullable restore
     bool WaitYesOrNo();
 
     bool Modal(Func<KeyEventArgs, bool?> ok);

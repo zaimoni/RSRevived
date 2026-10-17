@@ -6,8 +6,6 @@
 
 using System;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine
 {
   public class CSVField

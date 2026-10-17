@@ -18,7 +18,6 @@ namespace djack.RogueSurvivor.Engine.AI
   [Serializable]
   internal class MemorizedSensor<T> : Sensor where T:Sensor
   {
-#nullable enable
     private List<Percept> m_Percepts = new List<Percept>();
     private readonly T m_Sensor;
     private readonly int m_Persistance;
@@ -61,7 +60,6 @@ namespace djack.RogueSurvivor.Engine.AI
 #endregion
 
     public void Clear() { m_Percepts.Clear(); }
-#nullable restore
 
     private void Forget()
     {
@@ -87,7 +85,6 @@ namespace djack.RogueSurvivor.Engine.AI
       m_Percepts = tmp;
     }
 
-#nullable enable
     public Actor Viewpoint { get { return m_Sensor.Viewpoint; } }
 
     public List<Percept> Sense()
@@ -115,7 +112,6 @@ namespace djack.RogueSurvivor.Engine.AI
       m_Percepts.AddRange(tmp);
       return m_Percepts;
     }
-#nullable restore
   }
 }
 

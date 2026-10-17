@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-#nullable enable
-
 namespace Zaimoni.Collections
 {
     // Filtering enumerator.  In principle we could use one with Func<T,bool> as well.

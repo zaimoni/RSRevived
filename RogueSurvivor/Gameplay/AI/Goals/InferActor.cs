@@ -12,8 +12,6 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 using Size = Zaimoni.Data.Vector2D<short>;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     [Serializable]

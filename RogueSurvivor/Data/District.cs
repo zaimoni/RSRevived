@@ -29,7 +29,6 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   public sealed class District
   {
-#nullable enable
     private readonly List<Map> m_Maps = new List<Map>(3);
     public readonly Point WorldPosition;
     public readonly DistrictKind Kind;
@@ -71,7 +70,6 @@ namespace djack.RogueSurvivor.Data
     static public bool IsEntryMap(Map m) {
       return m == m.District.m_EntryMap;
     }
-#nullable restore
 
     public Map? SewersMap {
       get { return m_SewersMap; }
@@ -83,7 +81,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-#nullable enable
     static public bool IsSewersMap(Map m) {
       return m == m.District.m_SewersMap;
     }
@@ -291,7 +288,6 @@ namespace djack.RogueSurvivor.Data
       if (0 > src.Value || d.m_Maps.Count <= src.Value) throw new ArgumentOutOfRangeException("src.Value", src.Value.ToString());
       return d.m_Maps[src.Value];
     }
-#nullable restore
 
     /// <returns>positive: cross-district viewing
     /// zero: not at all
@@ -305,7 +301,6 @@ namespace djack.RogueSurvivor.Data
       return 0;
     }
 
-#nullable enable
     public Map? CrossDistrictViewing(int x)
     {
       switch(x)
@@ -343,7 +338,6 @@ namespace djack.RogueSurvivor.Data
       var maps = lhs.District.m_Maps;
       return maps.IndexOf(lhs)<maps.IndexOf(rhs);
     }
-#nullable restore
 
     // before cross district viewing, this was simply a PlayerCount check
     public bool RequiresUI {
@@ -377,7 +371,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-#nullable enable
     public int PlayerCorpseCount {
       get {
         int ret = 0;
@@ -572,7 +565,6 @@ namespace djack.RogueSurvivor.Data
         link_W(subwayMap1, world.At(dest + Direction.W)?.SubwayMap);
       }
     }
-#nullable restore
 
     // cheat map similar to savefile viewer
     public void DaimonMap(OutTextFile dest) {

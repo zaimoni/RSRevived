@@ -7,8 +7,6 @@
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
   public sealed class ActionSwitchPowerGenerator : ActorAction

@@ -16,8 +16,6 @@ using Zaimoni.JSON;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data
 {
   // The suffix names the class whose ExecAryZeroBehavior implements the behavior.  Was nested in ObjectiveAI.
@@ -228,7 +226,6 @@ namespace djack.RogueSurvivor.Data
     public abstract List<Percept> UpdateSensors();
 
     // vision
-#nullable enable
     public abstract HashSet<Point> FOV { get; }
     public abstract Location[] FOVloc { get; }
     public virtual void eventFOV() { }
@@ -262,7 +259,6 @@ namespace djack.RogueSurvivor.Data
     public abstract bool IsMyTurn();
     /// <returns>null, or an action x for which x.IsPerformable() is true</returns>
     public virtual ActorAction? ExecAryZeroBehavior(ZeroAryBehaviors code) { return null; }
-#nullable restore
 
     public bool CanSee(in Location x)  // correctness requires Location being value-copied
     {
@@ -278,19 +274,16 @@ namespace djack.RogueSurvivor.Data
       return 0 <= Array.IndexOf(FOVloc, loc);
     }
 
-#nullable enable
     public bool IsVisibleTo(Map? map, in Point position)
     {
       return null != map && _IsVisibleTo(map, position);    // convince Duckman to not superheroically crash many games on turn 0
     }
-#nullable restore
 
     public bool IsVisibleTo(in Location loc)
     {
       return null != loc.Map && _IsVisibleTo(loc.Map, loc.Position);    // convince Duckman to not superheroically crash many games on turn 0
     }
 
-#nullable enable
     public bool IsVisibleTo(Actor actor) => actor == m_Actor || IsVisibleTo(actor.Location);
     public string VisibleIdentity<T>(T x) where T:ILocation,INoun => IsVisibleTo(x.Location) ? x.TheName : x.UnknownPronoun;
 
@@ -298,8 +291,6 @@ namespace djack.RogueSurvivor.Data
 
     // for _Action.Choice
     public virtual ActorAction Choose(List<ActorAction> src) => Rules.Get.DiceRoller.Choose(src);
-
-#nullable restore
 
     /// <returns>number of turns of trap activation it takes to kill, or int.MaxValue for no known problem</returns>
     public virtual int FastestTrapKill(in Location loc) { return int.MaxValue; }   // z are unaware of deathtraps.  \todo override for dogs

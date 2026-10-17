@@ -14,8 +14,6 @@ using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
   // VAPORWARE need to include burst fire as well (both aimed and snap/hipfire)

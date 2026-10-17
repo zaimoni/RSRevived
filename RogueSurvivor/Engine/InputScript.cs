@@ -4,8 +4,6 @@ using System.IO;
 using System.Windows.Forms;
 using Zaimoni.Data;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine
 {
   /// <summary>Input to play before the keyboard and mouse are heard from: --input=TOKENS, or --input=@FILE for a response file;

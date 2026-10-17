@@ -177,7 +177,6 @@ namespace Zaimoni.Data
             }
         }
 
-#nullable enable
         /// <returns>null, or an ordered pair (domain violations, blacklisted)</returns>
         public KeyValuePair<List<T>?, List<T>?>? Audit(Dictionary<T, int> goal_costs) {
             List<T>? domain = null;
@@ -227,7 +226,6 @@ namespace Zaimoni.Data
           foreach(var x in src) if (StepFrom(goal_costs, x)) ret = true;
           return ret;
         }
-#nullable restore
 
         private bool _bootstrap(Dictionary<T,int> goal_costs, Dictionary<int, HashSet<T>> _now)
         {
@@ -476,7 +474,6 @@ namespace Zaimoni.Data
             return (0 < ret.Count) ? ret : null;
         }
 
-#nullable enable
         // normal use case is to set depth and then do local optimizations to the returned path
         public List<List<T>>? MinStepPathTo(T current_pos,int depth = 0)
         {
@@ -509,6 +506,5 @@ namespace Zaimoni.Data
             }
             return ret;
         }
-#nullable restore
     }
 }

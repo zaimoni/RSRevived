@@ -16,7 +16,6 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   public sealed class ItemTrap : Item, UsableItem, IJsonStaged<ItemTrap>
     {
-#nullable enable
     new public ItemTrapModel Model { get { return (base.Model as ItemTrapModel)!; } }
 
     private bool m_IsActivated;
@@ -131,7 +130,6 @@ namespace djack.RogueSurvivor.Engine.Items
       }
       return false;
     }
-#nullable restore
 
     public bool WouldLearnHowToBypass(Actor a, Location? is_real = null)
     {
@@ -183,8 +181,6 @@ namespace djack.RogueSurvivor.Engine.Items
     }
 
     public bool LearnHowToBypass(Actor a, Location loc) { return WouldLearnHowToBypass(a, loc); }
-
-#nullable enable
 
     // alpha10
     public int TriggerChanceFor(Actor a)

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-#nullable enable
-
 // Polymorphic save/load, for class hierarchies using hand-written System.Text.Json converters.
 // A custom JsonConverter<Base> bypasses [JsonDerivedType] the same way it bypasses ReferenceHandler,
 // so we write the $type discriminator ourselves.

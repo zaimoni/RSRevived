@@ -7,8 +7,6 @@
 using System;
 using System.Collections.Generic;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data
 {
   public sealed class Faction

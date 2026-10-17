@@ -9,8 +9,6 @@ using System;
 using System.Text.Json;
 using Zaimoni.JSON;
 
-#nullable enable
-
 // VAPORWARE this needs something that makes it AI-worthy to use.  Graffiti was a pre-apocalypse thing.
 // * Improvised flamethrower worked for James Bond 007.
 // * Z may not be that easy to blind in the first place.

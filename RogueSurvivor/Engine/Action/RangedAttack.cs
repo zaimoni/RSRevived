@@ -7,8 +7,6 @@ using System.Collections.Generic;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine._Action
 {
     public class RangedAttack : ActorAction, CombatAction

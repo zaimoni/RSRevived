@@ -6,8 +6,6 @@ using Zaimoni.Data;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data
 {
     class MapKripke : Observer<Location[]>  // For Saul Kripke's possible world semantics

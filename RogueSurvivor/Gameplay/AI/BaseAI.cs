@@ -40,10 +40,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private Location m_prevLocation;
     [NonSerialized] protected RouteFinder m_RouteFinder;    // alpha10
-#nullable enable
     [NonSerialized] protected List<Percept>? _all;           // cache variables of use to all AI subclasses
     [NonSerialized] protected List<Percept_<Actor>>? _enemies;       // usage varies...Z don't care about "current", OrderableAI subclasses do
-#nullable restore
     [NonSerialized] private bool _processing;
 
     protected BaseAI(Actor src) : base(src) {}
@@ -128,7 +126,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     /// <returns>non-null, action x for which x.IsPerformable() is true</returns>
-#nullable enable
     protected abstract ActorAction? SelectAction();
 
 /*
@@ -203,7 +200,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Location from = m_Actor.Location;
       return percepts?.SortIncreasing(p => Rules.InteractionDistance(p.Location, from));
     }
-#nullable restore
 
     // policy change for behaviors: unless the action from a behavior is being used to decide whether to commit to the behavior,
     // a behavior should handle all free actions itself and return only non-free actions.
@@ -347,7 +343,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-#nullable enable
     protected ActorAction? BehaviorBumpToward(Location goal, bool canCheckBreak, bool canCheckPush, Func<Point, Point, float> distanceFn)
     {
       var map = m_Actor.Location.Map;
@@ -446,7 +441,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return null;
     }
-#nullable restore
 
     protected ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals)
     {
@@ -469,7 +463,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 
-#nullable enable
     protected ActionMeleeAttack? BehaviorMeleeAttack(Actor target)
     {
       return (ActionMeleeAttack.Can(m_Actor, target) ? new ActionMeleeAttack(m_Actor, target) : null);
@@ -493,7 +486,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (equippedWeapon != bestMeleeWeapon) bestMeleeWeapon.EquippedBy(tmp_a);
       return null;
     }
-#nullable restore
 
     protected ActorAction BehaviorBuildTrap()
     {
@@ -507,7 +499,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionDropItem(m_Actor, trap);
     }
 
-#nullable enable
     private bool IsGoodTrapSpot(Location loc, out string reason)
     {
       reason = "";
@@ -544,7 +535,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0 >= doors.Count) return null;
       return ActionBreak.create(m_Actor, Rules.Get.DiceRoller.Choose(doors).Value);
     }
-#nullable restore
 
 #if DEAD_FUNC
     // intentionally disabled in alpha 9; for ZM AI
@@ -566,7 +556,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-#nullable enable
     protected ActionPush? BehaviorPushNonWalkableObject()
     {
       if (!m_Actor.AbleToPush) return null;
@@ -579,7 +568,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0 >= objs.Count) return null;
       return ActionPush.Random(m_Actor, Rules.Get.DiceRoller.Choose(objs).Value);
     }
-#nullable restore
 
     protected ActionPush BehaviorPushNonWalkableObjectForFood()
     {
@@ -672,7 +660,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-#nullable enable
     protected virtual ActorAction? BehaviorFollowActor(Actor? other, int maxDist)
     {
       if (null == other || other.IsDead) return null;
@@ -727,7 +714,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return null;
     }
-#nullable restore
 
     protected virtual ActorAction BehaviorChargeEnemy(Percept_<Actor> target, bool canCheckBreak, bool canCheckPush)
     {
@@ -882,7 +868,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return Rules.Get.DiceRoller.Choose(best).Key.Value;
     }
 
-#nullable enable
     private ActorAction? BehaviorUseExit(Exit exitAt, UseExitFlags useFlags)
     {
       if ((useFlags & UseExitFlags.DONT_BACKTRACK) != UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
@@ -929,7 +914,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Location == percept.Location) return new ActionEatCorpse(m_Actor, percept.Percepted[0]);
       return BehaviorHeadFor(percept.Location,true,true);
     }
-#nullable restore
 
     /// <summary>
     /// Compute safety from a list of dangers at a given position.
@@ -1019,7 +1003,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (float)(avgDistance * heuristicFactorBonus);
     }
 
-#nullable enable
     // isBetterThanEvalFn will never see NaN
     static protected ChoiceEval<_T_>? Choose<_T_>(IEnumerable<_T_>? listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
@@ -1100,7 +1083,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a is Resolvable res) return IsValidFleeingAction(res.ConcreteAction);
       return a is ActionMoveStep || a is ActionOpenDoor || a is ActionSwitchPlace;
     }
-#nullable restore
 
     protected bool IsValidWanderAction(ActorAction a)
     {
@@ -1125,7 +1107,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-#nullable enable
     protected bool IsValidMoveTowardGoalAction(ActorAction? a)
     {
       if (null == a) return false;
@@ -1138,7 +1119,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a is ActionSwitchPowerGenerator) return false;
       return true;
     }
-#nullable restore
 
     protected bool IsOccupiedByOther(Location loc)  // percept locations are normalized
     {
@@ -1146,7 +1126,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null != actorAt && actorAt != m_Actor;
     }
 
-#nullable enable
     protected bool WantToEvadeMelee(Actor actor, ActorCourage courage, Actor target)
     {
 //    if (WillTireAfterAttack(actor)) return true;  // post-process this, handling this here is awful for rats
@@ -1183,7 +1162,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //      if (num1 > num2) return b;
       return null;
     }
-#nullable restore
 
     protected static bool WillTireAfterAttack(Actor actor)
     {
@@ -1262,7 +1240,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
   internal static partial class ext_RSRevived
   {
-#nullable enable
     public static List<KeyValuePair<_T_, A>>? Candidates<_T_, A>(this IEnumerable<_T_> choices, Func<_T_,A?> interpret) where A:ActorAction
     {
       List<KeyValuePair<_T_, A>> ret = new();
@@ -1274,7 +1251,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return 0<ret.Count ? ret : null;
     }
-#nullable restore
 
     public static Func<Point, Point, float> Postprocess(this Func<Point, Point, float> src, Func<Point, Point, float, float> post)
     {

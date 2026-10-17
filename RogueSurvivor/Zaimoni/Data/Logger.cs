@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 
-#nullable enable
-
 namespace Zaimoni.Data
 {
     static public partial class Logger

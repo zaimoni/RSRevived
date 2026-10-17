@@ -1,7 +1,5 @@
 ﻿using djack.RogueSurvivor.Data;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
     internal class ActionPutInContainer : ActorAction,ActorGive,Target<MapObject>

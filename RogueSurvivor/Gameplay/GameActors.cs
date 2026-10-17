@@ -22,7 +22,6 @@ namespace djack.RogueSurvivor.Gameplay
     public const int HUMAN_AUDIO = 8*WorldTime.TURNS_PER_HOUR/15; // Also max hearing range; swamp thing also hears but much lower range
     private const int DOG_STA = 3*WorldTime.TURNS_PER_HOUR;
 
-#nullable enable
     static public ActorModel From(IDs id) { return m_Models[(int)id]; }
 
     private static void _setModel(ActorModel model)
@@ -64,7 +63,6 @@ namespace djack.RogueSurvivor.Gameplay
     public static void Init(IRogueUI ui) {
       LoadFromCSV(ui, Path.Combine("Resources", "Data", "Actors.csv"));
     }
-#nullable restore
 
 /*
 to transform from MALE_CIVILIAN to POLICEMAN:
@@ -275,7 +273,6 @@ to transform from MALE_CIVILIAN to POLICEMAN:
     }
 #endif
 
-#nullable enable
     static public bool IsSkeletonBranch(ActorModel m)
     {
       return m == Skeleton || m == Red_Eyed_Skeleton || m == Red_Skeleton;
@@ -290,7 +287,6 @@ to transform from MALE_CIVILIAN to POLICEMAN:
     {
       return m == RatZombie;
     }
-#nullable restore
 
     public enum IDs
     {

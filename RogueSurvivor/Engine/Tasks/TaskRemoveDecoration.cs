@@ -12,8 +12,6 @@ using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Tasks
 {
   [Serializable]

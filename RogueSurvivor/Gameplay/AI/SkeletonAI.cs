@@ -16,8 +16,6 @@ using Zaimoni.JSON;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]

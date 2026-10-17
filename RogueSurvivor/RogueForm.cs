@@ -29,9 +29,7 @@ namespace djack.RogueSurvivor
     private const int CP_NOCLOSE_BUTTON = 512;
     private Font m_NormalFont;
     private Font m_BoldFont;
-#nullable enable
     private KeyEventArgs? m_InKey;
-#nullable restore
     private bool m_HasMouseButtons;
     private MouseButtons m_MouseButtons;
     private IContainer components;
@@ -39,13 +37,11 @@ namespace djack.RogueSurvivor
     private readonly List<string> m_Mods = new List<string>();
     private static RogueForm? s_ooao = null;
 
-#nullable enable
     public static RogueForm Get { get { return s_ooao!; } }
 
     public IEnumerable<string> Mods { get => new List<string>(m_Mods); }  // value-copy for const correctness.
     public Font NormalFont { get => m_NormalFont; }
     public Font BoldFont { get => m_BoldFont; }
-#nullable restore
 
 #region Init
     public RogueForm()
@@ -164,7 +160,6 @@ namespace djack.RogueSurvivor
 #endregion
 
 #region IRogueUI implementation
-#nullable enable
     public KeyEventArgs UI_WaitKey()
     {
       if (InputScript.NextKey() is { } scripted) {   // --input: the script is the person at the keyboard, until it runs out
@@ -207,8 +202,6 @@ namespace djack.RogueSurvivor
         if (origin != mousePos) return new(default, new(mousePos.X, mousePos.Y));
       } while (true);
     }
-
-#nullable restore
 
     public void UI_PostKey(KeyEventArgs e)
     {
@@ -281,7 +274,6 @@ namespace djack.RogueSurvivor
       return false;
     }
 
-#nullable enable
     public T? WaitEscape<T>(Func<KeyEventArgs, T?> ok) where T:class
     {
       if (RogueGame.IsSimulating || TestDrive.Unattended) return null;
@@ -293,7 +285,6 @@ namespace djack.RogueSurvivor
       } while (null == ret);
       return ret;
     }
-#nullable restore
 
     public bool WaitYesOrNo()
     {

@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using System.IO;
 using Zaimoni.Data;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine
 {
   public sealed class TextFile

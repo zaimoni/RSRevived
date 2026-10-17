@@ -9,8 +9,6 @@ using Item_s = djack.RogueSurvivor.Data.Item_s;
 using System.Text.Json;
 using Zaimoni.JSON;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]

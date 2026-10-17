@@ -7,8 +7,6 @@
 using djack.RogueSurvivor.Data;
 using System;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]

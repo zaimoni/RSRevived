@@ -9,8 +9,6 @@ using System.Linq;
 using System.Threading;
 using Zaimoni.Data;
 
-#nullable enable
-
 // re-implementation of System.Collections.Generic.Dictionary
 // cloning: https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,cc27fcdd81291584,references
 

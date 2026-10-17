@@ -270,7 +270,6 @@ namespace djack.RogueSurvivor.Engine
     private const int JUMP_STUMBLE_CHANCE = 25;
     private const int JUMP_STUMBLE_ACTION_COST = Actor.BASE_ACTION_COST;
 
-#nullable enable
     // we cannot actually *be* a singleton since we need to guarantee that IRogueUI.UI is set up before we are alive
     static private RogueGame? s_ooao = null;
 
@@ -282,17 +281,13 @@ namespace djack.RogueSurvivor.Engine
     static private ZoneLoc[]? s_RefugeeSpawnZones = null;
     static private List<Actor>? s_RefugeePool = null;
     static public IEnumerable<Actor>? RefugeePool { get => s_RefugeePool; }   // read-only; for Session to save
-#nullable restore
 
-#nullable enable
 #if DEBUG
     public static bool IsDebugging;
 #endif
     private static readonly Stopwatch play_timer = new Stopwatch();
     private readonly IRogueUI m_UI; // this cannot be static.
-#nullable restore
     private HiScoreTable m_HiScoreTable;
-#nullable enable
     private static MessageManager? s_MessageManager;
     private static MessageManager Messages { get { return s_MessageManager!; } }
     private bool m_HasLoadedGame;
@@ -302,10 +297,8 @@ namespace djack.RogueSurvivor.Engine
     private static Actor? m_PlayerInTurn;
     private static string? m_Status = null; // suppressed by m_PlayerInTurn mismatch; AI view of player state
     private static string? m_Status2 = null; // suppressed by m_PlayerInTurn mismatch; UI feedback
-#nullable restore
     private static ZoneLoc m_MapView;
 
-#nullable enable
     private static bool m_HaveDebugLogged = false;
     public static void DebugLog(string msg) {
       m_HaveDebugLogged = true;
@@ -318,15 +311,11 @@ namespace djack.RogueSurvivor.Engine
     private readonly BaseTownGenerator m_TownGenerator;
     private static bool m_PlayedIntro = false;
     private readonly IMusicManager m_MusicManager;
-#nullable restore
     private CharGen m_CharGen;
-#nullable enable
     private readonly TextFile? m_Manual;
     private int m_ManualLine = 0;
-#nullable restore
     private Thread m_SimThread;
 
-#nullable enable
     public static Actor Player { get { return m_Player!; } }
     public static bool IsPlayer(Actor? a) { return a == m_Player; }
     private static Actor setPlayer(Actor a) {
@@ -336,7 +325,6 @@ namespace djack.RogueSurvivor.Engine
         if (null != msgs) s_MessageManager = msgs;
         return a;
     }
-#nullable restore
     public static Map CurrentMap { get { return m_MapView.m; } }
     private static Rectangle MapViewRect { get { return m_MapView.Rect; } }
     public bool IsGameRunning { get { return m_IsGameRunning; } }
@@ -406,7 +394,6 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
 
-#nullable enable
     public static void AddMessage(UI.Message msg) => Messages.Add(msg);
 
     // allows propagating sound to NPCs, in theory (API needs extending)
@@ -1010,7 +997,6 @@ namespace djack.RogueSurvivor.Engine
       }
       return true;
     }
-#nullable restore
 
     private bool HandleNewGameMode()
     {
@@ -1811,7 +1797,6 @@ namespace djack.RogueSurvivor.Engine
        }
     }
 
-#nullable enable
     private void AdvancePlay(District district, SimFlags sim)
     {
       var sess = Session.Get;
@@ -1880,7 +1865,6 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District finished: "+district.Name);
 #endif
     }
-#nullable restore
 
     public void bts_TimeOfDayMessaging() {
       // XXX message generation wrappers do not have access to map time, only world time
@@ -2023,13 +2007,11 @@ namespace djack.RogueSurvivor.Engine
       if (nextActorToAct.AfterAction()) map.AfterAction();
     }
 
-#nullable enable
     public void PlayEventMusic(string music)
     {
       m_MusicManager.Stop();
       m_MusicManager.Play(music, MusicPriority.PRIORITY_EVENT);
     }
-#nullable restore
 
     private void NextMapTurn(Map map, RogueGame.SimFlags sim)
     {
@@ -2310,7 +2292,6 @@ namespace djack.RogueSurvivor.Engine
       map.AdvanceLocalTime();
     }
 
-#nullable enable
     private void CheckFor_Fire_ZombieInvasion(Map map)
     {
       // lock down the ley-line invasion to city limits, for now.
@@ -2705,7 +2686,6 @@ namespace djack.RogueSurvivor.Engine
       return Rules.Get.DiceRoller.Choose(pts);
     }
 
-#nullable enable
     static private bool HasRaidHappenedSince(RaidType raid, Map map, int sinceNTurns)
     {
       return map.HasRaidHappenedSince(raid, sinceNTurns);
@@ -2758,7 +2738,6 @@ namespace djack.RogueSurvivor.Engine
          && !HasRaidHappenedSince(RaidType.BIKERS, map, BIKERS_RAID_DAYS_GAP * WorldTime.TURNS_PER_DAY)
          &&  Rules.Get.RollChance(BIKERS_RAID_CHANCE_PER_TURN);
     }
-#nullable restore
 
     private void FireEvent_BikersRaid(Map map)
     {
@@ -2806,7 +2785,6 @@ namespace djack.RogueSurvivor.Engine
       NotifyOrderablesAI(RaidType.BIKERS, leader.Location);
     }
 
-#nullable enable
     private bool CheckForEvent_GangstasRaid(Map map)
     {
         if (!World.Get.CHAR_CityLimits.Contains(map.District.WorldPosition)) return false;
@@ -2815,7 +2793,6 @@ namespace djack.RogueSurvivor.Engine
          && !HasRaidHappenedSince(RaidType.GANGSTA, map, GANGSTAS_RAID_DAYS_GAP*WorldTime.TURNS_PER_DAY)
          &&  Rules.Get.RollChance(GANGSTAS_RAID_CHANCE_PER_TURN);
     }
-#nullable restore
 
     private void FireEvent_GangstasRaid(Map map)
     {
@@ -2867,14 +2844,12 @@ namespace djack.RogueSurvivor.Engine
       NotifyOrderablesAI(RaidType.GANGSTA, leader.Location);
     }
 
-#nullable enable
     private bool CheckForEvent_BlackOpsRaid(Map map)
     {
       return map.LocalTime.Day >= BLACKOPS_RAID_DAY
          && !HasRaidHappenedSince(RaidType.BLACKOPS, map, BLACKOPS_RAID_DAY_GAP*WorldTime.TURNS_PER_DAY)
          &&  Rules.Get.RollChance(BLACKOPS_RAID_CHANCE_PER_TURN);
     }
-#nullable restore
 
     private void FireEvent_BlackOpsRaid(Map map)
     {
@@ -2891,7 +2866,6 @@ namespace djack.RogueSurvivor.Engine
     // Post-apocalyptic survivors do *NOT* need gas stations to arrive, unlike bikers and gangsters.
     // Their vans are assumed to be retrofitted to use biodiesel or ethanol (and they may well be
     // carrying the means to synthesize either or both).
-#nullable enable
     private bool CheckForEvent_BandOfSurvivors(Map map)
     {
         if (!World.Get.CHAR_CityLimits.Contains(map.District.WorldPosition)) return false;
@@ -2999,7 +2973,6 @@ namespace djack.RogueSurvivor.Engine
       }
       return null;
     }
-#nullable restore
 
     private void SpawnNewUndead(Map map, int day)
     {
@@ -3020,7 +2993,6 @@ namespace djack.RogueSurvivor.Engine
       SpawnActorOnMapBorder(map, newUndead, 1);
     }
 
-#nullable enable
     private void SpawnNewSewersUndead(Map map)
     {
       Actor newSewersUndead = m_TownGenerator.CreateNewSewersUndead(map.LocalTime.TurnCounter);
@@ -3119,7 +3091,6 @@ namespace djack.RogueSurvivor.Engine
       m_IsGameRunning = false;
       m_MusicManager.Stop();
     }
-#nullable restore
 
     // Advisor hint available overlay
     static private UI.OverlayPopup? s_HintAvailableOverlay = null;  // alpha10
@@ -3619,7 +3590,6 @@ namespace djack.RogueSurvivor.Engine
       play_timer.Restart();
     }
 
-#nullable enable
     private bool TryInsanity(PlayerController pc)
     {
       var player = pc.ControlledActor;
@@ -3680,7 +3650,6 @@ namespace djack.RogueSurvivor.Engine
       string newScreenshotName = GetUserNewScreenshotName();
       return null != m_UI.UI_SaveScreenshot(ScreenshotFilePath(newScreenshotName)) ? newScreenshotName : null;
     }
-#nullable restore
 
     private void HandleHelpMode()
     {
@@ -3980,7 +3949,6 @@ namespace djack.RogueSurvivor.Engine
       m_UI.WaitEscape();
     }
 
-#nullable enable
     /// <summary>A test run has no one to dismiss a popup: it goes to the log instead.</summary>
     static private bool Unattended(string[] msg)
     {
@@ -4127,7 +4095,6 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
       return ret;
     }
-#nullable restore
 
     private void HandleItemInfo()
     {
@@ -4873,7 +4840,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-#nullable enable
     private KeyValuePair<Data.Model.InventorySource<Item>, GDI_Point>? MouseToInventoryItem(GDI_Point screen)
     {
       var inventory = Player.Inventory;
@@ -4896,7 +4862,6 @@ namespace djack.RogueSurvivor.Engine
       // hard crash if this inventory is flagged as seen by player
       return new(new(invspec.Value, itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
     }
-#nullable restore
 
     private bool HandleMouseOverCorpses(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
@@ -4952,7 +4917,6 @@ namespace djack.RogueSurvivor.Engine
       return true;  // \todo test behavior when returning hasDoneAction
     }
 
-#nullable enable
     private Corpse? MouseToCorpse(GDI_Point screen, out GDI_Point corpsePos)
     {
       corpsePos = GDI_Point.Empty;
@@ -4992,8 +4956,6 @@ namespace djack.RogueSurvivor.Engine
       DoReviveCorpse(player, corpse);
       return true;
     }
-
-#nullable restore
 
     public void DoButcherCorpse(Actor a, Corpse c)  // AI doesn't currently do this, but should be able to once it knows how to manage sanity
     {
@@ -5108,7 +5070,6 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-#nullable enable
     private bool HandlePlayerShout(Actor player, string? text)
     {
       if (!player.CanShout(out string reason)) {
@@ -5672,7 +5633,6 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       return actionDone;
     }
-#nullable restore
 
     private bool HandlePlayerFireMode(PlayerController pc)
     {
@@ -5989,7 +5949,6 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
-#nullable enable
     private bool HandlePlayerSleep(Actor player)
     {
       if (!player.CanSleep(out string reason)) {
@@ -6359,7 +6318,6 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       return flag2;
     }
-#nullable restore
 
     private bool CanTag(Map map, Point pos, out string reason)
     {
@@ -6379,7 +6337,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-#nullable enable
     // alpha10 new way to use stench killer
     private bool HandlePlayerSprayOdorSuppressor(Actor player, ItemSprayScent spray)
     {
@@ -6417,7 +6374,6 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       return actionDone;
     }
-#nullable restore
 
     private bool HandlePlayerOrderPCMode(PlayerController pc) {
       // check for meaningful tasks to automate
@@ -7023,7 +6979,6 @@ namespace djack.RogueSurvivor.Engine
       return PagedPopup(string.Format("Ordering {0} to give...", follower.Name), can_give.Count, label, details);
     }
 
-#nullable enable
     private void HandleAiActor(ActorController ai)
     {
 #if DEBUG
@@ -7113,7 +7068,6 @@ namespace djack.RogueSurvivor.Engine
       SaveHints();
       ShowAdvisorHint(hint);
     }
-#nullable restore
 
     private bool IsAdvisorHintAppliable(AdvisorHint hint)
     {
@@ -7773,12 +7727,10 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen();
     }
 
-#nullable enable
     private Direction? WaitDirectionOrCancel()
     {
         return m_UI.WaitEscape(key => CommandToDirection(InputTranslator.KeyToCommand(key)));
     }
-#nullable restore
 
     static private int KeyToChoiceNumber(Keys key)
     {
@@ -8148,7 +8100,6 @@ namespace djack.RogueSurvivor.Engine
       return lines.ToArray();
     }
 
-#nullable enable
     static private string? DescribeActorActivity(Actor actor)
     {
       if (actor.IsPlayer) return null;
@@ -8632,7 +8583,6 @@ namespace djack.RogueSurvivor.Engine
       lines.Add(string.Format("Boring : {0}%", entertainmentModel.BoreChance));
       return lines;
     }
-#nullable restore
 
     static private string DescribeSkillShort(Skills.IDs id)
     {
@@ -8722,7 +8672,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-#nullable enable
     public static Direction? CommandToDirection(PlayerCommand cmd)
     {
       switch (cmd) {
@@ -8738,7 +8687,6 @@ namespace djack.RogueSurvivor.Engine
         default: return null;
       }
     }
-#nullable restore
 
     public void DoMoveActor(Actor actor, in Location newLocation)
     {
@@ -8828,7 +8776,6 @@ namespace djack.RogueSurvivor.Engine
       return canLeave;
     }
 
-#nullable enable
     public bool TryTriggerTrap(ItemTrap trap, Actor victim)
     {
       // \todo possible micro-optimization from common tests behind these function calls
@@ -9073,7 +9020,6 @@ namespace djack.RogueSurvivor.Engine
                                            ? string.Format("{0} {1} breath.", VERB_CATCH.Conjugate(actor), actor.HisOrHer)
                                            : string.Format("{0}.", VERB_WAIT.Conjugate(actor))));
     }
-#nullable restore
 
     public bool DoPlayerBump(Actor player, Direction direction)
     {
@@ -9259,7 +9205,6 @@ namespace djack.RogueSurvivor.Engine
       MakeEnemyOfTargetFactionInDistrict(aggressor, soldier);
     }
 
-#nullable enable
     private static void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target)
     {
       // XXX this should actually be based on radio range
@@ -9297,7 +9242,6 @@ namespace djack.RogueSurvivor.Engine
 
       target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, radio_displays, radio_displays, radio_should_record);
     }
-#nullable restore
 
     public void DoMeleeAttack(Actor attacker, Actor defender)
     {
@@ -9788,7 +9732,6 @@ namespace djack.RogueSurvivor.Engine
     }
 
 
-#nullable enable
     private void ShowBlastImage(GDI_Point screenPos, BlastAttack attack, int damage)
     {
       float alpha = (float) (0.1 + damage / (double)attack.Damage[0]);
@@ -9838,7 +9781,6 @@ namespace djack.RogueSurvivor.Engine
       ShowBlastImage(MapToScreen(pt), blast, damage);
       return true;
     }
-#nullable restore
 
     private int ApplyExplosionDamage(in Location location, int distanceFromBlast, BlastAttack blast)
     {
@@ -9893,7 +9835,6 @@ namespace djack.RogueSurvivor.Engine
       return num1;
     }
 
-#nullable enable
     static private void ExplosionChainReaction(Inventory? inv, in Location location)
     {
       if (inv.IsEmpty()) return;
@@ -9914,7 +9855,6 @@ namespace djack.RogueSurvivor.Engine
       if (null != itemExplosiveList) foreach (var it in itemExplosiveList) inv.RemoveAllQuantity(it);
       if (null != itemPrimedExplosiveList) foreach (var it in itemPrimedExplosiveList) location.Map.DropItemAtExt(it, location.Position);
     }
-#nullable restore
 
     public void DoChat(Actor speaker, Actor target)
     {
@@ -9943,7 +9883,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-#nullable enable
     // intended to be a side-effecting free action.  We intentionally do not support null op here
     public bool DoBackgroundChat(Actor speaker, List<Actor> targets, string speaker_text, string target_text, Action<Actor> op, Sayflags flags = default)
     {
@@ -10572,7 +10511,6 @@ namespace djack.RogueSurvivor.Engine
       if (do_not_crash_on_target_turn) DoWait(target);
       DoGiveItemTo(actor,target,gift);
     }
-#nullable restore
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift)
     {
@@ -10766,7 +10704,6 @@ restart:
       if (actor.IsPlayer) RedrawPlayScreen();
     }
 
-#nullable enable
     private void DoUseFoodItem(Actor actor, ItemFood food)
     {
       if (Player == actor && actor.FoodPoints >= actor.MaxFood - 1) ErrorPopup("Don't waste food!");
@@ -10896,7 +10833,6 @@ restart:
         seen?.AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " off." : " on."));
       }
     }
-#nullable restore
 
     public void DoBreak(Actor actor, MapObject mapObj)
     {
@@ -11230,7 +11166,6 @@ restart:
       witnesses?.AddMessage(MakePanopticMessage(actor, string.Format("{0} a tag.", VERB_SPRAY.Conjugate(actor))));
     }
 
-#nullable enable
     // alpha10 new way to use spray scent
     public void UI_SprayOdorSuppressor(Actor actor, ItemSprayScent suppressor, Actor sprayOn)
     {
@@ -11293,7 +11228,6 @@ restart:
       default: return (it is ItemAmmo || it is ItemFood) ? Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE : Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE;
       }
     }
-#nullable restore
 
     public void KillActor(Actor killer, Actor deadGuy, string reason)
     {
@@ -11553,7 +11487,6 @@ restart:
        return disarmIt; // done
     }
 
-#nullable enable
     static private ActorModel? CheckUndeadEvolution(Actor undead)
     {
       if (!s_Options.AllowUndeadsEvolution || !Session.Get.HasEvolution) return null;
@@ -11623,7 +11556,6 @@ restart:
       if (rules.RollChance(50)) rotation = -rotation;
       new Corpse(deadGuy, rotation); // XXX constructor inserts into containing map
     }
-#nullable restore
 
     private void PlayerDied(Actor killer, string reason)
     {
@@ -11967,7 +11899,6 @@ restart:
       if (upgradeActor.Controller is PlayerController u_pc) HandlePlayerFollowersUpgrade(u_pc);
     }
 
-#nullable restore
     private void HandlePlayerFollowersUpgrade(PlayerController pc)
     {
         var player = pc.ControlledActor;
@@ -11976,7 +11907,6 @@ restart:
         pc.AddMessageForceRead(new("Your followers learned new skills at your side!", Session.Get.WorldTime.TurnCounter, Color.Green));
         foreach (var fo in followers) HandlePlayerDecideUpgrade(pc, fo);
     }
-#nullable restore
 
     private void SkillUpgradeLiving(Actor actor) {
       if (actor.Model.Abilities.IsUndead) return;
@@ -12056,7 +11986,6 @@ restart:
       return Rules.Get.DiceRoller.Choose(idsList);
     }
 
-#nullable enable
     static private int NPCSkillUtility(Actor actor, Skills.IDs skID)
     {
       const int USELESS_UTIL = 0;
@@ -12113,7 +12042,6 @@ restart:
         }
       }
     }
-#nullable restore
 
     static private Skills.IDs? RollRandomSkillToUpgrade(Actor actor, int maxTries)
     {
@@ -12127,7 +12055,6 @@ restart:
       return null;
     }
 
-#nullable enable
     private void DoLooseRandomSkill(Actor actor)
     {
       var lost = actor.MySkills.LoseRandomSkill();
@@ -12148,7 +12075,6 @@ restart:
       // XXX \todo global event
       Player.ActorScoring.AddEvent(turn, string.Format("The weather changed to {0}.", DescribeWeather(world.Weather)));
     }
-#nullable restore
 
     private Actor Zombify(Actor zombifier, Actor deadVictim, bool isStartingGame)
     {
@@ -12271,7 +12197,6 @@ restart:
       RedrawPlayScreen();
     }
 
-#nullable enable
     private static string LocationText()
     {
       var loc = new Location(CurrentMap, MapViewRect.Location + (Point)HALF_VIEW_WIDTH);
@@ -12280,7 +12205,6 @@ restart:
       if (null != zonesAt) foreach (var z in zonesAt) stringBuilder.AppendFormat("{0} ", z.Name);
       return stringBuilder.ToString();
     }
-#nullable restore
 
  /*
   * Intentionally disabled function in RS alpha 9
@@ -12562,7 +12486,6 @@ restart:
       return GameImages.ICON_THREAT_DANGER;
     }
 
-#nullable enable
     private static string? EnemyIcon(Actor actor) {
         if (Player.IsSelfDefenceFrom(actor)) return GameImages.ICON_SELF_DEFENCE;
         else if (Player.IsAggressorOf(actor)) return GameImages.ICON_AGGRESSOR;
@@ -12606,7 +12529,6 @@ restart:
         }
         return null;
     }
-#nullable restore
 
     public void DrawActorSprite(Actor actor, GDI_Point screen, Color tint)
     {
@@ -12688,7 +12610,6 @@ restart:
       }
     }
 
-#nullable enable
     public void DrawActorDecoration(Actor actor, DollPart part, Color tint)
     {
       var decorations = actor.Doll.GetDecorations(part);
@@ -12716,7 +12637,6 @@ restart:
       var equippedItem = actor.GetEquippedItem(part);
       if (null != equippedItem) m_UI.AppendTile(equippedItem.ImageID, tint);
     }
-#nullable restore
 
     public void DrawCorpse(Corpse c, int gx, int gy, Color tint)
     {
@@ -13199,7 +13119,6 @@ restart:
       }
     }
 
-#nullable enable
     private void DrawInventory(IEnumerable<Item>? inventory, string? title, bool drawSlotsNumbers, int maxSlots, int gx, int gy)
     {
       if (!string.IsNullOrEmpty(title)) m_UI.UI_DrawStringBold(Color.White, title, gx, gy-BOLD_LINE_SPACING);
@@ -13273,7 +13192,6 @@ restart:
     }
     private void DrawItem(Item it, in Vector2D_stack<int> pos) => DrawItem(it, in pos, Color.White);
     private void DrawItem(Item it, GDI_Point pos, Color tint) => DrawItem(it, new Vector2D_stack<int>(pos.X, pos.Y), tint);
-#nullable restore
 
     public void DrawActorSkillTable(Actor actor, int gx, int gy)
     {
@@ -13436,7 +13354,6 @@ restart:
       return Player.Controller.IsVisibleTo(in location);
     }
 
-#nullable enable
     private static bool IsVisibleToPlayer(Map map, in Point position)
     {
       return Player.Controller.IsVisibleTo(map, in position);
@@ -13451,7 +13368,6 @@ restart:
     {
       return Player.Controller.IsVisibleTo(mapObj.Location);
     }
-#nullable restore
 
     public void PanViewportToRedraw(in Location loc)
     {
@@ -13475,7 +13391,6 @@ restart:
       }
     }
 
-#nullable enable
     public void PanViewportTo(Actor player) {
       if (Player != player) PanViewportTo(setPlayer(player).Location);
       else PanViewportTo(player.Location);
@@ -13507,7 +13422,6 @@ restart:
         PagedPopup("Advising...", considering.Count, label, details, false);
         return ret;
     }
-#nullable restore
 
     /// <returns>The final location looked at if confirmed; null if cancelled</returns>
     private Location? DoPlayerFarLook()
@@ -13724,7 +13638,6 @@ restart:
       }
     }
 
-#nullable enable
     private List<PlayerController>? _ForceVisibleToPlayer(in Location view)
     {
       if (null == view.Map) return null; // convince Duckman to not superheroically crash many games on turn 0
@@ -13780,7 +13693,6 @@ restart:
       if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
       return viewing;
     }
-#nullable restore
 
     private bool ForceVisibleToPlayer(in Location view)
     {
@@ -14476,7 +14388,6 @@ retry:
       }
     }
 
-#nullable enable
     private const int SHOW_SPECIAL_DIALOGUE_LINE_LIMIT = 61;
     private void ShowSpecialDialogue(Actor speaker, string[] text)
     {
@@ -14509,7 +14420,6 @@ retry:
       m_MusicManager.Stop();
       return ret;
     }
-#nullable restore
 
     private void CheckSpecialPlayerEventsAfterAction(Actor player)
     { // XXX player is always m_Player here.
@@ -14798,7 +14708,6 @@ retry:
       }
     }
 
-#nullable enable
     private ActorAction? GenerateInsaneAction(Actor actor)
     {
       var rules = Rules.Get;
@@ -14834,7 +14743,6 @@ retry:
         default: return null;
       }
     }
-#nullable restore
 
     private void SeeingCauseInsanity(Actor whoDoesTheAction, int sanCost, string what)
     {
@@ -15011,7 +14919,6 @@ retry:
       }
     }
 
-#nullable enable
     private void CloseAllGates(Map map,string gate_name)
     {
       string singular_gate = gate_name;
@@ -15029,7 +14936,6 @@ retry:
           witnesses?.AddMessage(MakePanopticMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))));
       });
     }
-#nullable restore
 
     static private void DoHospitalPowerOn()
     {
@@ -15093,12 +14999,10 @@ retry:
       return speaker.HasActiveCellPhone && target.HasActiveCellPhone;
     }
 
-#nullable enable
     static private List<Actor> ListDistrictActors(District d, MapListFlags flags, Predicate<Actor> pred)
     {
       return d.FilterActors(pred, map => (flags & MapListFlags.EXCLUDE_SECRET_MAPS) == MapListFlags.NONE || !map.IsSecret);
     }
-#nullable restore
 
     static private string FunFactActorResume(Actor a, string info)
     {
@@ -15222,7 +15126,6 @@ retry:
     }
   }
 
-#nullable enable
   internal static partial class ext_RSRevived {
     // These two are assumed to be working w/actor.VisibleIdentity
     // Using an extension function for the Verb class is intentional (same API as for raw strings)
@@ -15424,5 +15327,4 @@ retry:
     }
 
   }
-#nullable restore
 }

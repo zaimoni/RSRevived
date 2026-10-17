@@ -56,7 +56,6 @@ namespace djack.RogueSurvivor.Data
     public virtual string ImageID { get => m_ID.ImageID(); }
     public string HiddenImageID { get => m_ID.ImageID(); }
 
-#nullable enable
     public Location Location {
       get => m_Location;
       set {
@@ -238,14 +237,12 @@ namespace djack.RogueSurvivor.Data
       if (IDs.IRON_GATE_OPEN   == dest && IDs.IRON_GATE_CLOSED == m_ID) return true;
       return false;
     }
-#nullable restore
 
     protected void InvalidateLOS()
     {
       if (null != m_Location.Map) Engine.LOS.Validate(m_Location.Map,los => !los.Contains(m_Location.Position));
     }
 
-#nullable enable
     private string ReasonCantPushTo(Point toPos)
     {
       var tile_loc = Location.Map.GetTileModelLocation(toPos);
@@ -277,7 +274,6 @@ namespace djack.RogueSurvivor.Data
     /// <param name="to">Assumed in canonical form (in-bounds)</param>
     public bool CanPushTo(in Location to) { return string.IsNullOrEmpty(ReasonCantPushTo(in to)); }
     public void PlaceAt(Map m, in Point pos) {m.PlaceAt(this, pos);} // this guaranteed non-null so non-null precondition ok
-#nullable restore
 
     public void Remove()
     {
@@ -426,7 +422,6 @@ namespace djack.RogueSurvivor.Data
     }
   } // MapObject
 
-#nullable enable
   [Serializable]
   public sealed class ShelfLike : MapObject, IInventory, IJsonStaged<ShelfLike>
     {
@@ -489,7 +484,6 @@ namespace djack.RogueSurvivor.Data
       base._destroy();
     }
   }
-#nullable restore
 
   static class MapObject_ext
   {

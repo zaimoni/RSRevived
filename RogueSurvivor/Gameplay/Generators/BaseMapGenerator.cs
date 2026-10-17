@@ -14,8 +14,6 @@ using Zaimoni.Data;
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
   public abstract class BaseMapGenerator : MapGenerator
@@ -254,7 +252,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       m_DiceRoller = new DiceRoller();
     }
 
-#nullable enable
     static public void DressCivilian(DiceRoller roller, Actor actor)
     {
       if (actor.Model.DollBody.IsMale)
@@ -357,7 +354,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.Doll.AddDecoration(DollPart.SKIN, roller.Choose(MALE_SKINS));
       actor.Doll.AddDecoration(DollPart.TORSO, GameImages.BLACKOP_SUIT);
     }
-#nullable restore
 
     static public void GiveNameToActor(DiceRoller roller, Actor actor, string? prefix=null)
     {
@@ -452,7 +448,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new ItemGrenade(GameItems.GRENADE, m_DiceRoller.Roll(1, GameItems.GRENADE.StackingLimit));
     }
-#nullable restore
 
     protected static void BarricadeDoors(Map map, Rectangle rect, int barricadeLevel)
     {

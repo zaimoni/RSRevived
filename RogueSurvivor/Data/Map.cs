@@ -49,12 +49,9 @@ namespace djack.RogueSurvivor.Data
     public const int GROUND_INVENTORY_SLOTS = RogueGame.INVENTORY_SLOTS_PER_LINE;
     public readonly int Seed;
     public readonly Point DistrictPos; // should be District.WorldPosition by construction
-#nullable enable
     [NonSerialized] private District? m_District; // keep reference cycle out of savefile
     public District District { get { return m_District!; } }
-#nullable restore
     public readonly string Name;
-#nullable enable
     public readonly string BgMusic;  // alpha10
     private Lighting m_Lighting;
     public readonly WorldTime LocalTime;
@@ -157,7 +154,6 @@ namespace djack.RogueSurvivor.Data
       return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(wrap);
 //    return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.OfType< Engine.MapObjects.PowerGenerator >().ToList()); // OfType stopped working: .NET 5.0 break?
     }
-#nullable restore
 
     public Map(int seed, string name, District d, short width, short height, string music, Lighting light=Lighting.OUTSIDE, bool secret=false)
     {
@@ -783,7 +779,6 @@ namespace djack.RogueSurvivor.Data
       return dest.IsInBounds(pt) ? new Location(dest, pt) : dest._Normalize(pt);
     }
 
-#nullable enable
     public Location? Normalize(Point pt)
     {
       if (IsInBounds(pt)) return null;
@@ -1150,7 +1145,6 @@ namespace djack.RogueSurvivor.Data
       }
       return ret;
     }
-#nullable restore
 
     public bool WouldBlacklistFor(Point pt,Actor actor)
     {
@@ -1340,7 +1334,6 @@ retry:
           && LocalTime.TurnCounter - t0 < sinceNTurns; // at least n turns ago
     }
 
-#nullable enable
 #region zones: map generation support
     public void AddZone(Zone zone) { m_Zones.Add(zone); }
 #if OBSOLETE
@@ -2519,7 +2512,6 @@ retry:
       }
     }
 
-#nullable enable
     /// <remark>Map generation depends on this being no-fail</remark>
     public void RemoveAllItemsAt(Point position) { m_GroundItemsByPosition.Remove(position); }
 
@@ -2684,7 +2676,6 @@ retry:
         m_ScentsByPosition.Add(position, new List<OdorScent>(2) { new OdorScent(odor, freshStrength) });
       }
     }
-#nullable restore
 
 #if DEAD_FUNC
     public void RemoveScent(OdorScent scent)
@@ -2695,7 +2686,6 @@ retry:
     }
 #endif
 
-#nullable enable
     public void DecayScents()
     {
       // Cf. Location.OdorsDecay
@@ -2966,7 +2956,6 @@ retry:
        return new Rectangle(DistrictPos, new Size(1, 1));
      }
     }
-#nullable restore
 
 #if PRERELEASE_MOTHBALL
     private void fuse_chokepoints(List<Point[]> candidates, Direction normal_dir, Action<Location[]> install)

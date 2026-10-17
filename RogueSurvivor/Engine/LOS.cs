@@ -304,7 +304,6 @@ namespace djack.RogueSurvivor.Engine
       return IdealFireLine(in from, test.Value.Position, maxRange);
     }
 
-#nullable enable
     private static Location[]? AbstractFireLine(in Location fromLocation, Point toPosition)
     {
       Map map = fromLocation.Map;
@@ -331,7 +330,6 @@ namespace djack.RogueSurvivor.Engine
       int dist = Rules.InteractionDistance(in from, test.Value);
       return AbstractFireLine(in from, test.Value.Position);
     }
-#nullable restore
 
     private static bool CanTraceHypotheticalFireLine(in Location fromLocation, Point toPosition, int maxRange, Actor shooter, List<Point>? line=null)
     {
@@ -379,7 +377,6 @@ namespace djack.RogueSurvivor.Engine
     // and also ditch the cache when it got "old"
     // note that actors only block their own hypothetical lines of fire, not hypothetical throwing lines or hypothetical FOV
     // the return of a cached value is assumed to be by value
-#nullable enable
     private static Point VisibilityCheck(Point origin, Point dest, out Direction? alt)
     {
       alt = null;
@@ -543,6 +540,5 @@ namespace djack.RogueSurvivor.Engine
     {
       return ComputeFOVFor(actor, actor.Location);
     }
-#nullable restore
   }
 }

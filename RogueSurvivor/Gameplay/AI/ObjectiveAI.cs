@@ -494,17 +494,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected List<Actor> _slow_melee_threat = null;
     [NonSerialized] protected HashSet<Actor> _immediate_threat = null;
     [NonSerialized] protected HashSet<Point> _blast_field = null;
-#nullable enable
     [NonSerialized] protected List<Point>? _retreat = null;
     [NonSerialized] protected List<Point>? _run_retreat = null;
-#nullable restore
     [NonSerialized] protected bool _safe_retreat = false;
     [NonSerialized] protected bool _safe_run_retreat = false;
-#nullable enable
     protected ActionMoveDelta? _last_move = null;   // for detecting period 2 move looping
     protected sbyte _recoil = 0;
     public sbyte Recoil { get { return _recoil; } }
-#nullable restore
     [NonSerialized] protected bool _used_advanced_pathing = false;
     [NonSerialized] protected bool _rejected_backtrack = false;
     [NonSerialized] protected HashSet<Location> _current_goals = null;
@@ -587,7 +583,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-#nullable enable
     public Pathable? LivePathing() {
       Pathable? ret = null;
       var ub = Objectives.Count;
@@ -598,7 +593,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return ret;
     }
-#nullable restore
 
     public override bool IsEngaged { get {
       if (base.IsEngaged) return true;
@@ -1024,7 +1018,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-#nullable enable
     public bool LegalPathingIsValid { get { return null != _legal_path; } }
 
     public ActorAction? LegalPathing(Location loc)
@@ -1032,7 +1025,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != _legal_path && _legal_path.TryGetValue(loc, out var act)) return act;
       return null;
     }
-#nullable restore
 
     protected override void RecordLastAction(ActorAction act) {
       if (null == act || !act.PerformedBy(m_Actor)) return; // not ours, reject
@@ -1201,7 +1193,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-#nullable enable
     protected ActorAction? UsePreexistingPath(HashSet<Location>? goals=null)
     {
         var ret = UsePreexistingPath(GetMinStepPath<Point>(), goals);
@@ -1212,7 +1203,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     protected ActorAction? UsePreexistingLambdaPath() { return GetLambdaPath()?.WalkPath(this); }
-#nullable restore
 
     private ActorAction _pathNear(Location loc)
     {
@@ -1535,7 +1525,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return "BASTARD! TRAITOR!";
     }
 
-#nullable enable
     protected ActorAction? BehaviorFleeExplosives()
     {
       if (!(_blast_field?.Contains(m_Actor.Location.Position) ?? false)) return null;
@@ -1562,7 +1551,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return null;
     }
-#nullable restore
 
     protected void ETAToKill(Actor en, int dist, ItemRangedWeapon rw, Dictionary<Actor, int> best_weapon_ETAs, Dictionary<Actor, ItemRangedWeapon> best_weapons=null)
     {
@@ -1593,7 +1581,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-#nullable enable
     protected ActorAction? ScanForMeleeSnipe()
     {
 #if DEBUG
@@ -1716,7 +1703,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
        m_Actor.TargetedActivity(Activity.FIGHTING, target);
        return new ActionRangedAttack(m_Actor, target, fireMode);
     }
-#nullable restore
 
     // forked from OrderableAI::BehaviorEquipWeapon
     private ActorAction? AttackWithoutMoving()
@@ -1836,7 +1822,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool WantToRecharge() { return m_Actor.Inventory.Has<ItemLight>(it => WantToRecharge(it)); }
 
-#nullable enable
     public ActorAction? RechargeWithAdjacentGenerator()
     {
       var recharge = m_Actor.Inventory.GetFirstMatching<ItemLight>(it => it.MaxBatteries - it.Batteries >= (it as BatteryPowered).RechargeRate);
@@ -1856,7 +1841,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0 < recharge_at.Count) return BehaviorPathTo(recharge_at);
       return null;
     }
-#nullable restore
 
     private void AvoidBeingCornered()
     {
@@ -1969,7 +1953,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected void ClearMovePlan() { PlannedMoves.Clear(); }
 
-#nullable restore
     private List<Point>? FindRetreat()
     {
 #if DEBUG
@@ -1998,7 +1981,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmp_point = ret.Where(pt=> _damage_field[pt] < _damage_field[m_Actor.Location.Position]);
       return (tmp_point.Any() ? tmp_point.ToList() : null);
     }
-#nullable restore
 
 #region DecideMove
     static private List<Point> DecideMove_Avoid(List<Point> src, IEnumerable<Point> avoid)
@@ -2518,7 +2500,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return _finalDecideMove(tmp, legal_steps);
     }
 
-#nullable enable
     private ActorAction? _finalDecideMove(List<Location> tmp, Dictionary<Location, ActorAction> legal_steps)
     {
       var secondary = new List<ActorAction>();
@@ -2561,7 +2542,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (1==src.Count) return src.First().Value;   // intentionally allow non-moving shove through to simulate panic
       return _finalDecideMove(src.Keys.ToList(), src);
     }
-#nullable restore
 
     // \todo timing test: handle Resolvable before or after ActorDest?
     public bool VetoAction(ActorAction x)
@@ -2647,7 +2627,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-#nullable enable
     static public bool ActorsNearby(Location loc, Predicate<Actor> test)
     {
       var e = loc.Exit;
@@ -2846,7 +2825,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return null;
     }
-#nullable restore
 
     public void ScheduleFollowup(ActorAction x)
     {
@@ -3028,7 +3006,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return _finalDecideMove(src);
     }
 
-#nullable enable
     protected ActorAction? DecideMove(Dictionary<Location, KeyValuePair<ActorAction, int>> dests)
     {
       if (0 >= dests.Count) return null;
@@ -3100,7 +3077,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       DecideMove_NoJump(_dests);
       return _finalDecideMove(_dests);
     }
-#nullable restore
 
     private ActionMoveStep? _finalDecideMove(IEnumerable<Point> src, List<Point> tmp2)
     {
@@ -3412,7 +3388,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return decide();
     }
 
-#nullable enable
     public Dictionary<Location, ActionMoveDelta>? PlanWalkAwayFrom(Dictionary<Location,Actor> fear, IEnumerable<Point>? range = null, IEnumerable<Point>? range2 = null)
     {
       List<Location>? upgrade(IEnumerable<Point> src) {
@@ -3427,7 +3402,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       return PlanWalkAwayFrom(fear, (null != range) ? upgrade(range) : null, (null != range2) ? upgrade(range2) : null);
     }
-#nullable restore
 
     public void ExecuteActionChain(List<ActorAction> actions)
     {
@@ -3895,7 +3869,6 @@ retry:
       return navigate;
     }
 
-#nullable enable
     protected FloodfillPathfinder<Point> PathfinderFor(Dictionary<Point, int> goal_costs,Map m)
     {
 #if DEBUG
@@ -3950,7 +3923,6 @@ retry:
       if (null != min_steps && 1<min_steps.Count) return RecordMinStepPath(min_steps,ret);
       return ret;
     }
-#nullable restore
 
     protected ActorAction? BehaviorPathTo(FloodfillPathfinder<Location> navigate)
     {
@@ -4715,7 +4687,6 @@ restart_chokepoints:
       }
     }
 
-#nullable enable
     private void AddExplosivesToDamageField(List<Percept_<Inventory>>? goals)
     {
       if (null == goals) return;
@@ -4938,7 +4909,6 @@ restart_chokepoints:
         return null;
     }
 #endregion
-#nullable restore
 
     public void Terminate(Actor a)
     {
@@ -5247,7 +5217,6 @@ restart_chokepoints:
       }
     }
 
-#nullable enable
     abstract protected ActorAction? BehaviorWouldGrabFrom(in Location loc);
     abstract protected ActorAction? BehaviorWouldGrabFrom(ShelfLike obj);
     public ActorAction? BehaviorWouldGrabFrom(in Data.Model.InvOrigin stack) {
@@ -5263,8 +5232,6 @@ restart_chokepoints:
     }
 
     public ActorAction? WouldGetFrom(in Location loc) => loc.Items.IsEmpty() ? null : BehaviorWouldGrabFrom(loc);
-
-#nullable restore
 
     protected List<Data.Model.InvOrigin> GetInterestingInventoryStacks(Predicate<Inventory> want_now)   // technically could be ActorController
     {
@@ -5390,7 +5357,6 @@ restart_chokepoints:
         return true;    // default to ok to trade away
     }
 
-#nullable enable
     public List<Item>? GetTradeableItems()
     {
       var inv = m_Actor.Inventory;
@@ -5398,7 +5364,6 @@ restart_chokepoints:
       IEnumerable<Item> ret = inv.Where(it => IsTradeableItem(it));
       return ret.Any() ? ret.ToList() : null;
     }
-#nullable restore
 
     public Dictionary<Location, Actor> GetTradingTargets(Dictionary<Location,Actor> friends) // Waterfall Lifecycle: retain this parameter for contrafactual use
     {
@@ -5483,7 +5448,6 @@ restart_chokepoints:
         return false;
     }
 
-#nullable enable
     /// <summary>
     /// Strongly prefer to not directly create ActionUseItem for ammo; use this wrapper to bypass a player UI check.
     /// </summary>
@@ -5495,7 +5459,6 @@ restart_chokepoints:
       if (m_Actor.Inventory.Contains(ammo)) rw.EquippedBy(m_Actor);
       return new ActionUseItem(m_Actor, ammo);
     }
-#nullable restore
 
     private ActorAction? _PrefilterDrop(Item it, bool use_ok=true)
     {
@@ -6017,7 +5980,6 @@ restart_chokepoints:
       return null;
     }
 
-#nullable enable
     private ActorAction? _BehaviorDropOrExchange(Item give, Item take, in Data.Model.InvOrigin stack, bool use_ok=true)
     {
 #if DEBUG
@@ -6048,7 +6010,6 @@ restart_chokepoints:
       }
       return BehaviorDropItem(give);
     }
-#nullable restore
 
     public bool RHSMoreInteresting(Item lhs, Item rhs)
     {
@@ -6978,7 +6939,6 @@ restart_chokepoints:
 #endif
     }
 
-#nullable enable
     private bool _InterestingItemPostprocess(Item it)
     {
       if (!m_Actor.CanGet(it, out var err)) {
@@ -7045,7 +7005,6 @@ restart_chokepoints:
       }
       return _InterestingItemPostprocess(am);
     }
-#nullable restore
 
     // so we can do post-condition testing cleanly
     private bool _IsInterestingItem(Item it)
@@ -7170,7 +7129,6 @@ restart_chokepoints:
 #endif
     }
 
-#nullable enable
     public virtual bool IsInterestingTradeItem(Actor speaker, Item offeredItem) // Cf. OrderableAI::IsRationalTradeItem
     {
 #if DEBUG
@@ -7180,7 +7138,6 @@ restart_chokepoints:
       if (Rules.Get.RollChance(speaker.CharismaticTradeChance)) return true;
       return IsInterestingItem(offeredItem);
     }
-#nullable restore
 
     /// pt is just an abstract key here, not used in position calculations directly
     private static void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon>? rws, in Data.Model.InvOrigin pt, Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> best_rw, Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> reload_empty_rw, Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> discard_empty_rw, Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> reload_rw)
@@ -7341,7 +7298,6 @@ restart_chokepoints:
       return null;
     }
 
-#nullable enable
     protected ActorAction? InventoryStackTactics() { return InventoryStackTactics(m_Actor.Location); }
 
     /// <remark>Intentionally asymmetric.  Call this twice to get proper coverage.
@@ -7708,8 +7664,6 @@ restart_chokepoints:
             if (0 < could_find.Count) threat.Cleared(could_find);
         }
     }
-
-#nullable restore
 
     /// <summary>
     /// While this is only used by the PC, there's no technical reason why CivilianAI cannot impersonate cops.

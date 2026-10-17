@@ -13,8 +13,6 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Location m_ExitPoint;
 
-#nullable enable
-
     public Exit Exit { get { return m_ExitPoint.Exit!; } }
     public bool IsNotBlocked { get { return Exit.IsNotBlocked(m_Actor); } }
     public Location dest { get { return Exit.Location; } }

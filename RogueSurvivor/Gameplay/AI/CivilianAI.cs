@@ -29,7 +29,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // JSON: saves $type only so far (the AI reloads with amnesia)
     static CivilianAI IJsonStaged<CivilianAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new CivilianAI(JsonOwner));
 
-#nullable enable
     private static readonly string[] FIGHT_EMOTES = new string[MAX_EMOTES] {
       "Go away",
       "Damn it I'm trapped!",
@@ -116,7 +115,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else if (CanSee(target.Location)) return "Come on {0}! Hurry up!";
       else return "Where the hell is {0}?";
     }
-#nullable restore
 
     protected override ActorAction SelectAction()
     {

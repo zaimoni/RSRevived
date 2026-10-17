@@ -3815,7 +3815,6 @@ restart:
       return map;
     }
 
-#nullable enable
     private Actor CreateNewHospitalPatient(int spawnTime)
     {
       Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, spawnTime);
@@ -3851,7 +3850,6 @@ restart:
       numberedName.Take(PostprocessQuantity(GameItems.BANDAGE.create()));
       return numberedName;
     }
-#nullable restore
 
     private void MakeHospitalPatientRoom(Map map, string baseZoneName, Rectangle room, bool isFacingEast)
     {
@@ -4052,7 +4050,6 @@ restart:
       return actor;
     }
 
-#nullable enable
     public static Actor MakeZombified(Actor? zombifier, Actor deadVictim, int turn)
     {
       string properName = string.Format("{0}'s zombie", deadVictim.UnmodifiedName);
@@ -4182,7 +4179,6 @@ restart:
       SkinDog(m_DiceRoller, numberedName);
       return numberedName;
     }
-#nullable restore
 
     static private void AddExit(Map from, Point fromPosition, Map to, Point toPosition, string exitImageID)
     {

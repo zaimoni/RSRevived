@@ -18,8 +18,6 @@ using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
 using ItemRangedWeaponModel = djack.RogueSurvivor.Engine.Items.ItemRangedWeaponModel;
 using ItemTrap = djack.RogueSurvivor.Engine.Items.ItemTrap;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]

@@ -8,8 +8,6 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionBreak : ActorAction

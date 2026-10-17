@@ -8,8 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]

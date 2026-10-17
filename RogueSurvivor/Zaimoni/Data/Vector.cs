@@ -436,7 +436,6 @@ namespace Zaimoni.Data
         IEnumerator<Vector2D<T>> IEnumerable<Vector2D<T>>.GetEnumerator() => new Enumerator(this);
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => new Enumerator(this);
 
-#nullable enable
         /// <summary>The allocation-free twin of LINQ's Any, which would box both this struct and its enumerator.</summary>
         public bool Any(Predicate<Vector2D<T>> testFn)
         {
@@ -498,7 +497,6 @@ namespace Zaimoni.Data
                 if (testFn(pt)) dest.push(ref pt);
             }
         }
-#nullable restore
         public string to_s() => "[" + _anchor.to_s() + "," + _dim.to_s() + "]";
 
         public override int GetHashCode() => _anchor.GetHashCode() ^ _dim.GetHashCode();

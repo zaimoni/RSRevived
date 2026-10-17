@@ -10,8 +10,6 @@ using Zaimoni.JSON;
 
 using Color = System.Drawing.Color;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.UI
 {
   [Serializable]

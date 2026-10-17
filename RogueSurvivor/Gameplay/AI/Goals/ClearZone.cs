@@ -8,8 +8,6 @@ using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Gameplay.AI.Goals
 {
     // Civilian: view every single coordinate in the zone

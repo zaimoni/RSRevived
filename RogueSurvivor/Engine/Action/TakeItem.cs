@@ -3,8 +3,6 @@ using djack.RogueSurvivor.Data;
 using System.Text.Json;
 using Zaimoni.JSON;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Engine._Action
 {
     [Serializable]

@@ -5,7 +5,6 @@ using djack.RogueSurvivor.Engine.Items;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-#nullable enable
 
     // alpha10
     public sealed class ActionSprayOdorSuppressor : ActorAction, TargetActor, Use<ItemSprayScent>, NotSchedulable

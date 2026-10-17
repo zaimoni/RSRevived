@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-#nullable enable
-
 namespace djack.RogueSurvivor.Data.Model
 {
     // for mental modeling by ObjectiveAI
