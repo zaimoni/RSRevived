@@ -2686,16 +2686,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (0 < ret.Count ? ret : null);
     }
 
-    public ActorAction BehaviorWalkAwayFrom(IEnumerable<Location> goals, HashSet<Point> LoF_reserve)
+    public ActorAction? BehaviorWalkAwayFrom(IEnumerable<Location> goals, HashSet<Point>? LoF_reserve)
     {
       var leader = m_Actor.LiveLeader;
-      var ranged_target = null != leader ? (leader.Controller as ObjectiveAI)?.GetNearestTargetFor() : null;
-      Actor actor = ranged_target?.Key;
-      bool checkLeaderLof = null != actor;
-      List<Point> leaderLoF = null;
-      if (checkLeaderLof) {
-        leaderLoF = new List<Point>(1);
-        LOS.CanTraceFireLine(leader.Location, actor.Location, ranged_target.Value.Value.Model.Attack.Range, leaderLoF);
+      var leader_oai = leader?.Controller as ObjectiveAI;
+      List<Point>? leaderLoF = null;
+      if (leader_oai is not null) {
+        if (leader_oai.GetNearestTargetFor() is (var actor, var rw)) {
+          leaderLoF = new List<Point>(1);
+          LOS.CanTraceFireLine(leader.Location, actor.Location, rw.Model.Attack.Range, leaderLoF);
+        }
       }
       var choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
@@ -2708,13 +2708,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         float num = SafetyFrom(in location, goals);
         if (LoF_reserve?.Contains(location.Position) ?? false) --num;
-        if (null != leader) {
+        if (leader is not null) {
           num -= (float)Rules.StdDistance(in location, leader.Location);
           if (leaderLoF?.Contains(location.Position) ?? false) num -= (float)IN_LEADER_LOF_SAFETY_PENALTY;
         }
         return num;
       }, (a, b) => a > b);
-      return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
+      return choiceEval is not null ? new ActionBump(m_Actor, choiceEval.Choice) : null;
     }
 
     private ActorAction? BehaviorFlee(Actor enemy, HashSet<Point>? LoF_reserve, bool doRun, string[] emotes)
