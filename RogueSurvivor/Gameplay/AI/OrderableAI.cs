@@ -944,7 +944,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     internal class Goal_HintPathToActor : Objective,Pathable, IJsonStaged<Goal_HintPathToActor>
     {
       private readonly Actor _dest;
-      private readonly ActorAction _when_at_target;
+      private readonly ActorAction? _when_at_target;
 
       public Actor Whom { get { return _dest; } }
 
@@ -985,8 +985,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       #endregion
 
 
-      public Goal_HintPathToActor(int t0, Actor who, Actor dest, ActorAction at_target=null)
-      : base(t0,who)
+      public Goal_HintPathToActor(int t0, Actor who, Actor dest, ActorAction? at_target = null) : base(t0,who)
       {
         _dest = dest;
         _when_at_target = at_target;
@@ -1287,10 +1286,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
     private ActorDirective? m_Directive;
     private ActorOrder? m_Order;
-    protected Percept_<ActorTag> m_LastEnemySaw;    // by tag: the actor may be long dead (savefile break 2026-10-04)
-    protected Percept m_LastItemsSaw;
-    protected Percept_<ActorTag> m_LastSoldierSaw;
-    protected Percept m_LastRaidHeard;
+    protected Percept_<ActorTag>? m_LastEnemySaw;    // by tag: the actor may be long dead (savefile break 2026-10-04)
+    protected Percept? m_LastItemsSaw;
+    protected Percept_<ActorTag>? m_LastSoldierSaw;
+    protected Percept? m_LastRaidHeard;
     [NonSerialized] static private Percept? _lastRaidHeard; // staging for m_LastRaidHeard
     [NonSerialized] private List<Actor>? _adjacent_friends;    // cache variable for above four
     protected bool m_ReachedPatrolPoint;
