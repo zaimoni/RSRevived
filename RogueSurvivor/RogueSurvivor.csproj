@@ -5,6 +5,8 @@
     <!-- https://learn.microsoft.com/en-us/dotnet/standard/frameworks -->
     <TargetFramework>net10.0-windows7.0</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms> <!-- unsure if this is correct -->
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CS0162</NoWarn> <!-- the const bool tracing guards leave unreachable code by design -->
 
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
