@@ -297,7 +297,11 @@ namespace djack.RogueSurvivor.Engine
     private static Actor? m_PlayerInTurn;
     private static string? m_Status = null; // suppressed by m_PlayerInTurn mismatch; AI view of player state
     private static string? m_Status2 = null; // suppressed by m_PlayerInTurn mismatch; UI feedback
-    private static ZoneLoc m_MapView;
+    /// <summary>The viewport.  Null only between Reset and the next AfterLoad or SetCurrentMap; non-null throughout play, which
+    /// MapView states.  Replaced, never mutated: every assignment is an Interlocked.Exchange, and a reader that needs more than one
+    /// member takes its own snapshot once, so a pan from another thread cannot tear it.</summary>
+    private static ZoneLoc? m_MapView;
+    private static ZoneLoc MapView => m_MapView!;
 
     private static bool m_HaveDebugLogged = false;
     public static void DebugLog(string msg) {
@@ -325,8 +329,8 @@ namespace djack.RogueSurvivor.Engine
         if (null != msgs) s_MessageManager = msgs;
         return a;
     }
-    public static Map CurrentMap { get { return m_MapView.m; } }
-    private static Rectangle MapViewRect { get { return m_MapView.Rect; } }
+    public static Map CurrentMap { get { return MapView.m; } }
+    private static Rectangle MapViewRect { get { return MapView.Rect; } }
     public bool IsGameRunning { get { return m_IsGameRunning; } }
     public static GameOptions Options { get { return s_Options; } }
     public static Keybindings KeyBindings { get { return s_KeyBindings; } }
@@ -338,13 +342,13 @@ namespace djack.RogueSurvivor.Engine
     /// the counted commands are re-installed by each loaded PlayerController's TakeControl, which follows this.</summary>
     static public void AfterLoad(Actor? player, List<Actor>? refugees)
     {
-      if (null != player) m_MapView = setPlayer(player).Location.View;
+      if (null != player) Interlocked.Exchange(ref m_MapView, setPlayer(player).Location.View);
       s_RefugeePool = refugees;
       s_CountedCommands = null;
     }
 
     // very severe access control issue; should be called only from Session::Session()
-    static public void Reset() { m_MapView = default; }
+    static public void Reset() { Interlocked.Exchange<ZoneLoc?>(ref m_MapView, null); }
 #endregion
 
     public static void Init()
@@ -9272,7 +9276,7 @@ namespace djack.RogueSurvivor.Engine
       bool isAttVisible = sees.Key;
       bool isVisible = isAttVisible || isDefVisible;
       bool isPlayer = attacker.IsPlayer || defender.IsPlayer;   // (player1 OR player2) IMPLIES isPlayer?
-      bool display_defender = isDefVisible || m_MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
+      bool display_defender = isDefVisible || MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
 
       bool player_knows(Actor a) {
         return     a.Controller.CanSee(defender.Location) // we already checked the attacker visibility, he's the sound origin
@@ -9432,7 +9436,7 @@ namespace djack.RogueSurvivor.Engine
         bool see_defender = sees.Value;
         bool see_attacker = sees.Key;
         bool player_involved = attacker.IsPlayer || defender.IsPlayer;
-        bool display_defender = see_defender || m_MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
+        bool display_defender = see_defender || MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
 
         bool player_knows(Actor a) {
           return     a.Controller.CanSee(defender.Location) // we already checked the attacker visibility, he's the sound origin
@@ -9557,7 +9561,7 @@ namespace djack.RogueSurvivor.Engine
         bool see_defender = sees.Value;
         bool see_attacker = sees.Key;
         bool player_involved = attacker.IsPlayer || defender.IsPlayer;
-        bool display_defender = see_defender || m_MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
+        bool display_defender = see_defender || MapView.Contains(defender.Location); // hard-crash if this is false -- denormalization will be null
 
         bool player_knows(Actor a) {
           return     a.Controller.CanSee(defender.Location) // we already checked the attacker visibility, he's the sound origin
@@ -12118,7 +12122,7 @@ restart:
 
     private static bool IsInViewRect(in Location loc)
     {
-      return m_MapView.Contains(in loc);
+      return MapView.Contains(in loc);
     }
 
     static private ColorString WeatherStatusText()
@@ -12146,7 +12150,7 @@ restart:
                 if (0 >= District.UsesCrossDistrictView(CurrentMap)) {
                     DrawMiniMap(CurrentMap.Rect);
                 } else {
-                    Rectangle view = new Rectangle(m_MapView.Center.Position - (Point)MINIMAP_RADIUS, (Point)(1+2*MINIMAP_RADIUS));
+                    Rectangle view = new Rectangle(MapView.Center.Position - (Point)MINIMAP_RADIUS, (Point)(1+2*MINIMAP_RADIUS));
                     DrawMiniMap(view);
                 }
                 m_UI.UI_DrawLine(Color.DarkGray, MESSAGES_X, MESSAGES_Y, CANVAS_WIDTH, MESSAGES_Y);
@@ -12251,21 +12255,21 @@ restart:
       string[] overlays = new string[view_squares];
       int working = 0;
 
-      lock(m_MapView) {
-      var num1 = MapViewRect.Left;
-      var num2 = MapViewRect.Right;
-      var num3 = MapViewRect.Top;
-      var num4 = MapViewRect.Bottom;
-      var view_center = MapViewRect.Location + (Point)HALF_VIEW_WIDTH;
+      var view = MapViewRect;   // one snapshot; a pan replaces m_MapView, it never mutates it
+      var num1 = view.Left;
+      var num2 = view.Right;
+      var num3 = view.Top;
+      var num4 = view.Bottom;
+      var view_center = view.Location + (Point)HALF_VIEW_WIDTH;
 
       // as drawing is slow, we should be able to get away with thrashing the garbage collector here
-      HashSet<Point> tainted = threats?.ThreatWhere(map, MapViewRect) ?? new HashSet<Point>();
-      HashSet<Point> tourism = sights_to_see?.In(map, MapViewRect) ?? new HashSet<Point>();
+      HashSet<Point> tainted = threats?.ThreatWhere(map, view) ?? new HashSet<Point>();
+      HashSet<Point> tourism = sights_to_see?.In(map, view) ?? new HashSet<Point>();
 
       // the line of fire overlay is a non-local calculation -- historically, how to draw a tile was entirely knowable from the tile and its contents
       int i = view_squares;
       while(0 < i--) {
-        point = MapViewRect.convert(i);
+        point = view.convert(i);
         var test = new Location(map,point);
         if (!Map.Canonical(ref test)) continue;
         bool clairsight = null != s_FaustClairvoyance && s_FaustClairvoyance.Contains(Player, test);
@@ -12278,8 +12282,8 @@ restart:
           foreach(Point pt in LoF) {
             if (pt==actorAt.Location.Position) continue;
             var delta = pt - actorAt.Location.Position + point;
-            if (!MapViewRect.Contains(delta)) continue;
-            working = MapViewRect.convert(delta);
+            if (!view.Contains(delta)) continue;
+            working = view.convert(delta);
             if (0 > working || view_squares <= working) continue;
             if (   i > working // not yet visibility-checked
                 || is_visible[working])   // known-visible
@@ -12309,7 +12313,7 @@ restart:
           point.Y = y;
           var loc = new Location(map,point);
           if (!Map.Canonical(ref loc)) continue;
-          working = MapViewRect.convert(point);   // likely a VM issue if this throws
+          working = view.convert(point);   // likely a VM issue if this throws
           var screen = MapToScreen(x, y);
           bool player = is_visible[working];
           bool flag2 = false;
@@ -12373,7 +12377,6 @@ restart:
           }
         }
       }
-      } // lock(m_MapView)
       // exit display
       var e = Player.Location.Exit; // XXX does not change w/remote viewing
       if (null != e) {
@@ -13279,9 +13282,10 @@ restart:
 
     public static GDI_Point MapToScreen(Location loc)
     {
-      if (!m_MapView.ContainsExt(in loc)) {
+      var view = MapView;
+      if (!view.ContainsExt(in loc)) {
           var e = loc.Exit;
-          if (null!=e && e.Location == m_MapView.Center) {
+          if (null!=e && e.Location == view.Center) {
             // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
             int exit_slot() {
                 if (District.IsEntryMap(loc.Map)) return ENTRYMAP_EXIT_SLOT;
@@ -13327,7 +13331,7 @@ restart:
         Location loc = new(CurrentMap, pos);
         if (Map.Canonical(ref loc)) return loc;
       }
-      var e = m_MapView.Center.Exit;
+      var e = MapView.Center.Exit;
       if (null != e) {
         Rectangle bounds = new(new(EXIT_SLOT_X, EXIT_SLOT_Y0), new(TILE_SIZE, 2* TILE_SIZE));
         if (bounds.Contains((short)pixel.X, (short)pixel.Y)) return e.Location;
@@ -13369,24 +13373,14 @@ restart:
 
     public void PanViewportToRedraw(in Location loc)
     {
-      var stage = loc.View;
-      lock(m_MapView) {
-        if (stage != m_MapView) {
-          m_MapView = loc.View;
-        }
-      }
+      Interlocked.Exchange(ref m_MapView, loc.View);
       RedrawPlayScreen();
     }
 
     public void PanViewportTo(in Location loc)
     {
       var stage = loc.View;
-      lock(m_MapView) {
-        if (stage != m_MapView) {
-          m_MapView = loc.View;
-          RedrawPlayScreen();
-        }
-      }
+      if (stage != Interlocked.Exchange(ref m_MapView, stage)) RedrawPlayScreen();
     }
 
     public void PanViewportTo(Actor player) {
@@ -14239,8 +14233,7 @@ restart:
 
     private void SetCurrentMap(Location loc)
     {
-      if (null!=m_MapView) lock(m_MapView) { m_MapView = loc.View; }
-      else m_MapView = loc.View;
+      Interlocked.Exchange(ref m_MapView, loc.View);
 
       // alpha10 update background music
       UpdateBgMusic();
