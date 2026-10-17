@@ -892,7 +892,7 @@ namespace djack.RogueSurvivor.Engine
         gy1 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "Main Menu", 0, gy1, new Color?());
         gy1 += 2*BOLD_LINE_SPACING;
-        DrawMenuOrOptions(c, Color.White, entries, Color.White, null, gx1, ref gy1);
+        DrawMenuOrOptions(c, Color.White, entries, null, gx1, ref gy1);
         m_UI.DrawFootnote("cursor to move, ENTER to select");
         DateTime now = DateTime.Now;
         var rules = Rules.Get;
@@ -1105,7 +1105,7 @@ namespace djack.RogueSurvivor.Engine
         int gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, "New Game - Choose Game Mode", gx, gy1, new Color?());
         gy1 += 2*BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, (Color.LightGray, values), gx, ref gy1);
         gy1 += 2*BOLD_LINE_SPACING;
         foreach (string text in summaries[currentChoice]) {
           m_UI.UI_DrawStringBold(Color.Gray, text, gx, gy1, new Color?());
@@ -1184,7 +1184,7 @@ namespace djack.RogueSurvivor.Engine
         gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Character - Choose Race", Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
         gy1 += 2*BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, (Color.LightGray, values), gx, ref gy1);
         m_UI.DrawFootnote("cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
@@ -1244,7 +1244,7 @@ namespace djack.RogueSurvivor.Engine
         gy = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Living - Choose Gender", Session.DescGameMode(Session.Get.GameMode)), gx, gy, new Color?());
         gy += 2* BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, (Color.LightGray, values), gx, ref gy);
         m_UI.DrawFootnote("cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
@@ -1310,7 +1310,7 @@ namespace djack.RogueSurvivor.Engine
         gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Undead - Choose Type", Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
         gy1 += 2* BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, (Color.LightGray, values), gx, ref gy1);
         m_UI.DrawFootnote("cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
@@ -1359,7 +1359,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New {1} Character - Choose Starting Skill", Session.DescGameMode(Session.Get.GameMode), m_CharGen.IsMale ? "Male" : "Female"), gx, gy1, new Color?());
         gy1 += 2* BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, (Color.LightGray, values), gx, ref gy1);
         m_UI.DrawFootnote("cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
@@ -1647,7 +1647,7 @@ namespace djack.RogueSurvivor.Engine
         gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] - Options", Session.DescGameMode(Session.Get.GameMode)), 0, gy, new Color?());
         gy += 2*BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, false, 400);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, (Color.LightGreen, values), gx, ref gy, false, 400);
         gy += BOLD_LINE_SPACING;
 
         // alpha10
@@ -13865,18 +13865,20 @@ restart:
       GameHintsStatus.Save(s_Hints, Path.Combine(GetUserConfigPath(), "hints.json"));
     }
 
-    public void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, bool valuesOnNewLine = false, int rightPadding = 256)
+    public void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, (Color, string[])? v_array, int gx, ref int gy, bool valuesOnNewLine = false, int rightPadding = 256)
     {
 #if DEBUG
-      if (null == entries) throw new ArgumentNullException(nameof(entries));
-      if (null != values && entries.Length != values.Length) throw new InvalidOperationException("null!=entries && entries.Length != values.Length");
+      if (entries is null) throw new ArgumentNullException(nameof(entries));
 #endif
       int gx1 = gx + rightPadding;
       Color color = Color.FromArgb(entriesColor.A, entriesColor.R / 2, entriesColor.G / 2, entriesColor.B / 2);
-      for (int index = 0; index < entries.Length; ++index) {
-        string text1 = string.Format(((index != currentChoice || valuesOnNewLine) ? "     {0}" : "---> {0}"), entries[index]);
-        m_UI.UI_DrawStringBold(entriesColor, text1, gx, gy, new Color?(color));
-        if (values != null) {
+      if (v_array is (var valuesColor, var values)) {
+#if DEBUG
+        if (entries.Length != values.Length) throw new InvalidOperationException("null!=entries && entries.Length != values.Length");
+#endif
+        for (int index = 0; index < entries.Length; ++index) {
+          string text1 = string.Format(((index != currentChoice || valuesOnNewLine) ? "     {0}" : "---> {0}"), entries[index]);
+          m_UI.UI_DrawStringBold(entriesColor, text1, gx, gy);
           string text2 = index != currentChoice ? values[index] : string.Format("{0} <---", values[index]);
           if (valuesOnNewLine) {
             gy += BOLD_LINE_SPACING;
@@ -13884,9 +13886,16 @@ restart:
           } else {
             m_UI.UI_DrawStringBold(valuesColor, text2, gx1, gy, new Color?());
           }
+          gy += BOLD_LINE_SPACING;
         }
-        gy += BOLD_LINE_SPACING;
+      } else {
+        for (int index = 0; index < entries.Length; ++index) {
+          string text1 = string.Format(((index != currentChoice || valuesOnNewLine) ? "     {0}" : "---> {0}"), entries[index]);
+          m_UI.UI_DrawStringBold(entriesColor, text1, gx, gy);
+          gy += BOLD_LINE_SPACING;
+        }
       }
+
     }
 
     public void DrawHeader()
@@ -14567,7 +14576,7 @@ retry:
         m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", 0, gy1);
         gy1 += 2*BOLD_LINE_SPACING;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, 0, ref gy1);
+        DrawMenuOrOptions(currentChoice, Color.White, entries, (Color.LightGreen, values), 0, ref gy1);
         gy1 += 2*BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", 0, gy1);
         gy1 += BOLD_LINE_SPACING;

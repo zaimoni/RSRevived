@@ -258,7 +258,7 @@ namespace djack.RogueSurvivor.Engine
         gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy, new Color?());
         gy += BOLD_LINE_SPACING;
-        game.DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy);
+        game.DrawMenuOrOptions(currentChoice, Color.White, entries, (Color.LightGreen, values), gx, ref gy);
         if (CheckForConflict()) {
           m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy, new Color?());
           gy += BOLD_LINE_SPACING;
