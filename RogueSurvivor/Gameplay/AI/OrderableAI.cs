@@ -2552,9 +2552,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction? BehaviorDontLeaveFollowersBehind(int distance, out Actor? target)
+    protected KeyValuePair<ActorAction, Actor>? BehaviorDontLeaveFollowersBehind(int distance)
     {
-      target = null;
       // Scan the group:
       // - Find nearst member of the group that isn't near enough
       // - If at least half the group is close enough we consider the group cohesion to be good enough and do nothing.
@@ -2567,8 +2566,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (closest.Key > remote_followers[ub].Key) closest = remote_followers[ub];
       };
 
-      target = closest.Value;
-      return BehaviorPathToAdjacent(closest.Value.Location);
+      var act = BehaviorPathToAdjacent(closest.Value.Location);
+      if (act is null) return null;
+      return new(act, closest.Value);
     }
 
     protected ActionUseItem? BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)

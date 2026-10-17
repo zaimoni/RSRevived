@@ -168,7 +168,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       InitAICache(current, _all);
 
       // get out of the range of explosions if feasible
-      ActorAction tmpAction = BehaviorFleeExplosives();
+      ActorAction? tmpAction = BehaviorFleeExplosives();
       if (null != tmpAction) return tmpAction;
 
       _enemies = SortByGridDistance(FilterEnemies(current)); // this tests fast; makes InCombat valid
@@ -764,13 +764,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (m_Actor.CountFollowers > 0) {
-        tmpAction = BehaviorDontLeaveFollowersBehind(2, out Actor target);
-        if (null != tmpAction) {
+        var kv = BehaviorDontLeaveFollowersBehind(2);
+        if (kv is not null) {
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "dont't leave followers");
           if (rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
-            game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));
+            game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(kv.Value.Value), kv.Value.Value.Name));
           m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
+          return kv.Value.Key;
         }
       }
 
