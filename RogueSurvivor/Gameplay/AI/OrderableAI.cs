@@ -2553,14 +2553,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorDontLeaveFollowersBehind(int distance, out Actor target)
+    protected ActorAction? BehaviorDontLeaveFollowersBehind(int distance, out Actor? target)
     {
       target = null;
       // Scan the group:
       // - Find nearst member of the group that isn't near enough
       // - If at least half the group is close enough we consider the group cohesion to be good enough and do nothing.
       var remote_followers = m_Actor.DistantFollowers(distance, (m_Actor.CountFollowers + 1) / 2);
-      if (null == remote_followers) return null;
+      if (remote_followers is null) return null;
 
       var closest = remote_followers[0];
       int ub = remote_followers.Count;
@@ -3127,13 +3127,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public ActorAction? BehaviorUseAdjacentStack() { return WouldUseAccessibleStack(m_Actor.Location, true); }
     protected ActorAction BehaviorPathTo(in Location dest) { return BehaviorPathTo(new HashSet<Location> { dest }); }
 
-    protected ActorAction BehaviorPathToAdjacent(Location dest)
+    protected ActorAction? BehaviorPathToAdjacent(Location dest)
     {
       var seen = new HashSet<Location> { dest };
       Dictionary<Location, ActionMoveDelta> final_range = new();
 
       var range = m_Actor.MovesTo(in dest);
-      if (null == range) return null;
+      if (range is null) return null;
 
       void reprocess_range(Dictionary<Location, ActionMoveDelta> src) {
         var reject = new HashSet<Location>();

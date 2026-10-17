@@ -15,15 +15,15 @@ namespace djack.RogueSurvivor.Engine
     private bool m_Spawned;
     public readonly Actor TheActor;
     public readonly bool IsWithRefugees;
-    public readonly string EventThemeMusic;
-    public readonly string EventMessage;
+    public readonly string? EventThemeMusic;
+    public readonly string? EventMessage;
 
     public bool IsSpawned {
       get { return m_Spawned;  }
       set { if (!m_Spawned) m_Spawned = value; } // \todo? eliminate this outright
     }
 
-    public UniqueActor(Actor a, bool spawn_now, bool refugee=false, string music=null, string msg=null)
+    public UniqueActor(Actor a, bool spawn_now, bool refugee=false, string? music=null, string? msg=null)
     {
       m_Spawned = spawn_now;
       TheActor = a;
