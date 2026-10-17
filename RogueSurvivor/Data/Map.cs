@@ -1223,17 +1223,15 @@ retry:
       }
 
       // special area navigation
-      {
-      KeyValuePair<Map,Map>? src_alt = Engine.Session.Get.UniqueMaps.NavigatePoliceStation(this);
-      KeyValuePair<Map,Map>? dest_alt = Engine.Session.Get.UniqueMaps.NavigatePoliceStation(dest);
-      if (null != src_alt && null == dest_alt) {    // probably dead code
-        dest = src_alt.Value.Key;
-        goto retry;
+      if (Session.Get.UniqueMaps.NavigatePoliceStation(this) is (var before_p, var _)) {
+        if (Session.Get.UniqueMaps.NavigatePoliceStation(dest) is null) {    // probably dead code
+          dest = before_p;
+          goto retry;
+        }
       }
-      }
-      if (Session.Get.UniqueMaps.NavigateHospital(this) is (var before, var _)) {
+      if (Session.Get.UniqueMaps.NavigateHospital(this) is (var before_h, var _)) {
         if (Session.Get.UniqueMaps.NavigateHospital(dest) is null) {
-          dest = before;
+          dest = before_h;
           goto retry;
         }
       }

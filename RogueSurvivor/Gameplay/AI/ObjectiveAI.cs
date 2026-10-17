@@ -3752,7 +3752,7 @@ Restart:
       // early exit: unique map, not-sewer: should be handled at caller level (do not enforce until we no longer have a serious CPU problem)
 
       // \todo hospital and police station have unusual behavior (multi-level linear)
-      var police_station = required_0.HaveItBothWays(m => null==Session.Get.UniqueMaps.NavigatePoliceStation(m));
+      var police_station = required_0.HaveItBothWays(m => Session.Get.UniqueMaps.NavigatePoliceStation(m) is null);
       var p_offices = Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap;
       if (!police_station.Value) excluded.Add(p_offices);
       else if (!police_station.Key) excluded.Add(p_offices.District.EntryMap);

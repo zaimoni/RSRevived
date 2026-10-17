@@ -122,10 +122,10 @@ namespace djack.RogueSurvivor.Engine
 
 
     /// <returns>Key is towards surface; Value is deeper</returns>
-    public KeyValuePair<Map,Map>? NavigatePoliceStation(Map x)
+    public (Map,Map?)? NavigatePoliceStation(Map x)
     {
-      if (PoliceStation_OfficesLevel.TheMap == x) return new KeyValuePair<Map,Map>(x.District.EntryMap, PoliceStation_JailsLevel.TheMap);
-      if (PoliceStation_JailsLevel.TheMap == x) return new KeyValuePair<Map,Map>(PoliceStation_OfficesLevel.TheMap,null);
+      if (PoliceStation_OfficesLevel.TheMap == x) return (x.District.EntryMap, PoliceStation_JailsLevel.TheMap);
+      if (PoliceStation_JailsLevel.TheMap == x) return (PoliceStation_OfficesLevel.TheMap, null);
       return null;
     }
 
@@ -136,7 +136,7 @@ namespace djack.RogueSurvivor.Engine
       if (Hospital_Offices.TheMap == x) return (Hospital_Admissions.TheMap, Hospital_Patients.TheMap);
       if (Hospital_Patients.TheMap == x) return (Hospital_Offices.TheMap, Hospital_Storage.TheMap);
       if (Hospital_Storage.TheMap == x) return (Hospital_Patients.TheMap, Hospital_Power.TheMap);
-      if (Hospital_Power.TheMap == x) return (Hospital_Storage.TheMap,null);
+      if (Hospital_Power.TheMap == x) return (Hospital_Storage.TheMap, null);
       return null;
     }
 

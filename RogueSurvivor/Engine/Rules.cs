@@ -729,29 +729,28 @@ retry:
         return new Location(entry_e.Value.Value.Location.Map, entry_e.Value.Value.Location.Position + (loc.Position - entry_e.Value.Key));
       }
       // far from surface.  Currently one of hospital or police station
-      if (Session.Get.UniqueMaps.NavigateHospital(loc.Map) is (var before, var _)) {
-        var e = loc.Map.FirstExitFor(before);
+      if (Session.Get.UniqueMaps.NavigateHospital(loc.Map) is (var before_h, var _)) {
+        var e = loc.Map.FirstExitFor(before_h);
 #if DEBUG
-        if (null == e) throw new InvalidProgramException("should be able to ascend to surface");
+        if (e is null) throw new InvalidProgramException("should be able to ascend to surface");
 #endif
         loc = new Location(e.Value.Value.Location.Map, e.Value.Value.Location.Position-(loc.Position - e.Value.Key));
         goto retry;
       }
-      var in_police_Station = Session.Get.UniqueMaps.NavigatePoliceStation(loc.Map);
-      if (null != in_police_Station) {
-        // Jails.  Considered rotated 90 counterclockwise
+      if (Session.Get.UniqueMaps.NavigatePoliceStation(loc.Map) is (var before_p, var _)) {
 #if DEBUG
         if (loc.Map!=Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap) throw new InvalidProgramException("police station only has two levels");
 #endif
-        var e = loc.Map.FirstExitFor(in_police_Station.Value.Key);
+        var e = loc.Map.FirstExitFor(before_p);
 #if DEBUG
-        if (null == e) throw new InvalidProgramException("should be able to ascend to surface");
+        if (e is null) throw new InvalidProgramException("should be able to ascend to surface");
 #endif
         Size raw_delta = loc.Position - e.Value.Key;
         Size delta = new(raw_delta.Y, (short)(-raw_delta.X));
         loc = new Location(e.Value.Value.Location.Map,e.Value.Value.Location.Position+delta);
         goto retry;
       }
+
       return loc;   // if not in the entry map, source map is not close to surface
     }
   } // end Rules class
