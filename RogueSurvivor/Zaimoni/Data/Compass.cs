@@ -122,19 +122,19 @@ namespace Zaimoni.Data
           private uint _radix_point = 0;
           private uint _radix_segment = 0;
           private uint _graph = 0;
-          private readonly Func<uint,uint, bool> _contains = null;
+          private readonly Func<uint,uint, bool>? _contains = null;
 
           public uint Radix { get { return _radix_point; } }
 
           // defaults are to be correct for the local direction enumeration
-          public LineGraph(uint graph = 0, uint radix = (uint)reference.XCOM_EXT_STRICT_UB, Func<uint, uint, bool> contains = null) {
+          public LineGraph(uint graph = 0, uint radix = (uint)reference.XCOM_EXT_STRICT_UB, Func<uint, uint, bool>? contains = null) {
 #if DEBUG
             if (1 >= radix) throw new InvalidOperationException("1 >= radix");
 #endif
             _radix_point = radix;
             _radix_segment = crmth.max_unordered_pair(radix)+1;
             _graph = graph;
-            if (null != contains) _contains = contains;
+            if (contains is not null) _contains = contains;
             else if ((uint)reference.XCOM_EXT_STRICT_UB == _radix_point) _contains = LineSegmentContains;
           }
 
@@ -147,7 +147,7 @@ namespace Zaimoni.Data
             }
             if (_graph < _radix_segment) {
               if (_graph == delta) return;
-              if (null != _contains) {
+              if (_contains is not null) {
                 if (_contains(_graph,delta)) return;
                 if (_contains(delta,_graph)) {
                   _graph = delta;
@@ -162,8 +162,10 @@ namespace Zaimoni.Data
             while(0 < working) {    // be slightly inefficient for ease of verification
               uint inspect = crmth.decode(ref working, _radix_segment);
               if (delta == inspect) return; // no-op
-              if (null != _contains && _contains(inspect,delta)) return; // no-op
-              if (null != _contains && _contains(delta, inspect)) staging.Add(delta);
+              if (_contains is not null) {
+                if (_contains(inspect,delta)) return; // no-op
+                if (_contains(delta, inspect)) staging.Add(delta);
+              }
               // XXX complete implementation would check for extension of line segment \todo IMPLEMENT
               else staging.Add(inspect);
             }
@@ -186,7 +188,7 @@ namespace Zaimoni.Data
 #endif
             if (_graph < _radix_segment) {
               if (_graph == seg) return true;
-              if (null != _contains) return _contains(_graph,seg);
+              if (_contains is not null) return _contains(_graph,seg);
               return false;
             }
             uint working = _graph;
@@ -194,7 +196,7 @@ namespace Zaimoni.Data
             while(0 < working) {    // be slightly inefficient for ease of verification
               uint inspect = crmth.decode(ref working, _radix_segment);
               if (seg == inspect) return true; // no-op
-              if (null != _contains) {
+              if (_contains is not null) {
                 if (_contains(inspect,seg)) return true; // ok
                 if (_contains(seg, inspect)) return false;   // implies failure when in normal form
               }

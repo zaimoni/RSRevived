@@ -19,7 +19,7 @@ namespace Zaimoni.Data
     public class FloodfillPathfinder<T>
     {
         readonly private HashSet<T> _blacklist;     // coordinates that cannot be entered at all.  For Map, usually walls.
-        private Predicate<T> _blacklist_fn;
+        private Predicate<T>? _blacklist_fn;
         readonly private Func<T, bool> _inDomain;   // legal coordinates; for Map, usually InBounds
 
         readonly private Dictionary<T, int> _map;
@@ -104,7 +104,7 @@ namespace Zaimoni.Data
 
         public bool IsBlacklisted(T src) {
           if (_blacklist.Contains(src)) return true;
-          return null!=_blacklist_fn && _blacklist_fn(src);
+          return _blacklist_fn is not null && _blacklist_fn(src);
         }
 
         public void Approve(IEnumerable<T> src)
@@ -188,7 +188,7 @@ namespace Zaimoni.Data
                     continue;
                 }
                 if (_blacklist.Contains(x.Key)
-                    || (null != _blacklist_fn && _blacklist_fn(x.Key))) {
+                    || (_blacklist_fn is not null && _blacklist_fn(x.Key))) {
                     (banned ??= new List<T>()).Add(x.Key);
                     continue;
                 }
@@ -236,7 +236,7 @@ namespace Zaimoni.Data
             foreach(var x in goal_costs) {
                 if (_blacklist.Contains(x.Key)) continue;
                 if (!_inDomain(x.Key)) continue;
-                if (null != _blacklist_fn && _blacklist_fn(x.Key)) continue;
+                if (_blacklist_fn is not null && _blacklist_fn(x.Key)) continue;
                 bool has_prior_cost = _map.TryGetValue(x.Key, out int old_cost);
                 if (has_prior_cost && old_cost <= x.Value) continue;
                 if (!_now.TryGetValue(x.Value, out var now)) _now.Add(x.Value, now = new());
@@ -258,7 +258,7 @@ namespace Zaimoni.Data
             if (null == _now) throw new ArgumentNullException(nameof(_now));
 #endif
             IEnumerable<T> legal_goals = goals.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp));
-            if (null != _blacklist_fn) legal_goals = legal_goals.Where(tmp => !_blacklist_fn(tmp));
+            if (_blacklist_fn is not null) legal_goals = legal_goals.Where(tmp => !_blacklist_fn(tmp));
             if (!legal_goals.Any()) return false; // not an error condition when merging in new goals into an existing map
             if (!_now.TryGetValue(0, out var now)) _now.Add(0, now = new());
 #if OBSOLETE
@@ -285,7 +285,7 @@ namespace Zaimoni.Data
                 foreach (KeyValuePair<T, int> tmp2 in _forward(tmp)) {
                   if (_blacklist.Contains(pt = tmp2.Key)) continue;
                   if (!_inDomain(pt)) continue;
-                  if (null != _blacklist_fn && _blacklist_fn(pt)) continue;
+                  if (_blacklist_fn is not null && _blacklist_fn(pt)) continue;
                   if (max_delta_cost <= (delta_cost = tmp2.Value)) continue;
 #if DEBUG
                   if (0 >= delta_cost) throw new Pathfail("pathological cost function given to FloodfillFinder");
@@ -376,7 +376,7 @@ namespace Zaimoni.Data
             // a proper Dijkstra search is in increasing cost order
             Dictionary<int, HashSet<T>> _now = new Dictionary<int, HashSet<T>>();
             IEnumerable<T> legal_start = start.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp));
-            if (null != _blacklist_fn) legal_start = legal_start.Where(tmp => !_blacklist_fn(tmp));
+            if (_blacklist_fn is not null) legal_start = legal_start.Where(tmp => !_blacklist_fn(tmp));
             if (!legal_start.Any()) throw new Pathfail("no legal starting points");
             if (legal_start.Any(tmp => goals(tmp))) return;    // no-op; not a hard error but should not have called
             if (!_bootstrap(legal_start, _now)) return;    // no-op; should be a hard error but a runtime issue
@@ -391,7 +391,7 @@ namespace Zaimoni.Data
                   if (_blacklist.Contains(tmp2.Key)) continue;
                   if (!_inDomain(tmp2.Key)) continue;
                   if (max_delta_cost<= tmp2.Value) continue;
-                  if (null != _blacklist_fn && _blacklist_fn(tmp2.Key)) continue;
+                  if (_blacklist_fn is not null && _blacklist_fn(tmp2.Key)) continue;
 #if DEBUG
                   if (0 >= tmp2.Value) throw new Pathfail("pathological cost function given to FloodfillFinder");
 #else
@@ -431,7 +431,7 @@ namespace Zaimoni.Data
                   if (_blacklist.Contains(tmp2.Key)) continue;
                   if (!_inDomain(tmp2.Key)) continue;
                   if (max_cost-cost<=tmp2.Value) continue;
-                  if (null != _blacklist_fn && _blacklist_fn(tmp2.Key)) continue;
+                  if (_blacklist_fn is not null && _blacklist_fn(tmp2.Key)) continue;
                   int new_dist = cost+tmp2.Value;
                   if (_map.TryGetValue(tmp2.Key,out int test) && test <= new_dist) continue;
                   _map[tmp2.Key] = new_dist;
