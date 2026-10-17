@@ -2681,6 +2681,13 @@ namespace djack.RogueSurvivor.Data
       get => Model.Abilities.CanTire && m_StaminaPoints < STAMINA_MIN_FOR_ACTIVITY;
     }
 
+    public int CannotMeleeForThisLong() {
+      // 4 = base stamina + resting recovery
+      if (STAMINA_MIN_FOR_ACTIVITY-4 < StaminaPoints) return 0;
+      return (STAMINA_MIN_FOR_ACTIVITY - StaminaPoints)/4;
+    }
+
+
     // 2023-04-22: For now, assume conditions for crouching are those for running.
     // revisit the stamina, etc. questions later
     // e.g., if we introduce the WEAK trait then *standing up* is problematic for a WEAK living

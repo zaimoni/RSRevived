@@ -2898,11 +2898,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return 0<routes.Count ? routes : null;
     }
 
-    private static int CannotMeleeForThisLong(Actor a) {
-        if (Actor.STAMINA_MIN_FOR_ACTIVITY-4 < a.StaminaPoints) return 0;
-        return (Actor.STAMINA_MIN_FOR_ACTIVITY - a.StaminaPoints)/4;
-    }
-
     // sunk from BaseAI
     protected ActorAction? BehaviorFightOrFlee(ActorCourage courage, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
@@ -2952,7 +2947,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
             if (  (null != _damage_field && _damage_field.ContainsKey(m_Actor.Location.Position))
-                || (Rules.IsAdjacent(m_Actor.Location, in e_loc) && 0 >= CannotMeleeForThisLong(enemy)))
+                || (Rules.IsAdjacent(m_Actor.Location, in e_loc) && 0 >= enemy.CannotMeleeForThisLong()))
             decideToFlee = true;    // but do not run as otherwise we won't build up stamina
         }
       }
@@ -3017,7 +3012,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (0<stage.Count && stage.Count < next_to.Count) next_to = stage;
         }
 
-        var no_melee_for = CannotMeleeForThisLong(enemy);
+        var no_melee_for = enemy.CannotMeleeForThisLong();
         if (2 <= no_melee_for) {
           var n = Rules.Get.DiceRoller.Roll(0, next_to.Count);
           var act = next_to[n];
