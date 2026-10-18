@@ -1225,9 +1225,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _sparse.Set(SparseData.LoF,LoF);
     }
 
-    public List<Point> GetLoF() { return _sparse.Get<List<Point>>(SparseData.LoF); }   // XXX reference-copy return 
+    public List<Point>? GetLoF() => _sparse.Get<List<Point>>(SparseData.LoF);   // XXX reference-copy return 
     protected void RecordCloseToActor(Actor a,int maxDist) { _sparse.Set(SparseData.CloseToActor,new KeyValuePair<Actor,int>(a,maxDist)); }
-    public KeyValuePair<Actor, int> GetCloseToActor() { return _sparse.Get<KeyValuePair<Actor, int>>(SparseData.CloseToActor); }
+    public KeyValuePair<Actor, int> GetCloseToActor() => _sparse.Get<KeyValuePair<Actor, int>>(SparseData.CloseToActor);
 
 #if PROTOTYPE_LINEAR_CHOKEPOINT
     protected void RecordChokepoint(LinearChokepoint src) {
@@ -1317,10 +1317,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return act;
     }
 
-    public HashSet<Location> GetPreviousGoals() { return _sparse.Get<HashSet<Location>>(SparseData.PathingTo); }
-    public HashSet<Location> GetPreviousGoals(Location suppress) {
+    public HashSet<Location>? GetPreviousGoals() { return _sparse.Get<HashSet<Location>>(SparseData.PathingTo); }
+    public HashSet<Location>? GetPreviousGoals(Location suppress) {
       var ret = _sparse.Get<HashSet<Location>>(SparseData.PathingTo); // reference-return
-      if (null != ret) {
+      if (ret is not null) {
         ret.Remove(suppress);
         if (1 <= ret.Count) return ret;
         _sparse.Unset(SparseData.PathingTo);
@@ -1338,8 +1338,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _used_advanced_pathing = true;
     }
 
-    public List<List<T>> GetMinStepPath<T>() { return _sparse.Get<List<List<T>>>(SparseData.MinStepPath); }
-    protected PathToTarget GetLambdaPath() { return _sparse.Get<PathToTarget>(SparseData.LambdaPath); }
+    public List<List<T>>? GetMinStepPath<T>() { return _sparse.Get<List<List<T>>>(SparseData.MinStepPath); }
+    protected PathToTarget? GetLambdaPath() { return _sparse.Get<PathToTarget>(SparseData.LambdaPath); }
     protected PathToTarget ForceLambdaPath() {
       var prior = _sparse.Get<PathToTarget>(SparseData.LambdaPath);
       if (null == prior) {

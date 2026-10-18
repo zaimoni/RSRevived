@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Zaimoni.Data
 {
@@ -10,7 +11,7 @@ namespace Zaimoni.Data
 
         // Create Read Update Delete API
         public bool Has(K key) { return _map?.ContainsKey(key) ?? false; }
-        public T Get<T>(K key) {
+        [return: MaybeNull] public T Get<T>(K key) {
           if (null == _map) return default;
           if (!_map.TryGetValue(key, out var test)) return default;
           if (test is T ret) return ret;
