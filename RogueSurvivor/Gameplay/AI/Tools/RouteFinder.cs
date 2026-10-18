@@ -80,7 +80,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         /// - the ai or the model, eg: civilians can try to jump and open doors.
         /// - the intent, eg: gangs can try to break stuff to get to items while civilians should not.
         /// </summary>
-        /// <see cref="RouteFinder.CanReachSimple(in Location, int, Func{Location, Location, int})"/>
+        /// <see cref="RouteFinder.CanReachSimple(in Location, Func{Location, Location, int})"/>
         public SpecialActions AllowedActions { get; set; }
         #endregion
 
@@ -109,10 +109,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         /// <param name="distanceFn"></param>
         /// <returns></returns>
         /// <see cref="BaseAI.BehaviorBumpToward(RogueGame, Point, Func{Point, Point, float})"/>
-        public bool CanReachSimple(in Location dest, int maxDist, Func<Location,Location,int> distanceFn)
+        public bool CanReachSimple(in Location dest, Func<Location, Location, int> distanceFn)
         {
             Actor a = m_AI.ControlledActor;
             Location start_loc = a.Location;
+            int maxDist = distanceFn(start_loc, dest);
 
             // trivial case of starting adj to dest
             bool adjToDestIsGoal = (AllowedActions & SpecialActions.ADJ_TO_DEST_IS_GOAL) != 0;

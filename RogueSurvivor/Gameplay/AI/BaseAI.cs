@@ -1192,7 +1192,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool CanReachSimple(in Location dest, RouteFinder.SpecialActions allowedActions)
     {
        (m_RouteFinder ??= new RouteFinder(this)).AllowedActions = allowedActions;
-       return m_RouteFinder.CanReachSimple(in dest, Rules.GridDistance(m_Actor.Location, in dest), Rules.GridDistanceFn);
+       return m_RouteFinder.CanReachSimple(in dest, Rules.GridDistanceFn);
     }
 
     protected void FilterOutUnreachable<_T_>(ref List<_T_> percepts, RouteFinder.SpecialActions allowedActions) where _T_:ILocation
