@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-
+using Zaimoni.Data;
 using ActionMoveDelta = djack.RogueSurvivor.Engine.Actions.ActionMoveDelta;
 using Point = Zaimoni.Data.Vector2D<short>;
 
@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         public readonly Location origin2;
         public readonly Point target;
         public readonly Point delta;
-        private KeyValuePair<int, int> span_spread;
+        private readonly KeyValuePair<int, int> span_spread;
         private Direction[] xy;
 
         public Point origin => origin2.Position;
@@ -26,17 +26,36 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
             origin2 = src;
             var denorm = src.Map.Denormalize(in dest);
             if (null == denorm) throw new ArgumentNullException(nameof(denorm));
+            if (src == denorm) throw new InvalidOperationException("self-pathing");
             target = denorm.Value.Position;
             delta = target - origin2.Position;
-            resetOrigin(src);
+
+            (var dominant, var absDelta) = delta.DominantDir();
+            switch (dominant)
+            {
+                case Compass.XCOMlike.NE:
+                case Compass.XCOMlike.SE:
+                case Compass.XCOMlike.SW:
+                case Compass.XCOMlike.NW:
+                    span_spread = new(absDelta.X, 0);
+                    break;
+                case Compass.XCOMlike.E:
+                case Compass.XCOMlike.W:
+                    span_spread = new(absDelta.X, absDelta.X - absDelta.Y);
+                    break;
+                case Compass.XCOMlike.N:
+                case Compass.XCOMlike.S:
+                    span_spread = new(absDelta.Y, absDelta.Y - absDelta.X);
+                    break;
+            }
+
+            resetOrigin(absDelta);
         }
 
         [MemberNotNull(nameof(xy))]
-        private void resetOrigin(Location src)
+        private void resetOrigin(Point absDelta)
         {
-            Point absDelta = delta.coord_xform(Math.Abs);
             bool x_dominant = absDelta.X > absDelta.Y;
-            span_spread = x_dominant ? new KeyValuePair<int, int>(absDelta.X, absDelta.X - absDelta.Y) : new KeyValuePair<int, int>(absDelta.Y, absDelta.Y - absDelta.X);
 #if Z_COMPASS
 #else
             if (x_dominant) {

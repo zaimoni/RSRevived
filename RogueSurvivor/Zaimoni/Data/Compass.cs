@@ -57,6 +57,22 @@ namespace Zaimoni.Data
         }
         }
 
+        public static (XCOMlike, Point) DominantDir(this Point delta)
+        {
+            Point absDelta = delta.coord_xform(Math.Abs);
+            if (absDelta.X == absDelta.Y) {
+                // true diagonal
+                if (0 < delta.X) {
+                    return (0 < delta.Y ? XCOMlike.SE : XCOMlike.NE, absDelta);
+                } else if (0 > delta.X) {
+                    return (0 < delta.Y ? XCOMlike.SW : XCOMlike.NW, absDelta);
+                }
+                return (XCOMlike.N, absDelta);   // not really, but avoids exception-throwing
+            }
+            if (absDelta.X > absDelta.Y) return (0 < delta.X ? XCOMlike.E : XCOMlike.W, absDelta);
+            /* if (absDelta.X > absDelta.Y) */ return (0 < delta.Y ? XCOMlike.S : XCOMlike.N, absDelta);
+        }
+
         // precompile some constants we use internally
         private enum _ref : uint
         {
