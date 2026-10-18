@@ -29,8 +29,15 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         private class Node<T>
         {
             public bool IsVisited;
-            public T Pos;
-            public int DistToGoal;
+            public readonly T Pos;
+            public readonly int DistToGoal;
+
+            public Node(T pos, int distToGoal)
+            {
+                Pos = pos;
+                DistToGoal = distToGoal;
+                IsVisited = false;
+            }
         }
 
         /// <summary>
@@ -132,7 +139,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
             // search similar to A*...
             // expect we don't care about accumulated path cost as we want only to check reachability
             var m_Nodes = new LinkedList<Node<Location>>();
-            m_Nodes.AddFirst(new Node<Location>() { IsVisited = false, Pos = start_loc, DistToGoal = distanceFn(start_loc, dest) });
+            m_Nodes.AddFirst(new Node<Location>(start_loc, distanceFn(start_loc, dest)));
             for (;;) {
                 // get most promising node, nodes are sorted by their distance to goal, similar to A*
                 var iCurrent = m_Nodes.First;
@@ -163,15 +170,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
 
                     if (!CanMoveIn(RogueGame.Game, a, adj)) continue;
 
-                    var adjNode = m_Nodes.FirstOrDefault(n => n.Pos == adj);
-                    bool exploreIt = false;
-                    if (adjNode == null) {
-                        // new one to explore
-                        adjNode = new Node<Location>() { IsVisited = false, Pos = adj, DistToGoal = adjDistToGoal };
-                        exploreIt = true;
-                    } else exploreIt = !adjNode.IsVisited; // explore only if not already explored
-
-                    if (exploreIt) Insert(m_Nodes,adjNode);
+                    var adjNode = m_Nodes.FirstOrDefault(n => n.Pos == adj) ?? new(adj, adjDistToGoal);
+                    if (!adjNode.IsVisited) Insert(m_Nodes,adjNode); // explore only if not already explored
                 }
             }
         }
