@@ -3,7 +3,6 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 
@@ -26,20 +25,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
     public sealed class RouteFinder
     {
         #region Types
-        private class Node<T>
-        {
-            public bool IsVisited;
-            public readonly T Pos;
-            public readonly int DistToGoal;
-
-            public Node(T pos, int distToGoal)
-            {
-                Pos = pos;
-                DistToGoal = distToGoal;
-                IsVisited = false;
-            }
-        }
-
         /// <summary>
         /// Allowed actions when blocked by a map object. Will ask game rules for validity.
         /// </summary>
@@ -136,59 +121,29 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
                 return CanMoveIn(RogueGame.Game, a, dest);
             }
 
-            // search similar to A*...
-            // expect we don't care about accumulated path cost as we want only to check reachability
-            var m_Nodes = new LinkedList<Node<Location>>();
-            m_Nodes.AddFirst(new Node<Location>(start_loc, distanceFn(start_loc, dest)));
-            for (;;) {
-                // get most promising node, nodes are sorted by their distance to goal, similar to A*
-                var iCurrent = m_Nodes.First;
-                for(;;) {
-                    if (iCurrent.Value.Pos == dest) return true;  // found goal
+            // best-first search: we only want reachability, so there is no accumulated path cost and a tile's priority (its
+            // distance to the goal) never changes once it is queued.  The open set is a priority queue on that distance; a
+            // tile enters the seen set when first met, whether or not it can be moved into, so it is tested once.
+            var open = new PriorityQueue<Location, int>();
+            var seen = new HashSet<Location> { start_loc };
+            open.Enqueue(start_loc, distanceFn(start_loc, dest));
+            while (open.TryDequeue(out var current, out var currentDistToGoal)) {
+                if (current == dest) return true;  // found goal
+                if (adjToDestIsGoal && 1 == currentDistToGoal) return true; // found adj to goal
 
-                    if (adjToDestIsGoal) {
-                        if (distanceFn(iCurrent.Value.Pos, dest) == 1)  return true; // found adj to goal
-                    }
-
-                    if (!iCurrent.Value.IsVisited) break;  // visit this one
-
-                    // node already visited, try next one.
-                    if (iCurrent.Next == null) return false;  // out of nodes to explore
-                    iCurrent = iCurrent.Next;
-                }
-
-                // explore this node by looking at adj tiles. 
+                // explore this node by looking at adj tiles.
                 // only explore tiles that are not too far, closer to the goal and can be moved in.
-                var current = iCurrent.Value;
-                current.IsVisited = true;
-                int currentDistToGoal = distanceFn(current.Pos, dest);
                 foreach (Direction dir in Direction.COMPASS) {
-                    var adj = current.Pos + dir;
+                    var adj = current + dir;
                     if (!Map.Canonical(ref adj)) continue;
                     int adjDistToGoal = distanceFn(adj, dest);
                     if (adjDistToGoal >= currentDistToGoal || adjDistToGoal > maxDist) continue;
-
+                    if (!seen.Add(adj)) continue;   // already queued, expanded, or known impassable
                     if (!CanMoveIn(RogueGame.Game, a, adj)) continue;
-
-                    var adjNode = m_Nodes.FirstOrDefault(n => n.Pos == adj) ?? new(adj, adjDistToGoal);
-                    if (!adjNode.IsVisited) Insert(m_Nodes,adjNode); // explore only if not already explored
+                    open.Enqueue(adj, adjDistToGoal);
                 }
             }
-        }
-
-        /// <summary>
-        /// Insert a new node and keep nodes list sorted on distance to goal.
-        /// </summary>
-        /// <param name="newNode"></param>
-        private void Insert<T>(LinkedList<Node<T>> src, Node<T> newNode)
-        {
-            var insertBefore = src.First;
-
-            while (insertBefore != null && insertBefore.Value.DistToGoal < newNode.DistToGoal)
-                insertBefore = insertBefore.Next;
-
-            if (insertBefore == null) src.AddLast(newNode);
-            else src.AddBefore(insertBefore, newNode);
+            return false;  // out of tiles to explore
         }
         #endregion
 
