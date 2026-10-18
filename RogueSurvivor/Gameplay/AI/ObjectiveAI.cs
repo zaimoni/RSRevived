@@ -1080,9 +1080,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return risk;
     }
 
-    public ActorAction UsePreexistingPath(List<List<Point>> path_pt, HashSet<Location> goals=null)
+    public ActorAction? UsePreexistingPath(List<List<Point>>? path_pt, HashSet<Location>? goals = null)
     {
-        if (null == path_pt || 0 >= path_pt.Count) return null;
+        if (path_pt is null || 0 >= path_pt.Count) return null;
         if (2 <= path_pt.Count) {
               // relevant.  Assume that if there is a 2-step min-cost path on this that we want the first step
               var candidates = new List<List<ActionMoveDelta>>();
@@ -1138,9 +1138,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    public ActorAction UsePreexistingPath(List<List<Location>> path_pt, HashSet<Location> goals=null)
+    public ActorAction? UsePreexistingPath(List<List<Location>>? path_pt, HashSet<Location>? goals = null)
     {
-        if (null == path_pt || 0 >= path_pt.Count) return null;
+        if (path_pt is null || 0 >= path_pt.Count) return null;
         if (2 <= path_pt.Count) {
               // relevant.  Assume that if there is a 2-step min-cost path on this that we want the first step
               var candidates = new List<List<ActionMoveDelta>>();
@@ -1195,13 +1195,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? UsePreexistingPath(HashSet<Location>? goals=null)
     {
         var ret = UsePreexistingPath(GetMinStepPath<Point>(), goals);
-        if (null != ret) return ret;
-        ret = UsePreexistingPath(GetMinStepPath<Location>(), goals);
-        if (null != ret) return ret;
-        return null;
+        if (ret is not null) return ret;
+        return UsePreexistingPath(GetMinStepPath<Location>(), goals);
     }
 
-    protected ActorAction? UsePreexistingLambdaPath() { return GetLambdaPath()?.WalkPath(this); }
+    protected ActorAction? UsePreexistingLambdaPath() => GetLambdaPath()?.WalkPath(this);
 
     private ActorAction _pathNear(Location loc)
     {
@@ -1551,7 +1549,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected void ETAToKill(Actor en, int dist, ItemRangedWeapon rw, Dictionary<Actor, int> best_weapon_ETAs, Dictionary<Actor, ItemRangedWeapon> best_weapons=null)
+    protected void ETAToKill(Actor en, int dist, ItemRangedWeapon rw, Dictionary<Actor, int> best_weapon_ETAs, Dictionary<Actor, ItemRangedWeapon>? best_weapons = null)
     {
       Attack tmp = m_Actor.HypotheticalRangedAttack(rw.Model.Attack, dist, en);
       int a_dam = tmp.DamageValue - en.CurrentDefence.Protection_Shot;
@@ -3196,7 +3194,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public Dictionary<Location, ActionMoveDelta>? PlanWalkAwayFrom(Dictionary<Location,Actor> fear, IEnumerable<Location>? range = null, IEnumerable<Location>? range2 = null)
     {
-      var move_plans = new Dictionary<Location,KeyValuePair<int,Dictionary<Location,ActionMoveDelta>>>();
+      var move_plans = new Dictionary<Location, KeyValuePair<int, Dictionary<Location, ActionMoveDelta>?>>();
       var inverted_move_plans = new Dictionary<Location, Dictionary<Location, ActionMoveDelta>>();
       var process = new HashSet<Location>();
       var working_fear = new Dictionary<Location,Actor>(fear);  // need a value-copy just in case
@@ -3266,7 +3264,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
            test.Value.Remove(dest);
            if (0 >= test.Value.Count) {
              (staging ??= new List<Location>()).Add(x.Key);
-             move_plans[x.Key] = new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(test.Key,null);
+             move_plans[x.Key] = new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>?>(test.Key,null);
            }
          }
          inverted_move_plans.Remove(dest);
@@ -3290,13 +3288,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return test.Value;
       }
 
-      KeyValuePair<bool,Dictionary<Location,ActionMoveDelta>> trivialized()
+      KeyValuePair<bool, Dictionary<Location, ActionMoveDelta>?> trivialized()
       {
         if (move_plans.TryGetValue(m_Actor.Location,out var test)) {
-          if (null == test.Value || 0 >= test.Value.Count) return new KeyValuePair<bool, Dictionary<Location, ActionMoveDelta>>(true,null);
-          if  (1 == test.Value.Count) return new KeyValuePair<bool, Dictionary<Location, ActionMoveDelta>>(true, test.Value);
+          if (test.Value is null || 0 >= test.Value.Count) return new(true, null);
+          if (1 == test.Value.Count) return new(true, test.Value);
         }
-        return new KeyValuePair<bool, Dictionary<Location, ActionMoveDelta>>(false,null);
+        return new(false, null);
       }
 
       void install_moves(in Location loc) {
@@ -3304,8 +3302,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int depth = 0;
         if (move_plans.TryGetValue(loc,out var cache)) {
           depth = cache.Key+1;
-          if (null == cache.Value || 0<cache.Value.Count) return;   // already done
-        } else move_plans[loc] = (cache = new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(0,new Dictionary<Location, ActionMoveDelta>()));
+          if (cache.Value is null || 0<cache.Value.Count) return;   // already done
+        } else move_plans[loc] = (cache = new(0, new()));
         // generate logical moves
         foreach(var pt in loc.Position.Adjacent()) {
           var delta = ActionMoveDelta.schedule(m_Actor, new(loc.Map, pt), loc);
@@ -3313,9 +3311,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
            var loc2 = delta.dest;  // backward compatibility
             if (!destination_melee_safe(loc2, depth)) continue;
             cache.Value.Add(loc2, delta);
-            move_plans.Add(loc2, new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(depth,new Dictionary<Location, ActionMoveDelta>()));
+            move_plans.Add(loc2, new(depth, new()));
             if (inverted_move_plans.TryGetValue(loc2,out var origins)) origins.Add(loc, delta);
-            else (inverted_move_plans[loc2] = new Dictionary<Location, ActionMoveDelta>()).Add(loc, delta);
+            else (inverted_move_plans[loc2] = new()).Add(loc, delta);
           }
         }
         if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
@@ -3326,15 +3324,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
               var delta = ActionMoveDelta.schedule(m_Actor, loc2, loc);
               if (delta is not null && delta.IsLegal()) {
                 cache.Value.Add(loc2, delta);
-                move_plans.Add(loc2, new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(depth,new Dictionary<Location, ActionMoveDelta>()));
+                move_plans.Add(loc2, new(depth, new()));
                 if (inverted_move_plans.TryGetValue(loc2,out var origins)) origins.Add(loc, delta);
-                else (inverted_move_plans[loc2] = new Dictionary<Location, ActionMoveDelta>()).Add(loc, delta);
+                else (inverted_move_plans[loc2] = new()).Add(loc, delta);
               }
             }
           }
         }
         if (0 >= cache.Value.Count) {
-          move_plans[loc] = new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>>(depth,null);
+          move_plans[loc] = new(depth, null);
           return;
         }
         if (2 <= cache.Value.Count) {
@@ -3346,7 +3344,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (0 < blocked.Count) {
             if (blocked.Count >= cache.Value.Count) {
               int min_blocked = blocked.Min(x => x.Value);
-              cache.Value.OnlyIf((Predicate<Location>)(x => min_blocked == blocked[x]));
+              cache.Value.OnlyIf(x => min_blocked == blocked[x]);
             } else {
               foreach(var x in blocked) cache.Value.Remove(x.Key);
             }
@@ -4178,7 +4176,7 @@ retry:
       return act;
     }
 
-    public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at, Predicate<Map> preblacklist = null, Predicate<Location> postblacklist = null)
+    public ActorAction? BehaviorPathTo(Func<Map,HashSet<Point>> targets_at, Predicate<Map>? preblacklist = null, Predicate<Location>? postblacklist = null)
     {
       var goals = Goals(targets_at, m_Actor.Location.Map, preblacklist);
       if (0 >= goals.Count) return null;
