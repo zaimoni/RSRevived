@@ -318,7 +318,7 @@ namespace djack.RogueSurvivor.Engine
     private CharGen m_CharGen;
     private readonly TextFile? m_Manual;
     private int m_ManualLine = 0;
-    private Thread m_SimThread;
+    private Thread? m_SimThread;
 
     public static Actor Player { get { return m_Player!; } }
     public static bool IsPlayer(Actor? a) { return a == m_Player; }
@@ -726,9 +726,9 @@ namespace djack.RogueSurvivor.Engine
       _bootstrap_computable(world);
       while (m_IsGameRunning && 0 < world.PlayerCount) {
         var d = world.CurrentPlayerDistrict();
-        if (null == d) {
-          if (null == world.CurrentSimulationDistrict()) throw new InvalidOperationException("no districts available to simulate");
-          if (null == m_SimThread) throw new InvalidOperationException("no simulation thread");
+        if (d is null) {
+          if (world.CurrentSimulationDistrict() is null) throw new InvalidOperationException("no districts available to simulate");
+          if (m_SimThread is null) throw new InvalidOperationException("no simulation thread");
           Thread.Sleep(100);
           continue;
         }
@@ -3098,7 +3098,7 @@ namespace djack.RogueSurvivor.Engine
 
     // Advisor hint available overlay
     static private UI.OverlayPopup? s_HintAvailableOverlay = null;  // alpha10
-    static private string[] s_HintAvailableHeaderLines = null;
+    static private string[]? s_HintAvailableHeaderLines = null;
 
     // Don't want this in PlayerController; the required public accessors are unacceptable.
     static private List<KeyValuePair<PlayerController, KeyValuePair<int, PlayerCommand> > >? s_CountedCommands = null;
@@ -4602,7 +4602,7 @@ namespace djack.RogueSurvivor.Engine
     private static Action ToggleFaust = () => s_FaustPC = !s_FaustPC;
     public static bool FaustExamineNewLivings { get => s_FaustPC; }
 
-    private static Zaimoni.SetTheory.RelationC<Actor, Location> s_FaustClairvoyance = null;
+    private static Zaimoni.SetTheory.RelationC<Actor, Location>? s_FaustClairvoyance = null;
     public static void FaustClairvoyance(Actor a, IEnumerable<Location> locs) {
       foreach(var loc in locs) (s_FaustClairvoyance ?? (s_FaustClairvoyance = new())).Add(a, loc);
     }
@@ -11231,7 +11231,7 @@ restart:
       }
     }
 
-    public void KillActor(Actor killer, Actor deadGuy, string reason)
+    public void KillActor(Actor? killer, Actor deadGuy, string reason)
     {
 #if DEBUG
       // for some reason, this can happen with starved actors (cf. alpha 8)
@@ -11455,7 +11455,7 @@ restart:
       // If m_Player has just died, then we should be in the current district and thus clear to find a player
       // furthermore, the viewport didn't pan away to another player
       if (Player == deadGuy) FindPlayer();
-      if (null == m_SimThread) StartSimThread();
+      if (m_SimThread is null) StartSimThread();
     }
 
     // alpha10
@@ -12253,7 +12253,7 @@ restart:
       Point point = new Point();
       const int view_squares = (2*HALF_VIEW_WIDTH+1)*(2*HALF_VIEW_HEIGHT+1);
       Span<bool> is_visible = stackalloc bool[view_squares];
-      string[] overlays = new string[view_squares];
+      string?[] overlays = new string[view_squares];
       int working = 0;
 
       var view = MapViewRect;   // one snapshot; a pan replaces m_MapView, it never mutates it
@@ -12449,7 +12449,7 @@ restart:
       }
     }
 
-    public void DrawMapObject(MapObject mapObj, GDI_Point screen, Tile tile, Color tint, string overlay)    // tile is the one that the map object is on.
+    public void DrawMapObject(MapObject mapObj, GDI_Point screen, Tile tile, Color tint, string? overlay)    // tile is the one that the map object is on.
     {
       if (mapObj.IsMovable && tile.Model.IsWater) {
         int num = (mapObj.Location.Position.X + Session.Get.WorldTime.TurnCounter) % 2 == 0 ? -2 : 0;
@@ -14277,13 +14277,13 @@ restart:
 
     private void StartSimThread()
     {
-      if (m_SimThread == null) {
+      if (m_SimThread is null) {
         m_SimThread = new Thread(new ThreadStart(SimThreadProc)) {
-          Name = "Simulation Thread"
+          Name = "Simulation Thread",
+          IsBackground = true
         };
-        m_SimThread.IsBackground = true;
       }
-      lock (m_SimStateLock) { m_CancelSource = new CancellationTokenSource(); } // alpha10
+      lock (m_SimStateLock) { m_CancelSource = new(); } // alpha10
       m_SimThread.Start();
     }
 
@@ -14293,7 +14293,7 @@ restart:
     /// <param name="abort">true to stop the thread by aborting, false to stop it cleanly (recommended)</param>
     private void StopSimThread(bool abort=true)
     {
-      if (null == m_SimThread) return;
+      if (m_SimThread is null) return;
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "stopping & clearing sim thread...");
 
       // .NET 5.0: Thread::Abort() is unsupported

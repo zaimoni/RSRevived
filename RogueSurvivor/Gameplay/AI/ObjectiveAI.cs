@@ -488,12 +488,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private Dictionary<Item_IDs, KeyValuePair<sbyte,int>>? _rating_overrides; // origin code: 1 self, 2 order (AI or PC)
 
     // cache variables
-    [NonSerialized] protected List<Point> _legal_steps = null;
-    [NonSerialized] protected Dictionary<Location,ActorAction> _legal_path = null;
-    [NonSerialized] protected Dictionary<Point, int> _damage_field = null; // denormalized
-    [NonSerialized] protected List<Actor> _slow_melee_threat = null;
-    [NonSerialized] protected HashSet<Actor> _immediate_threat = null;
-    [NonSerialized] protected HashSet<Point> _blast_field = null;
+    [NonSerialized] protected List<Point>? _legal_steps = null;
+    [NonSerialized] protected Dictionary<Location,ActorAction>? _legal_path = null;
+    [NonSerialized] protected Dictionary<Point, int>? _damage_field = null; // denormalized
+    [NonSerialized] protected List<Actor>? _slow_melee_threat = null;
+    [NonSerialized] protected HashSet<Actor>? _immediate_threat = null;
+    [NonSerialized] protected HashSet<Point>? _blast_field = null;
     [NonSerialized] protected List<Point>? _retreat = null;
     [NonSerialized] protected List<Point>? _run_retreat = null;
     [NonSerialized] protected bool _safe_retreat = false;
@@ -503,7 +503,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public sbyte Recoil { get { return _recoil; } }
     [NonSerialized] protected bool _used_advanced_pathing = false;
     [NonSerialized] protected bool _rejected_backtrack = false;
-    [NonSerialized] protected HashSet<Location> _current_goals = null;
+    [NonSerialized] protected HashSet<Location>? _current_goals = null;
     [NonSerialized] protected CallChain _caller = CallChain.NONE;
     [NonSerialized] protected ActorAction? _staged_action = null;   // should be a free action
     [NonSerialized] protected FleeExplosive[]? _blast_zones = null;   // should be a free action
@@ -964,7 +964,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // morally a constructor-type function
-    protected void InitAICache(List<Percept> now, List<Percept> all_time=null)
+    protected void InitAICache(List<Percept> now, List<Percept>? all_time=null)
     {
       _initAICache();
 
@@ -1004,8 +1004,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null!=_last_move && _last_move.dest!=m_Actor.Location) _last_move = null;
 
       // perception fixup
-      var infer = Goal<InferActor>();
-      if (null != infer) infer.Infer(ref now);
+      Goal<InferActor>()?.Infer(ref now);
 
       // inventory priority fixup
       if (null != _rating_overrides) {
