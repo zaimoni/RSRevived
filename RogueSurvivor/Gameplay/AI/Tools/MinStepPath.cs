@@ -1,62 +1,55 @@
 ﻿using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 using ActionMoveDelta = djack.RogueSurvivor.Engine.Actions.ActionMoveDelta;
 using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Tools
 {
-    [Serializable]
     class MinStepPathStats
     {
-        public readonly Map m;
+        public readonly Location origin2;
         public readonly Point target;
-        private Point m_Origin;
-        private Point m_Delta;
+        public readonly Point delta;
         private KeyValuePair<int, int> span_spread;
         private Direction[] xy;
 
-        public Point origin { get { return m_Origin; } }
-        public Point delta { get { return m_Delta; } }
+        public Point origin => origin2.Position;
         public Direction[] advancing { get { return xy; } }
         public int span { get { return span_spread.Key; } }
         public int spread { get { return span_spread.Value; } }
 
         public MinStepPathStats(in Location src, in Location dest)
         {
-            m = src.Map;
-            m_Origin = src.Position;
+            origin2 = src;
             var denorm = src.Map.Denormalize(in dest);
             if (null == denorm) throw new ArgumentNullException(nameof(denorm));
             target = denorm.Value.Position;
+            delta = target - origin2.Position;
             resetOrigin(src);
         }
 
+        [MemberNotNull(nameof(xy))]
         private void resetOrigin(Location src)
         {
-            var denorm = m.Denormalize(in src);
-            if (null == denorm) throw new ArgumentNullException(nameof(denorm));
-            m_Origin = denorm.Value.Position;
-
-            m_Delta = target - m_Origin;
-            Point absDelta = m_Delta.coord_xform(Math.Abs);
+            Point absDelta = delta.coord_xform(Math.Abs);
             bool x_dominant = absDelta.X > absDelta.Y;
             span_spread = x_dominant ? new KeyValuePair<int, int>(absDelta.X, absDelta.X - absDelta.Y) : new KeyValuePair<int, int>(absDelta.Y, absDelta.Y - absDelta.X);
 #if Z_COMPASS
 #else
             if (x_dominant) {
-                if (0 < m_Delta.X) xy = (0 <= m_Delta.Y) ? new Direction[] { Direction.SE, Direction.E, Direction.NE } : new Direction[] { Direction.NE, Direction.E, Direction.SE };
-                else xy = (0 <= m_Delta.Y) ? new Direction[] { Direction.SW, Direction.W, Direction.NW } : new Direction[] { Direction.NW, Direction.W, Direction.SW };
+                if (0 < delta.X) xy = (0 <= delta.Y) ? new Direction[] { Direction.SE, Direction.E, Direction.NE } : new Direction[] { Direction.NE, Direction.E, Direction.SE };
+                else xy = (0 <= delta.Y) ? new Direction[] { Direction.SW, Direction.W, Direction.NW } : new Direction[] { Direction.NW, Direction.W, Direction.SW };
             } else {
-                if (0 < m_Delta.Y) xy = (0 <= m_Delta.X) ? new Direction[] { Direction.SE, Direction.S, Direction.SW } : new Direction[] { Direction.SW, Direction.S, Direction.SE };
-                else xy = (0 <= m_Delta.X) ? new Direction[] { Direction.NE, Direction.N, Direction.NW } : new Direction[] { Direction.NW, Direction.N, Direction.NE };
+                if (0 < delta.Y) xy = (0 <= delta.X) ? new Direction[] { Direction.SE, Direction.S, Direction.SW } : new Direction[] { Direction.SW, Direction.S, Direction.SE };
+                else xy = (0 <= delta.X) ? new Direction[] { Direction.NE, Direction.N, Direction.NW } : new Direction[] { Direction.NW, Direction.N, Direction.NE };
             }
 #endif
         }
     }
 
-    [Serializable]
     class MinStepPath
     {
         public MinStepPathStats stats;
