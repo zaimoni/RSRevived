@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define TRACE_SELECTACTION
-
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
@@ -97,9 +95,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       _all = FilterSameMap(UpdateSensors());
 
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
-#endif
       m_Actor.Walk();    // alpha 10: don't run by default
 
       // OrderableAI specific: respond to orders
@@ -126,9 +121,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // New objectives system
       if (0<Objectives.Count) {
         foreach(Objective o in new List<Objective>(Objectives)) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget && !o.IsExpired)  Logger.WriteLine(Logger.Stage.RUN_MAIN, o.ToString());
-#endif
           if (o.IsExpired) Remove(o);
           else if (o.UrgentAction(out var goal_action)) {
             if (tracing) RogueGame.Game.InfoPopup(o.ToString()+": "+(goal_action?.ToString() ?? "null"));
@@ -139,14 +131,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #else
             else if (!goal_action.IsPerformable()) Objectives.Remove(o);
 #endif
-#if TRACE_SELECTACTION
-            else {
-              if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returning to task: "+o.ToString());
-              return goal_action;
-            }
-#else
             else return goal_action;
-#endif
           }
         }
       }
@@ -222,9 +207,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var nearest_enemy = FilterNearest(_enemies);
           if (nearest_enemy is not null && Rules.Get.RollChance(50)) { // null check due to InferActor goal
             tmpAction = BehaviorWarnFriends(friends, nearest_enemy.Percepted);
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
-#endif
             if (tmpAction is not null) return tmpAction;
           }
         }

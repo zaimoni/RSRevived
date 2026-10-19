@@ -135,9 +135,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // New objectives systems
       if (0<Objectives.Count) {
         foreach(Objective o in new List<Objective>(Objectives)) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget && !o.IsExpired)  Logger.WriteLine(Logger.Stage.RUN_MAIN, o.ToString());
-#endif
           if (o.IsExpired) Remove(o);
           else if (o.UrgentAction(out var goal_action)) {
             if (goal_action is null) Remove(o);
@@ -177,9 +174,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var available_ranged_weapons = m_Actor.GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk: "+tmpAction);
-#endif
       if (tracing && !RogueGame.IsSimulating && tmpAction is not null) RogueGame.Game.InfoPopup("managing melee risk: "+tmpAction.ToString());
       if (tmpAction is not null) return tmpAction;
 
@@ -193,9 +187,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var nearest_enemy = FilterNearest(_enemies);
           if (nearest_enemy is not null && Rules.Get.RollChance(50)) { // null check due to InferActor goal
             tmpAction = BehaviorWarnFriends(friends, nearest_enemy.Percepted);
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
-#endif
             if (tmpAction is not null) return tmpAction;
           }
         }

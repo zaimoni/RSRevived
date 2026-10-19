@@ -4188,9 +4188,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
             m_LastItemsSaw = new Percept(stacks[0].Inventory, m_Actor.Location.Map.LocalTime.TurnCounter, stacks[0].Location);
             tmpAction = BehaviorGrabFromStack(stacks[0]);
             if (tmpAction?.IsPerformable() ?? false) {
-#if TRACE_SELECTACTION
-              if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking from stack");
-#endif
               m_Actor.Activity = Activity.IDLE;
               return tmpAction;
             }

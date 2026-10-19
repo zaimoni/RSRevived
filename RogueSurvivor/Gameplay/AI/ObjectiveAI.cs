@@ -575,9 +575,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var remote = Goal<T>();
         if (remote is not null) {
           var ret = remote.Pathing();
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, remote.ToString()+": " +ret.to_s());
-#endif
           if (ret is not null) return ret;
         }
         return null;
@@ -740,13 +737,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     /// </summary>
     public void OnMove() {
       if (PathToTarget.reject_path(GetMinStepPath<Point>(),this) || PathToTarget.reject_path(GetMinStepPath<Location>(),this)) {
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) {
-            var pt_path = GetMinStepPath<Point>();
-            var loc_path = GetMinStepPath<Location>();
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "removing invalidated path "+(pt_path?.to_s() ?? loc_path.to_s()));
-        }
-#endif
         _sparse.Unset(SparseData.MinStepPath);
         _last_move = null;
       }
@@ -1263,9 +1253,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           else throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act));
 #endif
       }
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "most recent path: "+src.to_s());
-#endif
       if (CallChain.SelectAction_LambdaPath == _caller) {
         var prior = GetLambdaPath();
         prior.Install(m_Actor.Location.Map,src,this);
@@ -1302,9 +1289,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           else throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name+" committed a period-2 move loop on turn "+m_Actor.Location.Map.LocalTime.TurnCounter+": "+_last_move+", "+act));
 #endif
       }
-#if TRACE_SELECTACTION
-       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "most recent path: " + src.to_s());
-#endif
       if (CallChain.SelectAction_LambdaPath == _caller) {
         var prior = GetLambdaPath();
         prior.Install(src,this);
@@ -1329,9 +1313,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected void RecordGoals(HashSet<Location> src) {
       if (src is null) return;
       if (_rejected_backtrack) return;
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "most recent goals: "+src.to_s());
-#endif
       _sparse.Set(SparseData.PathingTo,src);
       _used_advanced_pathing = true;
     }
@@ -3927,9 +3908,6 @@ retry:
       if (!navigate.Domain.Contains(m_Actor.Location)) return null;
       Dictionary<Location,int>? costs = null;
       var path = navigate.MinStepPathTo(m_Actor.Location,m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather));
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "path: "+path.to_s());
-#endif
       if (path is not null) {
         var pathable = path[0].FindAll(loc => _legal_path.ContainsKey(loc));
         if (0 >= pathable.Count) return null;
@@ -3966,9 +3944,6 @@ retry:
           if (navigate.IsBlacklisted(path[0][0])) throw m_Actor.Spotlight(new InvalidOperationException("blacklisted path: "+path.to_s()));
 #endif
           ActorAction act = _legal_path[path[0][0]];
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+(act?.ToString() ?? null)+"; "+ (act?.IsLegal() ?? false));
-#endif
           if (act is ActionMoveStep tmp) m_Actor.IsRunning = RunIfAdvisable(tmp.dest); // XXX should be more tactically aware
 
           var min_steps = navigate.MinStepPathTo(m_Actor.Location);

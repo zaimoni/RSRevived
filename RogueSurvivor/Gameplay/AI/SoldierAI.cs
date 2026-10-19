@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define TRACE_SELECTACTION
-
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.AI;
@@ -101,10 +99,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       m_Actor.Walk();    // alpha 10: don't run by default
 
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
-#endif
-
       // OrderableAI specific: respond to orders
       if (Order is not null) {
         var actorAction = ExecuteOrder(Order, _all);
@@ -131,14 +125,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (_enemies is null) AdviseFriendsOfSafety();
 
       // New objectives system
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
-#endif
       if (0<Objectives.Count) {
         foreach(Objective o in new List<Objective>(Objectives)) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget && !o.IsExpired)  Logger.WriteLine(Logger.Stage.RUN_MAIN, o.ToString());
-#endif
           if (o.IsExpired) Remove(o);
           else if (o.UrgentAction(out var goal_action)) {
             if (goal_action is null) Remove(o);
@@ -151,11 +139,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (old_enemies is null ? "null == current_enemies" : old_enemies.Count.ToString()+" enemies"));
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (_enemies is null ? "null == current_enemies" : _enemies.Count.ToString()+" enemies"));
-#endif
 
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
@@ -175,23 +158,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var available_ranged_weapons = m_Actor.GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk: "+tmpAction);
-#endif
       if (tmpAction is not null) return tmpAction;
 
       if (_enemies is not null) {
         tmpAction = BehaviorThrowGrenade();
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "toss grenade");
-#endif
         if (tmpAction is not null) return tmpAction;
       }
 
       tmpAction = BehaviorEquipWeapon(available_ranged_weapons);
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading");
-#endif
       if (tmpAction is not null) return tmpAction;
 
       // all free actions have to be before targeting enemies
@@ -202,16 +176,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var nearest_enemy = FilterNearest(_enemies);
           if (nearest_enemy is not null && Rules.Get.RollChance(50)) { // null check due to InferActor goal
             tmpAction = BehaviorWarnFriends(friends, nearest_enemy.Percepted);
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
-#endif
             if (tmpAction is not null) return tmpAction;
           }
         }
         tmpAction = BehaviorFightOrFlee(ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
-#endif
         if (tmpAction is not null) return tmpAction;
       }
       // at this point, even if enemies are in sight we have no useful direct combat action
@@ -221,20 +189,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (old_enemies is not null) {
         tmpAction = BehaviorChargeEnemy(FilterNearest(old_enemies), false, false);
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget ) Logger.WriteLine(Logger.Stage.RUN_MAIN, "charging enemies");
-#endif
         if (tmpAction is not null) return tmpAction;
       }
 
       if (old_enemies is null && m_Actor.WantToSleepNow) {
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorNavigateToSleep");
-#endif
         tmpAction = BehaviorNavigateToSleep();
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "navigating to sleep");
-#endif
         if (tmpAction is not null) return tmpAction;
       }
 
@@ -256,13 +215,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var leader = m_Actor.LiveLeader;
       if (leader is not null && !DontFollowLeader) {
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorHangAroundActor");
-#endif
         tmpAction = BehaviorHangAroundActor(leader, FOLLOW_LEADER_MIN_DIST, FOLLOW_LEADER_MAX_DIST);    // SoldierAI difference here probably ok
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorHangAroundActor: "+(tmpAction?.ToString() ?? "null"));
-#endif
         if (tmpAction is not null) {
           m_Actor.TargetedActivity(Activity.FOLLOWING, leader);
           return tmpAction;
