@@ -119,7 +119,7 @@ namespace djack.RogueSurvivor.Engine
       int origin_depth = reader.CurrentDepth;
       reader.Read();
 
-      Dictionary<string, string> relay_commandline = null;
+      Dictionary<string, string>? relay_commandline = null;
       UniqueMaps? relay_uniqueMaps = null;
       World? relay_world = null;
       UniqueItems? relay_uniqueItems = null;

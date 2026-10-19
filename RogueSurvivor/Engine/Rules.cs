@@ -340,13 +340,17 @@ namespace djack.RogueSurvivor.Engine
     // * only valid for subclasses of ObjectiveAI/OrderableAI (which can pathfind in the first place).
     // * ok to push objects aside
     // * not ok to chat as a time-cost action (could be re-implemented)
-    private static ActorAction IsPathableFor(Actor actor, Location loc, out string reason)
+    private static ActorAction? IsPathableFor(Actor actor, Location loc, out string reason)
     {
 #if DEBUG
       if (loc.Map is null) throw new ArgumentNullException(nameof(loc)+".Map");
       if (actor is null) throw new ArgumentNullException(nameof(actor));
-      if (!(actor.Controller is Gameplay.AI.ObjectiveAI)) throw new InvalidOperationException("!(actor.Controller is Gameplay.AI.ObjectiveAI)");
 #endif
+      var oai = actor.Controller as Gameplay.AI.ObjectiveAI;
+#if DEBUG
+      if (oai is null) throw new InvalidOperationException("!(actor.Controller is Gameplay.AI.ObjectiveAI)");
+#endif
+
       reason = "";
 
       if (1 >= actor.Controller.FastestTrapKill(in loc)) {
@@ -377,8 +381,6 @@ namespace djack.RogueSurvivor.Engine
         return actionMoveStep;
       }
 
-      Gameplay.AI.ObjectiveAI ai = actor.Controller as Gameplay.AI.ObjectiveAI;
-
       // respec of IsWalkableFor guarantees that any actor will be adjacent
       var actorAt = map.GetActorAt(point);
       if (actorAt is not null) {
@@ -402,7 +404,7 @@ namespace djack.RogueSurvivor.Engine
 
            bool push_legal = 1<=push_dest.Count;
            if (push_legal) {
-             var self_block = ai.WantToGoHere(actorAt.Location);
+             var self_block = oai.WantToGoHere(actorAt.Location);
              if (self_block is not null && 1==self_block.Count) {
                push_dest.OnlyIf(pt => !self_block.Contains(pt));
                push_legal = 1<=push_dest.Count;
@@ -467,7 +469,7 @@ namespace djack.RogueSurvivor.Engine
             return ActionBashDoor.schedule(actor, door);
           }
         }
-        var act = ai?.WouldGetFrom(mapObjectAt as ShelfLike);
+        var act = oai?.WouldGetFrom(mapObjectAt as ShelfLike);
         if (act is not null) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause
@@ -491,7 +493,7 @@ namespace djack.RogueSurvivor.Engine
            bool push_legal = (is_adjacent ? 1 : 2)<=push_dest.Count;
            if (is_adjacent) {
              if (push_legal) {
-               var self_block = ai.WantToGoHere(mapObjectAt.Location);
+               var self_block = oai.WantToGoHere(mapObjectAt.Location);
                if (self_block is not null && 1==self_block.Count) push_dest.OnlyIf(pt => !self_block.Contains(pt));
 
                var candidates = PreferNonAdjacent(push_dest, actor.Location);
@@ -828,7 +830,7 @@ retry:
 #endif
 
       reason = null;
-      if (actors_in_way.TryGetValue(point,out Actor actorAt)) {
+      if (actors_in_way.TryGetValue(point,out var actorAt)) {
         if (actor.IsEnemyOf(actorAt)) {
           return (ActionMeleeAttack.Can(actor, actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
         }

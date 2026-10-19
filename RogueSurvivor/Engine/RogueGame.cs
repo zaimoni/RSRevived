@@ -6682,7 +6682,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag2 = false;
       Map map1 = player.Location.Map;
       Point? nullable = null;
-      UI.OverlayRect selected = null;
+      UI.OverlayRect? selected = null;
       Color color = Color.White;
       do {
         ClearMessages();
@@ -6742,7 +6742,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag2 = false;
       Map map1 = player.Location.Map;
       Point? nullable = null;
-      UI.OverlayRect selected = null;
+      UI.OverlayRect? selected = null;
       Color color = Color.White;
       do {
         ClearMessages();
@@ -6802,7 +6802,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag2 = false;
       Map map1 = player.Location.Map;
       Point? nullable = null;
-      UI.OverlayRect selected = null;
+      UI.OverlayRect? selected = null;
       Color color = Color.White;
       do {
         ClearMessages();
@@ -7139,7 +7139,7 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.NPC_TRADE:
           return map.HasAnyAdjacentInMap(position, pt =>
          {
-             Actor actorAt = map.GetActorAt(pt);
+             var actorAt = map.GetActorAt(pt);
              if (actorAt is null) return false;
              return ActionTrade.Can(Player, actorAt);
          });
@@ -7147,14 +7147,14 @@ namespace djack.RogueSurvivor.Engine
           if (Player.Inventory.IsEmpty()) return false;
           return map.HasAnyAdjacentInMap(position, pt =>
          {
-             Actor actorAt = map.GetActorAt(pt);
+             var actorAt = map.GetActorAt(pt);
              if (actorAt is null) return false;
              return !Player.IsEnemyOf(actorAt);
          });
         case AdvisorHint.NPC_SHOUTING:
           return map.HasAnyAdjacentInMap(position, pt =>
          {
-             Actor actorAt = map.GetActorAt(pt);
+             var actorAt = map.GetActorAt(pt);
              if (!actorAt?.IsSleeping ?? true) return false;
              return !Player.IsEnemyOf(actorAt);
          });
@@ -7163,14 +7163,14 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.LEADING_NEED_SKILL:
           return map.HasAnyAdjacentInMap(position, pt =>
          {
-             Actor actorAt = map.GetActorAt(pt);
+             var actorAt = map.GetActorAt(pt);
              if (actorAt is null) return false;
              return !Player.IsEnemyOf(actorAt);
          });
         case AdvisorHint.LEADING_CAN_RECRUIT:
           return map.HasAnyAdjacentInMap(position, pt =>
          {
-             Actor actorAt = map.GetActorAt(pt);
+             var actorAt = map.GetActorAt(pt);
              if (actorAt is null) return false;
              return Player.CanTakeLeadOf(actorAt);
          });
@@ -7179,7 +7179,7 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.LEADING_SWITCH_PLACE:
           return map.HasAnyAdjacentInMap(position, pt =>
          {
-             Actor actorAt = map.GetActorAt(pt);
+             var actorAt = map.GetActorAt(pt);
              return (actorAt is not null && Player.CanSwitchPlaceWith(actorAt));
          });
         case AdvisorHint.GAME_SAVE_LOAD:
@@ -7822,7 +7822,7 @@ namespace djack.RogueSurvivor.Engine
       if (!Map.Canonical(ref examine)) throw new InvalidOperationException("tracing unvisualizable");
 #endif
 
-      Actor actorAt = examine.Actor;
+      var actorAt = examine.Actor;
       if (actorAt is not null) return DescribeActor(actorAt);
       var mapObjectAt = examine.MapObject;
       if (mapObjectAt is not null) return DescribeMapObject(mapObjectAt);
@@ -7853,7 +7853,7 @@ namespace djack.RogueSurvivor.Engine
       var a_model = actor.Model;
       lines.Add(string.Format("{0}.", a_model.Name.Capitalize()));
       lines.Add(string.Format("{0} since {1}.", a_model.Abilities.IsUndead ? "Undead" : "Staying alive", new WorldTime(actor.SpawnTime).ToString()));
-      OrderableAI aiController = actor.Controller as OrderableAI;
+      var aiController = actor.Controller as OrderableAI;
       if (aiController?.Order is not null) lines.Add(string.Format("Order : {0}.", aiController.Order.ToString())); // 2020-01-15 IL doesn't want temporary for aiController?.Order
       var leader = actor.LiveLeader;
       if (leader is not null) {
@@ -9098,7 +9098,7 @@ namespace djack.RogueSurvivor.Engine
       // XXX \todo check for allies who witness this
       if (target.IsSleeping) return;
       if (!wasAlreadyEnemy) {
-        string msg = (target.Controller as ObjectiveAI)?.AggressedBy(aggressor);
+        var msg = (target.Controller as ObjectiveAI)?.AggressedBy(aggressor);
         if (!string.IsNullOrEmpty(msg)) target.Say(aggressor, msg, Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
       }
       Faction faction = target.Faction;
@@ -9798,7 +9798,7 @@ namespace djack.RogueSurvivor.Engine
       if (blast.CanDamageObjects) {
         var mapObjectAt = map.GetMapObjectAtExt(pos);
         if (mapObjectAt is not null) {
-          DoorWindow doorWindow = mapObjectAt as DoorWindow;
+          var doorWindow = mapObjectAt as DoorWindow;
           if (mapObjectAt.IsBreakable || doorWindow is not null && doorWindow.IsBarricaded) {
             int val2 = num1;
             if (doorWindow is not null && doorWindow.IsBarricaded) {
@@ -12257,7 +12257,7 @@ restart:
         if (is_visible[i]) {
           var actorAt = map.GetActorAtExt(point);
           if (actorAt is null) continue;
-          List<Point> LoF = (actorAt.Controller as ObjectiveAI)?.GetLoF();
+          List<Point>? LoF = (actorAt.Controller as ObjectiveAI)?.GetLoF();
           if (LoF is null) continue;
           foreach(Point pt in LoF) {
             if (pt==actorAt.Location.Position) continue;
@@ -12837,7 +12837,7 @@ restart:
       if (s_Options.ShowPlayerTagsOnMinimap) {
         foreach (var pt in view) {
             if (!Player.Controller.IsKnown(new Location(map, pt))) continue;
-            string imageID = null;
+            string? imageID = null;
             if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG1, in pt)) imageID = GameImages.MINI_PLAYER_TAG1;
             else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG2, in pt)) imageID = GameImages.MINI_PLAYER_TAG2;
             else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG3, in pt)) imageID = GameImages.MINI_PLAYER_TAG3;
@@ -12916,7 +12916,7 @@ restart:
             return null;
         }
 
-        Action<Actor> draw = null;
+        Action<Actor>? draw = null;
         if (find_us[(int)ItemTrackerModel.TrackingOffset.UNDEADS]) {
             draw = actor => {
                 if (actor.Model.Abilities.IsUndead && Rules.GridDistance(actor.Location, Player.Location) <= Rules.ZTRACKINGRADIUS) DrawDetected(actor, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION, view);
@@ -13516,7 +13516,7 @@ restart:
             string[] lines = DescribeStuffAt(viewpoint);
             if (lines is not null) inspect = new(lines, Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
           } else {
-            List<string> lines = null;
+            List<string>? lines = null;
             var allies = Player.Allies;
             if (allies is not null) {
                 foreach(var a in allies) {
@@ -13986,7 +13986,7 @@ restart:
 
       static void _validateCity()
       {
-        if (!Session.CommandLineOptions.TryGetValue("city",out string x)) return;
+        if (!Session.CommandLineOptions.TryGetValue("city",out var x)) return;
         int split = x.IndexOf(',');
         if (   1 > split || x.Length-2 < split
             || !short.TryParse(x.AsSpan(0, split), out short city_size)
@@ -14002,7 +14002,7 @@ restart:
 
       static void _validateSpawn()
       {
-        if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return;
+        if (!Session.CommandLineOptions.TryGetValue("spawn",out var x)) return;
         // character 0 is the game mode.  Choice values are 0..2 currently
         // we encode this as: C)lassic, I)nfection, V)intage, Z)-war
         // character 1 is the race.  Choice values are 1..2
@@ -14069,7 +14069,7 @@ restart:
 
       Map? entryMap = null;
       if (!Session.Get.CMDoptionExists("no-spawn")) {
-        if (Session.CommandLineOptions.TryGetValue("spawn-district", out string district_spec)) {
+        if (Session.CommandLineOptions.TryGetValue("spawn-district", out var district_spec)) {
           var x = Convert.ToInt32(district_spec[0]) - Convert.ToInt32('A'); // breaks down at 27 N-S extent
           var y = Convert.ToInt32(district_spec[1]) - Convert.ToInt32('0'); // breaks down at 11 E-W extent
           entryMap = world[x, y].EntryMap;
@@ -14175,7 +14175,7 @@ restart:
         actor.CreateCivilianDeductFoodSleep();
       }
       actor.MakePC();
-      if (Session.CommandLineOptions.TryGetValue("spawn-district", out string district_spec)) {
+      if (Session.CommandLineOptions.TryGetValue("spawn-district", out var district_spec)) {
         var prune = district_spec.IndexOf('@');
         if (-1 < prune) district_spec = district_spec.Substring(prune+1);
         if (!string.IsNullOrEmpty(district_spec)) {
@@ -14425,7 +14425,7 @@ retry:
           switch(Session.Get.ScriptStage_PoliceStationPrisoner) {
           case 0:
             if (p_map.AnyAdjacent<PowerGenerator>(player.Location.Position) && IsVisibleToPlayer(prisoner)) {  // alpha10 fix: and visible!)
-                string[] local_6 = null;
+                string[]? local_6 = null;
                 if (player.IsFaction(GameFactions.IDs.TheCivilians) || player.IsFaction(GameFactions.IDs.TheSurvivors)) {
                   if (prisoner.IsSleeping) DoWakeUp(prisoner);
                   local_6 = new string[] {    // standard message
@@ -14550,7 +14550,7 @@ retry:
       values[2] = string.Format("{0}   (out of {1} possibilities)", values[2], matchingActors3);
       values[3] = string.Format("{0}   (out of {1} possibilities)", values[3], matchingActors4);
 
-      Actor newPlayerAvatar = null;
+      Actor? newPlayerAvatar = null;
       Func<int,bool?> setup_handler = (currentChoice => {
         int gy1 = 0;
         m_UI.ClearScreen();
@@ -14634,7 +14634,7 @@ retry:
       return m_UI.WaitYesOrNo();
     }
 
-    static private bool IsSuitableReincarnation(Actor a, bool asLiving)
+    static private bool IsSuitableReincarnation(Actor? a, bool asLiving)
     {
       if (a is null || a.IsDead || a.IsPlayer || a.Location.Map.DistrictPos != CurrentMap.DistrictPos || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisoner.TheActor || District.IsSewersMap(a.Location.Map)))
         return false;
@@ -14643,7 +14643,7 @@ retry:
       return a.Model.Abilities.IsUndead && (s_Options.CanReincarnateAsRat || a.Model != GameActors.RatZombie);
     }
 
-    static private Actor FindReincarnationAvatar(GameOptions.ReincMode reincMode, out int matchingActors)
+    static private Actor? FindReincarnationAvatar(GameOptions.ReincMode reincMode, out int matchingActors)
     {
       switch (reincMode) {
         case GameOptions.ReincMode.RANDOM_FOLLOWER:
@@ -14669,8 +14669,8 @@ retry:
           matchingActors = 0;
           return null;
         case GameOptions.ReincMode.ZOMBIFIED:
-          Actor zombifiedPlayer = Session.Get.Scoring_fatality.ZombifiedPlayer;
-          if (IsSuitableReincarnation(zombifiedPlayer, false)) {
+          var zombifiedPlayer = Session.Get.Scoring_fatality.ZombifiedPlayer;
+          if (zombifiedPlayer is not null && IsSuitableReincarnation(zombifiedPlayer, false)) {
             matchingActors = 1;
             return zombifiedPlayer;
           }
@@ -14858,7 +14858,7 @@ retry:
               }
               var escapees = new List<Actor>();
               foreach (var pt in new Rectangle(1,4,17,1)) {
-                Actor a = map.GetActorAt(pt);
+                Actor? a = map.GetActorAt(pt);
                 if (a is not null) escapees.Add(a);
               }
               var escape = new Tasks.TaskEscapeNanny(escapees, safe_zone);
