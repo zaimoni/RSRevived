@@ -27,6 +27,8 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Zaimoni.Data;
+using Zaimoni.Lazy;
+using static System.Collections.Specialized.BitVector32;
 using static Zaimoni.Data.Functor;
 // GDI+ types
 using Color = System.Drawing.Color;
@@ -1287,7 +1289,7 @@ namespace djack.RogueSurvivor.Engine
 
       static GameActors.IDs? command_line()
       {
-        if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
+        if (!Session.CommandLineOptions.TryGetValue("spawn",out var x)) return null;
         switch(x.Substring(2,1))
         {
         case "M": return GameActors.MaleZombified.ID;
@@ -1340,7 +1342,7 @@ namespace djack.RogueSurvivor.Engine
 
       static Skills.IDs? command_line()
       {
-        if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
+        if (!Session.CommandLineOptions.TryGetValue("spawn",out var x)) return null;
         try {
           return (Skills.IDs)Enum.Parse(typeof(Skills.IDs), x.AsSpan(3));
         } catch (ArgumentException) {
@@ -2092,7 +2094,7 @@ namespace djack.RogueSurvivor.Engine
         }
         if (Session.Get.HasInfection) {
 #region Infection effects
-          List<Actor> actorList = null;
+          List<Actor>? actorList = null;
           foreach (Actor actor in map.Actors) {
             if (actor.Infection >= Rules.INFECTION_LEVEL_1_WEAK && !actor.Model.Abilities.IsUndead) {
               int infectionPercent = actor.InfectionPercent;
@@ -2134,7 +2136,7 @@ namespace djack.RogueSurvivor.Engine
         // 2. Regen actors AP & STA
         map.PreTurnStart();
 #region 4. Actor gauges & states
-        List<Actor> actorList1 = null;
+        List<Actor>? actorList1 = null;
         foreach (Actor actor in map.Actors) {
 #region hunger & rot
           if (actor.Model.Abilities.HasToEat) {
@@ -3893,61 +3895,38 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, "> NOTABLE LOCATIONS", gx, gy3, new Color?());
         int gy9 = gy3 + BOLD_LINE_SPACING;
         int num7 = gy9;
-        for (int y = 0; y < World.Get.Size; ++y) {
-          for (int x = 0; x < World.Get.Size; ++x) {
+        foreach(var pt in World.Get.Extent) {
+            void render(Color clr, string what) {
+              m_UI.UI_DrawStringBold(clr, string.Format("at {0} : {1}.", World.CoordToString(pt), what), gx, gy9);
+              gy9 += BOLD_LINE_SPACING;
+              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
+                gy9 = num7;
+                gx += 350;
+              }
+            };
+
             Map entryMap = World.Get[x, y].EntryMap;
-            Zone zoneByPartialName1;
-            if ((zoneByPartialName1 = entryMap.GetZoneByPartialName("Subway Station")) is not null) {
-              m_UI.UI_DrawStringBold(Color.Blue, string.Format("at {0} : {1}.", World.CoordToString(x, y), zoneByPartialName1.Name), gx, gy9, new Color?());
-              gy9 += BOLD_LINE_SPACING;
-              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
-                gy9 = num7;
-                gx += 350;
-              }
+            var zoneByPartialName1 = entryMap.GetZoneByPartialName("Subway Station");
+            if (zoneByPartialName1 is not null) {
+              render(Color.Blue, zoneByPartialName1.Name);
             }
-            Zone zoneByPartialName2;
-            if ((zoneByPartialName2 = entryMap.GetZoneByPartialName("Sewers Maintenance")) is not null) {
-              m_UI.UI_DrawStringBold(Color.Green, string.Format("at {0} : {1}.", World.CoordToString(x, y), zoneByPartialName2.Name), gx, gy9, new Color?());
-              gy9 += BOLD_LINE_SPACING;
-              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
-                gy9 = num7;
-                gx += 350;
-              }
+            var zoneByPartialName2 = entryMap.GetZoneByPartialName("Sewers Maintenance");
+            if (zoneByPartialName2 is not null) {
+              render(Color.Green, zoneByPartialName2.Name);
             }
             if (entryMap == Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap) {
-              m_UI.UI_DrawStringBold(Color.CadetBlue, string.Format("at {0} : Police Station.", World.CoordToString(x, y)), gx, gy9, new Color?());
-              gy9 += BOLD_LINE_SPACING;
-              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
-                gy9 = num7;
-                gx += 350;
-              }
+              render(Color.CadetBlue, "Police Station.");
             }
             if (entryMap == Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap) {
-              m_UI.UI_DrawStringBold(Color.White, string.Format("at {0} : Hospital.", World.CoordToString(x, y)), gx, gy9, new Color?());
-              gy9 += BOLD_LINE_SPACING;
-              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
-                gy9 = num7;
-                gx += 350;
-              }
+              render(Color.White, "Hospital.");
             }
             if (Session.Get.PlayerKnows_CHARUndergroundFacilityLocation && entryMap == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap) {
-              m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : {1}.", World.CoordToString(x, y), Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Name), gx, gy9, new Color?());
-              gy9 += BOLD_LINE_SPACING;
-              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
-                gy9 = num7;
-                gx += 350;
-              }
+              render(Color.Red, Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Name);
             }
             var vip = Session.Get.UniqueActors.TheSewersThing.TheActor;
             if ((Player.Controller as PlayerController).KnowsWhere(vip) && entryMap == vip.Location.Map.District.EntryMap) {
-              m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : The Sewers Thing lives down there.", World.CoordToString(x, y)), gx, gy9, new Color?());
-              gy9 += BOLD_LINE_SPACING;
-              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
-                gy9 = num7;
-                gx += 350;
-              }
+              render(Color.Red, "The Sewers Thing lives down there.");
             }
-          }
         }
       m_UI.RenderFootnote("press ESC to leave");
       m_UI.WaitEscape();
