@@ -157,7 +157,7 @@ namespace djack.RogueSurvivor.Data
               break;
           case 3:
               {
-              string stage = reader.GetString();
+              string? stage = reader.GetString();
               if (Enum.TryParse(stage, out relay_kind)) return code;
               Engine.RogueGame.Game.ErrorPopup("unrecognized district kind " + stage);
               }

@@ -151,7 +151,7 @@ namespace djack.RogueSurvivor.Engine
               break;
           case 7:
               {
-              string stage = reader.GetString();
+              string? stage = reader.GetString();
               if (Enum.TryParse(stage, out GameMode)) return;
               RogueGame.Game.ErrorPopup("unrecognized GameMode " + stage);
               }

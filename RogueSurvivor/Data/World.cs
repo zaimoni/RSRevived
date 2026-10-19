@@ -329,7 +329,7 @@ namespace djack.RogueSurvivor.Data
               break;
           case 2:
               {
-              string stage = reader.GetString();
+              string? stage = reader.GetString();
               if (Enum.TryParse(stage, out Weather w)) {
                 Weather = w;
                 return;

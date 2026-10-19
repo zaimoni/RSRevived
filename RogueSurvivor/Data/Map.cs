@@ -357,7 +357,7 @@ namespace djack.RogueSurvivor.Data
                         break;
                     case 2:
                         {
-                        string stage = reader.GetString();
+                        string? stage = reader.GetString();
                         if (Enum.TryParse(stage, out m_Lighting)) return 0;
                         Engine.RogueGame.Game.ErrorPopup("unrecognized light level " + stage);
                         }
