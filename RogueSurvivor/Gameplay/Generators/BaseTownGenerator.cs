@@ -591,10 +591,9 @@ restart:
       if (world_pos == PoliceStationWorldPos) MakePoliceStation(map, blockList1);
       if (world_pos == HospitalWorldPos) MakeHospital(map, blockList1);
 
-      List<Block> outside_limits = null;
       var in_city = IsFacingCity(map.District);
       if (in_city is not null) {
-        outside_limits = new(blockList1.Count);
+        List<Block> outside_limits = new(blockList1.Count);
         foreach (var b in blockList1) if (!in_city(b)) outside_limits.Add(b);
 
         // \todo this is where we would inject the firing range, and the sewage treatment plant
@@ -766,7 +765,7 @@ restart:
 #endif
 
 #region 5. Sewers Maintenance Room & Building(surface).
-      List<Block> blockList = null;
+      List<Block>? blockList = null;
       foreach (Block mSurfaceBlock in m_SurfaceBlocks) {
         if (    mSurfaceBlock.BuildingRect.Width <= m_Params.MinBlockSize + 2
             &&  mSurfaceBlock.BuildingRect.Height <= m_Params.MinBlockSize + 2
@@ -909,7 +908,7 @@ restart:
     public List<Block> GetSubwayStationBlocks(Map entryMap, uint geometry)
     {
       // subway station code isn't meant to handle the diagnonals so bail on those early
-      List<Block> blockList = null;
+      List<Block>? blockList = null;
       // entry map has same dimensions as incoming subway map
       // rail line is 4 squares high (does not scale until close to 900 turns/hour)
       // EW: reserved coordinates are y1 to y1+3 inclusive, so subway.Width/2-1 to subway.Width/2+2
@@ -2203,7 +2202,7 @@ restart:
       const int height = 4;
       Point rail = SubwayRail(map.District);  // both the N-S and E-W railways use this as their reference point
 
-      Direction direction = null;
+      Direction? direction = null;
       if (isSurface) direction = m_DiceRoller.Choose(Direction.COMPASS_4);  // \todo CHAR zoning codes -- should not be directly facing z invasion
       else {
         var options = new Dictionary<Compass.XCOMlike,int>();
@@ -3456,7 +3455,7 @@ restart:
 
       static Actor DraftLeader(List<Actor> pool) {
         // first: leadership + backup weapons
-        Actor awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        Actor? awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (awesome is not null) return awesome;
 
         // leadership+pistol

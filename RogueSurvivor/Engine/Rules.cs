@@ -207,7 +207,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private static ActorAction? IsBumpableFor(Actor actor, Map map, Point point, out string reason)
+    private static ActorAction? IsBumpableFor(Actor actor, Map map, Point point, out string? reason)
     {
 #if DEBUG
       if (map is null) throw new ArgumentNullException(nameof(map));
@@ -279,12 +279,12 @@ namespace djack.RogueSurvivor.Engine
       return mapObjectAt?.IsBumpableFor(actor, out reason);
     }
 
-    public static ActorAction IsBumpableFor(Actor actor, in Location location)
+    public static ActorAction? IsBumpableFor(Actor actor, in Location location)
     {
-      return IsBumpableFor(actor, in location, out string reason);
+      return IsBumpableFor(actor, in location, out var _);
     }
 
-    public static ActorAction IsBumpableFor(Actor actor, in Location location, out string reason)
+    public static ActorAction? IsBumpableFor(Actor actor, in Location location, out string? reason)
     {
       return IsBumpableFor(actor, location.Map, location.Position, out reason);
     }

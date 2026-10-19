@@ -47,14 +47,14 @@ namespace djack.RogueSurvivor
     public static string toString(eVideo v) { return v.ToString(); }
     public static string toString(eSound s) { return s.ToString(); }
 
-    public static eVideo toVideo(string s)
+    public static eVideo toVideo(string? s)
     {
 //      if (s == SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX.ToString())
 //        return SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX;
       return s == eVideo.VIDEO_GDI_PLUS.ToString() ? eVideo.VIDEO_GDI_PLUS : eVideo.VIDEO_INVALID;
     }
 
-    public static SetupConfig.eSound toSound(string s)
+    public static SetupConfig.eSound toSound(string? s)
     {
 //      if (s == SetupConfig.eSound.SOUND_MANAGED_DIRECTX.ToString())
 //        return SetupConfig.eSound.SOUND_MANAGED_DIRECTX;

@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine
 
         [NonSerialized] private Scoring_fatality? m_Scoring_fatality = null;
         private Scoring m_Scoring = new();
-        private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
+        private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string>? m_CommandLineOptions;    // needs .NET 4.6 or higher
         public readonly RadioFaction Police = new RadioFaction(Data.GameFactions.IDs.ThePolice, Gameplay.Item_IDs.TRACKER_POLICE_RADIO);
 
         private static int s_seed = 0;  // We're a compiler-enforced singleton so this only looks weird
@@ -334,11 +334,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
         public static void Reset(GameMode mode) => s_TheSession = new Session(mode);
-
-        public bool CMDoptionExists(string x) {
-            if (m_CommandLineOptions is null) return false;
-            return m_CommandLineOptions.ContainsKey(x);
-        }
+        public bool CMDoptionExists(string x) => m_CommandLineOptions?.ContainsKey(x) ?? false;
 
         public void ForcePoliceKnown(Location loc) {   // for world creation
             var allItems = Map.AllItemsAt(loc);

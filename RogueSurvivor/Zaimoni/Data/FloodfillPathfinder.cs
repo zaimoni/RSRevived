@@ -171,7 +171,7 @@ namespace Zaimoni.Data
                     if (dest.Remove(x.Key) && 0 >= dest.Count) _now.Remove(old_cost);
                 }
                 if (working_src_now.TryGetValue(x.Value, out var dest3) && dest3.Contains(x.Key)) {
-                    if (_now.TryGetValue(x.Value, out HashSet<T> dest4)) dest4.Add(x.Key);
+                    if (_now.TryGetValue(x.Value, out var dest4)) dest4.Add(x.Key);
                     else _now[x.Value] = new HashSet<T> { x.Key };
                 }
             }
@@ -298,7 +298,7 @@ namespace Zaimoni.Data
                     if (_now[old_cost].Remove(pt) && 0 >= _now[old_cost].Count) _now.Remove(old_cost);
                   }
                   _map[pt] = new_cost;
-                  if (_now.TryGetValue(new_cost, out HashSet<T> dest)) dest.Add(pt);
+                  if (_now.TryGetValue(new_cost, out var dest)) dest.Add(pt);
                   else _now.Add(new_cost, new HashSet<T> { pt });
                 }
               }
@@ -403,7 +403,7 @@ namespace Zaimoni.Data
                     if (_now[old_cost].Remove(tmp2.Key) && 0 >= _now[old_cost].Count) _now.Remove(old_cost);
                   }
                   _map[tmp2.Key] = new_cost;
-                  if (_now.TryGetValue(new_cost, out HashSet<T> dest)) dest.Add(tmp2.Key);
+                  if (_now.TryGetValue(new_cost, out var dest)) dest.Add(tmp2.Key);
                   else _now[new_cost] = new HashSet<T>{tmp2.Key};
                   if (goals(tmp2.Key)) found.Add(tmp2.Key);
                 }

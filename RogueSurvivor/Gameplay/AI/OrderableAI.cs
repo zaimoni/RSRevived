@@ -1041,7 +1041,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }
 
-      public ActorAction Pathing()
+      public ActorAction? Pathing()
       {
         Location? test = m_Actor.Location.Map.Denormalize(_dest.Location);
         if (test is not null && m_Actor.Controller.FOV.Contains(test.Value.Position)) {
@@ -1057,7 +1057,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         IEnumerable<Point> dest_pts = m_Actor.Location.Position.Adjacent().Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor));
-        ActorAction ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == m_Actor.Location.Map ? new HashSet<Point>(dest_pts) : new HashSet<Point>()));
+        ActorAction? ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == m_Actor.Location.Map ? new HashSet<Point>(dest_pts) : new HashSet<Point>()));
         if (ret is null || !ret.IsLegal()) {
          _isExpired = true;
           return null;
@@ -1236,7 +1236,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             move_to.Add(pt);
             continue;
           }
-          Actor a = _dest.Map.GetActorAt(pt);
+          Actor? a = _dest.Map.GetActorAt(pt);
           if (a is null) continue;
           if (m_Actor.IsEnemyOf(a)) continue;   // XXX intelligent enemies might react, but that's handled in sound processing
           var is_helping = (a.Controller as ObjectiveAI).Goal<Goal_BreakBarricade>(o => o.Target==door);
@@ -1440,12 +1440,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    private ActorAction ExecuteBarricading(Location location, bool toTheMax)
+    private ActorAction? ExecuteBarricading(Location location, bool toTheMax)
     {
       if (m_Actor.Location.Map != location.Map) return null;
       if (!(location.Map.GetMapObjectAt(location.Position) is DoorWindow door)) return null;
       if (!m_Actor.CanBarricade(door)) return null;
-      ActorAction tmpAction = null;
+      ActorAction? tmpAction = null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, location.Position)) {
         tmpAction= new ActionBarricadeDoor(m_Actor, door);
         if (!toTheMax) SetOrder(null);
@@ -1457,7 +1457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmpAction;
     }
 
-    private ActorAction ExecuteBuildFortification(Location location, bool isLarge)
+    private ActorAction? ExecuteBuildFortification(Location location, bool isLarge)
     {
       if (m_Actor.Location.Map != location.Map) return null;
       if (!string.IsNullOrEmpty(ActionBuildFortification.ReasonCant(m_Actor, isLarge))) {
@@ -1465,7 +1465,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
       }
       if (!string.IsNullOrEmpty(ActionBuildFortification.ReasonCant(location))) return null;
-      ActorAction tmpAction = null;
+      ActorAction? tmpAction = null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, location.Position)) {
         tmpAction = new ActionBuildFortification(m_Actor, location, isLarge);
         if (!tmpAction.IsLegal()) return null;
@@ -1501,7 +1501,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionWait(m_Actor);
     }
 
-    private ActorAction ExecutePatrol(Location location, List<Percept> percepts)
+    private ActorAction? ExecutePatrol(Location location, List<Percept> percepts)
     {
       var enemies = FilterEnemies(percepts);
       if (enemies is not null) {
@@ -1522,10 +1522,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      List<Zone> patrolZones = location.Map.GetZonesAt(Order.Location.Position);
+      List<Zone>? patrolZones = location.Map.GetZonesAt(Order.Location.Position);
       return BehaviorWander(null, loc =>
       {
-        List<Zone> zonesAt = loc.Map.GetZonesAt(loc.Position);
+        List<Zone>? zonesAt = loc.Map.GetZonesAt(loc.Position);
         if (zonesAt is null) return false;
         foreach (Zone zone1 in zonesAt) {
           foreach (Zone zone2 in patrolZones) {
@@ -1749,11 +1749,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction ManageMeleeRisk(List<ItemRangedWeapon> available_ranged_weapons)
+    protected ActorAction? ManageMeleeRisk(List<ItemRangedWeapon> available_ranged_weapons)
     {
         const bool tracing = false; // debugging hook
 
-        ActorAction tmpAction = null;
+        ActorAction? tmpAction = null;
         if ((_retreat is not null || _run_retreat is not null) && available_ranged_weapons is not null && _enemies is not null) {
         if (tracing && !RogueGame.IsSimulating) {
           RogueGame.Game.InfoPopup(available_ranged_weapons.to_s());
@@ -1838,10 +1838,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    private ActorAction Equip(ItemRangedWeapon rw) {
+    private ActorAction? Equip(ItemRangedWeapon rw) {
       if (!rw.IsEquipped /* && m_Actor.CanEquip(rw) */) rw.EquippedBy(m_Actor);
       if (0 >= rw.Ammo) {
-        ItemAmmo ammo = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
+        var ammo = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
         if (ammo is not null) return UseAmmo(ammo, rw);
       }
       return null;
@@ -1908,7 +1908,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX there may be more important objectives than this
       foreach(ItemRangedWeapon rw in available_ranged_weapons) {
         if (rw.Model.MaxAmmo <= rw.Ammo) continue;
-        ItemAmmo am = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
+        var am = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
         if (am is null) continue;
         if (0 == rw.Ammo || (rw.Model.MaxAmmo - rw.Ammo) >= am.Quantity) return Equip(rw) ?? new ActionUseItem(m_Actor, am);
       }
@@ -1916,7 +1916,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // forked from BaseAI::BehaviorEquipWeapon
-    protected ActorAction BehaviorEquipWeapon(List<ItemRangedWeapon> available_ranged_weapons)
+    protected ActorAction? BehaviorEquipWeapon(List<ItemRangedWeapon> available_ranged_weapons)
     {
 #if DEBUG
       if ((available_ranged_weapons is null) != (GetBestRangedWeaponWithAmmo() is null)) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
@@ -1925,7 +1925,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var game = RogueGame.Game;
 
       // migrated from CivilianAI::SelectAction
-      ActorAction tmpAction = null;
+      ActorAction? tmpAction = null;
       if (_enemies is not null) {
         tmpAction = ScanForMeleeSnipe();
         if (tmpAction is not null) return tmpAction;
@@ -1940,7 +1940,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (_enemies is null) {
         foreach(ItemRangedWeapon rw in available_ranged_weapons) {
           if (rw.Model.MaxAmmo <= rw.Ammo) continue;
-          ItemAmmo am = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
+          var am = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
           if (am is null) continue;
           if (0 == rw.Ammo || (rw.Model.MaxAmmo - rw.Ammo) >= am.Quantity) return Equip(rw) ?? new ActionUseItem(m_Actor, am);
         }
@@ -1990,7 +1990,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (tmpAction is ActionShove shove) {
           if (_enemies is not null) {
 //          Dictionary<Point,int> risk = null;  // optimized out
-            List<Location> norisk = null;
+            List<Location>? norisk = null;
             // this might endanger the shove target...be more careful
             foreach(Direction d in Direction.COMPASS) {
               var dest = shove.Target.Location+d;
@@ -2002,7 +2002,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (norisk is not null) {
               var target_rw = (shove.Target.Controller as ObjectiveAI).GetBestRangedWeaponWithAmmo();
               if (target_rw is not null) {
-                Dictionary<Point,int> targets = null;
+                Dictionary<Point,int>? targets = null;
                 var my_loc = shove.Target.Location.Map.Denormalize(m_Actor.Location);   // expected to be non-null since we could shove
                 foreach(var en in _enemies) {
                   var loc = shove.Target.Location.Map.Denormalize(en.Location);
@@ -2134,7 +2134,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public ActorAction? OpportunityFire()
     {
         // migrated from CivilianAI::SelectAction
-        ActorAction tmpAction = null;
+        ActorAction? tmpAction = null;
         if (_enemies is not null) {
             tmpAction = ScanForMeleeSnipe();
             if (tmpAction is not null) return tmpAction;
@@ -2259,7 +2259,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Inventory.IsEmpty) return null;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
       int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-      ItemFood obj1 = null;
+      ItemFood? obj1 = null;
       int rating = int.MinValue;
       foreach (Item obj2 in m_Actor.Inventory) {
         if (!(obj2 is ItemFood food)) continue;
@@ -2283,7 +2283,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Inventory.IsEmpty) return null;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
       int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-      ItemFood obj1 = null;
+      ItemFood? obj1 = null;
       int rating = int.MinValue;
       foreach (Item obj2 in m_Actor.Inventory) {
         if (!(obj2 is ItemFood food)) continue;
@@ -2371,7 +2371,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (_enemies is null) throw new ArgumentNullException(nameof(_enemies));
 #endif
       if (3 > _enemies.Count) return null;
-      ItemGrenade firstGrenade = m_Actor.Inventory.GetFirstMatching<ItemGrenade>();
+      var firstGrenade = m_Actor.Inventory.GetFirstMatching<ItemGrenade>();
       if (firstGrenade is null) return null;
       var itemGrenadeModel = firstGrenade.Model;
       int maxRange = m_Actor.MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
@@ -2601,7 +2601,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionUseItem(m_Actor, choiceEval.Choice); // legal only for OrderableAI
     }
 
-    protected override ActorAction BehaviorChargeEnemy(Percept_<Actor> target, bool canCheckBreak, bool canCheckPush)
+    protected override ActorAction? BehaviorChargeEnemy(Percept_<Actor> target, bool canCheckBreak, bool canCheckPush)
     {
       Actor actor = target.Percepted;
       ActorAction? tmpAction = BehaviorMeleeAttack(actor);
@@ -2627,7 +2627,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         };
         var friends = friends_in_FOV;
         if (friends is not null) {
-          List<List<Point>> LoF = null;
+          List<List<Point>>? LoF = null;
           foreach(var x in friends) {
             var rw = (x.Value.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo();
             if (rw is null) continue;
@@ -2635,7 +2635,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (rw.Model.Attack.Range < Rules.GridDistance(x.Key, target.Location)) continue;
             var line = new List<Point>();
             if (!LOS.CanTraceHypotheticalFireLine(x.Key, target.Location, rw.Model.Attack.Range, x.Value, line)) continue;
-            (LoF ??= new List<List<Point>>()).Add(line);
+            (LoF ??= new()).Add(line);
           }
           if (LoF is not null) {
             close_in = close_in.Postprocess((ptA,ptB,dist) => {
@@ -2909,7 +2909,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // it is possible to reach here with a ranged weapon.  (Char Office assault, for instance)  In this case, we don't have Line of Fire.
       if (GetBestRangedWeaponWithAmmo() is not null) return null;
 
-      List<Point> legal_steps = _legal_steps; // XXX working reference due to following postprocessing
+      var legal_steps = _legal_steps; // XXX working reference due to following postprocessing
       if (_blast_field is not null && legal_steps is not null) {
         IEnumerable<Point> test = legal_steps.Where(pt => !_blast_field.Contains(pt));
         legal_steps = (test.Any() ? test.ToList() : null);
@@ -3225,14 +3225,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
            && (1 >= maxDist || (CanSee(in dest) && m_Actor.MinStepPathTo(in src, in dest) is not null));
     }
 
-    protected override ActorAction BehaviorFollowActor(Actor other, int maxDist)
+    protected override ActorAction? BehaviorFollowActor(Actor other, int maxDist)
     {
       if (other?.IsDead ?? true) return null;
       if (InProximity(m_Actor.Location, other.Location, maxDist)) {
           RecordCloseToActor(other, maxDist);
           return new ActionWait(m_Actor);
       }
-      ActorAction actorAction = BehaviorPathToAdjacent(other.Location); // can null out from traffic jam
+      ActorAction? actorAction = BehaviorPathToAdjacent(other.Location); // can null out from traffic jam
       if (!actorAction?.IsPerformable() ?? true) return null;
       if (actorAction is ActionMoveStep tmp) {
         if (  Rules.GridDistance(m_Actor.Location.Position, tmp.dest.Position) > maxDist
@@ -3243,7 +3243,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // belongs with CivilianAI, or possibly OrderableAI but NatGuard may not have access to the crime listings
-    protected ActorAction BehaviorEnforceLaw()
+    protected ActorAction? BehaviorEnforceLaw()
     {
 #if DEBUG
       if (!m_Actor.Model.Abilities.IsLawEnforcer) throw new InvalidOperationException("!m_Actor.Model.Abilities.IsLawEnforcer");
@@ -3251,7 +3251,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX this should affect reputation
       var friends = friends_in_FOV;
       if (friends is null) return null;
-      Dictionary<Location,Actor> murderers = null;
+      Dictionary<Location,Actor>? murderers = null;
       // if either ActorUnsuspicousChance exceeds 100%, or ActorSpotMurdererChance is 0% or less, report
       // the murders counter value as zero.  (This should not immunize against actually witnessing the murder, or murder in progress.)
       // this needs to affect the popup as well.  A murderer should not do an action that enables detection.
@@ -3457,7 +3457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionSleep(m_Actor);
     }
 
-    private ActorAction BehaviorNavigateToSleep(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int> item_memory)
+    private ActorAction? BehaviorNavigateToSleep(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int> item_memory)
     {
 #if DEBUG
         if (item_memory is null) throw new ArgumentNullException(nameof(item_memory));
@@ -3486,7 +3486,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (tracing && !RogueGame.IsSimulating) {
               RogueGame.Game.InfoPopup("scheduling sleep:" + m_Actor.CanSleep().ToString());
             }
-            SetObjective(new Engine.Goal.NextAction(m_Actor, (ActorAction)null, new ActionSleep(m_Actor)));
+            SetObjective(new Engine.Goal.NextAction(m_Actor, null, new ActionSleep(m_Actor)));
           }
         }
         return act;
@@ -3731,7 +3731,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // XXX \todo replace/augment this behavior to generally take action to manage sanity
     // that is: entertainment (currently), medication, and chatting.
     // the use medicine behavior is used in combat so it should not be nearly as finicky about sanity as the non-combat management here
-    protected ActorAction BehaviorUseEntertainment()
+    protected ActorAction? BehaviorUseEntertainment()
     {
       Inventory inventory = m_Actor.Inventory;
       if (inventory.IsEmpty) return null;
@@ -3780,7 +3780,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       const int USE_STENCH_KILLER_CHANCE = 75;
       if (Rules.Get.RollChance(USE_STENCH_KILLER_CHANCE)) {  // compromise between burning RNG and very high false negative rate
       // first check if want to use it on self, then check on adj leader/follower
-      Actor sprayOn = null;
+      Actor? sprayOn = null;
 
       bool WantsToSprayOn(Actor a)
       {
@@ -3876,7 +3876,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmp.ToList();
     }
 
-    private Item MostInterestingItemInStack(Inventory stack)
+    private Item? MostInterestingItemInStack(Inventory stack)
     {
 #if DEBUG
       if (stack.IsEmpty()) throw new ArgumentNullException(nameof(stack));
@@ -3884,7 +3884,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var interesting = InterestingItems(stack);
       if (interesting is null) return null;
 
-      Item obj = null;
+      Item? obj = null;
       foreach (Item it in interesting) {
         if (obj is null || RHSMoreInteresting(obj, it)) obj = it;
       }
@@ -3943,13 +3943,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack.obj_owner is null && stack.loc is null) throw new InvalidOperationException("do not try to grab from actor inventory");
 #endif
-      Item obj = MostInterestingItemInStack(stack.Inventory);
+      Item? obj = MostInterestingItemInStack(stack.Inventory);
       if (obj is null) return null;
 
       // but if we cannot take it, ignore anyway
       bool cant_get = !m_Actor.CanGet(obj);
       bool need_recover = cant_get && m_Actor.Inventory.IsFull;
-      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, in stack) : null);
+      ActorAction? recover = (need_recover ? BehaviorMakeRoomFor(obj, in stack) : null);
 #if DEBUG
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
       if (cant_get && recover is null) {
@@ -3994,13 +3994,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX \todo strictly speaking we should build out cross-map here
       if (m_Actor.StackIsBlocked(in loc) || m_Actor.Location.Map != loc.Map) return null;
 
-      Item obj = MostInterestingItemInStack(stack);
+      Item? obj = MostInterestingItemInStack(stack);
       if (obj is null) return null;
 
       // but if we cannot take it, ignore anyway
       bool cant_get = !m_Actor.CanGet(obj);
       bool need_recover = cant_get && m_Actor.Inventory.IsFull;
-      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, in origin) : null);
+      ActorAction? recover = (need_recover ? BehaviorMakeRoomFor(obj, in origin) : null);
 #if DEBUG
 #if INTEGRITY_CHECK_ITEM_RETURN_CODE
       if (cant_get && recover is null) {
@@ -4022,7 +4022,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 
       // the get item checks do not validate that inventory is not full
-      ActorAction tmp = null;
+      ActorAction? tmp = null;
       // XXX ActionGetFromContainer is obsolete.  Bypass BehaviorIntelligentBumpToward for containers.
       bool may_take = is_real ? m_Actor.MayTakeFrom(origin) : true;
 
@@ -4047,7 +4047,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
         if (stacks is null) throw new ArgumentNullException(nameof(stacks));
 #endif
-        ActorAction tmpAction = null;
+        ActorAction? tmpAction = null;
           {
           List<KeyValuePair<Data.Model.InvOrigin, ActorAction>> get_item = new();
           foreach(var x in stacks) {
@@ -4276,10 +4276,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 }
             }
         }
-        ActorAction tmpAction = null;
+        ActorAction? tmpAction = null;
         int min_dist = int.MaxValue;
-        Actor donor = null;
-        ActionGiveTo donate = null;
+        Actor? donor = null;
+        ActionGiveTo? donate = null;
         if (0 < insurance.Count) {
             foreach (var x in insurance) {
                 int dist = Rules.InteractionDistance(m_Actor.Location, x.Key.Location);

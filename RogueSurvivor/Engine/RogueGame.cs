@@ -14528,7 +14528,7 @@ retry:
       m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0);
       m_UI.UI_DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 2 * BOLD_LINE_SPACING);
       m_UI.UI_Repaint();
-      Actor[] reincarnationAvatars = {
+      Actor?[] reincarnationAvatars = {
         FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_ACTOR, out int matchingActors1),
         FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_LIVING, out int matchingActors2),
         FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_UNDEAD, out int matchingActors3),
@@ -14596,7 +14596,7 @@ retry:
       StartSimThread();
     }
 
-    static private string DescribeAvatar(Actor a)
+    static private string DescribeAvatar(Actor? a)
     {
       if (a is null) return "(N/A)";
       return string.Format("{0}, a {1}{2}", a.Name, a.Model.Name, (0 < a.CountFollowers ? ", leader" : (a.HasLeader ? ", follower" : "")));

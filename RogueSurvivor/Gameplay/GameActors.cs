@@ -245,7 +245,8 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       bool flag = true;
       using (StreamReader streamReader = File.OpenText(path)) {
         while (!streamReader.EndOfStream) {
-          string str = streamReader.ReadLine();
+          string? str = streamReader.ReadLine();
+          if (str is null) continue;
           if (flag) flag = false;
           else stringList.Add(str);
         }

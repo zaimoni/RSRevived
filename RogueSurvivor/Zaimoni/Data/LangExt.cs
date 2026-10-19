@@ -27,7 +27,7 @@ namespace Zaimoni.Data
         }
 
         public static string Plural(string x) {
-          if (irregular_plural.TryGetValue(x, out string ret)) return ret;
+          if (irregular_plural.TryGetValue(x, out string? ret)) return ret;
 
           if (elided_adj_nouns.TryGetValue(x,out KeyValuePair<string, string> test)) return test.Key+Noun.Plural(test.Value);
 
@@ -35,7 +35,7 @@ namespace Zaimoni.Data
         }
 
         public static string Feminine(string x) {
-          if (irregular_feminine.TryGetValue(x, out string ret)) return ret;
+          if (irregular_feminine.TryGetValue(x, out string? ret)) return ret;
 
           if (elided_adj_nouns.TryGetValue(x,out KeyValuePair<string, string> test)) return test.Key+Noun.Feminine(test.Value);
 
