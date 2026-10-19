@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         {
 
           ret = null;
-          if (null == threats || null == tourism) return false;   // not re-bound yet (RepairLoad is for a live session): cannot decide
+          if (threats is null || tourism is null) return false;   // not re-bound yet (RepairLoad is for a live session): cannot decide
 
           Predicate<Point>? is_cleared = null;
 
@@ -109,7 +109,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
           if (0 < tourism_at.Count) is_cleared = is_cleared.And(pt => !tourism_at.Contains(pt));
 
-          else if (null == is_cleared) {
+          else if (is_cleared is null) {
 
             _isExpired = true;
 
@@ -142,7 +142,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             if (0 < threats_at.Count) is_cleared = pt => !threats_at.Contains(pt);
             var tourism_at = tourism.In(m_Zone.m);
             if (0 < tourism_at.Count) is_cleared = is_cleared.And(pt => !tourism_at.Contains(pt));
-            else if (null == is_cleared) {
+            else if (is_cleared is null) {
                 _isExpired = true;
                 return true;
             }
@@ -158,7 +158,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         }
 
         public bool update(Location[] fov) {
-            if (    null != oai.enemies_in_FOV // expire immediately if enemy sighted
+            if (    oai.enemies_in_FOV is not null // expire immediately if enemy sighted
                 || !m_Zone.Contains(m_Actor.Location)) { // we left the zone for some reason
                 _isExpired = true;
                 return true;

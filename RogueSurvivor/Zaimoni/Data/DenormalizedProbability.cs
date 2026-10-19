@@ -39,7 +39,7 @@ namespace Zaimoni.Data
         public DenormalizedProbability(DenormalizedProbability<T> src)
         {
 #if DEBUG
-            if (null == src) throw new ArgumentNullException(nameof(src));
+            if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
             _weights = new Dictionary<T, float>(src._weights);
             Norm = new Dataflow<Dictionary<T, float>, double>(_weights, _current_norm);
@@ -100,8 +100,8 @@ retry:      if (target == Norm.Get) return;
         public static DenormalizedProbability<KeyValuePair<T, T>> operator *(DenormalizedProbability<T> lhs, DenormalizedProbability<T> rhs)
         {
 #if DEBUG
-            if (null == lhs) throw new ArgumentNullException(nameof(lhs));
-            if (null == rhs) throw new ArgumentNullException(nameof(rhs));
+            if (lhs is null) throw new ArgumentNullException(nameof(lhs));
+            if (rhs is null) throw new ArgumentNullException(nameof(rhs));
 #endif
             var ret = new DenormalizedProbability<KeyValuePair<T, T>>();
             foreach (var x in lhs._weights) {
@@ -116,8 +116,8 @@ retry:      if (target == Norm.Get) return;
         public static DenormalizedProbability<T> Apply(DenormalizedProbability<KeyValuePair<T, T>> src, Func<T, T, T> op)
         {
 #if DEBUG
-            if (null == op) throw new ArgumentNullException(nameof(op));
-            if (null == src) throw new ArgumentNullException(nameof(src));
+            if (op is null) throw new ArgumentNullException(nameof(op));
+            if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
             var ret = new DenormalizedProbability<T>();
             foreach (var x in src._weights) {

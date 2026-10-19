@@ -55,8 +55,8 @@ namespace djack.RogueSurvivor.Engine
     public HiScore(Scoring sc, ActorScoring asc, string skillsDescription)
     {
 #if DEBUG
-      if (null == sc) throw new ArgumentNullException(nameof(sc));
-      if (null == asc) throw new ArgumentNullException(nameof(asc));
+      if (sc is null) throw new ArgumentNullException(nameof(sc));
+      if (asc is null) throw new ArgumentNullException(nameof(asc));
 #endif
       AchievementPoints = asc.AchievementPoints;
       Death = asc.DeathReason;

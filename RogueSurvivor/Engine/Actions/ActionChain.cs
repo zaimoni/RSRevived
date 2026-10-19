@@ -34,7 +34,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         public ActionChain(Actor actor, List<ActorAction> actions) : base(actor)
         {
 #if DEBUG
-            if (null == actions || 2 > actions.Count) throw new ArgumentNullException(nameof(actions));
+            if (actions is null || 2 > actions.Count) throw new ArgumentNullException(nameof(actions));
             if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
             if (actions.Count > _forkBefore(actions)) throw new ArgumentOutOfRangeException(nameof(actions), actions, "fork may only terminate an action chain");
 #endif
@@ -49,16 +49,16 @@ namespace djack.RogueSurvivor.Engine.Actions
 #endif
             var chain1 = act1 as ActionChain;
 #if DEBUG
-            if (null != chain1 && chain1.m_Actions.Count > _forkBefore(chain1.m_Actions)) throw new ArgumentOutOfRangeException(nameof(chain1), chain1, "fork may only terminate an action chain");
+            if (chain1 is not null && chain1.m_Actions.Count > _forkBefore(chain1.m_Actions)) throw new ArgumentOutOfRangeException(nameof(chain1), chain1, "fork may only terminate an action chain");
 #endif
             if (act0 is ActionChain chain0) {
 #if DEBUG
                 if (chain0.m_Actions.Count >= _forkBefore(chain0.m_Actions)) throw new ArgumentOutOfRangeException(nameof(chain0), chain0, "fork may only terminate an action chain");
 #endif
                 m_Actions = new List<ActorAction>(chain0.m_Actions);
-                if (null != chain1) m_Actions.AddRange(chain1.m_Actions);
+                if (chain1 is not null) m_Actions.AddRange(chain1.m_Actions);
                 else m_Actions.Add(act1);
-            } else if (null != chain1) {
+            } else if (chain1 is not null) {
                 m_Actions = new List<ActorAction>(chain1.m_Actions);
                 m_Actions.Insert(0, act0);
             } else {
@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         public ActionChain(List<ActorAction> src, int lb) : base(src[0])
         {
 #if DEBUG
-          if (null == src || src.Count <= lb) throw new ArgumentNullException(nameof(src));
+          if (src is null || src.Count <= lb) throw new ArgumentNullException(nameof(src));
 #endif
           var actions = new List<ActorAction>();
           while(lb < src.Count) actions.Add(src[lb++]);
@@ -214,7 +214,7 @@ namespace djack.RogueSurvivor.Engine.Actions
               if (a_dest.dest == origin) return true;
             } else if (act is _Action.Fork fork) {
               var test = fork.RejectOrigin(origin);
-              if (null == test) return true;
+              if (test is null) return true;
               m_Actions[i] = test;
               return false;
             } else return false;

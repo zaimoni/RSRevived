@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine._Action
             if (src != m_Actor.Location) return false;
 
             var victim = target;
-            if (null == victim) return false;
+            if (victim is null) return false;
             if (!m_Actor.IsEnemyOf(victim)) return false;
 
             return CanMeleeAttack(victim);
@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Engine._Action
         public override void Perform()
         {
             var melee = m_Actor.GetBestMeleeWeapon();
-            if (null != melee) {
+            if (melee is not null) {
                 if (!melee.IsEquipped) melee.EquippedBy(m_Actor); // relies on equipping being a free action
             } else {
                 if (m_Actor.GetEquippedWeapon() is ItemMeleeWeapon tmp_melee) tmp_melee.UnequippedBy(m_Actor);
@@ -69,7 +69,7 @@ namespace djack.RogueSurvivor.Engine._Action
 
         static public MeleeAttack? ScheduleCast(Actor actor, Location dest, Location? origin = null)
         {
-            Location src = null == origin ? actor.Location : origin.Value;
+            Location src = origin is null ? actor.Location : origin.Value;
 
 #if B_MOVIE_MARTIAL_ARTS
             bool in_range = Rules.IsAdjacent(src, dest);
@@ -85,7 +85,7 @@ namespace djack.RogueSurvivor.Engine._Action
 
         static public MeleeAttack? Cast(Actor actor, Location dest, Location? origin = null)
         {
-            Location src = null == origin ? actor.Location : origin.Value;
+            Location src = origin is null ? actor.Location : origin.Value;
             var ret = new MeleeAttack(actor, src, dest);
             return ret.IsPerformable() ? ret : null;
         }
@@ -95,7 +95,7 @@ namespace djack.RogueSurvivor.Engine._Action
             Location src = en.Location;
             foreach (var dest in dests) {
                 var melee = ScheduleCast(en.who, dest);
-                if (null == melee) continue;
+                if (melee is null) continue;
                 catalog.Add(melee);
             }
         }
@@ -104,11 +104,11 @@ namespace djack.RogueSurvivor.Engine._Action
         {
             Location src = en.Location;
             var dash = en.RunSteps;
-            if (null == dash) return;
+            if (dash is null) return;
             foreach (var dest in dests) {
                 foreach (var move in dash) {
                     var snipe = ScheduleCast(en.who, dest, move.dest);
-                    if (null == snipe) continue;
+                    if (snipe is null) continue;
                     dash_attack.Add(new(move, snipe));
                 }
             }

@@ -33,14 +33,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public bool update(Actor a) {
       var oai = a.Controller as ObjectiveAI;
-      if (null == oai) return false;
+      if (oai is null) return false;
       if (a.IsFaction(GameFactions.IDs.TheCHARCorporation)) return false;
       if (a.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE)) return false;
       if (!m_surveiled.Contains(a.Location)) return false;
       if (a.Controller is OrderableAI && m_surveiled.Contains(oai.PrevLocation)) return false;
       if (!m_surveiled.Any(loc => {
           var actor = loc.Actor;
-          if (null == actor) return false;
+          if (actor is null) return false;
           return actor.IsFaction(GameFactions.IDs.TheCHARCorporation);
         }))
         return true;    // no CHAR guards: expire, no break-in achievement
@@ -262,7 +262,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       World.Get.DoForAllDistricts(d=>{
         if (DistrictKind.BUSINESS != d.Kind) return;
 
-        if (null != d.EntryMap.GetZoneByPartialName("CHAR Office@")) {
+        if (d.EntryMap.GetZoneByPartialName("CHAR Office@") is not null) {
           districtList.Add(new KeyValuePair<District,int>(d, Rules.GridDistance(d.WorldPosition, PoliceStationWorldPos)));
           return;
         }
@@ -566,7 +566,7 @@ restart:
       if (0 < subway_layout) {
         if (ForceSubwayStation.Contains(world_pos)) {
           var test = GetSubwayStationBlocks(map, subway_layout);
-          if (null == test) goto restart;
+          if (test is null) goto restart;
         }
         GenerateSubwayMap(map.Seed << 2 ^ map.Seed, map, out var subway_station);
         if (subway_station is not null) {
@@ -593,7 +593,7 @@ restart:
 
       List<Block> outside_limits = null;
       var in_city = IsFacingCity(map.District);
-      if (null != in_city) {
+      if (in_city is not null) {
         outside_limits = new(blockList1.Count);
         foreach (var b in blockList1) if (!in_city(b)) outside_limits.Add(b);
 
@@ -775,7 +775,7 @@ restart:
           (blockList ??= new List<Block>(m_SurfaceBlocks.Count)).Add(mSurfaceBlock);
         }
       }
-      if (blockList != null) {
+      if (blockList is not null) {
         Block block = m_DiceRoller.Choose(blockList);
         ClearRectangle(surface, block.BuildingRect);
         TileFill(surface, GameTiles.FLOOR_CONCRETE, block.BuildingRect);
@@ -1125,7 +1125,7 @@ restart:
 
 #region 2. Make station linked to surface.
       List<Block> blockList = GetSubwayStationBlocks(entryMap, layout);
-      if (blockList != null) {
+      if (blockList is not null) {
         block = m_DiceRoller.Choose(blockList);
         ClearRectangle(entryMap, block.BuildingRect);   // had been wiping out stores, etc as late-generation
         TileFill(entryMap, GameTiles.FLOOR_CONCRETE, block.BuildingRect);
@@ -1366,7 +1366,7 @@ restart:
       if (shopType == ShopType.GUNSHOP) BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
       ItemsDrop(map, b.InsideRect, pt => {
         var mapObjectAt = map.GetMapObjectAt(pt);
-        if (mapObjectAt == null || MapObject.IDs.SHOP_SHELF != mapObjectAt.ID) return false;
+        if (mapObjectAt is null || MapObject.IDs.SHOP_SHELF != mapObjectAt.ID) return false;
         return m_DiceRoller.RollChance(Parameters.ItemInShopShelfChance);
       }, pt => MakeRandomShopItem(shopType));
       map.AddZone(MakeUniqueZone(shop_name_image.Key, b.BuildingRect));
@@ -1419,7 +1419,7 @@ restart:
     protected Direction PlaceShoplikeEntrance(Map map, Block b, TileModel model, Func<DoorWindow> make_door)
     {
 #if DEBUG
-      if (null == make_door) throw new ArgumentNullException(nameof(make_door));
+      if (make_door is null) throw new ArgumentNullException(nameof(make_door));
 #endif
       bool orientation_ew = b.InsideRect.Width >= b.InsideRect.Height;
       Direction ret;
@@ -2435,7 +2435,7 @@ restart:
     protected List<Rectangle> MakeRoomsPlan(Map map, Rectangle rect, short minRoomsXSize, short minRoomsYSize =0, List<Rectangle>? list = null)
     {
         if (0 >= minRoomsYSize) minRoomsYSize = minRoomsXSize;    // backward compatibility
-        if (null == list) list = new(); // retain this parameter for Waterfall software lifecycle
+        if (list is null) list = new(); // retain this parameter for Waterfall software lifecycle
 
         _MakeRoomsPlan(map, list, rect, minRoomsXSize, minRoomsYSize);
 
@@ -2469,7 +2469,7 @@ restart:
       Rectangle insideRoom = new Rectangle(roomRect.Location + Direction.SE, roomRect.Size + 2 * Direction.NW);
 
       if (-1 == role) role = m_DiceRoller.Roll(0, 10);  // alpha10.1 roll room role if not set
-      bool ok(Point pt) => null == free || free(pt);   // a reserved tile takes nothing
+      bool ok(Point pt) => free is null || free(pt);   // a reserved tile takes nothing
 
       // alpha10.1 added restriction to not place a mapobj if adj to at least 5 mapobj as to not cramp apartements
       switch (role)
@@ -3048,7 +3048,7 @@ restart:
     public Map GenerateUniqueMap_CHARUnderground(Map surfaceMap, Zone officeZone)
     {
 #if DEBUG
-      if (null == surfaceMap) throw new ArgumentNullException(nameof(surfaceMap));
+      if (surfaceMap is null) throw new ArgumentNullException(nameof(surfaceMap));
 #endif
       Zone? zone1 = null;
       Point surfaceExit = new();
@@ -3068,7 +3068,7 @@ restart:
             }
           }
         }
-        while (null == zone1);
+        while (zone1 is null);
         List<Point> candidates = new();
         foreach (var pt in zone1.Bounds) if (surfaceMap.IsWalkable(pt)) candidates.Add(pt);
         if (0 >= candidates.Count) continue;
@@ -3457,23 +3457,23 @@ restart:
       static Actor DraftLeader(List<Actor> pool) {
         // first: leadership + backup weapons
         Actor awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP));
-        if (null != awesome) return awesome;
+        if (awesome is not null) return awesome;
 
         // leadership+pistol
         awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && 2 <= a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP));
-        if (null != awesome) return awesome;
+        if (awesome is not null) return awesome;
 
         // leadership+shotgun
         awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP));
-        if (null != awesome) return awesome;
+        if (awesome is not null) return awesome;
 
         // backup weapons
         awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && a.Inventory.Has(Item_IDs.RANGED_SHOTGUN));
-        if (null != awesome) return awesome;
+        if (awesome is not null) return awesome;
 
         // pistol
         awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL));
-        if (null != awesome) return awesome;
+        if (awesome is not null) return awesome;
 
         // shotgun
         return pool.FirstOrDefault();
@@ -4018,12 +4018,12 @@ restart:
       if (0 >= numberedName.MySkills.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Take(GameItems.TRUNCHEON.create());
       numberedName.Take(GameItems.FLASHLIGHT.create());
 //    numberedName.Take(MakeItemPoliceRadio()); // class prop, implicit for police
-      if (null == armor) {
+      if (armor is null) {
         if (m_DiceRoller.RollChance(50)) {
           armor = m_DiceRoller.RollChance(80) ? GameItems.POLICE_JACKET : GameItems.POLICE_RIOT;
         }
       }
-      if (null != armor) numberedName.Take(armor.create());
+      if (armor is not null) numberedName.Take(armor.create());
       return numberedName;
     }
 
@@ -4053,11 +4053,11 @@ restart:
     public static Actor MakeZombified(Actor? zombifier, Actor deadVictim, int turn)
     {
       string properName = string.Format("{0}'s zombie", deadVictim.UnmodifiedName);
-      Actor named = (deadVictim.Model.DollBody.IsMale ? GameActors.MaleZombified : GameActors.FemaleZombified).CreateNamed(zombifier == null ? GameFactions.TheUndeads : zombifier.Faction, properName, turn);
+      Actor named = (deadVictim.Model.DollBody.IsMale ? GameActors.MaleZombified : GameActors.FemaleZombified).CreateNamed(zombifier is null ? GameFactions.TheUndeads : zombifier.Faction, properName, turn);
       named.APreset();
       for (DollPart part = DollPart._FIRST; part < DollPart._COUNT; ++part) {
         var decorations = deadVictim.Doll.GetDecorations(part);
-        if (null == decorations) continue;
+        if (decorations is null) continue;
         foreach (string imageID in decorations) named.Doll.AddDecoration(part, imageID);
       }
       named.Doll.AddDecoration(DollPart.TORSO, GameImages.BLOODIED);
@@ -4111,7 +4111,7 @@ restart:
     public Actor CreateNewArmyNationalGuard(string rankName, Actor leader)
     {
       var actor = CreateNewArmyNationalGuard(leader.SpawnTime, rankName);
-      while(null != leader.FirstFollower(a => a.Name == actor.Name)) GiveNameToActor(m_DiceRoller, actor, rankName);
+      while(leader.FirstFollower(a => a.Name == actor.Name) is not null) GiveNameToActor(m_DiceRoller, actor, rankName);
       return actor;
     }
 
@@ -4130,7 +4130,7 @@ restart:
     public Actor CreateNewBikerMan(Actor leader)
     {
       var actor = CreateNewBikerMan(leader.SpawnTime, leader.GangID);
-      while(null != leader.FirstFollower(a => a.Name == actor.Name)) GiveNameToActor(m_DiceRoller, actor);
+      while(leader.FirstFollower(a => a.Name == actor.Name) is not null) GiveNameToActor(m_DiceRoller, actor);
       return actor;
     }
 
@@ -4149,7 +4149,7 @@ restart:
     public Actor CreateNewGangstaMan(Actor leader)
     {
       var actor = CreateNewGangstaMan(leader.SpawnTime, leader.GangID);
-      while(null != leader.FirstFollower(a => a.Name == actor.Name)) GiveNameToActor(m_DiceRoller, actor);
+      while(leader.FirstFollower(a => a.Name == actor.Name) is not null) GiveNameToActor(m_DiceRoller, actor);
       return actor;
     }
 
@@ -4169,7 +4169,7 @@ restart:
     public Actor CreateNewBlackOps(string rankName, Actor leader)
     {
       var actor = CreateNewBlackOps(leader.SpawnTime, rankName);
-      while(null != leader.FirstFollower(a => a.Name == actor.Name)) GiveNameToActor(m_DiceRoller, actor, rankName);
+      while(leader.FirstFollower(a => a.Name == actor.Name) is not null) GiveNameToActor(m_DiceRoller, actor, rankName);
       return actor;
     }
 

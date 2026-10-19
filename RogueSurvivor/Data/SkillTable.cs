@@ -26,13 +26,13 @@ namespace djack.RogueSurvivor.Data
     private SkillTable(Dictionary<Gameplay.Skills.IDs, sbyte>? src) => m_Table = src;
 
     static public SkillTable Clone(SkillTable src) {
-        return new(null != src.m_Table ? new(src.m_Table) : null);
+        return new(src.m_Table is not null ? new(src.m_Table) : null);
     }
 
     /// <returns>sum of skill levels</returns>
     public int GetSkills(ref Zaimoni.Data.Stack<Gameplay.Skills.IDs> dest)
     {
-      if (null == m_Table) return 0;
+      if (m_Table is null) return 0;
       int ret = 0;
       foreach(var x in m_Table) {
         dest.push(x.Key);
@@ -43,7 +43,7 @@ namespace djack.RogueSurvivor.Data
 
     public int GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs id)
     {
-      if (null == m_Table) return 0;
+      if (m_Table is null) return 0;
       m_Table.TryGetValue(id, out sbyte skill); // default(sbyte) is 0: ok
       return skill;
     }
@@ -56,14 +56,14 @@ namespace djack.RogueSurvivor.Data
 
     public void DecOrRemoveSkill(Gameplay.Skills.IDs id)
     {
-      if (null == m_Table || !m_Table.ContainsKey(id) || 0 < --m_Table[id]) return;
+      if (m_Table is null || !m_Table.ContainsKey(id) || 0 < --m_Table[id]) return;
       m_Table.Remove(id);
       if (0 >= m_Table.Count) m_Table = null;
     }
 
     public Gameplay.Skills.IDs? LoseRandomSkill()
     {
-      if (null == m_Table || 0 >= m_Table.Count) return null;   // inline CountSkills
+      if (m_Table is null || 0 >= m_Table.Count) return null;   // inline CountSkills
       var ret = Engine.Rules.Get.DiceRoller.Choose(m_Table);
       DecOrRemoveSkill(ret.Key);
       return ret.Key;
@@ -73,7 +73,7 @@ namespace djack.RogueSurvivor.Data
     public void toJson(Utf8JsonWriter writer)
     {
       writer.WriteStartObject();
-      if (null != m_Table) foreach (var x in m_Table) writer.WriteNumber(x.Key.ToString(), x.Value);
+      if (m_Table is not null) foreach (var x in m_Table) writer.WriteNumber(x.Key.ToString(), x.Value);
       writer.WriteEndObject();
     }
 

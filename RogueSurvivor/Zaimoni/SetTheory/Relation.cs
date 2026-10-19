@@ -107,7 +107,7 @@ namespace Zaimoni.SetTheory
             return false;
         }
 
-        public bool Contains(K key) => null != Range(key);
+        public bool Contains(K key) => Range(key) is not null;
 
         public bool Contains(V val) {
             lock (_rel) {
@@ -273,7 +273,7 @@ namespace Zaimoni.SetTheory
             return default;
         }
 
-        public bool Contains(K key) => null != Range(key);
+        public bool Contains(K key) => Range(key) is not null;
 
         public bool Contains(V val) {
             lock (_rel) {

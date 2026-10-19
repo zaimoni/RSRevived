@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Data
     public void AddDecoration(DollPart part, string imageID)
     {
 #if DEBUG
-      if (null == m_Decorations) throw new ArgumentNullException(nameof(m_Decorations));
+      if (m_Decorations is null) throw new ArgumentNullException(nameof(m_Decorations));
 #endif
       (GetDecorations(part) ?? (m_Decorations[(int) part] = new(1))).Add(imageID);
     }
@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Data
     {
       for (DollPart index = DollPart.NONE; index < DollPart._COUNT; ++index) {
         var x = GetDecorations(index);
-        if (null != x && x.Remove(imageID) && 0 >= x.Count) {
+        if (x is not null && x.Remove(imageID) && 0 >= x.Count) {
           m_Decorations![(int)index] = null;
           break;
         }
@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Data
     public void RemoveAllDecorations()
     {
 #if DEBUG
-      if (null == m_Decorations) throw new ArgumentNullException(nameof(m_Decorations));
+      if (m_Decorations is null) throw new ArgumentNullException(nameof(m_Decorations));
 #endif
       for (DollPart index = DollPart.NONE; index < DollPart._COUNT; ++index)
         m_Decorations[(int)index] = null;
@@ -55,7 +55,7 @@ namespace djack.RogueSurvivor.Data
     // JSON: an object of body part to image IDs.  Our owner writes us only when HasDecorations.
     public bool HasDecorations {
       get {
-        if (null != m_Decorations) foreach (var x in m_Decorations) if (null != x && 0 < x.Count) return true;
+        if (m_Decorations is not null) foreach (var x in m_Decorations) if (x is not null && 0 < x.Count) return true;
         return false;
       }
     }
@@ -63,10 +63,10 @@ namespace djack.RogueSurvivor.Data
     public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
       writer.WriteStartObject();
-      if (null != m_Decorations) {
+      if (m_Decorations is not null) {
         for (DollPart index = DollPart.NONE; index < DollPart._COUNT; ++index) {
           var x = m_Decorations[(int)index];
-          if (null != x && 0 < x.Count) writer.WriteArray(index.ToString(), x, options);
+          if (x is not null && 0 < x.Count) writer.WriteArray(index.ToString(), x, options);
         }
       }
       writer.WriteEndObject();
@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Data
 
     public Doll(ActorModel model, JsonElement src) : this(model)
     {
-      if (null == m_Decorations) throw new JsonException(model.ID.ToString() + " is not drawn from parts: it cannot have a Doll");
+      if (m_Decorations is null) throw new JsonException(model.ID.ToString() + " is not drawn from parts: it cannot have a Doll");
       foreach (var x in src.EnumerateObject()) {
         if (char.IsDigit(x.Name, 0) || !Enum.TryParse<DollPart>(x.Name, out var part) || 0 > (int)part || DollPart._COUNT <= part) throw new JsonException("unrecognized doll part: " + x.Name);
         foreach (var imageID in x.Value.EnumerateArray()) AddDecoration(part, imageID.GetString() ?? throw new JsonException("null doll decoration"));

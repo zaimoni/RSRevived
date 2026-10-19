@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor
     [STAThread]
     private static void Main(string[] args)
     {
-      if (null!=args) {
+      if (args is not null) {
         // help option is impractical: C stdout is inaccessible in a GUI C# program
         bool reading_PC = false;
         foreach (string tmp in args) {

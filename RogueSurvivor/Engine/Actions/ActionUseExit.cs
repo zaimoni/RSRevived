@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionUseExit(Actor actor, in Location exitPoint) : base(actor)
     {
 #if DEBUG
-      if (null == exitPoint.Exit) throw new ArgumentNullException("exitPoint.Exit");
+      if (exitPoint.Exit is null) throw new ArgumentNullException("exitPoint.Exit");
 #endif
       m_ExitPoint = exitPoint;
       actor.Activity = Activity.IDLE;

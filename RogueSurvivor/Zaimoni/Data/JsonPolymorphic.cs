@@ -84,7 +84,7 @@ namespace Zaimoni.JSON
         public override void Write(Utf8JsonWriter writer, T src, JsonSerializerOptions options)
         {
             if (!src.TryStartDefinition(writer, out var id)) return;
-            if (null == id && m_CompactAnonymous) {
+            if (id is null && m_CompactAnonymous) {
                 writer.WriteCompact(w => {
                     w.WriteStartDefinition(null);
                     src.toJsonFields(w, options);
@@ -163,8 +163,8 @@ namespace Zaimoni.JSON
                     if (!m_ByType.ContainsKey(t)) (missing ??= new()).Add(t.FullName ?? t.Name);
                 } else if (m_ByType.ContainsKey(t)) (extra ??= new()).Add(t.FullName ?? t.Name);
             }
-            if (null != missing) throw new InvalidOperationException("not registered for JSON save/load of " + typeof(TBase).FullName + ": " + string.Join(", ", missing));
-            if (null != extra) throw new InvalidOperationException("registered for JSON save/load of " + typeof(TBase).FullName + " but not meant to be saved: " + string.Join(", ", extra));
+            if (missing is not null) throw new InvalidOperationException("not registered for JSON save/load of " + typeof(TBase).FullName + ": " + string.Join(", ", missing));
+            if (extra is not null) throw new InvalidOperationException("registered for JSON save/load of " + typeof(TBase).FullName + " but not meant to be saved: " + string.Join(", ", extra));
         }
 
         // fields declared as a derived type must dispatch as well
@@ -175,7 +175,7 @@ namespace Zaimoni.JSON
             if (!src.TryStartDefinition(writer, out var id)) return;
             if (!m_ByType.TryGetValue(src.GetType(), out var entry)) throw new JsonException("not registered for JSON save of " + typeof(TBase).FullName + ": " + src.GetType().FullName);
             var tag = typeof(TBase) == src.GetType() ? null : entry.Tag;   // the root class is implied
-            if (null == id && m_CompactAnonymous) {
+            if (id is null && m_CompactAnonymous) {
                 writer.WriteCompact(w => {
                     w.WriteStartDefinition(null, tag);
                     entry.Save(w, src, options);

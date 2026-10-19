@@ -88,15 +88,15 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public void Infer(ref List<Percept> dest) {
             List<Percept_<Actor>> needed = new(tracked);
 
-            if (null != dest) {
+            if (dest is not null) {
                 var ub = dest.Count;
                 while (0 <= --ub)
                 {
                     var actor = dest[ub].Percepted as Actor;
-                    if (null == actor) continue;
+                    if (actor is null) continue;
 
                     var found = needed.FirstOrDefault(x => x.Percepted == actor);
-                    if (null == found) continue;
+                    if (found is null) continue;
                     needed.Remove(found);
                     if (found.Turn < dest[ub].Turn)
                     { // live sighting

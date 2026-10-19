@@ -179,7 +179,7 @@ retry:
           return;
         }
         var replace = chain.splice(wrapped);
-        if (null != replace) Add(replace);
+        if (replace is not null) Add(replace);
       }
 
       private KeyValuePair<int,int> FindFirst(ActorAction src) {
@@ -217,7 +217,7 @@ retry:
           }
         }
         if (all_there) return this;
-        if (null == args) return null;
+        if (args is null) return null;
         if (1 == args.Count) return args[0];
         return new Fork(m_Actor, args);
       }
@@ -294,7 +294,7 @@ namespace djack.RogueSurvivor.Engine.Op
         while (0 <= --ub) {
           if (m_Options[ub] is CanReduce<WorldUpdate> reducing) {
             var now = reducing.Reduce();
-            if (null == now) {
+            if (now is null) {
               m_Options.RemoveAt(ub);
               continue;
             }
@@ -335,7 +335,7 @@ namespace djack.RogueSurvivor.Engine.Op
             if (x is Join) throw new InvalidOperationException("test case: Join");
 #endif
             var act = x.Bind(src);
-            if (null != act) actions.Add(act);
+            if (act is not null) actions.Add(act);
           }
         }
         var act_count = actions.Count;
@@ -349,7 +349,7 @@ namespace djack.RogueSurvivor.Engine.Op
         List<KeyValuePair<ActorAction, WorldUpdate?>> options = new();
         foreach(var x in m_Options) {
           var stage = x.BindReduce(src);
-          if (null != stage) options.Add(stage.Value);
+          if (stage is not null) options.Add(stage.Value);
         }
         if (0 >= options.Count) return null;
         if (1 == options.Count) return options[0];
@@ -358,7 +358,7 @@ namespace djack.RogueSurvivor.Engine.Op
         List<WorldUpdate> next = new();
         foreach(var x in options) {
           actions.Add(x.Key);
-          if (null != x.Value) next.Add(x.Value);
+          if (x.Value is not null) next.Add(x.Value);
         }
         return new(new _Action.Fork(src, actions), 0 >= next.Count ? null : new Fork(next));
       }

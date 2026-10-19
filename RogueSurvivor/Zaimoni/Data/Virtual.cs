@@ -16,7 +16,7 @@ namespace Zaimoni.Data
         // We go with Ruby syntax x.to_s() rather than Python syntax str(x)
         public static string to_s<T>(this HashSet<T> x)
         {
-            if (null == x) return "null";
+            if (x is null) return "null";
             var ub = x.Count;
             if (0 >= ub) return "{}";
             var tmp = new List<string>(ub);
@@ -32,7 +32,7 @@ namespace Zaimoni.Data
 
         public static string to_s<T>(this List<T[]> x)
         {
-            if (null == x) return "null";
+            if (x is null) return "null";
             var ub = x.Count;
             if (0 >= ub) return "[]";
             var tmp = new List<string>(ub);
@@ -48,7 +48,7 @@ namespace Zaimoni.Data
 
         public static string to_s<T>(this T[] x)
         {
-            if (null == x) return "null";
+            if (x is null) return "null";
             var ub = x.Length;
             if (0 >= ub) return "[]";
             var tmp = new List<string>(ub);
@@ -64,7 +64,7 @@ namespace Zaimoni.Data
 
         public static string to_s<T>(this List<T> x)
         {
-            if (null == x) return "null";
+            if (x is null) return "null";
             var ub = x.Count;
             if (0 >= ub) return "[]";
             var tmp = new List<string>(ub);
@@ -80,7 +80,7 @@ namespace Zaimoni.Data
 
         public static string to_s<K,V>(this List<KeyValuePair<K,V>> x)
         {
-            if (null == x) return "null";
+            if (x is null) return "null";
             var ub = x.Count;
             if (0 >= ub) return "[]";
             var tmp = new List<string>(ub);
@@ -95,7 +95,7 @@ namespace Zaimoni.Data
 
         public static string to_s<T, U>(this Dictionary<T, U> x)
         {
-            if (null == x) return "null";
+            if (x is null) return "null";
             var ub = x.Count;
             if (0 >= ub) return "{}";
             var tmp = new List<string>(ub);
@@ -111,7 +111,7 @@ namespace Zaimoni.Data
 
         public static string to_s<T>(this IEnumerable<T> x)
         {
-            if (null == x) return "null";
+            if (x is null) return "null";
             var ub = x.Count();
             if (0 >= ub) return "[]";
             var tmp = new List<string>(ub);
@@ -128,7 +128,7 @@ namespace Zaimoni.Data
         // ultimate fallback
         public static string to_s<T>(this T x)
         {
-            if (null == x) return "null";
+            if (x is null) return "null";
             var t_info = typeof(T);
 
             // Try to simulate at runtime what C++ does at compile time
@@ -137,7 +137,7 @@ namespace Zaimoni.Data
             if (x is Fn_to_s y) return y.to_s();
 #if OBSOLETE
             var to_s_candidate = t_info.GetMethod("to_s", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic, null, Type.EmptyTypes, null);
-            if (null != to_s_candidate) {
+            if (to_s_candidate is not null) {
                 return (string)to_s_candidate.Invoke(x, null);
             }
 #endif
@@ -146,7 +146,7 @@ namespace Zaimoni.Data
                 var t_name = t_info.FullName;
                 var method_name = string.Empty;
                 var t_args = t_info.GetGenericArguments();
-                if (1 == t_args.Length && null != t_name) {
+                if (1 == t_args.Length && t_name is not null) {
                     t_name = t_name.Substring(0, t_name.IndexOf('['));
                     method_name = "System.String to_s[T]("+t_name+"[T])";
                 }

@@ -40,18 +40,18 @@ namespace djack.RogueSurvivor.Engine.Actions
     public Gameplay.Item_IDs ID { get { return m_ID; } }
 
     public Item? Take { get {
-      if (null == _resolved) init();
+      if (_resolved is null) init();
       return _resolved?.Take;
     } }
 
     public MapObject? What { get {
-      if (null == _resolved) init();
+      if (_resolved is null) init();
       return _resolved?.What;
     } }
 
     private void init()
     {
-      if (null != _resolved) {
+      if (_resolved is not null) {
         if (!_resolved.IsLegal()) {
           m_FailReason = null;
           _resolved = null;
@@ -59,13 +59,13 @@ namespace djack.RogueSurvivor.Engine.Actions
       }
 
       var stacks = Map.GetAccessibleInventoryOrigins(m_Actor.Location);
-      if (null == stacks) return;
+      if (stacks is null) return;
 
       var model = Gameplay.GameItems.From(m_ID);
 
       foreach(var stack in stacks) {
         var obj = stack.Inventory!.GetFirstByModel(model);
-        if (null == obj) continue;
+        if (obj is null) continue;
         if (!m_Actor.IsPlayer && !(m_Actor.Controller as Gameplay.AI.ObjectiveAI).IsInterestingItem(obj)) continue; // XXX temporary, not valid once safehouses are landing
         var act = new _Action.TakeItem(m_Actor, in stack, obj);
         if (!act.IsPerformable()) continue;
@@ -77,10 +77,10 @@ namespace djack.RogueSurvivor.Engine.Actions
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
     {
-      if (null == _resolved) {
+      if (_resolved is null) {
         if (!string.IsNullOrEmpty(m_FailReason)) return false;
         init();
-        if (null == _resolved) {
+        if (_resolved is null) {
           m_FailReason = "not in reach";
           return false;
         }
@@ -92,10 +92,10 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsPerformable()
     {
-      if (null == _resolved) {
+      if (_resolved is null) {
         if (!string.IsNullOrEmpty(m_FailReason)) return false;
         init();
-        if (null == _resolved) {
+        if (_resolved is null) {
           m_FailReason = "not in reach";
           return false;
         }
@@ -162,8 +162,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsLegal()
     {
       // can happen if double-executing
-      if (null != received && !m_Target.ControlledActor.IsCarrying(received)) { m_FailReason = "no longer had received"; return false; }
-      if (null==Give) { m_FailReason = "not in inventory"; return false; }
+      if (received is not null && !m_Target.ControlledActor.IsCarrying(received)) { m_FailReason = "no longer had received"; return false; }
+      if (Give is null) { m_FailReason = "not in inventory"; return false; }
       if (m_Target.ItemIsUseless(gift)) return false;
       return true;
     }
@@ -177,14 +177,14 @@ namespace djack.RogueSurvivor.Engine.Actions
       var t_actor = m_Target.ControlledActor;
       var t_inv = t_actor.Inventory;
       t_inv.RepairContains(gift, "already had ");
-      if (null != m_ConcreteAction) {
+      if (m_ConcreteAction is not null) {
         if (m_ConcreteAction.IsPerformable()) return true;
         m_ConcreteAction = null;
       }
       if (t_inv.IsFull && !RogueGame.CanPickItemsToTrade(m_Actor, t_actor, gift)) {
         if (t_actor.CanGet(gift)) return true;
         var recover = m_Target.BehaviorMakeRoomFor(gift,m_Actor.Location,false); // unsure if this works cross-map
-        if (null == recover) return false;
+        if (recover is null) return false;
         if (recover is Engine._Action.TradeItem trade && trade.Whom == t_actor) {
           if (trade.IsPerformable()) {
             m_ConcreteAction = trade;
@@ -199,7 +199,7 @@ namespace djack.RogueSurvivor.Engine.Actions
           return null;
         }
 
-        if (null!=(received = parse_recovery(recover))) {
+        if ((received = parse_recovery(recover)) is not null) {
 #if DEBUG
           if (!t_inv.Contains(received)) throw new InvalidOperationException("no longer had recieved");
 #endif
@@ -219,7 +219,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      if (null != m_ConcreteAction) m_ConcreteAction.Perform();
+      if (m_ConcreteAction is not null) m_ConcreteAction.Perform();
       else RogueGame.Game.DoGiveItemTo(m_Actor.Controller as Gameplay.AI.OrderableAI, m_Target, gift!, received!);
     }
 

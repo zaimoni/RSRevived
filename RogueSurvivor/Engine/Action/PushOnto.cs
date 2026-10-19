@@ -51,7 +51,7 @@ namespace djack.RogueSurvivor.Engine.Op
         // disallow cars for this
         public static bool PushDestOk(in Location loc) {
             var obj = loc.MapObject;
-            if (null != obj) {
+            if (obj is not null) {
                 if (!obj.IsMovable) return false;
                 if (obj.IsOnFire) return false;
                 if (MapObject.MAX_NORMAL_WEIGHT < obj.Weight) return false;
@@ -61,13 +61,13 @@ namespace djack.RogueSurvivor.Engine.Op
 
         public override bool IsLegal() {
             var obj = m_From.MapObject;
-            if (null != obj) {
+            if (obj is not null) {
                 if (!obj.IsMovable) return false;
                 if (obj.IsOnFire) return false;
                 return DisarmOk(obj, m_ObjCode);
             }
             obj = m_NewLocation.MapObject;
-            if (null != obj) {
+            if (obj is not null) {
                 if (!obj.IsMovable) return false;
                 if (obj.IsOnFire) return false;
                 if (0 == (4 & m_ObjCode) && MapObject.MAX_NORMAL_WEIGHT < obj.Weight) return false;
@@ -85,7 +85,7 @@ namespace djack.RogueSurvivor.Engine.Op
         static public int DisarmWith(in Location loc)
         {
             var e = loc.Exit;
-            if (null != e) {
+            if (e is not null) {
                 var exit_map = e.Location.Map;
                 var exit_district = exit_map.District;
                 if (exit_map == exit_district.SewersMap) return loc.IsInside ? 1 + 16 : 4;
@@ -103,7 +103,7 @@ namespace djack.RogueSurvivor.Engine.Op
         static public int DisarmWithAlt(in Location loc)
         {
             var e = loc.Exit;
-            if (null != e) {
+            if (e is not null) {
                 var unique_maps = Session.Get.UniqueMaps;
                 if (0 < unique_maps.HospitalDepth(loc.Map) || 0 < unique_maps.HospitalDepth(e.Location.Map)) return 8;
             }
@@ -130,9 +130,9 @@ namespace djack.RogueSurvivor.Engine.Op
         }
 
         public override bool IsRelevant() {
-            if (null != m_NewLocation.MapObject) return false;
+            if (m_NewLocation.MapObject is not null) return false;
             var obj = m_From.MapObject;
-            return null != obj && obj.IsMovable && !obj.IsOnFire && DisarmOk(obj, m_ObjCode); // breaking traps is more work to get right
+            return obj is not null && obj.IsMovable && !obj.IsOnFire && DisarmOk(obj, m_ObjCode); // breaking traps is more work to get right
         }
 
         public override bool IsRelevant(Location loc) {
@@ -141,7 +141,7 @@ namespace djack.RogueSurvivor.Engine.Op
 
         public override bool IsSuppressed(Actor a)
         {   // \todo more sophisticated non-combat response to enemies in sight
-            return null != a.Controller.enemies_in_FOV;
+            return a.Controller.enemies_in_FOV is not null;
         }
 
         public override ActorAction? Bind(Actor src) => _Action.PushOnto.create(src, m_From, m_NewLocation);
@@ -149,7 +149,7 @@ namespace djack.RogueSurvivor.Engine.Op
         public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
         {
             var act = Bind(src);
-            if (null == act) return null;
+            if (act is null) return null;
             return new(act, null);
         }
 
@@ -239,7 +239,7 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public override bool IsPerformable() {
             if (!IsLegal()) return false;
-            if (null != m_NewLocation.MapObject) return false;
+            if (m_NewLocation.MapObject is not null) return false;
             if (1 != Rules.GridDistance(m_Actor.Location, m_Object.Location)) return false;
             if (!m_Actor.CanPush(m_Object, out m_FailReason)) return false;
             if (m_Actor.Location == m_NewLocation) { // pull

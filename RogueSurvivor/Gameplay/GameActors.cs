@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Gameplay
     private static void _setModel(ActorModel model)
     {
 #if DEBUG
-        if (null != m_Models[(int) model.ID]) throw new InvalidOperationException("can only set actor model once");
+        if (m_Models[(int) model.ID] is not null) throw new InvalidOperationException("can only set actor model once");
 #endif
         m_Models[(int) model.ID] = model;
     }

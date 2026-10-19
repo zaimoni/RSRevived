@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Engine
     public static void Save(HiScoreTable table, string filepath)
     {
 #if DEBUG
-      if (null == table) throw new ArgumentNullException(nameof(table));
+      if (table is null) throw new ArgumentNullException(nameof(table));
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table...");

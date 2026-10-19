@@ -53,7 +53,7 @@ namespace Zaimoni.Data
         public FloodfillPathfinder(FloodfillPathfinder<T> src)
         {
 #if DEBUG
-            if (null == src) throw new ArgumentNullException(nameof(src));
+            if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
             _blacklist = new HashSet<T>(src._blacklist);
             _blacklist_fn = src._blacklist_fn;
@@ -67,7 +67,7 @@ namespace Zaimoni.Data
         public FloodfillPathfinder(FloodfillPathfinder<T> src, Func<T, Dictionary<T, int>> Forward, Func<T, Dictionary<T, int>> Inverse)
         {
 #if DEBUG
-            if (null == src) throw new ArgumentNullException(nameof(src));
+            if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
             _blacklist = new HashSet<T>(src._blacklist);
             _blacklist_fn = src._blacklist_fn;
@@ -147,7 +147,7 @@ namespace Zaimoni.Data
         public void _reset(Dictionary<int, HashSet<T>> _now)
         {
 #if DEBUG
-            if (null == _now) throw new ArgumentNullException(nameof(_now));
+            if (_now is null) throw new ArgumentNullException(nameof(_now));
 #endif
             _map.Clear();
             _now.Clear();
@@ -195,8 +195,8 @@ namespace Zaimoni.Data
                 any_ok = true;
             }
             if (any_ok) {
-                if (null != domain) foreach (var x in domain) goal_costs.Remove(x);
-                if (null != banned) foreach (var x in banned) goal_costs.Remove(x);
+                if (domain is not null) foreach (var x in domain) goal_costs.Remove(x);
+                if (banned is not null) foreach (var x in banned) goal_costs.Remove(x);
                 return null;
             }
             return new KeyValuePair<List<T>?, List<T>?>(domain, banned);
@@ -230,7 +230,7 @@ namespace Zaimoni.Data
         private bool _bootstrap(Dictionary<T,int> goal_costs, Dictionary<int, HashSet<T>> _now)
         {
 #if DEBUG
-            if (null == _now) throw new ArgumentNullException(nameof(_now));
+            if (_now is null) throw new ArgumentNullException(nameof(_now));
 #endif
             bool have_updated = false;
             foreach(var x in goal_costs) {
@@ -255,7 +255,7 @@ namespace Zaimoni.Data
         private bool _bootstrap(IEnumerable<T> goals, Dictionary<int, HashSet<T>> _now)
         {
 #if DEBUG
-            if (null == _now) throw new ArgumentNullException(nameof(_now));
+            if (_now is null) throw new ArgumentNullException(nameof(_now));
 #endif
             IEnumerable<T> legal_goals = goals.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp));
             if (_blacklist_fn is not null) legal_goals = legal_goals.Where(tmp => !_blacklist_fn(tmp));
@@ -318,8 +318,8 @@ namespace Zaimoni.Data
         public void PartialGoalDistance(IEnumerable<T> start, Dictionary<int, HashSet<T>> _now, int max_cost=int.MaxValue)
         {
 #if DEBUG
-            if (null == start) throw new ArgumentNullException(nameof(start));
-            if (null == _now) throw new ArgumentNullException(nameof(_now));
+            if (start is null) throw new ArgumentNullException(nameof(start));
+            if (_now is null) throw new ArgumentNullException(nameof(_now));
 #endif
             while(0<_now.Count && start.Any(pos => !_map.ContainsKey(pos))) _iterate(_now,max_cost);
         }
@@ -328,8 +328,8 @@ namespace Zaimoni.Data
         public void GoalDistance(IEnumerable<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
         {
 #if DEBUG
-            if (null == start) throw new ArgumentNullException(nameof(start));
-            if (null == goals) throw new ArgumentNullException(nameof(goals));
+            if (start is null) throw new ArgumentNullException(nameof(start));
+            if (goals is null) throw new ArgumentNullException(nameof(goals));
 #endif
             if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException(nameof(start),"contains out-of-domain values");
             _map.Clear();
@@ -346,8 +346,8 @@ namespace Zaimoni.Data
         public void GoalDistance(Dictionary<T,int> goal_costs, IEnumerable<T> start, int max_cost=int.MaxValue)
         {
 #if DEBUG
-            if (null == start) throw new ArgumentNullException(nameof(start));
-            if (null == goal_costs) throw new ArgumentNullException(nameof(goal_costs));
+            if (start is null) throw new ArgumentNullException(nameof(start));
+            if (goal_costs is null) throw new ArgumentNullException(nameof(goal_costs));
 #endif
             if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException(nameof(start),"contains out-of-domain values");
             _map.Clear();
@@ -365,8 +365,8 @@ namespace Zaimoni.Data
         public void GoalDistance(Predicate<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
         {
 #if DEBUG
-            if (null == start) throw new ArgumentNullException(nameof(start));
-            if (null == goals) throw new ArgumentNullException(nameof(goals));
+            if (start is null) throw new ArgumentNullException(nameof(start));
+            if (goals is null) throw new ArgumentNullException(nameof(goals));
 #endif
             if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException(nameof(start),"contains out-of-domain values");
             _map.Clear();
@@ -480,7 +480,7 @@ namespace Zaimoni.Data
             if (!_map.TryGetValue(current_pos, out int current_cost)) throw new ArgumentOutOfRangeException(nameof(current_pos), "not in the cost map");
             if (0 == current_cost) return null;   // already at a goal
             var bootstrap = Approach(current_pos);
-            if (null == bootstrap) return null;
+            if (bootstrap is null) return null;
             List<T> next = bootstrap.Keys.ToList();
             var ret = new List<List<T>> { next };
             if (0 < depth && 1 == next.Count) return ret;    // no optimization indicated
@@ -489,10 +489,10 @@ namespace Zaimoni.Data
                 foreach (T loc in next) {
                     int reference_cost = Cost(loc);
                     var tmp = Approach(loc);
-                    if (null == tmp) continue;
+                    if (tmp is null) continue;
                     tmp.OnlyIf(pt => reference_cost > Cost(pt));
                     if (0 >= tmp.Count) continue;
-                    if (null == working) {
+                    if (working is null) {
                         working = new List<T>(tmp.Keys);
                         continue;
                     }
@@ -500,7 +500,7 @@ namespace Zaimoni.Data
                     if (0 >= tmp.Count) continue;
                     working.AddRange(tmp.Keys);
                 }
-                if (null == working) break;
+                if (working is null) break;
                 ret.Add(working);
                 next = working;
             }

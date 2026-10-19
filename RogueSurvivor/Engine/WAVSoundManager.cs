@@ -27,8 +27,8 @@ namespace djack.RogueSurvivor.Engine
     public string Music { get; private set; }
     public int Priority { get; private set; }
 
-    public bool IsPlaying { get { return null != m_CurrentAudio && m_IsPlaying; } }
-    public bool HasEnded { get { return null != m_CurrentAudio && !m_IsPlaying; } }
+    public bool IsPlaying { get { return m_CurrentAudio is not null && m_IsPlaying; } }
+    public bool HasEnded { get { return m_CurrentAudio is not null && !m_IsPlaying; } }
 
     public WAVSoundManager()
     {
@@ -87,7 +87,7 @@ namespace djack.RogueSurvivor.Engine
       Music = musicname;
       Priority = priority;
       (m_CurrentAudio = music).PlaySync(); // XXX really should be in new thread but then we don't get feedback on sound termination
-      if (null != m_BackgroundAudio) {
+      if (m_BackgroundAudio is not null) {
         if (m_BackgroundLoop) {
           (m_CurrentAudio = m_BackgroundAudio).PlayLooping();
         } else {
@@ -164,7 +164,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void Stop()
     {
-      if (null != m_CurrentAudio) m_CurrentAudio.Stop();
+      if (m_CurrentAudio is not null) m_CurrentAudio.Stop();
       m_CurrentAudio = null;
       m_BackgroundAudio = null;
       Music = "";
@@ -217,7 +217,7 @@ namespace djack.RogueSurvivor.Engine
       m_CurrentAudio = null;
       foreach (string key in m_Musics.Keys) {
         SoundPlayer tmp = m_Musics[key];
-        if (null == tmp) continue;
+        if (tmp is null) continue;
         Logger.WriteLine(Logger.Stage.CLEAN_SOUND, string.Format("disposing music {0}.", (object) key));
         tmp.Dispose();
       }

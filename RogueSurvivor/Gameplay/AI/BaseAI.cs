@@ -50,7 +50,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
       base.toJsonFields(writer, options);
-      if (null != m_prevLocation.Map) {
+      if (m_prevLocation.Map is not null) {
         writer.WritePropertyName("PrevLocation");
         JsonSerializer.Serialize(writer, m_prevLocation, options);
       }
@@ -86,12 +86,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override ActorAction? GetAction()
     {
-      if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
+      if (m_prevLocation.Map is null) m_prevLocation = m_Actor.Location;
       m_Actor.TargetActor = null;
       var actorAction = SelectAction();
       const bool tracing = false;
 #if DEBUG
-      if (null != actorAction && !actorAction.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("illegal action returned from SelectAction"));
+      if (actorAction is not null && !actorAction.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("illegal action returned from SelectAction"));
 #endif
       if (tracing) {
         RogueGame.Game.PanViewportTo(m_Actor);
@@ -107,7 +107,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var backup = actorAction;
 #endif
         var alt = ai.RewriteAction(actorAction);
-        if (null != alt && alt.IsPerformable()) {
+        if (alt is not null && alt.IsPerformable()) {
 #if DEBUG
           if (!is_rewritable && (alt is ActionMoveStep || alt is ActionMoveDelta)) throw new InvalidOperationException("tracing");
 #endif
@@ -138,9 +138,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected List<Percept_<_T_>>? FilterSameMap<_T_>(IEnumerable<Percept_<_T_>> percepts) where _T_:class
     {
       Map map = m_Actor.Location.Map;
-      Func< Percept_ < _T_ >,bool> same_map = p => null != map.Denormalize(p.Location);
+      Func< Percept_ < _T_ >,bool> same_map = p => map.Denormalize(p.Location) is not null;
       var e = m_Actor.Location.Exit;
-      if (null != e) same_map = same_map.Or(p => e.Location==p.Location);
+      if (e is not null) same_map = same_map.Or(p => e.Location==p.Location);
       return percepts.Filter(same_map);
     }
 
@@ -226,7 +226,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if OBSOLETE
         // alpha10.1 prefer unexplored/oldest
         // unexplored should not happen because exploration rule is tested before wander rule but just to be more robust...
-        if (exploration != null) {
+        if (exploration is not null) {
           int locAge = exploration.GetExploredAge(in next);
           score += (0 == locAge) ? UNEXPLORED_LOC : locAge;
         }
@@ -237,7 +237,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // as a side effect, make ais with no exploration data (eg zombies) more eager to visit door/windows and exits.
         if (next.MapObject is DoorWindow) score += DOORWINDOWS;
         var e = next.Exit;
-        if (null != e) score += (e.Location==m_prevLocation ? BACKTRACKING : EXITS);    // Staying Alive: match fix to BehaviorExplore
+        if (e is not null) score += (e.Location==m_prevLocation ? BACKTRACKING : EXITS);    // Staying Alive: match fix to BehaviorExplore
 
         // alpha10.1 prefer inside when almost sleepy
         if (m_Actor.IsAlmostSleepy && next.IsInside) score += INSIDE_WHEN_ALMOST_SLEEPY;
@@ -248,14 +248,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var opts = Direction.COMPASS.Candidates(dir => {
           var act = new ActionBump(m_Actor, dir);
           var next = act.dest;
-          if (null != goodWanderLocFn && !goodWanderLocFn(next)) return null;
+          if (goodWanderLocFn is not null && !goodWanderLocFn(next)) return null;
           if (!Map.Canonical(ref next)) return null;
           if (!IsValidWanderAction(act.ConcreteAction)) return null;
           if (!act.IsPerformable()) return null;
 
           return act;
       });
-      if (null == opts) return null;
+      if (opts is null) return null;
 
       var best = opts.KeepMaximal(kv => ranking(kv.Value.dest));
       if (1 == best.Count) return best[0].Key.Value;
@@ -294,28 +294,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorBumpToward(Point goal, bool canCheckBreak, bool canCheckPush, Func<Point, Point, float> distanceFn)
     {
 #if DEBUG
-      if (null == distanceFn) throw new ArgumentNullException(nameof(distanceFn));
+      if (distanceFn is null) throw new ArgumentNullException(nameof(distanceFn));
 #endif
       var choiceEval = ChooseExtended(Direction.COMPASS, dir => {
         Location next = m_Actor.Location + dir;
         ActorAction a = Rules.IsBumpableFor(m_Actor, in next);
-        if (a == null) {
+        if (a is null) {
           if (m_Actor.Model.Abilities.IsUndead && m_Actor.AbleToPush) {
             var mapObjectAt = next.MapObject;
-            if (mapObjectAt != null && m_Actor.CanPush(mapObjectAt)) {
+            if (mapObjectAt is not null && m_Actor.CanPush(mapObjectAt)) {
               var push = ActionPush.Random(m_Actor, mapObjectAt);
-              if (null != push) return push;
+              if (push is not null) return push;
             }
           }
 
           // alpha10 check special actions
           if (canCheckBreak) {
             var act_break = ActionBreak.create(m_Actor, m_Actor.Location.Map.GetMapObjectAt(next.Position));
-            if (null != act_break) return act_break;
+            if (act_break is not null) return act_break;
           }
           if (canCheckPush) {
             var obj = m_Actor.Location.Map.GetMapObjectAt(next.Position);
-            if (null != obj && m_Actor.CanPush(obj)) {
+            if (obj is not null && m_Actor.CanPush(obj)) {
                 // push in a valid direction at random
                 List<Direction> validPushes = new List<Direction>(8);
                 foreach (Direction pushDir in Direction.COMPASS) {
@@ -339,7 +339,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         return cost;
       }, (a, b) => a < b);
-      if (choiceEval != null) return choiceEval.Choice;
+      if (choiceEval is not null) return choiceEval.Choice;
       return null;
     }
 
@@ -348,7 +348,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var map = m_Actor.Location.Map;
       if (map == goal.Map) return BehaviorBumpToward(goal.Position, canCheckBreak, canCheckPush, distanceFn);
       Location? test = map.Denormalize(in goal);
-      if (null == test) return null;
+      if (test is null) return null;
       return BehaviorBumpToward(test.Value.Position, canCheckBreak, canCheckPush, distanceFn);
     }
 
@@ -367,7 +367,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var map = m_Actor.Location.Map;
       if (map == goal.Map) return BehaviorStupidBumpToward(goal.Position, canCheckBreak, canCheckPush);
       Location? test = map.Denormalize(in goal);
-      if (null == test) return null;
+      if (test is null) return null;
       return BehaviorStupidBumpToward(test.Value.Position, canCheckBreak, canCheckPush);
     }
 
@@ -399,7 +399,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var map = m_Actor.Location.Map;
       if (map == goal.Map) return BehaviorIntelligentBumpToward(goal.Position, canCheckBreak, canCheckPush);
       Location? test = map.Denormalize(in goal);
-      if (null == test) return null;
+      if (test is null) return null;
       return BehaviorIntelligentBumpToward(test.Value.Position, canCheckBreak, canCheckPush);
     }
 
@@ -411,7 +411,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public ActorAction? BehaviorHeadFor(IEnumerable<Location>? goals, bool canCheckBreak, bool canCheckPush)
     {
-      if (null == goals || !goals.Any()) return null;
+      if (goals is null || !goals.Any()) return null;
       ActorAction? tmp;
       int dist = int.MaxValue;
       ActorAction? ret = null;
@@ -419,7 +419,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int new_dist = Rules.GridDistance(m_Actor.Location, in goal);
         if (dist <= new_dist) continue;
         tmp = BehaviorHeadFor(in goal, canCheckBreak, canCheckPush);
-        if (null == tmp) continue;
+        if (tmp is null) continue;
         dist = new_dist;
         ret = tmp;
       }
@@ -431,10 +431,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // We assume the list is sorted in increasing order of grid distance
     protected ActorAction? TargetGridMelee(List<Percept_<Actor>>? perceptList)
     {
-      if (null == perceptList) return null; // inefficient, but reduces lines of code elsewhere
+      if (perceptList is null) return null; // inefficient, but reduces lines of code elsewhere
       foreach (var percept in perceptList) {
         var tmp = BehaviorStupidBumpToward(percept.Location, true, true);
-        if (null != tmp) {
+        if (tmp is not null) {
           m_Actor.TargetedActivity(Activity.CHASING, percept.Percepted);
           return tmp;
         }
@@ -455,12 +455,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!bump.IsPerformable()) return float.NaN;
 #endif
         float num = SafetyFrom(location.Position, goals);
-        if (null != leader) {
+        if (leader is not null) {
           num -= (float)Rules.StdDistance(in location, leader.Location);
         }
         return num;
       }, (a, b) => a > b);
-      return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
+      return ((choiceEval is not null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 
     protected ActionMeleeAttack? BehaviorMeleeAttack(Actor target)
@@ -479,7 +479,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var equippedWeapon = tmp_a.GetEquippedWeapon();
       var bestMeleeWeapon = tmp_a.GetBestMeleeWeapon();   // rely on OrderableAI doing the right thing
 
-      if (bestMeleeWeapon == null) {
+      if (bestMeleeWeapon is null) {
         equippedWeapon?.UnequippedBy(tmp_a);    // unusable ranged weapon
         return null;
       }
@@ -544,11 +544,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> percepts = null;
       foreach (Point position in fov) {
         MapObject mapObjectAt = map.GetMapObjectAt(position);
-        if (mapObjectAt != null && mapObjectAt.IsBreakable) {
+        if (mapObjectAt is not null && mapObjectAt.IsBreakable) {
           (percepts ?? (percepts = new List<Percept>())).Add(new Percept(mapObjectAt, map.LocalTime.TurnCounter, new Location(map, position)));
         }
       }
-      if (percepts == null) return null;
+      if (percepts is null) return null;
       Percept percept = FilterNearest(percepts);
       if (!Rules.IsAdjacent(m_Actor.Location.Position, percept.Location.Position))
         return BehaviorIntelligentBumpToward(percept.Location.Position, true, true);
@@ -562,7 +562,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Map map = m_Actor.Location.Map;
       Dictionary<Point,MapObject> objs = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
         var o = m.GetMapObjectAtExt(pt);
-        if (null == o || o.IsWalkable) return null;
+        if (o is null || o.IsWalkable) return null;
         return (m_Actor.CanPush(o) ? o : null);
       });
       if (0 >= objs.Count) return null;
@@ -579,7 +579,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // do not worry about inside vs. outside here
       foreach(var loc in FOVloc) {
         var o = loc.MapObject;
-        if (null != o && !o.IsWalkable && !o.IsJumpable && m_Actor.CanPush(o)) food_blockers.Add(loc, o);
+        if (o is not null && !o.IsWalkable && !o.IsJumpable && m_Actor.CanPush(o)) food_blockers.Add(loc, o);
       }
       if (0 >= food_blockers.Count) return null;
 
@@ -595,7 +595,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var unclear = new Dictionary<Point,MapObject>();
       foreach(var x in food_blockers) {
         var loc = x.Key;
-        if (null != loc.Exit) { // on same-district exit is clearly bad
+        if (loc.Exit is not null) { // on same-district exit is clearly bad
           verified.Add(loc.Position, x.Value);
           continue;
         }
@@ -662,16 +662,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected virtual ActorAction? BehaviorFollowActor(Actor? other, int maxDist)
     {
-      if (null == other || other.IsDead) return null;
+      if (other is null || other.IsDead) return null;
       int num = Rules.GridDistance(m_Actor.Location, other.Location);
       if (CanSee(other.Location) && num <= maxDist) return new ActionWait(m_Actor);
       if (other.Location.Map != m_Actor.Location.Map) {
         var exitAt = m_Actor.Location.Exit;
-        if (exitAt != null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit())
+        if (exitAt is not null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit())
           return BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
       var actorAction = BehaviorIntelligentBumpToward(other.Location, false, false);
-      if (actorAction == null || !actorAction.IsPerformable()) return null;
+      if (actorAction is null || !actorAction.IsPerformable()) return null;
       if (other.IsRunning) m_Actor.Run();
       return actorAction;
     }
@@ -682,35 +682,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var percept = scents.Maximize(scent => scent.Percepted.Strength);
       if (m_Actor.Location != percept.Location) {
         var tmpAction = BehaviorIntelligentBumpToward(percept.Location, false, false);
-        if (null!=tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
         var dir = Direction.FromVector(percept.Location.Position-m_Actor.Location.Position);
         // Cf. Angband.
-        if (null!=dir) {
+        if (dir is not null) {
           if (Rules.Get.DiceRoller.RollChance(50)) { // anti-clockwise bias
             tmpAction = BehaviorIntelligentBumpToward(percept.Location+dir.Left, false, false);
-            if (null!=tmpAction) return tmpAction;
+            if (tmpAction is not null) return tmpAction;
             tmpAction = BehaviorIntelligentBumpToward(percept.Location+dir.Right, false, false);
-            if (null!=tmpAction) return tmpAction;
+            if (tmpAction is not null) return tmpAction;
             tmpAction = BehaviorIntelligentBumpToward(percept.Location + dir.Left.Left, false, false);
-            if (null!=tmpAction) return tmpAction;
+            if (tmpAction is not null) return tmpAction;
             tmpAction = BehaviorIntelligentBumpToward(percept.Location + dir.Right.Right, false, false);
-            if (null!=tmpAction) return tmpAction;
+            if (tmpAction is not null) return tmpAction;
           } else {  // clockwise bias
             tmpAction = BehaviorIntelligentBumpToward(percept.Location + dir.Right, false, false);
-            if (null!=tmpAction) return tmpAction;
+            if (tmpAction is not null) return tmpAction;
             tmpAction = BehaviorIntelligentBumpToward(percept.Location + dir.Left, false, false);
-            if (null!=tmpAction) return tmpAction;
+            if (tmpAction is not null) return tmpAction;
             tmpAction = BehaviorIntelligentBumpToward(percept.Location + dir.Right.Right, false, false);
-            if (null!=tmpAction) return tmpAction;
+            if (tmpAction is not null) return tmpAction;
             tmpAction = BehaviorIntelligentBumpToward(percept.Location + dir.Left.Left, false, false);
-            if (null!=tmpAction) return tmpAction;
+            if (tmpAction is not null) return tmpAction;
           }
         }
         return null;
       }
       if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
           var e = m_Actor.Location.Exit;
-          if (null != e) return BehaviorUseExit(e, UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+          if (e is not null) return BehaviorUseExit(e, UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
       return null;
     }
@@ -721,16 +721,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction? tmpAction = BehaviorMeleeAttack(actor);
       // XXX there is some common post-processing we want done regardless of the exact path.  This abuse of try-catch-finally probably is a speed hit.
       try {
-        if (null != tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
         if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionWait(m_Actor);
         tmpAction = BehaviorHeadFor(target.Location, canCheckBreak, canCheckPush);
-        if (null == tmpAction) return null;
+        if (tmpAction is null) return null;
         if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) m_Actor.Run();
         return tmpAction;
       } catch(Exception) {
         throw;
       } finally {
-        if (null != tmpAction) m_Actor.TargetedActivity(Activity.FIGHTING, actor);
+        if (tmpAction is not null) m_Actor.TargetedActivity(Activity.FIGHTING, actor);
       }
     }
 
@@ -763,12 +763,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // barricading goes here
         if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || Rules.Get.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
           tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
-          if (null != tmpAction) {
+          if (tmpAction is not null) {
             bool flag3 = true;
             var leader = m_Actor.LiveLeader;
-            if (null != leader) {
+            if (leader is not null) {
               var exitAt = m_Actor.Location.Exit;
-              if (exitAt != null) flag3 = leader.Location.Map == exitAt.ToMap;
+              if (exitAt is not null) flag3 = leader.Location.Map == exitAt.ToMap;
             }
             if (flag3) {
               m_Actor.Activity = Activity.FLEEING;
@@ -778,7 +778,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         // XXX we should run for the exit here
         tmpAction = BehaviorWalkAwayFrom(_enemies.Select(p => p.Location.Position));
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           if (doRun) m_Actor.Run();
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
@@ -803,7 +803,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // charge
       tmpAction = BehaviorChargeEnemy(target, true, true);
-      if (null != tmpAction) {
+      if (tmpAction is not null) {
         if (m_Actor.Model.Abilities.CanTalk && Rules.Get.RollChance(EMOTE_CHARGE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name), true);
         return tmpAction;
@@ -830,7 +830,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         num += exploration.AgeScore(in loc);
         var mapObjectAt = map.GetMapObjectAt(position);
         // this is problematic when the door is the previous location.  Do not overwhelm in/out
-        if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) {
+        if (mapObjectAt is not null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) {
           num += (loc != PrevLocation ? EXPLORE_BARRICADES : -EXPLORE_DIRECTION);
         }
         if (map.IsInsideAtExt(position)) {
@@ -850,7 +850,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
           return act;
       });
-      if (null == opts) return null;
+      if (opts is null) return null;
 
       var best = opts.KeepMaximal(kv => ranking(kv.Key, kv.Value.dest));
       if (1 == best.Count) return best[0].Key.Value;
@@ -858,10 +858,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // \todo --faust option effects
       if (false /* Engine.Session.Get.CMDoptionExists("faust") */) {
         var PCs = RogueGame.PCsNearby(m_Actor.Location, RogueGame.VIEW_RADIUS, TRUE);
-        if (null != PCs) {
+        if (PCs is not null) {
           RogueGame.FaustClairvoyance(m_Actor, PCs.Select(pc => pc.ControlledActor.Location));
           var act = RogueGame.Game.AI_prayer(m_Actor, best.Keys().Values());
-          if (null != act) return act;
+          if (act is not null) return act;
         }
       }
 
@@ -873,29 +873,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((useFlags & UseExitFlags.DONT_BACKTRACK) != UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
       if (exitAt.IsNotBlocked(out var actorAt, out var mapObjectAt, m_Actor)) return (m_Actor.CanUseExit() ? new ActionUseExit(m_Actor, m_Actor.Location) : null);
       if ((useFlags & UseExitFlags.ATTACK_BLOCKING_ENEMIES) != UseExitFlags.NONE) {
-        if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && ActionMeleeAttack.Can(m_Actor, actorAt))
+        if (actorAt is not null && m_Actor.IsEnemyOf(actorAt) && ActionMeleeAttack.Can(m_Actor, actorAt))
           return new ActionMeleeAttack(m_Actor, actorAt);
       }
       if ((useFlags & UseExitFlags.BREAK_BLOCKING_OBJECTS) != UseExitFlags.NONE) {
         var act_break = ActionBreak.create(m_Actor, mapObjectAt);
-        if (null != act_break) return act_break;
+        if (act_break is not null) return act_break;
       }
       return null;
     }
 
     protected ActorAction? BehaviorUseExit(UseExitFlags useFlags) {
       var e = m_Actor.Location.Exit;
-      if (null == e) return null;
+      if (e is null) return null;
       return BehaviorUseExit(e, useFlags);
     }
 
     protected ActorAction? BehaviorGoEatFoodOnGround(List<Percept>? stacksPercepts)
     {
-      if (stacksPercepts == null) return null;
+      if (stacksPercepts is null) return null;
       var percepts = stacksPercepts.FilterT<Inventory>(inv => inv.Has<ItemFood>());
-      if (percepts == null) return null;
+      if (percepts is null) return null;
       var firstByType = m_Actor.Location.Items?.GetFirst<ItemFood>();
-      if (null != firstByType) return new ActionEatFoodOnGround(m_Actor, firstByType);
+      if (firstByType is not null) return new ActionEatFoodOnGround(m_Actor, firstByType);
       var percept = FilterNearest(percepts);
       return BehaviorStupidBumpToward(percept.Location,false,false);
     }
@@ -908,7 +908,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!Session.HasCorpses || !ActionEatCorpse.WantTo(m_Actor)) return null;
 #endif
             var corpsesPercepts = percepts?.FilterCast<List<Corpse>>();
-      if (null == corpsesPercepts) return null;
+      if (corpsesPercepts is null) return null;
       m_Actor.Activity = Activity.IDLE;
       var percept = FilterNearest(corpsesPercepts);
       if (m_Actor.Location == percept.Location) return new ActionEatCorpse(m_Actor, percept.Percepted[0]);
@@ -952,7 +952,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       float jumpPenalty = 0.0f;
       if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump) {
         var mapObjectAt = map.GetMapObjectAtExt(from);
-        if (mapObjectAt != null && mapObjectAt.IsJumpable) jumpPenalty = 0.1f;
+        if (mapObjectAt is not null && mapObjectAt.IsJumpable) jumpPenalty = 0.1f;
       }
 #endregion
       float heuristicFactorBonus = 1f + avoidCornerBonus + inOutBonus - jumpPenalty;
@@ -1006,7 +1006,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // isBetterThanEvalFn will never see NaN
     static protected ChoiceEval<_T_>? Choose<_T_>(IEnumerable<_T_>? listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
-      if (null == listOfChoices || !listOfChoices.Any()) return null;
+      if (listOfChoices is null || !listOfChoices.Any()) return null;
 
       Dictionary<float, List<ChoiceEval<_T_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_T_>>>();
 
@@ -1032,7 +1032,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     static protected ChoiceEval<_T_>? Choose<_T_>(IEnumerable<_T_>? listOfChoices, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
-      if (null == listOfChoices || !listOfChoices.Any()) return null;
+      if (listOfChoices is null || !listOfChoices.Any()) return null;
 
       float num = float.NaN;
       List<ChoiceEval<_T_>> candidates = new List<ChoiceEval<_T_>>();
@@ -1053,14 +1053,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // isBetterThanEvalFn will never see NaN
     static protected ChoiceEval<_DATA_>? ChooseExtended<_T_, _DATA_>(IEnumerable<_T_>? listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, _DATA_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
-      if (null == listOfChoices || !listOfChoices.Any()) return null;
+      if (listOfChoices is null || !listOfChoices.Any()) return null;
 
       Dictionary<float, List<ChoiceEval<_DATA_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_DATA_>>>();
 
       float num = float.NaN;
       foreach(_T_ tmp in listOfChoices) {
         _DATA_ choice = isChoiceValidFn(tmp);
-        if (null == choice) continue;
+        if (choice is null) continue;
         float f = evalChoiceFn(tmp, choice);
         if (float.IsNaN(f)) continue;
         if (float.IsNaN(num) || isBetterEvalThanFn(f, num)) {
@@ -1079,14 +1079,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool IsValidFleeingAction(ActorAction? a)
     {
-      if (null == a) return false;
+      if (a is null) return false;
       if (a is Resolvable res) return IsValidFleeingAction(res.ConcreteAction);
       return a is ActionMoveStep || a is ActionOpenDoor || a is ActionSwitchPlace;
     }
 
     protected bool IsValidWanderAction(ActorAction a)
     {
-      if (null == a) return false;
+      if (a is null) return false;
       if (a is ActionMoveStep) return true;
       if (a is ActionSwitchPlace) return true;
 //    if (a is ActionPush) return true; // wasn't being generated in RS alpha 9...results do not look good
@@ -1109,7 +1109,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool IsValidMoveTowardGoalAction(ActorAction? a)
     {
-      if (null == a) return false;
+      if (a is null) return false;
       if (a is Resolvable res) return IsValidMoveTowardGoalAction(res.ConcreteAction);
       // blacklist actions inappropriate for bump movement
       if (a is ActionChat) return false;
@@ -1123,7 +1123,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool IsOccupiedByOther(Location loc)  // percept locations are normalized
     {
       var actorAt = loc.Actor;
-      return null != actorAt && actorAt != m_Actor;
+      return actorAt is not null && actorAt != m_Actor;
     }
 
     protected bool WantToEvadeMelee(Actor actor, ActorCourage courage, Actor target)
@@ -1224,7 +1224,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       public override string ToString()
       {
-        return string.Format("ChoiceEval({0}; {1:F})", null == Choice ? "NULL" : Choice.ToString(), Value);
+        return string.Format("ChoiceEval({0}; {1:F})", Choice is null ? "NULL" : Choice.ToString(), Value);
       }
     }
 
@@ -1245,7 +1245,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<KeyValuePair<_T_, A>> ret = new();
       foreach(var choice in choices) {
         var test = interpret(choice);
-        if (null == test) continue;
+        if (test is null) continue;
         if (!test.IsPerformable()) continue;
         ret.Add(new(choice, test));
       }
@@ -1254,7 +1254,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public static Func<Point, Point, float> Postprocess(this Func<Point, Point, float> src, Func<Point, Point, float, float> post)
     {
-      if (null == post) {
+      if (post is null) {
         Func<Point, Point, float> l = src;  // local copies needed to get true lambda calculus
         return l;
       }

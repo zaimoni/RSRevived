@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Engine.AI
     public MemorizedSensor(T noMemorySensor, int persistance)
     {
 #if DEBUG
-      if (null == noMemorySensor) throw new ArgumentNullException(nameof(noMemorySensor));
+      if (noMemorySensor is null) throw new ArgumentNullException(nameof(noMemorySensor));
 #endif
       m_Sensor = noMemorySensor;
       m_Persistance = persistance;
@@ -64,8 +64,8 @@ namespace djack.RogueSurvivor.Engine.AI
     private void Forget()
     {
       var actor = Viewpoint;
-      if (null == actor) return;
-      if (null == actor.Location.Map) return; // Duckman superheroically crashes this, otherwise
+      if (actor is null) return;
+      if (actor.Location.Map is null) return; // Duckman superheroically crashes this, otherwise
       // memorized sensor is only used for vision
       var FOVloc = actor.Controller.FOVloc;
       var tmp = new List<Percept>(m_Percepts.Count);

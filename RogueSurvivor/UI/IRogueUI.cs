@@ -36,12 +36,12 @@ namespace djack.RogueSurvivor.UI
     static public IRogueUI UI {
         get { return s_ooao!; }
         protected set {
-            if (null != s_ooao) throw new InvalidOperationException("cannot cooperative-set singleton twice");
+            if (s_ooao is not null) throw new InvalidOperationException("cannot cooperative-set singleton twice");
             s_ooao = value;
         }
     }
 
-    static public bool IsConstructed { get { return null != s_ooao; } }
+    static public bool IsConstructed { get { return s_ooao is not null; } }
 
     IEnumerable<string> Mods { get; }
     Font NormalFont { get; }

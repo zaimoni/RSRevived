@@ -21,7 +21,7 @@ namespace Zaimoni.Lazy
 
         public Relay() { }
         public bool? code { get { return _code; } }
-        public bool signal() => null != _code;
+        public bool signal() => _code is not null;
         public void update(hook h) { }
 
 
@@ -36,7 +36,7 @@ namespace Zaimoni.Lazy
         }
 
         private void _notify() {
-            if (null != exec) {
+            if (exec is not null) {
                 var ub = exec.Count;
                 while (0 <= --ub) {
                     exec[ub].signal();
@@ -61,11 +61,11 @@ namespace Zaimoni.Lazy
         public void update(hook h) { }
 
         public bool signal() {
-            if (null == _code && null != op) {
+            if (_code is null && op is not null) {
                 _code = op();
-                if (null != _code) op = null;
+                if (_code is not null) op = null;
             }
-            return null != _code;
+            return _code is not null;
         }
 
     }
@@ -81,7 +81,7 @@ namespace Zaimoni.Lazy
         public void update(hook h) { }
 
         public bool signal() {
-            if (null == exec) {
+            if (exec is null) {
                 _code = true;
                 return true;
             }
@@ -89,7 +89,7 @@ namespace Zaimoni.Lazy
             exec.AND_hooks(ref _code);
             if (0 >= exec.Count) {
                 exec = null;
-                if (null == _code) {
+                if (_code is null) {
                     _code = true;
                     return true;
                 }
@@ -110,8 +110,8 @@ namespace Zaimoni.Lazy
         public LogicalAND() { }
         public bool? code { get { return _code; } }
         public void update(hook h) {
-            if (null == h.code) return;
-            if (null == guard) return;
+            if (h.code is null) return;
+            if (guard is null) return;
             bool test = h.code.Value;
             var ub = guard.Count;
             while (0 <= --ub) {
@@ -130,21 +130,21 @@ namespace Zaimoni.Lazy
         }
 
         public bool signal() {
-            if (null != _code) return _code.Value;
-            if (null != guard) {
+            if (_code is not null) return _code.Value;
+            if (guard is not null) {
                 guard.AND_hooks(ref _code);
                 if (0 >= guard.Count) guard = null;
-                if (null != _code) return _code.Value;
+                if (_code is not null) return _code.Value;
             }
 
-            if (null == exec) {
+            if (exec is null) {
                 _code = true;
                 return true;
             }
             exec.AND_hooks(ref _code);
             if (0 >= exec.Count) {
                 exec = null;
-                if (null == _code) {
+                if (_code is null) {
                     _code = true;
                     return true;
                 }
@@ -164,8 +164,8 @@ namespace Zaimoni.Lazy
         public LogicalOR() { }
         public bool? code { get { return _code; } }
         public void update(hook h) {
-            if (null == h.code) return;
-            if (null == guard) return;
+            if (h.code is null) return;
+            if (guard is null) return;
             bool test = h.code.Value;
             var ub = guard.Count;
             while (0 <= --ub) {
@@ -183,10 +183,10 @@ namespace Zaimoni.Lazy
 
         public bool signal()
         {
-            if (null != _code) return true;
-            if (null != guard) {
+            if (_code is not null) return true;
+            if (guard is not null) {
                 bool? ret = guard.OR_hooks();
-                if (null != ret) {
+                if (ret is not null) {
                     guard = null;
                     if (!ret.Value) {
                         _code = false;
@@ -195,14 +195,14 @@ namespace Zaimoni.Lazy
                 }
             }
 
-            if (null == exec) {
+            if (exec is null) {
                 _code = true;
                 return true;
             }
             exec.AND_hooks(ref _code);
             if (0 >= exec.Count) {
                 exec = null;
-                if (null == _code) {
+                if (_code is null) {
                     _code = true;
                     return true;
                 }
@@ -217,7 +217,7 @@ namespace Zaimoni.Lazy
             var ub = exec.Count;
             while (0 <= --ub) {
                 var test = exec[ub].code;
-                if (null != test) {
+                if (test is not null) {
                     if (false == test.Value) code = false;
                     exec.RemoveAt(ub);
                     continue;
@@ -236,7 +236,7 @@ namespace Zaimoni.Lazy
             var ub = exec.Count;
             while (0 <= --ub) {
                 var test = exec[ub].code;
-                if (null != test) {
+                if (test is not null) {
                     if (test.Value) return true;
                     exec.RemoveAt(ub);
                     continue;

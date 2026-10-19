@@ -137,10 +137,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.Walk();    // alpha 10: don't run by default
 
       // OrderableAI specific: respond to orders
-      if (null != Order) {
+      if (Order is not null) {
         if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "under orders");
         var actorAction = ExecuteOrder(Order, current);
-        if (null != actorAction) {
+        if (actorAction is not null) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "implementing orders");
           return actorAction;
@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (m_Actor.Location!=PrevLocation) {
         // sewers are not a good choice for default-tourism
-        if (null!=ItemMemory && null!=m_Actor.InterestingLocs && !District.IsSewersMap(m_Actor.Location.Map)) {
+        if (ItemMemory is not null && m_Actor.InterestingLocs is not null && !District.IsSewersMap(m_Actor.Location.Map)) {
           var _items = ItemMemory;
           var tourism = m_Actor.InterestingLocs;
           var map = m_Actor.Location.Map;
@@ -169,7 +169,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // get out of the range of explosions if feasible
       ActorAction? tmpAction = BehaviorFleeExplosives();
-      if (null != tmpAction) return tmpAction;
+      if (tmpAction is not null) return tmpAction;
 
       _enemies = SortByGridDistance(FilterEnemies(current)); // this tests fast; makes InCombat valid
 
@@ -178,7 +178,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else ++m_SafeTurns;
 
       // if we have no enemies and have not fled an explosion, our friends can see that we're safe
-      if (null == _enemies) AdviseFriendsOfSafety();
+      if (_enemies is null) AdviseFriendsOfSafety();
       else {
         var seen = Rules.Get.DiceRoller.Choose(_enemies);
         m_LastEnemySaw = new(new ActorTag(seen.Percepted), seen.Turn, seen.Location);
@@ -196,9 +196,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (o.IsExpired) Remove(o);
           else if (o.UrgentAction(out var goal_action)) {
             if (tracing) {
-              if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == goal_action ? "expiring by null"  : "proceeding : "+ goal_action.ToString());
+              if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(goal_action is null ? "expiring by null"  : "proceeding : "+ goal_action.ToString());
             }
-            if (null==goal_action) Remove(o);
+            if (goal_action is null) Remove(o);
 #if DEBUG
             else if (!goal_action.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("result of UrgentAction should be performable"));
 #else
@@ -217,7 +217,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (tracing) {
-        if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(null == _enemies ? "null == _enemies" : _enemies.Count.ToString() + " enemies");
+        if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(_enemies is null ? "null == _enemies" : _enemies.Count.ToString() + " enemies");
       }
 
       if (!(Directives_nocreate?.CanThrowGrenades ?? ActorDirective.CanThrowGrenades_default) && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) grenade.UnequippedBy(m_Actor);
@@ -238,22 +238,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // useful for assault running, dash-and-shoot, take cover and prepare for dash-and-shoot
 
       tmpAction = CombinatoricCombat();
-      if (tracing && null != tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "CombinatoricCombat: " + tmpAction.ToString());
-      if (null != tmpAction) return tmpAction;
+      if (tracing && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "CombinatoricCombat: " + tmpAction.ToString());
+      if (tmpAction is not null) return tmpAction;
 
       var available_ranged_weapons = m_Actor.GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
-      if (null != tmpAction) {
+      if (tmpAction is not null) {
         if (tracing) {
           if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("managing melee risk: "+tmpAction.ToString());
         }
         return tmpAction;
       }
 
-      if (null != _enemies && (Directives_nocreate?.CanThrowGrenades ?? ActorDirective.CanThrowGrenades_default)) {
+      if (_enemies is not null && (Directives_nocreate?.CanThrowGrenades ?? ActorDirective.CanThrowGrenades_default)) {
         tmpAction = BehaviorThrowGrenade();
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "toss grenade");
           return tmpAction;
         }
@@ -261,7 +261,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // \todo doesn't handle properly interactions w/inventory management when enemies out of melee range; e.g. if have shotgun ammo, should take empty shotgun if not in immediate danger
       tmpAction = BehaviorEquipWeapon(available_ranged_weapons);
-      if (null != tmpAction) {
+      if (tmpAction is not null) {
         if (tracing) {
           if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("equip weapon: "+tmpAction.ToString());
         }
@@ -269,12 +269,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       var friends = FilterNonEnemies(current);
-      if (null != _enemies) {
-        if (null != friends) {
+      if (_enemies is not null) {
+        if (friends is not null) {
           var nearest_enemy = FilterNearest(_enemies);
-          if (null != nearest_enemy && Rules.Get.RollChance(50)) { // null check due to InferActor goal
+          if (nearest_enemy is not null && Rules.Get.RollChance(50)) { // null check due to InferActor goal
             tmpAction = BehaviorWarnFriends(friends, nearest_enemy.Percepted);
-            if (null != tmpAction) {
+            if (tmpAction is not null) {
               if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
               return tmpAction;
             }
@@ -282,7 +282,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
         tmpAction = BehaviorFightOrFlee((Directives_nocreate?.Courage ?? ActorDirective.Courage_default), m_Emotes, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
             if (tracing) {
                 if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("fight-or-flee: "+tmpAction.ToString());
             }
@@ -292,7 +292,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // at this point, even if enemies are in sight we have no useful direct combat action
 
       tmpAction = NonCombatReflexMoves();
-      if (null != tmpAction) {
+      if (tmpAction is not null) {
         if (tracing) {
           if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("non-combat reflex: "+tmpAction.ToString());
         }
@@ -304,7 +304,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && (Directives_nocreate?.CanSleep ?? ActorDirective.CanSleep_default) && m_Actor.WantToSleepNow) {
         if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorNavigateToSleep");
         tmpAction = BehaviorNavigateToSleep();
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "navigating to sleep");
           return tmpAction;
         }
@@ -314,8 +314,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // attempting extortion from cops should have consequences.
       // XXX as should doing it to a civilian whose leader is a cop (and in communication)
       if (   RogueGame.Options.IsAggressiveHungryCiviliansOn
-          && current != null
-          && null == leader
+          && current is not null
+          && leader is null
           && !m_Actor.Model.Abilities.IsLawEnforcer
           && (m_Actor.IsHungry
           && !m_Actor.Has<ItemFood>())) {
@@ -326,9 +326,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (a.Inventory.Has<ItemFood>()) return true;
           return a.Location.Items?.Has<ItemFood>() ?? false;
         }));
-        if (target != null) {
+        if (target is not null) {
           tmpAction = BehaviorChargeEnemy(target, true, true);
-          if (null != tmpAction) {
+          if (tmpAction is not null) {
             if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "starving, attacking for food");
             if (Rules.Get.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
               m_Actor.Say(target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
@@ -355,7 +355,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       tmpAction = BehaviorUseStenchKiller();    // civilian-specific
-      if (null != tmpAction) {
+      if (tmpAction is not null) {
         if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using stench killer");
         return tmpAction;
       }
@@ -363,7 +363,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool? combat_unready = false;  // currently only matters for law enforcement
       if (m_Actor.Model.Abilities.IsLawEnforcer && !(combat_unready = CombatUnready()).Value) {
         tmpAction = BehaviorEnforceLaw();
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "enforcing law (combat ready)");
           return tmpAction;
         }
@@ -372,8 +372,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX if we have item memory, check whether "critical items" have a known location.  If so, head for them (floodfill pathfinding)
       // XXX leaders should try to check what their followers use as well.
       var items = WhatHaveISeen();
-      if (null == leader || DontFollowLeader) {
-      if (null != items && null != _legal_path) {
+      if (leader is null || DontFollowLeader) {
+      if (items is not null && _legal_path is not null) {
         // BehaviorResupply has some pathing inefficency issues...it really should:
         // * full location goals, rather than map/point pairs
         // * index goals by which items are causing the goal to exist
@@ -397,7 +397,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok; "+(tmpAction?.ToString() ?? "null"));
             Logger.WriteLine(Logger.Stage.RUN_MAIN, "goals: "+(GetPreviousGoals()?.to_s() ?? "null"));
           }
-          if (null != tmpAction) {
+          if (tmpAction is not null) {
             _used_advanced_pathing = true; // object constancy
             return tmpAction;
           }
@@ -408,7 +408,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var rules = Rules.Get;
       if (rules.RollChance(BUILD_TRAP_CHANCE)) {
         tmpAction = BehaviorBuildTrap();
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build trap");
           return tmpAction;
         }
@@ -416,7 +416,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (rules.RollChance(BUILD_LARGE_FORT_CHANCE)) { // difference in relative ordering with soldiers is ok
         tmpAction = BehaviorBuildLargeFortification(START_FORT_LINE_CHANCE);
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build large fortification");
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
@@ -424,41 +424,41 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (rules.RollChance(BUILD_SMALL_FORT_CHANCE)) {
         tmpAction = BehaviorBuildSmallFortification();
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build small fortification");
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
       }
 
-      if (null != leader && !DontFollowLeader) {
+      if (leader is not null && !DontFollowLeader) {
         // \todo interposition target for pathing hints, etc. from leader
         if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorFollowActor");
         tmpAction = BehaviorFollowActor(leader, 1);
         if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorFollowActor: "+(tmpAction?.ToString() ?? "null"));
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           m_Actor.TargetedActivity(Activity.FOLLOWING, leader);
           return tmpAction;
         }
       } else {
         tmpAction = RecruitLOS();
-        if (null != tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
         tmpAction = RecruitRadio();
-        if (null != tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
       }
       // XXX if we are a leader, we should try to rearrange items for our followers (no one starving while another has a lot of food)
       // XXX if we are a follower, we should try to avoid being hurt by the leader's rearranging our items
 
       if (m_Actor.IsHungry) {
         tmpAction = BehaviorAttackBarricade();
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for food behind barricade");
           game.DoEmote(m_Actor, "Open damn it! I know there is food there!", true);
           return tmpAction;
         }
         if (rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE)) {
           tmpAction = BehaviorPushNonWalkableObjectForFood();
-          if (null != tmpAction) {
+          if (tmpAction is not null) {
             if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for food behind non-walkable objects");
             game.DoEmote(m_Actor, "Where is all the damn food?!", true);
             m_Actor.Activity = Activity.IDLE;
@@ -467,15 +467,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       tmpAction = BehaviorGoReviveCorpse(current);  // not logically CivilianAI only
-      if (null != tmpAction) {
+      if (tmpAction is not null) {
         m_Actor.Activity = Activity.IDLE;
         if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "revive corpse");
         return tmpAction;
       }
-      if (null == m_Actor.Threats && null == m_Actor.InterestingLocs) {
+      if (m_Actor.Threats is null && m_Actor.InterestingLocs is null) {
         if (rules.RollChance(USE_EXIT_CHANCE)) {
           tmpAction = BehaviorUseExit(UseExitFlags.DONT_BACKTRACK);
-          if (null != tmpAction) {
+          if (tmpAction is not null) {
             if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "use exit for no good reason");
             return tmpAction;
           }
@@ -486,11 +486,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (p.Percepted is not Actor actor || actor == m_Actor) return false;
           return actor.Controller is SoldierAI;
       });
-      if (percept1 != null) m_LastSoldierSaw = new(new ActorTag((Actor)percept1.Percepted), percept1.Turn, percept1.Location);
+      if (percept1 is not null) m_LastSoldierSaw = new(new ActorTag((Actor)percept1.Percepted), percept1.Turn, percept1.Location);
 
       if (m_Actor.Model.Abilities.IsLawEnforcer && combat_unready.Value) {
         tmpAction = BehaviorEnforceLaw();
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "enforcing law (combat unready)");
           return tmpAction;
         }
@@ -501,10 +501,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // The newer movement behaviors using floodfill pathing, etc. depend on there being legal walking moves
 #region floodfill pathfinder
-      if (null != _legal_path) {
+      if (_legal_path is not null) {
         if (!InCombat) {    // want to recompute if threat tracking active within view rectangle
           tmpAction = UsePreexistingLambdaPath();
-          if (null != tmpAction) {
+          if (tmpAction is not null) {
             if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using pre-existing path");
             return tmpAction;
           }
@@ -513,10 +513,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // advanced pathing ultimately reduces to various flavors of calls to (specializations) of 
         // public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
         if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering advanced pathing");
-        if (null == combat_unready) combat_unready = CombatUnready();
-        HashSet<Gameplay.Item_IDs> want = (null != items ? WhatDoIWantNow() : new());    // non-emergency things
+        if (combat_unready is null) combat_unready = CombatUnready();
+        HashSet<Gameplay.Item_IDs> want = (items is not null ? WhatDoIWantNow() : new());    // non-emergency things
         // while we want to account for what our followers want, we don't want to block our followers from the items either
-        if (null != items) want.IntersectWith(items);
+        if (items is not null) want.IntersectWith(items);
         if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "want: "+want.to_s());
 
         // 2019-01-31: historical range sorting is:, This map, other maps [old implementation pruned 2019-03-18]
@@ -539,7 +539,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return ret;
         }
 
-        if (!combat_unready.Value && null != threats && threats.Any()) pathing_targets = hunt_threat;
+        if (!combat_unready.Value && threats is not null && threats.Any()) pathing_targets = hunt_threat;
 
         var sights_to_see = m_Actor.InterestingLocs;
         HashSet<Point> tourism(Map m) {
@@ -549,7 +549,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           return ret;
         }
-        if (null != sights_to_see) pathing_targets = pathing_targets.Otherwise(tourism);
+        if (sights_to_see is not null) pathing_targets = pathing_targets.Otherwise(tourism);
 
         // police want to exclude threat/tourism in indoor zones already covered by leader-types (other handling will cover engaged threat)
         var allies = m_Actor.Allies;
@@ -558,18 +558,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (a.HasLeader && 0 >= a.CountFollowers) continue; // bottom of chain of command, no authority to clear zones on own
             if (a.IsSleeping) continue; // not expected to do anything useful
             var handled = (a.Controller as ObjectiveAI)?.ClearingThisZone();
-            if (null == handled) continue;
+            if (handled is null) continue;
             if (handled.m != m) continue;
             bool reject(Point pt) { return handled.Rect.Contains(pt); }
             target.RemoveWhere(reject);
             update_path.UnStageView(m,reject);
           }
         }
-        if (null != allies) pathing_targets.Postfilter(already_handled);
+        if (allies is not null) pathing_targets.Postfilter(already_handled);
 
         HashSet<Point> generators(Map m) {
           var gens = Generators(m);
-          if (null == gens) return new HashSet<Point>();
+          if (gens is null) return new HashSet<Point>();
           if (WantToRecharge()) {
             update_path.StageGenerators(gens);
             return m_Actor.Model.CastToBumpableDestinations(m,gens.Select(obj => obj.Location.Position));
@@ -592,8 +592,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         if (0 < want.Count) pathing_targets = pathing_targets.Union(resupply_want);
-        if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing targets: "+(null==pathing_targets ? "null" : "non-null"));
-        if (null != pathing_targets) {
+        if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing targets: "+(pathing_targets is null ? "null" : "non-null"));
+        if (pathing_targets is not null) {
           var view = m_Actor.Location.View;
           var d_span = view.DistrictSpan;
           int map_code = District.UsesCrossDistrictView(m_Actor.Location.Map);
@@ -614,7 +614,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmpAction = BehaviorPathTo(pathing_targets,prefilter_view, reject_view);
           _caller = CallChain.NONE;
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within view: "+(tmpAction?.ToString() ?? "null"));
-          if (null!=tmpAction) return tmpAction;
+          if (tmpAction is not null) return tmpAction;
           update_path.ForgetStaging();
           // 2) minimap range pathing, if distinct from view
           if (0!= map_code) {
@@ -698,10 +698,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 }
             }
 
-            if (null != tmpAction) {
+            if (tmpAction is not null) {
               var considering = GetPreviousGoals(m_Actor.Location);
               var unseen = considering?.Where(loc => !CanSee(loc)).ToHashSet();
-              if (null != unseen && 0 < unseen.Count) {
+              if (unseen is not null && 0 < unseen.Count) {
                 if (tracing) {
                   Logger.WriteLine(Logger.Stage.RUN_DEBUG, "LoS on unseen: " + unseen.to_s());
                 }
@@ -715,46 +715,46 @@ namespace djack.RogueSurvivor.Gameplay.AI
             update_path.ForgetStaging();
           }
           // 3) world pathing (no prefilter/postfilter, ok to hunt threat even if combat unready)
-          if (combat_unready.Value && null != threats && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
+          if (combat_unready.Value && threats is not null && threats.Any()) pathing_targets = pathing_targets.Otherwise(hunt_threat);
 
           _caller = CallChain.SelectAction_LambdaPath;
           tmpAction = BehaviorPathTo(pathing_targets);
           _caller = CallChain.NONE;
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "pathing within world: "+(tmpAction?.ToString() ?? "null"));
-          if (null!=tmpAction) return tmpAction;
+          if (tmpAction is not null) return tmpAction;
           update_path.ForgetStaging();
         }
       }
 #endregion
 
-      if (null != friends) {
-        if (m_LastRaidHeard != null) {
+      if (friends is not null) {
+        if (m_LastRaidHeard is not null) {
           tmpAction = BehaviorTellFriendAboutPercept(m_LastRaidHeard, TELL_FRIEND_ABOUT_RAID_CHANCE);
-          if (null != tmpAction) {
+          if (tmpAction is not null) {
             if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about raid");
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
         }
-        if (m_LastSoldierSaw != null) {
+        if (m_LastSoldierSaw is not null) {
           tmpAction = BehaviorTellFriendAboutPercept(m_LastSoldierSaw, TELL_FRIEND_ABOUT_SOLDIER_CHANCE);
-          if (null != tmpAction) {
+          if (tmpAction is not null) {
             if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about soldier");
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
         }
-        if (m_LastEnemySaw != null) {
+        if (m_LastEnemySaw is not null) {
           tmpAction = BehaviorTellFriendAboutPercept(m_LastEnemySaw, TELL_FRIEND_ABOUT_ENEMY_CHANCE);
-          if (null != tmpAction) {
+          if (tmpAction is not null) {
             if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about enemy");
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
         }
-        if (m_LastItemsSaw != null) {
+        if (m_LastItemsSaw is not null) {
           tmpAction = BehaviorTellFriendAboutPercept(m_LastItemsSaw, TELL_FRIEND_ABOUT_ITEMS_CHANCE);
-          if (null != tmpAction) {
+          if (tmpAction is not null) {
             if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about items");
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
@@ -774,30 +774,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // Try to reuse previous goals before explore/wander 2020-11-20 zaimoni
       var prev_goals = GetPreviousGoals(m_Actor.Location);
-      if (null != prev_goals) {
+      if (prev_goals is not null) {
           var ok = prev_goals.Where(loc => loc.IsWalkableFor(m_Actor));
           if (ok.Any()) {
             if (ok.Count() < prev_goals.Count) prev_goals = ok.ToHashSet();
             tmpAction = BehaviorPathTo(prev_goals);
-            if (null != tmpAction) {
+            if (tmpAction is not null) {
               m_Actor.Activity = Activity.IDLE;
               return tmpAction;
             }
           }
           tmpAction = BehaviorMakeTime();
-          if (null != tmpAction) return tmpAction;
+          if (tmpAction is not null) return tmpAction;
           return new ActionWait(m_Actor);
       }
 
 #if FALSE_POSITIVE
-      if (null != m_Actor.Threats || null != m_Actor.InterestingLocs) {
+      if (m_Actor.Threats is not null || m_Actor.InterestingLocs is not null) {
         Session.Get.World.DaimonMap(); // for accuracy
         throw new InvalidOperationException("test case");
       }
 #endif
 
       tmpAction = BehaviorExplore(m_Exploration);
-      if (null != tmpAction) {
+      if (tmpAction is not null) {
         if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "unguided exploration");
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;

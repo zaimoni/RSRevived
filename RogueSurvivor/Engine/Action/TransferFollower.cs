@@ -14,8 +14,8 @@ namespace djack.RogueSurvivor.Engine._Action
         public TransferFollower(Actor authority, Actor who, Actor leads, Action<Actor, Actor, Actor>? msg = null) : base(authority) {
 #if DEBUG
             var prior = who.LiveLeader;
-            if (null != prior && authority != prior) throw new InvalidOperationException("invalid transfer of follower");
-            if (null == prior && authority != who && authority != leads) throw new InvalidOperationException("invalid transfer of follower");
+            if (prior is not null && authority != prior) throw new InvalidOperationException("invalid transfer of follower");
+            if (prior is null && authority != who && authority != leads) throw new InvalidOperationException("invalid transfer of follower");
 #endif
             whom = who;
             dest = leads;
@@ -69,7 +69,7 @@ namespace djack.RogueSurvivor.Engine._Action
         {
             m_Actor.SpendActionPoints();
             var old_leader = whom.LiveLeader;
-            if (null != old_leader) {
+            if (old_leader is not null) {
                 old_leader.RemoveFollower(whom);
                 whom.SetTrustIn(old_leader, whom.TrustInLeader);
             }
@@ -77,7 +77,7 @@ namespace djack.RogueSurvivor.Engine._Action
             dest.AddFollower(whom);
             int trustIn = whom.GetTrustIn(dest);
             whom.TrustInLeader = trustIn;
-            if (null != messaging) messaging(m_Actor, whom, dest);
+            if (messaging is not null) messaging(m_Actor, whom, dest);
         }
 
     }

@@ -138,8 +138,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 }
                 writer.WriteEndArray();
             }
-            if (null != pt_path) writer.WriteArrayOfArrays("PointSteps", pt_path, options);
-            if (null != loc_path) writer.WriteArrayOfArrays("Steps", loc_path, options);
+            if (pt_path is not null) writer.WriteArrayOfArrays("PointSteps", pt_path, options);
+            if (loc_path is not null) writer.WriteArrayOfArrays("Steps", loc_path, options);
             if (0 < stage_view.Count) writer.WriteArray("StageView", stage_view, options);
             if (0 < stage_inventory.Count) writer.WriteArray("StageInventory", stage_inventory, options);
             if (0 < stage_generators.Count) writer.WriteRefs("StageGenerators", stage_generators);
@@ -150,8 +150,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         public int steps {
             get {
-                if (null != pt_path) return pt_path.Count;
-                if (null != loc_path) return loc_path.Count;
+                if (pt_path is not null) return pt_path.Count;
+                if (loc_path is not null) return loc_path.Count;
                 return 0;
             }
         }
@@ -203,7 +203,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endregion
 
         private static List<List<Location>>? _upgrade(Map m, List<List<Point>>? src) {
-            if (null == src) return null;
+            if (src is null) return null;
             var xform = new List<List<Location>>();
             foreach (var step in src) {
                 if (0 >= step.Count) break;
@@ -214,13 +214,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         private Map? HomeMap(ObjectiveAI ai) {
-            if (null == pt_path) return null;
+            if (pt_path is null) return null;
             if (0 < reasons.Count) return reasons.First().Key.Map;
             return ai.ControlledActor.Location.Map;
         }
 
         private void _upgrade(ObjectiveAI ai) {
-            if (null == pt_path) return;
+            if (pt_path is null) return;
             loc_path = _upgrade(HomeMap(ai), pt_path);
             pt_path = null;
         }
@@ -232,13 +232,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             if (0 < stage_inventory.Count) {
                 var items = ai.ItemMemory;
-                if (null != items) {
+                if (items is not null) {
                     var need = ai.WhatDoINeedNow();
                     var want = ai.WhatDoIWantNow();
 
                     int code(in Location loc) {
                       var think_is_there = items.WhatIsAt(loc);
-                      if (null != think_is_there) {
+                      if (think_is_there is not null) {
                         // \todo duplicate cheating postfilters from ActorController::WhereIs
                         foreach (var it in need) {
                             if (think_is_there.Contains(it)) return (int)What.INVENTORY - (int)it;
@@ -264,12 +264,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         public void Install(List<List<Location>>? src, ObjectiveAI ai) {
-            if (null == src || 0 >= src.Count) {
+            if (src is null || 0 >= src.Count) {
                 ForgetStaging();
                 return;
             }
-            if (null != pt_path) _upgrade(ai);
-            if (null == loc_path) loc_path = src;
+            if (pt_path is not null) _upgrade(ai);
+            if (loc_path is null) loc_path = src;
             else {
                 int merge_ub = loc_path.Count;
                 int ub = src.Count;
@@ -291,16 +291,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         public void Install(Map m, List<List<Point>>? src, ObjectiveAI ai)
         {
-            if (null == src || 0 >= src.Count) {
+            if (src is null || 0 >= src.Count) {
                 ForgetStaging();
                 return;
             }
-            if (null != pt_path && m != HomeMap(ai)) _upgrade(ai);
-            if (null != loc_path) { // merging into location path
+            if (pt_path is not null && m != HomeMap(ai)) _upgrade(ai);
+            if (loc_path is not null) { // merging into location path
                 Install(_upgrade(m,src),ai);
                 return;
             }
-            if (null == pt_path) pt_path = src;
+            if (pt_path is null) pt_path = src;
             else {
                 int merge_ub = pt_path.Count;
                 int ub = src.Count;
@@ -321,7 +321,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         public static List<Location>? WantToGoHere(List<List<Location>>? src, Location loc) {
-            if (null == src || 0 >= src.Count) return null;
+            if (src is null || 0 >= src.Count) return null;
             List<Location> ret;
             int n = src.Count;
             while (0 < n--) {
@@ -332,7 +332,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         public static List<Location>? WantToGoHere(List<List<Point>>? src, Location loc) {
-            if (null == src || 0 >= src.Count) return null;
+            if (src is null || 0 >= src.Count) return null;
             List<Point> working;
             int n = src.Count;
             while (0 < n--) {
@@ -348,10 +348,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         public List<Location>? WantToGoHere(in Location loc, ObjectiveAI ai) {
             var ret = WantToGoHere(loc_path, loc);
-            if (null != ret) return ret;
+            if (ret is not null) return ret;
             if (HomeMap(ai) == loc.Map) {
                 ret = WantToGoHere(pt_path, loc);
-                if (null != ret) return ret;
+                if (ret is not null) return ret;
             }
             return null;
         }
@@ -360,7 +360,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // require that we be adjacent to the path.
         public static bool reject_path(List<List<Location>>? min_path, ObjectiveAI ai)
         {
-           if (null == min_path) return false;
+           if (min_path is null) return false;
            Location loc = ai.ControlledActor.Location;
            bool is_adjacent(Location pt) { return 1 != Engine.Rules.InteractionDistance(loc, in pt); }
 
@@ -388,7 +388,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         public static bool reject_path(List<List<Point>>? min_path, ObjectiveAI ai)
         {
-           if (null == min_path) return false;
+           if (min_path is null) return false;
            Location loc = ai.ControlledActor.Location;
            Map map = loc.Map;
            Point pos = loc.Position;
@@ -419,7 +419,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if PROTOTYPE
         // eliminate reasons not near the path
         private bool decay_reasons(List<List<Location>> min_path) {
-            if (null == min_path) return false;
+            if (min_path is null) return false;
             var screen = new Dictionary<Location, int>(reasons);
             var ret = new Dictionary<Location, int>();
             int i = min_path.Count;
@@ -451,7 +451,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         private bool decay_reasons(List<List<Point>> min_path) {
-            if (null == min_path) return false;
+            if (min_path is null) return false;
             var map = reasons.First().Key.Map;
             var screen = new Dictionary<Location, int>(reasons);
             var ret = new Dictionary<Location, int>();
@@ -486,7 +486,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         // remove path that does not lead to a reason quickly
         private bool decay_path(List<List<Location>> min_path) {
-            if (null == min_path) return false;
+            if (min_path is null) return false;
             var working = new List<List<Location>>();
             var reference = new List<List<Location>>();
             var triggers = new HashSet<Location>(reasons.Keys);
@@ -553,7 +553,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         private bool decay_path(List<List<Point>> min_path) {
-            if (null == min_path) return false;
+            if (min_path is null) return false;
             var working = new List<List<Point>>();
             var reference = new List<List<Point>>();
             var triggers = new HashSet<Location>(reasons.Keys);
@@ -624,12 +624,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
             Func<Location, int>? test = null;
             var items = ai.ItemMemory;
-            if (null != items) {
+            if (items is not null) {
                 var need = ai.WhatDoINeedNow();
                 var want = ai.WhatDoIWantNow();
                 test = test.Or(loc => {
                    var think_is_there = items.WhatIsAt(loc);
-                    if (null != think_is_there) {
+                    if (think_is_there is not null) {
                         // \todo duplicate cheating postfilters from ActorController::WhereIs
                         foreach (var it in need) {
                             if (think_is_there.Contains(it)) return (int)What.INVENTORY - (int)it;
@@ -643,13 +643,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
 
             var threat = ai.ControlledActor.Threats;
-            if (null != threat) test = test.Or(loc => {
+            if (threat is not null) test = test.Or(loc => {
                 if (threat.AnyThreatAt(in loc) && !ai.CanSee(in loc)) return (int)What.VIEW;
                 return 0;
             });
 
             var tourism = ai.ControlledActor.InterestingLocs;
-            if (null != tourism) test = test.Or(loc => {
+            if (tourism is not null) test = test.Or(loc => {
                 if (tourism.Contains(in loc)) return (int)What.VIEW;
                 return 0;
             });
@@ -670,7 +670,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 } else if ((int)What.RECHARGE == x.Value) {
                     if (ai.WantToRecharge()) ret.Add(x.Key, x.Value);
                     continue;
-                } else if (null!=retestable) {
+                } else if (retestable is not null) {
                     var code = retestable(x.Key);
                     if (0 != code) ret.Add(x.Key, code);
                 }
@@ -705,8 +705,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         public ActorAction? WalkPath(ObjectiveAI ai) {
-            if (null != loc_path) return ai.UsePreexistingPath(loc_path);
-            if (null != pt_path) return ai.UsePreexistingPath(pt_path);
+            if (loc_path is not null) return ai.UsePreexistingPath(loc_path);
+            if (pt_path is not null) return ai.UsePreexistingPath(pt_path);
             return null;
         }
     }

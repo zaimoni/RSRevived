@@ -42,7 +42,7 @@ namespace Zaimoni.Data
 #endif
             using var stream = filepath.CreateStream(false);
             var ret = System.Text.Json.JsonSerializer.Deserialize<_T_>(stream, s_config_opts);
-            if (null == ret) throw new InvalidDataException("no " + typeof(_T_).Name + " in " + filepath);
+            if (ret is null) throw new InvalidDataException("no " + typeof(_T_).Name + " in " + filepath);
             return ret;
         }
     }

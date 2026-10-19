@@ -45,7 +45,7 @@ namespace djack.RogueSurvivor.Gameplay
     private static void LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, Skills.IDs[] idsToRead, out _DATA_TYPE_[] data)
     {
 #if DEBUG
-      if (null == ui) throw new ArgumentNullException(nameof(ui));
+      if (ui is null) throw new ArgumentNullException(nameof(ui));
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path), path, "string.IsNullOrEmpty(path)");
 #endif
       Skills.Notify(ui, kind, "loading file...");

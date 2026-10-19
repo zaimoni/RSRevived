@@ -47,7 +47,7 @@ namespace djack.RogueSurvivor.Engine
           break;
         }
       }
-      if (null == text) return false;
+      if (text is null) return false;
       if (text.StartsWith("@")) text = File.ReadAllText(text.Substring(1));
       foreach (var line in text.Split('\n')) {
         var code = line;
@@ -160,7 +160,7 @@ namespace djack.RogueSurvivor.Engine
       var at = token.IndexOf('@');
       if (0 > at) {
         var key = ParseKey(token);
-        return null == key ? null : new Scripted(token, What.KEY, key.Value, MouseButtons.None, 0, 0);
+        return key is null ? null : new Scripted(token, What.KEY, key.Value, MouseButtons.None, 0, 0);
       }
       var kind = token.Substring(0, at).ToLowerInvariant();
       var rest = token.Substring(at + 1);
@@ -201,7 +201,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       var code = KeyCode(parts[parts.Length - 1]);
-      return null == code ? null : code.Value | modifiers;
+      return code is null ? null : code.Value | modifiers;
     }
 
     // W3C UI Events code values that are not spelled as the System.Windows.Forms.Keys member.  The first name for a key is

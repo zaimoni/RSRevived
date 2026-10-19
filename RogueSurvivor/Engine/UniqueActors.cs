@@ -73,7 +73,7 @@ namespace djack.RogueSurvivor.Engine
     public void init_Prisoner(Actor newCivilian)
     {
 #if DEBUG
-      if (null != PoliceStationPrisoner) throw new InvalidOperationException("only call UniqueActors::init_Prisoner once");
+      if (PoliceStationPrisoner is not null) throw new InvalidOperationException("only call UniqueActors::init_Prisoner once");
 #endif
       newCivilian.Name = "The Prisoner Who Should Not Be";
       for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Engine
     public void init_JasonMyers()
     {
 #if DEBUG
-      if (null != JasonMyers) throw new InvalidOperationException("only call UniqueActors::init_JasonMyers once");
+      if (JasonMyers is not null) throw new InvalidOperationException("only call UniqueActors::init_JasonMyers once");
 #endif
       Actor named = GameActors.JasonMyers.CreateNamed(GameFactions.ThePsychopaths, "Jason Myers", 0);
       named.IsUnique = true;
@@ -104,7 +104,7 @@ namespace djack.RogueSurvivor.Engine
     private void init_FatherTime(BaseTownGenerator tgen)    // unused parameter...haven't decided on full item complement yet.
     {
 #if DEBUG
-      if (null != FatherTime) throw new InvalidOperationException("only call UniqueActors::init_FatherTime once");
+      if (FatherTime is not null) throw new InvalidOperationException("only call UniqueActors::init_FatherTime once");
 #endif
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Father Time", 0);
       named.IsUnique = true;
@@ -121,14 +121,14 @@ namespace djack.RogueSurvivor.Engine
     private void init_SewersThing(BaseTownGenerator tgen)
     {
 #if DEBUG
-      if (null != TheSewersThing) throw new InvalidOperationException("only call UniqueActors::init_SewersThing once");
+      if (TheSewersThing is not null) throw new InvalidOperationException("only call UniqueActors::init_SewersThing once");
 #endif
       Map map = tgen.RandomDistrictInCity().SewersMap;
       Actor named = GameActors.SewersThing.CreateNamed(GameFactions.TheUndeads, "The Sewers Thing", 0);
       DiceRoller roller = new DiceRoller(map.Seed);
       if (!MapGenerator.ActorPlace(roller, map, named)) throw new InvalidOperationException("could not spawn unique The Sewers Thing");
       Zone? zoneByPartialName = map.GetZoneByPartialName("Sewers Maintenance");
-      if (null != zoneByPartialName)
+      if (zoneByPartialName is not null)
         MapGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, pt => {
            return map.IsWalkable(pt) && !map.HasActorAt(in pt) && !map.HasItemsAt(pt) && !map.HasExitAt(in pt);
         }, roller, pt => BaseMapGenerator.MakeObjBoard(GameImages.OBJ_BOARD, new string[] {
@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Engine
     private void init_BigBear(BaseTownGenerator tgen)
     {
 #if DEBUG
-      if (null != BigBear) throw new InvalidOperationException("only call UniqueActors::init_BigBear once");
+      if (BigBear is not null) throw new InvalidOperationException("only call UniqueActors::init_BigBear once");
 #endif
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Big Bear", 0);
       named.IsUnique = true;
@@ -180,7 +180,7 @@ namespace djack.RogueSurvivor.Engine
     private void init_FamuFataru(BaseTownGenerator tgen)
     {
 #if DEBUG
-      if (null != FamuFataru) throw new InvalidOperationException("only call UniqueActors::init_FamuFataru once");
+      if (FamuFataru is not null) throw new InvalidOperationException("only call UniqueActors::init_FamuFataru once");
 #endif
       Actor named = GameActors.FemaleCivilian.CreateNamed(GameFactions.TheCivilians, "Famu Fataru", 0);
       named.IsUnique = true;
@@ -209,7 +209,7 @@ namespace djack.RogueSurvivor.Engine
     private void init_Santaman(BaseTownGenerator tgen)
     {
 #if DEBUG
-      if (null != Santaman) throw new InvalidOperationException("only call UniqueActors::init_Santaman once");
+      if (Santaman is not null) throw new InvalidOperationException("only call UniqueActors::init_Santaman once");
 #endif
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Santaman", 0);
       named.IsUnique = true;
@@ -236,7 +236,7 @@ namespace djack.RogueSurvivor.Engine
     private void init_Roguedjack(BaseTownGenerator tgen)
     {
 #if DEBUG
-      if (null != Roguedjack) throw new InvalidOperationException("only call UniqueActors::init_Roguedjack once");
+      if (Roguedjack is not null) throw new InvalidOperationException("only call UniqueActors::init_Roguedjack once");
 #endif
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Roguedjack", 0);
       named.IsUnique = true;
@@ -264,7 +264,7 @@ namespace djack.RogueSurvivor.Engine
     private void init_Duckman(BaseTownGenerator tgen)
     {
 #if DEBUG
-      if (null != Duckman) throw new InvalidOperationException("only call UniqueActors::init_Duckman once");
+      if (Duckman is not null) throw new InvalidOperationException("only call UniqueActors::init_Duckman once");
 #endif
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Duckman", 0);
       named.IsUnique = true;
@@ -293,7 +293,7 @@ namespace djack.RogueSurvivor.Engine
     private void init_HansVonHanz(BaseTownGenerator tgen)
     {
 #if DEBUG
-      if (null != HansVonHanz) throw new InvalidOperationException("only call UniqueActors::init_HanzVonHanz once");
+      if (HansVonHanz is not null) throw new InvalidOperationException("only call UniqueActors::init_HanzVonHanz once");
 #endif
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Hans von Hanz", 0);
       named.IsUnique = true;
@@ -329,15 +329,15 @@ namespace djack.RogueSurvivor.Engine
     // Any other (not spawned yet; or dead, with its corpse gone) is saved here in full, and so loads with no map.
     static private void save(Utf8JsonWriter writer, string name, UniqueActor src, JsonSerializerOptions options)
     {
-      if (null == src) return;  // not generated yet
+      if (src is null) return;  // not generated yet
       writer.WritePropertyName(name);
       writer.WriteStartObject();
       writer.WritePropertyName("Actor");
       JsonSerializer.Serialize(writer, src.TheActor, options);
       writer.WriteBoolean("Spawned", src.IsSpawned);
       if (src.IsWithRefugees) writer.WriteBoolean("WithRefugees", true);
-      if (null != src.EventThemeMusic) writer.WriteString("Music", src.EventThemeMusic);
-      if (null != src.EventMessage) writer.WriteString("Message", src.EventMessage);
+      if (src.EventThemeMusic is not null) writer.WriteString("Music", src.EventThemeMusic);
+      if (src.EventMessage is not null) writer.WriteString("Message", src.EventMessage);
       writer.WriteEndObject();
     }
 

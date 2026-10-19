@@ -225,7 +225,7 @@ namespace djack.RogueSurvivor.Data
 
     public void RepairLoad(Map m, Point pos)
     {
-      if (null == m_Location.Map && null != m) m_Location = new Location(m, pos);
+      if (m_Location.Map is null && m is not null) m_Location = new Location(m, pos);
 #if DEBUG
       else throw new InvalidOperationException("location repair rejected");
 #endif
@@ -240,13 +240,13 @@ namespace djack.RogueSurvivor.Data
 
     protected void InvalidateLOS()
     {
-      if (null != m_Location.Map) Engine.LOS.Validate(m_Location.Map,los => !los.Contains(m_Location.Position));
+      if (m_Location.Map is not null) Engine.LOS.Validate(m_Location.Map,los => !los.Contains(m_Location.Position));
     }
 
     private string ReasonCantPushTo(Point toPos)
     {
       var tile_loc = Location.Map.GetTileModelLocation(toPos);
-      if (null == tile_loc.Key) return "out of map";
+      if (tile_loc.Key is null) return "out of map";
       if (!tile_loc.Key.IsWalkable) return "blocked by an obstacle";
       if (tile_loc.Value.HasMapObject) return "blocked by an object";
       if (tile_loc.Value.StrictHasActorAt) return "blocked by someone";
@@ -277,7 +277,7 @@ namespace djack.RogueSurvivor.Data
 
     public void Remove()
     {
-      if (null == Location.Map) return;
+      if (Location.Map is null) return;
       Location.Map.RemoveMapObjectAt(Location.Position);
     }
 
@@ -461,7 +461,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (   !actor.Model.Abilities.HasInventory
           || !actor.Model.Abilities.CanUseMapObjects
-          ||  actor.Inventory == null)
+          ||  actor.Inventory is null)
           return "cannot take an item";
       if (m_Inventory.IsFull) return "container is full";
       return "";
@@ -606,7 +606,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     static public bool BlocksReachInto(this MapObject obj) {
-        if (null != obj) {
+        if (obj is not null) {
             if (obj.BlocksLivingPathfinding) return true;
             if (obj is DoorWindow door && door.IsClosed) return true;
         }

@@ -100,7 +100,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsLegal()
     {
       var it = Use;
-      if (null == it) {
+      if (it is null) {
         m_FailReason = "not in inventory";
         return false;
       }

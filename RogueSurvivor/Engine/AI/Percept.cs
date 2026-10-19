@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Engine.AI
     {
 #if DEBUG
       if (0 > t0) throw new ArgumentOutOfRangeException(nameof(t0),t0, "0 > t0");
-      if (null == loc.Map) throw new ArgumentNullException(nameof(loc.Map));
+      if (loc.Map is null) throw new ArgumentNullException(nameof(loc.Map));
 #endif
       Turn = t0;
       Location = loc;
@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Engine.AI
      : base(in location,turn)
     {
 #if DEBUG
-      if (null == percepted) throw new ArgumentNullException(nameof(percepted));
+      if (percepted is null) throw new ArgumentNullException(nameof(percepted));
 #endif
       m_Percepted = percepted;
     }
@@ -124,7 +124,7 @@ namespace djack.RogueSurvivor.Engine.AI
 
     internal static List<Percept_<object>>? FilterT<_T_>(this IEnumerable<Percept_<object>>? percepts, Predicate<_T_> fn) where _T_:class
     {
-      if (null == percepts || !percepts.Any()) return null;
+      if (percepts is null || !percepts.Any()) return null;
       List<Percept_<object>>? ret = null;
       foreach(var p in percepts) if (p.Percepted is _T_ test && fn(test)) (ret ??= new List<Percept_<object>>()).Add(p);
       return ret;
@@ -132,7 +132,7 @@ namespace djack.RogueSurvivor.Engine.AI
 
     internal static bool Any<_T_>(this IEnumerable<Percept_<_T_>>? percepts, Predicate<_T_> fn) where _T_:class
     {
-      if (null == percepts || !percepts.Any()) return false;
+      if (percepts is null || !percepts.Any()) return false;
       foreach(var p in percepts) if (fn(p.Percepted)) return true;
       return false;
     }
@@ -140,7 +140,7 @@ namespace djack.RogueSurvivor.Engine.AI
 #if DEAD_FUNC
     internal static Zaimoni.Data.Stack<_T_> ToZStack<_T_>(this IEnumerable<Percept_<object>>? percepts, Predicate<_T_> fn) where _T_:class
     {
-      if (null == percepts || !percepts.Any()) throw new ArgumentNullException(nameof(percepts));
+      if (percepts is null || !percepts.Any()) throw new ArgumentNullException(nameof(percepts));
       var ret = new Zaimoni.Data.Stack<_T_>(new _T_[percepts.Count()]);
       foreach(var p in percepts) if (p.Percepted is _T_ test && fn(test)) ret.push(test);
       return ret;

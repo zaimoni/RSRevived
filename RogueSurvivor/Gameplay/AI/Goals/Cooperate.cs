@@ -81,7 +81,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 var test = m_Plan;
                 while(ForceRelevant(who.Location, ref test));
                 var act = test.Bind(who);
-                if (null != act) {
+                if (act is not null) {
                     if (test is Engine.Op.Join join && join.Sequel.IsLegal()) m_Plan = join.Sequel;
                     else m_Expired = true;
                     return act;
@@ -190,7 +190,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
             if (m_Plan.IsRelevant(m_Actor.Location)) {
                 ret = m_Plan.Bind(m_Actor);
-                if (null != ret) {
+                if (ret is not null) {
                     if (m_Plan.IsExpired) _isExpired = true;
                     return true;
                 }
@@ -198,9 +198,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 return true;
             }
             var goals = m_Plan.Goals(m_Actor);
-            if (null != goals) {
+            if (goals is not null) {
                 ret = (m_Actor.Controller as ObjectiveAI).BehaviorPathTo(goals);
-                return null != ret;
+                return ret is not null;
             }
             return false;
         }

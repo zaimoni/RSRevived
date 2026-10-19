@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Data.Model
         {
 #if DEBUG
             a_owner = owner ?? throw new ArgumentNullException(nameof(owner));
-            if (null == owner.Inventory) throw new ArgumentNullException("owner.Inventory");
+            if (owner.Inventory is null) throw new ArgumentNullException("owner.Inventory");
 #else
             a_owner = owner;
 #endif
@@ -34,7 +34,7 @@ namespace djack.RogueSurvivor.Data.Model
         {
 #if DEBUG
             a_owner = agent ?? throw new ArgumentNullException(nameof(agent));
-            if (null == agent.Inventory) throw new ArgumentNullException("agent.Inventory");
+            if (agent.Inventory is null) throw new ArgumentNullException("agent.Inventory");
 #else
             a_owner = agent;
 #endif
@@ -45,11 +45,11 @@ namespace djack.RogueSurvivor.Data.Model
         public InvOrigin(Location src, Data.Item it) {
             var shelf = src.MapObject as ShelfLike;
             var ginv = src.Items;
-            if (null == shelf) {
+            if (shelf is null) {
                 loc = src;
                 return;
             }
-            if (null != ginv && ginv.Contains(it)) {
+            if (ginv is not null && ginv.Contains(it)) {
                 loc = src;
                 return;
             }
@@ -98,7 +98,7 @@ namespace djack.RogueSurvivor.Data.Model
             throw new InvalidOperationException("tracing");
         } }
 
-        public bool IsGroundInventory { get => null == a_owner && null == obj_owner; }
+        public bool IsGroundInventory { get => a_owner is null && obj_owner is null; }
 
         public bool Stance(Actor a) {
             var dist = Engine.Rules.GridDistance(a.Location, Location);
@@ -107,7 +107,7 @@ namespace djack.RogueSurvivor.Data.Model
                 a.Crouch();
                 var code = Location.OnReachInto(a);
                 if (0 >= code) return false; // we took a hit -- cancel taking item
-            } else if (null != obj_owner) {
+            } else if (obj_owner is not null) {
                 // need to stand to make this work
                 a.StandUp();
             }
@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Data.Model
         public bool IsAccessible(in Location origin)
         {
             if (1 == Engine.Rules.GridDistance(origin, Location)) {
-                if (null != loc) {
+                if (loc is not null) {
                   if (loc.Value.MapObject?.BlocksReachInto() ?? false) return false;
                 }
                 return true;
@@ -126,35 +126,35 @@ namespace djack.RogueSurvivor.Data.Model
         }
 
         public bool Exists { get {
-            if (null != loc) return null != loc.Value.Items;
-            if (null != obj_owner) return obj_owner.Location.MapObject == obj_owner;
+            if (loc is not null) return loc.Value.Items is not null;
+            if (obj_owner is not null) return obj_owner.Location.MapObject == obj_owner;
             // must be actor inventory.
             return !a_owner!.IsDead;
         } }
 
         public void fireChange() {
             // Police ai cheats
-            if (null == a_owner || !a_owner.IsFaction(GameFactions.IDs.ThePolice)) {
-                if (null != loc) Engine.Session.Get.Police.Investigate.Record(loc.Value);
-                if (null != obj_owner) Engine.Session.Get.Police.Investigate.Record(obj_owner.Location);
+            if (a_owner is null || !a_owner.IsFaction(GameFactions.IDs.ThePolice)) {
+                if (loc is not null) Engine.Session.Get.Police.Investigate.Record(loc.Value);
+                if (obj_owner is not null) Engine.Session.Get.Police.Investigate.Record(obj_owner.Location);
             }
         }
 
         // start change targets for centralized actor handling
         public bool CanAddAll(Data.Item it)
         {
-            if (null != a_owner) return a_owner.CanTake(it);
+            if (a_owner is not null) return a_owner.CanTake(it);
             var inv = Inventory;
-            if (null != inv) return inv.CanAddAll(it);
-            return null != loc;
+            if (inv is not null) return inv.CanAddAll(it);
+            return loc is not null;
         }
 
         public bool AddAll(Data.Item it)
         {
-            if (null != a_owner) return a_owner.Take(it);
+            if (a_owner is not null) return a_owner.Take(it);
             var inv = Inventory;
-            if (null != inv) return inv.AddAll(it);
-            if (null != loc) {
+            if (inv is not null) return inv.AddAll(it);
+            if (loc is not null) {
                 loc.Value.Drop(it);
                 return true;
             }
@@ -162,10 +162,10 @@ namespace djack.RogueSurvivor.Data.Model
         }
 
         int AddAsMuchAsPossible(Data.Item it) {
-            if (null != a_owner) return a_owner.TakeAsMuchAsPossible(it);
+            if (a_owner is not null) return a_owner.TakeAsMuchAsPossible(it);
             var inv = Inventory;
-            if (null != inv) return inv.AddAsMuchAsPossible(it);
-            if (null != loc) {
+            if (inv is not null) return inv.AddAsMuchAsPossible(it);
+            if (loc is not null) {
                 loc.Value.Drop(it);
                 return it.Quantity;
             }
@@ -174,7 +174,7 @@ namespace djack.RogueSurvivor.Data.Model
 
         public bool IsCarrying(Data.Item it) {
             var iinv = IInv;
-            if (null != iinv) return iinv.IsCarrying(it);
+            if (iinv is not null) return iinv.IsCarrying(it);
 
             return Inventory?.Contains(it) ?? false;
         }
@@ -182,7 +182,7 @@ namespace djack.RogueSurvivor.Data.Model
         public bool IsCarrying(Gameplay.Item_IDs id)
         {
             var iinv = IInv;
-            if (null != iinv) return iinv.IsCarrying(id);
+            if (iinv is not null) return iinv.IsCarrying(id);
 
             return Inventory?.Contains(id) ?? false;
         }
@@ -194,7 +194,7 @@ namespace djack.RogueSurvivor.Data.Model
         public void Remove(Data.Item it, bool canMessage = true)
         {
             var iinv = IInv;
-            if (null != iinv) {
+            if (iinv is not null) {
                 iinv.Remove(it, canMessage);
                 return;
             }
@@ -204,15 +204,15 @@ namespace djack.RogueSurvivor.Data.Model
 
         public bool CanTake(Data.Item it) {
             var iinv = IInv;
-            if (null != iinv) return iinv.CanTake(it);
+            if (iinv is not null) return iinv.CanTake(it);
 
-            return Inventory?.CanAddAll(it) ?? null != loc;
+            return Inventory?.CanAddAll(it) ?? loc is not null;
         }
 
         public bool Take(Data.Item it) {
             var iinv = IInv;
-            if (null != iinv) return iinv.Take(it);
-            if (null != loc) {
+            if (iinv is not null) return iinv.Take(it);
+            if (loc is not null) {
                 loc.Value.Drop(it);
                 return true;
             }
@@ -223,11 +223,11 @@ namespace djack.RogueSurvivor.Data.Model
         {
             var inv = Inventory;
             Data.Item? ret = inv?.GetFirst(id);
-            if (null != ret) return ret;
+            if (ret is not null) return ret;
             // auto-equip items path. non-autoequip items would be handled before checking hammerspace inventory
-            if (null != a_owner) {
+            if (a_owner is not null) {
                 var slots = a_owner.InventorySlots;
-                if (null != slots) return slots.GetFirst(id);
+                if (slots is not null) return slots.GetFirst(id);
             }
             return null;
         }
@@ -253,7 +253,7 @@ namespace djack.RogueSurvivor.Data.Model
 
         [Conditional("DEBUG")]
         public void RejectCrossLink(Data.Inventory? other) {
-            if (null != other) Inventory?.RejectCrossLink(other);
+            if (other is not null) Inventory?.RejectCrossLink(other);
         }
 
         [Conditional("DEBUG")]
@@ -261,9 +261,9 @@ namespace djack.RogueSurvivor.Data.Model
 
         public override string ToString()
         {
-            if (null != obj_owner) return obj_owner.ToString();
-            if (null != loc) return loc.Value.ToString();
-            if (null != a_owner) return a_owner.Name;
+            if (obj_owner is not null) return obj_owner.ToString();
+            if (loc is not null) return loc.Value.ToString();
+            if (a_owner is not null) return a_owner.Name;
             return "(invalid inventory source)";
         }
     }
@@ -283,7 +283,7 @@ namespace djack.RogueSurvivor.Data.Model
         ;
 #if DEBUG
        var inv = src.Inventory;
-       if (null == inv || !inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
+       if (inv is null || !inv.Contains(obj)) throw new InvalidOperationException("!inv.Contains(obj)");
 #endif
      }
 
@@ -312,16 +312,16 @@ namespace Zaimoni.JsonConvert
             var actor = stage.TryGetProperty("Actor", out var x) ? x.RequireRef<djack.RogueSurvivor.Data.Actor>() : null;
             var shelf = stage.TryGetProperty("Shelf", out x) ? x.RequireRef<djack.RogueSurvivor.Data.ShelfLike>() : null;
             djack.RogueSurvivor.Data.Location? loc = stage.TryGetProperty("Location", out x) ? x.Deserialize<djack.RogueSurvivor.Data.Location>(options) : null;
-            if (null == actor && null == shelf && null == loc) throw new JsonException("inventory origin of nothing: " + stage.GetRawText());
+            if (actor is null && shelf is null && loc is null) throw new JsonException("inventory origin of nothing: " + stage.GetRawText());
             return new(actor, shelf, loc);
         }
 
         public override void Write(Utf8JsonWriter writer, djack.RogueSurvivor.Data.Model.InvOrigin src, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
-            if (null != src.a_owner) writer.WriteRef("Actor", src.a_owner);
-            if (null != src.obj_owner) writer.WriteRef("Shelf", src.obj_owner);
-            if (null != src.loc) {
+            if (src.a_owner is not null) writer.WriteRef("Actor", src.a_owner);
+            if (src.obj_owner is not null) writer.WriteRef("Shelf", src.obj_owner);
+            if (src.loc is not null) {
                 writer.WritePropertyName("Location");
                 JsonSerializer.Serialize(writer, src.loc.Value, options);
             }

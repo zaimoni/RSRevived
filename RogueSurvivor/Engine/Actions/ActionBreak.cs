@@ -64,9 +64,9 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     static public ActionBreak? create(Actor actor, MapObject? obj)
     {
-      if (null == obj) return null;
-      if (null != CannotBreak(actor)) return null;
-      if (null != CannotBreak(obj)) return null;
+      if (obj is null) return null;
+      if (CannotBreak(actor) is not null) return null;
+      if (CannotBreak(obj) is not null) return null;
       var stage = new ActionBreak(actor, obj);
       if (!stage.IsPerformable()) return null;
       return stage;
@@ -74,9 +74,9 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     static public ActionBreak? schedule(Actor actor, MapObject? obj)
     { // inline the IsLegal test so we can avoid vacuous construction
-      if (null == obj) return null;
-      if (null != CannotBreak(actor)) return null;
-      if (null != CannotBreak(obj)) return null;
+      if (obj is null) return null;
+      if (CannotBreak(actor) is not null) return null;
+      if (CannotBreak(obj) is not null) return null;
       return new ActionBreak(actor, obj);
     }
   }

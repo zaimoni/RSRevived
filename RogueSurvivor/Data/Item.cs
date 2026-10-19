@@ -172,7 +172,7 @@ namespace djack.RogueSurvivor.Data
     // thin wrappers
     public void DropAt(Map m, in Point pos) {   // used only in map generation
       var obj = m.GetMapObjectAt(pos) as ShelfLike;
-      if (null != obj) obj.PutItemIn(this);
+      if (obj is not null) obj.PutItemIn(this);
       else m.DropItemAt(this, in pos);
     }
 

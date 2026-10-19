@@ -144,7 +144,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       AddExplored(in location);
       var zonesAt = location.Map.GetZonesAt(location.Position);
-      if (null == zonesAt || 0 >= zonesAt.Count) return;
+      if (zonesAt is null || 0 >= zonesAt.Count) return;
       foreach (Zone zone in zonesAt) AddExplored(new ZoneLoc(location.Map, zone));
     }
 
@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       AddExplored(in location);
       var zonesAt = location.Map.GetZonesAt(location.Position);
-      if (null == zonesAt || 0 >= zonesAt.Count) return;
+      if (zonesAt is null || 0 >= zonesAt.Count) return;
       foreach (Zone zone in zonesAt) AddExplored(new ZoneLoc(location.Map, zone), new_zone_handler);
     }
   }

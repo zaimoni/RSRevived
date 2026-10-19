@@ -64,7 +64,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             if (critical.Length != src.Count) return true;
             foreach (var x in critical) if (!src.Contains(x)) return true;
             var seen = oai.items_in_FOV;
-            if (null != seen) {
+            if (seen is not null) {
                 foreach (var x in seen) {
                     foreach (var it in critical) {
                         if (x.Value.Inventory.Has(it)) return true;

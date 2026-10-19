@@ -206,7 +206,7 @@ namespace djack.RogueSurvivor.Gameplay
 
         private static void _setModel(Data.Model.Item model) {
 #if DEBUG
-      if (null != m_Models[(int) model.ID]) throw new InvalidOperationException("can only set item model once");
+      if (m_Models[(int) model.ID] is not null) throw new InvalidOperationException("can only set item model once");
 #endif
       m_Models[(int) model.ID] = model;
     }
@@ -632,7 +632,7 @@ namespace djack.RogueSurvivor.Gameplay
     public static void Init(IRogueUI ui)
     {
 #if DEBUG
-      if (null == ui) throw new ArgumentNullException(nameof(ui));
+      if (ui is null) throw new ArgumentNullException(nameof(ui));
 #endif
       var dataDir = Path.Combine("Resources", "Data") + Path.DirectorySeparatorChar;
       var med_data = LoadMedicineFromCSV(ui, dataDir + "Items_Medicine.csv");

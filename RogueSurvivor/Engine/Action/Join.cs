@@ -122,7 +122,7 @@ namespace djack.RogueSurvivor.Engine.Op
                     if (x is Join) throw new InvalidOperationException("test case");
 #endif
                     var act = x.Bind(src);
-                    if (null != act) actions.Add(act);
+                    if (act is not null) actions.Add(act);
                 }
             }
             var act_count = actions.Count;
@@ -133,7 +133,7 @@ namespace djack.RogueSurvivor.Engine.Op
         public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
         {
             var act = Bind(src);
-            if (null == act) return null;
+            if (act is null) return null;
             return new(act, m_Sequel);
         }
 
@@ -191,7 +191,7 @@ namespace djack.RogueSurvivor.Engine._Action
       {
         toJsonActor(writer);
         writer.WriteArray("Options", m_Options, options);
-        if (null != m_Sequel) {
+        if (m_Sequel is not null) {
           writer.WritePropertyName("Sequel");
           JsonSerializer.Serialize(writer, m_Sequel, options);
         }
@@ -216,19 +216,19 @@ namespace djack.RogueSurvivor.Engine._Action
       public override bool IsPerformable() {
         _real_options = m_Options.FindAll(act => act.IsPerformable());
         if (0 >= _real_options.Count) _real_options = null;
-        return null != _real_options;
+        return _real_options is not null;
       }
 
       public override void Perform() {
 #if DEBUG
-        if (null == _real_options) throw new ArgumentNullException(nameof(_real_options));
+        if (_real_options is null) throw new ArgumentNullException(nameof(_real_options));
 #endif
         var act = Rules.Get.DiceRoller.Choose(_real_options); // \todo more sophisticated choice logic
         act.Perform();
 
         var sequel = m_Sequel?.Bind(m_Actor);
 
-        if (null != sequel) {
+        if (sequel is not null) {
           (m_Actor.Controller as ObjectiveAI).SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, sequel));
         }
       }

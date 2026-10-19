@@ -166,7 +166,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         /// <returns>null, or a Performable action</returns>
         public override ActorAction? Bind(Actor src) {
             var ordai = src.Controller as OrderableAI;
-            if (null == ordai) return null;
+            if (ordai is null) return null;
             return ordai.OpportunityFire();
         }
         public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src) => null;

@@ -47,8 +47,8 @@ namespace djack.RogueSurvivor.Data
     /// <summary>for the log of a failed save or load: whose controller it was in, if any</summary>
     static public string? JsonOwnerContext()
     {
-      if (null != s_SaveOwner) return "saving the controller of " + s_SaveOwner.Name;
-      if (null != s_LoadOwner) return "loading the controller of " + s_LoadOwner.Name;
+      if (s_SaveOwner is not null) return "saving the controller of " + s_SaveOwner.Name;
+      if (s_LoadOwner is not null) return "loading the controller of " + s_LoadOwner.Name;
       return null;
     }
 
@@ -68,7 +68,7 @@ namespace djack.RogueSurvivor.Data
     /// <summary>Reads the staged fields of every controller constructed since the last call, in file order.</summary>
     static public void LoadPending(JsonSerializerOptions options)
     {
-      if (null == s_JsonPending) return;
+      if (s_JsonPending is null) return;
       var pending = s_JsonPending;
       s_JsonPending = null;
       var prior = s_LoadOwner;
@@ -142,7 +142,7 @@ namespace djack.RogueSurvivor.Data
     public bool LastSeen(Location x, out int turn) {
       turn = 0;
       var memory = ItemMemory;
-      return null != memory && Map.Canonical(ref x) && memory.HaveEverSeen(x, out turn);
+      return memory is not null && Map.Canonical(ref x) && memory.HaveEverSeen(x, out turn);
     }
 
     public bool IsKnown(Location x) { return LastSeen(x, out _); }
@@ -159,13 +159,13 @@ namespace djack.RogueSurvivor.Data
 
     public Dictionary<Location, int>? Filter(Dictionary<Location, int> src, Predicate<Inventory> ok) {
       var it_memory = ItemMemory;
-      if (null == it_memory) return src;
+      if (it_memory is null) return src;
 
       Dictionary<Location, int> ret = new();
       foreach(var x in src) {
         // Cf. LOSSensor::_seeItems
         var allItems = Map.AllItemsAt(x.Key, m_Actor);
-        if (null == allItems) {
+        if (allItems is null) {
           it_memory.Set(x.Key, null, x.Key.Map.LocalTime.TurnCounter);   // Lost faith there was anything there
           continue;
         }
@@ -191,30 +191,30 @@ namespace djack.RogueSurvivor.Data
 
     public HashSet<Point>? WhereIs(IEnumerable<Gameplay.Item_IDs> src, Map map) {
       var it_memory = ItemMemory;
-      if (null == it_memory) return null;
+      if (it_memory is null) return null;
       var ret = new HashSet<Point>();
       bool IsInHere(Location loc) { return loc.Map == map; }
       foreach(var it in src) {
         var tmp = it_memory.WhereIs(it, IsInHere);
-        if (null == tmp) continue;
+        if (tmp is null) continue;
         tmp.OnlyIf(loc => !m_Actor.StackIsBlocked(in loc));
         if (0 >= tmp.Count) continue;
         var it_model = (0 <= (int)it) ? Gameplay.GameItems.From(it) : null; // exclude synthetic item models
         // cheating post-filter: reject boring entertainment
         if (it_model is ItemEntertainmentModel ent) {
-          tmp = Filter(tmp, inv => null != inv.GetFirstByModel<ItemEntertainment>(ent, e => !e.IsBoringFor(m_Actor)));
-          if (null == tmp) continue;
+          tmp = Filter(tmp, inv => inv.GetFirstByModel<ItemEntertainment>(ent, e => !e.IsBoringFor(m_Actor)) is not null);
+          if (tmp is null) continue;
         }
         // cheating post-filter: reject dead flashlights at full inventory (these look useless as items but the type may not be useless)
         if (m_Actor.Inventory.IsFull) {
           if (it_model is ItemLightModel || it_model is ItemTrackerModel) {   // want to say "the item type this model is for, is BatteryPowered" without thrashing garbage collector
             tmp = Filter(tmp, inv => {
               var test = inv.GetFirstByModel(it_model);
-              if (null == test) return false;
+              if (test is null) return false;
               if (!test.IsUseless) return true;
-              return null != inv.GetFirstByModel<Item>(it_model, obj => !obj.IsUseless);
+              return inv.GetFirstByModel<Item>(it_model, obj => !obj.IsUseless) is not null;
             });
-            if (null == tmp) continue;
+            if (tmp is null) continue;
           }
         }
         ret.UnionWith(tmp.Keys.Select(Location.pos));
@@ -238,10 +238,10 @@ namespace djack.RogueSurvivor.Data
       List<Data.Model.CombatActor> stage = new();
 
       var who = friends_in_FOV;
-      if (null != who) foreach(var a in who) stage.Add(new(a.Value));
+      if (who is not null) foreach(var a in who) stage.Add(new(a.Value));
 
       who = enemies_in_FOV;
-      if (null != who) foreach(var a in who) stage.Add(new(a.Value));
+      if (who is not null) foreach(var a in who) stage.Add(new(a.Value));
 
       if (0 >= stage.Count) return null;
 
@@ -253,7 +253,7 @@ namespace djack.RogueSurvivor.Data
       return ret;
     } }
 
-    public virtual bool IsEngaged { get => null!=enemies_in_FOV; }
+    public virtual bool IsEngaged { get => enemies_in_FOV is not null; }
     public virtual bool InCombat { get => IsEngaged; }
 
     public abstract bool IsMyTurn();
@@ -262,7 +262,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanSee(in Location x)  // correctness requires Location being value-copied
     {
-      if (null == x.Map) return false;     // convince Duckman to not superheroically crash many games on turn 0
+      if (x.Map is null) return false;     // convince Duckman to not superheroically crash many games on turn 0
       return 0 <= Array.IndexOf(FOVloc, x);
     }
 
@@ -276,12 +276,12 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsVisibleTo(Map? map, in Point position)
     {
-      return null != map && _IsVisibleTo(map, position);    // convince Duckman to not superheroically crash many games on turn 0
+      return map is not null && _IsVisibleTo(map, position);    // convince Duckman to not superheroically crash many games on turn 0
     }
 
     public bool IsVisibleTo(in Location loc)
     {
-      return null != loc.Map && _IsVisibleTo(loc.Map, loc.Position);    // convince Duckman to not superheroically crash many games on turn 0
+      return loc.Map is not null && _IsVisibleTo(loc.Map, loc.Position);    // convince Duckman to not superheroically crash many games on turn 0
     }
 
     public bool IsVisibleTo(Actor actor) => actor == m_Actor || IsVisibleTo(actor.Location);

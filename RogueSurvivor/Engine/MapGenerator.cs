@@ -39,8 +39,8 @@ namespace djack.RogueSurvivor.Engine
     protected static void TileFill(Map map, TileModel model, short left, short top, int width, int height, Action<Tile, TileModel, short, short>? decoratorFn=null)
     {
 #if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
-      if (null == model) throw new ArgumentNullException(nameof(model));
+      if (map is null) throw new ArgumentNullException(nameof(map));
+      if (model is null) throw new ArgumentNullException(nameof(model));
 #endif
       for (short x = left; x < left + width; ++x) {
         for (short y = top; y < top + height; ++y) {
@@ -54,8 +54,8 @@ namespace djack.RogueSurvivor.Engine
     protected static void TileFill(Map map, TileModel model, short left, short top, int width, int height, bool inside)
     {
 #if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
-      if (null == model) throw new ArgumentNullException(nameof(model));
+      if (map is null) throw new ArgumentNullException(nameof(map));
+      if (model is null) throw new ArgumentNullException(nameof(model));
 #endif
       for (short x = left; x < left + width; ++x) {
         for (short y = top; y < top + height; ++y) {
@@ -68,8 +68,8 @@ namespace djack.RogueSurvivor.Engine
     protected static void TileHLine(Map map, TileModel model, int left, int top, int width, Action<Tile, TileModel, Point>? decoratorFn=null)
     {
 #if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
-      if (null == model) throw new ArgumentNullException(nameof(model));
+      if (map is null) throw new ArgumentNullException(nameof(map));
+      if (model is null) throw new ArgumentNullException(nameof(model));
 #endif
       for (short x = (short)left; x < left + width; ++x) {
         Point pt = new Point(x, (short)top);
@@ -82,8 +82,8 @@ namespace djack.RogueSurvivor.Engine
     protected static void TileVLine(Map map, TileModel model, int left, int top, int height, Action<Tile, TileModel, Point>? decoratorFn=null)
     {
 #if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
-      if (null == model) throw new ArgumentNullException(nameof(model));
+      if (map is null) throw new ArgumentNullException(nameof(map));
+      if (model is null) throw new ArgumentNullException(nameof(model));
 #endif
       for (short y = (short)top; y < top + height; ++y) {
         Point pt = new Point((short)left, y);
@@ -101,8 +101,8 @@ namespace djack.RogueSurvivor.Engine
     protected static void TileRectangle(Map map, TileModel model, short left, short top, int width, int height, Action<Tile, TileModel, Point>? decoratorFn=null)
     {
 #if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
-      if (null == model) throw new ArgumentNullException(nameof(model));
+      if (map is null) throw new ArgumentNullException(nameof(map));
+      if (model is null) throw new ArgumentNullException(nameof(model));
 #endif
       TileHLine(map, model, left, top, width, decoratorFn);
       TileHLine(map, model, left, top + height - 1, width, decoratorFn);
@@ -115,7 +115,7 @@ namespace djack.RogueSurvivor.Engine
     public Point DigUntil(Map map, TileModel model, Point startPos, Direction digDirection, Predicate<Point> stopFn)
     {
 #if DEBUG
-      if (null == stopFn) throw new ArgumentNullException(nameof(stopFn));
+      if (stopFn is null) throw new ArgumentNullException(nameof(stopFn));
 #endif
       Point p = startPos + digDirection;
       while (map.IsInBounds(p) && !stopFn(p)) {
@@ -129,7 +129,7 @@ namespace djack.RogueSurvivor.Engine
     protected static bool CheckForEachTile(Rectangle rect, Predicate<Point> predFn)
     {
 #if DEBUG
-      if (null == predFn) throw new ArgumentNullException(nameof(predFn));
+      if (predFn is null) throw new ArgumentNullException(nameof(predFn));
 #endif
       foreach (var pt in rect) if (!predFn(pt)) return false;
       return true;
@@ -152,10 +152,10 @@ namespace djack.RogueSurvivor.Engine
     protected static bool ActorPlace(DiceRoller roller, Map map, Actor actor, Rectangle rect, Predicate<Point>? goodPositionFn=null)
     {
 #if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
-      if (null == actor) throw new ArgumentNullException(nameof(actor));
+      if (map is null) throw new ArgumentNullException(nameof(map));
+      if (actor is null) throw new ArgumentNullException(nameof(actor));
 #endif
-      List<Point> valid_spawn = rect.Where(pt => map.IsWalkableFor(pt, actor) && (goodPositionFn == null || goodPositionFn(pt))).ToList();
+      List<Point> valid_spawn = rect.Where(pt => map.IsWalkableFor(pt, actor) && (goodPositionFn is null || goodPositionFn(pt))).ToList();
       if (0>=valid_spawn.Count) return false;
       _actorPlace(actor, new(map, roller.Choose(valid_spawn)));
       return true;
@@ -164,8 +164,8 @@ namespace djack.RogueSurvivor.Engine
     public static bool ActorPlace(Actor actor, Location dest)
     {
 #if DEBUG
-      if (null == dest.Map) throw new ArgumentNullException(nameof(dest.Map));
-      if (null == actor) throw new ArgumentNullException(nameof(actor));
+      if (dest.Map is null) throw new ArgumentNullException(nameof(dest.Map));
+      if (actor is null) throw new ArgumentNullException(nameof(actor));
       if (!Map.Canonical(ref dest)) throw new InvalidOperationException("location cannot be made canonical");
 #endif
       _actorPlace(actor, in dest);
@@ -205,7 +205,7 @@ namespace djack.RogueSurvivor.Engine
     protected static void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject> createFn)
     {
 #if DEBUG
-      if (null == createFn) throw new ArgumentNullException(nameof(createFn));
+      if (createFn is null) throw new ArgumentNullException(nameof(createFn));
 #endif
       foreach (var pt in rect) {
         if (map.HasMapObjectAt(pt)) continue;
@@ -216,8 +216,8 @@ namespace djack.RogueSurvivor.Engine
     public static void MapObjectPlaceInGoodPosition(Map map, Rectangle rect, Func<Point, bool> isGoodPosFn, DiceRoller roller, Func<Point, MapObject> createFn)
     {
 #if DEBUG
-      if (null == createFn) throw new ArgumentNullException(nameof(createFn));
-      if (null == isGoodPosFn) throw new ArgumentNullException(nameof(isGoodPosFn));
+      if (createFn is null) throw new ArgumentNullException(nameof(createFn));
+      if (isGoodPosFn is null) throw new ArgumentNullException(nameof(isGoodPosFn));
 #endif
       List<Point> pointList = rect.Where(pt => isGoodPosFn(pt) && map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt)).ToList();
       if (0 >= pointList.Count) return;
@@ -229,7 +229,7 @@ namespace djack.RogueSurvivor.Engine
     protected static void ItemsDrop(Map map, Rectangle rect, Predicate<Point> isGoodPositionFn, Func<Point, Item> createFn)
     {
 #if DEBUG
-      if (null == createFn) throw new ArgumentNullException(nameof(createFn));
+      if (createFn is null) throw new ArgumentNullException(nameof(createFn));
 #endif
       foreach (var pt in rect) if (isGoodPositionFn(pt)) createFn(pt)?.DropAt(map, pt);
     }
@@ -242,7 +242,7 @@ namespace djack.RogueSurvivor.Engine
         map.RemoveAllDecorationsAt(pt);
         if (clearZones) map.RemoveAllZonesAt(pt);
         var actor = map.GetActorAt(pt);
-        if (null != actor) {
+        if (actor is not null) {
           actor.RemoveFromMap();
           Session.Get.Police.Threats.Cleared(actor);  // cf. _actorPlace.  It is not dying, so nothing else makes the police forget it.
         }
@@ -263,12 +263,12 @@ namespace djack.RogueSurvivor.Engine
     protected static void PlaceIf(Map map, Point pt, TileModel floor, Func<Point, bool> predicateFn, Func<Point, MapObject> createFn)
     {
 #if DEBUG
-      if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
-      if (null == createFn) throw new ArgumentNullException(nameof(createFn));
+      if (predicateFn is null) throw new ArgumentNullException(nameof(predicateFn));
+      if (createFn is null) throw new ArgumentNullException(nameof(createFn));
 #endif
       if (!predicateFn(pt)) return;
       MapObject mapObj = createFn(pt);
-      if (mapObj == null) return;
+      if (mapObj is null) return;
       map.SetTileModelAt(pt, floor);
       MapObjectPlace(map, pt, mapObj);
     }

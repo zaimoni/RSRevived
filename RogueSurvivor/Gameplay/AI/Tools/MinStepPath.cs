@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         {
             origin = src;
             var denorm = src.Map.Denormalize(in dest);
-            if (null == denorm) throw new ArgumentNullException(nameof(denorm));
+            if (denorm is null) throw new ArgumentNullException(nameof(denorm));
             if (src == denorm) throw new InvalidOperationException("self-pathing");
             target = denorm.Value.Position;
             delta = target - origin.Position;

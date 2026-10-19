@@ -50,7 +50,7 @@ namespace djack.RogueSurvivor
 
     protected override void Dispose(bool disposing)
     {
-      if (disposing && components != null)
+      if (disposing && components is not null)
                 components.Dispose();
       base.Dispose(disposing);
     }

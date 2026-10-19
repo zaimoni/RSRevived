@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemRangedWeapon rw { get { return _rw!; } }
     private ItemRangedWeapon? test_rw(Actor a) {
       var rw = a.Inventory.GetCompatibleRangedWeapon(this);
-      if (null != rw && rw.Ammo < rw.Model.MaxAmmo) {
+      if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) {
         _rw = rw;
         return _rw;
       }
@@ -41,18 +41,18 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool CouldUse() { return true; }
     public bool CouldUse(Actor a) {
       if (a.Model.Abilities.AI_NotInterestedInRangedWeapons) return false; // bikers
-      return null != test_rw(a);
+      return test_rw(a) is not null;
     }
     public bool CanUse(Actor a) { return CouldUse(a); }
     public void Use(Actor actor, Inventory inv) {
 #if DEBUG
       if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain "+ToString());
 #endif
-      if (null != _rw) {
+      if (_rw is not null) {
         if (!inv.Contains(_rw)) _rw = null;
         else if (!_rw.IsEquipped) {
           var curr_rw = actor.GetEquippedWeapon() as ItemRangedWeapon;
-          if (null != curr_rw && curr_rw.AmmoType == _rw.AmmoType) _rw = curr_rw;
+          if (curr_rw is not null && curr_rw.AmmoType == _rw.AmmoType) _rw = curr_rw;
           else _rw.EquippedBy(actor);
         }
       }
@@ -67,13 +67,13 @@ namespace djack.RogueSurvivor.Engine.Items
     }
     public string ReasonCantUse(Actor a) {
       if (!a.Inventory.Contains(_rw)) _rw = null;
-      if (null != _rw) return "";   // already cleared
-      if (null != test_rw(a)) return "";  // ok
+      if (_rw is not null) return "";   // already cleared
+      if (test_rw(a) is not null) return "";  // ok
       if (!(a.GetEquippedWeapon() is ItemRangedWeapon rw) || rw.AmmoType != AmmoType) return "no compatible ranged weapon equipped";
       if (rw.Ammo >= rw.Model.MaxAmmo) return "weapon already fully loaded";
       return "";
     }
-    public bool UseBeforeDrop(Actor a) { return null != test_rw(a); }
+    public bool UseBeforeDrop(Actor a) { return test_rw(a) is not null; }
     public bool FreeSlotByUse(Actor a) { return false; } // handled by other behaviors
 #endregion
 

@@ -210,10 +210,10 @@ namespace djack.RogueSurvivor.Engine
           reader.Read();
       }
 
-      if (null != relay_commandline) m_CommandLineOptions = new(relay_commandline);
-      if (null != relay_uniqueMaps) UniqueMaps = relay_uniqueMaps;
-      if (null != relay_uniqueItems) UniqueItems = relay_uniqueItems;
-      if (null != relay_uniqueActors) UniqueActors = relay_uniqueActors;
+      if (relay_commandline is not null) m_CommandLineOptions = new(relay_commandline);
+      if (relay_uniqueMaps is not null) UniqueMaps = relay_uniqueMaps;
+      if (relay_uniqueItems is not null) UniqueItems = relay_uniqueItems;
+      if (relay_uniqueActors is not null) UniqueActors = relay_uniqueActors;
       m_JsonLoadedRefugeePool = relay_refugees;
       m_JsonLoadedWorld = relay_world;
       Map.LoadTileLegend(null); // only meaningful for the save it came from
@@ -297,7 +297,7 @@ namespace djack.RogueSurvivor.Engine
       writer.WriteNumber("ScriptStage_HospitalPowerup", ScriptStage_HospitalPowerup);
       writer.WriteBoolean("PlayerKnows_CHARUndergroundFacilityLocation", PlayerKnows_CHARUndergroundFacilityLocation);
       writer.WriteString("GameMode", GameMode.ToString());
-      if (null != m_CommandLineOptions) {
+      if (m_CommandLineOptions is not null) {
         writer.WritePropertyName("CommandLineOptions");
         JsonSerializer.Serialize(writer, m_CommandLineOptions, options);
       }
@@ -312,12 +312,12 @@ namespace djack.RogueSurvivor.Engine
       writer.WritePropertyName("World");
       JsonSerializer.Serialize(writer, m_JsonLoadedWorld ?? World.Get, options);
       {
-      var player = (null != m_JsonLoadedWorld) ? m_JsonLoadedPlayer : RogueGame.Player;
-      if (null != player) writer.WriteRef("Player", player);
+      var player = (m_JsonLoadedWorld is not null) ? m_JsonLoadedPlayer : RogueGame.Player;
+      if (player is not null) writer.WriteRef("Player", player);
       // Refugees waiting to arrive are on no map, so nothing else saves them.  Must follow World, as must UniqueActors:
       // an actor that a map or corpse already saved is a reference here.
-      var refugees = (null != m_JsonLoadedWorld) ? m_JsonLoadedRefugeePool : RogueGame.RefugeePool;
-      if (null != refugees) writer.WriteArray("RefugeePool", refugees, options);
+      var refugees = (m_JsonLoadedWorld is not null) ? m_JsonLoadedRefugeePool : RogueGame.RefugeePool;
+      if (refugees is not null) writer.WriteArray("RefugeePool", refugees, options);
       }
       writer.WritePropertyName("UniqueMaps");
       JsonSerializer.Serialize(writer, UniqueMaps, options);
@@ -328,7 +328,7 @@ namespace djack.RogueSurvivor.Engine
       writer.WritePropertyName("Police");
       Police.toJson(writer, options);
       // last: its entries name actors that World or UniqueActors defined
-      if (null != m_JsonLoadedWorld) PlayerController.toJsonUI(writer, "PlayerUI", options, m_JsonLoadedBeforeAction, m_JsonLoadedAfterAction);
+      if (m_JsonLoadedWorld is not null) PlayerController.toJsonUI(writer, "PlayerUI", options, m_JsonLoadedBeforeAction, m_JsonLoadedAfterAction);
       else PlayerController.toJsonUI(writer, "PlayerUI", options);
       writer.WriteEndObject();
     }
@@ -336,13 +336,13 @@ namespace djack.RogueSurvivor.Engine
         public static void Reset(GameMode mode) => s_TheSession = new Session(mode);
 
         public bool CMDoptionExists(string x) {
-            if (null == m_CommandLineOptions) return false;
+            if (m_CommandLineOptions is null) return false;
             return m_CommandLineOptions.ContainsKey(x);
         }
 
         public void ForcePoliceKnown(Location loc) {   // for world creation
             var allItems = Map.AllItemsAt(loc);
-            if (null == allItems) {
+            if (allItems is null) {
                 Police.ItemMemory.Set(loc, null, 0);
             } else {
                 HashSet<Gameplay.Item_IDs> seen_items = new();
@@ -443,7 +443,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static JsonSerializerOptions JSON_opts {
       get {
-        if (null == s_j_opts) {
+        if (s_j_opts is null) {
           s_j_opts = new();
           s_j_opts.ReferenceHandler = new Zaimoni.JSON.PreserveReferenceHandler();
           Zaimoni.JSON.PreserveReferenceHandler.Where = ActorController.JsonOwnerContext;
@@ -631,7 +631,7 @@ namespace djack.RogueSurvivor.Engine
     /// load, agree on derived data, and save again as the same text.  Does not notice what is not saved at all.  Then the converter audit.</summary>
     private static void RoundTripTest(string filepath)
     {
-      var json_path = (null == TestFormat) ? filepath : TestPath(filepath);
+      var json_path = (TestFormat is null) ? filepath : TestPath(filepath);
       var json_path2 = json_path+"2";   // only survives a failed round-trip test
       RogueGame.Game.ErrorPopup("JSON save ok");
       var test2 = LoadJsonStaged(json_path);
@@ -642,7 +642,7 @@ namespace djack.RogueSurvivor.Engine
       RogueGame.Game.ErrorPopup("JSON load ok");
       SaveJson(test2, json_path2);
       var json_diff = Zaimoni.JSON.JSON_ext.FirstDifference(File.ReadAllLines(json_path), File.ReadAllLines(json_path2));
-      if (null != json_diff) throw new InvalidOperationException("JSON round trip: "+ json_path + " vs. "+ json_path2 + "\n" + json_diff);
+      if (json_diff is not null) throw new InvalidOperationException("JSON round trip: "+ json_path + " vs. "+ json_path2 + "\n" + json_diff);
       File.Delete(json_path2);
       var json_incomplete = Zaimoni.JSON.Audit.IncompleteConverters(JSON_opts);
       var json_audit = 0 >= json_incomplete.Count ? "all JSON converters complete" : "incomplete JSON converters (" + json_incomplete.Count.ToString() + "): " + string.Join(", ", json_incomplete);

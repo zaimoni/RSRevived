@@ -67,7 +67,7 @@ namespace djack.RogueSurvivor.Engine.Op
         public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
         {
             var act = Bind(src);
-            if (null == act) return null;
+            if (act is null) return null;
             return new(act, null);
         }
 
@@ -81,7 +81,7 @@ namespace djack.RogueSurvivor.Engine.Op
             origin.ForEachAdjacent(dest => {
                 if (ok(dest)) {
                     var move = ScheduleCast(origin, dest, run, who);
-                    if (null != move) ret.Add(new(dest, move));
+                    if (move is not null) ret.Add(new(dest, move));
                 }
             });
 

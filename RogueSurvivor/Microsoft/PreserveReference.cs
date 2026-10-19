@@ -49,7 +49,7 @@ namespace Zaimoni.JSON
        {
            Referenced.Add(value);
            if (!ObjectToReference.TryGetValue(value, out string? referenceId)) {
-               if (null != _wanted && !_wanted.Contains(value)) throw PreserveReferenceHandler.Fail("referenced in the second pass of the save but not the first: " + PreserveReferenceHandler.Render(value));
+               if (_wanted is not null && !_wanted.Contains(value)) throw PreserveReferenceHandler.Fail("referenced in the second pass of the save but not the first: " + PreserveReferenceHandler.Render(value));
                referenceId = NewId(value);
            }
            return referenceId;
@@ -71,7 +71,7 @@ namespace Zaimoni.JSON
            alreadyExists = !Defined.Add(value);
            if (alreadyExists) return Reference(value);   // written already: this is a reference to it
            if (ObjectToReference.TryGetValue(value, out string? referenceId)) return referenceId;   // referenced before defined
-           if (null != _wanted && !_wanted.Contains(value)) return null;
+           if (_wanted is not null && !_wanted.Contains(value)) return null;
            return NewId(value);
        }
 
@@ -81,7 +81,7 @@ namespace Zaimoni.JSON
 
        public bool TryResolve(string referenceId, out object? value)
        {
-           if (null == _referenceIdToObjectMap) {
+           if (_referenceIdToObjectMap is null) {
                value = null;
                return false;
            }
@@ -111,7 +111,7 @@ namespace Zaimoni.JSON
        /// Those whose id never loaded are left for Errors to report.</summary>
        public void RunFixups()
        {
-           if (null == _fixups) return;
+           if (_fixups is null) return;
            List<KeyValuePair<string, Action<object>>>? unresolved = null;
            for (int i = 0; i < _fixups.Count; i++) {   // a fixup is allowed to defer more
                var x = _fixups[i];
@@ -125,20 +125,20 @@ namespace Zaimoni.JSON
        public string? Errors()
        {
            List<string>? err = null;
-           if (null != _objectToReferenceIdMap) {
+           if (_objectToReferenceIdMap is not null) {
                foreach (var x in _objectToReferenceIdMap) {
-                   if (null != _defined && _defined.Contains(x.Key)) continue;
+                   if (_defined is not null && _defined.Contains(x.Key)) continue;
                    (err ??= new()).Add("referenced but never saved: " + x.Value + " (" + PreserveReferenceHandler.Render(x.Key) + ")\n");
                }
            }
-           if (null != _fixups) {
+           if (_fixups is not null) {
                string? last = null;
                foreach (var x in _fixups) {
                    if (x.Key == last) continue;
                    (err ??= new()).Add("referenced but never loaded: " + (last = x.Key));
                }
            }
-           return null == err ? null : string.Join("\n", err);
+           return err is null ? null : string.Join("\n", err);
        }
    }
 
@@ -167,7 +167,7 @@ namespace Zaimoni.JSON
        static public JsonException Fail(string why)
        {
            var where = Where?.Invoke();
-           Logger.WriteLine(Logger.Stage.RUN_DEBUG, "JSON references: " + why + (null == where ? "" : " (" + where + ")"));
+           Logger.WriteLine(Logger.Stage.RUN_DEBUG, "JSON references: " + why + (where is null ? "" : " (" + where + ")"));
            return new JsonException(why);
        }
 
@@ -195,7 +195,7 @@ namespace Zaimoni.JSON
            } finally {
                s_resolve = null;
            }
-           if (null != err) throw Fail(err);
+           if (err is not null) throw Fail(err);
        }
    }
 }

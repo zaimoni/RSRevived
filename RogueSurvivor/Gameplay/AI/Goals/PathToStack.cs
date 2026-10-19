@@ -83,8 +83,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
         private static ActorAction? Take(Actor who, in Data.Model.InvOrigin src, Item_IDs what) {
           var take = src.Inventory.GetWorstDestackable(GameItems.From(what));
-          if (null == take) return null;
-          bool src_is_inanimate = null != src.loc || null != src.obj_owner;
+          if (take is null) return null;
+          bool src_is_inanimate = src.loc is not null || src.obj_owner is not null;
           if (!who.Inventory!.IsFull) {
             if (src_is_inanimate) return new Engine._Action.TakeItem(who, in src, take);
           }
@@ -134,9 +134,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 if (!_stacks[i].Key.IsAccessible(m_Actor.Location)) continue;
                 var need_override = oai.SetRatingOverride(_stacks[i].Value, 3, 2);
                 var act = Take(m_Actor, _stacks[i].Key, _stacks[i].Value);
-                if (null != act && act.IsPerformable()) {
+                if (act is not null && act.IsPerformable()) {
                     (_inventory_actions ??= new()).Add(new(_stacks[i].Key, act));
-                } else if (null != need_override) {
+                } else if (need_override is not null) {
                     oai.UnsetRatingOverride(_stacks[i].Value, 2);
                     if (0 < need_override.Value.Value) oai.SetRatingOverride(_stacks[i].Value, need_override.Value.Key, need_override.Value.Value);
                 }
@@ -147,7 +147,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
         private static ActorTake? ExtractTake(ActorAction act) {
             var ret = act as ActorTake;
-            if (null == ret)
+            if (ret is null)
             {
                 if (act is ActionChain chain) ret = chain.LastAction as ActorTake;
             }
@@ -186,7 +186,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
             if (m_Actor.Controller.IsEngaged) return false;
 
-            if (null != _inventory_actions)
+            if (_inventory_actions is not null)
             {
                 // prefilter
                 if (2 <= _inventory_actions.Count)
@@ -195,12 +195,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                     while (1 <= --ub)
                     {
                         var upper_take = ExtractTake(_inventory_actions[ub].Value);
-                        if (null == upper_take) continue;
+                        if (upper_take is null) continue;
                         var i = ub;
                         while (0 <= --i)
                         {
                             var take = ExtractTake(_inventory_actions[i].Value);
-                            if (null == take) continue;
+                            if (take is null) continue;
                             if (oai.RHSMoreInteresting(take.Take, upper_take.Take)) {
                                 _inventory_actions.RemoveAt(i);
                                 break;
@@ -213,7 +213,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 }
                 ret = _inventory_actions[0].Value;
                 var ret_take = ExtractTake(ret);
-                if (null != ret_take) {
+                if (ret_take is not null) {
                     var have = ret_take.Take;
                     m_Actor.LiveLeader?.Controller.ReportTaken(_inventory_actions[0].Key, have, m_Actor);
                 }

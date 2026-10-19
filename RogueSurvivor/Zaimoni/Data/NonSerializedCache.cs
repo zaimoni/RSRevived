@@ -40,7 +40,7 @@ namespace Zaimoni.Data
 
         public T Get {
             get {
-                if (null == m_cache) m_cache = m_bootstrap(m_src);
+                if (m_cache is null) m_cache = m_bootstrap(m_src);
                 return m_cache.Value;
             }
         }

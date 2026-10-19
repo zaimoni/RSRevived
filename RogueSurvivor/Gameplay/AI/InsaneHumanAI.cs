@@ -127,12 +127,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       m_Actor.Walk();    // alpha 10: don't run by default
       var tmpAction = BehaviorEquipWeapon();
-      if (null != tmpAction) return tmpAction;
+      if (tmpAction is not null) return tmpAction;
 
       /* if (game.Rules.RollChance(ATTACK_CHANCE)) */ { // alpha 10.1: unconditional
-        if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {
+        if ((_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors())))) is not null) {
           tmpAction = TargetGridMelee(_enemies);
-          if (null != tmpAction) return tmpAction;
+          if (tmpAction is not null) return tmpAction;
         }
       }
       var rules = Rules.Get;
@@ -142,7 +142,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (rules.RollChance(USE_EXIT_CHANCE)) {
         tmpAction = BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
-        if (null != tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
       }
       return BehaviorWander();
     }

@@ -87,7 +87,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             var oai = (m_Actor.Controller as ObjectiveAI)!;
             if (oai.IsFocused) return false;
             var TradeableItems = oai.GetTradeableItems();   // may need revision for player....
-            if (null == TradeableItems || 0 >= TradeableItems.Count) {
+            if (TradeableItems is null || 0 >= TradeableItems.Count) {
                 _isExpired = true;
                 return true;
             }
@@ -99,14 +99,14 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                     _whom.RemoveAt(i);
                     continue;
                 }
-                if (oai.CanSee(actor.Location) && null == m_Actor.MinStepPathTo(m_Actor.Location, actor.Location)) {
+                if (oai.CanSee(actor.Location) && m_Actor.MinStepPathTo(m_Actor.Location, actor.Location) is null) {
                     _whom.RemoveAt(i);
                     continue;
                 }
                 var a_oai = (actor.Controller as ObjectiveAI)!;
                 if (1 == TradeableItems.Count) {
                     var other_TradeableItems = a_oai.GetTradeableItems();
-                    if (null == other_TradeableItems) continue;
+                    if (other_TradeableItems is null) continue;
                     if (1 == other_TradeableItems.Count && TradeableItems[0].ModelID == other_TradeableItems[0].ModelID) {
                         _whom.RemoveAt(i);
                         continue;
@@ -139,13 +139,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             var find_us = _whom.Select(act => act.Location);
             var find_visible = find_us.Where(loc => oai.CanSee(loc));
             var act = oai.BehaviorHeadFor(find_visible, false, false);
-            if (null != act) {
+            if (act is not null) {
                 m_Actor.TargetedActivity(Activity.FOLLOWING, Rules.Get.DiceRoller.Choose(find_visible).Actor); // XXX possibly misleading
                 ret = act;
                 return true;
             }
             act = oai.BehaviorPathTo(new HashSet<Location>(find_us));
-            if (null != act) {
+            if (act is not null) {
                 m_Actor.TargetedActivity(Activity.FOLLOWING, Rules.Get.DiceRoller.Choose(_whom)); // XXX possibly misleading
                 ret = act;
                 return true;

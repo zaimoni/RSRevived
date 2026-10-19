@@ -55,8 +55,8 @@ namespace Zaimoni.JSON
         static public void WriteStartDefinition(this Utf8JsonWriter writer, string? id, string? type = null)
         {
             writer.WriteStartObject();
-            if (null != id) writer.WriteString("$id", id);
-            if (null != type) writer.WriteString("$type", type);
+            if (id is not null) writer.WriteString("$id", id);
+            if (type is not null) writer.WriteString("$type", type);
         }
 
         /// <summary>Consumes the leading $id and $type properties, in either order.</summary>
@@ -67,11 +67,11 @@ namespace Zaimoni.JSON
             type = null;
             while (JsonTokenType.PropertyName == reader.TokenType) {
                 if (reader.ValueTextEquals("$id")) {
-                    if (null != id) throw new JsonException("duplicate $id");
+                    if (id is not null) throw new JsonException("duplicate $id");
                     reader.Read();
                     id = reader.GetString();
                 } else if (reader.ValueTextEquals("$type")) {
-                    if (null != type) throw new JsonException("duplicate $type");
+                    if (type is not null) throw new JsonException("duplicate $type");
                     reader.Read();
                     type = reader.GetString();
                 } else return;
@@ -189,7 +189,7 @@ namespace Zaimoni.JSON
             var buffer = s_compact_buffer ??= new();
             buffer.ResetWrittenCount();
             var compact = s_compact_writer;
-            if (null == compact || compact.Options.Encoder != writer.Options.Encoder) {
+            if (compact is null || compact.Options.Encoder != writer.Options.Encoder) {
                 compact?.Dispose();
                 compact = s_compact_writer = new Utf8JsonWriter(buffer, new JsonWriterOptions { Indented = false, Encoder = writer.Options.Encoder });
             } else compact.Reset(buffer);

@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Engine._Goal
 
         public static bool IsDone(in Location loc) {
             if (loc.Map.IsTrapCoveringMapObjectAt(loc.Position)) return true;
-            return null == loc.Items?.GetItemsByType<ItemTrap>(trap => trap.IsActivated && 0 < trap.Model.Damage);
+            return loc.Items?.GetItemsByType<ItemTrap>(trap => trap.IsActivated && 0 < trap.Model.Damage) is null;
         }
 
         public static bool IsDone(in Location loc, Actor viewpoint) {

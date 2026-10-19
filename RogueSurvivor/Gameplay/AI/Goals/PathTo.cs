@@ -77,7 +77,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         }
 
         var ai = m_Actor.Controller as ObjectiveAI;
-        if (null != m_Actor.Controller.enemies_in_FOV) {
+        if (m_Actor.Controller.enemies_in_FOV is not null) {
           _isExpired = true;    // cancel: something urgent
           return true;
         }

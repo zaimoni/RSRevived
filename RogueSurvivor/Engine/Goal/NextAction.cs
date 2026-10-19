@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Engine.Goal
 
             if (src.TryGetProperty("PlanDisengaged", out x)) Plan_disengaged = x.Deserialize<WorldUpdate>(options);
 
-            if (null == Intent_engaged && null == Intent_disengaged && null == Plan_engaged && null == Plan_disengaged) throw new JsonException("next action with no intent");
+            if (Intent_engaged is null && Intent_disengaged is null && Plan_engaged is null && Plan_disengaged is null) throw new JsonException("next action with no intent");
 
         }
 
@@ -45,7 +45,7 @@ namespace djack.RogueSurvivor.Engine.Goal
 
             void slot<T>(string name, T? value) where T : class {
 
-                if (null == value) return;
+                if (value is null) return;
 
                 writer.WritePropertyName(name);
 
@@ -69,7 +69,7 @@ namespace djack.RogueSurvivor.Engine.Goal
         public NextAction(Actor who, ActorAction engaged) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
 #if DEBUG
-            if (null == engaged) throw new ArgumentNullException(nameof(engaged));
+            if (engaged is null) throw new ArgumentNullException(nameof(engaged));
 #endif
             Intent_engaged = engaged;
         }
@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Engine.Goal
         : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
 #if DEBUG
-            if (null == engaged && null == disengaged) throw new ArgumentNullException(nameof(engaged) + "; " + nameof(disengaged));
+            if (engaged is null && disengaged is null) throw new ArgumentNullException(nameof(engaged) + "; " + nameof(disengaged));
 #endif
             Intent_engaged = engaged;
             Intent_disengaged = disengaged;
@@ -88,7 +88,7 @@ namespace djack.RogueSurvivor.Engine.Goal
         : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
 #if DEBUG
-            if (null == engaged && null == disengaged) throw new ArgumentNullException(nameof(engaged) + "; " + nameof(disengaged));
+            if (engaged is null && disengaged is null) throw new ArgumentNullException(nameof(engaged) + "; " + nameof(disengaged));
 #endif
             Intent_engaged = engaged;
             Plan_disengaged = disengaged;
@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Engine.Goal
         public NextAction(Actor who, WorldUpdate engaged) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
 #if DEBUG
-            if (null == engaged) throw new ArgumentNullException(nameof(engaged));
+            if (engaged is null) throw new ArgumentNullException(nameof(engaged));
 #endif
             Plan_engaged = engaged;
         }
@@ -106,7 +106,7 @@ namespace djack.RogueSurvivor.Engine.Goal
         : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
 #if DEBUG
-            if (null == engaged && null == disengaged) throw new ArgumentNullException(nameof(engaged) + "; " + nameof(disengaged));
+            if (engaged is null && disengaged is null) throw new ArgumentNullException(nameof(engaged) + "; " + nameof(disengaged));
 #endif
             Plan_engaged = engaged;
             Intent_disengaged = disengaged;
@@ -116,7 +116,7 @@ namespace djack.RogueSurvivor.Engine.Goal
         : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
 #if DEBUG
-            if (null == engaged && null == disengaged) throw new ArgumentNullException(nameof(engaged) + "; " + nameof(disengaged));
+            if (engaged is null && disengaged is null) throw new ArgumentNullException(nameof(engaged) + "; " + nameof(disengaged));
 #endif
             Plan_engaged = engaged;
             Plan_disengaged = disengaged;
@@ -138,7 +138,7 @@ namespace djack.RogueSurvivor.Engine.Goal
         {
             ret = null;
             _isExpired = true;
-            if (null == m_Actor.Controller.enemies_in_FOV) {
+            if (m_Actor.Controller.enemies_in_FOV is null) {
                 ret = _intentDisengaged();
             } else {
                 ret = _intentEngaged();
@@ -147,15 +147,15 @@ namespace djack.RogueSurvivor.Engine.Goal
         }
 
         private ActorAction? _intentEngaged() {
-            if (null != Intent_engaged && Intent_engaged.IsPerformable()) return Intent_engaged;
-            if (null != Plan_engaged) return Plan_engaged.Bind(m_Actor);
+            if (Intent_engaged is not null && Intent_engaged.IsPerformable()) return Intent_engaged;
+            if (Plan_engaged is not null) return Plan_engaged.Bind(m_Actor);
             return null;
         }
 
         private ActorAction? _intentDisengaged()
         {
-            if (null != Intent_disengaged && Intent_disengaged.IsPerformable()) return Intent_disengaged;
-            if (null != Plan_disengaged) return Plan_disengaged.Bind(m_Actor);
+            if (Intent_disengaged is not null && Intent_disengaged.IsPerformable()) return Intent_disengaged;
+            if (Plan_disengaged is not null) return Plan_disengaged.Bind(m_Actor);
             return null;
         }
     }

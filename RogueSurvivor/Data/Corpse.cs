@@ -26,13 +26,13 @@ namespace djack.RogueSurvivor.Data
 
     public Actor? DraggedBy { get {
       var who = Location.Actor;
-      if (null == who || who.IsDead) return null;
+      if (who is null || who.IsDead) return null;
       return who.DraggedCorpse == this ? who : null;
     } }
 
     public bool IsDragged { get {
       var who = Location.Actor;
-      if (null == who || who.IsDead) return false;
+      if (who is null || who.IsDead) return false;
       return who.DraggedCorpse == this;
     } }
 
@@ -81,9 +81,9 @@ namespace djack.RogueSurvivor.Data
         set {
           Point? same_map = default;
           if (DeadGuy.Location.Map == value.Map) same_map = DeadGuy.Location.Position;
-          if (null == same_map) DeadGuy.Location.Map.Remove(this);
+          if (same_map is null) DeadGuy.Location.Map.Remove(this);
           DeadGuy.Location = value;
-          if (null == same_map) DeadGuy.Location.Map.Add(this);
+          if (same_map is null) DeadGuy.Location.Map.Add(this);
           else DeadGuy.Location.Map.UpdateCache(this, same_map.Value);
         }
     }

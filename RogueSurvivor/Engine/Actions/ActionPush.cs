@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionPush(Actor actor, MapObject pushObj, Direction pushDir) : base(actor)
     {
 #if DEBUG
-      if (null == pushDir) throw new ArgumentNullException(nameof(pushDir));
+      if (pushDir is null) throw new ArgumentNullException(nameof(pushDir));
 #endif
       m_Object = pushObj
 #if DEBUG

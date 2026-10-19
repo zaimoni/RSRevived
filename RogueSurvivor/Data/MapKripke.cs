@@ -22,11 +22,11 @@ namespace djack.RogueSurvivor.Data
         {
             m_Domain = z;
             _viewpoint = viewpoint;
-            if (null != viewpoint) update(viewpoint.Controller.FOVloc);  // AI
+            if (viewpoint is not null) update(viewpoint.Controller.FOVloc);  // AI
             else { // Socrates' Daimon
                 foreach (var loc in m_Domain) {
                     var obj = loc.MapObject;
-                    if (null != obj) (_knownMapObjects ??= new Dictionary<Location,MapObject>()).Add(loc, obj);
+                    if (obj is not null) (_knownMapObjects ??= new Dictionary<Location,MapObject>()).Add(loc, obj);
                 }
             }
         }
@@ -35,10 +35,10 @@ namespace djack.RogueSurvivor.Data
         {
             foreach (var loc in src) {
                 var obj = loc.MapObject;
-                if (null != obj) Place(obj, loc);
+                if (obj is not null) Place(obj, loc);
                 else _knownMapObjects?.Remove(loc);
             }
-            if (null != _knownMapObjects && 0 >= _knownMapObjects.Count) _knownMapObjects = null;
+            if (_knownMapObjects is not null && 0 >= _knownMapObjects.Count) _knownMapObjects = null;
             return false;
         }
 
@@ -48,7 +48,7 @@ namespace djack.RogueSurvivor.Data
                 var origin = m_Domain.Rect.Location;
                 var tl = new Location(m_Domain.m, origin);
                 var denorm = loc.Map.Denormalize(tl);
-                if (null == denorm) throw new InvalidOperationException("cannot re-anchor");
+                if (denorm is null) throw new InvalidOperationException("cannot re-anchor");
                 // \todo re-positioned Rectangle ideally would contain loc.Position
                 m_Domain = new ZoneLoc(loc.Map, new Rectangle(denorm.Value.Position, m_Domain.Rect.Size));
                 return origin - denorm.Value.Position;
@@ -60,14 +60,14 @@ namespace djack.RogueSurvivor.Data
 
         public MapObject? GetMapObjectAt(Location loc)
         {
-            if (null == _knownMapObjects) return null;
+            if (_knownMapObjects is null) return null;
             if (_knownMapObjects.TryGetValue(loc, out var obj)) return obj;
             return null;
         }
 
         public Location? Find(MapObject obj)
         {
-            if (null == _knownMapObjects) return null;
+            if (_knownMapObjects is null) return null;
             foreach (var x in _knownMapObjects) if (x.Value == obj) return x.Key;
             return null;
         }
@@ -75,7 +75,7 @@ namespace djack.RogueSurvivor.Data
         public void Place(MapObject obj, Location loc)
         {
             var old_loc = Find(obj);
-            if (null != old_loc) _knownMapObjects!.Remove(old_loc.Value);
+            if (old_loc is not null) _knownMapObjects!.Remove(old_loc.Value);
             (_knownMapObjects ??= new Dictionary<Location, MapObject>())[loc] = obj;
         }
 

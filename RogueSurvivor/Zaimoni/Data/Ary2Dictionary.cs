@@ -104,7 +104,7 @@ namespace Zaimoni.Data
                 }
                 if (x.Value.Remove(key) && 0 >= x.Value.Count) (expired ??= new List<Key2>(_second_first_dict.Count)).Add(x.Key);
             }
-            if (null != expired) foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
+            if (expired is not null) foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
             foreach(Key2 tmp in incoming) {
               _second_first_dict[tmp] = new Dictionary<Key1, Range> { [key] = value };
             }
@@ -121,7 +121,7 @@ namespace Zaimoni.Data
             foreach (var x in _second_first_dict) {
                 if (x.Value.Remove(key) && 0 >= x.Value.Count) (expired ??= new List<Key2>(_second_first_dict.Count)).Add(x.Key);
             }
-            if (null != expired) foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
+            if (expired is not null) foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
         }
 
         public List<Key1> Instruct(Ary2Dictionary<Key1, Key2, Range> student)

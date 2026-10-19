@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor.Engine._Action
             if (actor.Controller is not Gameplay.AI.ObjectiveAI ai) throw new ArgumentNullException(nameof(ai));  // not for a trained dog fetching something
             if (!m_Actor.CanGetItems()) throw new InvalidOperationException("!m_Actor.CanGetItems()");
             if (!actor.IsPlayer && !ai.IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
-            if (null == stack.loc && null == stack.obj_owner) throw new InvalidOperationException("trying to take from actor");
+            if (stack.loc is null && stack.obj_owner is null) throw new InvalidOperationException("trying to take from actor");
 #endif
             m_src = stack;
             m_Item = it;
@@ -86,9 +86,9 @@ namespace djack.RogueSurvivor.Engine._Action
             if (m_Crouching) {
                 if (!m_Actor.CanCrouch(out m_FailReason)) return false;
                 var actor = m_src.Location.Actor;
-                if (null != actor) {
+                if (actor is not null) {
                     var allies = m_Actor.Allies;
-                    if (null == allies) return false;
+                    if (allies is null) return false;
                     if (!allies.Contains(actor)) return false;
                 }
             }
@@ -102,13 +102,13 @@ namespace djack.RogueSurvivor.Engine._Action
             m_Actor.Crouch();
             var code = m_src.Location.OnReachInto(m_Actor);
             if (0 >= code) return; // we took a hit -- cancel taking item
-          } else if (null != m_src.obj_owner) {
+          } else if (m_src.obj_owner is not null) {
             // need to stand to make this work
             m_Actor.StandUp();
           }
           if (m_Item is Engine.Items.ItemTrap trap) trap.Desactivate(); // alpha10
           m_src.Transfer(m_Item, new Data.Model.InvOrigin(m_Actor));
-          if (!m_Item.Model.DontAutoEquip && m_Actor.CanEquip(m_Item) && null == m_Actor.GetEquippedItem(m_Item.Model.EquipmentPart))
+          if (!m_Item.Model.DontAutoEquip && m_Actor.CanEquip(m_Item) && m_Actor.GetEquippedItem(m_Item.Model.EquipmentPart) is null)
             m_Item.EquippedBy(m_Actor);
 
           RogueGame.Game.UI_TakeItem(m_Actor, m_src.Location, m_Item);

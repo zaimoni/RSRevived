@@ -50,7 +50,7 @@ namespace djack.RogueSurvivor.UI
     {
       get {
         var form = RogueForm.Get;
-        if (null == form) return 1f;
+        if (form is null) return 1f;
         return form.ClientRectangle.Width / (float)IRogueUI.CANVAS_WIDTH;
       }
     }
@@ -59,7 +59,7 @@ namespace djack.RogueSurvivor.UI
     {
       get {
         var form = RogueForm.Get;
-        if (null == form) return 1f;
+        if (form is null) return 1f;
         return form.ClientRectangle.Height / (float)IRogueUI.CANVAS_HEIGHT;
       }
     }
@@ -184,7 +184,7 @@ namespace djack.RogueSurvivor.UI
 
     private void DoDraw()
     {
-      if (null == RogueForm.Get) return;
+      if (RogueForm.Get is null) return;
       m_RenderGraphics.Clear(m_ClearColor);
       foreach (IGfx gfx in new List<IGfx>(m_Gfxs))  // Bay12/jorgene0: this collection can change at reincarnation
         gfx.Draw(m_RenderGraphics);
@@ -194,7 +194,7 @@ namespace djack.RogueSurvivor.UI
     {
       Location = new Point(0, 0);
       var form = RogueForm.Get;
-      if (null != form) Size = MinimumSize = MaximumSize = form.Size;
+      if (form is not null) Size = MinimumSize = MaximumSize = form.Size;
     }
 
     public void Clear(Color clearColor)
@@ -366,22 +366,22 @@ namespace djack.RogueSurvivor.UI
     {
        if (disposing)
             {
-            if (null != components)
+            if (components is not null)
                 {
                 components.Dispose();
                 components = null;
                 }
-            if (null != m_TileImage)
+            if (m_TileImage is not null)
                 {
                 m_TileImage.Dispose();
                 m_TileImage = null;
                 }
-            if (null != m_RenderImage)
+            if (m_RenderImage is not null)
                 {
                 m_RenderImage.Dispose();
                 m_RenderImage = null;
                 }
-            if (null != m_MinimapBitmap)
+            if (m_MinimapBitmap is not null)
                 {
                 m_MinimapBitmap.Dispose();
                 m_MinimapBitmap = null;

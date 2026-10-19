@@ -83,7 +83,7 @@ namespace djack.RogueSurvivor.Engine
 
     public T ChooseWithoutReplacement<T>(List<T>? src) {
 #if DEBUG
-      if (null==src || 0 >= src.Count) throw new ArgumentNullException(nameof(src));
+      if (src is null || 0 >= src.Count) throw new ArgumentNullException(nameof(src));
 #endif
       return _chooseWithoutReplacement(src);
     }

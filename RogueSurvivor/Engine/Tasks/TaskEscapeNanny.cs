@@ -52,7 +52,7 @@ namespace djack.RogueSurvivor.Engine.Tasks
             if (0 >= _escapees.Count) return;
             foreach(var a in _escapees) {
               var ai = a.Controller as Gameplay.AI.ObjectiveAI;
-              if (null != ai.Goal<Gameplay.AI.Goal_PathTo>() || null != ai.Goal<Gameplay.AI.Goals.PathTo>()) continue;
+              if (ai.Goal<Gameplay.AI.Goal_PathTo>() is not null || ai.Goal<Gameplay.AI.Goals.PathTo>() is not null) continue;
               ai.GoalHeadFor(m,_safe_zone);
             }
 

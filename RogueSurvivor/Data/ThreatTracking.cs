@@ -125,7 +125,7 @@ namespace djack.RogueSurvivor.Data
         {
           var catalog = new Dictionary<Actor, Dictionary<Map, Point[]>>();
           var canon = zone.GetCanonical;
-          if (null == canon) {
+          if (canon is null) {
             threatAt(zone, catalog, pred);
           } else {
             foreach(var z in canon) threatAt(z, catalog, pred);
@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Data
         {
           var catalog = new Dictionary<Map, Point[]>();
           var canon = zone.GetCanonical;
-          if (null == canon) {
+          if (canon is null) {
             imageThreat(zone, catalog, pred);
           } else {
             foreach(var z in canon) imageThreat(z, catalog, pred);
@@ -206,7 +206,7 @@ namespace djack.RogueSurvivor.Data
         public HashSet<Point> ThreatWhere(Map map, Rectangle view)  // we exploit Rectangle being value-copied rather than reference-copied here
         {
           var ret = new HashSet<Point>();
-          if (null == map) return ret;
+          if (map is null) return ret;
           var crossdistrict_ok = District.UsesCrossDistrictView(map);
           if (0 < crossdistrict_ok) {
             Point pos = map.DistrictPos;   // only used in denormalized cases
@@ -214,7 +214,7 @@ namespace djack.RogueSurvivor.Data
             District? test = null;
             // subway may be null
             if (0 > view.Left) {
-              if (null != (test = world.At(pos + Direction.W))) {
+              if ((test = world.At(pos + Direction.W)) is not null) {
                 foreach(Point pt in ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle((short)(map.Width + view.Left), view.Top, (short)(-view.Left), view.Height)))
                   ret.Add(new Point((short)(pt.X-map.Width),pt.Y));
               }
@@ -224,14 +224,14 @@ namespace djack.RogueSurvivor.Data
             if (map.Width < view.Right) {
               var new_width = map.Width;
               new_width -= view.Left;
-              if (null != (test = world.At(pos + Direction.E))) {
+              if ((test = world.At(pos + Direction.E)) is not null) {
                 foreach(Point pt in ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(0, view.Top, (short)(view.Width - new_width), view.Height)))
                   ret.Add(new Point((short)(pt.X+map.Width),pt.Y));
               }
               view.Width = new_width;
             }
             if (0 > view.Top) {
-              if (null != (test = world.At(pos + Direction.N))) {
+              if ((test = world.At(pos + Direction.N)) is not null) {
                 foreach(Point pt in ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(view.Left, (short)(map.Height + view.Top), view.Width, (short)(-view.Top))))
                   ret.Add(new Point(pt.X,(short)(pt.Y - map.Height)));
               }
@@ -241,7 +241,7 @@ namespace djack.RogueSurvivor.Data
             if (map.Height < view.Bottom) {
               var new_height = map.Height;
               new_height -= view.Top;
-              if (null != (test = world.At(pos + Direction.S))) {
+              if ((test = world.At(pos + Direction.S)) is not null) {
                 foreach(Point pt in ThreatWhere(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(view.Left, 0, view.Width, (short)(view.Height - new_height))))
                   ret.Add(new Point(pt.X,(short)(pt.Y + map.Height)));
               }
@@ -263,7 +263,7 @@ namespace djack.RogueSurvivor.Data
 
         public bool AnyThreatIn(Map map, Rectangle view)  // we exploit Rectangle being value-copied rather than reference-copied here
         {
-          if (null == map) return false;
+          if (map is null) return false;
           var crossdistrict_ok = District.UsesCrossDistrictView(map);
           if (0 < crossdistrict_ok) {
             Point pos = map.DistrictPos;   // only used in denormalized cases
@@ -271,7 +271,7 @@ namespace djack.RogueSurvivor.Data
             District? test = null;
             // subway may be null
             if (0 > view.Left) {
-              if (null != (test = world.At(pos + Direction.W))) {
+              if ((test = world.At(pos + Direction.W)) is not null) {
                 if (AnyThreatIn(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle((short)(map.Width + view.Left), view.Top, (short)(-view.Left), view.Height))) return true;
               }
               view.Width += view.Left;
@@ -280,13 +280,13 @@ namespace djack.RogueSurvivor.Data
             if (map.Width < view.Right) {
               var new_width = map.Width;
               new_width -= view.Left;
-              if (null != (test = world.At(pos + Direction.E))) {
+              if ((test = world.At(pos + Direction.E)) is not null) {
                 if (AnyThreatIn(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(0, view.Top, (short)(view.Width - new_width), view.Height))) return true;
               }
               view.Width = new_width;
             }
             if (0 > view.Top) {
-              if (null != (test = world.At(pos + Direction.N))) {
+              if ((test = world.At(pos + Direction.N)) is not null) {
                 if (AnyThreatIn(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(view.Left, (short)(map.Height + view.Top), view.Width, (short)(-view.Top)))) return true;
               }
               view.Height += view.Top;
@@ -295,7 +295,7 @@ namespace djack.RogueSurvivor.Data
             if (map.Height < view.Bottom) {
               var new_height = map.Height;
               new_height -= view.Top;
-              if (null != (test = world.At(pos + Direction.S))) {
+              if ((test = world.At(pos + Direction.S)) is not null) {
                 if (AnyThreatIn(test.CrossDistrictViewing(crossdistrict_ok), new Rectangle(view.Left, 0, view.Width, (short)(view.Height - new_height)))) return true;
               }
               view.Height = new_height;
@@ -383,11 +383,11 @@ namespace djack.RogueSurvivor.Data
               cache.UnionWith(local);
             }
           }
-          if (null == other) return;
+          if (other is null) return;
           var remap = new Dictionary<Map,List<Point>>();
           foreach(Point pt in other) {
             Location? test = m.Normalize(pt);
-            if (null == test) continue;
+            if (test is null) continue;
             if (!remap.TryGetValue(test.Value.Map,out var cache)) remap.Add(test.Value.Map, cache = new List<Point>(other.Count));
             cache.Add(test.Value.Position);
           }
@@ -484,7 +484,7 @@ namespace djack.RogueSurvivor.Data
                   }
                 }
             }
-            if (null != amnesia) _threats.Remove(amnesia);
+            if (amnesia is not null) _threats.Remove(amnesia);
           }
         }
 #endif
@@ -509,7 +509,7 @@ namespace djack.RogueSurvivor.Data
                     (discard ??= new(_threats.Count)).Add(x.Key);
                 }
             }
-            if (null != discard) foreach (var a in discard) Cleared(a);
+            if (discard is not null) foreach (var a in discard) Cleared(a);
         }
 
         // huge cheat ... requires any tainted location to be assigned to its "nearest threat on-map"
@@ -647,13 +647,13 @@ namespace djack.RogueSurvivor.Data
 //    public IEnumerable<Point>? In(Map map) => Range(map);
       public HashSet<Point> In(Map map) {
         var stage = Range(map);
-        return null != stage ? new(stage) : new();
+        return stage is not null ? new(stage) : new();
       }
 
       public HashSet<Point> In(Map map, Rectangle view)
       {
           var ret = new HashSet<Point>();
-          if (null == map) return ret;
+          if (map is null) return ret;
           var crossdistrict_ok = District.UsesCrossDistrictView(map);
           Point pos = map.DistrictPos;   // only used in denormalized cases
           if (0> view.Left) {
@@ -692,7 +692,7 @@ namespace djack.RogueSurvivor.Data
           }
 
           var tmp2 = Range(map);
-          if (null == tmp2) return ret;
+          if (tmp2 is null) return ret;
           HashSet<Point> stage = new(tmp2);
           if (0 >= ret.Count) ret = stage;
           else ret.UnionWith(stage);
@@ -771,7 +771,7 @@ namespace djack.RogueSurvivor.Data
 
             /// <returns>true if and only if this has activated and should be deleted</returns>
             public bool Fire(in Location trigger) {
-                if (null == triggers) return false; // BLANK is no-op
+                if (triggers is null) return false; // BLANK is no-op
                 if (targets.Remove(trigger) && 0 >= targets.Count) return true; // just became no-op
                 if (!triggers.Remove(trigger)) return false; // did not match
                 if (0 < triggers.Count) return false; // still have work to do
@@ -803,7 +803,7 @@ namespace djack.RogueSurvivor.Data
         public void ClearHandlers() { lock (_locs) { _handlers = null; } }
         public void InstallAfterDelete(Action<Location> src) {
 #if DEBUG
-            if (null != _after_delete) throw new InvalidOperationException("need to build out handler composition");
+            if (_after_delete is not null) throw new InvalidOperationException("need to build out handler composition");
 #endif
             _after_delete = src;
         }
@@ -845,7 +845,7 @@ namespace djack.RogueSurvivor.Data
         public T this[Map m, IEnumerable<Point> pts]
         {
             set {
-                if (null == pts || !pts.Any()) return;
+                if (pts is null || !pts.Any()) return;
                 lock (_locs) {
                     if (_locs.TryGetValue(m, out var cache)) {
                         foreach (var pt in pts) cache[pt] = value;
@@ -861,7 +861,7 @@ namespace djack.RogueSurvivor.Data
 #if PROTOTYPE
         // lock provided by callers
         private void merge(delete_from src) {
-            if (null == _handlers) {
+            if (_handlers is null) {
                 _handlers = new List<delete_from> { src };
                 return;
             }
@@ -878,7 +878,7 @@ namespace djack.RogueSurvivor.Data
 
         // lock provided by callers
         private void fire_delete(in Location loc) {
-            if (null != _handlers) {
+            if (_handlers is not null) {
                 // XXX linear search XXX
                 int ub = _handlers.Count;
                 while (0 <= --ub) {
@@ -898,7 +898,7 @@ namespace djack.RogueSurvivor.Data
             if (_locs.TryGetValue(loc.Map, out var test) && test.Remove(loc.Position)) {
                 fire_delete(in loc);
                 if (0 >= test.Count) _locs.Remove(loc.Map);
-                if (null != _after_delete) _after_delete(loc);
+                if (_after_delete is not null) _after_delete(loc);
                 return true;
             }
             return false;
@@ -1033,7 +1033,7 @@ namespace djack.RogueSurvivor.Data
                             var cz = loc.ClearableZone;
 //                          var ez = src.Exit_zones;
                             var ez = src.ExitZones;
-                            if (null != cz && 0 > Array.IndexOf(ez, cz)) throw new InvalidOperationException("asymmetric accessibility of zones");
+                            if (cz is not null && 0 > Array.IndexOf(ez, cz)) throw new InvalidOperationException("asymmetric accessibility of zones");
                             var za = loc.TrivialDistanceZones;
                             if (0 > Array.IndexOf(za, src)) throw new InvalidOperationException("asymmetric accessibility of zones");
 #endif
@@ -1058,7 +1058,7 @@ namespace djack.RogueSurvivor.Data
                 foreach (var y in x.Value) {
                     var loc = new Location(x.Key, y.Key);
                     var tmp_zones = loc.TrivialDistanceZones;
-                    if (null != tmp_zones) goals.Add(loc, tmp_zones);
+                    if (tmp_zones is not null) goals.Add(loc, tmp_zones);
                 }
             }
 

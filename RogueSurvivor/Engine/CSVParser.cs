@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine
 
     public string[] Parse(string line)
     {
-      if (line == null) return new string[0];
+      if (line is null) return new string[0];
       line = line.TrimEnd();
       List<string> stringList = new List<string>(line.Split(m_Delimiter));
       int index1 = 0;
@@ -66,7 +66,7 @@ namespace djack.RogueSurvivor.Engine
 
     public string Format(string[] fields)
     {
-      if (fields == null) return string.Format("{0}", (object)m_Delimiter);
+      if (fields is null) return string.Format("{0}", (object)m_Delimiter);
       StringBuilder stringBuilder = new StringBuilder();
       foreach (string field in fields) {
         stringBuilder.Append(field);

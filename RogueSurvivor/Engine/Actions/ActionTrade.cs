@@ -116,9 +116,9 @@ namespace djack.RogueSurvivor.Engine.Actions
 
             if (!src.IsPlayer && !target.IsPlayer) {
                 var theirs = target.GetRationalTradeableItems(src.Controller as Gameplay.AI.OrderableAI);
-                if (null == theirs) return "target unwilling to trade";
+                if (theirs is null) return "target unwilling to trade";
                 var mine = src.GetRationalTradeableItems(target.Controller as Gameplay.AI.OrderableAI);
-                if (null == mine) return "unwilling to trade";
+                if (mine is null) return "unwilling to trade";
                 bool ok = false;
                 foreach (var want in theirs) {
                     foreach (var have in mine) {

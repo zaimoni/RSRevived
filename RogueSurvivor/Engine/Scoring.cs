@@ -272,7 +272,7 @@ namespace djack.RogueSurvivor.Engine
     public bool IsJsonEmpty {
       get {
         return 0 >= m_FirstKills.Count && 0 >= m_KillCounts.Count && 0 >= m_Sightings.Count && 0 >= m_Events.Count && 0 >= m_VisitedMaps.Count
-            && null == m_DeathReason && 0 >= CompletedAchievementsCount;
+            && m_DeathReason is null && 0 >= CompletedAchievementsCount;
       }
     }
 
@@ -311,7 +311,7 @@ namespace djack.RogueSurvivor.Engine
         writer.WriteArrayOfLines(rows);
       }
       if (0 < m_VisitedMaps.Count) writer.WriteRefs("VisitedMaps", m_VisitedMaps);
-      if (null != m_DeathReason) writer.WriteString("DeathReason", m_DeathReason);
+      if (m_DeathReason is not null) writer.WriteString("DeathReason", m_DeathReason);
       writer.WriteEndObject();
     }
 
@@ -362,7 +362,7 @@ namespace djack.RogueSurvivor.Engine
 
       var zonesAt = victim.Location.Map.GetZonesAt(victim.Location.Position);
       var map_name = victim.Location.Map.Name;
-      DeathPlace = (zonesAt != null ? string.Format("{0} at {1}", map_name, zonesAt[0].Name) : map_name);
+      DeathPlace = (zonesAt is not null ? string.Format("{0} at {1}", map_name, zonesAt[0].Name) : map_name);
 
       m_FollowersWhenDied = victim.Followers?.ToList();
     }

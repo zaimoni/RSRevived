@@ -286,7 +286,7 @@ namespace djack.RogueSurvivor.Data
         /// <param name="src">null to discard the legend, once the maps are loaded</param>
         static public void LoadTileLegend(JsonElement? src)
         {
-            if (null == src) {
+            if (src is null) {
                 s_TileLegend = null;
                 return;
             }
@@ -321,7 +321,7 @@ namespace djack.RogueSurvivor.Data
         [NonSerialized] public static District? s_LoadOwner = null;
         private Map(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
-            if (null == s_LoadOwner) throw new ArgumentNullException(nameof(s_LoadOwner));
+            if (s_LoadOwner is null) throw new ArgumentNullException(nameof(s_LoadOwner));
             if (JsonTokenType.StartObject != reader.TokenType) throw new JsonException();
             int origin_depth = reader.CurrentDepth;
             reader.Read();
@@ -492,16 +492,16 @@ namespace djack.RogueSurvivor.Data
                 }
 
                 // if we have both Extent and Zones then we can recompute IsInside
-                if (seen[3] && seen[5] && null == m_IsInside) {
+                if (seen[3] && seen[5] && m_IsInside is null) {
                     m_IsInside = new byte[(Extent.X * Extent.Y - 1) / 8 + 1];
                     var inside = GetZonesByPartialName("$Inside");   // XXX exact match ok for these
                     var outside = GetZonesByPartialName("$Outside");
-                    if (null != inside) {
+                    if (inside is not null) {
                         foreach (var z in inside) {
                             foreach (var pt in z.Bounds) SetIsInsideAt(pt);
                         }
                     }
-                    if (null != outside) {
+                    if (outside is not null) {
                         foreach (var z in outside) {
                             foreach (var pt in z.Bounds) SetIsInsideAt(pt, false);
                         }
@@ -547,7 +547,7 @@ namespace djack.RogueSurvivor.Data
       JsonSerializer.Serialize(writer, LocalTime, options);
       writer.WritePropertyName("Extent");
       JsonSerializer.Serialize(writer, Extent, options);
-      if (null != m_TileIDs) {
+      if (m_TileIDs is not null) {
         // row-major, one row per line: reads like the map
         writer.WritePropertyName("Tiles");
         var rows = new List<string>(Extent.Y);
@@ -721,7 +721,7 @@ namespace djack.RogueSurvivor.Data
       if ((test = r.Bottom) > (nonstrict_ub = Height - 1)) r.Height -= (short)(test - nonstrict_ub);
     }
 
-    public bool IsValid(Point p) { return IsInBounds(p) || null != Normalize(p); } // potentially obsolete; cf. Map::Canonical family
+    public bool IsValid(Point p) { return IsInBounds(p) || Normalize(p) is not null; } // potentially obsolete; cf. Map::Canonical family
 
     /// <summary>
     /// Cf. Actor::_CanEnter and CanEnter
@@ -736,7 +736,7 @@ namespace djack.RogueSurvivor.Data
     static public bool Canonical(ref Location loc) {
       if (!loc.Map.IsInBounds(loc.Position)) {
         var test = loc.Map._Normalize(loc.Position);
-        if (null == test) return false;
+        if (test is null) return false;
         loc = test.Value;
       }
       return true;
@@ -810,7 +810,7 @@ namespace djack.RogueSurvivor.Data
       var ret = new List<Location>(locs.Count());
       foreach(var x in locs) {
         Location? test = Denormalize(in x);
-        if (null != test) ret.Add(test.Value);
+        if (test is not null) ret.Add(test.Value);
       }
       return 0<ret.Count ? ret : null;
     }
@@ -819,7 +819,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (this != loc.Map) {
         Location? test = Denormalize(in loc);
-        if (null == test) return false;
+        if (test is null) return false;
         loc = test.Value;
       }
       return view.Contains(loc.Position);
@@ -908,7 +908,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (IsInBounds(pt)) return new KeyValuePair<TileModel?, Location>(GameTiles.From(m_TileIDs[pt.X, pt.Y]), new Location(this,pt));
       Location? loc = _Normalize(pt);   // XXX would have to handle out-of-bounds exits when building with peace walls
-      if (null == loc) return default;
+      if (loc is null) return default;
       return new KeyValuePair<TileModel?, Location>(loc.Value.Map.GetTileModelAt(loc.Value.Position), loc.Value);
     }
 
@@ -918,7 +918,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (IsInBounds(pt)) return GameTiles.From(m_TileIDs[pt.X, pt.Y]);   //      return GetTileModelAt(x,y);
       Location? loc = _Normalize(pt);
-      if (null == loc) return null;
+      if (loc is null) return null;
       return loc.Value.Map.GetTileModelAt(loc.Value.Position);
     }
 
@@ -927,7 +927,7 @@ namespace djack.RogueSurvivor.Data
       // should evaluate: IsValid(pt) && GetTileModelAtExt(pt).IsWalkable
       if (IsInBounds(pt)) return GameTiles.From(m_TileIDs[pt.X, pt.Y]).IsWalkable;
       Location? loc = _Normalize(pt);
-      return null != loc && loc.Value.Map.GetTileModelAt(loc.Value.Position).IsWalkable;
+      return loc is not null && loc.Value.Map.GetTileModelAt(loc.Value.Position).IsWalkable;
     }
 
     // thin wrappers based on Tile API
@@ -986,7 +986,7 @@ namespace djack.RogueSurvivor.Data
     {   // 2019-08-27 release mode IL Code size       72 (0x48) [invalidated]
       if (IsInBounds(pos)) return HasExitAt(in pos);
       Location? test = _Normalize(pos);
-      return null != test && test.Value.Map.HasExitAt(test.Value.Position);
+      return test is not null && test.Value.Map.HasExitAt(test.Value.Position);
     }
 
     public Exit? GetExitAt(Point pos) => m_Exits.GetValueOrDefault(pos);
@@ -1159,11 +1159,11 @@ namespace djack.RogueSurvivor.Data
       if (   is_adjacent
           && actor.Controller is Gameplay.AI.ObjectiveAI oai
           && oai.LegalPathingIsValid)
-          return null == oai.LegalPathing(dest);
+          return oai.LegalPathing(dest) is null;
 
       if (actor.Model.CanEnter(dest)) return false;
       if (   is_adjacent // \todo is this morally dead code?
-          && null == Engine.Rules.IsPathableFor(actor, dest)) return true;
+          && Engine.Rules.IsPathableFor(actor, dest) is null) return true;
       // generators may not be entered, but are still (unreliably) pathable
       if (GetMapObjectAtExt(pt) is Engine.MapObjects.PowerGenerator) return false;
       return true;
@@ -1442,7 +1442,7 @@ retry:
     public void RegenerateZoneExits()
     {
       // whole-map data
-      if (null == m_CanonicalZones) {
+      if (m_CanonicalZones is null) {
         m_CanonicalZones = new Dictionary<Rectangle,ZoneLoc>();
         var staging = new List<ZoneLoc>();
         ZoneLoc? test;
@@ -1467,7 +1467,7 @@ retry:
               continue;
             }
           }
-          if (null != test) staging.Add(test);
+          if (test is not null) staging.Add(test);
         }
         m_ClearableZones = new Dictionary<Rectangle,ZoneLoc>();
         foreach(var z in staging) m_ClearableZones.Add(z.Rect, z);
@@ -1481,7 +1481,7 @@ retry:
         bool needs_zone(Location loc) {
             if (loc.BlocksLivingPathfinding) return false;
             var trivial = loc.ClearableZones;
-            if (null == trivial) return true;
+            if (trivial is null) return true;
             return 1 == trivial.Count && IsOnEdge(loc.Position) && !trivial[0].Contains(in loc);
         }
 
@@ -1500,7 +1500,7 @@ retry:
                 ok = 0;
                 while (0 <= --ub) {
                   test = new Location(this, src.X - 1, src.Y + ub);
-                  if (null != ClearableZoneAt(test.Position)) {
+                  if (ClearableZoneAt(test.Position) is not null) {
                     ok = 0;
                     break;
                   } else if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
@@ -1524,7 +1524,7 @@ retry:
                 ok = 0;
                 while (0 <= --ub) {
                   test = new Location(this, src.X + src.Width, src.Y + ub);
-                  if (null != ClearableZoneAt(test.Position)) {
+                  if (ClearableZoneAt(test.Position) is not null) {
                     ok = 0;
                     break;
                   } else if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
@@ -1548,7 +1548,7 @@ retry:
                 ok = 0;
                 while (0 <= --ub) {
                   test = new Location(this, src.X + ub, src.Y - 1);
-                  if (null != ClearableZoneAt(test.Position)) {
+                  if (ClearableZoneAt(test.Position) is not null) {
                     ok = 0;
                     break;
                   } else if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
@@ -1572,7 +1572,7 @@ retry:
                 ok = 0;
                 while (0 <= --ub) {
                   test = new Location(this, src.X + ub, src.Y + src.Height);
-                  if (null != ClearableZoneAt(test.Position)) {
+                  if (ClearableZoneAt(test.Position) is not null) {
                     ok = 0;
                     break;
                   } else if (scan[ub] = !test.BlocksLivingPathfinding) ok++;
@@ -1595,7 +1595,7 @@ retry:
         }
 
         Point zone_anchor(List<Location> src) {
-            var src_exits = src.Where(loc => null != loc.Exit);
+            var src_exits = src.Where(loc => loc.Exit is not null);
             if (src_exits.Any()) return src_exits.First().Position;
             return src[0].Position;
         }
@@ -1670,7 +1670,7 @@ retry:
         if (ActorPositionHull(ref hull)) {
             var zone = new ZoneLoc(this, new Rectangle(hull[0] - delta, (hull[1] - hull[0]) + 2*delta));
             var canon = zone.GetCanonical;
-            if (null != canon) {
+            if (canon is not null) {
                 foreach(var z in canon) {
                     if (z.m == this) continue;
                     var viewpoints = z.m.Viewpoints.Get;
@@ -1692,7 +1692,7 @@ retry:
       foreach (var x in m_GroundItemsByPosition.Values) op(x);
       foreach (var actor in m_ActorsList) {
         var inv = actor.Inventory;
-        if (null != inv) op(inv);
+        if (inv is not null) op(inv);
       }
     }
 
@@ -1712,7 +1712,7 @@ retry:
       foreach (var x in m_GroundItemsByPosition.Values) ret += xform(x);
       foreach (var actor in m_ActorsList) {
         var inv = actor.Inventory;
-        if (null != inv) ret += xform(inv);
+        if (inv is not null) ret += xform(inv);
       }
 
       return ret;
@@ -1748,7 +1748,7 @@ retry:
     {
       if (IsInBounds(pt)) return GetActorAt(pt);
       Location? test = _Normalize(pt);
-      return null == test ? null : test.Value.Map.GetActorAt(test.Value.Position);
+      return test is null ? null : test.Value.Map.GetActorAt(test.Value.Position);
     }
 
     public bool StrictHasActorAt(Point pt) { return m_aux_ActorsByPosition.ContainsKey(pt); }
@@ -1758,7 +1758,7 @@ retry:
       if (m_aux_ActorsByPosition.ContainsKey(pt)) return true;
       if (IsInBounds(pt)) return false;
       Location? tmp = _Normalize(pt);
-      return null != tmp && tmp.Value.Map.m_aux_ActorsByPosition.ContainsKey(tmp.Value.Position);
+      return tmp is not null && tmp.Value.Map.m_aux_ActorsByPosition.ContainsKey(tmp.Value.Position);
     }
 
     public Actor? From(in ActorTag src) {
@@ -1792,7 +1792,7 @@ retry:
 #if DEBUG
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
       var actorAt = GetActorAt(position);
-      if (null != actorAt) throw new ArgumentOutOfRangeException(nameof(position),position, (actorAt == actor ? "actor already at position" : "another actor already at position"));
+      if (actorAt is not null) throw new ArgumentOutOfRangeException(nameof(position),position, (actorAt == actor ? "actor already at position" : "another actor already at position"));
 #endif
       lock(m_aux_ActorsByPosition) {
         // test game behaved rather badly when a second Samantha Collins was imprisoned on turn 0
@@ -1891,10 +1891,10 @@ retry:
     private string ReasonNotWalkableFor(Point pt, ActorModel model)
     {
       var tile_loc = GetTileModelLocation(pt);
-      if (null == tile_loc.Key) return "out of map";
+      if (tile_loc.Key is null) return "out of map";
       if (!tile_loc.Key.IsWalkable) return "blocked";
       var mapObjectAt = tile_loc.Value.MapObject;
-      if (null != mapObjectAt && !mapObjectAt.IsWalkable) {
+      if (mapObjectAt is not null && !mapObjectAt.IsWalkable) {
         if (mapObjectAt.IsJumpable) {
           if (!model.Abilities.CanJump) return "cannot jump";
         } else if (model.Abilities.IsSmall) {
@@ -1919,10 +1919,10 @@ retry:
     private string ReasonNotWalkableFor(Point pt, Actor actor)
     {
       var tile_loc = GetTileModelLocation(pt);
-      if (null == tile_loc.Key) return "out of map";
+      if (tile_loc.Key is null) return "out of map";
       if (!tile_loc.Key.IsWalkable) return "blocked";
       var mapObjectAt = tile_loc.Value.MapObject;
-      if (null != mapObjectAt && !mapObjectAt.IsWalkable) {
+      if (mapObjectAt is not null && !mapObjectAt.IsWalkable) {
         if (mapObjectAt.IsJumpable) {
           if (!actor.CanJump) return "cannot jump";
           // We only have to be completely accurate when adjacent to a square.
@@ -1933,8 +1933,8 @@ retry:
       }
       // 1) does not have to be accurate except when adjacent
       // 2) treat null map as "omni-adjacent" (happens during spawning)
-      if (tile_loc.Value.StrictHasActorAt && (null==actor.Location.Map || Engine.Rules.IsAdjacent(actor.Location,tile_loc.Value))) return "someone is there";  // XXX includes actor himself
-      if (actor.DraggedCorpse != null && actor.IsTired) return "dragging a corpse when tired";
+      if (tile_loc.Value.StrictHasActorAt && (actor.Location.Map is null || Engine.Rules.IsAdjacent(actor.Location,tile_loc.Value))) return "someone is there";  // XXX includes actor himself
+      if (actor.DraggedCorpse is not null && actor.IsTired) return "dragging a corpse when tired";
       return "";
     }
 
@@ -2014,7 +2014,7 @@ retry:
           fn(a);
       }
 
-      return (null == pred ? Players.Get.ActOnce(pan_to)
+      return (pred is null ? Players.Get.ActOnce(pan_to)
                            : Players.Get.ActOnce(pan_to, pred));
     }
 
@@ -2039,7 +2039,7 @@ retry:
     {   // 2019-08-27 release mode IL Code size       72 (0x48)
       if (IsInBounds(pt)) return GetMapObjectAt(pt);
       Location? test = _Normalize(pt);
-      return null == test ? null : test.Value.Map.GetMapObjectAt(test.Value.Position);
+      return test is null ? null : test.Value.Map.GetMapObjectAt(test.Value.Position);
     }
 
     public bool HasMapObjectAt(Point position) =>  m_MapObjectsByPosition.ContainsKey(position);
@@ -2050,7 +2050,7 @@ retry:
         // cross-map push or similar
         Location? test = _Normalize(position);
 #if DEBUG
-        if (null == test) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsValid(position)");
+        if (test is null) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsValid(position)");
 #endif
         test.Value.Map.PlaceAt(mapObj,test.Value.Position); // intentionally not using thin wrapper
         return;
@@ -2061,11 +2061,11 @@ retry:
       var mapObjectAt = GetMapObjectAt(position);
       if (mapObjectAt == mapObj) return;
 #if DEBUG
-      if (null != mapObjectAt) throw new ArgumentOutOfRangeException(nameof(position), position, "null != GetMapObjectAt(position)");
+      if (mapObjectAt is not null) throw new ArgumentOutOfRangeException(nameof(position), position, "null != GetMapObjectAt(position)");
 #endif
-      bool update_item_memory = null != (mapObj as ShelfLike)?.NonEmptyInventory;
+      bool update_item_memory = (mapObj as ShelfLike)?.NonEmptyInventory is not null;
       // cf Map::PlaceAt(Actor,Position)
-      if (null != mapObj.Location.Map) {
+      if (mapObj.Location.Map is not null) {
         if (HasMapObject(mapObj)) {
           if (update_item_memory) {
             var police = Engine.Session.Get.Police;
@@ -2216,7 +2216,7 @@ retry:
     {   // 2019-08-27 release mode IL Code size       72 (0x48) [invalidated]
       if (IsInBounds(pt)) return GetItemsAt(pt);
       Location? test = _Normalize(pt);
-      return null == test ? null : test.Value.Items;
+      return test is null ? null : test.Value.Items;
     }
 
     /// <summary>
@@ -2268,11 +2268,11 @@ retry:
         if (!Canonical(ref loc)) continue;
         var obj = loc.MapObject;
         var shelf = obj as ShelfLike;
-        if (null != shelf?.NonEmptyInventory) ret.Add(new(shelf));
+        if (shelf?.NonEmptyInventory is not null) ret.Add(new(shelf));
 
         var inv = loc.Items;
-        if (null == inv) continue;
-        if (null != obj && obj.BlocksReachInto()) continue;
+        if (inv is null) continue;
+        if (obj is not null && obj.BlocksReachInto()) continue;
         ret.Add(new(loc));
       }
     }
@@ -2312,7 +2312,7 @@ retry:
       var dest = origin + dir;
       if (!Canonical(ref dest)) return null;
       var actor = dest.Actor;
-      if (null != actor) {
+      if (actor is not null) {
         if (!actor.Inventory.IsEmpty() && !a.IsEnemyOf(actor)) ret.Add(new(actor));
         return 0<ret.Count ? ret : null;
       }
@@ -2323,7 +2323,7 @@ retry:
 
       var inv = dest.Items;
       if (inv is not null) {
-        if (null == obj || !obj.BlocksReachInto()) ret.Add(new(dest));
+        if (obj is null || !obj.BlocksReachInto()) ret.Add(new(dest));
       }
       return 0<ret.Count ? ret : null;
     }
@@ -2335,7 +2335,7 @@ retry:
 
       if (Direction.NEUTRAL == dir) {
         var standing_on = origin.MapObject as ShelfLike;
-        if (null != standing_on && standing_on.IsJumpable) {
+        if (standing_on is not null && standing_on.IsJumpable) {
           // shelf is our ground level
           ret.Add(new(standing_on));
         } else {
@@ -2347,16 +2347,16 @@ retry:
       var dest = origin + dir;
       if (!Canonical(ref dest)) return null;
       var actor = dest.Actor;
-      if (null != actor) {
+      if (actor is not null) {
         var a_inv = actor.Inventory;
-        if (null != a_inv && !a.IsEnemyOf(actor)) ret.Add(new(actor));
+        if (a_inv is not null && !a.IsEnemyOf(actor)) ret.Add(new(actor));
         return 0<ret.Count ? ret : null;
       }
 
       var obj = dest.MapObject;
       if (obj is ShelfLike shelf) ret.Add(new(shelf));
       if (a.IsCrouching || a.CanCrouch()) {
-        if (null == obj || !obj.BlocksReachInto()) ret.Add(new(dest));
+        if (obj is null || !obj.BlocksReachInto()) ret.Add(new(dest));
       }
       return 0<ret.Count ? ret : null;
     }
@@ -2369,7 +2369,7 @@ retry:
 #endif
       var itemsAt = GetItemsAt(position);
       itemsAt?.RepairContains(it, "already had ");
-      if (itemsAt == null) {
+      if (itemsAt is null) {
         Inventory g_inv = new(GROUND_INVENTORY_SLOTS);
         m_GroundItemsByPosition.Add(position, g_inv);
         g_inv.AddAll(it);
@@ -2409,7 +2409,7 @@ retry:
       }
       Location? tmp = _Normalize(position);
 #if DEBUG
-      if (null == tmp) throw new ArgumentOutOfRangeException(nameof(position),position,"invalid position for Item "+nameof(it));
+      if (tmp is null) throw new ArgumentOutOfRangeException(nameof(position),position,"invalid position for Item "+nameof(it));
 #endif
       tmp.Value.Map.DropItemAt(it,tmp.Value.Position);
     }
@@ -2449,7 +2449,7 @@ retry:
         return;
       }
       Location? remap = _Normalize(position);
-      if (null != remap) remap.Value.Map.RemoveAt(test, remap.Value.Position);
+      if (remap is not null) remap.Value.Map.RemoveAt(test, remap.Value.Position);
     }
 
     // Panoptic.
@@ -2469,7 +2469,7 @@ retry:
 
         foreach(var x in m_MapObjectsByPosition) {
           var inv = (x.Value as ShelfLike)?.NonEmptyInventory;
-          if (null == inv) continue;
+          if (inv is null) continue;
           foreach (var it in inv) {
             if (!ret.TryGetValue(it.ModelID, out var cache)) ret.Add(it.ModelID, cache = new());
             if (!cache.TryGetValue(x.Key, out var cache2)) cache.Add(x.Key, cache2 = new());
@@ -2635,12 +2635,12 @@ retry:
     {
       if (IsInBounds(position)) {
         var scentByOdor = GetScentByOdor(odor, in position);
-        if (scentByOdor != null) return scentByOdor.Strength;
+        if (scentByOdor is not null) return scentByOdor.Strength;
       } else {
         Location? tmp = _Normalize(position);
-        if (null != tmp) {
+        if (tmp is not null) {
           var scentByOdor = tmp.Value.Map.GetScentByOdor(odor, tmp.Value.Position);
-          if (scentByOdor != null) return scentByOdor.Strength;
+          if (scentByOdor is not null) return scentByOdor.Strength;
         }
       }
       return 0;
@@ -2692,7 +2692,7 @@ retry:
         tmp.Value.OnlyIfNot(scent => scent.Decay(odorDecayRate));
         if (0 >= tmp.Value.Count) (discard2 ??= new()).Add(tmp.Key);
       }
-      if (null != discard2) foreach(var x in discard2) m_ScentsByPosition.Remove(x);
+      if (discard2 is not null) foreach(var x in discard2) m_ScentsByPosition.Remove(x);
     }
 
     private void _relativeEnergySort(int origin, int ub)
@@ -2772,7 +2772,7 @@ retry:
       var tile_loc = GetTileModelLocation(pt);
       if (!tile_loc.Key?.IsTransparent ?? true) return true;
       var obj = tile_loc.Value.MapObject;
-      return null != obj && !obj.IsMovable && !obj.IsTransparent;
+      return obj is not null && !obj.IsMovable && !obj.IsTransparent;
     }
 
     public bool IsBlockingFire(Point pt)
@@ -2787,10 +2787,10 @@ retry:
     public bool IsBlockingThrow(Point pt)
     {
       var tile_loc = GetTileModelLocation(pt);
-      if (null == tile_loc.Key) return true;
+      if (tile_loc.Key is null) return true;
       if (!tile_loc.Key.IsWalkable) return true;
       var obj = tile_loc.Value.MapObject;
-      return obj != null && !obj.IsWalkable && !obj.IsJumpable;
+      return obj is not null && !obj.IsWalkable && !obj.IsJumpable;
     }
 
     /// <returns>0 not blocked, 1 jumping required, 2 blocked (for livings)</returns>
@@ -2801,7 +2801,7 @@ retry:
       // non-enterable objects (hard)
       // jumpable objects (soft) map.GetMapObjectAt(pt)
       var obj = GetMapObjectAtExt(pt);
-      if (null == obj || obj.IsCouch || obj.IsWalkable) return 0;
+      if (obj is null || obj.IsCouch || obj.IsWalkable) return 0;
       if (obj.IsJumpable) return 1;
       return 2;
     }
@@ -2863,7 +2863,7 @@ retry:
       var ret = new Dictionary<Point,T>();
       foreach(Point pt in pos.Adjacent()) {
         var test = testFn(this,pt);
-        if (null != test) ret.Add(pt, test);
+        if (test is not null) ret.Add(pt, test);
       }
       return ret;
     }
@@ -2895,7 +2895,7 @@ retry:
       foreach(Point pt in position.Adjacent()) {
         if (!IsValid(pt)) continue;
         var a = GetActorAtExt(pt);
-        if (null != a && test(a)) return true;
+        if (a is not null && test(a)) return true;
       }
       return false;
     }
@@ -3084,7 +3084,7 @@ retry:
 #if PROTOTYPE
         if (walkable) {
           var obj = GetMapObjectAtExt(p);
-          if (null != obj && !(obj is DoorWindow) && !obj.IsWalkable && !obj.IsJumpable) walkable = false;  // i.e., car extinguishing can trigger recalc
+          if (obj is not null && !(obj is DoorWindow) && !obj.IsWalkable && !obj.IsJumpable) walkable = false;  // i.e., car extinguishing can trigger recalc
         }
 #endif
         return walkable;

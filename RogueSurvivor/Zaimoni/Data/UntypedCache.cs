@@ -12,14 +12,14 @@ namespace Zaimoni.Data
         // Create Read Update Delete API
         public bool Has(K key) { return _map?.ContainsKey(key) ?? false; }
         [return: MaybeNull] public T Get<T>(K key) {
-          if (null == _map) return default;
+          if (_map is null) return default;
           if (!_map.TryGetValue(key, out var test)) return default;
           if (test is T ret) return ret;
           return default;
         }
 
         public void Unset(K key) {
-            if (null != _map) {
+            if (_map is not null) {
               _map.Remove(key);
               if (0 >= _map.Count)  _map = null;
             }

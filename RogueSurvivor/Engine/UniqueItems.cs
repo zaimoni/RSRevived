@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     static private void save(Utf8JsonWriter writer, string name, in UniqueItem src, JsonSerializerOptions options) {
-        if (null == src.TheItem) return;    // not generated yet
+        if (src.TheItem is null) return;    // not generated yet
         writer.WritePropertyName(name);
         writer.WriteStartObject();
         writer.WritePropertyName("Item");

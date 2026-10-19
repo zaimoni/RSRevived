@@ -183,15 +183,15 @@ namespace djack.RogueSurvivor.Engine
     static public ShelfLike? CanActorPutItemIntoContainer(Actor actor, in Point position)
     {
       var mapObjectAt = actor.Location.Map.GetMapObjectAtExt(position) as ShelfLike;
-      if (null == mapObjectAt) return null;
+      if (mapObjectAt is null) return null;
       return string.IsNullOrEmpty(mapObjectAt.ReasonCantPutItemIn(actor)) ? mapObjectAt : null;
     }
 
     static public bool CanActorEatFoodOnGround(Actor actor, Item it, out string reason)
     {
 #if DEBUG
-      if (actor == null) throw new ArgumentNullException(nameof(actor));
-      if (it == null) throw new ArgumentNullException(nameof(it));
+      if (actor is null) throw new ArgumentNullException(nameof(actor));
+      if (it is null) throw new ArgumentNullException(nameof(it));
 #endif
       if (!(it is ItemFood))
       {
@@ -210,17 +210,17 @@ namespace djack.RogueSurvivor.Engine
     private static ActorAction? IsBumpableFor(Actor actor, Map map, Point point, out string reason)
     {
 #if DEBUG
-      if (null == map) throw new ArgumentNullException(nameof(map));
-      if (null == actor) throw new ArgumentNullException(nameof(actor));
+      if (map is null) throw new ArgumentNullException(nameof(map));
+      if (actor is null) throw new ArgumentNullException(nameof(actor));
 #endif
       reason = "";
       Location loc = new Location(map,point);
       if (!actor.CanEnter(ref loc)) {
         var targets = actor.GetMoveBlockingActors(point);
         var m_attack = targets.CanBumpMelee(actor, point, out reason);
-        if (null != m_attack) return m_attack;
+        if (m_attack is not null) return m_attack;
         var act = loc.MapObject?.IsBumpableFor(actor, out reason);
-        if (null != act) return act;
+        if (act is not null) return act;
         reason = "blocked";
         return null;
       }
@@ -231,7 +231,7 @@ namespace djack.RogueSurvivor.Engine
 
       var actors_in_way = actor.GetMoveBlockingActors(point);
       var melee = actors_in_way.CanBumpMelee(actor, point, out reason);
-      if (null != melee) return melee;
+      if (melee is not null) return melee;
       if (actors_in_way.TryGetValue(point,out var actorAt)) {
         // player as leader should be able to switch with player as follower
         // NPCs shouldn't be leading players anyway
@@ -251,10 +251,10 @@ namespace djack.RogueSurvivor.Engine
         if (actor.IsPlayer) {
           var obj_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
           var inv_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(in loc);
-          if (null != obj_act || null != inv_act) {
+          if (obj_act is not null || inv_act is not null) {
             List<ActorAction> stage = new() { new ActionLeaveMap(actor, in point) };
-            if (null != obj_act) stage.Add(obj_act);
-            if (null != inv_act) stage.Add(inv_act);
+            if (obj_act is not null) stage.Add(obj_act);
+            if (inv_act is not null) stage.Add(inv_act);
             return new Choice(actor, stage);
           }
         }
@@ -266,10 +266,10 @@ namespace djack.RogueSurvivor.Engine
         if (actor.IsPlayer) {
           var obj_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
           var inv_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(in loc);
-          if (null != obj_act || null != inv_act) {
+          if (obj_act is not null || inv_act is not null) {
             List<ActorAction> stage = new() { actionMoveStep };
-            if (null != obj_act) stage.Add(obj_act);
-            if (null != inv_act) stage.Add(inv_act);
+            if (obj_act is not null) stage.Add(obj_act);
+            if (inv_act is not null) stage.Add(inv_act);
             return new Choice(actor, stage);
           }
         }
@@ -306,7 +306,7 @@ namespace djack.RogueSurvivor.Engine
     public static void MaximizeVisibility<T>(ref List<KeyValuePair<Location, T>> candidates, Actor actor, MapObject obj)
     {
       var threat = actor.Threats; // assumed that Threats and InterestingLocs are either both null, or both non-null
-      if (null != threat && 2 <= candidates.Count) {
+      if (threat is not null && 2 <= candidates.Count) {
         var radius = Actor.MAX_VISION + 1;
         var domain = new Rectangle(actor.Location.Position - (Point)radius, (Size)(2*radius +1));
         var a_map = actor.Location.Map;
@@ -343,8 +343,8 @@ namespace djack.RogueSurvivor.Engine
     private static ActorAction IsPathableFor(Actor actor, Location loc, out string reason)
     {
 #if DEBUG
-      if (null == loc.Map) throw new ArgumentNullException(nameof(loc)+".Map");
-      if (null == actor) throw new ArgumentNullException(nameof(actor));
+      if (loc.Map is null) throw new ArgumentNullException(nameof(loc)+".Map");
+      if (actor is null) throw new ArgumentNullException(nameof(actor));
       if (!(actor.Controller is Gameplay.AI.ObjectiveAI)) throw new InvalidOperationException("!(actor.Controller is Gameplay.AI.ObjectiveAI)");
 #endif
       reason = "";
@@ -368,9 +368,9 @@ namespace djack.RogueSurvivor.Engine
         if (map!=actor.Location.Map) {
           // check for exit leading here and substitute if so.  Cf. BaseAI::BehaviorUseExit
           var exit = actor.Model.Abilities.AI_CanUseAIExits ? actor.Location.Exit : null;
-          if (null != exit && exit.Location==loc) {
+          if (exit is not null && exit.Location==loc) {
            if (exit.IsNotBlocked(out var a, out var obj, actor)) return new ActionUseExit(actor, actor.Location);
-           if (a != null && actor.IsEnemyOf(a) && ActionMeleeAttack.Can(actor, a)) return new ActionMeleeAttack(actor, a);
+           if (a is not null && actor.IsEnemyOf(a) && ActionMeleeAttack.Can(actor, a)) return new ActionMeleeAttack(actor, a);
            return ActionBreak.schedule(actor, obj);
           }
         }
@@ -381,7 +381,7 @@ namespace djack.RogueSurvivor.Engine
 
       // respec of IsWalkableFor guarantees that any actor will be adjacent
       var actorAt = map.GetActorAt(point);
-      if (actorAt != null) {
+      if (actorAt is not null) {
         if (actor.IsEnemyOf(actorAt)) {
           return (ActionMeleeAttack.Can(actor, actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
         }
@@ -403,7 +403,7 @@ namespace djack.RogueSurvivor.Engine
            bool push_legal = 1<=push_dest.Count;
            if (push_legal) {
              var self_block = ai.WantToGoHere(actorAt.Location);
-             if (null != self_block && 1==self_block.Count) {
+             if (self_block is not null && 1==self_block.Count) {
                push_dest.OnlyIf(pt => !self_block.Contains(pt));
                push_legal = 1<=push_dest.Count;
              }
@@ -412,7 +412,7 @@ namespace djack.RogueSurvivor.Engine
              bool i_am_in_his_way = false;
              bool i_can_help = false;
              var help_him = (actorAt.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(actorAt.Location);
-             if (null != help_him) {
+             if (help_him is not null) {
                i_am_in_his_way = help_him.Contains(actor.Location);
                if (push_dest.NontrivialFilter(x => help_him.Contains(x.Key))) push_dest.OnlyIf(pt => help_him.Contains(pt));
                i_can_help = help_him.Contains(push_dest.First().Key);
@@ -421,22 +421,22 @@ namespace djack.RogueSurvivor.Engine
              // function target
              var test = ClassifyAdjacent(push_dest, actor.Location);
              var candidates = (i_can_help && test.Value.Any()) ? test.Value.ToList() : null;
-             if (null == candidates && !i_am_in_his_way && i_can_help && test.Key.Any()) candidates = test.Key.ToList();
-             if (null == candidates && i_am_in_his_way) {
+             if (candidates is null && !i_am_in_his_way && i_can_help && test.Key.Any()) candidates = test.Key.ToList();
+             if (candidates is null && i_am_in_his_way) {
                // HMM...maybe step aside instead?
                var considering = actor.MutuallyAdjacentFor(actorAt.Location);
-               if (null != considering) {
+               if (considering is not null) {
                  considering = considering.FindAll(pt => pt.IsWalkableFor(actor));
                  if (0 < considering.Count) return ActionMoveStep.schedule(actor, Get.DiceRoller.Choose(considering));
                }
              }
 
              // legacy initialization
-             if (null == candidates && test.Value.Any()) candidates = test.Value.ToList();
-             if (null == candidates && test.Key.Any()) candidates = test.Key.ToList();
+             if (candidates is null && test.Value.Any()) candidates = test.Value.ToList();
+             if (candidates is null && test.Key.Any()) candidates = test.Key.ToList();
              // end function target
 
-             if (null != candidates) return new ActionShove(actor,actorAt, Get.DiceRoller.Choose(candidates).Value);
+             if (candidates is not null) return new ActionShove(actor,actorAt, Get.DiceRoller.Choose(candidates).Value);
            }
         }
 
@@ -451,14 +451,14 @@ namespace djack.RogueSurvivor.Engine
         return null;
       }
       var mapObjectAt = map.GetMapObjectAt(point);
-      if (mapObjectAt != null) {
+      if (mapObjectAt is not null) {
         if (mapObjectAt is DoorWindow door) {
           if (door.BarricadePoints > 0) {
             // pathfinding livings will break barricaded doors (they'll prefer to go around it)
             var act_bash = ActionBashDoor.schedule(actor, door);
-            if (null != act_bash) return act_bash;
+            if (act_bash is not null) return act_bash;
             var act_break = ActionBreak.schedule(actor, mapObjectAt);
-            if (null != act_break) return act_break;
+            if (act_break is not null) return act_break;
             reason = "cannot bash the barricade";
             return null;
           }
@@ -468,12 +468,12 @@ namespace djack.RogueSurvivor.Engine
           }
         }
         var act = ai?.WouldGetFrom(mapObjectAt as ShelfLike);
-        if (null != act) return act;
+        if (act is not null) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause
         if (actor.Model.Abilities.CanBashDoors) {
           var act_break = ActionBreak.schedule(actor, mapObjectAt);
-          if (null != act_break) return act_break;
+          if (act_break is not null) return act_break;
         }
 
         // pushing is very bad for bumping, but ok for pathing
@@ -492,17 +492,17 @@ namespace djack.RogueSurvivor.Engine
            if (is_adjacent) {
              if (push_legal) {
                var self_block = ai.WantToGoHere(mapObjectAt.Location);
-               if (null != self_block && 1==self_block.Count) push_dest.OnlyIf(pt => !self_block.Contains(pt));
+               if (self_block is not null && 1==self_block.Count) push_dest.OnlyIf(pt => !self_block.Contains(pt));
 
                var candidates = PreferNonAdjacent(push_dest, actor.Location);
-               if (null != candidates) {
+               if (candidates is not null) {
                  MaximizeVisibility(ref candidates, actor, mapObjectAt);
                  return new ActionPush(actor,mapObjectAt, Get.DiceRoller.Choose(candidates).Value);
                }
              } else {
                // proceed with pull if we can't push safely
                var pull_dests = mapObjectAt.Location.Adjacent(loc => 1 == GridDistance(actor.Location, loc));
-               if (null != pull_dests) return new ActionPull(actor, mapObjectAt, Get.DiceRoller.Choose(pull_dests));
+               if (pull_dests is not null) return new ActionPull(actor, mapObjectAt, Get.DiceRoller.Choose(pull_dests));
              }
            }
         }
@@ -511,11 +511,11 @@ namespace djack.RogueSurvivor.Engine
         if (mapObjectAt is PowerGenerator powGen) {
           if (powGen.IsOn) {
             var charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.LEFT_HAND));   // normal lights and trackers
-            if (null != charge) return charge;
+            if (charge is not null) return charge;
             charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.RIGHT_HAND));  // formal correctness
-            if (null != charge) return charge;
+            if (charge is not null) return charge;
             charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.HIP_HOLSTER)); // the police tracker
-            if (null != charge) return charge;
+            if (charge is not null) return charge;
           }
           if (actor.CanSwitch(powGen, out reason)) {
              if (actor.IsPlayer || !powGen.IsOn) return new ActionSwitchPowerGenerator(actor, powGen);
@@ -536,9 +536,9 @@ namespace djack.RogueSurvivor.Engine
     {
       if (a.Map != b.Map) {
         Location? test = a.Map.Denormalize(in b);
-        if (null == test) {
+        if (test is null) {
           var exit = a.Exit;
-          return null != exit && exit.Location == b;
+          return exit is not null && exit.Location == b;
         }
         return IsAdjacent(a.Position, test.Value.Position);
       }
@@ -560,11 +560,11 @@ namespace djack.RogueSurvivor.Engine
 
     public static int GridDistance(in Location locA, in Location locB)
     {
-      if (null == locA.Map) return int.MaxValue;
-      if (null == locB.Map) return int.MaxValue;
+      if (locA.Map is null) return int.MaxValue;
+      if (locB.Map is null) return int.MaxValue;
       if (locA.Map==locB.Map) return GridDistance(locB.Position - locA.Position);
       Location? tmp = locA.Map.Denormalize(in locB);
-      if (null == tmp) return int.MaxValue;
+      if (tmp is null) return int.MaxValue;
       return GridDistance(tmp.Value.Position - locA.Position);
     }
 
@@ -584,16 +584,16 @@ namespace djack.RogueSurvivor.Engine
     public static double StdDistance(in Location from, in Location to)
     {
       Location? test = from.Map.Denormalize(in to);
-      if (null == test) return double.MaxValue;
+      if (test is null) return double.MaxValue;
       return StdDistance(test.Value.Position - from.Position);
     }
 
     public static double InteractionStdDistance(in Location from, in Location to)
     {
       Location? test = from.Map.Denormalize(in to);
-      if (null == test) {
+      if (test is null) {
         var exit = from.Exit;
-        return (null != exit && exit.Location == to) ? 1.0 : double.MaxValue;
+        return (exit is not null && exit.Location == to) ? 1.0 : double.MaxValue;
       }
       return StdDistance(test.Value.Position - from.Position);
     }
@@ -603,9 +603,9 @@ namespace djack.RogueSurvivor.Engine
     {
       if (a.Map != b.Map) {
         Location? test = a.Map.Denormalize(in b);
-        if (null == test) {
+        if (test is null) {
           var exit = a.Exit;
-          return (null != exit && exit.Location == b) ? 1 : int.MaxValue;
+          return (exit is not null && exit.Location == b) ? 1 : int.MaxValue;
         }
         return GridDistance(a.Position, test.Value.Position);
       }
@@ -616,18 +616,18 @@ namespace djack.RogueSurvivor.Engine
     {
       if (a.Map == b.Map) return GridDistance(a.Position, b.Position);
       Location? test = a.Map.Denormalize(in b);
-      if (null != test) return GridDistance(a.Position, test.Value.Position);
+      if (test is not null) return GridDistance(a.Position, test.Value.Position);
       var exit = b.Exit;
-      if (null != exit) {
+      if (exit is not null) {
         if (a.Map == exit.Location.Map) return GridDistance(a.Position, exit.Location.Position)+1;
         test = a.Map.Denormalize(exit.Location);
-        if (null != test) return GridDistance(a.Position, test.Value.Position)+1;
+        if (test is not null) return GridDistance(a.Position, test.Value.Position)+1;
       }
       exit = a.Exit;
-      if (null != exit) {
+      if (exit is not null) {
         if (b.Map == exit.Location.Map) return GridDistance(b.Position, exit.Location.Position)+1;
         test = b.Map.Denormalize(exit.Location);
-        if (null != test) return GridDistance(b.Position, test.Value.Position)+1;
+        if (test is not null) return GridDistance(b.Position, test.Value.Position)+1;
       }
       return int.MaxValue;
     }
@@ -638,11 +638,11 @@ namespace djack.RogueSurvivor.Engine
 
     public static int L1_Distance(in Location a, in Location b)
     {
-      if (null == a.Map) return int.MaxValue;
-      if (null == b.Map) return int.MaxValue;
+      if (a.Map is null) return int.MaxValue;
+      if (b.Map is null) return int.MaxValue;
       if (a.Map == b.Map) return L1_Distance(b.Position - a.Position);
       Location? tmp = a.Map.Denormalize(in b);
-      if (null == tmp) return int.MaxValue;
+      if (tmp is null) return int.MaxValue;
       return L1_Distance(tmp.Value.Position - a.Position);
     }
 
@@ -656,17 +656,17 @@ namespace djack.RogueSurvivor.Engine
 
     public static int JumpPoint_Distance(in Location a, in Location b)
     {
-      if (null == a.Map) return int.MaxValue;
-      if (null == b.Map) return int.MaxValue;
+      if (a.Map is null) return int.MaxValue;
+      if (b.Map is null) return int.MaxValue;
       if (a.Map == b.Map) return JumpPoint_Distance(a.Position, b.Position);
       Location? tmp = a.Map.Denormalize(in b);
-      if (null == tmp) return int.MaxValue;
+      if (tmp is null) return int.MaxValue;
       return JumpPoint_Distance(a.Position, tmp.Value.Position);
     }
 
     public static bool IsMurder(Actor? killer, Actor victim)
     {
-      if (null == killer) return false;
+      if (killer is null) return false;
       if (victim.Model.Abilities.IsUndead) return false;
       bool k_first_class = killer.IsFirstClassCitizen();
       // 2024-10-09 zaimoni: for now, pretend army has access to police records
@@ -683,7 +683,7 @@ namespace djack.RogueSurvivor.Engine
       // If your leader is a cop i.e. First Class Citizen, killing his enemies should not trigger murder charges.
       var killer_leader = killer.LiveLeader;
       if (!k_first_class) {
-        if (null != killer_leader && killer_leader.IsFirstClassCitizen()) return IsMurder(killer_leader, victim);
+        if (killer_leader is not null && killer_leader.IsFirstClassCitizen()) return IsMurder(killer_leader, victim);
       }
 
       // Framed for murder.  Since this is an apocalypse, self-defence doesn't count no matter what the law was pre-apocalypse
@@ -695,7 +695,7 @@ namespace djack.RogueSurvivor.Engine
 
       // XXX RS Alpha 9; went away in RS Alpha 10.  The important case (police leading civilian) is handled above.  May need reimplementing (cf. Actor::ChainOfCommand)
       if (killer_leader?.IsSelfDefenceFrom(victim) ?? false) return false;
-      if (null != killer.FirstFollower(fo => !fo.IsSelfDefenceFrom(victim))) return false;
+      if (killer.FirstFollower(fo => !fo.IsSelfDefenceFrom(victim)) is not null) return false;
 
       return true;
     }
@@ -725,7 +725,7 @@ namespace djack.RogueSurvivor.Engine
       if (District.IsSubwayOrSewersMap(loc.Map)) return new Location(loc.Map.District.EntryMap,loc.Position);
 retry:
       var entry_e = loc.Map.FirstExitFor(loc.Map.District.EntryMap);
-      if (null != entry_e) {
+      if (entry_e is not null) {
         return new Location(entry_e.Value.Value.Location.Map, entry_e.Value.Value.Location.Position + (loc.Position - entry_e.Value.Key));
       }
       // far from surface.  Currently one of hospital or police station
@@ -784,26 +784,26 @@ retry:
           }
           // covers barricaded broken windows...otherwise redundant.
           var act_bash = ActionBashDoor.create(actor, door);
-          if (null != act_bash) return act_bash;
+          if (act_bash is not null) return act_bash;
           reason = "cannot bash the barricade";
           return null;
       }
       var act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
-      if (null != act) return act;
+      if (act is not null) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
         // only Z want to break arbitrary objects; thus the guard clause
       if (actor.Model.Abilities.CanBashDoors) {
         var act_break = ActionBreak.create(actor, mapObjectAt);
-        if (null != act_break) return act_break;
+        if (act_break is not null) return act_break;
       }
       if (mapObjectAt is PowerGenerator powGen) {
           if (powGen.IsOn) {
             var charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.LEFT_HAND));   // normal lights and trackers
-            if (null != charge) return charge;
+            if (charge is not null) return charge;
             charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.RIGHT_HAND));  // formal correctness
-            if (null != charge) return charge;
+            if (charge is not null) return charge;
             charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.HIP_HOLSTER)); // the police tracker
-            if (null != charge) return charge;
+            if (charge is not null) return charge;
           }
           if (actor.CanSwitch(powGen, out reason)) {
              if (actor.IsPlayer || !powGen.IsOn) return new ActionSwitchPowerGenerator(actor, powGen);
@@ -821,9 +821,9 @@ retry:
           foreach(var pt_actor in actors_in_way.Values) {
             if (pt_actor == actorAt) continue;
             if (!ActionMeleeAttack.Can(actor, pt_actor, out reason)) continue;
-            if (null == target || target.HitPoints>pt_actor.HitPoints) target = pt_actor;
+            if (target is null || target.HitPoints>pt_actor.HitPoints) target = pt_actor;
           }
-          return (null != target ? new ActionMeleeAttack(actor, target) : null);
+          return (target is not null ? new ActionMeleeAttack(actor, target) : null);
       }
 #endif
 

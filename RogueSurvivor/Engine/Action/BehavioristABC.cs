@@ -39,13 +39,13 @@ namespace djack.RogueSurvivor.Engine._Action
         public override bool IsLegal() {
             resolve();
             if (!_resolved) return true;
-            if (null == _action) return false;
+            if (_action is null) return false;
             return _action.IsLegal();
         }
         public override bool IsPerformable() {
             resolve();
             if (!_resolved) return true;
-            if (null == _action) return false;
+            if (_action is null) return false;
             return _action.IsPerformable();
         }
         public override void Perform() { _action?.Perform(); }

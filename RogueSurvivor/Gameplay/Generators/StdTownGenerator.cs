@@ -24,8 +24,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       bool outside_test(Point pt) { return !map.IsInsideAt(pt); }
       // XXX with default 15% policeman probability and default 25 max civilians, 0 police in district is ~1.7% chance and happens noticeably often in testing
       bool inside_test(Point pt) { return map.IsInsideAt(pt) && !map.HasZoneNamedAt(pt, "NoCivSpawn"); }
-      bool has_subway = null!=map.GetZoneByPartialName("Subway Station");
-      bool has_CHAR_office = null!=map.GetZoneByPartialName("CHAR Office");
+      bool has_subway = map.GetZoneByPartialName("Subway Station") is not null;
+      bool has_CHAR_office = map.GetZoneByPartialName("CHAR Office") is not null;
       var unclaimed_sheds = map.GetZonesByPartialName("Shed");
       List<Zone>? claimed_sheds = null;
       List<Zone>? full_sheds = null;
@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             var could_be_policecars = map.FindAdjacent<MapObject>(pt, (m,pos) => {
                 var obj = m.GetMapObjectAtExt(pos);
                 // avoiding exact-id test for now
-                if (null != obj && MapObject.CAR_WEIGHT == obj.Weight) return obj;
+                if (obj is not null && MapObject.CAR_WEIGHT == obj.Weight) return obj;
                 return null;
             });
             return 0 < could_be_policecars.Count;
@@ -59,12 +59,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           // Park sheds can get crowded fast.  #1 takes the central square (5 in reach).
           // VAPORWARE #2 takes the square between the central square and the door.
           // disallow more than 2.
-          if (null != unclaimed_sheds) {
-            if (null != claimed_sheds) {
+          if (unclaimed_sheds is not null) {
+            if (claimed_sheds is not null) {
               ok = ok.And(pt => {
-                if (null != claimed_sheds.Find(z => z.Bounds.Contains(pt))) return false;   // XXX \todo extend
+                if (claimed_sheds.Find(z => z.Bounds.Contains(pt)) is not null) return false;   // XXX \todo extend
                 var z2 = unclaimed_sheds.Find(z => z.Bounds.Contains(pt));
-                if (null == z2) return true;
+                if (z2 is null) return true;
                 var center = z2.Bounds.Location + z2.Bounds.Size/2;
                 if (pt == center) { // grab center slot
                   shed_claimed.Add(pt);
@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             } else {
               ok = ok.And(pt => {
                 var z2 = unclaimed_sheds.Find(z => z.Bounds.Contains(pt));
-                if (null == z2) return true;
+                if (z2 is null) return true;
                 var center = z2.Bounds.Location + z2.Bounds.Size/2;
                 if (pt == center) { // grab center slot
                   shed_claimed.Add(pt);
@@ -82,16 +82,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 } else return false;
               });
             }
-          } else if (null != claimed_sheds) {
-            if (null != full_sheds) {
+          } else if (claimed_sheds is not null) {
+            if (full_sheds is not null) {
               ok = ok.And(pt => {
-                if (null != full_sheds.Find(z => z.Bounds.Contains(pt))) return false;   // XXX \todo extend
+                if (full_sheds.Find(z => z.Bounds.Contains(pt)) is not null) return false;   // XXX \todo extend
                 var z2 = claimed_sheds.Find(z => z.Bounds.Contains(pt));
-                if (null == z2) return true;
+                if (z2 is null) return true;
                 var center = z2.Bounds.Location + z2.Bounds.Size/2;
                 foreach(var dir in Direction.COMPASS_4) {
                   var pt2 = center+dir;
-                  if (null != map.GetMapObjectAt(pt2)) continue;
+                  if (map.GetMapObjectAt(pt2) is not null) continue;
                   if (pt == pt2) {
                     shed_claimed.Add(pt);
                     return true;
@@ -102,11 +102,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             } else {
               ok = ok.And(pt => {
                 var z2 = claimed_sheds.Find(z => z.Bounds.Contains(pt));
-                if (null == z2) return true;
+                if (z2 is null) return true;
                 var center = z2.Bounds.Location + z2.Bounds.Size/2;
                 foreach(var dir in Direction.COMPASS_4) {
                   var pt2 = center+dir;
-                  if (null != map.GetMapObjectAt(pt2)) continue;
+                  if (map.GetMapObjectAt(pt2) is not null) continue;
                   if (pt == pt2) {
                     shed_claimed.Add(pt);
                     return true;
@@ -115,8 +115,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 return false;
               });
             }
-          } else if (null != full_sheds) {
-            ok = ok.And(pt => null == full_sheds.Find(z => z.Bounds.Contains(pt)));
+          } else if (full_sheds is not null) {
+            ok = ok.And(pt => full_sheds.Find(z => z.Bounds.Contains(pt)) is null);
           }
 
           // Unfortunately, CHAR did represent to the police that the offices were ok as curfew refuges.

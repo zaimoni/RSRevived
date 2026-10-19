@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Data.Model
         private Item_s[]? m_Items = null;
 
         public Inventory(IEnumerable<Item_s>? src) {
-            if (null != src) {
+            if (src is not null) {
                 List<Item_s> stage = new();
                 foreach (var x in src) {
                     if (0 < x.QtyLike) stage.Add(x);
@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Data.Model
         }
 
         public Inventory(IEnumerable<Data.Item>? src) {
-            if (null != src) {
+            if (src is not null) {
                 List<Item_s> stage = new();
                 foreach (var y in src) {
                     var x = y.toStruct();
@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Data.Model
 
         // value copy
         public Inventory(Inventory src) {
-            if (null != src?.m_Items && 0 < src.m_Items.Length) {
+            if (src?.m_Items is not null && 0 < src.m_Items.Length) {
                 var stage = new Item_s[src.m_Items.Length];
                 Array.Copy(src.m_Items, stage, src.m_Items.Length);
                 m_Items = stage;
@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Data.Model
         }
 
         public IEnumerable<Item_s>? Items { get { return m_Items; } }
-        public bool IsEmpty { get { return null == m_Items || 0 == m_Items.Length; } }
+        public bool IsEmpty { get { return m_Items is null || 0 == m_Items.Length; } }
 
         /// <returns>0: no; 1: ok; -1: discard on drop</returns>
         static public int QtyLikeZero_ok(Gameplay.Item_IDs ModelID) {
@@ -59,11 +59,11 @@ namespace djack.RogueSurvivor.Data.Model
         public int? GetBestDestackable(Model.Item it)    // alpha10 equivalent: GetSmallestStackByModel.  XXX \todo rename for legibility?
         {
             int? ret = default;
-            if (null != m_Items) {
+            if (m_Items is not null) {
                 int ub = m_Items.Length;
                 while (0 <= --ub) {
                     if (m_Items[ub].Model != it) continue;
-                    if (null == ret || m_Items[ub].QtyLike < ret.Value) ret = ub;
+                    if (ret is null || m_Items[ub].QtyLike < ret.Value) ret = ub;
                 }
             }
             return ret;
@@ -72,11 +72,11 @@ namespace djack.RogueSurvivor.Data.Model
         public int? GetWorstDestackable(Model.Item it)
         {
             int? ret = default;
-            if (null != m_Items) {
+            if (m_Items is not null) {
                 int ub = m_Items.Length;
                 while (0 <= --ub) {
                     if (m_Items[ub].Model != it) continue;
-                    if (null == ret || m_Items[ub].QtyLike > ret.Value) ret = ub;
+                    if (ret is null || m_Items[ub].QtyLike > ret.Value) ret = ub;
                 }
             }
             return ret;
@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Data.Model
 
         [Conditional("DEBUG")]
         private void LegalIndex(int n) {
-            if (null == m_Items) throw new ArgumentNullException(nameof(m_Items));
+            if (m_Items is null) throw new ArgumentNullException(nameof(m_Items));
             var ub = m_Items.Length;
             if (0 > n || ub <= n) throw new ArgumentOutOfRangeException(nameof(n));
         }
@@ -110,7 +110,7 @@ namespace djack.RogueSurvivor.Data.Model
 
         public void Consume(Gameplay.Item_IDs ModelID) {
             var target = GetBestDestackable(Gameplay.GameItems.From(ModelID));
-            if (null == target)
+            if (target is null)
 #if DEBUG
                 throw new ArgumentNullException(nameof(target))
 #else

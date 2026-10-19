@@ -64,18 +64,18 @@ namespace djack.RogueSurvivor.Data
     // Map version is not cross-district
     public void ForEachAdjacent(Action<Location> op)
     {
-      if (null == Map) return;
+      if (Map is null) return;
       foreach(var pt in Position.Adjacent()) {
         var test = new Location(Map,pt);
         if (Map.CanEnter(ref test)) op(test);
       }
       var e = Exit;
-      if (null != e) op(e.Location);
+      if (e is not null) op(e.Location);
     }
 
     public List<Location>? Adjacent(Predicate<Location> ok)
     {
-      if (null == Map) return null;
+      if (Map is null) return null;
 
       List<Location> ret = new();
       ForEachAdjacent(loc => {
@@ -88,16 +88,16 @@ namespace djack.RogueSurvivor.Data
     public bool ChokepointIsContested(Actor viewpoint) {
       // exit-based
       var e = Exit;
-      if (null != e) {
+      if (e is not null) {
         var a = e.Location.Actor;
-        if (null != a && a!=viewpoint && !a.IsEnemyOf(viewpoint)) return true;
+        if (a is not null && a!=viewpoint && !a.IsEnemyOf(viewpoint)) return true;
       }
       // check map for topology-based
       foreach (var dir in Direction.COMPASS) {
         var loc = this+dir;
         if (2> Engine.Rules.GridDistance(in loc, viewpoint.Location)) continue;
         var a = loc.Actor;
-        if (null == a || a.IsEnemyOf(viewpoint)) continue;
+        if (a is null || a.IsEnemyOf(viewpoint)) continue;
         var steps = a.OneStepRange();
         if (steps is null || 1>=steps.Count) return true;
         // \todo: educated guess based on last known move
@@ -111,7 +111,7 @@ namespace djack.RogueSurvivor.Data
     public List<ZoneLoc>? ClearableZones { get {
       var ret = new List<ZoneLoc>();
       var z = Map.ClearableZonesAt(Position);
-      if (null != z) {
+      if (z is not null) {
         ret.AddRange(z);
         return ret;
       }
@@ -120,7 +120,7 @@ namespace djack.RogueSurvivor.Data
         if (!Map.Canonical(ref loc)) continue;
         if (!loc.TileModel.IsWalkable) continue;
         z = loc.Map.ClearableZonesAt(loc.Position);
-        if (null != z) foreach(var zone in z) if (!ret.Contains(zone)) ret.Add(zone);
+        if (z is not null) foreach(var zone in z) if (!ret.Contains(zone)) ret.Add(zone);
       }
       return (0 < ret.Count) ? ret : null;
     } }
@@ -147,11 +147,11 @@ namespace djack.RogueSurvivor.Data
     public ZoneLoc[]? TrivialDistanceZones { get {
         var dest = new List<ZoneLoc>();
         var z = Map.TrivialPathingFor(Position);
-        if (null != z) {
+        if (z is not null) {
           dest.AddRange(z);
           foreach(var zone in z) {
             var x = zone.ExitZones;
-            if (null != x) {
+            if (x is not null) {
                 foreach(var z2 in x) if (z2.Exits.Contains(this) && !dest.Contains(z2)) dest.Add(z2);
             }
           }
@@ -161,7 +161,7 @@ namespace djack.RogueSurvivor.Data
             if (!Map.Canonical(ref loc)) continue;
             if (!loc.TileModel.IsWalkable) continue;
             z = Map.TrivialPathingFor(Position);
-            if (null != z) foreach(var zone in z) if (!dest.Contains(zone)) dest.Add(zone);
+            if (z is not null) foreach(var zone in z) if (!dest.Contains(zone)) dest.Add(zone);
         }
         return (0 < dest.Count) ? dest.ToArray() : null;
      } }
@@ -175,7 +175,7 @@ namespace djack.RogueSurvivor.Data
     public bool BlocksLivingPathfinding { get {
         if (!TileModel.IsWalkable) return true;
         var obj = MapObject;
-        return null != obj && obj.BlocksLivingPathfinding;
+        return obj is not null && obj.BlocksLivingPathfinding;
     } }
 
     public int OnReachInto(Actor actor)
@@ -188,7 +188,7 @@ namespace djack.RogueSurvivor.Data
           int new_hp = actor.HitPoints;
           if (cur_hp > new_hp) {
               var owner = trap.Owner;
-              if (null != owner) (trap_owners ??= new()).Add(owner);
+              if (owner is not null) (trap_owners ??= new()).Add(owner);
               cur_hp = new_hp;
           }
           return trap_gone;
@@ -196,7 +196,7 @@ namespace djack.RogueSurvivor.Data
       if (0 >= cur_hp) {
         var owner = trap_owners?[0];
         // look the other way when it comes to friendly trap kills
-        if (null != owner && !string.IsNullOrEmpty(owner.AIwillNotMurder)) owner = null;
+        if (owner is not null && !string.IsNullOrEmpty(owner.AIwillNotMurder)) owner = null;
         // the above can trigger killing of actor already; hard crash
         if (!actor.IsDead) Engine.RogueGame.Game.KillActor(owner, actor, "trap");
         return 0;
@@ -326,7 +326,7 @@ namespace Zaimoni.JsonConvert
             writer.WriteCompact(w => {
                 w.WriteStartArray();
                 JsonSerializer.Serialize(w, src.Position, options);
-                if (null != src.Map) src.Map.SaveAsRef(w);
+                if (src.Map is not null) src.Map.SaveAsRef(w);
                 w.WriteEndArray();
             });
         }

@@ -34,7 +34,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public static Item? WantsToRecharge(Actor whom) {
       Item? it = whom.Inventory.GetFirstMatching<Items.ItemLight>(obj => obj.MaxBatteries - 1 > obj.Batteries);
-      if (null != it) return it;
+      if (it is not null) return it;
       return whom.Inventory.GetFirstMatching<Items.ItemTracker>(obj => Gameplay.Item_IDs.TRACKER_POLICE_RADIO != obj.ModelID && obj.MaxBatteries - 1 > obj.Batteries);
     }
 

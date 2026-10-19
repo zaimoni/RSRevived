@@ -207,7 +207,7 @@ namespace djack.RogueSurvivor.Data
     public void DoForAllMaps(Action<Map> op,Predicate<District> ok)
     {
       foreach(District d in m_DistrictsGrid) {
-        if (null != ok && !ok(d)) continue;
+        if (ok is not null && !ok(d)) continue;
         foreach(Map m in d.Maps) op(m);
       }
     }
@@ -230,7 +230,7 @@ namespace djack.RogueSurvivor.Data
     public Actor? From(in ActorTag src) {
         foreach(District d in m_DistrictsGrid) {
             var actor = d.From(in src);
-            if (null != actor) return actor;
+            if (actor is not null) return actor;
         }
         return null;
     }
@@ -238,7 +238,7 @@ namespace djack.RogueSurvivor.Data
     public Corpse? CorpseFrom(in ActorTag src) {
         foreach(District d in m_DistrictsGrid) {
             var c = d.CorpseFrom(in src);
-            if (null != c) return c;
+            if (c is not null) return c;
         }
         return null;
     }
@@ -257,7 +257,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     private void initTurnOrder() {
-      if (null != s_turn_order && s_turn_order.Length == m_Size*m_Size) return;
+      if (s_turn_order is not null && s_turn_order.Length == m_Size*m_Size) return;
       List<Point> stage = new();
       stage.Add(Point.Empty);
 
@@ -382,7 +382,7 @@ namespace djack.RogueSurvivor.Data
       m_Size = relay_size;
       initTurnOrder();
 
-      if (null == relay_districts) throw new ArgumentNullException(nameof(relay_districts));
+      if (relay_districts is null) throw new ArgumentNullException(nameof(relay_districts));
       if (relay_districts.Length != m_Size * m_Size) throw new InvalidOperationException("tracing");
       m_DistrictsGrid = new District[m_Size,m_Size];
       foreach(var d in relay_districts) m_DistrictsGrid[d.WorldPosition.X, d.WorldPosition.Y] = d;
@@ -412,11 +412,11 @@ namespace djack.RogueSurvivor.Data
       writer.WritePropertyName("Districts");
       JsonSerializer.Serialize(writer, stage.ToArray(), options);
       stage = null; // allow garbage collection
-      if (null != m_PlayerDistrict) {
+      if (m_PlayerDistrict is not null) {
         writer.WritePropertyName("PlayerDistrict");
         JsonSerializer.Serialize(writer, m_PlayerDistrict, options);
       }
-      if (null != m_SimDistrict) {
+      if (m_SimDistrict is not null) {
         writer.WritePropertyName("SimDistrict");
         JsonSerializer.Serialize(writer, m_SimDistrict, options);
       }
@@ -463,7 +463,7 @@ namespace djack.RogueSurvivor.Data
       DoForAllMaps(m=> {
           foreach (var a in m.Police.Get) {
               if (a.Location == loc) continue;
-              if (null!=test && !test(a)) continue;
+              if (test is not null && !test(a)) continue;
               Location other_radio_pos = Engine.Rules.PoliceRadioLocation(a.Location);
               if (Engine.RogueGame.POLICE_RADIO_RANGE >= Engine.Rules.GridDistance(radio_pos, in other_radio_pos)) (ret ??= new HashSet<Actor>()).Add(a); //  \todo change target for range reduction from being underground
           }
@@ -479,7 +479,7 @@ namespace djack.RogueSurvivor.Data
           foreach (var a in m.Actors) {
               if (a.Location == loc) continue;
               if (!a.HasActivePoliceRadio) continue;
-              if (null!=test && !test(a)) continue;
+              if (test is not null && !test(a)) continue;
               Location other_radio_pos = Engine.Rules.PoliceRadioLocation(a.Location);
               if (Engine.RogueGame.POLICE_RADIO_RANGE >= Engine.Rules.GridDistance(radio_pos, in other_radio_pos)) (ret ??= new HashSet<Actor>()).Add(a); //  \todo change target for range reduction from being underground
           }
@@ -835,14 +835,14 @@ namespace djack.RogueSurvivor.Data
       var tmp_E = At(d.WorldPosition + Direction.E);
       var tmp_SW = At(d.WorldPosition + Direction.SW);
 
-      if (null != tmp_E) {
+      if (tmp_E is not null) {
         var e_time = tmp_E.LocalTime.TurnCounter;
 
         if (t1 == e_time) tmp_E = null;
         else if (t0 != e_time) throw new InvalidOperationException("World::ScheduleAdjacentForAdvancePlay t0 "+ t0.ToString() + " e_time " + e_time.ToString());
       }
 
-      if (null != tmp_SW) {
+      if (tmp_SW is not null) {
         var sw_time = tmp_SW.LocalTime.TurnCounter;
         if (t1 == sw_time) tmp_SW = null;
         else if (t0 != sw_time) throw new InvalidOperationException("World::ScheduleAdjacentForAdvancePlay t0 "+ t0.ToString() + " sw_time " + sw_time.ToString());
@@ -850,8 +850,8 @@ namespace djack.RogueSurvivor.Data
 
       // other directions not needed.  An early protoype also used Direction.NW but this caused global vs. local time skew
 #if AUDIT
-      if (null != tmp_E) Logger.WriteLine(Logger.Stage.RUN_MAIN, tmp_E.Name + ": " + tmp_E.LocalTime.TurnCounter.ToString());
-      if (null != tmp_SW) Logger.WriteLine(Logger.Stage.RUN_MAIN, tmp_SW.Name + ": " + tmp_SW.LocalTime.TurnCounter.ToString());
+      if (tmp_E is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, tmp_E.Name + ": " + tmp_E.LocalTime.TurnCounter.ToString());
+      if (tmp_SW is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, tmp_SW.Name + ": " + tmp_SW.LocalTime.TurnCounter.ToString());
 #endif
 
       lock (m_Ready) {
@@ -861,15 +861,15 @@ namespace djack.RogueSurvivor.Data
         Interlocked.CompareExchange(ref m_PlayerDistrict, null, d);
         Interlocked.CompareExchange(ref m_SimDistrict, null, d);
         // the ones that would typically be scheduled
-        if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
-        if (null != tmp_SW) ScheduleForAdvancePlay(tmp_SW);
+        if (tmp_E is not null) ScheduleForAdvancePlay(tmp_E);
+        if (tmp_SW is not null) ScheduleForAdvancePlay(tmp_SW);
       }
     }
 
     static private Point[]? s_turn_order = null;
 
     private void bootstrap_districts() {
-      if (null != m_PlayerDistrict || null != m_SimDistrict) return;
+      if (m_PlayerDistrict is not null || m_SimDistrict is not null) return;
       lock (m_Ready) {
         if (0 < m_Ready.Count) return;
 
@@ -925,14 +925,14 @@ namespace djack.RogueSurvivor.Data
     // avoiding property idiom for these as they affect World state
     public District? CurrentPlayerDistrict()
     {
-      if (null != m_PlayerDistrict) return m_PlayerDistrict;
+      if (m_PlayerDistrict is not null) return m_PlayerDistrict;
 #if AUDIT
       var t1 = At(Point.Empty)!.LocalTime.TurnCounter;
       var t0 = Last.LocalTime.TurnCounter;
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::CurrentPlayerDistrict");
 #endif
       lock (m_Ready) {
-        if (null == m_SimDistrict) bootstrap_districts();
+        if (m_SimDistrict is null) bootstrap_districts();
 restart:
         if (0 >= m_Ready.Count) return null;
         District tmp = m_Ready[0];
@@ -944,7 +944,7 @@ restart:
         Logger.WriteLine(Logger.Stage.RUN_MAIN, Last.Name + ": " + Last.LocalTime.TurnCounter.ToString());
 #endif
 
-        if (tmp.RequiresUI || null != m_SimDistrict) {
+        if (tmp.RequiresUI || m_SimDistrict is not null) {
           Interlocked.CompareExchange(ref m_PlayerDistrict, tmp, null);
           return m_PlayerDistrict;
         }
@@ -955,7 +955,7 @@ restart:
 
     public District? CurrentSimulationDistrict()
     {
-      if (null != m_SimDistrict) return m_SimDistrict;
+      if (m_SimDistrict is not null) return m_SimDistrict;
 #if AUDIT
       var t1 = At(Point.Empty)!.LocalTime.TurnCounter;
       var t0 = Last.LocalTime.TurnCounter;

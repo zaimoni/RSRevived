@@ -26,19 +26,19 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_NewLocation = actor.Location + direction;   // tentatively excluding this ActionBump class from IsPerformable upgrade due to this
       m_ConcreteAction = Rules.IsBumpableFor(m_Actor, in m_NewLocation, out m_FailReason);
 #if DEBUG
-      if (null != m_ConcreteAction && !m_ConcreteAction.IsPerformable()) throw new ArgumentOutOfRangeException(nameof(m_ConcreteAction), m_ConcreteAction, "not performable");
+      if (m_ConcreteAction is not null && !m_ConcreteAction.IsPerformable()) throw new ArgumentOutOfRangeException(nameof(m_ConcreteAction), m_ConcreteAction, "not performable");
 #endif
     }
 
     public override bool IsLegal()
     {
-      if (m_ConcreteAction == null) return false;
+      if (m_ConcreteAction is null) return false;
       return m_ConcreteAction.IsLegal();
     }
 
     public override void Perform()
     {
-      if (m_ConcreteAction == null) return;
+      if (m_ConcreteAction is null) return;
       m_ConcreteAction.Perform();
     }
 

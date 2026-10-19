@@ -106,7 +106,7 @@ namespace Zaimoni.Data
         public static string Feminine(this string name)
         {
             KeyValuePair<string, string>? test = name.SplitLastWord();
-            if (null != test) {
+            if (test is not null) {
                 if ("male" == test.Value.Key.ToLowerInvariant()) return "female " + test.Value.Value;
                 return test.Value.Key+" "+Noun.Feminine(test.Value.Value);
             }
@@ -125,7 +125,7 @@ namespace Zaimoni.Data
         {
           if (!plural) return name;
           KeyValuePair<string, string>? test = name.SplitLastWord();
-          if (null != test) return test.Value.Key+" "+Noun.Plural(test.Value.Value);
+          if (test is not null) return test.Value.Key+" "+Noun.Plural(test.Value.Value);
           return Noun.Plural(name);
         }
 

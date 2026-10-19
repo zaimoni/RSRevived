@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       base.toJsonFields(writer, options);
       writer.WritePropertyName("MemLOS");
       JsonSerializer.Serialize(writer, m_MemLOSSensor, options);
-      if (null != _squad && 0 < _squad.Count) writer.WriteRefs("Squad", _squad);
+      if (_squad is not null && 0 < _squad.Count) writer.WriteRefs("Squad", _squad);
     }
 
     protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
@@ -66,7 +66,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override bool HasJsonState { get {
       _squad = _squad?.Optimize();
-      return base.HasJsonState || (null != _squad && 0 < _squad.Count);
+      return base.HasJsonState || (_squad is not null && 0 < _squad.Count);
     } }
     #endregion
 
@@ -103,9 +103,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.Walk();    // alpha 10: don't run by default
 
       // OrderableAI specific: respond to orders
-      if (null != Order) {
+      if (Order is not null) {
         var actorAction = ExecuteOrder(Order, _all);
-        if (null != actorAction) {
+        if (actorAction is not null) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
         }
@@ -118,7 +118,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var old_enemies = FilterEnemies(_all);
       _enemies = SortByGridDistance(FilterCurrent(old_enemies));
-      if (null == _enemies) AdviseFriendsOfSafety();
+      if (_enemies is null) AdviseFriendsOfSafety();
 
       const bool tracing = false; // debugging hook
 
@@ -133,7 +133,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           else if (o.UrgentAction(out var goal_action)) {
             if (tracing) RogueGame.Game.InfoPopup(o.ToString()+": "+(goal_action?.ToString() ?? "null"));
 
-            if (null==goal_action) Remove(o);
+            if (goal_action is null) Remove(o);
 #if DEBUG
             else if (!goal_action.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("result of UrgentAction should be legal"));
 #else
@@ -155,7 +155,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ActorAction tmpAction = null;
 
-      if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == _enemies ? "null == _enemies" : _enemies.Count.ToString()+" enemies"));
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, (_enemies is null ? "null == _enemies" : _enemies.Count.ToString()+" enemies"));
 
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
@@ -169,35 +169,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
       tmpAction = CombinatoricCombat();
-      if (tracing && null != tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "CombinatoricCombat: " + tmpAction.ToString());
-      if (null != tmpAction) return tmpAction;
+      if (tracing && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "CombinatoricCombat: " + tmpAction.ToString());
+      if (tmpAction is not null) return tmpAction;
 
       var available_ranged_weapons = m_Actor.GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
-      if (tracing && null != tmpAction) RogueGame.Game.InfoPopup("ManageMeleeRisk: "+tmpAction.ToString());
-      if (null != tmpAction) return tmpAction;
+      if (tracing && tmpAction is not null) RogueGame.Game.InfoPopup("ManageMeleeRisk: "+tmpAction.ToString());
+      if (tmpAction is not null) return tmpAction;
 
       tmpAction = BehaviorEquipWeapon(available_ranged_weapons);
-      if (tracing && null != tmpAction) RogueGame.Game.InfoPopup("BehaviorEquipWeapon: "+tmpAction.ToString());
-      if (null != tmpAction) return tmpAction;
+      if (tracing && tmpAction is not null) RogueGame.Game.InfoPopup("BehaviorEquipWeapon: "+tmpAction.ToString());
+      if (tmpAction is not null) return tmpAction;
 
-      if (null != _enemies) {
+      if (_enemies is not null) {
         tmpAction = BehaviorFightOrFlee(ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
-        if (tracing && null != tmpAction) RogueGame.Game.InfoPopup("BehaviorFightOrFlee: "+tmpAction.ToString());
-        if (null != tmpAction) return tmpAction;
+        if (tracing && tmpAction is not null) RogueGame.Game.InfoPopup("BehaviorFightOrFlee: "+tmpAction.ToString());
+        if (tmpAction is not null) return tmpAction;
       }
       // at this point, even if enemies are in sight we have no useful direct combat action
 
       // Secure CHAR property
       var friends = FilterNonEnemies(_all);
-      if (null != friends) {
+      if (friends is not null) {
         var percepts3 = friends?.Filter(p =>
         {
           Actor actor = p.Percepted;
           return !actor.IsFaction(GameFactions.IDs.TheCHARCorporation) && RogueGame.IsInCHARProperty(actor.Location) && p.Turn == m_Actor.Location.Map.LocalTime.TurnCounter; // alpha10 bug fix only if visible right now!
         });
-        if (percepts3 != null) {
+        if (percepts3 is not null) {
           Actor target = FilterNearest(percepts3).Percepted;
           // Now that we can get crowds of civilians, they should react to seeing others betrayed
           // also note that the CHAR armor comes with an inbuilt CHAR radio (they invented the hyper-efficient radios the police and army use)
@@ -217,23 +217,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return new ActionSay(m_Actor, target, "Hey YOU!", (target.IsPlayer ? Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER : Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER | Sayflags.IS_FREE_ACTION));
         }
       }
-      if (null != _enemies) {
-        if (null != friends) {
+      if (_enemies is not null) {
+        if (friends is not null) {
           var nearest_enemy = FilterNearest(_enemies);
-          if (null != nearest_enemy && Rules.Get.RollChance(50)) { // null check due to InferActor goal
+          if (nearest_enemy is not null && Rules.Get.RollChance(50)) { // null check due to InferActor goal
             tmpAction = BehaviorWarnFriends(friends, nearest_enemy.Percepted);
 #if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
+            if (m_Actor.IsDebuggingTarget && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
 #endif
-            if (null != tmpAction) return tmpAction;
+            if (tmpAction is not null) return tmpAction;
           }
         }
       }
 
       tmpAction = NonCombatReflexMoves();
-      if (null != tmpAction) return tmpAction;
+      if (tmpAction is not null) return tmpAction;
 
-      if (old_enemies != null) {
+      if (old_enemies is not null) {
         var target = FilterNearest(old_enemies);
         if (m_Actor.Location == target.Location) {
           Actor actor = target.Percepted;
@@ -241,25 +241,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (CanReachSimple(target.Location, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP)) {
           tmpAction = BehaviorChargeEnemy(target,false,false);
-          if (null != tmpAction) return tmpAction;
+          if (tmpAction is not null) return tmpAction;
         }
       }
 
-      if (null == old_enemies && m_Actor.WantToSleepNow) {
+      if (old_enemies is null && m_Actor.WantToSleepNow) {
         tmpAction = BehaviorNavigateToSleep();
-        if (null != tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
       }
 
       var leader = m_Actor.LiveLeader;
-      if (null != leader && !DontFollowLeader) {
+      if (leader is not null && !DontFollowLeader) {
         tmpAction = BehaviorFollowActor(leader, 1);
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           m_Actor.TargetedActivity(Activity.FOLLOWING, leader);
           return tmpAction;
         }
       } else  {
         tmpAction = RecruitLOS();
-        if (null != tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
       }
 
       // critical item memory check goes here
@@ -270,7 +270,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // tourism would go here
 
       tmpAction = BehaviorWander(null, RogueGame.IsInCHAROffice);
-      if (null != tmpAction) return tmpAction;
+      if (tmpAction is not null) return tmpAction;
       // \todo path to CHAR office?
       return BehaviorWander();
     }

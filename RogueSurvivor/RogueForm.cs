@@ -47,7 +47,7 @@ namespace djack.RogueSurvivor
     public RogueForm()
     {
 #if DEBUG
-      if (null != s_ooao) throw new InvalidOperationException("only one main form");
+      if (s_ooao is not null) throw new InvalidOperationException("only one main form");
 #endif
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating main form...");
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "Form::InitializeComponent...");
@@ -169,7 +169,7 @@ namespace djack.RogueSurvivor
       InputScript.RejectUnattended();   // a test run with no one at the keyboard would wait forever
       while (true) {    // XXX no clean way to do this loop
         doEvents();
-        if (null!= m_InKey) break;
+        if (m_InKey is not null) break;
         Thread.Sleep(100);
       }
       return InputScript.Record(Interlocked.Exchange(ref m_InKey, null)!);   // the log of a session replays as a script
@@ -192,7 +192,7 @@ namespace djack.RogueSurvivor
         // inline UI_GetMousePosition()
         var mousePos = m_GameCanvas.MouseLocation;
         var key = Interlocked.Exchange(ref m_InKey, null);
-        if (null != key) return new(new(InputScript.Record(key), null), new(mousePos.X, mousePos.Y));
+        if (key is not null) return new(new(InputScript.Record(key), null), new(mousePos.X, mousePos.Y));
         // inline UI_PeekMouseButtons
         if (m_HasMouseButtons) {
             m_HasMouseButtons = false;
@@ -282,7 +282,7 @@ namespace djack.RogueSurvivor
         var key = UI_WaitKey();
         if (key.KeyCode == Keys.Escape) return null;
         ret = ok(key);
-      } while (null == ret);
+      } while (ret is null);
       return ret;
     }
 
@@ -301,7 +301,7 @@ namespace djack.RogueSurvivor
         var key = UI_WaitKey();
         if (Keys.Escape == key.KeyCode) return false;
         var ret = ok(key);
-        if (null != ret) return ret.Value;
+        if (ret is not null) return ret.Value;
       } while(true);
     }
 
@@ -310,7 +310,7 @@ namespace djack.RogueSurvivor
         var key = UI_WaitKey();
         if (Keys.Escape == key.KeyCode) return null;
         var ret = ok(key);
-        if (null != ret) return ret.Value;
+        if (ret is not null) return ret.Value;
       } while(true);
     }
 
@@ -689,23 +689,23 @@ namespace djack.RogueSurvivor
     {
       if (disposing)
             {
-            if (null != components)
+            if (components is not null)
                 {
                 components.Dispose();
                 components = null;
                 }
-            if (null != m_NormalFont)
+            if (m_NormalFont is not null)
                 {
                 m_NormalFont.Dispose();
                 m_NormalFont = null;
                 }
-            if (null != m_BoldFont)
+            if (m_BoldFont is not null)
                 {
                 m_BoldFont.Dispose();
                 m_BoldFont = null;
                 }
            }
-      if (disposing && m_GameCanvas != null)
+      if (disposing && m_GameCanvas is not null)
         m_GameCanvas.DisposeUnmanagedResources();
       base.Dispose(disposing);
     }

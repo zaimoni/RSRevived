@@ -113,7 +113,7 @@ namespace Zaimoni.Collections
         public Dictionary(IDictionary<Key, Value>? dictionary, IEqualityComparer<Key>? comp) :
             this(dictionary?.Count ?? 0, comp)
         {
-            if (null != dictionary)
+            if (dictionary is not null)
             {
                 foreach (var pair in dictionary) Add(pair.Key, pair.Value);
             }
@@ -289,10 +289,10 @@ namespace Zaimoni.Collections
 
         public bool ContainsValue(Value value) {
             var ub = count;
-            if (value == null) {
+            if (value is null) {
                 while (0 < ub) {
                     ref var staging = ref entries[--ub];
-                    if (0 <= staging.hashCode && null == staging.value) return true;
+                    if (0 <= staging.hashCode && staging.value is null) return true;
                 }
             } else {
                 var c = EqualityComparer<Value>.Default;
@@ -327,7 +327,7 @@ namespace Zaimoni.Collections
         void ICollection<KeyValuePair<Key,Value>>.CopyTo(KeyValuePair<Key,Value>[] array, int index) => CopyTo(array, index);
 
         void ICollection.CopyTo(Array array, int index) {
-            if (null == array) throw new ArgumentNullException(nameof(array));
+            if (array is null) throw new ArgumentNullException(nameof(array));
             if (1 != array.Rank) throw new ArgumentException("won't copy into multi-dimensional array", nameof(array));
             if( 0 != array.GetLowerBound(0)) throw new ArgumentException("array should have zero lower bound", nameof(array));
             if (index < 0 || index > array.Length) throw new ArgumentOutOfRangeException(nameof(index), index, "not in bounds");
@@ -364,7 +364,7 @@ namespace Zaimoni.Collections
         bool ICollection.IsSynchronized { get { return false; } }
 
         object ICollection.SyncRoot { get {
-                if (_syncRoot == null) {
+                if (_syncRoot is null) {
                     Interlocked.CompareExchange<object>(ref _syncRoot, new object(), null);
                 }
                 return _syncRoot;
@@ -388,7 +388,7 @@ namespace Zaimoni.Collections
             }
 
             set {
-                if (null == key) throw new ArgumentNullException(nameof(key));
+                if (key is null) throw new ArgumentNullException(nameof(key));
 //              ThrowHelper.IfNullAndNullsAreIllegalThenThrow<TValue>(value, ExceptionArgument.value);
 
                 try {
@@ -405,7 +405,7 @@ namespace Zaimoni.Collections
         }
 
         void IDictionary.Add(object key, object? value) {
-            if (null == key) throw new ArgumentNullException(nameof(key));
+            if (key is null) throw new ArgumentNullException(nameof(key));
 //          ThrowHelper.IfNullAndNullsAreIllegalThenThrow<TValue>(value, ExceptionArgument.value);
 
             try {
@@ -437,7 +437,7 @@ namespace Zaimoni.Collections
         // private access region
 
         private void CopyTo(KeyValuePair<Key,Value>[] array, int index) {
-            if (null == array) throw new ArgumentNullException(nameof(array));
+            if (array is null) throw new ArgumentNullException(nameof(array));
             if (index < 0 || index > array.Length) throw new ArgumentOutOfRangeException(nameof(index), index, "not in bounds");
             if (array.Length - index < Count) throw new ArgumentException("array not large enough");
 
@@ -490,7 +490,7 @@ retry:
 
         private int FindEntry(Key key)
         {
-            if (null == key) throw new ArgumentNullException(nameof(key));
+            if (key is null) throw new ArgumentNullException(nameof(key));
             if (0 > activeList) return -1;
 
             return FindEntry(key, stackalloc int[2]);
@@ -498,7 +498,7 @@ retry:
 
         private int FindEntry(Key key, out int root, out int leaf)
         {
-            if (null == key) throw new ArgumentNullException(nameof(key));
+            if (key is null) throw new ArgumentNullException(nameof(key));
             root = -1;
             leaf = -1;
             if (0 > activeList) return -1;
@@ -510,7 +510,7 @@ retry:
 
         private int FindEntry(Key key, Span<int> root_leaf)
         {
-            if (null == key) throw new ArgumentNullException(nameof(key));
+            if (key is null) throw new ArgumentNullException(nameof(key));
             root_leaf[0] = -1;
             root_leaf[1] = -1;
             if (0 > activeList) return -1;
@@ -617,7 +617,7 @@ retry:
 
         private void Insert(Key key, Value value, bool add)
         {
-            if (null == key) throw new ArgumentNullException(nameof(key));
+            if (key is null) throw new ArgumentNullException(nameof(key));
 
             int hashCode = Comparer.GetHashCode(key) & 0x7FFFFFFF;
 
@@ -722,7 +722,7 @@ retry:
 
         private static bool IsCompatibleKey(object key)
         {
-            if (null == key) throw new ArgumentNullException(nameof(key));
+            if (key is null) throw new ArgumentNullException(nameof(key));
             return key is Key;
         }
 
@@ -1197,7 +1197,7 @@ retry:
 
             public void CopyTo(Key[] array, int index)
             {
-                if (null == array) throw new ArgumentNullException(nameof(array));
+                if (array is null) throw new ArgumentNullException(nameof(array));
                 if (index < 0 || index > array.Length) throw new ArgumentOutOfRangeException(nameof(index), index, "not in bounds");
                 if (array.Length - index < Count) throw new ArgumentException("array not large enough");
 
@@ -1220,7 +1220,7 @@ retry:
 
             void ICollection.CopyTo(Array array, int index)
             {
-                if (null == array) throw new ArgumentNullException(nameof(array));
+                if (array is null) throw new ArgumentNullException(nameof(array));
                 if (1 != array.Rank) throw new ArgumentException("won't copy into multi-dimensional array", nameof(array));
                 if (0 != array.GetLowerBound(0)) throw new ArgumentException("array should have zero lower bound", nameof(array));
                 if (index < 0 || index > array.Length) throw new ArgumentOutOfRangeException(nameof(index), index, "not in bounds");
@@ -1314,7 +1314,7 @@ retry:
 
             public void CopyTo(Value[] array, int index)
             {
-                if (null == array) throw new ArgumentNullException(nameof(array));
+                if (array is null) throw new ArgumentNullException(nameof(array));
                 if (index < 0 || index > array.Length) throw new ArgumentOutOfRangeException(nameof(index), index, "not in bounds");
                 if (array.Length - index < Count) throw new ArgumentException("array not large enough");
 
@@ -1337,7 +1337,7 @@ retry:
 
             void ICollection.CopyTo(Array array, int index)
             {
-                if (null == array) throw new ArgumentNullException(nameof(array));
+                if (array is null) throw new ArgumentNullException(nameof(array));
                 if (1 != array.Rank) throw new ArgumentException("won't copy into multi-dimensional array", nameof(array));
                 if (0 != array.GetLowerBound(0)) throw new ArgumentException("array should have zero lower bound", nameof(array));
                 if (index < 0 || index > array.Length) throw new ArgumentOutOfRangeException(nameof(index), index, "not in bounds");

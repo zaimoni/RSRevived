@@ -44,8 +44,8 @@ namespace djack.RogueSurvivor.Engine._Action
         private TradeItem(Actor actor, Item give, Item take, in Data.Model.InvOrigin dest) : base(actor)
         {
 #if DEBUG
-            if (null == give) throw new ArgumentNullException(nameof(give));
-            if (null == take) throw new ArgumentNullException(nameof(take));
+            if (give is null) throw new ArgumentNullException(nameof(give));
+            if (take is null) throw new ArgumentNullException(nameof(take));
 #endif
             m_GiveItem = give;
             m_TakeItem = take;
@@ -60,7 +60,7 @@ namespace djack.RogueSurvivor.Engine._Action
         public override bool IsPerformable()
         {
             var dist = Rules.GridDistance(m_Actor.Location, m_dest.Location);
-            if (null != m_dest.a_owner) {
+            if (m_dest.a_owner is not null) {
               if (!Rules.IsAdjacent(m_Actor.Location, m_dest.Location)) return false;
             } else if (1 < dist) return false;
             if (!base.IsPerformable()) return false;
@@ -69,10 +69,10 @@ namespace djack.RogueSurvivor.Engine._Action
             {
                 if (!m_Actor.CanCrouch(out m_FailReason)) return false;
                 var actor = m_dest.Location.Actor;
-                if (null != actor)
+                if (actor is not null)
                 {
                     var allies = m_Actor.Allies;
-                    if (null == allies) return false;
+                    if (allies is null) return false;
                     if (!allies.Contains(actor)) return false;
                 }
             }
@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Engine._Action
                 m_Actor.Crouch();
                 var code = m_dest.Location.OnReachInto(m_Actor);
                 if (0 >= code) return; // we took a hit -- cancel taking item
-            } else if (null != m_dest.obj_owner) {
+            } else if (m_dest.obj_owner is not null) {
                 // need to stand to make this work
                 m_Actor.StandUp();
             }

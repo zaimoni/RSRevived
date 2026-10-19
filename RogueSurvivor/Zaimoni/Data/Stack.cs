@@ -65,7 +65,7 @@ namespace Zaimoni.Data
         static public Stack<T> ToZStack<T>(this IEnumerable<T> src, Predicate<T> test)
         {
           int ub;
-          if (null == src || 0 >= (ub = src.Count())) return default;
+          if (src is null || 0 >= (ub = src.Count())) return default;
           var ret = new Stack<T>(new T[ub]);
           foreach (var x in src) if (test(x)) ret.push(x);
           return ret;

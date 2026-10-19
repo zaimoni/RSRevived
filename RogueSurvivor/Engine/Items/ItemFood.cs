@@ -66,14 +66,14 @@ namespace djack.RogueSurvivor.Engine.Items
     private ItemFood(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<ItemFoodModel>();
         if (src.TryGetProperty("BestBefore", out var relay)) BestBefore = relay.Deserialize<WorldTime>(options);
-        if (IsPerishable && null == BestBefore) throw new JsonException("perishable food without BestBefore: " + ModelID.ToString());
+        if (IsPerishable && BestBefore is null) throw new JsonException("perishable food without BestBefore: " + ModelID.ToString());
     }
 
     static ItemFood IJsonStaged<ItemFood>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
         base.toJsonFields(writer, options);
-        if (null != BestBefore) {
+        if (BestBefore is not null) {
             writer.WritePropertyName("BestBefore");
             JsonSerializer.Serialize(writer, BestBefore, options);
         }

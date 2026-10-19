@@ -61,7 +61,7 @@ namespace djack.RogueSurvivor.Data
     {
         writer.WriteRef("Actor", who);
         writer.WriteString("Text", msg);
-        if (null != music) writer.WriteString("Music", music);
+        if (music is not null) writer.WriteString("Music", music);
     }
 
     public bool IsStale { get => expired || who.IsDead; }
@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Data
     public bool Expire(Actor viewpoint)
     {
         if (expired || who.IsDead) return true;
-        if (null == viewpoint.Sees(who)) return false;
+        if (viewpoint.Sees(who) is null) return false;
         expired = true; // just in case of severe multithreading bug
         if (viewpoint.Controller is PlayerController pc) {
             pc.InstallAfterAction(new UITracking(who));
@@ -143,11 +143,11 @@ namespace djack.RogueSurvivor.Data
         writer.WritePropertyName("ItemMemory");
         ItemMemoryJSON.Save(writer, m_itemMemory);
       }
-      if (null != m_Waypoints) writer.WriteArray("Waypoints", m_Waypoints, options);
+      if (m_Waypoints is not null) writer.WriteArray("Waypoints", m_Waypoints, options);
       writer.WritePropertyName("Messages");
       JsonSerializer.Serialize(writer, Messages, options);
       var counted = RogueGame.CountedCommand(this) ?? m_JsonCountedCommand;
-      if (null != counted) {
+      if (counted is not null) {
         writer.WriteStartArray("CountedCommand");
         writer.WriteNumberValue(counted.Value.Key);
         writer.WriteStringValue(counted.Value.Value.ToString());
@@ -325,13 +325,13 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool HasWaypoint(in Location dest) {
-        if (null == m_Waypoints) return false;
+        if (m_Waypoints is null) return false;
         foreach(var w in m_Waypoints) if (w.dest == dest) return true;
         return false;
     }
 
     public void RemoveWaypoint(in Location dest) {
-        if (null != m_Waypoints) {
+        if (m_Waypoints is not null) {
             var ub = m_Waypoints.Count;
             while(0 <= --ub) {
                 if (m_Waypoints[ub].dest == dest) m_Waypoints.RemoveAt(ub);
@@ -341,7 +341,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public void RemoveWaypoints(Predicate<Location> fail) {
-        if (null != m_Waypoints) {
+        if (m_Waypoints is not null) {
             var ub = m_Waypoints.Count;
             while(0 <= --ub) {
                 if (fail(m_Waypoints[ub].dest)) m_Waypoints.RemoveAt(ub);
@@ -370,7 +370,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public override IEnumerable<Gameplay.Item_IDs>? RejectUnwanted(IEnumerable<Gameplay.Item_IDs>? src, Location loc) {
-      if (null == src) return null;
+      if (src is null) return null;
       List<Gameplay.Item_IDs> ret = new();
       // \todo need a UI for this (cf. Angband)
       foreach(var it in src) {
@@ -410,7 +410,7 @@ namespace djack.RogueSurvivor.Data
     {
       base.TakeControl();
       Actor.Says += HandleSay;
-      if (null != m_JsonCountedCommand) {   // the JSON-loaded session is going live
+      if (m_JsonCountedCommand is not null) {   // the JSON-loaded session is going live
         RogueGame.CountedCommand(this, m_JsonCountedCommand.Value);
         m_JsonCountedCommand = null;
       }
@@ -469,7 +469,7 @@ namespace djack.RogueSurvivor.Data
     // event handlers use countdown loop to allow safely adding event handlers from within an event handler
     public void BeforeAction()
     {
-      if (null != s_BeforeAction) {
+      if (s_BeforeAction is not null) {
         int ub = s_BeforeAction.Count;
         while(0 <= --ub) {
           if (s_BeforeAction[ub].Expire(m_Actor)) s_BeforeAction.RemoveAt(ub);
@@ -480,7 +480,7 @@ namespace djack.RogueSurvivor.Data
 
     public void AfterAction()
     {
-      if (null != s_AfterAction) {
+      if (s_AfterAction is not null) {
         int ub = s_AfterAction.Count;
         while(0 <= --ub) {
           if (s_AfterAction[ub].Expire(m_Actor)) s_AfterAction.RemoveAt(ub);
@@ -493,14 +493,14 @@ namespace djack.RogueSurvivor.Data
 
     public bool KnowsWhere(Actor a)
     {
-      if (!a.IsDead && null != s_AfterAction) foreach(var e in s_AfterAction) if (e is UITracking track && track.IsTarget(a)) return true;
+      if (!a.IsDead && s_AfterAction is not null) foreach(var e in s_AfterAction) if (e is UITracking track && track.IsTarget(a)) return true;
       return false;
     }
 
     public override List<Percept> UpdateSensors()
     {
         var ret = m_LOSSensor.Sense();
-        if (null == enemies_in_FOV) AdviseFriendsOfSafety();  // XXX works even when fleeing from explosives
+        if (enemies_in_FOV is null) AdviseFriendsOfSafety();  // XXX works even when fleeing from explosives
 
         if (m_Actor.Model.Abilities.CanUseItems) UpdateThreatFromTrackers();
 
@@ -577,7 +577,7 @@ namespace djack.RogueSurvivor.Data
       foreach(var o in Objectives.ToList()) {
         if (o.IsExpired) Remove(o);
         else if (o.UrgentAction(out var goal_action)) {
-          if (null==goal_action) Remove(o);
+          if (goal_action is null) Remove(o);
 #if DEBUG
           else if (!goal_action.IsPerformable()) throw new InvalidOperationException("result of UrgentAction should be legal");
 #else
@@ -621,10 +621,10 @@ namespace djack.RogueSurvivor.Data
     public List<KeyValuePair<string, Action>> GetValidSelfOrders()
     {
       List<KeyValuePair<string, Action>> ret = new();
-      bool in_combat = (null!=m_Actor.Controller.enemies_in_FOV);   // not using InCombat getter as we don't want to be that draconian
+      bool in_combat = (m_Actor.Controller.enemies_in_FOV is not null);   // not using InCombat getter as we don't want to be that draconian
 
       if (!in_combat) {
-      if (m_Actor.IsTired && null == enemies_in_FOV) {
+      if (m_Actor.IsTired && enemies_in_FOV is null) {
         ret.Add(new("Rest in place", () => {
             SetObjective(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter, m_Actor, Actor.STAMINA_MIN_FOR_ACTIVITY));
         }));
@@ -651,7 +651,7 @@ namespace djack.RogueSurvivor.Data
           int threshold = m_Actor.MaxSTA-m_Actor.ScaleMedicineEffect(stim.StaminaBoost)+2;
           // currently all wrecked cars have weight 100
           if (Actor.STAMINA_MIN_FOR_ACTIVITY+MapObject.CAR_WEIGHT < threshold) threshold = Actor.STAMINA_MIN_FOR_ACTIVITY + MapObject.CAR_WEIGHT;   // no-op at 30 turns/hour, but not at 900 turns/hour
-          if (m_Actor.StaminaPoints < threshold && null == enemies_in_FOV) {
+          if (m_Actor.StaminaPoints < threshold && enemies_in_FOV is null) {
              ret.Add(new("Brace for pushing car in place",() => {
                  SetObjective(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter, m_Actor, threshold));
              }));
@@ -663,13 +663,13 @@ namespace djack.RogueSurvivor.Data
       if (0 < generators.Count) {
         var lights = m_Actor?.Inventory.GetItemsByType<ItemLight>(it => it.MaxBatteries-1>it.Batteries);
         var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => Gameplay.Item_IDs.TRACKER_POLICE_RADIO != it.ModelID && it.MaxBatteries - 1 > it.Batteries);
-        if (null != lights || null != trackers) {
+        if (lights is not null || trackers is not null) {
           ret.Add(new("Recharge everything to full", () => {
               SetObjective(new Goal_RechargeAll(m_Actor));
           }));
         }
       }
-      if (null != TurnOnAdjacentGenerators()) {
+      if (TurnOnAdjacentGenerators() is not null) {
         ret.Add(new("Turn on all adjacent generators", () => {
             SetObjective(new Goal_NonCombatComplete(m_Actor, new ActionSequence(m_Actor, new ZeroAryBehaviors[] { ZeroAryBehaviors.TurnOnAdjacentGenerators_ObjAI })));
         }));
@@ -687,7 +687,7 @@ namespace djack.RogueSurvivor.Data
       }
 
       var corpses_at = m_Actor.Location.Corpses;
-      if (null != corpses_at) {
+      if (corpses_at is not null) {
         foreach(Corpse c in corpses_at) {
           ret.Add(new("Butcher "+c.ToString(), () => {
               SetObjective(new Goal_Butcher(Session.Get.WorldTime.TurnCounter, m_Actor, c));
@@ -791,17 +791,17 @@ namespace djack.RogueSurvivor.Data
     public Message MakeCentricMessage(string eventText, in Location loc, Color? color=null)
     {
       Location? test = m_Actor.Location.Map.Denormalize(in loc);
-      if (null == test) throw new ArgumentNullException(nameof(test));
+      if (test is null) throw new ArgumentNullException(nameof(test));
       var v = test.Value.Position - m_Actor.Location.Position;
       string msg_text = string.Format("{0} {1} tiles to the {2}.", eventText, (int)Rules.StdDistance(in v), Direction.ApproximateFromVector(v));
-      if (null != color) return new(msg_text, Session.Get.WorldTime.TurnCounter, color.Value);
+      if (color is not null) return new(msg_text, Session.Get.WorldTime.TurnCounter, color.Value);
       return new(msg_text, Session.Get.WorldTime.TurnCounter);
     }
 
     private void HandleSay(object sender, Actor.SayArgs e)
     {
       if (!(sender is Actor speaker)) throw new ArgumentNullException(nameof(sender));
-      if (null == e._target) throw new ArgumentNullException("e.target");
+      if (e._target is null) throw new ArgumentNullException("e.target");
       lock (speaker) {
         if (e.shown) return;
         if (m_Actor.IsSleeping) return;

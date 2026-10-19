@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     private void OptimizeBeforeSaving()
     {
-      if (null != m_Actor && m_Actor.IsDead) {
+      if (m_Actor is not null && m_Actor.IsDead) {
         _friends = null;
         _enemies = null;
         _items = null;
@@ -57,7 +57,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       }
       // the dead seen last turn are not in the save (2026-10-04)
       static void forget_dead(ref Dictionary<Location, Actor>? seen) {
-        if (null == seen) return;
+        if (seen is null) return;
         var dead = seen.Where(x => x.Value.IsDead).Select(x => x.Key).ToList();
         foreach (var loc in dead) seen.Remove(loc);
         if (0 >= seen.Count) seen = null;
@@ -90,9 +90,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       writer.WriteStartObject();
       ActorController.WriteActorUnlessOwner(writer, m_Actor);
       writer.WriteString("Filters", Filters.ToString());
-      if (null != _friends && 0 < _friends.Count) writer.WriteRefValueDictionary("Friends", _friends, options);
-      if (null != _enemies && 0 < _enemies.Count) writer.WriteRefValueDictionary("Enemies", _enemies, options);
-      if (null != _items && 0 < _items.Count) {
+      if (_friends is not null && 0 < _friends.Count) writer.WriteRefValueDictionary("Friends", _friends, options);
+      if (_enemies is not null && 0 < _enemies.Count) writer.WriteRefValueDictionary("Enemies", _enemies, options);
+      if (_items is not null && 0 < _items.Count) {
         writer.WriteStartArray("Items");
         foreach (var x in _items) {
           writer.WriteCompact(w => {
@@ -114,7 +114,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       _friends = null;
       foreach (var loc in normalized_FOV) {
         var actorAt = loc.Actor;
-        if (null==actorAt) continue;
+        if (actorAt is null) continue;
         if (actorAt==m_Actor) continue;
         if (actorAt.IsDead) continue;
         perceptList.Add(new Percept(actorAt, m_Actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
@@ -128,7 +128,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       _items = null;
       foreach (var loc in normalized_FOV) {
         var allItems = Map.AllItemsAt(loc, m_Actor);
-        if (null == allItems) continue;
+        if (allItems is null) continue;
         foreach(var inv in allItems) {
           perceptList.Add(new Percept(inv.Inventory, m_Actor.Location.Map.LocalTime.TurnCounter, in loc));
           (_items ??= new())[loc] = inv;
@@ -141,7 +141,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       _items = null;
       foreach (var loc in normalized_FOV) {
         var allItems = Map.AllItemsAt(loc, m_Actor);
-        if (null == allItems) {
+        if (allItems is null) {
           items.Set(loc,null,loc.Map.LocalTime.TurnCounter);
           continue;
         }
@@ -160,7 +160,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       var turn = m_Actor.Location.Map.LocalTime.TurnCounter;
       foreach (var loc in normalized_FOV) {
         var corpsesAt = loc.Corpses;
-        if (null != corpsesAt) perceptList.Add(new Percept(corpsesAt, turn, in loc));
+        if (corpsesAt is not null) perceptList.Add(new Percept(corpsesAt, turn, in loc));
       }
     }
 
@@ -170,11 +170,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       if (default != (Filters & SensingFilter.ACTORS)) ret = _seeActors;
       if (default != (Filters & SensingFilter.ITEMS)) {
         var items = m_Actor.Controller.ItemMemory;
-        ret = ret.Compose(null != items ? items.Bind<List<Percept>, Location[], Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int>>(_seeItems)
+        ret = ret.Compose(items is not null ? items.Bind<List<Percept>, Location[], Zaimoni.Data.Ary2Dictionary<Location, Gameplay.Item_IDs, int>>(_seeItems)
                                         : _seeItems);
       }
       if (default != (Filters & SensingFilter.CORPSES)) ret = ret.Compose(_seeCorpses);
-      if (null == ret) throw new ArgumentNullException(nameof(ret));
+      if (ret is null) throw new ArgumentNullException(nameof(ret));
       return ret;
     }
 
@@ -184,7 +184,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       var _view_map = actor.Location.Map;
       HashSet<Point> m_FOV = FOV;
       var e = actor.Location.Exit;
-      var normalized_FOV = new Location[m_FOV.Count+(null == e ? 0 : 1)];
+      var normalized_FOV = new Location[m_FOV.Count+(e is null ? 0 : 1)];
       {
       int i = 0;
       foreach(var pt in m_FOV) {
@@ -192,7 +192,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         if (!Map.Canonical(ref loc)) throw new InvalidOperationException("FOV coordinates should be denormalized-legal");
         normalized_FOV[i++] = loc;
       }
-      if (null != e) normalized_FOV[i] = e.Location;
+      if (e is not null) normalized_FOV[i] = e.Location;
       }
       return normalized_FOV;
     }

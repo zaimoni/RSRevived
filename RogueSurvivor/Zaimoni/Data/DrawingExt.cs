@@ -34,8 +34,8 @@ namespace Zaimoni.Data
     public static void DoForEach(this Rectangle rect, Action<Point> doFn, Predicate<Point> testFn)
     {
 #if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+      if (doFn is null) throw new ArgumentNullException(nameof(doFn));
+      if (testFn is null) throw new ArgumentNullException(nameof(testFn));
 #endif
       Point point = new Point();
       for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
@@ -48,7 +48,7 @@ namespace Zaimoni.Data
     public static void DoForEach(this Rectangle rect, Action<Point> doFn)
     {
 #if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
+      if (doFn is null) throw new ArgumentNullException(nameof(doFn));
 #endif
       Point point = new Point();
       for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
@@ -61,8 +61,8 @@ namespace Zaimoni.Data
     public static void DoForEachOnEdge(this Rectangle rect, Action<Point> doFn, Predicate<Point> testFn)
     {
 #if DEBUG
-      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+      if (doFn is null) throw new ArgumentNullException(nameof(doFn));
+      if (testFn is null) throw new ArgumentNullException(nameof(testFn));
 #endif
       Point point = new Point();
       for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
@@ -96,7 +96,7 @@ namespace Zaimoni.Data
     public static List<Point> Where(this Rectangle rect, Predicate<Point> testFn)
     {
 #if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+      if (testFn is null) throw new ArgumentNullException(nameof(testFn));
 #endif
       List<Point> ret = new List<Point>();
       rect.DoForEach(pt => ret.Add(pt),testFn);
@@ -106,7 +106,7 @@ namespace Zaimoni.Data
     public static List<Point> WhereOnEdge(this Rectangle rect, Predicate<Point> testFn)
     {
 #if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+      if (testFn is null) throw new ArgumentNullException(nameof(testFn));
 #endif
       List<Point> ret = new List<Point>();
       rect.DoForEachOnEdge(pt => ret.Add(pt),testFn);
@@ -116,7 +116,7 @@ namespace Zaimoni.Data
     public static Point? FirstOrDefault(this Rectangle rect, Predicate<Point> testFn)
     {
 #if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+      if (testFn is null) throw new ArgumentNullException(nameof(testFn));
 #endif
       Point point = new Point();
       for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
@@ -130,15 +130,15 @@ namespace Zaimoni.Data
     public static bool Any(this Rectangle rect, Predicate<Point> testFn)
     {
 #if DEBUG
-      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+      if (testFn is null) throw new ArgumentNullException(nameof(testFn));
 #endif
-      return  null != rect.FirstOrDefault(testFn);
+      return  rect.FirstOrDefault(testFn) is not null;
     }
 
     // morally a dual-Any test that only iterates once.
     public static KeyValuePair<bool,bool> HaveItBothWays<T>(this IEnumerable<T> src, Predicate<T> test)
     {
-      if (null==src || !src.Any()) return new KeyValuePair<bool, bool>(false,false);
+      if (src is null || !src.Any()) return new KeyValuePair<bool, bool>(false,false);
       bool yes = false;
       bool no = false;
       foreach(var x in src) {
@@ -312,7 +312,7 @@ namespace Zaimoni.Data
     public static Bitmap SkewCopy(this Bitmap img, int w, int h, Func<Point,Point> transform)
     {
 #if DEBUG
-      if (null == transform) throw new ArgumentNullException(nameof(transform));
+      if (transform is null) throw new ArgumentNullException(nameof(transform));
 #endif
       Bitmap dest = new Bitmap(w,h);
       Point pt = new Point(0,0);
@@ -331,9 +331,9 @@ namespace Zaimoni.Data
         public static Bitmap Splice(this Bitmap src, Bitmap splice, Func<Point,bool> use_src)
     {
 #if DEBUG
-      if (null == use_src) throw new ArgumentNullException(nameof(use_src));
-      if (null == src) throw new ArgumentNullException(nameof(src));
-      if (null == splice) throw new ArgumentNullException(nameof(splice));
+      if (use_src is null) throw new ArgumentNullException(nameof(use_src));
+      if (src is null) throw new ArgumentNullException(nameof(src));
+      if (splice is null) throw new ArgumentNullException(nameof(splice));
       if (src.Width!=splice.Width) throw new InvalidOperationException("src.Width!=splice.Width");
       if (src.Height!=splice.Height) throw new InvalidOperationException("src.Width!=splice.Width");
 #endif
@@ -352,7 +352,7 @@ namespace Zaimoni.Data
     public static Bitmap Recolor(this Bitmap src, Point origin, Color color)
     {
 #if DEBUG
-      if (null == src) throw new ArgumentNullException(nameof(src));
+      if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
       int w = src.Width;
       int h = src.Height;
@@ -385,7 +385,7 @@ namespace Zaimoni.Data
     }
 
     public static bool NontrivialFilter<T>(this IEnumerable<T> src, Predicate<T> test) {
-      if (null == src) return false;
+      if (src is null) return false;
       int found = 0;    // bitmap encoding: 1 found true, 2 found false
       foreach(var x in src) {
         if (test(x)) {
@@ -507,8 +507,8 @@ namespace Zaimoni.Data
     public static T Minimize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>
     {
 #if DEBUG
-      if (null == metric) throw new ArgumentNullException(nameof(metric));
-      if (null == src) throw new ArgumentNullException(nameof(src));
+      if (metric is null) throw new ArgumentNullException(nameof(metric));
+      if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
       R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
       T ret = default;
@@ -525,8 +525,8 @@ namespace Zaimoni.Data
     public static T Maximize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>
     {
 #if DEBUG
-      if (null == metric) throw new ArgumentNullException(nameof(metric));
-      if (null == src) throw new ArgumentNullException(nameof(src));
+      if (metric is null) throw new ArgumentNullException(nameof(metric));
+      if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
       R num1 = (R)typeof(R).GetField("MinValue").GetValue(default(R));
       T ret = default;
@@ -560,8 +560,8 @@ namespace Zaimoni.Data
     public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<U,R> metric) where R:IComparable<R>
     {
 #if DEBUG
-      if (null == metric) throw new ArgumentNullException(nameof(metric));
-      if (null == src) throw new ArgumentNullException(nameof(src));
+      if (metric is null) throw new ArgumentNullException(nameof(metric));
+      if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
       if (1 >= src.Count) return src;
       R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
@@ -582,8 +582,8 @@ namespace Zaimoni.Data
     public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<T,R> metric) where R:IComparable<R>
     {
 #if DEBUG
-      if (null == metric) throw new ArgumentNullException(nameof(metric));
-      if (null == src) throw new ArgumentNullException(nameof(src));
+      if (metric is null) throw new ArgumentNullException(nameof(metric));
+      if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
       if (1 >= src.Count) return src;
       R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
@@ -626,7 +626,7 @@ namespace Zaimoni.Data
     // don't want to name-conflict with IEnumerable::Any (use that for guaranteed non-null)
     public static bool Any_<T>(this IEnumerable<T>? src, Predicate<T> test)
     {
-      if (null != src) foreach(var x in src) if (test(x)) return true;
+      if (src is not null) foreach(var x in src) if (test(x)) return true;
       return false;
     }
 
@@ -683,7 +683,7 @@ namespace Zaimoni.Data
 
     public static void DoForEach_<T>(this IEnumerable<T>? src, Action<T> op, Action pre_op)
     {
-      if (null != src && src.Any()) {
+      if (src is not null && src.Any()) {
         pre_op();
         foreach (T x in src) op(x);
       }
@@ -697,8 +697,8 @@ namespace Zaimoni.Data
 
     public static bool ValueEqual<T>(this List<T> lhs, List<T> rhs)
     {
-      if (null == lhs) return null==rhs;
-      if (null == rhs) return false;
+      if (lhs is null) return rhs is null;
+      if (rhs is null) return false;
       if (lhs.Count!=rhs.Count) return false;
       foreach(var x in lhs) if (!rhs.Contains(x)) return false;
       return true;
@@ -706,8 +706,8 @@ namespace Zaimoni.Data
 
     public static bool ValueEqual<T>(this HashSet<T> lhs, HashSet<T> rhs)
     {
-      if (null == lhs) return null==rhs;
-      if (null == rhs) return false;
+      if (lhs is null) return rhs is null;
+      if (rhs is null) return false;
       if (lhs.Count!=rhs.Count) return false;
       foreach(var x in lhs) if (!rhs.Contains(x)) return false;
       return true;
@@ -717,8 +717,8 @@ namespace Zaimoni.Data
     public static Predicate<T> And<T>(this Predicate<T> lhs, Predicate<T> rhs) {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (null == lhs) return r;
-      if (null == rhs) return l;
+      if (lhs is null) return r;
+      if (rhs is null) return l;
       bool and(T src) { return l(src) && r(src); };
       return and;
     }
@@ -726,8 +726,8 @@ namespace Zaimoni.Data
     public static Predicate<T> Or<T>(this Predicate<T> lhs, Predicate<T> rhs) {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (null == lhs) return r;
-      if (null == rhs) return l;
+      if (lhs is null) return r;
+      if (rhs is null) return l;
       bool or(T src) { return l(src) || r(src); };
       return or;
     }
@@ -736,8 +736,8 @@ namespace Zaimoni.Data
     public static Func<T,int> Or<T>(this Func<T, int> lhs, Func<T, int> rhs) {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (null == lhs) return r;
-      if (null == rhs) return l;
+      if (lhs is null) return r;
+      if (rhs is null) return l;
       int or(T src) {
         var test = l(src);
         if (0 != test) return test;
@@ -749,8 +749,8 @@ namespace Zaimoni.Data
     public static Func<T,bool> Or<T>(this Func<T, bool> lhs, Func<T, bool> rhs) {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (null == lhs) return r;
-      if (null == rhs) return l;
+      if (lhs is null) return r;
+      if (rhs is null) return l;
       bool or(T src) { return l(src) || r(src); };
       return or;
     }
@@ -761,13 +761,13 @@ namespace Zaimoni.Data
     {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (null == lhs) return r;
-      if (null == rhs) return l;
+      if (lhs is null) return r;
+      if (rhs is null) return l;
       HashSet<U> ret(T src) {
         var x = l(src);
         var y = r(src);
-        if (null == x) return y;
-        if (null != y) x.UnionWith(y);
+        if (x is null) return y;
+        if (y is not null) x.UnionWith(y);
         return x;
       }
       return ret;
@@ -778,11 +778,11 @@ namespace Zaimoni.Data
     {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (null == lhs) return r;
-      if (null == rhs) return l;
+      if (lhs is null) return r;
+      if (rhs is null) return l;
       HashSet<U> ret(T src) {
         var x = l(src);
-        if (null!=x && 0<x.Count) return x;
+        if (x is not null && 0<x.Count) return x;
         return r(src);
       }
       return ret;
@@ -792,11 +792,11 @@ namespace Zaimoni.Data
     {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (null == lhs) return null;
-      if (null == rhs) return l;
+      if (lhs is null) return null;
+      if (rhs is null) return l;
       HashSet<U> ret(T src) {
         var x = l(src);
-        if (null != x && 0 < x.Count) r(src,x);
+        if (x is not null && 0 < x.Count) r(src,x);
         return x;
       }
       return ret;
@@ -815,12 +815,12 @@ namespace Zaimoni.Data
     public static Action<T> Compose<T>(this Action<T>? rhs, Action<T>? lhs)
     {
       var l = lhs;  // local copies needed to get true lambda calculus
-      if (null == rhs) {
-        if (null == l) throw new ArgumentNullException(nameof(lhs));
+      if (rhs is null) {
+        if (l is null) throw new ArgumentNullException(nameof(lhs));
         return l;
       }
       var r = rhs;
-      if (null == l) return r;
+      if (l is null) return r;
       void ret(T src) {
         l(src);
         r(src);
@@ -831,12 +831,12 @@ namespace Zaimoni.Data
     public static Action<T,U> Compose<T, U>(this Action<T, U>? rhs, Action<T, U>? lhs)
     {
       var l = lhs;  // local copies needed to get true lambda calculus
-      if (null == rhs) {
-        if (null == l) throw new ArgumentNullException(nameof(lhs));
+      if (rhs is null) {
+        if (l is null) throw new ArgumentNullException(nameof(lhs));
         return l;
       }
       var r = rhs;
-      if (null == l) return r;
+      if (l is null) return r;
       void ret(T src, U src2) {
         l(src, src2);
         r(src, src2);
@@ -848,8 +848,8 @@ namespace Zaimoni.Data
     // reverse parameter order here to make function call chaining clean
     public static Func<T,V> Compose<T,U,V>(this Func<T,U> rhs, Func<U, V> lhs)
     {
-      if (null == lhs) throw new ArgumentNullException(nameof(lhs));
-      if (null == rhs) throw new ArgumentNullException(nameof(rhs));
+      if (lhs is null) throw new ArgumentNullException(nameof(lhs));
+      if (rhs is null) throw new ArgumentNullException(nameof(rhs));
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
       V ret(T src) {
@@ -863,8 +863,8 @@ namespace Zaimoni.Data
     {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (null == rhs) return l;
-      if (null == lhs) throw new ArgumentNullException(nameof(lhs));
+      if (rhs is null) return l;
+      if (lhs is null) throw new ArgumentNullException(nameof(lhs));
       U ret(T src) {
         return l(r(src));
       }
@@ -875,8 +875,8 @@ namespace Zaimoni.Data
     {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (null == lhs) return r;
-      if (null == rhs) throw new ArgumentNullException(nameof(rhs));
+      if (lhs is null) return r;
+      if (rhs is null) throw new ArgumentNullException(nameof(rhs));
       U ret(T src) {
         return l(r(src));
       }
@@ -929,7 +929,7 @@ namespace Zaimoni.Data
 
     public static string Encode(this Rectangle rect, HashSet<Point> src)
     {
-      if (null==src || 0 >= src.Count) return string.Empty;
+      if (src is null || 0 >= src.Count) return string.Empty;
       var tmp = src.ToList();
       tmp.Sort((a,b)=> {
           var test = a.X.CompareTo(b.X);
@@ -942,7 +942,7 @@ namespace Zaimoni.Data
     // encode a dictionary to a string
     public static string Encode(this Rectangle rect, Dictionary<Point,int> src)
     {
-      if (null==src || 0 >= src.Count) return string.Empty;
+      if (src is null || 0 >= src.Count) return string.Empty;
       var tmp = src.Keys.ToList();
       tmp.Sort((a,b)=> {
           var test = a.X.CompareTo(b.X);
@@ -954,7 +954,7 @@ namespace Zaimoni.Data
 
     public static string Encode(this Box2D<short> rect, Dictionary<Vector2D<short>, int> src)
     {
-      if (null==src || 0 >= src.Count) return string.Empty;
+      if (src is null || 0 >= src.Count) return string.Empty;
       var tmp = src.Keys.ToList();
       tmp.Sort((a,b)=> {
           var test = a.X.CompareTo(b.X);

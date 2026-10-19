@@ -326,7 +326,7 @@ namespace djack.RogueSurvivor.Engine
         // \todo these may need to be atomic updates
         m_Player = a;
         var msgs = (a.Controller as PlayerController)?.Messages;
-        if (null != msgs) s_MessageManager = msgs;
+        if (msgs is not null) s_MessageManager = msgs;
         return a;
     }
     public static Map CurrentMap { get { return MapView.m; } }
@@ -342,7 +342,7 @@ namespace djack.RogueSurvivor.Engine
     /// the counted commands are re-installed by each loaded PlayerController's TakeControl, which follows this.</summary>
     static public void AfterLoad(Actor? player, List<Actor>? refugees)
     {
-      if (null != player) Interlocked.Exchange(ref m_MapView, setPlayer(player).Location.View);
+      if (player is not null) Interlocked.Exchange(ref m_MapView, setPlayer(player).Location.View);
       s_RefugeePool = refugees;
       s_CountedCommands = null;
     }
@@ -355,7 +355,7 @@ namespace djack.RogueSurvivor.Engine
     {
 #if DEBUG
       if (!IRogueUI.IsConstructed) throw new InvalidOperationException("UI not set up");
-      if (null != s_ooao) throw new InvalidOperationException("tried to double-construct a moral singleton");
+      if (s_ooao is not null) throw new InvalidOperationException("tried to double-construct a moral singleton");
 #endif
       s_ooao = new RogueGame(IRogueUI.UI);
     }
@@ -411,7 +411,7 @@ namespace djack.RogueSurvivor.Engine
       };
 
       var actors = loc.ThoseNearby(GameActors.HUMAN_AUDIO, hears);
-      if (null == actors) return;
+      if (actors is null) return;
       foreach(var a in actors) {
           if (a.Controller is PlayerController pc) {
             if (player_knows(a)) continue;
@@ -434,17 +434,17 @@ namespace djack.RogueSurvivor.Engine
       };
 
       var PCs = PCsNearby(loc, GameActors.HUMAN_AUDIO, hears);
-      if (null == PCs) return;
+      if (PCs is null) return;
 
       foreach(var pc in PCs) {
         var msg = pc.MakeCentricMessage(text, in loc, PLAYER_AUDIO_COLOR);
-        if (null != msg) pc.AddMessage(msg);
+        if (msg is not null) pc.AddMessage(msg);
       }
     }
 
     private void AddMessageIfVisible<S,O>(S subject, List<PlayerController>? s_witnesses, string verb, O direct_object, List<PlayerController>? o_witnesses, string end_sentence, Color msg_color) where S:ILocation,INoun where O:ILocation,INoun
     {
-      if (null == s_witnesses && null == o_witnesses) return;
+      if (s_witnesses is null && o_witnesses is null) return;
       var so_witnesses = s_witnesses?.Intersect(o_witnesses);
       s_witnesses = s_witnesses?.SetDifference(so_witnesses);
       o_witnesses = o_witnesses?.SetDifference(so_witnesses);
@@ -454,13 +454,13 @@ namespace djack.RogueSurvivor.Engine
       var stage_msg = new string[4];
       stage_msg[1] = verb;
       stage_msg[3] = end_sentence;
-      if (null != so_witnesses) {
+      if (so_witnesses is not null) {
         stage_msg[0] = subject.TheName;
         stage_msg[2] = direct_object.TheName;
         so_witnesses.RedrawPlayScreen(new(string.Join(" ", stage_msg), t0, msg_color));
         have_rendered = true;
       }
-      if (null != s_witnesses) {
+      if (s_witnesses is not null) {
         stage_msg[0] = subject.TheName;
         stage_msg[2] = direct_object.UnknownPronoun;
         UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
@@ -471,7 +471,7 @@ namespace djack.RogueSurvivor.Engine
           s_witnesses.AddMessage(stage);
         }
       }
-      if (null != o_witnesses) {
+      if (o_witnesses is not null) {
         stage_msg[0] = subject.UnknownPronoun.Capitalize();
         stage_msg[2] = direct_object.TheName;
         UI.Message stage = new(string.Join(" ", stage_msg), t0, msg_color);
@@ -495,7 +495,7 @@ namespace djack.RogueSurvivor.Engine
       bool sees(Actor a) { return a.Controller.CanSee(loc); };
 
       var actors = loc.ThoseNearby(Actor.MAX_VISION, sees);
-      if (null == actors) return;
+      if (actors is null) return;
 
       foreach(var a in actors) doFn(a);
     }
@@ -584,8 +584,8 @@ namespace djack.RogueSurvivor.Engine
     private static void ClearMessages() { Messages.Clear(); }
 
     static public List<PlayerController>? Union(List<PlayerController>? lhs, List<PlayerController>? rhs) {
-        if (null == lhs) return rhs;
-        if (null == rhs) return lhs;
+        if (lhs is null) return rhs;
+        if (rhs is null) return lhs;
         List<PlayerController> ret = new(lhs);
         foreach(var pc in rhs) if (!lhs.Contains(pc)) ret.Add(pc);
         return ret;
@@ -663,7 +663,7 @@ namespace djack.RogueSurvivor.Engine
 
     // called from before game loop starts, so don't need to be too concerned about efficiency
     private void _bootstrap_computable(World world) {
-      if (null == s_RefugeeSpawnZones) {
+      if (s_RefugeeSpawnZones is null) {
          HashSet<Point> arrival(Rectangle arrived) {
            HashSet<Point> ret = new();
            foreach (var pt in arrived) ret.Add(pt);
@@ -784,7 +784,7 @@ namespace djack.RogueSurvivor.Engine
       int currentChoice = 0;
 
       bool? code = setup_handler(currentChoice);
-      if (null != code) return code.Value;
+      if (code is not null) return code.Value;
       m_UI.UI_Repaint();
 
       bool? handler(KeyEventArgs key) {
@@ -792,7 +792,7 @@ namespace djack.RogueSurvivor.Engine
           case Keys.Return:
             {
             var ret = choice_handler(currentChoice);
-            if (null != ret) return ret.Value;
+            if (ret is not null) return ret.Value;
             }
             break;
           case Keys.Up:
@@ -803,16 +803,16 @@ namespace djack.RogueSurvivor.Engine
             currentChoice = (currentChoice + 1) % choice_length;
             break;
           default:
-            if (null == failover_handler) return null;
+            if (failover_handler is null) return null;
             {
             var ret = failover_handler(key.KeyCode,currentChoice);
-            if (null != ret) return ret.Value;
+            if (ret is not null) return ret.Value;
             }
             break;
         }
 
         var code2 = setup_handler(currentChoice);
-        if (null != code2) return code2.Value;
+        if (code2 is not null) return code2.Value;
         m_UI.UI_Repaint();
         return null;
       };
@@ -826,7 +826,7 @@ namespace djack.RogueSurvivor.Engine
       int currentChoice = 0;
 
       T? code = setup_handler(currentChoice);
-      if (null != code) return code.Value;
+      if (code is not null) return code.Value;
       m_UI.UI_Repaint();
 
       T? handler(KeyEventArgs key) {
@@ -834,7 +834,7 @@ namespace djack.RogueSurvivor.Engine
           case Keys.Return:
             {
             var ret = choice_handler(currentChoice);
-            if (null != ret) return ret.Value;
+            if (ret is not null) return ret.Value;
             }
             break;
           case Keys.Up:
@@ -845,16 +845,16 @@ namespace djack.RogueSurvivor.Engine
             currentChoice = (currentChoice + 1) % choice_length;
             break;
           default:
-            if (null == failover_handler) return null;
+            if (failover_handler is null) return null;
             {
             var ret = failover_handler(key.KeyCode,currentChoice);
-            if (null != ret) return ret.Value;
+            if (ret is not null) return ret.Value;
             }
             break;
         }
 
         var code2 = setup_handler(currentChoice);
-        if (null != code2) return code2.Value;
+        if (code2 is not null) return code2.Value;
         m_UI.UI_Repaint();
         return null;
       };
@@ -979,7 +979,7 @@ namespace djack.RogueSurvivor.Engine
       if (!HandleNewGameMode()) return false;
       if (Session.CommandLineOptions.ContainsKey("no-spawn")) return true;
       bool? isUndead = HandleNewCharacterRace(roller);
-      if (null == isUndead) return false;
+      if (isUndead is null) return false;
       m_CharGen.IsUndead = isUndead.Value;
         // character 2 is the type
         // Living: M)ale, F)emale
@@ -988,15 +988,15 @@ namespace djack.RogueSurvivor.Engine
 
       if (isUndead.Value) {
         GameActors.IDs? undeadModel = HandleNewCharacterUndeadType(roller);
-        if (null == undeadModel) return false;
+        if (undeadModel is null) return false;
         m_CharGen.UndeadModel = undeadModel.Value;
       } else {
         bool? isMale = HandleNewCharacterGender(roller);
-        if (null == isMale) return false;
+        if (isMale is null) return false;
         m_CharGen.IsMale = isMale.Value;
 
         Skills.IDs? skID = HandleNewCharacterSkill(roller);
-        if (null == skID) return false;
+        if (skID is null) return false;
         m_CharGen.StartingSkill = skID.Value;
       }
       return true;
@@ -1300,7 +1300,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       GameActors.IDs? ret = command_line();
-      if (null != ret) return ret;
+      if (ret is not null) return ret;
 
       const int gx = 0;
       int gy1 = 0;
@@ -1349,7 +1349,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       Skills.IDs? ret = command_line();
-      if (null != ret) return ret;
+      if (ret is not null) return ret;
 
       const int gx = 0;
       int gy1 = 0;
@@ -1451,7 +1451,7 @@ namespace djack.RogueSurvivor.Engine
     {
       m_UI.DrawHeadNote("Loading hiscores table...");
       m_HiScoreTable = HiScoreTable.Load(GetUserHiScoreFilePath());
-      bool regen_table = (null == m_HiScoreTable);
+      bool regen_table = (m_HiScoreTable is null);
       if (!regen_table) {
         for (int index = 0; index < m_HiScoreTable.Count; ++index) {
           HiScore hiScore = m_HiScoreTable[index];
@@ -1778,7 +1778,7 @@ namespace djack.RogueSurvivor.Engine
     private void FindPlayer()
     {
        var tmp = CurrentMap.FindPlayer;
-       if (null != tmp) {
+       if (tmp is not null) {
          setPlayer(tmp).Controller.UpdateSensors();
          SetCurrentMap(Player.Location);
          RedrawPlayScreen();
@@ -1786,7 +1786,7 @@ namespace djack.RogueSurvivor.Engine
        }
        // check all maps in current district
        tmp = CurrentMap.District.FindPlayer(CurrentMap);
-       if (null != tmp) {
+       if (tmp is not null) {
          setPlayer(tmp);
          return;
        }
@@ -1794,7 +1794,7 @@ namespace djack.RogueSurvivor.Engine
        // check all other districts
        foreach(District tmp2 in World.Get.PlayerDistricts) {
          tmp = tmp2.FindPlayer(null);
-         if (null != tmp) {
+         if (tmp is not null) {
            setPlayer(tmp);
            return;
          }
@@ -1822,7 +1822,7 @@ namespace djack.RogueSurvivor.Engine
         Actor? last = null;
 #endif
         Actor? next;
-        while(null != (next = current.NextActorToAct)) {
+        while((next = current.NextActorToAct) is not null) {
           if (IsSimulating) {
             lock (m_SimStateLock) { if (m_CancelSource.IsCancellationRequested) return; } // .NET 5.0 conversion
           }
@@ -1891,7 +1891,7 @@ namespace djack.RogueSurvivor.Engine
         if (a.Controller is PlayerController pc) pc.AddMessage(msg);
       }
 
-      if (null != msg) World.Get.DoForAllActors(Map.SkyIsVisible, MessagePCs);
+      if (msg is not null) World.Get.DoForAllActors(Map.SkyIsVisible, MessagePCs);
 
       if (time.IsDawn) {
         OnNewDay();
@@ -1955,9 +1955,9 @@ namespace djack.RogueSurvivor.Engine
 
       Actor? nextActorToAct = map.NextActorToAct;
 #if DEBUG
-      if (nextActorToAct == null) throw new InvalidProgramException("need actor to handle");
+      if (nextActorToAct is null) throw new InvalidProgramException("need actor to handle");
 #else
-      if (nextActorToAct == null) return; // undiscovered CHAR base is in stasis
+      if (nextActorToAct is null) return; // undiscovered CHAR base is in stasis
 #endif
 
 #if DEBUG
@@ -1969,11 +1969,11 @@ namespace djack.RogueSurvivor.Engine
       if (police.IsMine(nextActorToAct)) police.onTurnStart(nextActorToAct);
       else {
         var leader = nextActorToAct.LiveLeader;
-        if (null!=leader && police.IsMine(leader) && (nextActorToAct.Controller as ObjectiveAI).InCommunicationWith(leader))
+        if (leader is not null && police.IsMine(leader) && (nextActorToAct.Controller as ObjectiveAI).InCommunicationWith(leader))
              police.onTurnStart(nextActorToAct);
       }
 
-      if (nextActorToAct.Controller == null)
+      if (nextActorToAct.Controller is null)
 #if DEBUG
         throw new InvalidOperationException("nextActorToAct.Controller == null");
 #else
@@ -2075,7 +2075,7 @@ namespace djack.RogueSurvivor.Engine
               if (!corpse.Location.StrictHasActorAt) {
                 Zombify(corpse.DeadGuy);
                 var witnesses = _ForceVisibleToPlayer(corpse.Location);
-                if (null != witnesses) {
+                if (witnesses is not null) {
                     witnesses.RedrawPlayScreen(new("The " + corpse.ToString() + " rises again!!", map.LocalTime.TurnCounter, Color.Red));
                     m_MusicManager.Play(GameSounds.UNDEAD_RISE, MusicPriority.PRIORITY_EVENT);
                 }
@@ -2103,24 +2103,24 @@ namespace djack.RogueSurvivor.Engine
                 if (infectionPercent >= Rules.INFECTION_LEVEL_5_DEATH) flag4 = true;
                 else if (infectionPercent >= Rules.INFECTION_LEVEL_4_BLEED) {
                   actor.Vomit();
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} blood.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses);
+                  if (witnesses is not null) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} blood.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses);
                   if (actor.RawDamage(Rules.INFECTION_LEVEL_4_BLEED_HP)) flag4 = true;
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_3_VOMIT) {
                   actor.Vomit();
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0}.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses);
+                  if (witnesses is not null) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0}.", VERB_VOMIT.Conjugate(actor)), Color.Purple), witnesses);
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_2_TIRED) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_2_TIRED_STA);
                   actor.Drowse(Rules.INFECTION_LEVEL_2_TIRED_SLP);
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} sick and tired.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses);
+                  if (witnesses is not null) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} sick and tired.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses);
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_1_WEAK) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_1_WEAK_STA);
-                  if (null != witnesses) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} sick and weak.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses);
+                  if (witnesses is not null) actor.Controller.AddMessageForceReadClear(MakePanopticMessage(actor, string.Format("{0} sick and weak.", VERB_FEEL.Conjugate(actor)), Color.Purple), witnesses);
                 }
                 if (flag4) (actorList ??= new List<Actor>()).Add(actor);
               }
             }
           }
-          if (actorList != null) {
+          if (actorList is not null) {
             foreach (Actor actor in actorList) {
               actor.PlayersInLOS()?.RedrawPlayScreen(MakePanopticMessage(actor, string.Format("{0} of infection!", VERB_DIE.Conjugate(actor))));
               KillActor(null, actor, "infection");
@@ -2209,7 +2209,7 @@ namespace djack.RogueSurvivor.Engine
           }
           actor.SpendSanity(1);
           var a_leader = actor.LiveLeader;
-          if (null != a_leader) {
+          if (a_leader is not null) {
 #region leader trust & leader/follower bond.
             actor.ModifyTrustInLeader(a_leader.TrustIncrease, false);
             if (actor.HasBondWith(a_leader) && rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
@@ -2224,7 +2224,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
 #region Kill (zombify) starved actors.
-        if (actorList1 != null) {
+        if (actorList1 is not null) {
           foreach (Actor actor in actorList1) {
             var witnesses = _ForceVisibleToPlayer(actor);
             witnesses?.AddMessage(MakePanopticMessage(actor, string.Format("{0} !!", VERB_DIE_FROM_STARVATION.Conjugate(actor))));
@@ -2264,7 +2264,7 @@ namespace djack.RogueSurvivor.Engine
 #region 6.2 Explode.
           bool find_live_grenade(Inventory inv, Location loc) {
             var tmp = inv.GetItemsByType<Data._Item.PrimedExplosive>(Data._Item.PrimedExplosive.IsExpired);
-            if (null != tmp) foreach (var exp in tmp) {
+            if (tmp is not null) foreach (var exp in tmp) {
                 inv.RemoveAllQuantity(exp);
                 DoBlast(loc, exp.Model.BlastAttack);
                 return true;
@@ -2315,7 +2315,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void CheckFor_Fire_SewersInvasion(Map? map)
     {
-      if (Session.Get.HasZombiesInSewers && null != map) {
+      if (Session.Get.HasZombiesInSewers && map is not null) {
         var uc = map.Actors.CountUndead();
         var max_un = s_Options.MaxUndeads / 2;
         if (uc < max_un && Rules.Get.RollChance(SEWERS_INVASION_CHANCE)) {
@@ -2361,7 +2361,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!World.Get.CHAR_CityLimits.Contains(map.District.WorldPosition)) return false;
 #if DEBUG
-      if (6 == map.LocalTime.Hour && WorldTime.TURNS_PER_HOUR - 1 == map.LocalTime.Tick && null == s_RefugeePool) throw new ArgumentNullException(nameof(s_RefugeePool));
+      if (6 == map.LocalTime.Hour && WorldTime.TURNS_PER_HOUR - 1 == map.LocalTime.Tick && s_RefugeePool is null) throw new ArgumentNullException(nameof(s_RefugeePool));
 #endif
       return 6 == map.LocalTime.Hour && WorldTime.TURNS_PER_HOUR-2 == map.LocalTime.Tick;
     }
@@ -2383,7 +2383,7 @@ namespace djack.RogueSurvivor.Engine
         while(0 < num2--) {
           var refugee = m_TownGenerator.CreateNewRefugee(district.EntryMap.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS);
           // Actively de-duplicate these names
-          while(null != s_RefugeePool.FirstOrDefault(a  => a.Name == refugee.Name)) BaseMapGenerator.GiveNameToActor(dr, refugee);
+          while(s_RefugeePool.FirstOrDefault(a  => a.Name == refugee.Name) is not null) BaseMapGenerator.GiveNameToActor(dr, refugee);
           s_RefugeePool.Add(m_TownGenerator.CreateNewRefugee(district.EntryMap.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS));
         }
 
@@ -2459,9 +2459,9 @@ namespace djack.RogueSurvivor.Engine
       }
 
       // If the leader does not use advanced pathing (e.g., police), point him at the city
-      if (null == leader.Threats) {
+      if (leader.Threats is null) {
         var dir = entering_from(dest.Rect, dest.m);
-        if (null != dir) {
+        if (dir is not null) {
           var escape = new Tasks.TaskEscapeNanny(leader, s_Arrival![(int)(dir.Value) /2].Value.Value);
           escape.Trigger(dest.m);
           dest.m.AddTimer(escape);
@@ -2492,7 +2492,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 == code) return;    // can only walk in through outer district
 
       lock(lock_RefugeePool) {
-        if (null == s_RefugeePool) return;
+        if (s_RefugeePool is null) return;
 
         // count: enemies of police, police
         // if have enemies of police, but no police, try to gate-crash on foot
@@ -2556,10 +2556,10 @@ namespace djack.RogueSurvivor.Engine
 
         private void PlayUniqueActorMusicAndMessage(UniqueActor unique, bool hasArrived)    // alpha10: uses parameter to signal arrival (true) or first sighting (false).  \todo: implement first sighting
         {
-            if (unique.EventMessage != null) {
+            if (unique.EventMessage is not null) {
                 Overlay? highlightOverlay = null;
 
-                if (unique.EventThemeMusic != null) {
+                if (unique.EventThemeMusic is not null) {
                     m_MusicManager.Stop();
                     m_MusicManager.Play(unique.EventThemeMusic, MusicPriority.PRIORITY_EVENT);
                 }
@@ -2573,7 +2573,7 @@ namespace djack.RogueSurvivor.Engine
                 }
                 AddMessagePressEnter();
                 ClearMessages();
-                if (highlightOverlay != null) RemoveOverlay(highlightOverlay);
+                if (highlightOverlay is not null) RemoveOverlay(highlightOverlay);
             }
         }
 #endif
@@ -2603,11 +2603,11 @@ namespace djack.RogueSurvivor.Engine
     private void FireEvent_NationalGuard(Map map)
     {
       var actor = SpawnNewNatGuardLeader(map);
-      if (actor == null) return;
+      if (actor is null) return;
 
       for (int index = 0; index < NATGUARD_SQUAD_SIZE-1; ++index) {
         var other = SpawnNewNatGuardTrooper(actor);
-        if (other != null) actor.AddFollower(other);
+        if (other is not null) actor.AddFollower(other);
       }
 
       NotifyOrderablesAI(RaidType.NATGUARD, actor.Location);
@@ -2642,7 +2642,7 @@ namespace djack.RogueSurvivor.Engine
     private void FireEvent_ArmySupplies(Map map)
     {
       var dropPoint = FindDropSuppliesPoint(map);
-      if (null == dropPoint) return;
+      if (dropPoint is null) return;
       Rectangle survey = new Rectangle(dropPoint.Value - (Point)ARMY_SUPPLIES_SCATTER, (Point)(2 * ARMY_SUPPLIES_SCATTER + 1));
       map.TrimToBounds(ref survey);
       // finding the supply drop point does all of the legality testing -- the center must qualify, the edges need not
@@ -2677,7 +2677,7 @@ namespace djack.RogueSurvivor.Engine
           || map.HasActorAt(in pt))  // B-movies never hit anyone with an airdrop
         return false;
       var obj = map.GetMapObjectAt(pt);
-      if (null == obj) return true;
+      if (obj is null) return true;
       if (obj.IsOnFire) return false;   // incinerated?
       if (obj.IsWalkable || obj.IsJumpable) return true;    // RS Alpha rejected these.  They're not a harder landing than pavement.
       return false; // tree, or z-level issue (e.g., large fortifications)
@@ -2713,14 +2713,14 @@ namespace djack.RogueSurvivor.Engine
 
     static private bool LZ_is_clear(ZoneLoc landing_zone, Faction friendly)
     {
-        foreach(var loc in landing_zone) if (null != loc.Actor) return false;
+        foreach(var loc in landing_zone) if (loc.Actor is not null) return false;
         short radius = (short)Actor.MaxLivingFOV(landing_zone.m);
         // cut some corners re FOV calculations
         var LoS_zone = new ZoneLoc(landing_zone.m, new Rectangle(landing_zone.Rect.Location-radius*Direction.NW, landing_zone.Rect.Size+2*Direction.SE));
         foreach(var loc in LoS_zone) {
           if (landing_zone.ContainsExt(in loc)) continue;
           var a = loc.Actor;
-          if (null != a && a.Faction.IsEnemyOf(friendly)) return false;
+          if (a is not null && a.Faction.IsEnemyOf(friendly)) return false;
         }
         return true;
     }
@@ -2772,7 +2772,7 @@ namespace djack.RogueSurvivor.Engine
       while(0 <= --i) lz[i].Place(party[i]);
 
       var dir = entering_from(landing_zones[n].Value.Key.Rect, landing_zones[n].Key);
-      if (null != dir) {
+      if (dir is not null) {
           // point the leader at the city (who won't have threat tracking),
           // then the destination the legacy implementation would have picked out.
           var final_dest = new HashSet<Point> { nominate_edge(map, party[0]) };
@@ -2831,7 +2831,7 @@ namespace djack.RogueSurvivor.Engine
       while(0 <= --i) lz[i].Place(party[i]);
 
       var dir = entering_from(landing_zones[n].Value.Key.Rect, landing_zones[n].Key);
-      if (null != dir) {
+      if (dir is not null) {
           // point the leader at the city (who won't have threat tracking),
           // then the destination the legacy implementation would have picked out.
           var final_dest = new HashSet<Point> { nominate_edge(map, party[0]) };
@@ -2859,10 +2859,10 @@ namespace djack.RogueSurvivor.Engine
     {
       map.District.SetLastRaidTime(RaidType.BLACKOPS, map.LocalTime.TurnCounter);
       var actor = SpawnNewBlackOpsLeader(map);
-      if (actor == null) return;
+      if (actor is null) return;
       for (int index = 0; index < BLACKOPS_RAID_SIZE-1; ++index) {
         var other = SpawnNewBlackOpsTrooper(actor);
-        if (other != null) actor.AddFollower(other);    // do not sink this into the above function: black op refugees are not a logic paradox
+        if (other is not null) actor.AddFollower(other);    // do not sink this into the above function: black op refugees are not a logic paradox
       }
       NotifyOrderablesAI(RaidType.BLACKOPS, actor.Location);
     }
@@ -2900,7 +2900,7 @@ namespace djack.RogueSurvivor.Engine
       while(0 <= --i) lz[i].Place(party[i]);
 
       var dir = entering_from(landing_zones[n].Value.Key.Rect, landing_zones[n].Key);
-      if (null != dir) {
+      if (dir is not null) {
           // point the leaderless survivors at the city (they won't have threat tracking),
           // then the destination the legacy implementation would have picked out.
           var final_dest = new HashSet<Point> { nominate_edge(map, party[0]) };
@@ -2933,7 +2933,7 @@ namespace djack.RogueSurvivor.Engine
         if (!loc.IsWalkableFor(toSpawn)) return false;
         if (!dest.m.NoPlayersNearerThan(in pt, minDistToPlayer)) return false;
         if (toSpawn.WouldBeAdjacentToEnemy(loc.Map, loc.Position)) return false;
-        if (null != loc.Actor) return false;
+        if (loc.Actor is not null) return false;
         return true;
       }).ToList();
       if (0 >= tmp.Count) return false;
@@ -3106,7 +3106,7 @@ namespace djack.RogueSurvivor.Engine
     // The JSON save keeps a controller's counted command with that controller: one entry out, one entry in.
     static internal KeyValuePair<int, PlayerCommand>? CountedCommand(PlayerController pc)
     {
-      if (null != s_CountedCommands) {
+      if (s_CountedCommands is not null) {
         var ub = s_CountedCommands.Count;
         while(0 <= --ub) if (s_CountedCommands[ub].Key == pc) return s_CountedCommands[ub].Value;   // the last one, as HandlePlayerActor finds it
       }
@@ -3130,7 +3130,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandlePlayerActor(PlayerController pc)
     {
 #if DEBUG
-      if (null == pc) throw new ArgumentNullException(nameof(pc));
+      if (pc is null) throw new ArgumentNullException(nameof(pc));
 #endif
       var player = pc.ControlledActor;
 #if DEBUG
@@ -3164,7 +3164,7 @@ namespace djack.RogueSurvivor.Engine
           int availableHint = -1;
           if (s_Options.IsAdvisorEnabled && (availableHint = GetAdvisorFirstAvailableHint()) != -1) {
             GetAdvisorHintText((AdvisorHint)availableHint, out string hintTitle, out var _);
-            if (null == s_HintAvailableOverlay) {
+            if (s_HintAvailableOverlay is null) {
               // constant due to above
               var overlayPos = MapToScreen(Player.Location.Position + Direction.NW + 2 * Direction.N);
               s_HintAvailableHeaderLines = new string[] {
@@ -3177,15 +3177,15 @@ namespace djack.RogueSurvivor.Engine
               s_HintAvailableHeaderLines[1] = hintTitle;
               if (!HasOverlay(s_HintAvailableOverlay)) AddOverlay(s_HintAvailableOverlay);
             }
-          } else if (s_HintAvailableOverlay != null && HasOverlay(s_HintAvailableOverlay)) {
+          } else if (s_HintAvailableOverlay is not null && HasOverlay(s_HintAvailableOverlay)) {
             RemoveOverlay(s_HintAvailableOverlay);
           }
         }
 
 #region Theme music
         foreach(var unique in Session.Get.UniqueActors.ToArray()) {
-          if (null == unique.EventThemeMusic) continue;
-          if ((unique.TheActor==player || null!=player.Sees(unique.TheActor)) && m_MusicManager.Music != unique.EventThemeMusic) m_MusicManager.Play(unique.EventThemeMusic, MusicPriority.PRIORITY_EVENT);
+          if (unique.EventThemeMusic is null) continue;
+          if ((unique.TheActor==player || player.Sees(unique.TheActor) is not null) && m_MusicManager.Music != unique.EventThemeMusic) m_MusicManager.Play(unique.EventThemeMusic, MusicPriority.PRIORITY_EVENT);
           else if (m_MusicManager.Music==unique.EventThemeMusic) m_MusicManager.Stop();
         }
 #endregion
@@ -3199,7 +3199,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
 
         ActorAction tmpAction = pc.AutoPilot();
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           play_timer.Start();
           tmpAction.Perform();
           // XXX following is duplicated code
@@ -3213,11 +3213,11 @@ namespace djack.RogueSurvivor.Engine
 
         PlayerCommand? pc_command = null;
         int? index = null;
-        if (null != s_CountedCommands) {
+        if (s_CountedCommands is not null) {
             var ub = s_CountedCommands.Count;
             while(0 <= --ub) {
               if (s_CountedCommands[ub].Key == pc) {
-                if (null != pc.enemies_in_FOV) {
+                if (pc.enemies_in_FOV is not null) {
                   // enemies in sight: abort.  Don't use the more general "in combat" notion.
                   // \todo We actually should abort if we think we could be imminently attacked by an unseen enemy
                   s_CountedCommands.RemoveAt(ub);
@@ -3238,7 +3238,7 @@ namespace djack.RogueSurvivor.Engine
             }
         }
 
-        if (null != pc_command) {
+        if (pc_command is not null) {
           play_timer.Start();
           switch (pc_command.Value)
           {
@@ -3251,18 +3251,18 @@ namespace djack.RogueSurvivor.Engine
           case PlayerCommand.MOVE_W:
           case PlayerCommand.MOVE_NW:
             if (TryInsanity(pc) || !DoPlayerBump(player, Direction.COMPASS[(int)(pc_command.Value) - (int)(PlayerCommand.MOVE_N)])) {
-              if (null != index) s_CountedCommands.RemoveAt(index.Value);
+              if (index is not null) s_CountedCommands.RemoveAt(index.Value);
             };
             break;
           case PlayerCommand.WAIT_OR_SELF:
             if (TryInsanity(pc)) {
-              if (null != index) s_CountedCommands.RemoveAt(index.Value);
+              if (index is not null) s_CountedCommands.RemoveAt(index.Value);
             };
             DoWait(player);
             break;
           case PlayerCommand.USE_SPRAY:
             if (TryInsanity(pc) || !HandlePlayerUseSpray(player)) {
-              if (null != index) s_CountedCommands.RemoveAt(index.Value);
+              if (index is not null) s_CountedCommands.RemoveAt(index.Value);
             };
             break;
           }
@@ -3281,7 +3281,7 @@ namespace djack.RogueSurvivor.Engine
         var mouseButtons = ui_event.Key.Value;
         GDI_Point point = new(ui_event.Value.Key, ui_event.Value.Value);
 
-        if (null != key) {
+        if (key is not null) {
           PlayerCommand command = InputTranslator.KeyToCommand(key);
             switch (command) {  // start indentation failure
               case PlayerCommand.QUIT_GAME:
@@ -3599,7 +3599,7 @@ namespace djack.RogueSurvivor.Engine
       var player = pc.ControlledActor;
       if (!player.IsInsane || !Rules.Get.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) return false;
       var insaneAction = GenerateInsaneAction(player);
-      if (null == insaneAction || !insaneAction.IsPerformable()) return false;
+      if (insaneAction is null || !insaneAction.IsPerformable()) return false;
       pc.AddMessageForceRead(new("(your insanity takes over)", Player.Location.Map.LocalTime.TurnCounter, Color.Orange));
       insaneAction.Perform();
       return true;
@@ -3645,19 +3645,19 @@ namespace djack.RogueSurvivor.Engine
       int turn = Session.Get.WorldTime.TurnCounter;
       RedrawPlayScreen(new UI.Message("Taking screenshot...", turn, Color.Yellow));
       var screenshot = DoTakeScreenshot();
-      RedrawPlayScreen(null == screenshot ? new UI.Message("Could not save screenshot.", turn, Color.Red)
+      RedrawPlayScreen(screenshot is null ? new UI.Message("Could not save screenshot.", turn, Color.Red)
                      : new UI.Message(string.Format("screenshot {0} saved.", screenshot), turn, Color.Yellow));
     }
 
     private string? DoTakeScreenshot()
     {
       string newScreenshotName = GetUserNewScreenshotName();
-      return null != m_UI.UI_SaveScreenshot(ScreenshotFilePath(newScreenshotName)) ? newScreenshotName : null;
+      return m_UI.UI_SaveScreenshot(ScreenshotFilePath(newScreenshotName)) is not null ? newScreenshotName : null;
     }
 
     private void HandleHelpMode()
     {
-      if (m_Manual == null) {
+      if (m_Manual is null) {
         m_UI.ClearScreen();
         m_UI.UI_DrawStringBold(Color.Red, "Game manual not available ingame.", 0, 0, new Color?());
         m_UI.RenderFootnote("press ENTER");
@@ -3897,7 +3897,7 @@ namespace djack.RogueSurvivor.Engine
           for (int x = 0; x < World.Get.Size; ++x) {
             Map entryMap = World.Get[x, y].EntryMap;
             Zone zoneByPartialName1;
-            if ((zoneByPartialName1 = entryMap.GetZoneByPartialName("Subway Station")) != null) {
+            if ((zoneByPartialName1 = entryMap.GetZoneByPartialName("Subway Station")) is not null) {
               m_UI.UI_DrawStringBold(Color.Blue, string.Format("at {0} : {1}.", World.CoordToString(x, y), zoneByPartialName1.Name), gx, gy9, new Color?());
               gy9 += BOLD_LINE_SPACING;
               if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
@@ -3906,7 +3906,7 @@ namespace djack.RogueSurvivor.Engine
               }
             }
             Zone zoneByPartialName2;
-            if ((zoneByPartialName2 = entryMap.GetZoneByPartialName("Sewers Maintenance")) != null) {
+            if ((zoneByPartialName2 = entryMap.GetZoneByPartialName("Sewers Maintenance")) is not null) {
               m_UI.UI_DrawStringBold(Color.Green, string.Format("at {0} : {1}.", World.CoordToString(x, y), zoneByPartialName2.Name), gx, gy9, new Color?());
               gy9 += BOLD_LINE_SPACING;
               if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
@@ -3978,7 +3978,7 @@ namespace djack.RogueSurvivor.Engine
     public void ErrorPopup(string msg) { if (!Unattended(new string[] { msg })) ErrorPopup(RogueForm.Get.WrapLines(msg)); }
 
     private bool InterpretForPC(ActorAction? act) {
-      if (null == act) return false;
+      if (act is null) return false;
       if (act.IsPerformable()) {
         act.Perform();
         return true;
@@ -4039,7 +4039,7 @@ namespace djack.RogueSurvivor.Engine
 
       void display() {
         staging.Clear();
-        if (null == working) {
+        if (working is null) {
           for (num2 = 0; num2 < delta && num1 + num2 < strict_ub; ++num2) {
             int index = num1 + num2;
             staging.Add(ExtendedChoiceNumberToChar(num2) + " " + all_labels[index]);
@@ -4077,7 +4077,7 @@ namespace djack.RogueSurvivor.Engine
             working = null;
           }
         }
-        if (null != working) {
+        if (working is not null) {
           int choiceNumber = KeyToExtendedChoiceNumber(key.KeyCode);
           if (choiceNumber >= 0 && choiceNumber < delta) {
             int index = num1 + choiceNumber;
@@ -4104,7 +4104,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var player_backup = Player;
       var item_classes = Player.Controller.WhatHaveISeen();
-      if (null == item_classes || 0>=item_classes.Count) {
+      if (item_classes is null || 0>=item_classes.Count) {
         ErrorPopup("You have seen no memorable items.");
         return;
       }
@@ -4113,7 +4113,7 @@ namespace djack.RogueSurvivor.Engine
       var tourism = Player.InterestingLocs;
       var sights_to_see = tourism?.All() ?? new();
 
-      if (null != tourism) {
+      if (tourism is not null) {
         Dictionary<Location, int> loc_distances = new();
         foreach(var loc in sights_to_see) loc_distances.Add(loc, Rules.GridDistance(Player.Location, loc));
         sights_to_see.Sort((x,y) => loc_distances[x].CompareTo(loc_distances[y]));
@@ -4172,7 +4172,7 @@ namespace djack.RogueSurvivor.Engine
           if (Player.Model.CanEnter(loc_qty.Key)) tmp_where.Add(loc_qty);
           else {
             var obj = loc_qty.Key.MapObject as ShelfLike;
-            if (null != obj) tmp_where.Add(loc_qty);
+            if (obj is not null) tmp_where.Add(loc_qty);
           }
         }
 
@@ -4218,7 +4218,7 @@ namespace djack.RogueSurvivor.Engine
               pc.AddWaypoint(x.Key, item_type.ToString()+": T" + x.Value.ToString());
               return true;
             case Keys.O: 
-              if (null != available_followers) {
+              if (available_followers is not null) {
                 return PagedPopup("Who takes it?", available_followers.Count, label_follower, details_follower);
               }
               break;
@@ -4227,7 +4227,7 @@ namespace djack.RogueSurvivor.Engine
           }
 
           var prompt = "Walk 1) to 9) steps towards the item";
-          if (null != available_followers) prompt += ", or O)rder a follower to pick it up";
+          if (available_followers is not null) prompt += ", or O)rder a follower to pick it up";
           var tmp = new List<string>();
           tmp.Insert(0, prompt);
           return ShowSpecialDialogue(Player,tmp.ToArray(), navigate);
@@ -4236,7 +4236,7 @@ namespace djack.RogueSurvivor.Engine
         return PagedPopup("Walk 1) to 9) steps to the item, recording a waypoint.", tmp_where.Count, label2, details2, false);
       }
 
-      PagedPopup("Reviewing...", item_classes.Count+(null != tourism ? 1 : 0), label, details, false);
+      PagedPopup("Reviewing...", item_classes.Count+(tourism is not null ? 1 : 0), label, details, false);
       PanViewportTo(player_backup);
       RedrawPlayScreen();
     }
@@ -4244,7 +4244,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandleAlliesInfo()
     {
       var player_allies = Player.Allies;
-      if (null == player_allies) {
+      if (player_allies is null) {
         InfoPopup("You have no nearby allies.");
         return;
       }
@@ -4254,7 +4254,7 @@ namespace djack.RogueSurvivor.Engine
 
       string label_a(Actor a) {
         var leader = a.LiveLeader;
-        return a.Name + (a.IsSleeping ? " (ZZZ)" : "") + (null == a.Followers ? "" : "[L]") + (null != leader ? "(leader " + leader.Name + ")" : "");
+        return a.Name + (a.IsSleeping ? " (ZZZ)" : "") + (a.Followers is null ? "" : "[L]") + (leader is not null ? "(leader " + leader.Name + ")" : "");
       }
       string label(int index) { return label_a(allies[index]); }
       bool details(int index) {
@@ -4263,9 +4263,9 @@ namespace djack.RogueSurvivor.Engine
         else PanViewportTo(a);
         var tmp = new List<string>{a.Name};
         ItemMeleeWeapon best_melee = a.GetBestMeleeWeapon();
-        tmp.Add("melee: "+(null == best_melee ? "unarmed" : best_melee.ModelID.ToString()));
+        tmp.Add("melee: "+(best_melee is null ? "unarmed" : best_melee.ModelID.ToString()));
         var ranged = a.Inventory.GetItemsByType<ItemRangedWeapon>();
-        if (null != ranged) {
+        if (ranged is not null) {
           string msg = "ranged:";
           foreach(ItemRangedWeapon rw in ranged) {
             msg += " "+rw.ModelID.ToString();
@@ -4275,7 +4275,7 @@ namespace djack.RogueSurvivor.Engine
         var items = (a.Controller as ObjectiveAI).WhatHaveISeen();
 
         var critical = (a.Controller as ObjectiveAI).WhatDoINeedNow();
-        if (null != items) critical.IntersectWith(items);
+        if (items is not null) critical.IntersectWith(items);
         else critical.Clear();
 ;       if (0<critical.Count) {
           string msg = "need now:";
@@ -4289,7 +4289,7 @@ namespace djack.RogueSurvivor.Engine
           tmp.Add(msg);
         } else {
           critical = (a.Controller as ObjectiveAI).WhatDoIWantNow();
-          if (null != items) critical.IntersectWith(items);
+          if (items is not null) critical.IntersectWith(items);
           else critical.Clear();
           if (0<critical.Count) {
             string msg = "want now:";
@@ -4435,7 +4435,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      if (null == Player.Aggressing && null == Player.Aggressors) {
+      if (Player.Aggressing is null && Player.Aggressors is null) {
         header = "No personal enemies";
       } else {
         opts.Add(new("Enemies by aggression", enemies_by_aggression));
@@ -4443,7 +4443,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (Player.IsFaction(GameFactions.IDs.ThePolice)) {
         var wanted = Session.Get.Police.Wanted();
-        if (null != wanted) {
+        if (wanted is not null) {
           void police_wanted(List<string> display) {
             void name_him(KeyValuePair<ActorTag, Engine.AI.WhereWhen> a) { display.Add(a.Key.Name + "; " + a.Value.ToString()); }
             wanted.DoForEach_(name_him, () => display.Add("Death-penalty criminals:"));
@@ -4607,7 +4607,7 @@ namespace djack.RogueSurvivor.Engine
       foreach(var loc in locs) (s_FaustClairvoyance ?? (s_FaustClairvoyance = new())).Add(a, loc);
     }
     private static void CancelFaustClairvoyance(Actor a) {
-      if (null != s_FaustClairvoyance) {
+      if (s_FaustClairvoyance is not null) {
         if (s_FaustClairvoyance.Remove(a) && s_FaustClairvoyance.EmptyDomain()) s_FaustClairvoyance = null;
       }
     }
@@ -4686,12 +4686,12 @@ namespace djack.RogueSurvivor.Engine
         a.Controller.UpdateSensors();
         Session.Get.Scoring.UseReincarnation(); // intentionally unconditional
         var followers = a.Followers;
-        if (null != followers) foreach(var fo in followers) FaustMC(fo);
+        if (followers is not null) foreach(var fo in followers) FaustMC(fo);
     }
     /// <summary>The Faust pre-screen: who the spirits would ride.  The conversion is FaustMC.</summary>
     private bool FaustNominates(Actor a) {
       if (a.Controller is not OrderableAI) return false;
-      if (null != a.LiveLeader) return false;
+      if (a.LiveLeader is not null) return false;
 
       if (a.Model.Abilities.IsLawEnforcer) return true;
       if (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) return true;
@@ -4699,7 +4699,7 @@ namespace djack.RogueSurvivor.Engine
       if (a.Location.Map.HasZonePrefixNamedAt(a.Location.Position, "Shed")) return false;
 
       var in_store = BaseTownGenerator.InStore(a.Location);
-      if (null != in_store) return "Grocery" != in_store;
+      if (in_store is not null) return "Grocery" != in_store;
 
       if (a.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap) return false;
       if (a.Location.Map == Session.Get.UniqueMaps.Hospital_Admissions.TheMap) return false;
@@ -4707,8 +4707,8 @@ namespace djack.RogueSurvivor.Engine
       if (a.Location.Map == Session.Get.UniqueMaps.Hospital_Patients.TheMap) return false;
       if (a.Location.Map == a.Location.Map.District.SewersMap) return true;
       a.Controller.UpdateSensors();
-      if (null == a.Controller.items_in_FOV) return false;
-      if (null != a.Controller.friends_in_FOV) return false;
+      if (a.Controller.items_in_FOV is null) return false;
+      if (a.Controller.friends_in_FOV is not null) return false;
 
       foreach(var x in a.Controller.items_in_FOV) {
         if (x.Value.IsCarrying(GameItems.melee)) return true;
@@ -4724,33 +4724,33 @@ namespace djack.RogueSurvivor.Engine
     }
 
     /// not really; just need to block the other manual handlers from triggering
-    private bool HandleMouseLook(GDI_Point mousePos) => null != MouseToLoc(mousePos.X, mousePos.Y);
+    private bool HandleMouseLook(GDI_Point mousePos) => MouseToLoc(mousePos.X, mousePos.Y) is not null;
 
     static private Location? m_LiveLook = null;
     private void HandleMouseLookAuto(int x, int y)
     {
-      if (null == m_MapView) return;
+      if (m_MapView is null) return;
       var examine = MouseToLoc(x, y);
-      if (null == examine) return;
+      if (examine is null) return;
       var loc = examine.Value; // backward compatibility
       if (loc == m_LiveLook) return;
       if (IsVisibleToPlayer(in loc)) {
         List<UI.Overlay> overlays = new();
         string[] lines = DescribeStuffAt(loc);
-        if (lines != null) {
+        if (lines is not null) {
           var screen = MapToScreen(loc);
           overlays.Add(SetInfoOverlay(new UI.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(screen.X + TILE_SIZE, screen.Y))));
         }
         if (s_Options.ShowTargets) {
           var actorAt = loc.Actor;
-          if (actorAt != null) DrawActorRelations(actorAt, overlays);
+          if (actorAt is not null) DrawActorRelations(actorAt, overlays);
         }
         if (0 < overlays.Count) {
           m_LiveLook = loc;
           foreach(var o in overlays) AddOverlay(o);
           bool remove(int x, int y) {
             var test = MouseToLoc(x, y);
-            if (null != test && null != m_LiveLook && test.Value == m_LiveLook.Value) return false;
+            if (test is not null && m_LiveLook is not null && test.Value == m_LiveLook.Value) return false;
             bool need_redraw = false;
             foreach(var o in overlays) {
               if (RemoveOverlay(o)) need_redraw = true;
@@ -4808,7 +4808,7 @@ namespace djack.RogueSurvivor.Engine
       hasDoneAction = false;
 
       var invSpec = MouseToInventoryItem(mousePos);
-      if (null == invSpec) return false; // this command can work against ground inventory
+      if (invSpec is null) return false; // this command can work against ground inventory
 
       bool isPlayerInventory = invSpec.Value.Key.Origin.a_owner == Player;
 
@@ -4851,7 +4851,7 @@ namespace djack.RogueSurvivor.Engine
       var inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen);
       int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
       if (index1 >= 0 && index1 < inventory.MaxCapacity) {
-        if (null == inventory[index1]) return null;
+        if (inventory[index1] is null) return null;
         return new(new(new Data.Model.InvOrigin(Player), inventory[index1]), InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1));
       }
 
@@ -4870,7 +4870,7 @@ namespace djack.RogueSurvivor.Engine
     {
       hasDoneAction = false;
       var corpse = MouseToCorpse(mousePos, out var corpsePos);
-      if (null == corpse)  return false;
+      if (corpse is null)  return false;
 
       bool OnRMBCorpse(Corpse c)
       {
@@ -4923,9 +4923,9 @@ namespace djack.RogueSurvivor.Engine
     private Corpse? MouseToCorpse(GDI_Point screen, out GDI_Point corpsePos)
     {
       corpsePos = GDI_Point.Empty;
-      if (Player == null) return null;
+      if (Player is null) return null;
       var corpsesAt = Player.Location.Corpses;
-      if (null == corpsesAt) return null;
+      if (corpsesAt is null) return null;
       var inventorySlot = MouseToInventorySlot(INVENTORYPANEL_X, CORPSESPANEL_Y, screen);
       corpsePos = InventorySlotToScreen(INVENTORYPANEL_X, CORPSESPANEL_Y, inventorySlot);
       int index = inventorySlot.X + inventorySlot.Y * 10;
@@ -4938,7 +4938,7 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerEatCorpse(Actor player, GDI_Point mousePos)
     {
       var corpse = MouseToCorpse(mousePos);
-      if (corpse == null) return false;
+      if (corpse is null) return false;
       var act = new ActionEatCorpse(player, corpse);
       if (act.IsPerformable()) {
         act.Perform();
@@ -4951,7 +4951,7 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerReviveCorpse(Actor player, GDI_Point mousePos)
     {
       var corpse = MouseToCorpse(mousePos);
-      if (corpse == null) return false;
+      if (corpse is null) return false;
       if (!player.CanRevive(corpse, out string reason)) {
         ErrorPopup(string.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, reason));
         return false;
@@ -4978,7 +4978,7 @@ namespace djack.RogueSurvivor.Engine
       var a_witness = _ForceVisibleToPlayer(a);
       a.SpendActionPoints();
       int num = a.DamageVsCorpses;
-      if (null != a_witness) {
+      if (a_witness is not null) {
         a_witness.AddMessage(MakePanopticMessage(a, string.Format("{0} {1} corpse.", VERB_FEAST_ON.Conjugate(a), c.DeadGuy.Name)));
         // alpha10 replace with sfx
         m_MusicManager.Stop();
@@ -5005,7 +5005,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = actor.Location.Map;
       var pointList = map.FilterAdjacentInMap(actor.Location.Position, pt => !map.HasActorAt(in pt) && !map.HasMapObjectAt(pt));
       var revive = corpse.DeadGuy;
-      if (pointList == null) {
+      if (pointList is null) {
         if (player) AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", VERB_HAVE.Conjugate(actor), revive.Name)));
         return;
       }
@@ -5036,7 +5036,7 @@ namespace djack.RogueSurvivor.Engine
     private bool DoPlayerItemSlotUse(Actor player, int slot)
     {
       var it = player.Inventory[slot];
-      if (it == null) {
+      if (it is null) {
         ErrorPopup(string.Format("No item at inventory slot {0}.", slot + 1));
         return false;
       }
@@ -5046,12 +5046,12 @@ namespace djack.RogueSurvivor.Engine
     private bool DoPlayerItemSlotTake(Actor player, int slot)
     {
       var itemsAt = player.Location.Items;
-      if (itemsAt == null) {
+      if (itemsAt is null) {
         ErrorPopup("No items on ground.");
         return false;
       }
       var it = itemsAt[slot];
-      if (it == null) {
+      if (it is null) {
         ErrorPopup(string.Format("No item at ground slot {0}.", slot + 1));
         return false;
       }
@@ -5061,7 +5061,7 @@ namespace djack.RogueSurvivor.Engine
     private bool DoPlayerItemSlotDrop(Actor player, int slot)
     {
       var it = player.Inventory[slot];
-      if (it == null) {
+      if (it is null) {
         ErrorPopup(string.Format("No item at inventory slot {0}.", slot + 1));
         return false;
       }
@@ -5093,7 +5093,7 @@ namespace djack.RogueSurvivor.Engine
         ///////////////////
         RedrawPlayScreen();
         var dir = WaitDirectionOrCancel();
-        if (null == dir) return false;
+        if (dir is null) return false;
         T target = select(dir);
         if (execute(target)) return true;
       } while (true);
@@ -5104,12 +5104,12 @@ namespace djack.RogueSurvivor.Engine
     {
       Dictionary<Direction,T>? options = null;
       var staging = select(Direction.NEUTRAL);
-      if (null != staging) (options = new Dictionary<Direction, T>()).Add(Direction.NEUTRAL, staging);
+      if (staging is not null) (options = new Dictionary<Direction, T>()).Add(Direction.NEUTRAL, staging);
       foreach(var dir in Direction.COMPASS) {
         staging = select(dir);
-        if (null != staging) (options ??= new Dictionary<Direction, T>()).Add(dir, staging);
+        if (staging is not null) (options ??= new Dictionary<Direction, T>()).Add(dir, staging);
       }
-      if (null == options) {
+      if (options is null) {
          if (!string.IsNullOrEmpty(no_options)) ErrorPopup(no_options);
          return false;
       }
@@ -5123,7 +5123,7 @@ namespace djack.RogueSurvivor.Engine
         ///////////////////
         RedrawPlayScreen();
         var dir = WaitDirectionOrCancel();
-        if (null == dir) return false;
+        if (dir is null) return false;
         var target = select(dir);
         if (execute(target)) return true;
       } while (true);
@@ -5151,7 +5151,7 @@ namespace djack.RogueSurvivor.Engine
         }
 
         bool record_take_from(Data.Model.InvOrigin? x) {
-          if (null == x) return false;
+          if (x is null) return false;
           src = x.Value;
           return true;
         }
@@ -5210,7 +5210,7 @@ namespace djack.RogueSurvivor.Engine
         }
 
         bool record_transfer_from(Data.Model.InvOrigin? x) {
-          if (null == x) return false;
+          if (x is null) return false;
           src = x.Value;
           return true;
         }
@@ -5236,14 +5236,14 @@ namespace djack.RogueSurvivor.Engine
           var loc = player.Location + dir;
           if (!Map.Canonical(ref loc)) return null;
           var candidates = Map.AllInventoriesAt(loc);
-          if (null == candidates) return null;
+          if (candidates is null) return null;
           if (src != candidates[0]) return candidates[0];
 
           return null;
         }
 
         bool record_transfer_to(Data.Model.InvOrigin? x) {
-          if (null == x) return false;
+          if (x is null) return false;
           dest = x.Value;
           return true;
         }
@@ -5259,7 +5259,7 @@ namespace djack.RogueSurvivor.Engine
         RemoveOverlay(aux);
 
         var it = Choose(src.Inventory, "Taking...");
-        if (null == it) {
+        if (it is null) {
           ClearOverlays();
           return false;
         }
@@ -5286,7 +5286,7 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerUnloadItem(PlayerController pc, GDI_Point screen)
     {
       var invSpec = MouseToInventoryItem(screen);  // this command can work against ground inventory
-      if (null == invSpec) return HandlePlayerMenuUnload(pc);
+      if (invSpec is null) return HandlePlayerMenuUnload(pc);
 
       if (!(invSpec.Value.Key.it is ItemRangedWeapon rw)) return false;
       if (0 >= rw.Ammo) return false;
@@ -5301,10 +5301,10 @@ namespace djack.RogueSurvivor.Engine
       var player = pc.ControlledActor;
       List<Data.Model.InventorySource<ItemRangedWeapon>> unload_these = new();
       var candidates = Map.GetAccessibleAdjacentInventoryOrigins(player.Location);
-      if (null == candidates) return false;
+      if (candidates is null) return false;
       foreach (var x in candidates) {
         var rws = x.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo);
-        if (null == rws) continue;
+        if (rws is null) continue;
         foreach (var rw in rws) unload_these.Add(new(x, rw));
       }
 
@@ -5326,20 +5326,20 @@ namespace djack.RogueSurvivor.Engine
       const string GIVE_MODE_TEXT = "GIVE MODE - directions to give item to someone, ESC cancels";
 
       var invSpec = MouseToInventoryItem(screen);
-      if (null == invSpec || invSpec.Value.Key.Origin.a_owner != player) return false;
+      if (invSpec is null || invSpec.Value.Key.Origin.a_owner != player) return false;
 
       ClearOverlays();
       AddOverlay(new UI.OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
       List<Data.Model.InvOrigin>? give_where_alt(Direction dir) { return Map.GetGivingInventoryOrigins(player, dir); }
       bool give_alt(List<Data.Model.InvOrigin>? src) {
-        if (null == src) {
+        if (src is null) {
           ErrorPopup("Noone there.");
           return false;
         }
 
         var actorAt = src[0].a_owner; // backward compatibility
-        if (actorAt != null) {
+        if (actorAt is not null) {
           if (player.CanGiveTo(actorAt, invSpec.Value.Key.it!, out string reason)) {
             DoGiveItemTo(player, actorAt, invSpec.Value.Key.it!);
             return true;
@@ -5347,7 +5347,7 @@ namespace djack.RogueSurvivor.Engine
           ErrorPopup(string.Format("Can't give {0} to {1} : {2}.", invSpec.Value.Key.it!.TheName, actorAt.TheName, reason));
           return false;
         }
-        if (null != src[0].obj_owner) {
+        if (src[0].obj_owner is not null) {
           var reason = src[0].obj_owner.ReasonCantPutItemIn(player);
           if (string.IsNullOrEmpty(reason)) {
             player.StandUp();
@@ -5357,7 +5357,7 @@ namespace djack.RogueSurvivor.Engine
           ErrorPopup(string.Format("Can't put {0} in {1} : {2}.", invSpec.Value.Key.it!.TheName, src[0].obj_owner.TheName, reason));
           return false;
         }
-        if (null != src[0].loc) {
+        if (src[0].loc is not null) {
           DoDropItem(player, invSpec.Value.Key.it!, src[0].loc.Value);
           return true;
         }
@@ -5380,7 +5380,7 @@ namespace djack.RogueSurvivor.Engine
       var can_trade_with = pc.GetTradingTargets(pc.friends_in_FOV); // this should only return legal trading targets
 
       // \todo filter these
-      if (null == can_trade_with) {
+      if (can_trade_with is null) {
         ErrorPopup("No visible non-enemy actors to trade with.");
         return;
       }
@@ -5402,7 +5402,7 @@ namespace djack.RogueSurvivor.Engine
           pc.SetObjective(my_trading);
           var o_oai = (target.Controller as ObjectiveAI)!;
           var your_trading = o_oai.Goal<Gameplay.AI.Goals.Trade>();
-          if (null != your_trading) your_trading.Add(player);
+          if (your_trading is not null) your_trading.Add(player);
           else {
             your_trading = new Gameplay.AI.Goals.Trade(player.Location.Map.LocalTime.TurnCounter, target, player);
             o_oai.SetObjective(your_trading);
@@ -5417,19 +5417,19 @@ namespace djack.RogueSurvivor.Engine
     {
       var player = pc.ControlledActor;
       var invSpec = MouseToInventoryItem(screen);
-      if (null == invSpec || invSpec.Value.Key.Origin.a_owner != player) return false;
+      if (invSpec is null || invSpec.Value.Key.Origin.a_owner != player) return false;
 
       ClearOverlays();
       AddOverlay(new UI.OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
       List<Data.Model.InvOrigin>? trade_where_alt(Direction dir) { return Map.GetTradingInventoryOrigins(player, dir); }
       bool trade_alt(List<Data.Model.InvOrigin>? src) {
-        if (null == src) {
+        if (src is null) {
           ErrorPopup("Noone there.");
           return false;
         }
         var actorAt = src[0].a_owner; // backward compatibility
-        if (null != actorAt) {
+        if (actorAt is not null) {
           if (ActionTrade.Can(player, actorAt, out string reason)) {
             ClearOverlays();
             RedrawPlayScreen();
@@ -5473,7 +5473,7 @@ namespace djack.RogueSurvivor.Engine
         if (!player.Location.Map.IsInBounds(pos)) return null;  // doors never generate on map edges so IsInBounds ok
 
         var door = player.Location.Map.GetMapObjectAt(pos) as DoorWindow;
-        if (null == door) return null;
+        if (door is null) return null;
         if (door.IsClosed) return null;
         return new ActionCloseDoor(player, door, player.Location == (player.Controller as BaseAI).PrevLocation);
       }
@@ -5499,7 +5499,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       bool build(MapObject? mapObjectAt) {
-        if (null != mapObjectAt) {
+        if (mapObjectAt is not null) {
           if (mapObjectAt is DoorWindow door) {
             if (player.CanBarricade(door, out string reason)) {
               DoBarricadeDoor(player, door);
@@ -5545,12 +5545,12 @@ namespace djack.RogueSurvivor.Engine
         MapObject? obj;
         if (pos == player.Location.Position) {
           var exitAt = player.Location.Exit;
-          if (exitAt == null) {
+          if (exitAt is null) {
             ErrorPopup("No exit there.");
             return false;
           }
           var actorAt = exitAt.Location.Actor;
-          if (actorAt != null) {
+          if (actorAt is not null) {
             if (player.IsEnemyOf(actorAt)) {
               var melee = new ActionMeleeAttack(player, actorAt);
               if (melee.IsPerformable()) {
@@ -5565,7 +5565,7 @@ namespace djack.RogueSurvivor.Engine
             }
           } else {
             obj = exitAt.Location.MapObject;
-            if (null != obj) {
+            if (obj is not null) {
               if (player.CanBreak(obj, out reason)) {
                 DoBreak(player, obj);
                 return true;
@@ -5583,7 +5583,7 @@ namespace djack.RogueSurvivor.Engine
         if (!player.Location.Map.IsValid(pos)) return false;
 
         obj = player.Location.Map.GetMapObjectAtExt(pos);
-        if (null != obj) {
+        if (obj is not null) {
           if (player.CanBreak(obj, out reason)) {
             DoBreak(player, obj);
             RedrawPlayScreen();
@@ -5620,7 +5620,7 @@ namespace djack.RogueSurvivor.Engine
 
       Direction? build_where(Direction dir) { return dir == Direction.NEUTRAL ? null : dir; }
       bool build(Direction? dir) {
-        if (null == dir) return false;
+        if (dir is null) return false;
         var act = new ActionBuildFortification(player, dir, isLarge);
         if (act.IsPerformable()) {
             act.Perform();
@@ -5653,7 +5653,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       var enemiesInFov = player.GetEnemiesInFov(player.Controller.FOVloc);
-      if (null == enemiesInFov || 0 >= enemiesInFov.Count) {
+      if (enemiesInFov is null || 0 >= enemiesInFov.Count) {
         ErrorPopup("No targets to fire at.");
         return false;
       }
@@ -5774,7 +5774,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
         if (!m_UI.Modal(handler)) break;
         RemoveOverlay(nominate);
-      } while(null == ret);
+      } while(ret is null);
       ClearOverlays();
       return ret;
     }
@@ -5810,7 +5810,7 @@ namespace djack.RogueSurvivor.Engine
         PanViewportTo(target);
         if (!m_UI.Modal(handler)) break;
         RemoveOverlay(nominate);
-      } while(null == ret);
+      } while(ret is null);
       ClearOverlays();
       PanViewportTo(player_backup);
       return ret;
@@ -5825,7 +5825,7 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
       var non_enemies = player.Controller.friends_in_FOV;
-      if (null == non_enemies) {
+      if (non_enemies is null) {
         ErrorPopup("No visible non-enemy actors to mark.");
         return;
       }
@@ -5890,9 +5890,9 @@ namespace djack.RogueSurvivor.Engine
       var itemGrenade = player.GetEquippedWeapon() as ItemGrenade;
       var itemGrenadePrimed = player.GetEquippedWeapon() as Data._Item.PrimedExplosive;
 #if DEBUG
-      if (itemGrenade == null && itemGrenadePrimed == null) throw new InvalidOperationException("No grenade to throw.");  // precondition
+      if (itemGrenade is null && itemGrenadePrimed is null) throw new InvalidOperationException("No grenade to throw.");  // precondition
 #endif
-      ActionThrowGrenade act = (null != itemGrenade) ? new ActionThrowGrenade(player, player.Location.Position, itemGrenade)
+      ActionThrowGrenade act = (itemGrenade is not null) ? new ActionThrowGrenade(player, player.Location.Position, itemGrenade)
                                                      : new ActionThrowGrenade(player, player.Location.Position, itemGrenadePrimed);
 
       UI.OverlayPopup mode = new(THROW_GRENADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty);
@@ -5935,7 +5935,7 @@ namespace djack.RogueSurvivor.Engine
         default:
            {
            var dir = CommandToDirection(command);
-           if (dir != null) {
+           if (dir is not null) {
               if (act.update(act.ThrowDest + dir)) {
                 err = display();
               }
@@ -5982,7 +5982,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       bool swap(Actor? actorAt) {
-        if (actorAt != null) {
+        if (actorAt is not null) {
           if (player.CanSwitchPlaceWith(actorAt, out string reason)) {
             DoSwitchPlace(player, actorAt);
             return true;
@@ -6005,12 +6005,12 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerTakeLead(Actor player)
     {
       var test = (player.Controller as ObjectiveAI)?.RecruitLOS();
-      if (null != test) {
+      if (test is not null) {
         test.Perform();
         return true;
       }
       test = (player.Controller as ObjectiveAI)?.RecruitRadio();
-      if (null != test) {
+      if (test is not null) {
         test.Perform();
         return true;
       }
@@ -6027,7 +6027,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       bool lead(Actor? actorAt) {
-        if (actorAt != null) {
+        if (actorAt is not null) {
           if (player.CanTakeLeadOf(actorAt, out string reason)) {
             DoTakeLead(player, actorAt);
             int turn = Session.Get.WorldTime.TurnCounter;
@@ -6083,19 +6083,19 @@ namespace djack.RogueSurvivor.Engine
 
       Point? push_from(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
       bool push(Point? pos) {
-        if (null == pos) return false;
+        if (pos is null) return false;
         if (!player.Location.Map.IsValid(pos.Value)) return false;
         string reason;
         MapObject? mapObj;
         var other = player.Location.Map.GetActorAtExt(pos.Value);
-        if (other != null) {
+        if (other is not null) {
           if (player.CanShove(other,out reason)) {
             return HandlePlayerShoveActor(player, other);
           } else {
             ErrorPopup(string.Format("Cannot shove {0} : {1}.", other.TheName, reason));
             return false;
           }
-        } else if (null != (mapObj = player.Location.Map.GetMapObjectAtExt(pos.Value))) {
+        } else if ((mapObj = player.Location.Map.GetMapObjectAtExt(pos.Value)) is not null) {
           if (player.CanPush(mapObj, out reason)) {
             return HandlePlayerPushObject(player, mapObj);
           } else {
@@ -6124,7 +6124,7 @@ namespace djack.RogueSurvivor.Engine
 
       Location? push_to(Direction dir) { return dir == Direction.NEUTRAL ? null : new Location?(mapObj.Location + dir); }
       bool push(Location? pos) {
-        if (null == pos) return false;
+        if (pos is null) return false;
         var loc = pos.Value;
         if (!Map.Canonical(ref loc)) return false;
         if (mapObj.CanPushTo(loc, out string reason)) {
@@ -6151,12 +6151,12 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new UI.OverlayRect(Color.Yellow, new(MapToScreen(other.Location), SIZE_OF_ACTOR)));
       if (other.Controller is ObjectiveAI ai) {
         var dests = ai.WantToGoHere(other.Location);
-        if (null != dests) foreach(var loc in dests) AddOverlay(new UI.OverlayRect(Color.Green, new(MapToScreen(loc), SIZE_OF_ACTOR)));
+        if (dests is not null) foreach(var loc in dests) AddOverlay(new UI.OverlayRect(Color.Green, new(MapToScreen(loc), SIZE_OF_ACTOR)));
       }
 
       Location? shove_to(Direction dir) { return dir == Direction.NEUTRAL ? null : new Location?(other.Location + dir); }
       bool shove(Location? pos) {
-        if (null == pos) return false;
+        if (pos is null) return false;
         var loc = pos.Value;
         if (!Map.Canonical(ref loc)) return false;
         if (other.CanBeShovedTo(in loc, out string reason)) {
@@ -6190,13 +6190,13 @@ namespace djack.RogueSurvivor.Engine
 
       Point? pull_from(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
       bool pull(Point? pos) {
-        if (null == pos) return false;
+        if (pos is null) return false;
         var loc = new Location(player.Location.Map, pos.Value);
         if (!Map.Canonical(ref loc)) return false;
         string reason;
         MapObject? mapObj;
         var other = loc.Actor;
-        if (null != other) {
+        if (other is not null) {
           // pull-shove.
           if (player.CanShove(other,out reason)) { // if can shove, can pull-shove.
             return HandlePlayerPullActor(player, other);
@@ -6204,7 +6204,7 @@ namespace djack.RogueSurvivor.Engine
             ErrorPopup(string.Format("Cannot pull {0} : {1}.", other.TheName, reason));
             return false;
           }
-        } else if (null != (mapObj = loc.MapObject)) { // pull.
+        } else if ((mapObj = loc.MapObject) is not null) { // pull.
           if (player.CanPush(mapObj, out reason)) { // if can push, can pull.
             return HandlePlayerPullObject(player, mapObj);
           } else {
@@ -6233,7 +6233,7 @@ namespace djack.RogueSurvivor.Engine
 
       Point? pull_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
       bool pull(Point? pos) {
-        if (null == pos) return false;
+        if (pos is null) return false;
         if (!player.Location.Map.IsInBounds(pos.Value)) return false;   // \todo this is not cross-district
         if (player.CanPull(mapObj, new Location(player.Location.Map, pos.Value), out string reason)) {
           DoPull(player, mapObj, new Location(player.Location.Map, pos.Value));
@@ -6260,7 +6260,7 @@ namespace djack.RogueSurvivor.Engine
 
       Location? pull_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Location?(player.Location + dir); }
       bool pull(Location? dest) {
-        if (null == dest) return false;
+        if (dest is null) return false;
         Location _dest = dest.Value;
         if (!Map.Canonical(ref _dest)) return false;
         if (player.CanPull(other, _dest, out string reason)) {
@@ -6280,7 +6280,7 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerUseSpray(Actor player)
     {
       var equippedItem = player.GetEquippedItem(DollPart.LEFT_HAND);
-      if (null != equippedItem) {
+      if (equippedItem is not null) {
         if (equippedItem is ItemSprayPaint s_paint) return HandlePlayerTag(player, s_paint);
         if (equippedItem is ItemSprayScent spray) {
           // alpha10 new way to use stench killer
@@ -6305,7 +6305,7 @@ namespace djack.RogueSurvivor.Engine
       // \todo This is not cross-district, but we're rethinking spray paint anyway)
       Point? spray_where(Direction dir) { return dir == Direction.NEUTRAL ? null : new Point?(player.Location.Position + dir); }
       bool spray_on(Point? pos) {
-        if (null == pos) return false;
+        if (pos is null) return false;
         if (!player.Location.Map.IsInBounds(pos.Value)) return false;
         if (CanTag(player.Location.Map, pos.Value, out string reason)) {
           DoTag(player, spray, pos.Value);
@@ -6357,7 +6357,7 @@ namespace djack.RogueSurvivor.Engine
 
       Actor? spray_who(Direction dir) { return dir == Direction.NEUTRAL ? player : player.Location.Map.GetActorAtExt(player.Location.Position + dir); }
       bool spray_on(Actor? who) {
-        if (null == who) {
+        if (who is null) {
           ErrorPopup("No one to spray on there.");
           return false;
         }
@@ -6394,7 +6394,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePlayerCountermandPC(PlayerController pc) {
       var orders = pc.CurrentSelfOrders;
-      if (null == orders) {
+      if (orders is null) {
         ErrorPopup("No current self-orders.");
         return;
       }
@@ -6546,8 +6546,8 @@ namespace djack.RogueSurvivor.Engine
 
       // a mechanical interpretation of the legacy order UI; intentionally not using programmer time to optimize UI
       List<KeyValuePair<string, Func<bool>>> orders = new();
-      if (null != fo_ordai) {
-          if (null != fo_ordai.Order) {
+      if (fo_ordai is not null) {
+          if (fo_ordai.Order is not null) {
             orders.Add(new(string.Format("0. Cancel legacy order {0}.", str1), () => {
               DoCancelOrder(player, fo_ordai);
               return true;
@@ -6616,7 +6616,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       // old-style but valid for PCs
-      if (null == FollowerCannotGiveItems(player, follower)) {
+      if (FollowerCannotGiveItems(player, follower) is null) {
         orders.Add(new("Give me...", () => {
             return HandlePlayerOrderFollowerToGiveItems(player, follower);
         }));
@@ -6624,7 +6624,7 @@ namespace djack.RogueSurvivor.Engine
 
       // new-style orders, that are valid for PCs, go here
       orders.Add(new("What's up?", () => {
-        if (null != fo_ordai) fo_ordai.HandlePlayerCountermand();
+        if (fo_ordai is not null) fo_ordai.HandlePlayerCountermand();
         else HandlePlayerCountermandPC(follower.Controller as PlayerController);
         return false;
       }));
@@ -6640,7 +6640,7 @@ namespace djack.RogueSurvivor.Engine
       if (follower.IsPlayer || !follower.Controller.InCombat) {
         bool could_lead(Actor ally) {
           var oai = ally.Controller as ObjectiveAI;
-          if (null == oai) return false;
+          if (oai is null) return false;
 //          InfoPopup(ally.Name+" : "+ ally.CountFollowers.ToString());
           if (ally.CountFollowers >= ally.MaxFollowers) return false;
 //          InfoPopup((!ally.IsPlayer && ally.Controller.InCombat).ToString());
@@ -6668,7 +6668,7 @@ namespace djack.RogueSurvivor.Engine
 
         var allies = player.Allies;
         var donate_to = player.FilterAllies(allies, could_lead);
-        if (null != donate_to) {
+        if (donate_to is not null) {
           orders.Add(new("Follow ...", () => {
             string label(int index) { return donate_to[index].Name; }
             bool details(int index) {
@@ -6716,7 +6716,7 @@ namespace djack.RogueSurvivor.Engine
         var mouseButtons = ui_event.Key.Value;
         GDI_Point mousePos = new(ui_event.Value.Key, ui_event.Value.Value);
 
-        if (key != null) {
+        if (key is not null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
           Point map2 = MouseToMap(mousePos);
@@ -6737,9 +6737,9 @@ namespace djack.RogueSurvivor.Engine
             } else {
               color = Color.Red;
             }
-            if (null == nullable || nullable.Value != map2) {
+            if (nullable is null || nullable.Value != map2) {
               nullable = map2;
-              if (null != selected) RemoveOverlay(selected);
+              if (selected is not null) RemoveOverlay(selected);
               selected = new(color, new(MapToScreen(nullable.Value), SIZE_OF_TILE));
               AddOverlay(selected);
             }
@@ -6748,7 +6748,7 @@ namespace djack.RogueSurvivor.Engine
       }
       while (flag1);
       RemoveOverlay(mode);
-      if (null != selected) RemoveOverlay(selected);
+      if (selected is not null) RemoveOverlay(selected);
       return flag2;
     }
 
@@ -6776,7 +6776,7 @@ namespace djack.RogueSurvivor.Engine
         var mouseButtons = ui_event.Key.Value;
         GDI_Point mousePos = new(ui_event.Value.Key, ui_event.Value.Value);
 
-        if (key != null) {
+        if (key is not null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
           Point map2 = MouseToMap(mousePos);
@@ -6797,9 +6797,9 @@ namespace djack.RogueSurvivor.Engine
                 }
               } else color = Color.Red;
             } else color = Color.Red;
-            if (null == nullable || nullable.Value != map2) {
+            if (nullable is null || nullable.Value != map2) {
               nullable = map2;
-              if (null != selected) RemoveOverlay(selected);
+              if (selected is not null) RemoveOverlay(selected);
               selected = new(color, new(MapToScreen(nullable.Value), SIZE_OF_TILE));
               AddOverlay(selected);
             }
@@ -6808,7 +6808,7 @@ namespace djack.RogueSurvivor.Engine
       }
       while (flag1);
       RemoveOverlay(mode);
-      if (null != selected) RemoveOverlay(selected);
+      if (selected is not null) RemoveOverlay(selected);
       return flag2;
     }
 
@@ -6836,7 +6836,7 @@ namespace djack.RogueSurvivor.Engine
         var mouseButtons = ui_event.Key.Value;
         GDI_Point mousePos = new(ui_event.Value.Key, ui_event.Value.Value);
 
-        if (key != null) {
+        if (key is not null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
           Point map2 = MouseToMap(mousePos);
@@ -6857,9 +6857,9 @@ namespace djack.RogueSurvivor.Engine
             } else {
               color = Color.Red;
             }
-            if (null == nullable || nullable.Value != map2) {
+            if (nullable is null || nullable.Value != map2) {
               nullable = map2;
-              if (null != selected) RemoveOverlay(selected);
+              if (selected is not null) RemoveOverlay(selected);
               selected = new(color, new(MapToScreen(nullable.Value), SIZE_OF_TILE));
               AddOverlay(selected);
             }
@@ -6868,7 +6868,7 @@ namespace djack.RogueSurvivor.Engine
       }
       while (flag1);
       RemoveOverlay(mode);
-      if (null != selected) RemoveOverlay(selected);
+      if (selected is not null) RemoveOverlay(selected);
       return flag2;
     }
 
@@ -6897,7 +6897,7 @@ namespace djack.RogueSurvivor.Engine
         var mouseButtons = ui_event.Key.Value;
         GDI_Point mousePos = new(ui_event.Value.Key, ui_event.Value.Value);
 
-        if (key != null) {
+        if (key is not null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
           Point map2 = MouseToMap(mousePos);
@@ -6905,7 +6905,7 @@ namespace djack.RogueSurvivor.Engine
             if (IsVisibleToPlayer(map1, in map2) && followerFOV.Contains(map2)) {
               bool flag3 = true;
               string reason = "";
-              if (map1.GetZonesAt(map2) == null) {
+              if (map1.GetZonesAt(map2) is null) {
                 flag3 = false;
                 reason = "no zone here";
               } else if (map2 != follower.Location.Position && !map1.IsWalkableFor(map2, follower, out reason))
@@ -6925,15 +6925,15 @@ namespace djack.RogueSurvivor.Engine
             } else {
               color = Color.Red;
             }
-            if (null == nullable || nullable.Value != map2) {
+            if (nullable is null || nullable.Value != map2) {
               nullable = map2;
-              if (null != selected) RemoveOverlay(selected);
+              if (selected is not null) RemoveOverlay(selected);
               selected = new(color, new(MapToScreen(nullable.Value), SIZE_OF_TILE));
               AddOverlay(selected);
 
-              if (null != zones) RemoveOverlay(zones);
+              if (zones is not null) RemoveOverlay(zones);
               var zonesAt = map1.GetZonesAt(nullable.Value);
-              if (null != zonesAt) {
+              if (zonesAt is not null) {
                 string[] lines = new string[zonesAt.Count + 1];
                 lines[0] = "Zone(s) here :";
                 for (int index = 0; index < zonesAt.Count; ++index)
@@ -6947,8 +6947,8 @@ namespace djack.RogueSurvivor.Engine
       }
       while (flag1);
       RemoveOverlay(mode);
-      if (null != selected) RemoveOverlay(selected);
-      if (null != zones) RemoveOverlay(zones);
+      if (selected is not null) RemoveOverlay(selected);
+      if (zones is not null) RemoveOverlay(zones);
       return flag2;
     }
 
@@ -6963,11 +6963,11 @@ namespace djack.RogueSurvivor.Engine
     {
 #if DEBUG
       var err = FollowerCannotGiveItems(player, follower);
-      if (null != err) throw new InvalidOperationException(err);    // precondition violation
+      if (err is not null) throw new InvalidOperationException(err);    // precondition violation
 #endif
 
       var can_give = follower.Inventory.grep(obj => follower.CanGiveTo(player, obj));
-      if (null == can_give) {
+      if (can_give is null) {
         ErrorPopup(string.Format("{0} can give no items.", follower.TheName));
         return false;
       }
@@ -6997,11 +6997,11 @@ namespace djack.RogueSurvivor.Engine
       Location loc_checkpoint = aiActor.Location;
 #endif
       var actorAction = ai.GetAction();
-      if (actorAction == null) throw new InvalidOperationException("AI returned null action.");
+      if (actorAction is null) throw new InvalidOperationException("AI returned null action.");
       if (!actorAction.IsPerformable()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), ai.GetType().ToString(), actorAction.FailReason));
       if (aiActor.IsInsane && Rules.Get.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         var insaneAction = GenerateInsaneAction(aiActor);
-        if (null != insaneAction && insaneAction.IsPerformable()) actorAction = insaneAction;
+        if (insaneAction is not null && insaneAction.IsPerformable()) actorAction = insaneAction;
       }
       // we need to know if this got past internal testing.
 #if DEBUG
@@ -7019,7 +7019,7 @@ namespace djack.RogueSurvivor.Engine
         World.Get._RejectInventoryDamage(errors, aiActor);
         if (0 < errors.Count) throw new InvalidOperationException(aiActor.Name + " action " + actorAction + " triggered:\n" + string.Join("\n", errors));
       }
-      if (actorAction is ActorDest && null != aiActor.Threats) ai.UpdateSensors(); // to trigger fast threat/tourism update
+      if (actorAction is ActorDest && aiActor.Threats is not null) ai.UpdateSensors(); // to trigger fast threat/tourism update
       if (IsPlayer(aiActor)) RedrawPlayScreen(); // can happen from AI prayer
     }
 
@@ -7099,7 +7099,7 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, pt => (Player.Controller as PlayerController).CanGetFromContainer(pt));
         case AdvisorHint.ITEM_GRAB_FLOOR:
           var itemsAt = map.GetItemsAt(position);
-          if (itemsAt == null) return false;
+          if (itemsAt is null) return false;
           foreach (var it in itemsAt) if (Player.CanGet(it)) return true;
           return false;
         case AdvisorHint.ITEM_UNEQUIP:
@@ -7127,7 +7127,7 @@ namespace djack.RogueSurvivor.Engine
           foreach (Item it in inventory5) if (Player.CanUse(it)) return true;
           return false;
         case AdvisorHint.FLASHLIGHT: return Player.Inventory.Has<ItemLight>();
-        case AdvisorHint.CELLPHONES: return Player.Inventory.GetFirstByModel(GameItems.CELL_PHONE) != null;
+        case AdvisorHint.CELLPHONES: return Player.Inventory.GetFirstByModel(GameItems.CELL_PHONE) is not null;
         case AdvisorHint.SPRAYS_PAINT: return Player.Inventory.Has<ItemSprayPaint>();
         case AdvisorHint.SPRAYS_SCENT: return Player.Inventory.Has<ItemSprayScent>();
         case AdvisorHint.WEAPON_FIRE:
@@ -7161,7 +7161,7 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, pt =>
          {
              Actor actorAt = map.GetActorAt(pt);
-             if (actorAt == null) return false;
+             if (actorAt is null) return false;
              return ActionTrade.Can(Player, actorAt);
          });
         case AdvisorHint.NPC_GIVING_ITEM:
@@ -7169,7 +7169,7 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, pt =>
          {
              Actor actorAt = map.GetActorAt(pt);
-             if (actorAt == null) return false;
+             if (actorAt is null) return false;
              return !Player.IsEnemyOf(actorAt);
          });
         case AdvisorHint.NPC_SHOUTING:
@@ -7185,14 +7185,14 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, pt =>
          {
              Actor actorAt = map.GetActorAt(pt);
-             if (actorAt == null) return false;
+             if (actorAt is null) return false;
              return !Player.IsEnemyOf(actorAt);
          });
         case AdvisorHint.LEADING_CAN_RECRUIT:
           return map.HasAnyAdjacentInMap(position, pt =>
          {
              Actor actorAt = map.GetActorAt(pt);
-             if (actorAt == null) return false;
+             if (actorAt is null) return false;
              return Player.CanTakeLeadOf(actorAt);
          });
         case AdvisorHint.LEADING_GIVE_ORDERS:
@@ -7201,7 +7201,7 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, pt =>
          {
              Actor actorAt = map.GetActorAt(pt);
-             return (null != actorAt && Player.CanSwitchPlaceWith(actorAt));
+             return (actorAt is not null && Player.CanSwitchPlaceWith(actorAt));
          });
         case AdvisorHint.GAME_SAVE_LOAD:
           return map.LocalTime.Hour >= 7;
@@ -7844,11 +7844,11 @@ namespace djack.RogueSurvivor.Engine
 #endif
 
       Actor actorAt = examine.Actor;
-      if (actorAt != null) return DescribeActor(actorAt);
+      if (actorAt is not null) return DescribeActor(actorAt);
       var mapObjectAt = examine.MapObject;
-      if (mapObjectAt != null) return DescribeMapObject(mapObjectAt);
+      if (mapObjectAt is not null) return DescribeMapObject(mapObjectAt);
       var itemsAt = examine.Items;
-      if (itemsAt != null) return DescribeInventory(itemsAt);
+      if (itemsAt is not null) return DescribeInventory(itemsAt);
       var corpsesAt = examine.Corpses;
       return corpsesAt?.Describe();
     }
@@ -7866,7 +7866,7 @@ namespace djack.RogueSurvivor.Engine
       var lines = new List<string>(10);
       var a_name = actor.Name.Capitalize();
       var a_faction = actor.Faction;
-      if (null != a_faction) {
+      if (a_faction is not null) {
         lines.Add(actor.IsInAGang ? string.Format("{0}, {1}-{2}.", a_name, a_faction.MemberName, actor.GangID.Name())   // 2020-01-15 IL ok with explicit a_faction.MemberName
                                   : string.Format("{0}, {1}.", a_name, a_faction.MemberName));
       } else lines.Add(string.Format("{0}.", a_name));
@@ -7875,14 +7875,14 @@ namespace djack.RogueSurvivor.Engine
       lines.Add(string.Format("{0}.", a_model.Name.Capitalize()));
       lines.Add(string.Format("{0} since {1}.", a_model.Abilities.IsUndead ? "Undead" : "Staying alive", new WorldTime(actor.SpawnTime).ToString()));
       OrderableAI aiController = actor.Controller as OrderableAI;
-      if (aiController?.Order != null) lines.Add(string.Format("Order : {0}.", aiController.Order.ToString())); // 2020-01-15 IL doesn't want temporary for aiController?.Order
+      if (aiController?.Order is not null) lines.Add(string.Format("Order : {0}.", aiController.Order.ToString())); // 2020-01-15 IL doesn't want temporary for aiController?.Order
       var leader = actor.LiveLeader;
-      if (null != leader) {
+      if (leader is not null) {
         lines.Add(string.Format("Leader : {0}.", leader.Name.Capitalize()));
         if (leader.IsPlayer) {  // \todo should this test be leader == Player ?
           lines.Add(TrustInLeaderText(actor.TrustInLeader));
 
-          if (null != aiController && aiController.DontFollowLeader) lines.Add("Ordered to not follow you.");
+          if (aiController is not null && aiController.DontFollowLeader) lines.Add("Ordered to not follow you.");
           lines.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, actor.HoursUntilHungry));
           lines.Add(string.Format("Slp : {0} {1}h", actor.SleepPoints, actor.HoursUntilSleepy));
           lines.Add(string.Format("San : {0} {1}h", actor.Sanity, actor.HoursUntilUnstable));
@@ -7897,7 +7897,7 @@ namespace djack.RogueSurvivor.Engine
         }
         if (!actor.IgnoredByPolice(Player)) {
           var blotter = Session.Get.Police.WantedFor(actor);
-          if (null!=blotter) {
+          if (blotter is not null) {
             lines.Add("WANTED:");
             foreach(var x in blotter) {
                 switch(x.v_code) {
@@ -7913,7 +7913,7 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         }
-      } else if (null != leader && leader.IsPlayer && actor.IsTrustingLeader) {
+      } else if (leader is not null && leader.IsPlayer && actor.IsTrustingLeader) {
         lines.Add(0 < (murders = Session.Get.Police.CountMurders(actor))
                      ? string.Format("* Confess {0}! *", "murder".QtyDesc(murders))
                      : "Has committed no murders.");
@@ -7991,7 +7991,7 @@ namespace djack.RogueSurvivor.Engine
       lines.Add(" ");
       var sk_table = actor.MySkills;
       var skills = sk_table.Skills;
-      if (null != skills) {
+      if (skills is not null) {
         foreach (var sk in skills) lines.Add(string.Format("{0}-{1}", sk.Value, Skills.Name(sk.Key)));
         lines.Add(" ");
       }
@@ -8046,16 +8046,16 @@ namespace djack.RogueSurvivor.Engine
       // 10. Trading options; cf. ObjectiveAI::HaveTradingTargets()
       var TradeableItems = (Player.Controller as ObjectiveAI)?.GetTradeableItems();
       var order_ai = actor.Controller as OrderableAI;
-      bool trade_ok = null!=order_ai && null != TradeableItems && 0 < TradeableItems.Count && !actor.IsPlayer && ActionTrade.Can(Player, actor) && null != Player.MinStepPathTo(Player.Location, actor.Location);
+      bool trade_ok = order_ai is not null && TradeableItems is not null && 0 < TradeableItems.Count && !actor.IsPlayer && ActionTrade.Can(Player, actor) && Player.MinStepPathTo(Player.Location, actor.Location) is not null;
       if (trade_ok && 1== TradeableItems.Count) {
         var other_TradeableItems = order_ai.GetTradeableItems();
-        if (null == other_TradeableItems) trade_ok = false;
+        if (other_TradeableItems is null) trade_ok = false;
         else if (1 == other_TradeableItems.Count && TradeableItems[0].ModelID == other_TradeableItems[0].ModelID) trade_ok = false;
       }
       if (trade_ok && order_ai.HasAnyInterestingItem(TradeableItems)) {
         // Cf. RogueGame::PickItemsToTrade
         var negotiate = order_ai.TradeOptions(Player);
-        if (null != negotiate) {
+        if (negotiate is not null) {
               lines.Add("would trade with you:");
               while(0 < negotiate.Count) {
                 var test = negotiate[0];
@@ -8108,17 +8108,17 @@ namespace djack.RogueSurvivor.Engine
       switch (actor.Activity) {
         case Data.Activity.IDLE: return null;
         case Data.Activity.CHASING:
-          if (actor.TargetActor == null)
+          if (actor.TargetActor is null)
             return "Chasing!";
           return string.Format("Chasing {0}!", actor.TargetActor.Name);
         case djack.RogueSurvivor.Data.Activity.FIGHTING:
-          if (actor.TargetActor == null)
+          if (actor.TargetActor is null)
             return "Fighting!";
           return string.Format("Fighting {0}!", actor.TargetActor.Name);
         case Data.Activity.TRACKING: return "Tracking!";
         case Data.Activity.FLEEING: return "Fleeing!";
         case Data.Activity.FOLLOWING:
-          if (actor.TargetActor == null) return "Following.";
+          if (actor.TargetActor is null) return "Following.";
           // alpha10
           if (actor.Leader == actor.TargetActor) return string.Format("Following {0} leader.", actor.HisOrHer);
           return string.Format("Following {0}.", actor.TargetActor.Name);
@@ -8178,9 +8178,9 @@ namespace djack.RogueSurvivor.Engine
       }
       if (0 < (tmp_i = obj.Weight)) lines.Add(string.Format("Weight    : {0}", tmp_i));
       var itemsAt = (obj as ShelfLike)?.NonEmptyInventory;
-      if (null != itemsAt) lines.AddRange(DescribeInventory(itemsAt));
+      if (itemsAt is not null) lines.AddRange(DescribeInventory(itemsAt));
       itemsAt = obj.Location.Items;
-      if (itemsAt != null) lines.AddRange(DescribeInventory(itemsAt));
+      if (itemsAt is not null) lines.AddRange(DescribeInventory(itemsAt));
       return lines.ToArray();
     }
 
@@ -8317,7 +8317,7 @@ namespace djack.RogueSurvivor.Engine
         lines.Add("----");
         lines.Add(string.Format("to give : <{0}>.", s_KeyBindings.AsString(PlayerCommand.GIVE_ITEM)));
         lines.Add(string.Format("to trade : <{0}>.", s_KeyBindings.AsString(PlayerCommand.INITIATE_TRADE)));
-        if (inInvAdditionalDesc != null) lines.Add(inInvAdditionalDesc);
+        if (inInvAdditionalDesc is not null) lines.Add(inInvAdditionalDesc);
         if (0 < command_lines.Count) lines.AddRange(command_lines);
       } else if (0 < command_lines.Count) {
         lines.Add(" ");
@@ -8335,7 +8335,7 @@ namespace djack.RogueSurvivor.Engine
       if (blast.CanDamageObjects) lines.Add("Can damage objects.");
       if (blast.CanDestroyWalls) lines.Add("Can destroy walls.");
       var primed = ex as Data._Item.PrimedExplosive;
-      lines.Add((null != primed) ? string.Format("Fuse          : {0} turn(s) left!", primed.FuseTimeLeft)
+      lines.Add((primed is not null) ? string.Format("Fuse          : {0} turn(s) left!", primed.FuseTimeLeft)
                                  : string.Format("Fuse          : {0} turn(s)", itemExplosiveModel.FuseDelay));
       int tmp_i = blast.Radius;
       lines.Add(string.Format("Blast radius  : {0}", tmp_i));
@@ -8349,7 +8349,7 @@ namespace djack.RogueSurvivor.Engine
         lines.Add((range != tmp_i) ? string.Format("Throwing rng  : {0} ({1})", range, tmp_i)
                                    : string.Format("Throwing rng  : {0}", range));
       }
-      if (null != primed) lines.Add("PRIMED AND READY TO EXPLODE!");
+      if (primed is not null) lines.Add("PRIMED AND READY TO EXPLODE!");
       return lines;
     }
 
@@ -8533,7 +8533,7 @@ namespace djack.RogueSurvivor.Engine
       var range_desc = tr.Model.RangeDesc;  // alpha10 range if applicable
       var lines = new List<string>{ "> tracker" };
       lines.Add(tr.DescribeBatteries());
-      if (null != range_desc) lines.Add("Range: " + range_desc);    // This is a translation target so do not hardcode the prefix
+      if (range_desc is not null) lines.Add("Range: " + range_desc);    // This is a translation target so do not hardcode the prefix
       return lines;
     }
 
@@ -8545,7 +8545,7 @@ namespace djack.RogueSurvivor.Engine
       void commentary() {
         if (tr.IsSafeFor(Player)) {
           lines.Add("You will safely avoid this trap.");
-          if (tr.Owner != null) lines.Add(string.Format("Trap setup by {0}.", tr.Owner.Name));
+          if (tr.Owner is not null) lines.Add(string.Format("Trap setup by {0}.", tr.Owner.Name));
         } else if (tr.WouldLearnHowToBypass(Player)) {
           lines.Add("You would safely avoid this trap, with good advice.");
         }
@@ -8709,11 +8709,11 @@ namespace djack.RogueSurvivor.Engine
       var a_only_witness = a_witness?.SetDifference(ad_witness);
       var d_only_witness = d_witness?.SetDifference(ad_witness);
 
-      bool dest_seen = null != a_witness;
-      if (null != a_witness) PanViewportTo(a_witness);
+      bool dest_seen = a_witness is not null;
+      if (a_witness is not null) PanViewportTo(a_witness);
 
       var draggedCorpse = actor.DraggedCorpse;
-      if (draggedCorpse != null) {
+      if (draggedCorpse is not null) {
         draggedCorpse.Location = actor.Location;
         var msg = MakePanopticMessage(actor, string.Format("{0} {1} corpse.", VERB_DRAG.Conjugate(actor), draggedCorpse.DeadGuy.TheName));
         a_witness?.AddMessage(msg);
@@ -8725,7 +8725,7 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
       }
       var mapObjectAt = newLocation.MapObject;
-      if (null != mapObjectAt && mapObjectAt.IsJumpable) {
+      if (mapObjectAt is not null && mapObjectAt.IsJumpable) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
         a_witness?.AddMessage(MakePanopticMessage(actor, VERB_JUMP_ON.Conjugate(actor), mapObjectAt));
         if (actor.Model.Abilities.CanJumpStumble && Rules.Get.RollChance(JUMP_STUMBLE_CHANCE)) {
@@ -8735,7 +8735,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       const int STAMINA_COST_MOVE_DRAGGED_CORPSE = 8;
-      if (draggedCorpse != null) actor.SpendStaminaPoints(STAMINA_COST_MOVE_DRAGGED_CORPSE);
+      if (draggedCorpse is not null) actor.SpendStaminaPoints(STAMINA_COST_MOVE_DRAGGED_CORPSE);
       actor.SpendActionPoints(actionCost);
 
       if (actor.GetEquippedItem(DollPart.HIP_HOLSTER) is ItemTracker tracker) tracker.Batteries += 2;  // police radio recharge
@@ -8771,7 +8771,7 @@ namespace djack.RogueSurvivor.Engine
       // 2020-01-03: Z-grab extended to cross-exit
       actor.Location.ForEachAdjacent(loc => {
           var actorAt = loc.Actor;
-          if (actorAt == null || !actorAt.Model.Abilities.IsUndead || !actorAt.IsEnemyOf(actor) || !Rules.Get.RollChance(actorAt.ZGrabChance(actor))) return;
+          if (actorAt is null || !actorAt.Model.Abilities.IsUndead || !actorAt.IsEnemyOf(actor) || !Rules.Get.RollChance(actorAt.ZGrabChance(actor))) return;
           if (visible) AddMessage(MakeMessage(actorAt, VERB_GRAB.Conjugate(actorAt), actor));
           canLeave = false;
       });
@@ -8836,7 +8836,7 @@ namespace djack.RogueSurvivor.Engine
       int dmg = trapModel.Damage * trap.Quantity;
       if (dmg > 0) {
         victim.TakeDamage(dmg);
-        if (null != witnesses) {
+        if (witnesses is not null) {
           DefenderDamageIcon(victim, GameImages.ICON_MELEE_DAMAGE, dmg.ToString());
           witnesses.ImportantMessage(MakePanopticMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, dmg)), victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           ClearOverlays();
@@ -8877,7 +8877,7 @@ namespace djack.RogueSurvivor.Engine
       Location origin = actor.Location;
       Map map = origin.Map;
       var exitAt = map.GetExitAt(exitPoint);
-      if (exitAt == null) {
+      if (exitAt is null) {
         if (isPlayer) ErrorPopup("There is nowhere to go there.");
 #if DEBUG
         else throw new ArgumentNullException(nameof(exitAt));   // going to crash out anyway on the free move trap
@@ -8919,13 +8919,13 @@ namespace djack.RogueSurvivor.Engine
       }
       bool is_running = actor.IsRunning;
       bool run_was_free_move = run_is_free_move && is_running;  // we cannot quite simulate this correctly at district boundaries: the departure district will not respect the free move
-      bool need_stamina_regen = (is_running ? !run_is_free_move : !actor.WalkIsFreeMove) && null!=exit_map.NextActorToAct;
+      bool need_stamina_regen = (is_running ? !run_is_free_move : !actor.WalkIsFreeMove) && exit_map.NextActorToAct is not null;
       actor.SpendActionPoints(is_running ? Actor.BASE_ACTION_COST/2 : Actor.BASE_ACTION_COST);
       if (is_running) actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
       else actor.StandUp();  // movement cancels crouching, for now (duck walk very low priority to implement)
       bool origin_seen = ForceVisibleToPlayer(actor);
       var mapObjectAt = exitAt.Location.MapObject;
-      if (null != mapObjectAt && mapObjectAt.IsJumpable) {
+      if (mapObjectAt is not null && mapObjectAt.IsJumpable) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
         if (origin_seen) AddMessage(MakeMessage(actor, VERB_JUMP_ON.Conjugate(actor), mapObjectAt));   // XXX not quite right, cf. other jump usage
         if (actor.Model.Abilities.CanJumpStumble && Rules.Get.RollChance(JUMP_STUMBLE_CHANCE)) {
@@ -8941,7 +8941,7 @@ namespace djack.RogueSurvivor.Engine
           || run_was_free_move)
         exit_map.MoveActorToFirstPosition(actor);
 
-      if (null != actor.DraggedCorpse) actor.DraggedCorpse.Location = actor.Location;
+      if (actor.DraggedCorpse is not null) actor.DraggedCorpse.Location = actor.Location;
       if ((ForceVisibleToPlayer(actor) || isPlayer) && !is_cross_district) AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_ENTER.Conjugate(actor), exit_map.Name)));
       if (is_cross_district)
         actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exit_map.District.Name));
@@ -8956,11 +8956,11 @@ namespace djack.RogueSurvivor.Engine
           var near = exitAt.Location + dir;
           if (!Map.Canonical(ref near)) continue;
           var exit = near.Exit;
-          if (null != exit) ai.Avoid(exit);
+          if (exit is not null) ai.Avoid(exit);
           near += dir;
           if (!Map.Canonical(ref near)) continue;
           exit = near.Exit;
-          if (null != exit) ai.Avoid(exit);
+          if (exit is not null) ai.Avoid(exit);
         }
       }
       if (isPlayer) PanViewportTo(actor.Location);
@@ -9091,20 +9091,20 @@ namespace djack.RogueSurvivor.Engine
 
       var police = Session.Get.Police;
       var police_relevant = police.EncodeAggression(aggressor, target, Session.Get.WorldTime.TurnCounter);
-      if (null != police_relevant) {
+      if (police_relevant is not null) {
         Actor? seen_by_police = (police.IsMine(target) && !target.IsSleeping) ? target : null;
-        if (null == seen_by_police && police.IsMine(aggressor)) seen_by_police = aggressor; // aggressor will be awake
-        if (null == seen_by_police) {
+        if (seen_by_police is null && police.IsMine(aggressor)) seen_by_police = aggressor; // aggressor will be awake
+        if (seen_by_police is null) {
           var test = WitnessesInLOS(aggressor.Location);
-          if (null != test) test = test.Value.grep(police.isMine());
-          if (null != test) seen_by_police = test.Value.WitnessedBy(Actor.isAwake);
+          if (test is not null) test = test.Value.grep(police.isMine());
+          if (test is not null) seen_by_police = test.Value.WitnessedBy(Actor.isAwake);
         }
-        if (null == seen_by_police) {
+        if (seen_by_police is null) {
           var test = WitnessesInLOS(target.Location);
-          if (null != test) test = test.Value.grep(police.isMine());
-          if (null != test) seen_by_police = test.Value.WitnessedBy(Actor.isAwake);
+          if (test is not null) test = test.Value.grep(police.isMine());
+          if (test is not null) seen_by_police = test.Value.WitnessedBy(Actor.isAwake);
         }
-        if (null != seen_by_police) {
+        if (seen_by_police is not null) {
           if (!aggressor.Model.Abilities.IsLawEnforcer || Rules.IsMurder(aggressor, seen_by_police)) {
             bool was_viewpoint_enemy = target == seen_by_police ? wasAlreadyEnemy : aggressor.IsAggressorOf(seen_by_police) || target.IsAggressorOf(seen_by_police);
             police.Record(police_relevant);
@@ -9130,7 +9130,7 @@ namespace djack.RogueSurvivor.Engine
         OnMakeEnemyOfSoldier(aggressor, target, wasAlreadyEnemy);
       }
       var leader = target.LiveLeader;
-      if (null != leader) {
+      if (leader is not null) {
         faction = leader.Faction;
         if (faction.IsEnemyOf(aggressor.Faction)) return;   // intercept invariant failure when aggressing a civilian follower of a cop
         if (faction == GameFactions.ThePolice) {
@@ -9316,14 +9316,14 @@ namespace djack.RogueSurvivor.Engine
         // roll for attacker disarming defender
         if (attacker.Model.Abilities.CanDisarm && rules.RollChance(attack.DisarmChance)) {
           Item disarmIt = Disarm(defender);
-          if (null != disarmIt) {
+          if (disarmIt is not null) {
             // show
-            if (null != d_witness) {
+            if (d_witness is not null) {
               d_pc?.Messages.Clear();
               ad_witness?.AddMessage(MakeMessage(ad_witness[0], attacker, VERB_DISARM.Conjugate(attacker), defender));
               d_only_witness?.AddMessage(MakeMessage(d_only_witness[0], attacker, VERB_DISARM.Conjugate(attacker), defender));
               d_witness.AddMessage(new(string.Format("{0} is sent flying!", disarmIt.TheName), attacker.Location.Map.LocalTime.TurnCounter));
-              if (null != d_pc) {
+              if (d_pc is not null) {
                 d_pc.AddMessagePressEnter();
               } else {
                 RedrawPlayScreen();
@@ -9651,7 +9651,7 @@ namespace djack.RogueSurvivor.Engine
     {
       foreach (Point point in LoF) {
         var mapObjectAt = attacker.Location.Map.GetMapObjectAt(point);
-        if (mapObjectAt != null && mapObjectAt.BreaksWhenFiredThrough && (mapObjectAt.BreakState != MapObject.Break.BROKEN && !mapObjectAt.IsWalkable)) {
+        if (mapObjectAt is not null && mapObjectAt.BreaksWhenFiredThrough && (mapObjectAt.BreakState != MapObject.Break.BROKEN && !mapObjectAt.IsWalkable)) {
           bool player1 = ForceVisibleToPlayer(attacker);
           bool player2 = player1 ? IsVisibleToPlayer(mapObjectAt) : ForceVisibleToPlayer(mapObjectAt);
           if (player1 || player2) {
@@ -9674,7 +9674,7 @@ namespace djack.RogueSurvivor.Engine
     {
       foreach (var loc in LoF) {
         var mapObjectAt = loc.MapObject;
-        if (mapObjectAt != null && mapObjectAt.BreaksWhenFiredThrough && (mapObjectAt.BreakState != MapObject.Break.BROKEN && !mapObjectAt.IsWalkable)) {
+        if (mapObjectAt is not null && mapObjectAt.BreaksWhenFiredThrough && (mapObjectAt.BreakState != MapObject.Break.BROKEN && !mapObjectAt.IsWalkable)) {
           bool player1 = ForceVisibleToPlayer(attacker);
           bool player2 = player1 ? IsVisibleToPlayer(mapObjectAt) : ForceVisibleToPlayer(mapObjectAt);
           if (player1 || player2) {
@@ -9696,7 +9696,7 @@ namespace djack.RogueSurvivor.Engine
     public void UI_ThrowGrenadeUnprimed(Actor actor, Point targetPos, ItemGrenade itemGrenade, List<PlayerController>? a_witness, List<PlayerController>? d_witness)
     {
 #if DEBUG
-        if (null == a_witness && null == d_witness) throw new InvalidOperationException("tracing");
+        if (a_witness is null && d_witness is null) throw new InvalidOperationException("tracing");
 #endif
 
         var ad_witness = a_witness?.Intersect(d_witness);
@@ -9716,7 +9716,7 @@ namespace djack.RogueSurvivor.Engine
     public void UI_ThrowGrenadePrimed(Actor actor, Point targetPos, Data._Item.PrimedExplosive itemGrenadePrimed, List<PlayerController>? a_witness, List<PlayerController>? d_witness)
     {
 #if DEBUG
-        if (null == a_witness && null == d_witness) throw new InvalidOperationException("tracing");
+        if (a_witness is null && d_witness is null) throw new InvalidOperationException("tracing");
 #endif
 
         var ad_witness = a_witness?.Intersect(d_witness);
@@ -9794,7 +9794,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = location.Map;
       Point pos = location.Position;
       var actorAt = map.GetActorAtExt(pos);
-      if (actorAt != null) {
+      if (actorAt is not null) {
         ExplosionChainReaction(actorAt.Inventory, in location);
         var witnesses = actorAt.PlayersInLOS();
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
@@ -9809,7 +9809,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       var itemsAt = map.GetItemsAtExt(pos);
-      if (itemsAt != null) {
+      if (itemsAt is not null) {
         ExplosionChainReaction(itemsAt, in location);
         int chance = num1;
         map.RemoveAtExt<Item>(obj => {
@@ -9818,11 +9818,11 @@ namespace djack.RogueSurvivor.Engine
       }
       if (blast.CanDamageObjects) {
         var mapObjectAt = map.GetMapObjectAtExt(pos);
-        if (mapObjectAt != null) {
+        if (mapObjectAt is not null) {
           DoorWindow doorWindow = mapObjectAt as DoorWindow;
-          if (mapObjectAt.IsBreakable || doorWindow != null && doorWindow.IsBarricaded) {
+          if (mapObjectAt.IsBreakable || doorWindow is not null && doorWindow.IsBarricaded) {
             int val2 = num1;
-            if (doorWindow != null && doorWindow.IsBarricaded) {
+            if (doorWindow is not null && doorWindow.IsBarricaded) {
               int num2 = Math.Min(doorWindow.BarricadePoints, val2);
               doorWindow.Barricade(-num2);
               val2 -= num2;
@@ -9832,7 +9832,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       var corpsesAt = map.GetCorpsesAt(pos);
-      if (corpsesAt != null) foreach (var c in corpsesAt) c.TakeDamage(num1);
+      if (corpsesAt is not null) foreach (var c in corpsesAt) c.TakeDamage(num1);
       // XXX implementation of blast.CanDestroyWalls goes here
       return num1;
     }
@@ -9846,7 +9846,7 @@ namespace djack.RogueSurvivor.Engine
         if (!(obj is ItemExplosive itemExplosive)) continue;
         if (itemExplosive is Data._Item.PrimedExplosive primed) primed.Cook();
         else {
-          if (null == itemPrimedExplosiveList) itemPrimedExplosiveList = new();
+          if (itemPrimedExplosiveList is null) itemPrimedExplosiveList = new();
           (itemExplosiveList ?? new()).Add(itemExplosive);
           var primed_model = itemExplosive.Model.Primed;
           for (int index = 0; index < obj.Quantity; ++index) {
@@ -9854,8 +9854,8 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (null != itemExplosiveList) foreach (var it in itemExplosiveList) inv.RemoveAllQuantity(it);
-      if (null != itemPrimedExplosiveList) foreach (var it in itemPrimedExplosiveList) location.Map.DropItemAtExt(it, location.Position);
+      if (itemExplosiveList is not null) foreach (var it in itemExplosiveList) inv.RemoveAllQuantity(it);
+      if (itemPrimedExplosiveList is not null) foreach (var it in itemPrimedExplosiveList) location.Map.DropItemAtExt(it, location.Position);
     }
 
     public void DoChat(Actor speaker, Actor target)
@@ -9922,7 +9922,7 @@ namespace djack.RogueSurvivor.Engine
           Location loc = new Location(speaker.Location.Map, pt);
           if (Map.Canonical(ref loc)) {
               var overhear = loc.Actor;
-              if (null != overhear && target != overhear) op(overhear);
+              if (overhear is not null && target != overhear) op(overhear);
           }
       }
       return true;
@@ -9934,7 +9934,7 @@ namespace djack.RogueSurvivor.Engine
         List<Actor> ret_viewpoints = new();
 
         void classify(Actor? actor) {
-            if (null != actor && !actor.IsDead && ok(actor)) {
+            if (actor is not null && !actor.IsDead && ok(actor)) {
                 if (actor.Controller is PlayerController pc) ret.Add(pc);
                 else ret_viewpoints.Add(actor);
             }
@@ -9948,7 +9948,7 @@ namespace djack.RogueSurvivor.Engine
         }
 
         var exit = loc.Exit;
-        if (null != exit) classify(exit.Location.Actor);
+        if (exit is not null) classify(exit.Location.Actor);
 
         return (0<ret.Count || 0<ret_viewpoints.Count) ? new(ret, ret_viewpoints) : null;
     }
@@ -9968,7 +9968,7 @@ namespace djack.RogueSurvivor.Engine
         List<PlayerController> ret = new();
 
         void classify(Actor? actor) {
-            if (null != actor && !actor.IsDead && actor.Controller is PlayerController pc && ok(actor)) ret.Add(pc);
+            if (actor is not null && !actor.IsDead && actor.Controller is PlayerController pc && ok(actor)) ret.Add(pc);
         };
 
         var survey = new Rectangle(loc.Position+(short)radius*Direction.NW, (Point)(2*radius+1));
@@ -9979,7 +9979,7 @@ namespace djack.RogueSurvivor.Engine
         }
 
         var exit = loc.Exit;
-        if (null != exit) classify(exit.Location.Actor);
+        if (exit is not null) classify(exit.Location.Actor);
 
         return 0<ret.Count ? ret : null;
     }
@@ -9997,7 +9997,7 @@ namespace djack.RogueSurvivor.Engine
       bool is_awake(Actor a) { return !a.IsSleeping; };
 
       var chat_competent = speaker.Location.ThoseNearby(Rules.CHAT_RADIUS, is_awake);
-      if (null == chat_competent) return false;
+      if (chat_competent is null) return false;
       chat_competent.Remove(speaker);
       if (0 >= chat_competent.Count) return false;
       var preferred_chat = chat_competent.Where(a => speaker.IsAlly(a)).ToArray();
@@ -10081,11 +10081,11 @@ namespace djack.RogueSurvivor.Engine
         return a != speaker && a != target;
       }
 
-      if (null != s_PC) PC_hear_question(s_PC);
-      if (null != t_PC) PC_hear_question(t_PC);
+      if (s_PC is not null) PC_hear_question(s_PC);
+      if (t_PC is not null) PC_hear_question(t_PC);
       speaker.MessageAllInDistrictByRadio(heard_question, TRUE, PC_heard_question, PC_heard_question, reject_conversants);
-      if (null != t_PC) PC_hear_answer(t_PC);
-      if (null != s_PC) PC_hear_answer(s_PC);
+      if (t_PC is not null) PC_hear_answer(t_PC);
+      if (s_PC is not null) PC_hear_answer(s_PC);
       target.MessageAllInDistrictByRadio(heard_answer, TRUE, PC_heard_answer, PC_heard_answer, reject_conversants);
 
       // not nearly as sanity-restoring as proper chat, but worth something
@@ -10104,7 +10104,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var speaker = pc.ControlledActor; // i.e., always visible
 #if DEBUG
-      if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
+      if (itSpeaker is null) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
       target.Inventory!.RejectCrossLink(speaker.Inventory!);
 
@@ -10118,7 +10118,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       var trade = PickItemToTrade(target, pc, itSpeaker); // XX rewrite target
-      if (null == trade) {
+      if (trade is null) {
         AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", target.Name)));
         return false;
       }
@@ -10153,7 +10153,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var speaker = pc.ControlledActor;
       if (speaker.Location != target.Location) {
-        if (null != target.loc) {
+        if (target.loc is not null) {
           if (!speaker.IsCrouching) {
             if (speaker.CanCrouch()) speaker.Crouch();
             else {
@@ -10162,18 +10162,18 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         }
-        if (null != target.obj_owner) speaker.StandUp();
+        if (target.obj_owner is not null) speaker.StandUp();
       }
 
 #if DEBUG
-      if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
+      if (itSpeaker is null) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
       target.RejectCrossLink(speaker.Inventory!);
 
       var trade = PickItemToTrade(target.Inventory, pc, itSpeaker);
-      if (null == trade) return;
+      if (trade is null) return;
       var act = _Action.TradeItem.Cast(in target, speaker, itSpeaker, trade);
-      if (null == act) return;
+      if (act is null) return;
 
       AddOverlay(new UI.OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
@@ -10203,7 +10203,7 @@ namespace djack.RogueSurvivor.Engine
       speaker.SpendActionPoints();    // prevent hyper-active player trades
 
       // bail on null item from speaker early
-      if (null == trade) {
+      if (trade is null) {
         if (flag1) AddMessage(MakeMessage(target, string.Format("is not interested in {0} items.", speaker.Name)));
         return;
       }
@@ -10228,7 +10228,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", VERB_OFFER.Conjugate(target), trade.Value.Value.AName, trade.Value.Key.AName)));
 
       var leader = target.LiveLeader;
-      bool acceptDeal = null == leader || (target_c.Directives_nocreate?.CanTrade ?? ActorDirective.CanTrade_default);
+      bool acceptDeal = leader is null || (target_c.Directives_nocreate?.CanTrade ?? ActorDirective.CanTrade_default);
 
       if (!acceptDeal) {
         if (flag1) AddMessage(MakeMessage(speaker, string.Format("{0}.", VERB_REFUSE_THE_DEAL.Conjugate(speaker))));
@@ -10249,14 +10249,14 @@ namespace djack.RogueSurvivor.Engine
     static public KeyValuePair<Item,Item>? PickItemsToTrade(OrderableAI speaker_c, Actor buyer)
     {
       var negotiate = speaker_c.TradeOptions(buyer);
-      if (null == negotiate) return null;
+      if (negotiate is null) return null;
       return Rules.Get.DiceRoller.Choose(negotiate);
     }
 
     static public KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer, Item gift)
     {
       var buyer_offers = buyer.GetInterestingTradeableItems(speaker);  // charisma check involved for these
-      if (null == buyer_offers || 0 >= buyer_offers.Count) return null;
+      if (buyer_offers is null || 0 >= buyer_offers.Count) return null;
       var negotiate = new List<KeyValuePair<Item,Item>>(buyer_offers.Count);   // relies on "small" inventory to avoid arithmetic overflow
       foreach(var b_item in buyer_offers) {
         if (ObjectiveAI.TradeVeto(gift,b_item)) continue;
@@ -10271,7 +10271,7 @@ namespace djack.RogueSurvivor.Engine
     static public bool CanPickItemsToTrade(Actor speaker, Actor buyer, Item gift)
     {
       var buyer_offers = buyer.GetInterestingTradeableItems(speaker);  // charisma check involved for these
-      if (null == buyer_offers || 0 >=buyer_offers.Count) return false;
+      if (buyer_offers is null || 0 >=buyer_offers.Count) return false;
       foreach(var b_item in buyer_offers) {
         if (ObjectiveAI.TradeVeto(gift,b_item)) continue;
         if (ObjectiveAI.TradeVeto(b_item,gift)) continue;
@@ -10288,7 +10288,7 @@ namespace djack.RogueSurvivor.Engine
 //    if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
       var objList = speaker.GetInterestingTradeableItems(buyer); // player as speaker would trivialize
-      if (objList == null || 0>=objList.Count) return null;
+      if (objList is null || 0>=objList.Count) return null;
       // following is AI-only
       IEnumerable<Item> tmp = (speaker.IsPlayer ? objList : objList.Where(it=>itSpeaker.ModelID != it.ModelID));
       // XXX disallow clearly non-mutual advantage trades
@@ -10364,7 +10364,7 @@ namespace djack.RogueSurvivor.Engine
 //    if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
       List<Item> objList = speaker.ToList(); // inventory has no mentality, trivialize
-      if (objList == null || 0>=objList.Count) return null;
+      if (objList is null || 0>=objList.Count) return null;
 
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index])); }
 
@@ -10388,12 +10388,12 @@ namespace djack.RogueSurvivor.Engine
         pc.Messages.Clear();
         AddOverlay((new UI.OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR))));
         DoEmote(speaker, string.Format("{0}!!", VERB_RAISE_ALARM.Conjugate(speaker)), true);
-        if (null != text) DoEmote(speaker, text, true);
+        if (text is not null) DoEmote(speaker, text, true);
         ClearOverlays();
         pc.AddMessagePressEnter();
       } else {
         var verb = VERB_SHOUT.Conjugate(speaker);
-        if (null == text)
+        if (text is null)
           DoEmote(speaker, string.Format("{0}!", verb), true);
         else
           DoEmote(speaker, string.Format("{0} \"{1}\"", verb, text), true);
@@ -10442,10 +10442,10 @@ namespace djack.RogueSurvivor.Engine
     {
       var witnesses = _ForceVisibleToPlayer(actor);
 
-      if (null != witnesses) {
+      if (witnesses is not null) {
         witnesses.RedrawPlayScreen(MakePanopticMessage(actor, VERB_TAKE.Conjugate(actor), it));
         var see_take = PlayersInLOS(loc)?.SetDifference(witnesses);
-        if (null != see_take) {
+        if (see_take is not null) {
             var msg = MakeMessage(see_take[0], actor, VERB_TAKE.Conjugate(actor), it);
             foreach (var pc in see_take) pc.Messages.Add(msg);
         }
@@ -10459,7 +10459,7 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.Inventory.Contains(gift)) throw new InvalidOperationException("no longer had gift");
 #endif
       var target = t_ordai.ControlledActor;
-      if (null != received) {
+      if (received is not null) {
 #if DEBUG
         if (!target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
 #endif
@@ -10471,7 +10471,7 @@ namespace djack.RogueSurvivor.Engine
       // try to trade with NPC first
       {
         var trade = PickItemsToTrade(actor, target, gift);
-        if (null != trade) {
+        if (trade is not null) {
           if (do_not_crash_on_target_turn) DoWait(target);
 #if DEBUG
           if (!target.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("no longer had recieved");
@@ -10485,9 +10485,9 @@ namespace djack.RogueSurvivor.Engine
 
       // If cannot trade, outright give
       if (target.Inventory.IsFull && !target.CanGet(gift)) {
-        if (null == received) { // \todo refactor this -- repeat block from ActionGiveItem
+        if (received is null) { // \todo refactor this -- repeat block from ActionGiveItem
           var recover = t_ordai.BehaviorMakeRoomFor(gift,actor.Location); // unsure if this works cross-map
-          if (null != recover && !recover.IsLegal() && recover is ActionUseItem) recover = t_ordai.BehaviorMakeRoomFor(gift); // ammo can get confused, evidently
+          if (recover is not null && !recover.IsLegal() && recover is ActionUseItem) recover = t_ordai.BehaviorMakeRoomFor(gift); // ammo can get confused, evidently
 
           static Item? parse_recovery(ActorAction? act) {
             if (act is Resolvable chain) return parse_recovery(chain.ConcreteAction); // historically ActionChain
@@ -10496,7 +10496,7 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
           received = parse_recovery(recover);
-          if (null != received) {
+          if (received is not null) {
 #if DEBUG
             if (!target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
 #endif
@@ -10504,7 +10504,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
 
-        if (null != received) {
+        if (received is not null) {
           if (do_not_crash_on_target_turn) DoWait(target);
           DoTrade(src_ordai, new KeyValuePair<Item,Item>(gift,received), t_ordai, false);
           return;
@@ -10530,7 +10530,7 @@ namespace djack.RogueSurvivor.Engine
       gift.UnequippedBy(actor, false);
       (new Data.Model.InvOrigin(actor)).Transfer(gift, new Data.Model.InvOrigin(target));
       target.SpendActionPoints();
-      if (!gift.Model.DontAutoEquip && target.CanEquip(gift) && target.GetEquippedItem(gift.Model.EquipmentPart) == null)
+      if (!gift.Model.DontAutoEquip && target.CanEquip(gift) && target.GetEquippedItem(gift.Model.EquipmentPart) is null)
         gift.EquippedBy(target);
 
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target))
@@ -10617,7 +10617,7 @@ namespace djack.RogueSurvivor.Engine
       it.Unequip();
       var invspec = dest.DropOntoInventory();
 
-      if (null == invspec.obj_owner) {
+      if (invspec.obj_owner is null) {
          dest.Drop(it);
          return;
       }
@@ -10667,7 +10667,7 @@ restart:
           dest.Take(ammo);
           src.it.Ammo = 0;
           ok = true;
-        } else if (null != dest.Inventory) {
+        } else if (dest.Inventory is not null) {
           var added = dest.Inventory.AddAsMuchAsPossible(ammo);
           if (0 < added) {
             src.it.Ammo -= added;
@@ -10676,7 +10676,7 @@ restart:
         }
       }
       if (!ok) {
-        if (null != dest.loc) return false;
+        if (dest.loc is not null) return false;
         dest = new(dest.Location);
         goto restart;
       }
@@ -10768,7 +10768,7 @@ restart:
         ent.AddBoringFor(actor);
         witnesses?.AddMessage(MakePanopticMessage(actor, string.Format("{0} now bored of {1}.", VERB_BE.Conjugate(actor), ent.TheName)));
       }
-      if (null != witnesses) RedrawPlayScreen();
+      if (witnesses is not null) RedrawPlayScreen();
     }
 
     public void UI_RechargeItemBattery(Actor actor, Item it)
@@ -10779,7 +10779,7 @@ restart:
     public void UI_OpenDoor(Actor actor, DoorWindow door)
     {
       var seen = _ForceVisibleToPlayer(actor);
-      if (null == seen)seen = _ForceVisibleToPlayer(door);
+      if (seen is null)seen = _ForceVisibleToPlayer(door);
       seen?.AddMessage(MakeMessage(actor, VERB_OPEN.Conjugate(actor), door));
       if (IsPlayer(actor)) AnimDelay(DELAY_SHORT);
     }
@@ -10787,7 +10787,7 @@ restart:
     public void UI_CloseDoor(Actor actor, DoorWindow door)
     {
       var seen = _ForceVisibleToPlayer(actor);
-      if (null == seen) seen = _ForceVisibleToPlayer(door);
+      if (seen is null) seen = _ForceVisibleToPlayer(door);
       seen?.AddMessage(MakeMessage(actor, VERB_CLOSE.Conjugate(actor), door));
     }
 
@@ -10804,7 +10804,7 @@ restart:
     public void UI_BuildFortification(Actor actor, Fortification fort)
     {
       var seen = _ForceVisibleToPlayer(actor);
-      if (null == seen) seen = _ForceVisibleToPlayer(fort);
+      if (seen is null) seen = _ForceVisibleToPlayer(fort);
       seen?.AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_BUILD.Conjugate(actor), fort.AName)));
     }
 
@@ -10817,7 +10817,7 @@ restart:
       fort.Repair(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
 
       var seen = _ForceVisibleToPlayer(actor);
-      if (null == seen) seen = _ForceVisibleToPlayer(fort);
+      if (seen is null) seen = _ForceVisibleToPlayer(fort);
       seen?.AddMessage(MakeMessage(actor, VERB_REPAIR.Conjugate(actor), fort));
     }
 
@@ -10826,12 +10826,12 @@ restart:
       actor.SpendActionPoints();
 
       var seen = _ForceVisibleToPlayer(actor);
-      if (null == seen) seen = _ForceVisibleToPlayer(powGen);
+      if (seen is null) seen = _ForceVisibleToPlayer(powGen);
       bool have_messaged = seen?.AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " off." : " on.")) ?? false;
       powGen.TogglePower(actor);
       if (!have_messaged) {
         seen = _ForceVisibleToPlayer(actor);
-        if (null == seen) seen = _ForceVisibleToPlayer(powGen);
+        if (seen is null) seen = _ForceVisibleToPlayer(powGen);
         seen?.AddMessage(MakeMessage(actor, VERB_SWITCH.Conjugate(actor), powGen, powGen.IsOn ? " off." : " on."));
       }
     }
@@ -10841,7 +10841,7 @@ restart:
       // NPCs know to use their best melee weapon
       if (!actor.IsPlayer) {
         var bestMeleeWeapon = actor.GetBestMeleeWeapon(mapObj);
-        if (null!=bestMeleeWeapon) {
+        if (bestMeleeWeapon is not null) {
           if ((actor.GetEquippedWeapon() as ItemMeleeWeapon) != bestMeleeWeapon) bestMeleeWeapon.EquippedBy(actor);
         }
       }
@@ -10942,14 +10942,14 @@ restart:
           (helpers ??= new(actor.CountFollowers)).Add(fo);
         }
       }
-      if (helpers != null) {
+      if (helpers is not null) {
         // share the sta cost.
         staCost = mapObj.Weight / (1 + helpers.Count);
         var o_witness = _ForceVisibleToPlayer(mapObj);
         foreach (Actor h in helpers) {
           h.SpendActionPoints();
           h.SpendStaminaPoints(staCost);
-          if (null != o_witness) o_witness.AddMessage(MakeMessage(h, string.Format("{0} {1} {2} {3}.", VERB_HELP.Conjugate(h), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
+          if (o_witness is not null) o_witness.AddMessage(MakeMessage(h, string.Format("{0} {1} {2} {3}.", VERB_HELP.Conjugate(h), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
           else _ForceVisibleToPlayer(h)?.AddMessage(MakeMessage(h, string.Format("{0} {1} {2} {3}.", VERB_HELP.Conjugate(h), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
         }
       }
@@ -11057,9 +11057,9 @@ restart:
       UI.Message? o_only_msg = null;
 
       if (!isVisible) {
-        if (null != a_witness) { PanViewportTo(a_witness); isVisible = true; }
-        else if (null != l_only_witness) { PanViewportTo(l_only_witness); isVisible = true; }
-        else if (null != o_only_witness) {
+        if (a_witness is not null) { PanViewportTo(a_witness); isVisible = true; }
+        else if (l_only_witness is not null) { PanViewportTo(l_only_witness); isVisible = true; }
+        else if (o_only_witness is not null) {
           PanViewportTo(o_only_witness); isVisible = true;
           o_only_msg = MakeMessage(o_only_witness[0], actor, VERB_PULL.Conjugate(actor), mapObj);
         }
@@ -11177,7 +11177,7 @@ restart:
 
     private void DoGiveOrderTo(Actor master, OrderableAI? ordai, ActorOrder order)
     {
-      if (null == ordai) return;
+      if (ordai is null) return;
       var slave = ordai.ControlledActor;
       master.SpendActionPoints();
       if (master != slave.Leader) slave.Say(master, "Who are you to give me orders?", Sayflags.IS_FREE_ACTION);
@@ -11191,7 +11191,7 @@ restart:
 
     private void DoCancelOrder(Actor master, OrderableAI ordai)
     {
-      if (null == ordai) return;
+      if (ordai is null) return;
       var slave = ordai.ControlledActor;
       master.SpendActionPoints();
       ordai.SetOrder(null);
@@ -11206,7 +11206,7 @@ restart:
       };
 
       var actors = loc.ThoseNearby(Rules.LOUD_NOISE_RADIUS, hears);
-      if (null == actors) return;
+      if (actors is null) return;
 
       foreach(var actor in actors) {
         var witnesses = _ForceVisibleToPlayer(actor); // yes, want two screen redraws here
@@ -11236,7 +11236,7 @@ restart:
 #if DEBUG
       // for some reason, this can happen with starved actors (cf. alpha 8)
       if (deadGuy.IsDead)
-        throw new InvalidOperationException(String.Format("killing deadGuy that is already dead : killer={0} deadGuy={1} reason={2}", (killer == null ? "N/A" : killer.TheName), deadGuy.TheName, reason));
+        throw new InvalidOperationException(String.Format("killing deadGuy that is already dead : killer={0} deadGuy={1} reason={2}", (killer is null ? "N/A" : killer.TheName), deadGuy.TheName, reason));
 #endif
       Actor m_Player_bak = Player;    // ForceVisibleToPlayer calls below can change this
 
@@ -11251,7 +11251,7 @@ restart:
       deadGuy.Killed(reason);
       deadGuy.StopDraggingCorpse();
       deadGuy.Location.Items?.UntriggerAllTraps();
-      if (killer != null && !killer.Model.Abilities.IsUndead && deadGuy_isUndead.cache)
+      if (killer is not null && !killer.Model.Abilities.IsUndead && deadGuy_isUndead.cache)
         killer.RegenSanity(killer.ScaleSanRegen(Rules.SANITY_RECOVER_KILL_UNDEAD));
 
       if (deadGuy.HasActivePoliceRadio) {
@@ -11262,11 +11262,11 @@ restart:
 
 
       var clan = deadGuy.ChainOfCommand;    // both leader and immediate followers
-      if (null != clan) foreach(var a in clan) {
+      if (clan is not null) foreach(var a in clan) {
         if (a.HasBondWith(deadGuy)) {
           a.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
           var witnesses = a.PlayersInLOS();
-          if (null != witnesses) a.Controller.AddMessageForceRead(MakePanopticMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)), witnesses);
+          if (witnesses is not null) a.Controller.AddMessageForceRead(MakePanopticMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)), witnesses);
         }
       }
 
@@ -11274,7 +11274,7 @@ restart:
       if (deadGuy.IsUnique) {
         // XXX \todo global event
         m_Player_bak.ActorScoring.AddEvent(turn,
-            (killer != null
+            (killer is not null
            ? string.Format("* {0} was killed by {1} {2}! *", deadGuy.TheName, killer.Model.Name, killer.TheName)
            : string.Format("* {0} died by {1}! *", deadGuy.TheName, reason)));
       }
@@ -11284,9 +11284,9 @@ restart:
       }
       deadGuy.RemoveAllFollowers();
       var leader = deadGuy.Leader;
-      if (null != leader) {
+      if (leader is not null) {
         leader.ActorScoring.AddEvent(turn,
-            (killer == null
+            (killer is null
            ? string.Format("Follower {0} died by {1}!", deadGuy.TheName, reason)
            : string.Format("Follower {0} was killed by {1} {2}!", deadGuy.TheName, killer.Model.Name, killer.TheName)));
         leader.RemoveFollower(deadGuy);
@@ -11319,11 +11319,11 @@ restart:
         }
         // pending deciding what "passes through"
         var slots = deadGuy.InventorySlots;
-        if (null != slots) {
+        if (slots is not null) {
             var ub = slots.Count();
             while(0 <= --ub) {
                 var it = slots[ub];
-                if (null == it) continue;
+                if (it is null) continue;
                 slots.Remove(it); // want to enable garbage collection
                 if (it.IsUseless) continue;
                 if (it.Model.IsUnbreakable || it.IsUnique || Rules.Get.RollChance(ItemSurviveKillProbability(it, reason))) {
@@ -11349,25 +11349,25 @@ restart:
       else UndeadRemains(deadGuy.Location.Map, deadGuy.Location.Position);
 #endif
 
-      if (null != killer) {
+      if (killer is not null) {
         killer.RecordKill(deadGuy);
         var killer_pc = killer.Controller as PlayerController;
         if (Session.Get.HasEvolution && killer.Model.Abilities.IsUndead) {
           var actorModel = CheckUndeadEvolution(killer);
-          if (actorModel != null) {
+          if (actorModel is not null) {
             // don't need value-copy here due to how the model assignment works
             var skills = killer.MySkills.Skills;
             killer.Model = actorModel;
             killer.APreset(); // to avoid triggering a debug-mode crash
-            if (null != killer_pc) killer.PrepareForPlayerControl();
-            if (null != skills) {
+            if (killer_pc is not null) killer.PrepareForPlayerControl();
+            if (skills is not null) {
               foreach (var sk in skills) {
                 for (int index = 0; index < sk.Value; ++index) killer.SkillUpgrade(sk.Key);
               }
               killer.RecomputeStartingStats();
             }
             var witnesses = _ForceVisibleToPlayer(killer);
-            if (null != witnesses) {
+            if (witnesses is not null) {
               AddOverlay(new UI.OverlayRect(Color.Yellow, new(MapToScreen(killer.Location), SIZE_OF_ACTOR)));
               witnesses.ImportantMessage(MakePanopticMessage(killer, string.Format("{0} a {1} horror!", VERB_TRANSFORM_INTO.Conjugate(killer), actorModel.Name)), DELAY_LONG);
               ClearOverlays();
@@ -11400,13 +11400,13 @@ restart:
           bool justice_served = false;
           if (0 < Session.Get.Police.CountMurders(deadGuy)) {
             justice_served = true;
-            if (null != killer_pc)
+            if (killer_pc is not null)
               killer_pc.AddMessage(new("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
             else
               killer.Say(deadGuy, "Good riddance, murderer!", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
           } else if (0 < Session.Get.Police.CountAssaults(deadGuy)) {
             justice_served = true;
-            if (null != killer_pc)
+            if (killer_pc is not null)
               killer_pc.AddMessage(new("You feel like you did your duty with killing a violent criminal.", Session.Get.WorldTime.TurnCounter, Color.White));
             else
               killer.Say(deadGuy, "Good riddance!", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
@@ -11428,7 +11428,7 @@ restart:
         if (deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) {
           ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, killer);
           var hero_team = killer.ChainOfCommand;
-          if (null != hero_team && killer.Controller is ObjectiveAI ai) {
+          if (hero_team is not null && killer.Controller is ObjectiveAI ai) {
             foreach (Actor a in hero_team) {
               if (!ai.InCommunicationWith(a) && killer.LiveLeader != a) continue;   // historically RS Alpha 9 gave credit to a PC leader for an NPC follower sewers thing kill
               ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, a);
@@ -11465,12 +11465,12 @@ restart:
     {
       // pick equipped item to disarm : prefer weapon, then any right handed item(?), then left handed.
       var disarmIt = actor.GetEquippedWeapon();
-      if (null == disarmIt) {
+      if (disarmIt is null) {
         disarmIt = actor.GetEquippedItem(DollPart.RIGHT_HAND);
-        if (null == disarmIt) disarmIt = actor.GetEquippedItem(DollPart.LEFT_HAND);
+        if (disarmIt is null) disarmIt = actor.GetEquippedItem(DollPart.LEFT_HAND);
        }
 
-       if (null == disarmIt) return null;
+       if (disarmIt is null) return null;
 
        // unequip, remove from inv and drop item in a random adjacent tile
        // if none possible, will drop on same tile (which then has no almost no gameplay effect 
@@ -11568,7 +11568,7 @@ restart:
 
       Session.Get.LatestKill(killer,Player);
 
-      Player.ActorScoring.DeathReason = killer == null ? string.Format("Death by {0}", reason)
+      Player.ActorScoring.DeathReason = killer is null ? string.Format("Death by {0}", reason)
                                                        : string.Format("{0} by {1} {2}", Rules.IsMurder(killer, Player) ? "Murdered" : "Killed", killer.Model.Name, killer.TheName);
       int turn = Session.Get.WorldTime.TurnCounter;
       Player.ActorScoring.AddEvent(turn, "Died.");
@@ -11580,14 +11580,14 @@ restart:
       }, Color.White, Color.White, POPUP_FILLCOLOR, GDI_Point.Empty));
 
       List<UI.Message> msgs = new() { new("**** YOU DIED! ****", turn, Color.Red) };
-      if (killer != null) msgs.Add(new(string.Format("Killer : {0}.", killer.TheName), turn, Color.Red));
+      if (killer is not null) msgs.Add(new(string.Format("Killer : {0}.", killer.TheName), turn, Color.Red));
       msgs.Add(new(string.Format("Reason : {0}.", reason), turn, Color.Red));
       msgs.Add(new(Player.Model.Abilities.IsUndead ? "You die one last time... Game over!"
                                                    : "You join the realm of the undeads... Game over!", turn, Color.Red));
       if (s_Options.IsDeathScreenshotOn) {
         RedrawPlayScreen();
         var screenshot = DoTakeScreenshot();
-        msgs.Add((null == screenshot) ? MakeErrorMessage("could not save death screenshot.")
+        msgs.Add((screenshot is null) ? MakeErrorMessage("could not save death screenshot.")
                                         : new(string.Format("Death screenshot saved : {0}.", screenshot), turn, Color.Red));
       }
       (Player.Controller as PlayerController)!.AddMessagesForceRead(msgs);
@@ -11657,7 +11657,7 @@ restart:
       textFile.Append("");
       textFile.Append("> SKILLS");
       var p_skills = Player.MySkills.Skills;
-      if (null == p_skills) {
+      if (p_skills is null) {
         textFile.Append(string.Format("{0} was a jack of all trades. Or an incompetent.", str1));
       } else {
         foreach (var sk in p_skills) textFile.Append(string.Format("{0}-{1}.", sk.Value, Skills.Name(sk.Key)));
@@ -11678,7 +11678,7 @@ restart:
       textFile.Append("> FOLLOWERS");
       { // scoping brace
       var followers = Session.Get.Scoring_fatality.FollowersWhendDied;
-      if (null == followers) {
+      if (followers is null) {
         textFile.Append(string.Format("{0} was doing fine alone. Or everyone else was dead.", str1));
       } else {
         int count_followers = followers.Count;  // greater than 0 by construction
@@ -11699,7 +11699,7 @@ restart:
         foreach (Actor actor in followers) {
           textFile.Append(string.Format("{0} skills : ", actor.Name));
           var a_skills = actor.MySkills.Skills;
-          if (null != a_skills) foreach (var sk in a_skills) textFile.Append(string.Format("{0}-{1}.", sk.Value, Skills.Name(sk.Key)));
+          if (a_skills is not null) foreach (var sk in a_skills) textFile.Append(string.Format("{0}-{1}.", sk.Value, Skills.Name(sk.Key)));
         }
       }
       } // scoping brace
@@ -11774,7 +11774,7 @@ restart:
       while (index < textFile.FormatedLines.Count);
       var stringBuilder1 = new StringBuilder();
       var skills = Player.MySkills.Skills;
-      if (null != skills) foreach (var sk in skills) stringBuilder1.AppendFormat("{0}-{1} ", sk.Value, Skills.Name(sk.Key));
+      if (skills is not null) foreach (var sk in skills) stringBuilder1.AppendFormat("{0}-{1} ", sk.Value, Skills.Name(sk.Key));
       if (!m_HiScoreTable.Register(new HiScore(g_scoring, p_scoring, stringBuilder1.ToString()))) return;
       SaveHiScoreTable();
       HandleHiScores(true);
@@ -11847,7 +11847,7 @@ restart:
 
           if (upgradeActor != Player) {
             var current_skills = skills.Skills;
-            if (null != current_skills) {
+            if (current_skills is not null) {
               popupLines.Add(" ");
               popupLines.Add(upgradeActor.Name + " current skills");
               foreach (var sk in current_skills) {
@@ -11905,7 +11905,7 @@ restart:
     {
         var player = pc.ControlledActor;
         var followers = player.Followers;
-        if (null == followers) return;
+        if (followers is null) return;
         pc.AddMessageForceRead(new("Your followers learned new skills at your side!", Session.Get.WorldTime.TurnCounter, Color.Green));
         foreach (var fo in followers) HandlePlayerDecideUpgrade(pc, fo);
     }
@@ -11918,7 +11918,7 @@ restart:
         return;
       }
       Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor);
-      if (null != upgrade2) actor.SkillUpgrade(upgrade2.Value);
+      if (upgrade2 is not null) actor.SkillUpgrade(upgrade2.Value);
     }
 
     private void SkillUpgradeUndead(Actor actor) {
@@ -11932,7 +11932,7 @@ restart:
         return;
       }
       Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor);
-      if (null != upgrade2) actor.SkillUpgrade(upgrade2.Value);
+      if (upgrade2 is not null) actor.SkillUpgrade(upgrade2.Value);
     }
 
     static private List<Skills.IDs> RollSkillsToUpgrade(Actor actor, int maxTries)
@@ -11944,7 +11944,7 @@ restart:
         Skills.IDs? upgrade;
         do {
           upgrade = RollRandomSkillToUpgrade(actor, maxTries);
-          if (null == upgrade) return idsList;
+          if (upgrade is null) return idsList;
         }
         while (idsList.Contains(upgrade.Value) && ++num < maxTries);
         idsList.Add(upgrade.Value);
@@ -11959,7 +11959,7 @@ restart:
         Skills.IDs? upgrade;
         do {
           upgrade = RollRandomSkillToUpgrade(actor, maxTries);
-          if (null == upgrade) return;
+          if (upgrade is null) return;
         }
         while (idsList.Contains(upgrade.Value) && ++num < maxTries);
         idsList.push(upgrade.Value);
@@ -12017,12 +12017,12 @@ restart:
           case Skills.IDs.AGILE: return 2;
           case Skills.IDs.AWAKE: return !actor.Model.Abilities.HasToSleep ? 0 : 3;
           case Skills.IDs.BOWS:
-            if (null != (inv = actor.Inventory) && inv.Has<ItemRangedWeapon>(rw => rw.Model.IsBow)) return 3;
+            if ((inv = actor.Inventory) is not null && inv.Has<ItemRangedWeapon>(rw => rw.Model.IsBow)) return 3;
             return 0;
           case Skills.IDs.CARPENTRY: return 1;
           case Skills.IDs.CHARISMATIC: return actor.CountFollowers <= 0 ? 0 : 1;    // ???
           case Skills.IDs.FIREARMS:
-            if (null != (inv = actor.Inventory) && inv.Has<ItemRangedWeapon>(rw => rw.Model.IsFireArm)) return 3;
+            if ((inv = actor.Inventory) is not null && inv.Has<ItemRangedWeapon>(rw => rw.Model.IsFireArm)) return 3;
             return 0;
           case Skills.IDs.HARDY: return !actor.Model.Abilities.HasToSleep ? 0 : 3;
           case Skills.IDs.HAULER: return 3;
@@ -12032,7 +12032,7 @@ restart:
           case Skills.IDs.LIGHT_FEET: return 2;
           case Skills.IDs.LIGHT_SLEEPER: return !actor.Model.Abilities.HasToSleep ? 0 : 2;
           case Skills.IDs.MARTIAL_ARTS:
-            if (null != (inv = actor.Inventory) && inv.Has<ItemWeapon>()) return 1;
+            if ((inv = actor.Inventory) is not null && inv.Has<ItemWeapon>()) return 1;
             return 2;
           case Skills.IDs.MEDIC: return 1;
           case Skills.IDs.NECROLOGY: return 1;  // alpha10; previously 0
@@ -12060,7 +12060,7 @@ restart:
     private void DoLooseRandomSkill(Actor actor)
     {
       var lost = actor.MySkills.LoseRandomSkill();
-      if (null != lost) {
+      if (lost is not null) {
         var witnesses = _ForceVisibleToPlayer(actor);
         witnesses?.AddMessage(MakePanopticMessage(actor, string.Format("regressed in {0}!", Skills.Name(lost.Value))));
       }
@@ -12107,7 +12107,7 @@ restart:
         int n = skillTable.GetSkills(ref sks)/2;
         while(0 < n--) {
           Skills.IDs? sk = roller.Choose(sks).Zombify();
-          if (null != sk) actor.SkillUpgrade(sk.Value);
+          if (sk is not null) actor.SkillUpgrade(sk.Value);
         }
         actor.RecomputeStartingStats();
       }
@@ -12173,13 +12173,13 @@ restart:
                 m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", Session.Get.WorldTime.TurnCounter), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
                 m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", Player.ActorScoring.TotalPoints, (int)(100.0 * (double)s_Options.DifficultyRating((GameFactions.IDs)Player.Faction.ID)), Session.DescShortGameMode(Session.Get.GameMode)), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
                 m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", 1 + Session.Get.Scoring.ReincarnationNumber, 1 + s_Options.MaxReincarnations), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-BOLD_LINE_SPACING);
-                if (null != m_Player) {
+                if (m_Player is not null) {
                   var capital_crimes = Session.Get.Police.CountCapitalCrimes(Player);
                   if (0 < capital_crimes) m_UI.UI_DrawString(Color.White, string.Format("Capital crimes {0}", capital_crimes), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-BOLD_LINE_SPACING);
                   DrawActorStatus(Player, RIGHTPANEL_TEXT_X, RIGHTPANEL_TEXT_Y);
                   var slots = Player.InventorySlots;
-                  if (null != slots) DrawInventory(slots, null, false, slots.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y - TILE_SIZE - BOLD_LINE_SPACING);
-                  if (Player.Inventory != null && Player.Model.Abilities.HasInventory)
+                  if (slots is not null) DrawInventory(slots, null, false, slots.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y - TILE_SIZE - BOLD_LINE_SPACING);
+                  if (Player.Inventory is not null && Player.Model.Abilities.HasInventory)
                     DrawInventory(Player.Inventory, "Inventory", true, Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
                   var invspec = Player.Location.InventoryAtFeet();
                   DrawInventory(invspec?.Inventory, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
@@ -12205,7 +12205,7 @@ restart:
       var loc = new Location(CurrentMap, MapViewRect.Location + (Point)HALF_VIEW_WIDTH);
       var stringBuilder = new StringBuilder(string.Format("({0},{1}) ", loc.Position.X, loc.Position.Y));
       var zonesAt = loc.Map.GetZonesAt(loc.Position);
-      if (null != zonesAt) foreach (var z in zonesAt) stringBuilder.AppendFormat("{0} ", z.Name);
+      if (zonesAt is not null) foreach (var z in zonesAt) stringBuilder.AppendFormat("{0} ", z.Name);
       return stringBuilder.ToString();
     }
 
@@ -12273,13 +12273,13 @@ restart:
         point = view.convert(i);
         var test = new Location(map,point);
         if (!Map.Canonical(ref test)) continue;
-        bool clairsight = null != s_FaustClairvoyance && s_FaustClairvoyance.Contains(Player, test);
+        bool clairsight = s_FaustClairvoyance is not null && s_FaustClairvoyance.Contains(Player, test);
         is_visible[i] = clairsight || IsVisibleToPlayer(map, in point);
         if (is_visible[i]) {
           var actorAt = map.GetActorAtExt(point);
-          if (null == actorAt) continue;
+          if (actorAt is null) continue;
           List<Point> LoF = (actorAt.Controller as ObjectiveAI)?.GetLoF();
-          if (null == LoF) continue;
+          if (LoF is null) continue;
           foreach(Point pt in LoF) {
             if (pt==actorAt.Location.Position) continue;
             var delta = pt - actorAt.Location.Position + point;
@@ -12294,7 +12294,7 @@ restart:
           overlays[i] = null;
           var loc = new Location(map, point);
           if (Map.Canonical(ref loc)) {
-            if (null != Player.Controller.RejectUnwanted(items?.WhatIsAt(loc), loc)) overlays[i] = GameImages.ITEMS_OVERLAY;
+            if (Player.Controller.RejectUnwanted(items?.WhatIsAt(loc), loc) is not null) overlays[i] = GameImages.ITEMS_OVERLAY;
           }
 
           if (tainted.Contains(point)) {
@@ -12327,18 +12327,18 @@ restart:
           if (player) {
             // XXX should be visible only if underlying AI sees corpses
             var corpsesAt = loc.Corpses;
-            if (null != corpsesAt) foreach (Corpse c in corpsesAt) DrawCorpse(c, screen.X, screen.Y, tint);
+            if (corpsesAt is not null) foreach (Corpse c in corpsesAt) DrawCorpse(c, screen.X, screen.Y, tint);
           }
           if (s_Options.ShowPlayerTargets && p_is_awake && Player.Location.Position == point)
             DrawPlayerActorTargets(Player);
           var mapObjectAt = loc.MapObject;
-          if (null != mapObjectAt) {
+          if (mapObjectAt is not null) {
             DrawMapObject(mapObjectAt, screen, tile, tint, overlays[working]);
             flag2 = true;
             if (player) {
               // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
               var itemsAt = (mapObjectAt as ShelfLike)?.NonEmptyInventory;  // will not handle concealed inventory
-              if (null != itemsAt) DrawItemsStack(itemsAt, screen, tint);
+              if (itemsAt is not null) DrawItemsStack(itemsAt, screen, tint);
             }
           }
           if (p_is_awake && Rules.GridDistance(Player.Location.Position, in point) <= 1) {    // grid distance 1 is always valid with cross-district visibility
@@ -12359,19 +12359,19 @@ restart:
           if (player) {
             // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
             var itemsAt = loc.Items;
-            if (null != itemsAt) {
+            if (itemsAt is not null) {
               DrawItemsStack(itemsAt, screen, tint);
               flag2 = true;
             }
             var actorAt = loc.Actor;
-            if (null != actorAt) {
+            if (actorAt is not null) {
               DrawActorSprite(actorAt, screen, tint);
               flag2 = true;
             }
           }
           if (tile.HasDecorations) flag2 = true;
           if (flag2 && tile.Model.IsWater) DrawTileWaterCover(tile, screen, tint);
-          if (player && imageID != null && !tile.IsInside)
+          if (player && imageID is not null && !tile.IsInside)
             m_UI.UI_DrawImage(imageID, screen.X, screen.Y);
           if (view_center.X==x && view_center.Y==y && (map!=Player.Location.Map || view_center!=Player.Location.Position)) {
             m_UI.UI_DrawImage(GameImages.ITEM_SLOT, screen.X, screen.Y, tint);    // XXX overload this
@@ -12380,7 +12380,7 @@ restart:
       }
       // exit display
       var e = Player.Location.Exit; // XXX does not change w/remote viewing
-      if (null != e) {
+      if (e is not null) {
         // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
         GDI_Point screen = MapToScreen(e.Location);
         var tile = e.Location.Tile;
@@ -12390,12 +12390,12 @@ restart:
         if (tile.IsInView) {
           // XXX should be visible only if underlying AI sees corpses
           var corpsesAt = e.Location.Corpses;
-          if (null != corpsesAt) foreach (var c in corpsesAt) DrawCorpse(c, screen.X, screen.Y, tint);
+          if (corpsesAt is not null) foreach (var c in corpsesAt) DrawCorpse(c, screen.X, screen.Y, tint);
         }
         // XXX DrawPlayerActorTargets should take account of threat at the exit
         bool flag2 = false;
         var mapObjectAt = e.Location.MapObject;
-        if (mapObjectAt != null) {
+        if (mapObjectAt is not null) {
           DrawMapObject(mapObjectAt, screen, tile, tint, null);
           flag2 = true;
         }
@@ -12403,19 +12403,19 @@ restart:
         if (tile.IsInView) {
             // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
             var itemsAt = e.Location.Items;
-            if (itemsAt != null) {
+            if (itemsAt is not null) {
               DrawItemsStack(itemsAt, screen, tint);
               flag2 = true;
             }
             var actorAt = e.Location.Actor;
-            if (actorAt != null) {
+            if (actorAt is not null) {
               DrawActorSprite(actorAt, screen, tint);
               flag2 = true;
             }
         }
        if (tile.HasDecorations) flag2 = true;
        if (flag2 && tile.Model.IsWater) DrawTileWaterCover(tile, screen, tint);
-       if (tile.IsInView && imageID != null && !tile.IsInside)
+       if (tile.IsInView && imageID is not null && !tile.IsInside)
          m_UI.UI_DrawImage(imageID, screen.X, screen.Y);
       }
     }
@@ -12535,13 +12535,13 @@ restart:
     public void DrawActorSprite(Actor actor, GDI_Point screen, Color tint)
     {
 #if DEBUG
-      if (null == actor) throw new ArgumentNullException(nameof(actor));
+      if (actor is null) throw new ArgumentNullException(nameof(actor));
 #endif
       int gx2 = screen.X;
       int gy2 = screen.Y;
       if (actor.Leader == Player) m_UI.UI_DrawImage(FollowerIcon(actor), gx2, gy2, tint);
 
-      if (actor.Model.ImageID != null) m_UI.UI_DrawImage(actor.Model.ImageID, gx2, gy2, tint);
+      if (actor.Model.ImageID is not null) m_UI.UI_DrawImage(actor.Model.ImageID, gx2, gy2, tint);
       else {
         // XXX would check sprite cache here
         DrawActorDecoration(actor, DollPart.SKIN, tint);
@@ -12568,7 +12568,7 @@ restart:
           SanityIcon(actor)?.DrawIcon(screen, tint);
           if (ActionTrade.Can(Player, actor)) {
 /*          var o_oai = actor.Controller as OrderableAI;
-            if (null != o_oai) {
+            if (o_oai is not null) {
               // \todo evaluate whether ai actually will accept any trades
             } */
             m_UI.UI_DrawImage(GameImages.ICON_CAN_TRADE, gx2, gy2, tint);
@@ -12583,7 +12583,7 @@ restart:
           break;
         case Data.Activity.CHASING:
         case Data.Activity.FIGHTING:
-          if (!actor.IsPlayer && null != actor.TargetActor) {
+          if (!actor.IsPlayer && actor.TargetActor is not null) {
             m_UI.UI_DrawImage(((actor.TargetActor == Player) ? GameImages.ACTIVITY_CHASING_PLAYER : GameImages.ACTIVITY_CHASING), gx2, gy2, tint);
           }
           goto case Data.Activity.IDLE;
@@ -12594,7 +12594,7 @@ restart:
           if (!actor.IsPlayer) m_UI.UI_DrawImage(GameImages.ACTIVITY_FLEEING, gx2, gy2, tint);
           goto case Data.Activity.IDLE;
         case Data.Activity.FOLLOWING:
-          if (!actor.IsPlayer && null != actor.TargetActor) {
+          if (!actor.IsPlayer && actor.TargetActor is not null) {
             m_UI.UI_DrawImage((actor.TargetActor.IsPlayer ? GameImages.ACTIVITY_FOLLOWING_PLAYER : (actor.TargetActor == actor.Leader ? GameImages.ACTIVITY_FOLLOWING_LEADER : GameImages.ACTIVITY_FOLLOWING)), gx2, gy2);
           }
           goto case Data.Activity.IDLE;
@@ -12615,7 +12615,7 @@ restart:
     public void DrawActorDecoration(Actor actor, DollPart part, Color tint)
     {
       var decorations = actor.Doll.GetDecorations(part);
-      if (null == decorations) return;
+      if (decorations is null) return;
       foreach (string imageID in decorations)
       {// the skin is both guaranteed to be present when any decorations are present, and be unique
         if (DollPart.SKIN==part) {
@@ -12629,7 +12629,7 @@ restart:
     public void DrawActorDecoration(Actor actor, int gx, int gy, DollPart part, float rotation, float scale)
     {
       var decorations = actor.Doll.GetDecorations(part);
-      if (null == decorations) return;
+      if (decorations is null) return;
       foreach (string imageID in decorations)
         m_UI.UI_DrawImageTransform(imageID, gx, gy, rotation, scale);
     }
@@ -12637,7 +12637,7 @@ restart:
     public void DrawActorEquipment(Actor actor, DollPart part, Color tint)
     {
       var equippedItem = actor.GetEquippedItem(part);
-      if (null != equippedItem) m_UI.AppendTile(equippedItem.ImageID, tint);
+      if (equippedItem is not null) m_UI.AppendTile(equippedItem.ImageID, tint);
     }
 
     public void DrawCorpse(Corpse c, int gx, int gy, Color tint)
@@ -12645,7 +12645,7 @@ restart:
       float rotation = c.Rotation;
       float scale = c.Scale;
       Actor deadGuy = c.DeadGuy;
-      if (deadGuy.Model.ImageID != null)
+      if (deadGuy.Model.ImageID is not null)
         m_UI.UI_DrawImageTransform(deadGuy.Model.ImageID, gx, gy, rotation, scale);
       else {
         DrawActorDecoration(deadGuy, gx, gy, DollPart.SKIN, rotation, scale);
@@ -12666,7 +12666,7 @@ restart:
     public void DrawCorpsesList(List<Corpse> list, string title, int gx, int gy)
     {
       var is_dragging = Player.DraggedCorpse;
-      int num2 = list == null ? 0 : list.Count;
+      int num2 = list is null ? 0 : list.Count;
       if (num2 > 0) title += " : " + num2;
       m_UI.UI_DrawStringBold(Color.White, title, gx, gy - BOLD_LINE_SPACING, new Color?());
       int gx1 = gx;
@@ -12692,7 +12692,7 @@ restart:
     {
       // target of this actor
       var a_target = actor.TargetActor;
-      if (null != a_target && !a_target.IsDead && IsVisibleToPlayer(a_target))
+      if (a_target is not null && !a_target.IsDead && IsVisibleToPlayer(a_target))
         overlays.Add(new UI.OverlayImage(MapToScreen(a_target.Location.Position), GameImages.ICON_IS_TARGET));
 
       // actors targeting this actor or in same group
@@ -12715,13 +12715,13 @@ restart:
 
       if (actor.Controller is ObjectiveAI ai) {
         var dests = ai.WantToGoHere(actor.Location);
-        if (null != dests) foreach(var loc in dests) overlays.Add(new UI.OverlayRect(Color.Green, new GDI_Rectangle(MapToScreen(loc), SIZE_OF_ACTOR)));
+        if (dests is not null) foreach(var loc in dests) overlays.Add(new UI.OverlayRect(Color.Green, new GDI_Rectangle(MapToScreen(loc), SIZE_OF_ACTOR)));
       }
     }
 
     public void DrawPlayerActorTargets(Actor player)
     {
-      if (null != player.Sees(player.TargetActor)) {
+      if (player.Sees(player.TargetActor) is not null) {
         var screen = MapToScreen(player.TargetActor.Location);
         m_UI.UI_DrawImage(GameImages.ICON_IS_TARGET, screen.X, screen.Y);
       }
@@ -12729,7 +12729,7 @@ restart:
       foreach(var loc in player.Controller.FOVloc) {
         if (loc == player.Location) continue;
         actor = loc.Actor;
-        if (null==actor || actor.IsDead) continue;
+        if (actor is null || actor.IsDead) continue;
         if (actor.TargetActor == player && actor.IsEngaged) {
           var screen = MapToScreen(player.Location);
           m_UI.UI_DrawImage(GameImages.ICON_IS_TARGETTED, screen.X, screen.Y);
@@ -12741,7 +12741,7 @@ restart:
     public void DrawItemsStack(Inventory inv, GDI_Point screen, Color tint)
     {
 #if DEBUG
-      if (null == inv && 0 >= inv.Count()) throw new ArgumentNullException(nameof(inv));
+      if (inv is null && 0 >= inv.Count()) throw new ArgumentNullException(nameof(inv));
 #endif
       foreach (Item it in inv) DrawItem(it, screen, tint);
     }
@@ -12789,7 +12789,7 @@ restart:
       Location loc = actor.Location;
       if (loc.Map != CurrentMap) {
         Location? test = CurrentMap.Denormalize(in loc);
-        if (null == test) return;   // XXX invariant failure
+        if (test is null) return;   // XXX invariant failure
         loc = test.Value;
       }
       if (view.Contains(loc.Position)) {
@@ -12810,7 +12810,7 @@ restart:
       Location loc = actor.Location;
       if (loc.Map != Player.Location.Map) {
         Location? test = Player.Location.Map.Denormalize(loc);
-        if (null == test) return;   // XXX invariant failure
+        if (test is null) return;   // XXX invariant failure
         loc = test.Value;
       }
       m_UI.UI_SetMinimapColor((loc.Position.X - view.Left), (loc.Position.Y - view.Top), minimap_color);
@@ -12824,7 +12824,7 @@ restart:
 
     private void DrawMiniMap(Rectangle view)
     {
-      if (null == m_Player) return;   // fail-safe.
+      if (m_Player is null) return;   // fail-safe.
       Map map = CurrentMap;
       var threats = Player.Threats;    // these two should agree on whether they're null or not
       var sights_to_see = Player.InterestingLocs;
@@ -12832,7 +12832,7 @@ restart:
       if (s_Options.IsMinimapOn) {
         m_UI.UI_ClearMinimap(Color.Black);
 #region set visited tiles color.
-        if (null == threats) {
+        if (threats is null) {
           foreach (var pt in view) if (Player.Controller.IsKnown(new Location(map, pt))) m_UI.UI_SetMinimapColor(pt.X - view.Left, pt.Y - view.Top, (map.HasExitAtExt(pt) ? Color.HotPink : map.GetTileModelAtExt(pt).MinimapColor));
         } else {
           HashSet<Point> tainted = threats.ThreatWhere(map, view);
@@ -12863,7 +12863,7 @@ restart:
             else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG2, in pt)) imageID = GameImages.MINI_PLAYER_TAG2;
             else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG3, in pt)) imageID = GameImages.MINI_PLAYER_TAG3;
             else if (map.HasDecorationAt(GameImages.DECO_PLAYER_TAG4, in pt)) imageID = GameImages.MINI_PLAYER_TAG4;
-            if (imageID != null) {
+            if (imageID is not null) {
               var delta = (pt - view.Location)* MINITILE_SIZE;
               m_UI.UI_DrawImage(imageID, MINIMAP_X + delta.X - 1, MINIMAP_Y + delta.Y - 1);
             }
@@ -12872,14 +12872,14 @@ restart:
       if (!Player.IsSleeping) {
         // if we see an ally, we should be able to "read off body language" who they are aiming at 2020-09-11 zaimoni
         var friends = Player.Controller.friends_in_FOV;
-        if (null != friends) foreach(var fr in friends.Values) {
+        if (friends is not null) foreach(var fr in friends.Values) {
           if (fr.IsSleeping) continue;
           if (!(fr.Controller is ObjectiveAI oai)) continue;
           var rw = oai.GetBestRangedWeaponWithAmmo();
-          int detection_range = (null != rw ? rw.Model.Attack.Range : 1);
+          int detection_range = (rw is not null ? rw.Model.Attack.Range : 1);
           var fr_enemies = fr.Controller.enemies_in_FOV;
-          if (null == fr_enemies) continue;
-          if (1 == detection_range && null != fr.Inventory?.GetFirst(Item_IDs.UNIQUE_FATHER_TIME_SCYTHE)) detection_range=2;
+          if (fr_enemies is null) continue;
+          if (1 == detection_range && fr.Inventory?.GetFirst(Item_IDs.UNIQUE_FATHER_TIME_SCYTHE) is not null) detection_range=2;
           foreach(var en in fr_enemies.Values) {
             if (detection_range < Rules.InteractionDistance(fr.Location, en.Location)) continue;
             if (en.IsDead) continue;
@@ -12951,18 +12951,18 @@ restart:
         if (find_us[(int)ItemTrackerModel.TrackingOffset.POLICE_FACTION]) {
             draw = draw.Compose(actor => {
                 var icons = police_icon(actor);
-                if (null != icons) DrawDetected(actor, icons.Value.Key, icons.Value.Value, view);
+                if (icons is not null) DrawDetected(actor, icons.Value.Key, icons.Value.Value, view);
             });
         }
-        if (null != draw) {
+        if (draw is not null) {
           foreach (var pt in view) {
             var actor = non_self(pt);
-            if (null != actor) draw(actor);
+            if (actor is not null) draw(actor);
           }
         }
       }	// end if (!Player.IsSleeping)
       var denorm = map.Denormalize(Player.Location);
-      if (null != denorm) {
+      if (denorm is not null) {
         minimap_delta = (denorm.Value.Position - view.Location)*MINITILE_SIZE;
         m_UI.UI_DrawImage(GameImages.MINI_PLAYER_POSITION, MINIMAP_X + minimap_delta.X - 1, MINIMAP_Y + minimap_delta.Y - 1);
       }
@@ -13017,13 +13017,13 @@ restart:
       if (a != m_PlayerInTurn) return "SIMULATING";
       if (!string.IsNullOrEmpty(m_Status)) return m_Status;
       var ai = a.Controller as ObjectiveAI;
-      if (null != ai) {
+      if (ai is not null) {
         var recruit = ai.RecruitableRadio();
-        if (null != recruit) return "RADIO RECRUIT";
-        if (null != ai.ContrafactualZTracker(a.Location)) return "WANT ZTRACKER";
+        if (recruit is not null) return "RADIO RECRUIT";
+        if (ai.ContrafactualZTracker(a.Location) is not null) return "WANT ZTRACKER";
       }
       if (a.Controller.InCombat) return "IN COMBAT";
-      if (null != ai) {
+      if (ai is not null) {
         var code = ai.InterruptLongActivity();
         if (ObjectiveAI.ReactionCode.NONE != code) {
           if (ObjectiveAI.ReactionCode.NONE != (code & ObjectiveAI.ReactionCode.ENEMY)) return "THREAT NEAR";
@@ -13136,7 +13136,7 @@ restart:
         } else
           pixel_pos.X += TILE_SIZE;
       }
-      if (null == inventory) return;
+      if (inventory is null) return;
 
       pixel_pos = new(gx, gy);
       slot = 0;
@@ -13199,7 +13199,7 @@ restart:
     {
       m_UI.UI_DrawStringBold(Color.White, "Skills", gx, gy - BOLD_LINE_SPACING, new Color?());
       var skills = actor.MySkills.Skills;
-      if (skills == null) return;
+      if (skills is null) return;
       int num = 0;
       int gx1 = gx;
       int gy1 = gy;
@@ -13211,7 +13211,7 @@ restart:
           case Skills.IDs.MARTIAL_ARTS:
             {
             var w = actor.GetEquippedWeapon();
-            skColor = (null == w) ? Color.LightGreen : Color.Red;
+            skColor = (w is null) ? Color.LightGreen : Color.Red;
             if (w is ItemMeleeWeapon melee && melee.Model.IsMartialArts) skColor = Color.LightGreen;
             }
             break;
@@ -13267,7 +13267,7 @@ restart:
     UI.Overlay SetInfoOverlay(UI.Overlay src) {
       // Create Read Update Delete would indicate a ClearInfoOverlay, but that is handled as formally required
       var expired = Interlocked.Exchange(ref s_infoOverlay, src);
-      if (null != expired) RemoveOverlay(expired);
+      if (expired is not null) RemoveOverlay(expired);
       return src;
     }
 
@@ -13286,7 +13286,7 @@ restart:
       var view = MapView;
       if (!view.ContainsExt(in loc)) {
           var e = loc.Exit;
-          if (null!=e && e.Location == view.Center) {
+          if (e is not null && e.Location == view.Center) {
             // VAPORWARE slots above entry map would be used for rooftops, etc. (helicopters in flight cannot see within buildings but can see rooftops)
             int exit_slot() {
                 if (District.IsEntryMap(loc.Map)) return ENTRYMAP_EXIT_SLOT;
@@ -13307,7 +13307,7 @@ restart:
 
       Location? tmp = CurrentMap.Denormalize(in loc);
 #if DEBUG
-      if (null == tmp) throw new ArgumentNullException(nameof(tmp));
+      if (tmp is null) throw new ArgumentNullException(nameof(tmp));
 #endif
       return MapToScreen(tmp.Value.Position);
     }
@@ -13333,7 +13333,7 @@ restart:
         if (Map.Canonical(ref loc)) return loc;
       }
       var e = MapView.Center.Exit;
-      if (null != e) {
+      if (e is not null) {
         Rectangle bounds = new(new(EXIT_SLOT_X, EXIT_SLOT_Y0), new(TILE_SIZE, 2* TILE_SIZE));
         if (bounds.Contains((short)pixel.X, (short)pixel.Y)) return e.Location;
       }
@@ -13398,8 +13398,8 @@ restart:
     /// Debugging tool: allows AI to pray for advice to player
     public A? AI_prayer<A>(Actor actor, List<A> considering) where A:ActorAction
     {
-        if (null == considering) return null;
-        if (null == actor) return null;
+        if (considering is null) return null;
+        if (actor is null) return null;
         if (1 >= considering.Count) return null;
         if (IsSimulating) return null;
         PanViewportTo(actor);
@@ -13444,7 +13444,7 @@ restart:
       };
 
       var desc = "FAR LOOK MODE - movement keys ok; W)alk or R)un to the waypoint";
-      if (null != available_followers) desc += ", O)rder a follower to stop by the waypoint";
+      if (available_followers is not null) desc += ", O)rder a follower to stop by the waypoint";
       desc += ", or walk 1) to 9) steps and record waypoint. ESC cancels";
 
       ClearOverlays();
@@ -13476,7 +13476,7 @@ restart:
             break;  // XXX \todo be somewhat more informative
           case Keys.O:  // walk to ...
               // other commands possible
-              if (null != available_followers && viewpoint != Player.Location && !available_followers.Any(fo => viewpoint == fo.Location)) {
+              if (available_followers is not null && viewpoint != Player.Location && !available_followers.Any(fo => viewpoint == fo.Location)) {
                 if (PagedPopup("Who stops by there?", available_followers.Count, label_follower, details_follower)) return null;
               }
             break;
@@ -13523,11 +13523,11 @@ restart:
               break;
             default: break; // intentionally do not handle all commands
           }
-          if (null == tmp) continue;
+          if (tmp is null) continue;
           if (    !Player.Controller.IsKnown(tmp.Value)                             // disallow not-known
               && (viewpoint.Map==tmp.Value.Map || viewpoint.Map.DistrictPos!=tmp.Value.Map.DistrictPos))    // but ok if same-district different map i.e. stairway
               continue;    // XXX probably should have some feedback here
-          if (null != inspect) {
+          if (inspect is not null) {
             RemoveOverlay(inspect);
             inspect = null;
           }
@@ -13535,11 +13535,11 @@ restart:
           // from Staying Alive: inspect mode within far-look
           if (IsVisibleToPlayer(in viewpoint)) {
             string[] lines = DescribeStuffAt(viewpoint);
-            if (null != lines) inspect = new(lines, Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
+            if (lines is not null) inspect = new(lines, Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
           } else {
             List<string> lines = null;
             var allies = Player.Allies;
-            if (null != allies) {
+            if (allies is not null) {
                 foreach(var a in allies) {
                     if (viewpoint != a.Location) continue;
                     if (Player.Controller is ObjectiveAI p_oai && p_oai.InCommunicationWith(a)) {
@@ -13549,7 +13549,7 @@ restart:
                 }
             }
             var threat = Player.Threats;
-            if (null != threat) {
+            if (threat is not null) {
                 var compromised = threat.ThreatAt(in viewpoint);
                 if (0 < compromised.Count) {
                    (lines ??= new()).Add("Possibly here:");
@@ -13557,16 +13557,16 @@ restart:
                 }
             }
             var items = Player.Controller.ItemMemory;
-            if (null != items) {
+            if (items is not null) {
                 var what = items.WhatIsAt(viewpoint);
-                if (null != what) {
+                if (what is not null) {
                     (lines ??= new()).Add("Should be here:");
                     foreach(var it in what) lines.Add(it.ToString());
                 }
             }
-            if (null != lines) inspect = new(lines.ToArray(), Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
+            if (lines is not null) inspect = new(lines.ToArray(), Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
           }
-          if (null != inspect) AddOverlay(inspect);
+          if (inspect is not null) AddOverlay(inspect);
           PanViewportTo(in viewpoint);
       } while(true);
     }
@@ -13574,7 +13574,7 @@ restart:
     private void HandlePlayerSetWaypoint(Actor player)
     {
       Location? target = DoPlayerFarLook();
-      if (null == target) return;
+      if (target is null) return;
       // build out implementation here -- minimap and viewport have to respond appropriately
       // try a green tint
     }
@@ -13583,7 +13583,7 @@ restart:
     {
       var pc = player.Controller as PlayerController;
       var w_pts = pc.Waypoints;
-      if (null == w_pts) {
+      if (w_pts is null) {
         ErrorPopup("No waypoints set.");
         return;
       }
@@ -13633,10 +13633,10 @@ restart:
 
     private List<PlayerController>? _ForceVisibleToPlayer(in Location view)
     {
-      if (null == view.Map) return null; // convince Duckman to not superheroically crash many games on turn 0
+      if (view.Map is null) return null; // convince Duckman to not superheroically crash many games on turn 0
 
       var viewing = PlayersInLOS(view);
-      if (null == viewing) return null;
+      if (viewing is null) return null;
 
       if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
       return viewing;
@@ -13645,7 +13645,7 @@ restart:
     private List<PlayerController>? _ForceVisibleToPlayer(Actor actor)
     {
       var viewing = actor.PlayersInLOS();
-      if (null == viewing) return null;
+      if (viewing is null) return null;
       if (actor.Controller is PlayerController a_pc) {
         if (actor == Player) return viewing;
         if (viewing.Contains(a_pc)) {
@@ -13660,7 +13660,7 @@ restart:
     public List<PlayerController>? _ForceVisibleToPlayer<T>(T actor) where T:ILocation
     {
       var viewing = actor.PlayersInLOS();
-      if (null == viewing) return null;
+      if (viewing is null) return null;
       if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
       return viewing;
     }
@@ -13668,7 +13668,7 @@ restart:
     private List<PlayerController>? _ForceVisibleToPlayer(Actor actor, Actor want)
     {
       var viewing = actor.PlayersInLOS();
-      if (null == viewing) return null;
+      if (viewing is null) return null;
       if (actor.Controller is PlayerController a_pc) {
         if (actor == Player) return viewing;
         if (viewing.Contains(a_pc)) {
@@ -13689,10 +13689,10 @@ restart:
 
     private bool ForceVisibleToPlayer(in Location view)
     {
-      if (null == view.Map) return false; // convince Duckman to not superheroically crash many games on turn 0
+      if (view.Map is null) return false; // convince Duckman to not superheroically crash many games on turn 0
 
       var viewing = PlayersInLOS(view);
-      if (null == viewing) return false;
+      if (viewing is null) return false;
 
       if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
       return true;
@@ -13712,7 +13712,7 @@ restart:
     private bool ForceVisibleToPlayer(MapObject mapObj) { return ForceVisibleToPlayer(mapObj.Location); }
 
     private bool ForceVisibleToPlayer(in Data.Model.InventorySource<Item> src) {
-      if (null != src.Origin.a_owner) return ForceVisibleToPlayer(src.Origin.a_owner);
+      if (src.Origin.a_owner is not null) return ForceVisibleToPlayer(src.Origin.a_owner);
       return ForceVisibleToPlayer(src.Origin.Location);
     }
 
@@ -13724,13 +13724,13 @@ restart:
         } else if (d.IsPlayer) {
             PanViewportTo(d);
             return new(IsVisibleToPlayer(a.Location), true);
-        } else if (null != ad_witness) {
+        } else if (ad_witness is not null) {
             PanViewportTo(ad_witness[0].ControlledActor);
             return new(true,true);
-        } else if (null != d_only_witness) {
+        } else if (d_only_witness is not null) {
             PanViewportTo(d_only_witness[0].ControlledActor);
             return new(false,true);
-        } else if (null != a_only_witness) {
+        } else if (a_only_witness is not null) {
             PanViewportTo(a_only_witness[0].ControlledActor);
             return new(false,true);
         }
@@ -13742,13 +13742,13 @@ restart:
         if (a.IsPlayer) {
             PanViewportTo(a);
             return new(true,true);
-        } else if (null != ad_witness) {
+        } else if (ad_witness is not null) {
             PanViewportTo(ad_witness[0].ControlledActor);
             return new(true,true);
-        } else if (null != d_only_witness) {
+        } else if (d_only_witness is not null) {
             PanViewportTo(d_only_witness[0].ControlledActor);
             return new(false,true);
-        } else if (null != a_only_witness) {
+        } else if (a_only_witness is not null) {
             PanViewportTo(a_only_witness[0].ControlledActor);
             return new(false,true);
         }
@@ -13757,10 +13757,10 @@ restart:
 
     static private int FindLongestLine(string[] lines)
     {
-      if (lines == null || lines.Length == 0) return 0;
+      if (lines is null || lines.Length == 0) return 0;
       int num = int.MinValue;
       foreach (string line in lines) {
-        if (line != null && line.Length > num) num = line.Length;
+        if (line is not null && line.Length > num) num = line.Length;
       }
       return num;
     }
@@ -14095,7 +14095,7 @@ restart:
           var y = Convert.ToInt32(district_spec[1]) - Convert.ToInt32('0'); // breaks down at 11 E-W extent
           entryMap = world[x, y].EntryMap;
         }
-        if (null == entryMap) {
+        if (entryMap is null) {
           int index = world.Size / 2;
           entryMap = world[index, index].EntryMap;
         }
@@ -14112,12 +14112,12 @@ restart:
       if (s_Options.RevealStartingDistrict) {
         foreach(Actor player in entryMap.Players.Get) {
           var zonesAt1 = entryMap.GetZonesAt(player.Location.Position);
-          if (null == zonesAt1) continue;
+          if (zonesAt1 is null) continue;
           Zone zone = zonesAt1[0];
           foreach (var pt in entryMap.Rect) {
             if (entryMap.IsInsideAt(pt)) {
               var zonesAt2 = entryMap.GetZonesAt(pt);
-              if (null == zonesAt2 || zonesAt2[0] != zone) continue;
+              if (zonesAt2 is null || zonesAt2[0] != zone) continue;
             }
             player.Controller.ForceKnown(pt);
           }
@@ -14139,7 +14139,7 @@ restart:
       var mapList = new List<Map>();
       world.DoForAllDistricts(d=> {
         var subway = d.SubwayMap;
-        if (null != subway && BaseTownGenerator.CanHaveSubwayStationBlocks(world.SubwayLayout(d.WorldPosition))) mapList.Add(subway);
+        if (subway is not null && BaseTownGenerator.CanHaveSubwayStationBlocks(world.SubwayLayout(d.WorldPosition))) mapList.Add(subway);
       });
       if (0 >= mapList.Count) return new UniqueItem(it, false);
       var rules = Rules.Get;
@@ -14226,7 +14226,7 @@ restart:
                }
                if (IsInCHAROffice(new Location(map, pt))) return false;
                var mapObjectAt = map.GetMapObjectAt(pt);
-               if (m_CharGen.IsUndead) return mapObjectAt == null;
+               if (m_CharGen.IsUndead) return mapObjectAt is null;
                return mapObjectAt?.IsCouch ?? false;
              })
           || MapGenerator.ActorPlace(roller, map, actor, pt => map.IsInsideAt(pt) && !IsInCHAROffice(new Location(map, pt))))   // XXX failover only works for livings
@@ -14238,7 +14238,7 @@ restart:
     private void RefreshPlayer()
     {
       var player = CurrentMap.FindPlayer;
-      if (null != player) SetCurrentMap(setPlayer(player).Location);
+      if (player is not null) SetCurrentMap(setPlayer(player).Location);
     }
 
     private void SetCurrentMap(Location loc)
@@ -14257,7 +14257,7 @@ restart:
     private bool SimulateNearbyDistricts(District d)
     {
       var d1 = World.Get.CurrentSimulationDistrict();
-      if (null == d1) return false;
+      if (d1 is null) return false;
       var t0 = d1.LocalTime.TurnCounter;
       AdvancePlay(d1, ComputeSimFlagsForTurn(d.EntryMap.LocalTime.TurnCounter));    // void SimulateDistrict(d1) if becomes complicated again
       if (t0 == d1.LocalTime.TurnCounter) {   // StopSimThread cut the turn short: d1 stays the current simulation district and resumes with the thread
@@ -14473,7 +14473,7 @@ retry:
                 if (player.Faction == GameFactions.TheCHARCorporation) {
                 }
 #endif
-                if (null != local_6) {
+                if (local_6 is not null) {
                   ShowSpecialDialogue(prisoner, local_6);
                   player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} offered a deal.", prisoner.Name));
                 }
@@ -14531,7 +14531,7 @@ retry:
       }
       // XXX \todo should be for all actors
       void update_sightings(Dictionary<Location,Actor> src) {
-        if (null != src) foreach (var x in src.Values) player.ActorScoring.AddSighting(x.Model.ID);
+        if (src is not null) foreach (var x in src.Values) player.ActorScoring.AddSighting(x.Model.ID);
       }
       update_sightings(player.Controller.friends_in_FOV);
       update_sightings(player.Controller.enemies_in_FOV);
@@ -14592,11 +14592,11 @@ retry:
       });
       Func<int, bool?> choice_handler = (currentChoice => {
         newPlayerAvatar = reincarnationAvatars[currentChoice];
-        if (null != newPlayerAvatar) return true;
+        if (newPlayerAvatar is not null) return true;
         return null;
       });
       if (!ChoiceMenu(choice_handler, setup_handler, entries.Length)) newPlayerAvatar = null;
-      if (newPlayerAvatar == null) {
+      if (newPlayerAvatar is null) {
         m_MusicManager.Stop();
         return;
       }
@@ -14619,7 +14619,7 @@ retry:
 
     static private string DescribeAvatar(Actor a)
     {
-      if (a == null) return "(N/A)";
+      if (a is null) return "(N/A)";
       return string.Format("{0}, a {1}{2}", a.Name, a.Model.Name, (0 < a.CountFollowers ? ", leader" : (a.HasLeader ? ", follower" : "")));
     }
 
@@ -14657,7 +14657,7 @@ retry:
 
     static private bool IsSuitableReincarnation(Actor a, bool asLiving)
     {
-      if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.DistrictPos != CurrentMap.DistrictPos || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisoner.TheActor || District.IsSewersMap(a.Location.Map)))
+      if (a is null || a.IsDead || a.IsPlayer || a.Location.Map.DistrictPos != CurrentMap.DistrictPos || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisoner.TheActor || District.IsSewersMap(a.Location.Map)))
         return false;
       if (asLiving)
         return !a.Model.Abilities.IsUndead && (!s_Options.IsLivingReincRestricted || a.IsFaction(GameFactions.IDs.TheCivilians));
@@ -14729,11 +14729,11 @@ retry:
           return new ActionDropItem(actor, it);
         case 4:
           var f_in_fov = actor.Controller.friends_in_FOV;
-          if (null == f_in_fov) return null;
+          if (f_in_fov is null) return null;
           foreach(var renege in f_in_fov.Values) {
             if (!rules.RollChance(50)) continue;
             var leader = actor.LiveLeader;
-            if (null != leader) {
+            if (leader is not null) {
               leader.RemoveFollower(actor);
               actor.TrustInLeader = 0;
             }
@@ -14757,7 +14757,7 @@ retry:
       };
 
       var victims = loc.ThoseNearby(maxLivingFOV, sees);
-      if (null == victims) return;
+      if (victims is null) return;
 
       var pc_did_it = whoDoesTheAction.Controller as PlayerController;
 
@@ -14766,9 +14766,9 @@ retry:
       foreach(var actor in victims) {
         actor.SpendSanity(sanCost);
         var PC_witnesses = actor.PlayersInLOS();
-        if (null == PC_witnesses) continue;
+        if (PC_witnesses is null) continue;
         bool have_messaged = false;
-        if (null != pc_did_it && PC_witnesses.Remove(pc_did_it)) {
+        if (pc_did_it is not null && PC_witnesses.Remove(pc_did_it)) {
           if (need_to_message_performer) {
               pc_did_it.AddMessage(new("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
               need_to_message_performer = false;
@@ -14880,7 +14880,7 @@ retry:
               var escapees = new List<Actor>();
               foreach (var pt in new Rectangle(1,4,17,1)) {
                 Actor a = map.GetActorAt(pt);
-                if (null != a) escapees.Add(a);
+                if (a is not null) escapees.Add(a);
               }
               var escape = new Tasks.TaskEscapeNanny(escapees, safe_zone);
               escape.Trigger(dest);
@@ -14931,7 +14931,7 @@ retry:
           OnLoudNoise(obj.Location, closing);
 
           Actor? actorAt = map.GetActorAt(obj.Location.Position);
-          if (null == actorAt) return;
+          if (actorAt is null) return;
           KillActor(null, actorAt, "crushed");    // XXX \todo credit the gate operator with a murder (with usual exemptions)
           var witnesses = _ForceVisibleToPlayer(actorAt);
           witnesses?.AddMessage(MakePanopticMessage(actorAt, string.Format("{0} {1} crushed between the closing " + gate_name + "!", VERB_BE.Conjugate(actorAt))));
@@ -15007,7 +15007,7 @@ retry:
 
     static private string FunFactActorResume(Actor a, string info)
     {
-      if (a == null) return "(N/A)";
+      if (a is null) return "(N/A)";
       return string.Format("{0} - {1}, a {2} - {3}", info, a.TheName, a.Model.Name, a.Location.Map.Name);
     }
 
@@ -15092,7 +15092,7 @@ retry:
 #region Background music
     private void UpdateBgMusic()
     {
-       if (   !s_Options.PlayMusic || null == m_Player
+       if (   !s_Options.PlayMusic || m_Player is null
            || (m_MusicManager.IsPlaying && m_MusicManager.Priority > MusicPriority.PRIORITY_BGM))  // don't interrupt music that has higher priority than bg
          return;
 
@@ -15141,7 +15141,7 @@ retry:
     }
 
     static public List<PlayerController>? SetDifference(this List<PlayerController> lhs, List<PlayerController>? rhs) {
-        if (null == rhs) return null;
+        if (rhs is null) return null;
         List<PlayerController> ret = new(lhs);
         if (0 < ret.Count) {
             foreach(var actor in rhs) ret.Remove(actor);
@@ -15150,7 +15150,7 @@ retry:
     }
 
     static public List<PlayerController>? Intersect(this List<PlayerController> lhs, List<PlayerController>? rhs) {
-        if (null == rhs) return null;
+        if (rhs is null) return null;
         List<PlayerController> ret = new();
         if (0 < lhs.Count) {
             foreach(var actor in rhs) if (lhs.Contains(actor)) ret.Add(actor);
@@ -15254,7 +15254,7 @@ retry:
         pointList = Rules.IsAdjacent(from, fo.Location) ? map.FilterAdjacentInMap(to.Position, pt => map.IsWalkableFor(pt, fo) && !map.HasActorAt(in pt))
                                                         : null;
         var game = RogueGame.Game;  // if this becomes hot path we can test whether hoisting this is worth the IL size increase
-        if (null != pointList && 0 < pointList.Count && game.TryActorLeaveTile(fo)) {
+        if (pointList is not null && 0 < pointList.Count && game.TryActorLeaveTile(fo)) {
           map.PlaceAt(fo, Rules.Get.DiceRoller.Choose(pointList));
           map.MoveActorToFirstPosition(fo);
           fo.OnEnterTile();
@@ -15271,14 +15271,14 @@ retry:
           Location test = new Location(loc.Map, pt);
           if (Map.Canonical(ref test)) {
               var actor = test.Actor;
-              if (null != actor && !actor.IsDead && ok(actor)) ret.Add(actor);
+              if (actor is not null && !actor.IsDead && ok(actor)) ret.Add(actor);
           }
         }
 
         var exit = loc.Exit;
-        if (null != exit) {
+        if (exit is not null) {
           var actor = exit.Location.Actor;
-          if (null != actor && !actor.IsDead && ok(actor)) ret.Add(actor);
+          if (actor is not null && !actor.IsDead && ok(actor)) ret.Add(actor);
         }
 
         return 0<ret.Count ? ret : null;
@@ -15301,7 +15301,7 @@ retry:
 
       // defender may be just-killed
       var responders = defender.Location.ThoseNearby(Actor.MAX_VISION, sees);
-      if (null == responders) return;
+      if (responders is null) return;
 
       AI.Percept_<Actor> target = new(attacker, attacker.Location.Map.LocalTime.TurnCounter, attacker.Location);
       foreach(var actor in responders) {

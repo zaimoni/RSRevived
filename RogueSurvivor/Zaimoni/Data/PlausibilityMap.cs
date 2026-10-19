@@ -72,13 +72,13 @@ namespace Zaimoni.Data
         public void Observe(HashSet<T> Cleared, HashSet<T> Sighted)
         {
             // positively not there
-            if (null != Cleared && 0 < Cleared.Count) {
+            if (Cleared is not null && 0 < Cleared.Count) {
                 foreach (T tmp in Cleared) {
                    _map.Remove(tmp);
                 }
             }
 
-            int sighted_count = (null != Sighted ? Sighted.Count : 0);
+            int sighted_count = (Sighted is not null ? Sighted.Count : 0);
 
             if (0 >= sighted_count) {   // no threat sighted: early exit
                 Normalize();
@@ -95,7 +95,7 @@ namespace Zaimoni.Data
         public void TimeStep(HashSet<T> Observed)
         {
             Dictionary<T, int> new_map = new Dictionary<T, int>();
-            if (null != Observed && 0 < Observed.Count) {
+            if (Observed is not null && 0 < Observed.Count) {
                 foreach(T tmp in Observed) {
                     if (_map.ContainsKey(tmp)) new_map[tmp] = _map[tmp];
                 }
@@ -116,7 +116,7 @@ namespace Zaimoni.Data
 
         private void IgnoreCertain(HashSet<T> Certain)
         {
-            if (null == Certain || 0 >= Certain.Count) return;
+            if (Certain is null || 0 >= Certain.Count) return;
             _target_count -= Certain.Count;
             foreach (T tmp in Certain) {
                 _map.Remove(tmp);
@@ -125,7 +125,7 @@ namespace Zaimoni.Data
 
         private void IncludeCertain(HashSet<T> Certain)
         {
-            if (null == Certain || 0 >= Certain.Count) return;
+            if (Certain is null || 0 >= Certain.Count) return;
             _target_count += Certain.Count;
             foreach (T tmp in Certain) {
                 _map[tmp] = CERTAIN;

@@ -20,7 +20,7 @@ namespace Zaimoni.Data
 
         private static string LogPath() // callers provide lock
         {
-          if (null == s_LogCreated) {
+          if (s_LogCreated is null) {
               var path = LogFilePath();
               if (File.Exists(path)) File.Delete(path);
               Directory.CreateDirectory(LogDirectory());
@@ -47,7 +47,7 @@ namespace Zaimoni.Data
             using var streamReader = new StreamReader(LogPath());
             while(true) {
                 str = streamReader.ReadLine();
-                if (null == str) break;
+                if (str is null) break;
                 ret.Add(str);
             }
             return ret;

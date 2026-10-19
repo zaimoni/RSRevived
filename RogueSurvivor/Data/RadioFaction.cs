@@ -37,7 +37,7 @@ namespace djack.RogueSurvivor.Data
             var stage = new Dictionary<Map, List<Point>>();
             foreach (var loc in fov) {
                 var actorAt = loc.Actor;
-                if (null != actorAt && (my_faction.IsEnemyOf(actorAt.Faction) || Threats.IsThreat(actorAt))) {
+                if (actorAt is not null && (my_faction.IsEnemyOf(actorAt.Faction) || Threats.IsThreat(actorAt))) {
                     Threats.Sighted(actorAt, loc);
                     Session.FromID(FactionID)?.Sighted(actorAt);
                     continue;
@@ -77,7 +77,7 @@ namespace djack.RogueSurvivor.Data
             Investigate.Seen(fov);
             foreach (var loc in fov) {
                 var actorAt = loc.Actor;
-                if (null != actorAt && !actorAt.IsDead && (my_faction.IsEnemyOf(actorAt.Faction) || Threats.IsThreat(actorAt))) {
+                if (actorAt is not null && !actorAt.IsDead && (my_faction.IsEnemyOf(actorAt.Faction) || Threats.IsThreat(actorAt))) {
                     Threats.Sighted(actorAt, loc);
                     continue;
                 }
@@ -136,13 +136,13 @@ namespace djack.RogueSurvivor.Data
         }
 
         public bool update(Location[] fov) {
-            if (null != m_Actor.Controller.enemies_in_FOV) return false;
+            if (m_Actor.Controller.enemies_in_FOV is not null) return false;
             if (m_Actor.Location.Map.District.SewersMap == m_Actor.Location.Map) return false; // even in VTG not worth clearing zones in sewer -- flashlight burn
             if (!m_Actor.Location.IsInside) return false; // don't try to actively clear outside
             var clear_this = m_Actor.Location.ClearableZone;
-            if (null == clear_this) return false;
+            if (clear_this is null) return false;
             if (!(m_Actor.Controller is ObjectiveAI oai)) return false; // invariant violation
-            if (null != oai.LivePathing()) return false;
+            if (oai.LivePathing() is not null) return false;
             bool threat = Threats.AnyThreatAt(clear_this);
             bool tourism = Investigate.ContainsAny(clear_this);
             if (threat || tourism) {
@@ -215,7 +215,7 @@ namespace djack.RogueSurvivor.Data
         public Demise(Actor victim, Actor? kill) {
             loc = victim.Location;
             t1 = loc.Map.LocalTime.TurnCounter;
-            killer = (null == kill ? default : new(kill));
+            killer = (kill is null ? default : new(kill));
         }
     }
 
@@ -367,7 +367,7 @@ namespace djack.RogueSurvivor.Data
 
         [NonSerialized] private Func<Actor, bool>? _isMine = null;
         public Func<Actor, bool> isMine() {
-            if (null == _isMine) {
+            if (_isMine is null) {
                 _isMine = a => a.IsFaction(FactionID);
             }
             return _isMine;
@@ -379,7 +379,7 @@ namespace djack.RogueSurvivor.Data
         }
 
         public SVOevent? EncodeKill(Actor? killer, Actor victim, int t0) {
-            if (null == killer) return null;
+            if (killer is null) return null;
             if (IsMine(victim)) return new(killer, 1, new(victim), t0); // faction kill
             if (Rules.IsMurder(killer, victim)) return new(killer, 3, new(victim), t0);
             return null;
@@ -397,7 +397,7 @@ namespace djack.RogueSurvivor.Data
         }
 
         public void Record(SVOevent? e) {
-            if (null != e) m_EventLog.Add(e);
+            if (e is not null) m_EventLog.Add(e);
         }
 
         public bool IsTargeted(ActorTag perp)
@@ -641,7 +641,7 @@ namespace djack.RogueSurvivor.Data
                                 var k = row[i];
                                 if (JsonValueKind.Number == k.ValueKind) {
                                     var n = k.GetInt32();
-                                    if (null == legend || 0 > n || legend.Count <= n) throw new JsonException("item kind not in the legend: " + row.GetRawText());
+                                    if (legend is null || 0 > n || legend.Count <= n) throw new JsonException("item kind not in the legend: " + row.GetRawText());
                                     (ids ??= new()).Add(legend[n]);
                                 } else (ids ??= new()).Add(Kind(k.GetString()));
                             }

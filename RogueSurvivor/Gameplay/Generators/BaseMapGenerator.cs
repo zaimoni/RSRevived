@@ -414,13 +414,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static protected void DecorateOutsideWalls(Map map, Rectangle rect, Func<Point, string> decoFn)
     {
 #if DEBUG
-      if (null == decoFn) throw new ArgumentNullException(nameof(decoFn));
+      if (decoFn is null) throw new ArgumentNullException(nameof(decoFn));
 #endif
       foreach (var pt in rect) {
         Tile tileAt = map.GetTileAt(pt);
         if (!tileAt.Model.IsWalkable && !tileAt.IsInside) {
           string imageID = decoFn(pt);
-          if (imageID != null)
+          if (imageID is not null)
             tileAt.AddDecoration(imageID);
         }
       }
@@ -480,8 +480,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     protected void QuadSplit(Rectangle rect, short minWidth, short minHeight, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight)
     {
       // allow map generation to force specific RNG results
-      if (null != exclude_QuadSplit_width) force_QuadSplit_width = exclude_QuadSplit_width.Value.X;
-      if (null != exclude_QuadSplit_height) force_QuadSplit_height = exclude_QuadSplit_height.Value.X;
+      if (exclude_QuadSplit_width is not null) force_QuadSplit_width = exclude_QuadSplit_width.Value.X;
+      if (exclude_QuadSplit_height is not null) force_QuadSplit_height = exclude_QuadSplit_height.Value.X;
 
       if (0 < force_QuadSplit_width) {
         if (force_QuadSplit_width < rect.Width / 3 || 2 * rect.Width / 3 <= force_QuadSplit_width) force_QuadSplit_width = 0;
@@ -499,8 +499,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (width1 < minWidth) width1 = minWidth;
       if (height1 < minHeight) height1 = minHeight;
       var size2 = rect.Size;
-      size2.X -= (null != exclude_QuadSplit_width) ? exclude_QuadSplit_width.Value.Y : width1;
-      size2.Y -= (null != exclude_QuadSplit_height) ? exclude_QuadSplit_height.Value.Y : height1;
+      size2.X -= (exclude_QuadSplit_width is not null) ? exclude_QuadSplit_width.Value.Y : width1;
+      size2.Y -= (exclude_QuadSplit_height is not null) ? exclude_QuadSplit_height.Value.Y : height1;
 
       bool flag1 = true;
       bool flag2 = true;
@@ -514,8 +514,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         size2.Y = 0;
         flag1 = false;
       }
-      short splitX = (null != exclude_QuadSplit_width) ? exclude_QuadSplit_width.Value.Y : (short)(rect.Left + width1);
-      short splitY = (null != exclude_QuadSplit_height) ? exclude_QuadSplit_height.Value.Y : (short)(rect.Top + height1);
+      short splitX = (exclude_QuadSplit_width is not null) ? exclude_QuadSplit_width.Value.Y : (short)(rect.Left + width1);
+      short splitY = (exclude_QuadSplit_height is not null) ? exclude_QuadSplit_height.Value.Y : (short)(rect.Top + height1);
       topLeft = new Rectangle(rect.Left, rect.Top, width1, height1);
       topRight = (flag2 ? new Rectangle(splitX, rect.Top, size2.X, height1) : Rectangle.Empty);
       bottomLeft = (flag1 ? new Rectangle(rect.Left, splitY, width1, size2.Y) : Rectangle.Empty);

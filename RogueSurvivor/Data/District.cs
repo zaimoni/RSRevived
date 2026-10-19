@@ -48,7 +48,7 @@ namespace djack.RogueSurvivor.Data
     public Map EntryMap {
       get { return m_EntryMap!; }
       private set {
-        if (null != m_EntryMap) throw new InvalidOperationException("entry map already generated");
+        if (m_EntryMap is not null) throw new InvalidOperationException("entry map already generated");
         m_EntryMap = value;
 //      if (value == null) return;
         m_Name = value.Name;    // historical identity of district name and map name
@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Data
     public Map? SewersMap {
       get { return m_SewersMap; }
       private set {
-        if (null != m_SewersMap) throw new InvalidOperationException("sewers map already generated");
+        if (m_SewersMap is not null) throw new InvalidOperationException("sewers map already generated");
         m_SewersMap = value;
 //      if (value == null) return;
         AddMap(value);
@@ -88,7 +88,7 @@ namespace djack.RogueSurvivor.Data
     public Map? SubwayMap {
       get { return m_SubwayMap; }
       set { // used from BaseTownGenerator::GenerateSubwayMap
-        if (null != m_SubwayMap) throw new InvalidOperationException("subway map already generated");
+        if (m_SubwayMap is not null) throw new InvalidOperationException("subway map already generated");
         m_SubwayMap = value;
 //      if (value == null) return;
         AddMap(value);
@@ -226,11 +226,11 @@ namespace djack.RogueSurvivor.Data
       JsonSerializer.Serialize(writer, m_Maps.ToArray(), options);
       writer.WritePropertyName("EntryMap");
       JsonSerializer.Serialize(writer, m_EntryMap, options);
-      if (null != m_SewersMap) {
+      if (m_SewersMap is not null) {
         writer.WritePropertyName("SewersMap");
         JsonSerializer.Serialize(writer, m_SewersMap, options);
       }
-      if (null != m_SubwayMap) {
+      if (m_SubwayMap is not null) {
         writer.WritePropertyName("SubwayMap");
         JsonSerializer.Serialize(writer, m_SubwayMap, options);
       }
@@ -249,12 +249,12 @@ namespace djack.RogueSurvivor.Data
         if (!map.IsWalkable(pt)) continue;    // no problem if not-walkable point is unzoned
         if (!map.IsInsideAt(pt)) continue;    // currently we only care if inside points are zoned (could change)
         var zones = map.GetZonesAt(pt);
-        if (null == zones) throw new InvalidOperationException(map.Name+": unzoned "+pt.to_s());
+        if (zones is null) throw new InvalidOperationException(map.Name+": unzoned "+pt.to_s());
       }
       // we're bringing up containers
       map.DoForAllGroundInventories((loc,inv) => {
           var obj = loc.MapObject as ShelfLike;
-          if (null != obj) throw new InvalidOperationException("failed to convert to proper container use at game start");
+          if (obj is not null) throw new InvalidOperationException("failed to convert to proper container use at game start");
       });
 #endif
     }
@@ -284,7 +284,7 @@ namespace djack.RogueSurvivor.Data
 
     public static Map decode(MapCode src) {
       var d = World.Get.At(src.Key);
-      if (null == d) throw new ArgumentNullException(nameof(d));
+      if (d is null) throw new ArgumentNullException(nameof(d));
       if (0 > src.Value || d.m_Maps.Count <= src.Value) throw new ArgumentOutOfRangeException("src.Value", src.Value.ToString());
       return d.m_Maps[src.Value];
     }
@@ -400,7 +400,7 @@ namespace djack.RogueSurvivor.Data
        foreach(Map tmp in m_Maps) {
          if (tmp == already_failed) continue;
          var tmp2 = tmp.FindPlayer;
-         if (null != tmp2) return tmp2;
+         if (tmp2 is not null) return tmp2;
        }
        return null;
     }
@@ -408,7 +408,7 @@ namespace djack.RogueSurvivor.Data
     public Actor? From(in ActorTag src) {
         foreach(Map m in m_Maps) {
             var actor = m.From(in src);
-            if (null != actor) return actor;
+            if (actor is not null) return actor;
         }
         return null;
     }
@@ -416,7 +416,7 @@ namespace djack.RogueSurvivor.Data
     public Corpse? CorpseFrom(in ActorTag src) {
         foreach(Map m in m_Maps) {
             var c = m.CorpseFrom(in src);
-            if (null != c) return c;
+            if (c is not null) return c;
         }
         return null;
     }
@@ -452,7 +452,7 @@ namespace djack.RogueSurvivor.Data
     {
       get {
         foreach(Map tmp in m_Maps) {
-          if (!tmp.IsSecret && null != tmp.NextActorToAct) return false;
+          if (!tmp.IsSecret && tmp.NextActorToAct is not null) return false;
         }
         return true;
       }
@@ -486,7 +486,7 @@ namespace djack.RogueSurvivor.Data
       static void GenerateExit(Map fromMap, Point from, Map toMap, Point to) => fromMap.SetExitAt(from, new Exit(toMap, in to));
 
       static void link_N(Map origin, Map? dest) {
-          if (null != dest) {
+          if (dest is not null) {
 #if DEBUG
             if (dest.Width != origin.Width) throw new InvalidOperationException("mismatched district width");
 #endif
@@ -502,7 +502,7 @@ namespace djack.RogueSurvivor.Data
       };
 
       static void link_W(Map origin, Map? dest) {
-          if (null != dest) {
+          if (dest is not null) {
 #if DEBUG
             if (dest.Height != origin.Height) throw new InvalidOperationException("mismatched district height");
 #endif
@@ -518,7 +518,7 @@ namespace djack.RogueSurvivor.Data
       };
 
       static void link_NW(Map origin, Map? dest) {
-          if (null != dest) {
+          if (dest is not null) {
               Point from1 = new Point(-1, -1);
               Point from2 = new Point(dest.Width, dest.Height);
               Point to1 = from2 + Direction.NW;
@@ -529,7 +529,7 @@ namespace djack.RogueSurvivor.Data
       };
 
       static void link_NE(Map origin, Map? dest) {
-          if (null != dest) {
+          if (dest is not null) {
               Point to_origin = origin.Rect.Anchor(Compass.XCOMlike.NE);
               Point to_dest = dest.Rect.Anchor(Compass.XCOMlike.SW);
               Point from_dest = dest.Rect.Anchor(Compass.XCOMlike.SW) + Direction.SW;
@@ -550,7 +550,7 @@ namespace djack.RogueSurvivor.Data
       link_NE(entryMap1, world.At(dest + Direction.NE)?.EntryMap);
 
       var sewersMap1 = d.SewersMap;
-      if (null != sewersMap1) {
+      if (sewersMap1 is not null) {
         link_N(sewersMap1, world.At(dest + Direction.N)?.SewersMap);
         link_W(sewersMap1, world.At(dest + Direction.W)?.SewersMap);
         link_NW(sewersMap1, world.At(dest + Direction.NW)?.SewersMap);
@@ -560,7 +560,7 @@ namespace djack.RogueSurvivor.Data
       // Subway has a different geometry than the other two canonical maps.
       // The diagonal corridors can have only of of two exits valid.
       var subwayMap1 = d.SubwayMap;
-      if (null != subwayMap1) {
+      if (subwayMap1 is not null) {
         link_N(subwayMap1, world.At(dest + Direction.N)?.SubwayMap);
         link_W(subwayMap1, world.At(dest + Direction.W)?.SubwayMap);
       }
@@ -584,7 +584,7 @@ namespace djack.RogueSurvivor.Data
     public void GenerateEntryMap(World world, int districtSize, Gameplay.Generators.BaseTownGenerator m_TownGenerator)
     {
 #if DEBUG
-      if (null != m_EntryMap) throw new InvalidOperationException("entry map already generated");
+      if (m_EntryMap is not null) throw new InvalidOperationException("entry map already generated");
 #endif
       int x = WorldPosition.X;
       int y = WorldPosition.Y;
@@ -621,8 +621,8 @@ namespace djack.RogueSurvivor.Data
     public void GenerateSewersMap(Gameplay.Generators.BaseTownGenerator m_TownGenerator)
     {
 #if DEBUG
-      if (null == m_EntryMap) throw new InvalidOperationException("entry map not generated yet");
-      if (null != m_SewersMap) throw new InvalidOperationException("sewers map already generated");
+      if (m_EntryMap is null) throw new InvalidOperationException("entry map not generated yet");
+      if (m_SewersMap is not null) throw new InvalidOperationException("sewers map already generated");
 #endif
       Map map = m_TownGenerator.GenerateSewersMap(EntryMap.Seed << 1 ^ EntryMap.Seed, this);
       SewersMap = map;

@@ -82,12 +82,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // dogs target their leader's enemy before the usual check for enemies
       var leader = m_Actor.LiveLeader;
-      if (null != leader) {
+      if (leader is not null) {
         var targetActor = leader.TargetActor;
-        if (targetActor != null && targetActor.Location.Map == m_Actor.Location.Map) {
+        if (targetActor is not null && targetActor.Location.Map == m_Actor.Location.Map) {
           m_Actor.Say(targetActor, "GRRRRRR WAF WAF", Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
           tmpAction = BehaviorStupidBumpToward(targetActor.Location, true, false);
-          if (null != tmpAction) {
+          if (tmpAction is not null) {
             RunToIfCloseTo(targetActor.Location, RUN_TO_TARGET_DISTANCE);
             m_Actor.TargetedActivity(Activity.FIGHTING, targetActor);
             return tmpAction;
@@ -96,17 +96,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // dogs cannot order their followers to stay behind
-      if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {
+      if ((_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors())))) is not null) {
         tmpAction = BehaviorFightOrFlee(FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP);
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           // run to (or away if fleeing) if close.
-          if (m_Actor.TargetActor != null) RunToIfCloseTo(m_Actor.TargetActor.Location, RUN_TO_TARGET_DISTANCE);
+          if (m_Actor.TargetActor is not null) RunToIfCloseTo(m_Actor.TargetActor.Location, RUN_TO_TARGET_DISTANCE);
           return tmpAction;
         }
       }
       if (m_Actor.IsAlmostHungry) {
         tmpAction = BehaviorGoEatFoodOnGround(_all?.FilterT<Inventory>());
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           m_Actor.Run();
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
@@ -114,16 +114,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (m_Actor.IsHungry) {
         tmpAction = BehaviorGoEatCorpse(_all);
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           m_Actor.Run();
           return tmpAction;
         }
       }
       if (m_Actor.IsTired) return new ActionWait(m_Actor);
       if (m_Actor.IsSleepy) return new ActionSleep(m_Actor);
-      if (null != leader) {
+      if (leader is not null) {
         tmpAction = BehaviorFollowActor(leader, 1);
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           m_Actor.Walk();
           m_Actor.TargetedActivity(Activity.FOLLOWING, m_Actor.Leader);
           return tmpAction;

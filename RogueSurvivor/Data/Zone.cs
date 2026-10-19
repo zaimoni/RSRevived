@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Data
     {
 #if DEBUG
       if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-      if (null == value) throw new ArgumentNullException(nameof(key));
+      if (value is null) throw new ArgumentNullException(nameof(key));
 #endif
       (m_Attributes ??= new Dictionary<string, object>(1))[key] = value;
     }
@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Data
       if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 #endif
       var attr = m_Attributes;
-      if (null == attr) return default;
+      if (attr is null) return default;
       if (!attr.TryGetValue(key, out var obj)) return default;
       if (obj is _T_ x) return x;
       throw new InvalidOperationException("game attribute is not of requested type");
@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Data
     public void Unset(string key)
     {
       var attr = m_Attributes;
-      if (null != attr) {
+      if (attr is not null) {
         attr.Remove(key);
         if (0 >= attr.Count) m_Attributes = null;
       }
@@ -102,16 +102,16 @@ namespace djack.RogueSurvivor.Data
     }
 
     // z is a cache: a ZoneLoc is its map and rectangle (the record's own equality would compare the cache too)
-    public bool Equals(ZoneLoc? other) => null != other && m == other.m && Rect == other.Rect;
+    public bool Equals(ZoneLoc? other) => other is not null && m == other.m && Rect == other.Rect;
     public override int GetHashCode() => HashCode.Combine(m, Rect);
 
     public Location[]? Exits { get {
         var z0 = Zone;
-        if (null == z0) return null;
+        if (z0 is null) return null;
 
         lock(z0) {
           var ret = z0.VolatileAttribute.Get<Location[]>("exits");
-          if (null != ret) return ret;
+          if (ret is not null) return ret;
           InstallExits();
           return z0.VolatileAttribute.Get<Location[]>("exits");
         }
@@ -119,13 +119,13 @@ namespace djack.RogueSurvivor.Data
 
     private ZoneLoc[]? Exit_zones { get {
         var z0 = Zone;
-        if (null == z0) return null;
+        if (z0 is null) return null;
 
         ZoneLoc[]? ret;
 
         lock(z0) {
           ret = z0.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
-          if (null != ret) return ret;
+          if (ret is not null) return ret;
           ret = InstallExits();
         }
         foreach(var zone in ret) {
@@ -136,7 +136,7 @@ namespace djack.RogueSurvivor.Data
 
     public KeyValuePair<Location[]?, ZoneLoc[]?> ExitData { get {
         var e_zones = Exit_zones; // need this to run first
-        if (null == e_zones) return default;
+        if (e_zones is null) return default;
         return new KeyValuePair<Location[]?, ZoneLoc[]?>(z!.VolatileAttribute.Get<Location[]>("exits"), e_zones);
     } }
 
@@ -147,19 +147,19 @@ namespace djack.RogueSurvivor.Data
         // host -> this
         // this -> z := Zone
         var z0 = Zone;
-        if (null == z0) return null;
+        if (z0 is null) return null;
 
         // may not be needed? multi-threading mitigation
         lock (z0) {
         var ret = z0.VolatileAttribute.Get<ZoneLoc[]>("exit_zones");
-        if (null != ret) return ret;
+        if (ret is not null) return ret;
 
         var prior_exits = z0.VolatileAttribute.Get<Location[]>("exits");
-        if (null == prior_exits) {
+        if (prior_exits is null) {
           var locs = new HashSet<Location>();
           var walking = WalkOut();
-          if (null != walking) locs.UnionWith(walking.Select(act => act.dest));
-          locs.UnionWith(this.Where(loc => null != loc.Exit).Select(loc => loc.Exit!.Location));
+          if (walking is not null) locs.UnionWith(walking.Select(act => act.dest));
+          locs.UnionWith(this.Where(loc => loc.Exit is not null).Select(loc => loc.Exit!.Location));
 #if DEBUG
           if (0 >= locs.Count) throw new InvalidOperationException("zone w/o exits");
 #endif
@@ -170,7 +170,7 @@ namespace djack.RogueSurvivor.Data
         Dictionary<Map,HashSet<Zone>> zones = new(); // using default pointer-equality, so duplicate coordinates aren't deduplicated
         foreach(var loc in prior_exits) {
           var dest_zones = loc.Map.GetZonesAt(loc.Position);
-          if (null != dest_zones) {
+          if (dest_zones is not null) {
             if (!zones.TryGetValue(loc.Map, out var cache)) zones.Add(loc.Map,(cache = new()));
             cache.UnionWith(dest_zones);
           }
@@ -245,7 +245,7 @@ namespace djack.RogueSurvivor.Data
     public string MapName { get {
       var center = Rect.Location + Rect.Size/2;
       var view = GetActorAt(center);
-      if (null != view && view.IsPlayer) return "navigation: "+view.Name; // anticipated use case is DaimonMap
+      if (view is not null && view.IsPlayer) return "navigation: "+view.Name; // anticipated use case is DaimonMap
       return m.Name;
     } }
     public bool HasExitAt(in Point pt) { return m.HasExitAtExt(pt); }
@@ -257,14 +257,14 @@ namespace djack.RogueSurvivor.Data
     // for now, bluff these two -- relies on canonicalization
     public int TurnOrderFor(Actor a) {
       var zones = GetCanonical;
-      if (null == zones) return m.TurnOrderFor(a);
+      if (zones is null) return m.TurnOrderFor(a);
       return -1;
     }
     public Dictionary<Point, List<Corpse>>? FilterCorpses(Predicate<Corpse> ok) {
       var zones = GetCanonical;
-      if (null != zones) return null; // temporary
+      if (zones is not null) return null; // temporary
       var home_catalog = m.FilterCorpses(ok);
-      if (null != home_catalog) {
+      if (home_catalog is not null) {
         home_catalog.OnlyIf(pt => Contains(new Location(m, pt)));
         if (0 >= home_catalog.Count) return null;
       }
@@ -277,7 +277,7 @@ namespace djack.RogueSurvivor.Data
     public bool ContainsExt(in Location loc) {
       if (m == loc.Map) return Rect.Contains(loc.Position);
       var test = m.Denormalize(in loc);
-      return null!=test && Rect.Contains(test.Value.Position);
+      return test is not null && Rect.Contains(test.Value.Position);
     }
 
     public Location Center { get { return new Location(m, Rect.Location + Rect.Size / 2); } }
@@ -316,7 +316,7 @@ namespace djack.RogueSurvivor.Data
             if (overflow[(int)XCOMlike.W / 2]) {
                 width_cuts[0] = (short)(m.Width + Rect.Left);
                 width_cuts[1] = 0;
-                if (null == maps[(int)XCOMlike.W] && null == maps[(int)XCOMlike.NW] && null == maps[(int)XCOMlike.SW]) {
+                if (maps[(int)XCOMlike.W] is null && maps[(int)XCOMlike.NW] is null && maps[(int)XCOMlike.SW] is null) {
                     overflow[(int)XCOMlike.W / 2] = false;
                     overflow_ew -= 8;
                 }
@@ -325,7 +325,7 @@ namespace djack.RogueSurvivor.Data
             if (overflow[(int)XCOMlike.E / 2]) {
                 width_cuts[2] = Rect.Right;
                 width_cuts[3] = (short)(Rect.Right - m.Width);
-                if (null == maps[(int)XCOMlike.E] && null == maps[(int)XCOMlike.NE] && null == maps[(int)XCOMlike.SE]) {
+                if (maps[(int)XCOMlike.E] is null && maps[(int)XCOMlike.NE] is null && maps[(int)XCOMlike.SE] is null) {
                     overflow[(int)XCOMlike.E / 2] = false;
                     overflow_ew -= 2;
                 }
@@ -336,7 +336,7 @@ namespace djack.RogueSurvivor.Data
             if (overflow[(int)XCOMlike.N / 2]) {
                 height_cuts[0] = (short)(m.Height + Rect.Top);
                 height_cuts[1] = 0;
-                if (null == maps[(int)XCOMlike.N] && null == maps[(int)XCOMlike.NW] && null == maps[(int)XCOMlike.NE]) {
+                if (maps[(int)XCOMlike.N] is null && maps[(int)XCOMlike.NW] is null && maps[(int)XCOMlike.NE] is null) {
                     overflow[(int)XCOMlike.N / 2] = false;
                     overflow_ew -= 1;
                 }
@@ -345,7 +345,7 @@ namespace djack.RogueSurvivor.Data
             if (overflow[(int)XCOMlike.S / 2]) {
                 height_cuts[2] = Rect.Bottom;
                 height_cuts[3] = (short)(Rect.Bottom - m.Height);
-                if (null == maps[(int)XCOMlike.S] && null == maps[(int)XCOMlike.SW] && null == maps[(int)XCOMlike.SE]) {
+                if (maps[(int)XCOMlike.S] is null && maps[(int)XCOMlike.SW] is null && maps[(int)XCOMlike.SE] is null) {
                     overflow[(int)XCOMlike.S / 2] = false;
                     overflow_ew -= 4;
                 }
@@ -358,52 +358,52 @@ namespace djack.RogueSurvivor.Data
             // we'd like this within a countdown loop
             ZoneLoc? zone = null;
             List<ZoneLoc>? canon = null;
-            if (null != maps[(int)XCOMlike.N] && overflow[(int)XCOMlike.N / 2]) {
+            if (maps[(int)XCOMlike.N] is not null && overflow[(int)XCOMlike.N / 2]) {
                 zone = new ZoneLoc(maps[(int)XCOMlike.N], ext_Vector.FromLTRB_short(width_cuts[1], height_cuts[0], width_cuts[2], m.Height));
                 canon = zone.GetCanonical;
-                if (null == canon) ret.Add(zone);
+                if (canon is null) ret.Add(zone);
                 else ret.AddRange(canon);
             }
-            if (null != maps[(int)XCOMlike.NE] && overflow[(int)XCOMlike.N / 2] && overflow[(int)XCOMlike.E / 2]) {
+            if (maps[(int)XCOMlike.NE] is not null && overflow[(int)XCOMlike.N / 2] && overflow[(int)XCOMlike.E / 2]) {
                 zone = new ZoneLoc(maps[(int)XCOMlike.NE], ext_Vector.FromLTRB_short(0, height_cuts[0], width_cuts[3], m.Height));
                 canon = zone.GetCanonical;
-                if (null == canon) ret.Add(zone);
+                if (canon is null) ret.Add(zone);
                 else ret.AddRange(canon);
             }
-            if (null != maps[(int)XCOMlike.E] && overflow[(int)XCOMlike.E / 2]) {
+            if (maps[(int)XCOMlike.E] is not null && overflow[(int)XCOMlike.E / 2]) {
                 zone = new ZoneLoc(maps[(int)XCOMlike.E], ext_Vector.FromLTRB_short(0, height_cuts[1], width_cuts[3], height_cuts[2]));
                 canon = zone.GetCanonical;
-                if (null == canon) ret.Add(zone);
+                if (canon is null) ret.Add(zone);
                 else ret.AddRange(canon);
             }
-            if (null != maps[(int)XCOMlike.SE] && overflow[(int)XCOMlike.S / 2] && overflow[(int)XCOMlike.E / 2]) {
+            if (maps[(int)XCOMlike.SE] is not null && overflow[(int)XCOMlike.S / 2] && overflow[(int)XCOMlike.E / 2]) {
                 zone = new ZoneLoc(maps[(int)XCOMlike.SE], ext_Vector.FromLTRB_short(0, 0, width_cuts[3], height_cuts[3]));
                 canon = zone.GetCanonical;
-                if (null == canon) ret.Add(zone);
+                if (canon is null) ret.Add(zone);
                 else ret.AddRange(canon);
             }
-            if (null != maps[(int)XCOMlike.S] && overflow[(int)XCOMlike.S / 2]) {
+            if (maps[(int)XCOMlike.S] is not null && overflow[(int)XCOMlike.S / 2]) {
                 zone = new ZoneLoc(maps[(int)XCOMlike.S], ext_Vector.FromLTRB_short(width_cuts[1], 0, width_cuts[2], height_cuts[3]));
                 canon = zone.GetCanonical;
-                if (null == canon) ret.Add(zone);
+                if (canon is null) ret.Add(zone);
                 else ret.AddRange(canon);
             }
-            if (null != maps[(int)XCOMlike.SW] && overflow[(int)XCOMlike.S / 2] && overflow[(int)XCOMlike.W / 2]) {
+            if (maps[(int)XCOMlike.SW] is not null && overflow[(int)XCOMlike.S / 2] && overflow[(int)XCOMlike.W / 2]) {
                 zone = new ZoneLoc(maps[(int)XCOMlike.SW], ext_Vector.FromLTRB_short(width_cuts[0], 0, m.Width, height_cuts[3]));
                 canon = zone.GetCanonical;
-                if (null == canon) ret.Add(zone);
+                if (canon is null) ret.Add(zone);
                 else ret.AddRange(canon);
             }
-            if (null != maps[(int)XCOMlike.W] && overflow[(int)XCOMlike.W / 2]) {
+            if (maps[(int)XCOMlike.W] is not null && overflow[(int)XCOMlike.W / 2]) {
                 zone = new ZoneLoc(maps[(int)XCOMlike.W], ext_Vector.FromLTRB_short(width_cuts[0], height_cuts[1], m.Width, height_cuts[2]));
                 canon = zone.GetCanonical;
-                if (null == canon) ret.Add(zone);
+                if (canon is null) ret.Add(zone);
                 else ret.AddRange(canon);
             }
-            if (null != maps[(int)XCOMlike.NW] && overflow[(int)XCOMlike.N / 2] && overflow[(int)XCOMlike.W / 2]) {
+            if (maps[(int)XCOMlike.NW] is not null && overflow[(int)XCOMlike.N / 2] && overflow[(int)XCOMlike.W / 2]) {
                 zone = new ZoneLoc(maps[(int)XCOMlike.NW], ext_Vector.FromLTRB_short(width_cuts[0], height_cuts[0], m.Width, m.Height));
                 canon = zone.GetCanonical;
-                if (null == canon) ret.Add(zone);
+                if (canon is null) ret.Add(zone);
                 else ret.AddRange(canon);
             }
             return ret;
@@ -425,7 +425,7 @@ namespace djack.RogueSurvivor.Data
         var staging = new List<ZoneLoc>(Array.Exists(data.Value, zone => !zone.IsClearable) ? Array.FindAll(data.Value, zone => zone.IsClearable) : data.Value);
         foreach (var loc in data.Key) {
             var test = loc.ClearableZones;
-            if (null != test) foreach (var z2 in test) if (this != z2 && !staging.Contains(z2)) staging.Add(z2);
+            if (test is not null) foreach (var z2 in test) if (this != z2 && !staging.Contains(z2)) staging.Add(z2);
         }
         return staging.ToArray();
     } }
@@ -434,7 +434,7 @@ namespace djack.RogueSurvivor.Data
       var ret = new List<UpdateMoveDelta>();
       Rect.DoForEachOnEdge(pt => {
           var test = UpdateMoveDelta.fromOrigin(new Location(m, pt), loc => !Contains(loc));
-          if (null != test) ret.AddRange(test);
+          if (test is not null) ret.AddRange(test);
       });
       return 0<ret.Count ? ret : null;
     }
@@ -490,7 +490,7 @@ namespace djack.RogueSurvivor.Data
     public bool ContainsExt(in Location loc) {
       if (m == loc.Map) return pts.Contains(loc.Position);
       var test = m.Denormalize(in loc);
-      return null!=test && pts.Contains(test.Value.Position);
+      return test is not null && pts.Contains(test.Value.Position);
     }
 
     public void DoForEach(Action<Location> doFn) {

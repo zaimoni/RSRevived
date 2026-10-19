@@ -114,9 +114,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.Walk();    // alpha 10: don't run by default
 
       // OrderableAI specific: respond to orders
-      if (null != Order) {
+      if (Order is not null) {
         var actorAction = ExecuteOrder(Order, _all);
-        if (null != actorAction) {
+        if (actorAction is not null) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
         }
@@ -130,7 +130,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var old_enemies = FilterEnemies(_all);
       _enemies = SortByGridDistance(FilterCurrent(old_enemies));
-      if (null == _enemies) AdviseFriendsOfSafety();
+      if (_enemies is null) AdviseFriendsOfSafety();
 
       // New objectives systems
       if (0<Objectives.Count) {
@@ -140,7 +140,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
           if (o.IsExpired) Remove(o);
           else if (o.UrgentAction(out var goal_action)) {
-            if (null==goal_action) Remove(o);
+            if (goal_action is null) Remove(o);
 #if DEBUG
             else if (!goal_action.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("result of UrgentAction should be legal"));
 #else
@@ -165,60 +165,60 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
       const bool tracing = false; // debugging hook
-      if (tracing && !RogueGame.IsSimulating && null != _enemies) {
+      if (tracing && !RogueGame.IsSimulating && _enemies is not null) {
         RogueGame.Game.PanViewportTo(m_Actor);
         RogueGame.Game.InfoPopup(m_Actor.Name + "\n" + _enemies[0].Percepted.Name);
       }
 
       tmpAction = CombinatoricCombat();
-      if (tracing && null != tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "CombinatoricCombat: " + tmpAction.ToString());
-      if (null != tmpAction) return tmpAction;
+      if (tracing && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "CombinatoricCombat: " + tmpAction.ToString());
+      if (tmpAction is not null) return tmpAction;
 
       var available_ranged_weapons = m_Actor.GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(available_ranged_weapons);
 #if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk: "+tmpAction);
+      if (m_Actor.IsDebuggingTarget && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk: "+tmpAction);
 #endif
-      if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("managing melee risk: "+tmpAction.ToString());
-      if (null != tmpAction) return tmpAction;
+      if (tracing && !RogueGame.IsSimulating && tmpAction is not null) RogueGame.Game.InfoPopup("managing melee risk: "+tmpAction.ToString());
+      if (tmpAction is not null) return tmpAction;
 
       tmpAction = BehaviorEquipWeapon(available_ranged_weapons);
-      if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("equip weapon: "+tmpAction.ToString());
-      if (null != tmpAction) return tmpAction;
+      if (tracing && !RogueGame.IsSimulating && tmpAction is not null) RogueGame.Game.InfoPopup("equip weapon: "+tmpAction.ToString());
+      if (tmpAction is not null) return tmpAction;
 
       var friends = FilterNonEnemies(_all);
-      if (null != _enemies) {
-        if (null != friends) {
+      if (_enemies is not null) {
+        if (friends is not null) {
           var nearest_enemy = FilterNearest(_enemies);
-          if (null != nearest_enemy && Rules.Get.RollChance(50)) { // null check due to InferActor goal
+          if (nearest_enemy is not null && Rules.Get.RollChance(50)) { // null check due to InferActor goal
             tmpAction = BehaviorWarnFriends(friends, nearest_enemy.Percepted);
 #if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
+            if (m_Actor.IsDebuggingTarget && tmpAction is not null) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
 #endif
-            if (null != tmpAction) return tmpAction;
+            if (tmpAction is not null) return tmpAction;
           }
         }
         tmpAction = BehaviorFightOrFlee(ActorCourage.COURAGEOUS, FIGHT_EMOTES, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.BREAK | RouteFinder.SpecialActions.PUSH);
-        if (tracing && !RogueGame.IsSimulating && null != tmpAction) RogueGame.Game.InfoPopup("fight-or-flee: "+tmpAction.ToString());
-        if (null != tmpAction) return tmpAction;
+        if (tracing && !RogueGame.IsSimulating && tmpAction is not null) RogueGame.Game.InfoPopup("fight-or-flee: "+tmpAction.ToString());
+        if (tmpAction is not null) return tmpAction;
       }
       // at this point, even if enemies are in sight we have no useful direct combat action
 
       tmpAction = NonCombatReflexMoves();
-      if (null != tmpAction) return tmpAction;
+      if (tmpAction is not null) return tmpAction;
 
-      if (null != old_enemies && !m_Actor.IsTired) {    // difference between gang and CHAR/soldier is ok here
+      if (old_enemies is not null && !m_Actor.IsTired) {    // difference between gang and CHAR/soldier is ok here
         tmpAction = BehaviorChargeEnemy(FilterNearest(old_enemies), false, false);
-        if (null != tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
       }
 
-      if (null == old_enemies && m_Actor.WantToSleepNow) {
+      if (old_enemies is null && m_Actor.WantToSleepNow) {
         tmpAction = BehaviorNavigateToSleep();
-        if (null != tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
       }
 
-      if (null == _enemies) {
+      if (_enemies is null) {
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
         var mayStealFrom = FilterCurrent(_all).FilterT<Actor>(a =>
         {
@@ -227,7 +227,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           game.DoEmote(a, string.Format("moves unnoticed by {0}.", m_Actor.Name));
           return false;
         });
-        if (null!= mayStealFrom) {
+        if (mayStealFrom is not null) {
           // alpha10 make sure to consider only reachable victims
           // gangs can break & push stuff
           FilterOutUnreachable(ref mayStealFrom, RouteFinder.SpecialActions.ADJ_TO_DEST_IS_GOAL | RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.BREAK | RouteFinder.SpecialActions.PUSH);
@@ -243,18 +243,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       tmpAction = BehaviorAttackBarricade();    // gang-specific
-      if (null != tmpAction) return tmpAction;
+      if (tmpAction is not null) return tmpAction;
 
       var leader = m_Actor.LiveLeader;
-      if (null != leader && !DontFollowLeader) {
+      if (leader is not null && !DontFollowLeader) {
         tmpAction = BehaviorFollowActor(leader, 1);
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           m_Actor.TargetedActivity(Activity.FOLLOWING, leader);
           return tmpAction;
         }
       } else {
         tmpAction = RecruitLOS();
-        if (null != tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
       }
 
       // critical item memory check goes here
@@ -272,7 +272,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // tourism would go here
 
       tmpAction = BehaviorExplore(m_Exploration);
-      if (null != tmpAction) {
+      if (tmpAction is not null) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }

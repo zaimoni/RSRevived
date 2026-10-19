@@ -254,16 +254,16 @@ namespace djack.RogueSurvivor.Data
       }
       private set {
         int playerDelta = 0;
-        if (null != m_Controller) {
+        if (m_Controller is not null) {
           if (m_Controller is PlayerController) playerDelta -= 1;
 
           m_Controller.LeaveControl();
         }
         m_Controller = value;
-        if (null != m_Controller) {
+        if (m_Controller is not null) {
           m_Controller.TakeControl();
           if (m_Controller is PlayerController) playerDelta += 1;
-          if (null != m_Subconscious && m_Controller.GetType() == m_Subconscious.GetType()) m_Subconscious = null;
+          if (m_Subconscious is not null && m_Controller.GetType() == m_Subconscious.GetType()) m_Subconscious = null;
         }
         if (0 != playerDelta) m_Location.Map?.Players.Recalc();
       }
@@ -391,7 +391,7 @@ namespace djack.RogueSurvivor.Data
 
     // Leadership
     public Actor? Leader { get => m_Leader; }
-    public Actor? LiveLeader { get => (null != m_Leader && !m_Leader.IsDead) ? m_Leader : null; }
+    public Actor? LiveLeader { get => (m_Leader is not null && !m_Leader.IsDead) ? m_Leader : null; }
     public bool HasLeader { get => !(m_Leader?.IsDead ?? true); }
     // null != LiveLeader is equivalent to HasLeader
 
@@ -423,13 +423,13 @@ namespace djack.RogueSurvivor.Data
     public IEnumerable<Actor>? Followers { get { return m_Followers; } }
 
     public Actor? FirstFollower(Predicate<Actor> test) {
-      if (null != m_Followers) foreach(var fo in m_Followers) if (test(fo)) return fo;
+      if (m_Followers is not null) foreach(var fo in m_Followers) if (test(fo)) return fo;
       return null;
     }
 
     public void DoForAllFollowers(Action<Actor> op)
     {
-      if (null != m_Followers) foreach(var fo in m_Followers) op(fo);
+      if (m_Followers is not null) foreach(var fo in m_Followers) op(fo);
     }
 
     public int CountFollowers { get { return m_Followers?.Count ?? 0; } }
@@ -442,7 +442,7 @@ namespace djack.RogueSurvivor.Data
 
     public List<KeyValuePair<int, Actor>>? DistantFollowers(int max_dist, int want_nearby)
     {
-        if (null == m_Followers) return null;
+        if (m_Followers is null) return null;
         if (0 >= want_nearby) return null;
 
         List<KeyValuePair<int, Actor>> ret = new();
@@ -479,7 +479,7 @@ namespace djack.RogueSurvivor.Data
     public string ReasonCannotLead(Actor target)
     {
 #if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
+      if (target is null) throw new ArgumentNullException(nameof(target));
 #endif
       if (IsEnemyOf(target)) return "enemy";
       if (Faction != target.Faction && target.Faction.LeadOnlyBySameFaction) return string.Format("{0} can't lead {1}", Faction.Name, target.Faction.Name);
@@ -491,7 +491,7 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCantTakeLeadOf(Actor target)
     {
 #if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
+      if (target is null) throw new ArgumentNullException(nameof(target));
 #endif
       var ret = target.ReasonCannotBeLed();
       if (!string.IsNullOrEmpty(ret)) return ret;
@@ -532,7 +532,7 @@ namespace djack.RogueSurvivor.Data
     private string ReasonIllegalToLead(Actor target)
     {
 #if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
+      if (target is null) throw new ArgumentNullException(nameof(target));
 #endif
       var ret = target.ReasonIllegalToBeLed();
       if (!string.IsNullOrEmpty(ret)) return ret;
@@ -615,7 +615,7 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCantSwitchPlaceWith(Actor target)
     {
 #if DEBUG
-      if (null == target) throw new ArgumentNullException(nameof(target));
+      if (target is null) throw new ArgumentNullException(nameof(target));
 #endif
       if (target.Leader != this) return "not your follower";
       if (target.IsSleeping) return "sleeping";
@@ -648,8 +648,8 @@ namespace djack.RogueSurvivor.Data
       get {
         // Even if this were not an apocalypse, law enforcement should get some slack in interpreting intent, etc.
         int ret = 0;
-        if (null != m_AggressorOf) {
-          if (IsHungry && !Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => null != a?.m_Inventory?.GetItemsByType<ItemFood>());
+        if (m_AggressorOf is not null) {
+          if (IsHungry && !Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => a?.m_Inventory?.GetItemsByType<ItemFood>() is not null);
           if (!Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => a.Model.Abilities.IsLawEnforcer);
         }
         return ret;
@@ -664,7 +664,7 @@ namespace djack.RogueSurvivor.Data
 
       // retain general-purpose code within the cases
       var armor = GetEquippedArmor();
-      if (null != armor && !armor.IsNeutral) {
+      if (armor is not null && !armor.IsNeutral) {
         int bonus() {
           switch(observer.Faction.ID) {
             case GameFactions.IDs.ThePolice:
@@ -711,7 +711,7 @@ namespace djack.RogueSurvivor.Data
     public string? AIwillNotMurder { get {
             if (Model.Abilities.IsLawEnforcer) return "police do not murder";
             var leader = LiveLeader;
-            if (null != leader && leader.Model.Abilities.IsLawEnforcer) return "deputies do not murder";
+            if (leader is not null && leader.Model.Abilities.IsLawEnforcer) return "deputies do not murder";
             if (Faction.ID.ExtortionIsAggression()) return "authorities do not murder";
             return null;
         }
@@ -741,7 +741,7 @@ namespace djack.RogueSurvivor.Data
     public void StopDraggingCorpse()
     {
       var dead_name = m_DraggedCorpse?.DeadGuy.Name;
-      if (null != dead_name) {
+      if (dead_name is not null) {
         m_DraggedCorpse = null;
         this.PlayersInLOS()?.RedrawPlayScreen(RogueGame.MakePanopticMessage(this, string.Format("{0} dragging {1} corpse.", RogueGame.VERB_STOP.Conjugate(this), dead_name)));
       }
@@ -767,7 +767,7 @@ namespace djack.RogueSurvivor.Data
 /*      if (Controller is Gameplay.AI.CivilianAI && Location.Map == Location.Map.District.EntryMap && new Rectangle(new Point(0,0),new Point(3,3)).Contains(Location.Map.District.WorldPosition)) return true;
         var denorm = RogueGame.Player.Location.Map.Denormalize(Location);
         if (   Controller is Gameplay.AI.CivilianAI
-            && null != denorm
+            && denorm is not null
             && RogueGame.Player.Location.LocalView.Contains(denorm.Value.Position)) return true;
 */
 #endif
@@ -796,7 +796,7 @@ namespace djack.RogueSurvivor.Data
     public void CommandLinePlayer() // would prefer private
     {
       // command-line option override
-      if (null == _force_PC_names) {
+      if (_force_PC_names is null) {
         if (Engine.Session.CommandLineOptions.ContainsKey("PC")) {
           _force_PC_names = Engine.Session.CommandLineOptions["PC"].Split('\0');
         } else {
@@ -854,13 +854,13 @@ namespace djack.RogueSurvivor.Data
       _has_to_eat = Model.Abilities.HasToEat;
       var w = GetEquippedWeapon();
       var rw = w as ItemRangedWeapon;
-      m_CurrentRangedAttack = (null != rw) ? rw.Model.Attack : Attack.BLANK;
+      m_CurrentRangedAttack = (rw is not null) ? rw.Model.Attack : Attack.BLANK;
       var melee = w as ItemMeleeWeapon;
-      m_CurrentMeleeAttack = (null != melee) ? melee.Model.BaseMeleeAttack(Model) : Model.UnarmedAttack;
+      m_CurrentMeleeAttack = (melee is not null) ? melee.Model.BaseMeleeAttack(Model) : Model.UnarmedAttack;
 
       m_CurrentDefence = Model.BaseDefence;
       var armor = GetEquippedArmor();
-      if (null != armor) m_CurrentDefence += armor.Model.ToDefence();
+      if (armor is not null) m_CurrentDefence += armor.Model.ToDefence();
     }
 
     public void RepairLoad()
@@ -869,7 +869,7 @@ namespace djack.RogueSurvivor.Data
       // Support savefile hacking.
       // If the controller is null, intent was to hand control from the player to the AI.
       // Give them AI controllers here.
-      if (null == m_Controller) Controller = Model.InstanciateController(this);
+      if (m_Controller is null) Controller = Model.InstanciateController(this);
 
       Controller.RepairLoad();
     }
@@ -986,7 +986,7 @@ namespace djack.RogueSurvivor.Data
       flag("Sleeping", IsSleeping);
       flag("Crouching", IsCrouching);
       writer.WriteNumber("SpawnTime", SpawnTime);
-      if (null != m_Location.Map && s_SaveMap == m_Location.Map) {
+      if (m_Location.Map is not null && s_SaveMap == m_Location.Map) {
         // just the position: the map that owns us knows it is our map
         writer.WritePropertyName("Position");
         JsonSerializer.Serialize(writer, m_Location.Position, options);
@@ -1016,11 +1016,11 @@ namespace djack.RogueSurvivor.Data
         writer.WritePropertyName("Doll");
         m_Doll.toJson(writer, options);
       }
-      if (null != m_Inventory) {
+      if (m_Inventory is not null) {
         writer.WritePropertyName("Inventory");
         JsonSerializer.Serialize(writer, m_Inventory, options);
       }
-      if (null != m_InventorySlots && !m_InventorySlots.IsEmpty) {
+      if (m_InventorySlots is not null && !m_InventorySlots.IsEmpty) {
         writer.WritePropertyName("Slots");
         m_InventorySlots.toJson(writer, options);
       }
@@ -1030,25 +1030,25 @@ namespace djack.RogueSurvivor.Data
       }
 
       // cross-links: other actors, who are saved by whatever owns them
-      if (null != m_TargetActor) writer.WriteRef("Target", m_TargetActor);
-      if (null != m_Followers && 0 < m_Followers.Count) writer.WriteRefs("Followers", m_Followers);
-      if (null != m_AggressorOf && 0 < m_AggressorOf.Count) writer.WriteRefs("AggressorOf", m_AggressorOf);
-      if (null != m_SelfDefenceFrom && 0 < m_SelfDefenceFrom.Count) writer.WriteRefs("SelfDefenceFrom", m_SelfDefenceFrom);
-      if (null != m_TrustDict) {
+      if (m_TargetActor is not null) writer.WriteRef("Target", m_TargetActor);
+      if (m_Followers is not null && 0 < m_Followers.Count) writer.WriteRefs("Followers", m_Followers);
+      if (m_AggressorOf is not null && 0 < m_AggressorOf.Count) writer.WriteRefs("AggressorOf", m_AggressorOf);
+      if (m_SelfDefenceFrom is not null && 0 < m_SelfDefenceFrom.Count) writer.WriteRefs("SelfDefenceFrom", m_SelfDefenceFrom);
+      if (m_TrustDict is not null) {
         // The dead are skipped unless they still have a corpse: the corpse saves them, and they may be revived.  Otherwise nothing owns them.
         var live = m_TrustDict.Where(x => !x.Key.IsDead || (x.Key.m_Location.Map?.HasCorpseOf(x.Key) ?? false)).ToList();
         if (0 < live.Count) writer.WriteRefDictionary("Trust", live, options);
       }
-      if (null != m_DraggedCorpse) writer.WriteRef("DraggedCorpse", m_DraggedCorpse);
+      if (m_DraggedCorpse is not null) writer.WriteRef("DraggedCorpse", m_DraggedCorpse);
 
       var prior = ActorController.s_SaveOwner;
       ActorController.s_SaveOwner = this;
       try {
-        if (null != m_Controller && !m_Controller.IsJsonDefault) {
+        if (m_Controller is not null && !m_Controller.IsJsonDefault) {
           writer.WritePropertyName("Controller");
           JsonSerializer.Serialize(writer, m_Controller, options);
         }
-        if (null != m_Subconscious) {
+        if (m_Subconscious is not null) {
           writer.WritePropertyName("Subconscious");
           JsonSerializer.Serialize(writer, m_Subconscious, options);
         }
@@ -1062,7 +1062,7 @@ namespace djack.RogueSurvivor.Data
     public void RevertToAI() {
       if (m_Controller is PlayerController pc) {
         var subc = Interlocked.Exchange(ref m_Subconscious, null);
-        if (null != subc) {
+        if (subc is not null) {
           if (!(subc is PlayerController)) {
             Controller = subc;
             return;
@@ -1072,7 +1072,7 @@ namespace djack.RogueSurvivor.Data
         return;
       }
       if (m_Subconscious is PlayerController) m_Subconscious = null;
-      if (null == m_Controller) Controller = Model.InstanciateController(this);
+      if (m_Controller is null) Controller = Model.InstanciateController(this);
     }
 
     public void PrefixName(string prefix) => m_Name = prefix+" "+m_Name;
@@ -1271,7 +1271,7 @@ namespace djack.RogueSurvivor.Data
     public ItemMeleeWeapon? GetBestMeleeWeapon()
     {
       var tmp = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
-      if (null == tmp) return null;
+      if (tmp is null) return null;
       int num1 = UnarmedMeleeAttack().Rating;
       ItemMeleeWeapon? itemMeleeWeapon1 = null;
       foreach (ItemMeleeWeapon obj in tmp) {
@@ -1286,7 +1286,7 @@ namespace djack.RogueSurvivor.Data
     public ItemMeleeWeapon? GetBestMeleeWeapon(MapObject toBreak)    // XXX don't actually use this parameter, just controls overload
     {
       var tmp = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
-      if (null == tmp) return null;
+      if (tmp is null) return null;
       int num1 = UnarmedMeleeAttack().Rating;
       ItemMeleeWeapon? itemMeleeWeapon1 = null;
       foreach (ItemMeleeWeapon obj in tmp) {
@@ -1301,13 +1301,13 @@ namespace djack.RogueSurvivor.Data
     public int? GetBestMeleeWeaponRating()
     {
       var tmp = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
-      if (null == tmp) return null;
+      if (tmp is null) return null;
       int martial_arts_rating = UnarmedMeleeAttack().Rating;
       int? ret = null;
       foreach (ItemMeleeWeapon obj in tmp) {
         int num2 = MeleeWeaponAttack(obj.Model).Rating;
         if (num2 <= martial_arts_rating) continue;
-        if (null != ret && num2 <= ret.Value) continue;
+        if (ret is not null && num2 <= ret.Value) continue;
         ret = num2;
       }
       return ret;
@@ -1328,7 +1328,7 @@ namespace djack.RogueSurvivor.Data
     public Attack BestMeleeAttack(Actor? target = null)
     {
       var tmp_melee = GetBestMeleeWeapon();
-      if (null!=tmp_melee) return MeleeWeaponAttack(tmp_melee.Model, target);
+      if (tmp_melee is not null) return MeleeWeaponAttack(tmp_melee.Model, target);
       return UnarmedMeleeAttack(target);
     }
 
@@ -1422,32 +1422,32 @@ namespace djack.RogueSurvivor.Data
         GetEquippedItem(DollPart.HIP_HOLSTER)?.NotUseless<ItemTracker>()?.Model.Tracks(ref find_us);
 
         // Tracking leaders makes sense, but not in single PC mode
-        if (0 >= CountFollowers && null != LiveLeader) find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER] = false;
+        if (0 >= CountFollowers && LiveLeader is not null) find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER] = false;
     }
 
     public bool HasActiveCellPhone {
       get {
-        return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader && !it.IsUseless);
+        return m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader && !it.IsUseless) is not null;
       }
     }
 
     public bool HasCellPhone {
       get {
-        return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless);
+        return m_Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless) is not null;
       }
     }
 
     public bool HasActivePoliceRadio {
       get {
         if (GameFactions.IDs.ThePolice==m_FactionID) return true;
-        return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackPolice);  // charges on walking so won't stay useless
+        return m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackPolice) is not null;  // charges on walking so won't stay useless
       }
     }
 
     public bool HasPoliceRadio {
       get {
         if (GameFactions.IDs.ThePolice==m_FactionID) return true;
-        return null != m_Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackPolice);  // charges on walking so won't stay useless
+        return m_Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackPolice) is not null;  // charges on walking so won't stay useless
       }
     }
 
@@ -1471,8 +1471,8 @@ namespace djack.RogueSurvivor.Data
         if (GameFactions.IDs.ThePolice==m_FactionID) return false; // implicit
         // XXX disallow murderers under certain conditions, etc
         var leader = LiveLeader;
-        if (null != leader) return leader.HasActivePoliceRadio; // XXX \todo change target: deep chain of command
-        if (null != m_Followers) foreach(Actor fo in m_Followers) if (fo.HasPoliceRadio) return true;
+        if (leader is not null) return leader.HasActivePoliceRadio; // XXX \todo change target: deep chain of command
+        if (m_Followers is not null) foreach(Actor fo in m_Followers) if (fo.HasPoliceRadio) return true;
         return false;
       }
     }
@@ -1481,8 +1481,8 @@ namespace djack.RogueSurvivor.Data
       get {
         if (!WantCellPhone) return false;
         var leader = LiveLeader;
-        if (null != leader) return leader.HasActiveCellPhone; // XXX \todo change target: deep chain of command
-        if (null != m_Followers) foreach(Actor fo in m_Followers) if (fo.HasCellPhone) return true;
+        if (leader is not null) return leader.HasActiveCellPhone; // XXX \todo change target: deep chain of command
+        if (m_Followers is not null) foreach(Actor fo in m_Followers) if (fo.HasCellPhone) return true;
         return false;
       }
     }
@@ -1501,8 +1501,8 @@ namespace djack.RogueSurvivor.Data
         }
 
         var leader = LiveLeader;
-        if (null != leader) return out_of_comm(leader); // XXX \todo change target: deep chain of command
-        if (null != m_Followers) foreach(Actor fo in m_Followers) if (out_of_comm(fo)) return true;
+        if (leader is not null) return out_of_comm(leader); // XXX \todo change target: deep chain of command
+        if (m_Followers is not null) foreach(Actor fo in m_Followers) if (out_of_comm(fo)) return true;
         return false;
       }
     }
@@ -1520,8 +1520,8 @@ namespace djack.RogueSurvivor.Data
         }
 
         var leader = LiveLeader;
-        if (null != leader) return out_of_comm(leader); // XXX \todo change target: deep chain of command
-        if (null != m_Followers) foreach(Actor fo in m_Followers) if (out_of_comm(fo)) return true;
+        if (leader is not null) return out_of_comm(leader); // XXX \todo change target: deep chain of command
+        if (m_Followers is not null) foreach(Actor fo in m_Followers) if (out_of_comm(fo)) return true;
         return false;
       }
     }
@@ -1542,7 +1542,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (police_radio && army_radio) throw new InvalidOperationException("need to implement dual police and army radio case");
 #endif
-      if (null == origin) origin = Location;
+      if (origin is null) origin = Location;
 
       var radio_location = Rules.PoliceRadioLocation(origin.Value);
       var radio_range = radio_location.RadioDistricts;
@@ -1586,7 +1586,7 @@ namespace djack.RogueSurvivor.Data
 
     public Actor? Sees(Actor? a)
     {
-      if (null == a) return null;
+      if (a is null) return null;
       if (this == a) return null;
       if (a.IsDead) return null;
       return (Controller.IsVisibleTo(a) ? a : null);  // inline IsVisibleToPlayer here, for generality
@@ -1595,7 +1595,7 @@ namespace djack.RogueSurvivor.Data
     // leadership/follower handling
     public void AddFollower(Actor other)
     {
-      if (null == m_Followers) m_Followers = new List<Actor>(1);
+      if (m_Followers is null) m_Followers = new List<Actor>(1);
       else if (m_Followers.Contains(other)) throw new ArgumentException("other is already a follower");
       m_Followers.Add(other);
       other.Leader?.RemoveFollower(other);
@@ -1615,7 +1615,7 @@ namespace djack.RogueSurvivor.Data
     public void RemoveFollower(Actor other)
     {
       var followers = m_Followers;
-      if (null == followers) throw new InvalidOperationException(Name+": no followers");
+      if (followers is null) throw new InvalidOperationException(Name+": no followers");
       other._NoLongerFollower();
       followers.Remove(other);
 //    other._NoLongerFollower(); // multi-threaded race condition when here?
@@ -1625,7 +1625,7 @@ namespace djack.RogueSurvivor.Data
     public void RemoveAllFollowers()
     {
       var followers = m_Followers;
-      if (null != followers) {
+      if (followers is not null) {
         foreach(var fo in followers) fo._NoLongerFollower();
         Interlocked.Exchange(ref m_Followers, null);
       }
@@ -1635,7 +1635,7 @@ namespace djack.RogueSurvivor.Data
 
     public int GetTrustIn(Actor other)
     {
-      if (null == m_TrustDict) return 0;
+      if (m_TrustDict is null) return 0;
       if (m_TrustDict.TryGetValue(other,out int trust)) return trust;
       return 0;
     }
@@ -1666,7 +1666,7 @@ namespace djack.RogueSurvivor.Data
     // these two are tightly integrated.
     private void MarkAsAggressorOf(Actor other)
     {
-      if (m_AggressorOf == null) m_AggressorOf = new List<Actor>{ other };
+      if (m_AggressorOf is null) m_AggressorOf = new List<Actor>{ other };
       else if (m_AggressorOf.Contains(other)) return;
       else m_AggressorOf.Add(other);
       Threats?.RecordTaint(other, other.Location);
@@ -1674,7 +1674,7 @@ namespace djack.RogueSurvivor.Data
 
     private void MarkAsSelfDefenceFrom(Actor other)
     {
-      if (m_SelfDefenceFrom == null) m_SelfDefenceFrom = new List<Actor>{ other };
+      if (m_SelfDefenceFrom is null) m_SelfDefenceFrom = new List<Actor>{ other };
       else if (m_SelfDefenceFrom.Contains(other)) return;
       else m_SelfDefenceFrom.Add(other);
       Threats?.RecordTaint(other, other.Location);
@@ -1709,25 +1709,25 @@ namespace djack.RogueSurvivor.Data
 
     private void RemoveAggressorOf(Actor other)
     {
-      if (m_AggressorOf == null) return;
+      if (m_AggressorOf is null) return;
       m_AggressorOf.Remove(other);
       if (0 >= m_AggressorOf.Count) m_AggressorOf = null;
     }
 
     private void RemoveSelfDefenceFrom(Actor other)
     {
-      if (m_SelfDefenceFrom == null) return;
+      if (m_SelfDefenceFrom is null) return;
       m_SelfDefenceFrom.Remove(other);
       if (0 >= m_SelfDefenceFrom.Count) m_SelfDefenceFrom = null;
     }
 
     public void RemoveAllAgressorSelfDefenceRelations()
     {
-      if (null != m_AggressorOf) {
+      if (m_AggressorOf is not null) {
         foreach(Actor other in m_AggressorOf) other.RemoveSelfDefenceFrom(this);
         m_AggressorOf = null;
       }
-      if (null != m_SelfDefenceFrom) {
+      if (m_SelfDefenceFrom is not null) {
         foreach(Actor other in m_SelfDefenceFrom) other.RemoveAggressorOf(this);
         m_SelfDefenceFrom = null;
       }
@@ -1755,7 +1755,7 @@ namespace djack.RogueSurvivor.Data
       // my followers enemies are my enemies
       static bool IsEnemyOfMyFollowers(Actor groupActor, Actor target)
       {
-        if (null == groupActor.m_Followers) return false;
+        if (groupActor.m_Followers is null) return false;
         foreach (Actor follower in groupActor.m_Followers)
           if (follower.IsEnemyOf(target, false)) return true;
         return false;
@@ -1766,7 +1766,7 @@ namespace djack.RogueSurvivor.Data
       static bool IsEnemyOfMyLeaderOrMates(Actor groupActor, Actor target)
       {
         var leader = groupActor.LiveLeader;
-        if (null == leader) return false;
+        if (leader is null) return false;
         if (leader.IsEnemyOf(target, false)) return true;
         return IsEnemyOfMyFollowers(leader, target);
       }
@@ -1785,7 +1785,7 @@ namespace djack.RogueSurvivor.Data
       var actorList = new List<Actor>(fov.Length-1); // assuming ok to thrash GC
       foreach (var loc in fov) {
         var actorAt = loc.Actor;
-        if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) {
+        if (actorAt is not null && actorAt != this && IsEnemyOf(actorAt)) {
           actorList.Add(actorAt);
         }
       }
@@ -1798,7 +1798,7 @@ namespace djack.RogueSurvivor.Data
       if (1 >= fov.Length) return false;  // sleeping?
       foreach (var loc in fov) {
         var actorAt = loc.Actor;
-        if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) return true;
+        if (actorAt is not null && actorAt != this && IsEnemyOf(actorAt)) return true;
       }
       return false;
     }
@@ -1812,7 +1812,7 @@ namespace djack.RogueSurvivor.Data
         // 2) leader/follower cliques are allies.
         m_Followers?.AppendTo(ret);
         var leader = LiveLeader;
-        if (null != leader) { // 2019-08-14: currently mutually exclusive with above for NPCs
+        if (leader is not null) { // 2019-08-14: currently mutually exclusive with above for NPCs
           ret.Add(leader);
           leader.m_Followers?.AppendTo(ret);
           ret.Remove(this);
@@ -1827,7 +1827,7 @@ namespace djack.RogueSurvivor.Data
         var ret = new HashSet<Actor>();
         m_Followers?.AppendTo(ret);
         var leader = LiveLeader;
-        if (null != leader) {
+        if (leader is not null) {
           ret.Add(leader);
           leader.m_Followers?.AppendTo(ret);
           ret.Remove(this);
@@ -1845,7 +1845,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsInGroupWith(Actor other)
     {
       var leader = LiveLeader;
-      if (null != leader) {
+      if (leader is not null) {
         if (   other == leader   // my leader?
             || other.Leader == leader)    // a mate?
           return true;
@@ -1862,11 +1862,11 @@ namespace djack.RogueSurvivor.Data
 
     public List<Actor>? FilterAllies(IEnumerable<Actor>? src, Predicate<Actor>? test = null)
     {
-        if (null == src || !src.Any()) return null;
+        if (src is null || !src.Any()) return null;
         List<Actor>? ret = null;
         foreach(var a in src) {
           if (!IsAlly(a)) continue;
-          if (null==test || test(a)) (ret ??= new List<Actor>(src.Count())).Add(a);
+          if (test is null || test(a)) (ret ??= new List<Actor>(src.Count())).Add(a);
         }
         return ret;
     }
@@ -1893,7 +1893,7 @@ namespace djack.RogueSurvivor.Data
       var ret = new Dictionary<Point,Actor>();
       if (pt == Location.Position) return ret;
       var a = Location.Map.GetActorAtExt(pt);
-      if (null!=a) ret[pt] = a;
+      if (a is not null) ret[pt] = a;
       if (!Rules.IsAdjacent(in pt,Location.Position)) return ret;
 #if B_MOVIE_MARTIAL_ARTS
       if (0 < UsingPolearmInBMovie) {
@@ -1902,7 +1902,7 @@ namespace djack.RogueSurvivor.Data
         foreach(var pt2 in pt.Adjacent()) {
           if (2!=Rules.GridDistance(Location.Position,in pt2)) continue;
           a = Location.Map.GetActorAtExt(pt2);
-          if (null==a || !IsEnemyOf(a)) continue;          // Only hostiles may block movement at range 2.
+          if (a is null || !IsEnemyOf(a)) continue;          // Only hostiles may block movement at range 2.
           ret.Add(pt2, a);
         }
       }
@@ -1941,7 +1941,7 @@ namespace djack.RogueSurvivor.Data
       (Controller as Gameplay.AI.ObjectiveAI)?.OnMove();  // 2019-08-24: both calls required to pass regression test
       // inline Map::IsTrapCoveringMapObjectAt
       var obj = Location.MapObject;
-      if (null == obj || obj.CoversTraps) {
+      if (obj is null || obj.CoversTraps) {
         if (0 == Location.OnReachInto(this)) return; // no further processing if dead
       }
       Location.Map.OnEnterTile(this);
@@ -1962,7 +1962,7 @@ namespace djack.RogueSurvivor.Data
       Point src = origin.Position;
       Point dest = target.Position;
       var tmp = FastestStepTo(m,src,dest);
-      if (null == tmp) return null;
+      if (tmp is null) return null;
       var ret = new List<List<Point>> { tmp };
       while(!tmp.Contains(dest)) {
         int dist = Rules.GridDistance(in dest,tmp[0]);
@@ -1972,7 +1972,7 @@ namespace djack.RogueSurvivor.Data
           HashSet<Point> tmp2 = new HashSet<Point>();
           foreach(Point pt in tmp) {
             var tmp3 = FastestStepTo(m,pt,dest);
-            if (null != tmp3) tmp2.UnionWith(tmp3);
+            if (tmp3 is not null) tmp2.UnionWith(tmp3);
           }
           if (0 >= tmp2.Count) return null;
           tmp = tmp2.ToList();
@@ -1988,7 +1988,7 @@ namespace djack.RogueSurvivor.Data
 
       if (origin.Map!=target.Map) {
         Location? test = origin.Map.Denormalize(in target);
-        if (null == test) return null;
+        if (test is null) return null;
         return _MinStepPathTo(in origin, test.Value);
       }
       return _MinStepPathTo(in origin, in target);
@@ -2007,7 +2007,7 @@ namespace djack.RogueSurvivor.Data
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       // deathtrapped revision intentionally omitted: not used in pathing
-      if (null != exit) {
+      if (exit is not null) {
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
           if (tmp.IsPerformable()) ret.Add(exit.Location);
@@ -2058,16 +2058,16 @@ namespace djack.RogueSurvivor.Data
       foreach(Direction dir in Direction.COMPASS) {
         Location test = loc+dir;
         ActorAction tmp = Rules.IsPathableFor(this, in test);
-        if (null == tmp) continue;
+        if (tmp is null) continue;
         if (!Map.Canonical(ref test)) continue;
-        if (null != no_path && no_path.IsBanned(test)) continue;
+        if (no_path is not null && no_path.IsBanned(test)) continue;
         ret.Add(test, tmp);
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
-      if (null != exit) { // the pathable check also handles death-trapping, but exits don't check for that
-        if (null != no_path && no_path.IsBanned(exit.Location)) exit = null;
+      if (exit is not null) { // the pathable check also handles death-trapping, but exits don't check for that
+        if (no_path is not null && no_path.IsBanned(exit.Location)) exit = null;
       }
-      if (null != exit) {
+      if (exit is not null) {
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
           if (tmp.IsPerformable()) ret.Add(exit.Location, tmp);
@@ -2101,22 +2101,22 @@ namespace djack.RogueSurvivor.Data
           ret.Add(dest, ActionMoveStep.schedule(this, dest)!);
           continue;
         }
-        if (null != no_path && no_path.IsBanned(dest)) continue;
+        if (no_path is not null && no_path.IsBanned(dest)) continue;
         // 2020-03-19 This is multi-threading sensitive -- the Sokoban preventer may have to reach across threads
         // generators fail CanEnter but can be pathable so that would have to be accounted for
-        if (null != (relay = Rules.IsPathableFor(this, in dest) ?? ActionMoveDelta.schedule(this, dest, loc))) ret.Add(dest, relay);
+        if ((relay = Rules.IsPathableFor(this, in dest) ?? ActionMoveDelta.schedule(this, dest, loc)) is not null) ret.Add(dest, relay);
       }
       var exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
-      if (null != exit) { // the pathable check also handles death-trapping, but exits don't check for that
-        if (null != no_path && no_path.IsBanned(exit.Location)) exit = null;
+      if (exit is not null) { // the pathable check also handles death-trapping, but exits don't check for that
+        if (no_path is not null && no_path.IsBanned(exit.Location)) exit = null;
       }
-      if (null != exit) {
+      if (exit is not null) {
         var tmp = new ActionUseExit(this, in loc);
         if (loc == Location) {
           if (tmp.IsPerformable()) ret.Add(exit.Location, tmp);
           else {
             var act_break = ActionBreak.schedule(this, exit.Location.MapObject);
-            if (null != act_break) ret.Add(exit.Location, act_break);
+            if (act_break is not null) ret.Add(exit.Location, act_break);
           }
         } else {
           ret.Add(exit.Location, new ActionUseExit(this, in loc));
@@ -2175,7 +2175,7 @@ namespace djack.RogueSurvivor.Data
       var ret = new HashSet<Point>();
       foreach(Point pt in now) {
         var tmp = OneStepRange(m,pt);
-        if (null == tmp) continue;
+        if (tmp is null) continue;
         var tmp2 = new HashSet<Point>(tmp);
         tmp2.ExceptWith(past);
         tmp2.ExceptWith(now);
@@ -2216,7 +2216,7 @@ namespace djack.RogueSurvivor.Data
       if (!mapObj.IsMovable) return "cannot be moved";
       if (mapObj.Location.StrictHasActorAt) return "someone is there";
       if (mapObj.IsOnFire) return "on fire";
-      if (null != m_DraggedCorpse) return "dragging a corpse";
+      if (m_DraggedCorpse is not null) return "dragging a corpse";
       var code = District.UsesCrossDistrictView(Location.Map);
       if (0 >= code) {
         if (Location.Map != mapObj.Location.Map) return "hard to push vertically";
@@ -2240,7 +2240,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (!AbleToPush) return "cannot shove people";
       if (IsTired) return "tired";
-      if (null != m_DraggedCorpse) return "dragging a corpse";
+      if (m_DraggedCorpse is not null) return "dragging a corpse";
       return "";
     }
 
@@ -2260,7 +2260,7 @@ namespace djack.RogueSurvivor.Data
       if (!Map.Canonical(ref to)) return "out of map";
       if (!to.TileModel.IsWalkable) return "blocked";
       if (!to.MapObject?.IsWalkable ?? false) return "blocked by an object";
-      if (null != to.Actor) return "blocked by someone";
+      if (to.Actor is not null) return "blocked by someone";
       return "";
     }
 
@@ -2284,7 +2284,7 @@ namespace djack.RogueSurvivor.Data
       if (!string.IsNullOrEmpty(ret)) return ret;
 
       var other = Location.MapObject;
-      if (null != other) return string.Format("{0} is blocking", other.TheName);
+      if (other is not null) return string.Format("{0} is blocking", other.TheName);
 
       moveTo.Map.IsWalkableFor(moveTo.Position, this, out ret);
       return ret;
@@ -2346,7 +2346,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (!AbleToPush) return "Cannot "+verb+" objects.";
       if (IsTired) return "Too tired to " + verb + ".";
-      if (null != m_DraggedCorpse) return "Cannot " + verb + ": dragging corpse of " + m_DraggedCorpse.DeadGuy.Name+".";
+      if (m_DraggedCorpse is not null) return "Cannot " + verb + ": dragging corpse of " + m_DraggedCorpse.DeadGuy.Name+".";
       return "";
     }
 
@@ -2356,7 +2356,7 @@ namespace djack.RogueSurvivor.Data
       if (!string.IsNullOrEmpty(ret)) return ret;
 
       var other = Location.MapObject;
-      if (null != other) return string.Format("Cannot pull: {0} is blocking", other.TheName);
+      if (other is not null) return string.Format("Cannot pull: {0} is blocking", other.TheName);
 
       return ret;
     }
@@ -2565,8 +2565,8 @@ namespace djack.RogueSurvivor.Data
         if (IsExhausted) num /= 2f;
         else if (IsSleepy) { num *= 2f; num /= 3f; }
         var armor = GetEquippedArmor();
-        if (null != armor) num -= armor.Weight;
-        if (null != m_DraggedCorpse) num /= 2f;
+        if (armor is not null) num -= armor.Weight;
+        if (m_DraggedCorpse is not null) num /= 2f;
         return Math.Max((int) num, 0);
       }
     }
@@ -2774,7 +2774,7 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCantLeaveMap(Point dest)
     {
       var exitAt = Location.Map.GetExitAt(dest);
-      if (null == exitAt) return "no exit to leave map with";
+      if (exitAt is null) return "no exit to leave map with";
       return exitAt.ReasonIsBlocked(this);
     }
 
@@ -2948,7 +2948,7 @@ namespace djack.RogueSurvivor.Data
     // 1: ok to start dragging
     // 2: ok to stop dragging
     private KeyValuePair<int, string> ReasonCantStartStopDrag(Corpse corpse) {
-      if (null != m_DraggedCorpse) {
+      if (m_DraggedCorpse is not null) {
         if (corpse == m_DraggedCorpse) return new KeyValuePair<int, string>(2, string.Empty); // we may stop dragging this
         return new KeyValuePair<int, string>(0, "already dragging a corpse");
       }
@@ -3143,7 +3143,7 @@ namespace djack.RogueSurvivor.Data
       if (Model.Abilities.CanTire) m_StaminaPoints -= dmg;
       var game = RogueGame.Game;
       var worn = GetEquippedArmor();
-      if (null != worn && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
+      if (worn is not null && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
         Remove(worn, false);
         game.UI_ItemBreaks(this, worn);
       }
@@ -3194,7 +3194,7 @@ namespace djack.RogueSurvivor.Data
           if (!m_Inventory.AddAll(worn)) Location.Drop(worn);
       }
       if (m_InventorySlots.SetIfNull(SLOT_H_TORSO, armor)) {
-          Equip(armor, null != m_Location.Map);
+          Equip(armor, m_Location.Map is not null);
           return true;
       }
 final_exit:
@@ -3203,7 +3203,7 @@ final_exit:
 
 
     public bool Take(Item it) {
-     if (null != m_InventorySlots) {
+     if (m_InventorySlots is not null) {
         // assume OrderableAI i.e. humanoid inventory, for now
         if (it is ItemBodyArmor armor) return Take(armor);
      }
@@ -3212,7 +3212,7 @@ final_exit:
     }
 
     public int TakeAsMuchAsPossible(Item it) {
-      if (null != m_InventorySlots) {
+      if (m_InventorySlots is not null) {
         // assume OrderableAI i.e. humanoid inventory, for now
         if (it is ItemBodyArmor armor) return Take(armor) ? 1 : 0;
       }
@@ -3275,7 +3275,7 @@ final_exit:
     public ItemMeleeWeapon? GetWorstMeleeWeapon()
     {
       var melee = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
-      if (null == melee) return null;
+      if (melee is null) return null;
       if (1 == melee.Count) return melee[0];
       // some sort of invariant problem here
       // NOTE: martial arts influences the apparent rating considerably
@@ -3286,7 +3286,7 @@ final_exit:
 
     // the best body armor should be in the inventory slot
     public ItemBodyArmor? GetBestBodyArmor() {
-      if (null != m_InventorySlots) return m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
+      if (m_InventorySlots is not null) return m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
       return null;
     } 
     // non-null return implies at least two body armors
@@ -3297,7 +3297,7 @@ final_exit:
       if (!_has_to_eat) return true;
       if (m_Inventory.IsEmpty()) return false;
       var tmp = m_Inventory.GetItemsByType<ItemFood>();
-      if (null == tmp) return false;
+      if (tmp is null) return false;
       int turnCounter = Location.Map.LocalTime.TurnCounter;
 //    int num = 0;
       int num = m_FoodPoints-FOOD_HUNGRY_LEVEL;
@@ -3376,7 +3376,7 @@ final_exit:
     // considering these as change target
     public ItemBodyArmor? GetEquippedArmor()
     {
-      if (null != m_InventorySlots) return m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
+      if (m_InventorySlots is not null) return m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
       // legacy implementation
       return m_Inventory?.GetFirst<ItemBodyArmor>(obj => obj.EquippedPart == DollPart.TORSO);
     }
@@ -3384,7 +3384,7 @@ final_exit:
     public ItemBodyArmor? UsingCopArmor()
     {
       var ret = GetEquippedArmor();
-      if (null != ret && ret.IsFriendlyForCops()) return ret;
+      if (ret is not null && ret.IsFriendlyForCops()) return ret;
       return null;
     }
 
@@ -3420,7 +3420,7 @@ final_exit:
     }
 
     public bool CanGetItems() {
-      return Model.Abilities.HasInventory && Model.Abilities.CanUseMapObjects && null != m_Inventory;
+      return Model.Abilities.HasInventory && Model.Abilities.CanUseMapObjects && m_Inventory is not null;
     }
 
     private string ReasonCantGet(Item it)
@@ -3455,7 +3455,7 @@ final_exit:
     {
       if (Location == loc) return false;
       var obj = loc.MapObject;    // XXX this check should affect BehaviorResupply
-      if (null == obj) return false;
+      if (obj is null) return false;
       if (!(obj is ShelfLike) && !loc.IsWalkableFor(this)) {
         // Cf. Actor::CanOpen
         if (obj is DoorWindow doorWindow && doorWindow.IsBarricaded) return true;
@@ -3539,7 +3539,7 @@ final_exit:
       MySkills.AddOrIncreaseSkill(id);
       switch(id)
       {
-      case Skills.IDs.HAULER: if (null != m_Inventory) m_Inventory.MaxCapacity = MaxInv;
+      case Skills.IDs.HAULER: if (m_Inventory is not null) m_Inventory.MaxCapacity = MaxInv;
         break;
       case Skills.IDs.TOUGH: m_HitPoints += SKILL_TOUGH_HP_BONUS;
         break;
@@ -3758,15 +3758,15 @@ final_exit:
 
     public List<ItemRangedWeapon>? GetAvailableRangedWeapons()
     {
-      if (null == m_Inventory) return null;
+      if (m_Inventory is null) return null;
       if (Model.Abilities.AI_NotInterestedInRangedWeapons) return null;
 
-      return m_Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != m_Inventory.GetCompatibleAmmoItem(rw));
+      return m_Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || m_Inventory.GetCompatibleAmmoItem(rw) is not null);
     }
 
     public List<ItemRangedWeapon>? ReadyRangedWeapons()
     {
-      if (null == m_Inventory) return null;
+      if (m_Inventory is null) return null;
       if (Model.Abilities.AI_NotInterestedInRangedWeapons) return null;
 
       return m_Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo);
@@ -3801,7 +3801,7 @@ final_exit:
       if ((flags & Sayflags.IS_FREE_ACTION) == 0) SpendActionPoints();
 
       var handler = Says; // work around non-atomic test, etc.
-      if (null != handler) {
+      if (handler is not null) {
         SayArgs tmp = new SayArgs(target, target.IsPlayer || (flags & Sayflags.IS_IMPORTANT) != 0);
         tmp.messages.Add(RogueGame.MakeMessage(this, string.Format("to {0} : ", target.TheName), sayColor));
         tmp.messages.Add(RogueGame.MakeMessage(this, string.Format("\"{0}\"", text), sayColor));
@@ -3828,7 +3828,7 @@ final_exit:
 
     public void Killed(string reason, Actor? killer=null) {
       var handler = Dies; // work around non-atomic test, etc.
-      if (null != handler) {
+      if (handler is not null) {
         DieArgs tmp = new DieArgs(this,killer,reason);
         handler(this,tmp);
       }
@@ -3858,7 +3858,7 @@ final_exit:
       m_FoodPoints = MaxFood;
       m_SleepPoints = MaxSleep;
       m_Sanity = MaxSanity;
-      if (null != m_Inventory) m_Inventory.MaxCapacity = MaxInv;
+      if (m_Inventory is not null) m_Inventory.MaxCapacity = MaxInv;
     }
 
     public void CreateCivilianDeductFoodSleep() {
@@ -3912,7 +3912,7 @@ final_exit:
     public void PrepareForPlayerControl()
     {
       var leader = Leader;
-      if (null != leader && !leader.IsPlayer) leader.RemoveFollower(this);   // needed if leader is NPC
+      if (leader is not null && !leader.IsPlayer) leader.RemoveFollower(this);   // needed if leader is NPC
     }
 
     // This is a backstop for bugs elsewhere.
@@ -3934,7 +3934,7 @@ final_exit:
     // C# docs indicate using Actor as a key wants these
     public bool Equals(Actor? x)
     {
-      if (null == x) return false;
+      if (x is null) return false;
       if (SpawnTime != x.SpawnTime) return false;
       if (m_Name != x.m_Name) return false;
       if (Location!=x.Location) return false;

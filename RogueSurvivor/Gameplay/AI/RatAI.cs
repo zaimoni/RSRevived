@@ -65,15 +65,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction? SelectAction()
     {
       ActorAction? tmpAction;
-      if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {
+      if ((_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors())))) is not null) {
         tmpAction = TargetGridMelee(_enemies);
-        if (null != tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
       }
       tmpAction = BehaviorGoEatCorpse(_all);
-      if (null != tmpAction) return tmpAction;
+      if (tmpAction is not null) return tmpAction;
 
       tmpAction = BehaviorTrackScent(m_LivingSmellSensor.Scents);
-      if (null != tmpAction) {
+      if (tmpAction is not null) {
         m_Actor.Activity = Activity.TRACKING;
         return tmpAction;
       }

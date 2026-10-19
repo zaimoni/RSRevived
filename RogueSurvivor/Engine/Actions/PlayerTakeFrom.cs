@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         {
             var dist = Rules.GridDistance(m_Actor.Location, m_Src.Location);
             if (1 < dist) return false;
-            if (1 == dist && null != m_Src.loc && !m_Actor.IsCrouching && !m_Actor.CanCrouch()) return false;
+            if (1 == dist && m_Src.loc is not null && !m_Actor.IsCrouching && !m_Actor.CanCrouch()) return false;
             // \todo make traps dangerous, again (guard clause 1 == dist && null != m_Src.loc + something about trap damage)
             return base.IsPerformable();
         }
@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         {
             var game = RogueGame.Game;
             var it = game.Choose(m_Src.Inventory, "Taking...");
-            if (null != it) game.Interpret(new _Action.TakeItem(m_Actor, in m_Src, it));
+            if (it is not null) game.Interpret(new _Action.TakeItem(m_Actor, in m_Src, it));
         }
 
         static private string ReasonCantGetFrom(in Data.Model.InvOrigin src)
@@ -48,10 +48,10 @@ namespace djack.RogueSurvivor.Engine.Actions
             var inv = loc.Items;
             if (inv.IsEmpty()) return null;
             var obj = loc.MapObject;
-            if (null != obj && obj.BlocksReachInto()) return null;
+            if (obj is not null && obj.BlocksReachInto()) return null;
             var player = pc.ControlledActor;
             var p_inv = player.Inventory;
-            if (null == p_inv) return null;
+            if (p_inv is null) return null;
             if (p_inv.IsFull) {
                 var ok = false;
                 foreach (var it in inv) {
@@ -68,10 +68,10 @@ namespace djack.RogueSurvivor.Engine.Actions
         static public PlayerTakeFrom? create(PlayerController pc, ShelfLike obj)
         {
             var inv = obj?.NonEmptyInventory;
-            if (null == inv) return null;
+            if (inv is null) return null;
             var player = pc.ControlledActor;
             var p_inv = player.Inventory;
-            if (null == p_inv) return null;
+            if (p_inv is null) return null;
             if (p_inv.IsFull) {
                 var ok = false;
                 foreach (var it in inv) {

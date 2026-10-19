@@ -278,7 +278,7 @@ namespace Microsoft
         ==============================================================================*/
         public virtual void NextBytes(byte[] buffer)
         {
-            if (null == buffer) throw new ArgumentNullException(nameof(buffer));
+            if (buffer is null) throw new ArgumentNullException(nameof(buffer));
             for (int i = 0; i < buffer.Length; i++)
             {
                 buffer[i] = (byte)(InternalSample() % (byte.MaxValue + 1));

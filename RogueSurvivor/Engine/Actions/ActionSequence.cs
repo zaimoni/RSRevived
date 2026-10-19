@@ -42,7 +42,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         : base(actor)
         {
 #if DEBUG
-            if (null == codes || !codes.Any()) throw new ArgumentNullException(nameof(codes));
+            if (codes is null || !codes.Any()) throw new ArgumentNullException(nameof(codes));
 #endif
             _AP = m_Actor.ActionPoints;
             _turn = m_Actor.Location.Map.LocalTime.TurnCounter;
@@ -66,7 +66,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         {
             while(0 < _handler_codes.Count) {
                 var working = m_Actor.Controller.ExecAryZeroBehavior(_handler_codes[0]);
-                if (null != working && working.IsPerformable()) return working;
+                if (working is not null && working.IsPerformable()) return working;
                 // \todo we're using a list so we can append further handlers
                 _handler_codes.RemoveAt(0);
             }

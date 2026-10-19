@@ -106,13 +106,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
             var pt = here.FindExitOrigin(e);
 
-            if (null != pt) return new Location(here, pt.Value);
+            if (pt is not null) return new Location(here, pt.Value);
 
-            foreach (var m in here.District.Maps) if (null != (pt = m.FindExitOrigin(e))) return new Location(m, pt.Value);
+            foreach (var m in here.District.Maps) if ((pt = m.FindExitOrigin(e)) is not null) return new Location(m, pt.Value);
 
-            foreach (var m in e.ToMap.District.Maps) if (null != (pt = m.FindExitOrigin(e))) return new Location(m, pt.Value);
+            foreach (var m in e.ToMap.District.Maps) if ((pt = m.FindExitOrigin(e)) is not null) return new Location(m, pt.Value);
 
-            foreach (var back in e.ToMap.Exits) if (null != (pt = back.ToMap.FindExitOrigin(e))) return new Location(back.ToMap, pt.Value);
+            foreach (var back in e.ToMap.Exits) if ((pt = back.ToMap.FindExitOrigin(e)) is not null) return new Location(back.ToMap, pt.Value);
 
             throw new JsonException(m_Actor.UnmodifiedName + " blacklists an exit to " + e.Location.ToString() + " that no nearby map has");
 

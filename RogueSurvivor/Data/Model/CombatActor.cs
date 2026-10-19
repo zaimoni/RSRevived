@@ -98,7 +98,7 @@ namespace djack.RogueSurvivor.Data.Model
 
             foreach (var en in others) {
                 if (!who.IsEnemyOf(en.who)) continue;
-                if (null != en.ready_rw) {
+                if (en.ready_rw is not null) {
                     if (en.NextMoveLostWithoutRunOrWait) {
                         Engine._Action.RangedAttack.Coverage(en, domain, Engine.Actions.FireMode.RAPID, ready_rw, direct);
                     } else if (en.RunIsFreeMove) {
@@ -131,7 +131,7 @@ namespace djack.RogueSurvivor.Data.Model
                 domain.Add(en.Location);
             }
 
-            if (null != ready_rw) {
+            if (ready_rw is not null) {
                if (NextMoveLostWithoutRunOrWait) {
                  Engine._Action.RangedAttack.Coverage(this, domain, Engine.Actions.FireMode.RAPID, ready_rw, direct);
                } else if (RunIsFreeMove) {
@@ -145,7 +145,7 @@ namespace djack.RogueSurvivor.Data.Model
             while (0 <= --i) {
                 var x = double_attack[i];
                 var rw = (x.Key as Engine._Action.RangedAttack)?.rw;
-                if (null == rw) continue;
+                if (rw is null) continue;
                 if (RapidRecoilOk(rw)) continue;
                 if (1<Recoil || FireMode.RAPID == (x.Value as Engine._Action.RangedAttack)!.FMode) {
                     double_attack.RemoveAt(i);
@@ -261,8 +261,8 @@ namespace djack.RogueSurvivor.Data.Model
           + m_HitPoints.ToString() + "/" + m_StaminaPoints.ToString() + "/" + _recoil.ToString()
           + "\nrun is free move: " + (RunIsFreeMove ? "true" : "false")
           + "\nflight bounds: " + runaway.ToString()
-          + "\nrw: " + (null == ready_rw ? "null" : ready_rw.to_s())
-          + "\n" + (null == run_steps ? "null" : run_steps.to_s()); }
+          + "\nrw: " + (ready_rw is null ? "null" : ready_rw.to_s())
+          + "\n" + (run_steps is null ? "null" : run_steps.to_s()); }
 
     }
 }

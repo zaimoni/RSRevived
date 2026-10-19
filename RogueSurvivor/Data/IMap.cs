@@ -52,7 +52,7 @@ namespace djack.RogueSurvivor.Data
                     // XXX does not handle transparent walls or opaque non-walls
                     Point pt = new Point(x, y) + Origin;
                     var tile = GetTileModelAt(pt);
-                    if (null == tile) {
+                    if (tile is null) {
                         ascii_map[y][x] = " ";
                         continue;
                     }
@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Data
                     const string open_gate = "<span class='lfort'>&#x2637;</span>";    // unicode: misc symbols (I Ching earth)
                     const string chair = "<span class='chair'>&#x2441;</span>";    // unicode: OCR chair
                     var tmp_obj = GetMapObjectAt(pt);  // micro-optimization target (one Point temporary involved)
-                    if (null != tmp_obj) {
+                    if (tmp_obj is not null) {
                         if (tmp_obj.IsCouch) {
                             ascii_map[y][x] = "="; // XXX no good icon for bed...we have no rings so this is not-awful
                         } else if (MapObject.IDs.TREE == tmp_obj.ID) {
@@ -124,7 +124,7 @@ namespace djack.RogueSurvivor.Data
                     _process_inv(GetItemsAt(pt), x, y);
 #region actors
                     var a = GetActorAt(pt);
-                    if (null != a && !a.IsDead) {
+                    if (a is not null && !a.IsDead) {
                         string p_txt = '(' + x.ToString() + ',' + y.ToString() + ')';
                         string a_str = ((int)a.Faction.ID).ToString(); // default to the faction numeral
                         string pos_css = "";
@@ -207,7 +207,7 @@ namespace djack.RogueSurvivor.Data
                         if (a.IsSleeping) actor_stats.Add("<span style='background-color:black; color:cyan'>Z</span>");
                         if (Engine.Session.Get.Police.IsTargeted(a)) actor_stats.Add("<span style='background-color:black; color:red'>M</span>");
                         if (0 < a.CountFollowers) actor_stats.Add("<span style='background-color:black; color:cyan'>L</span>");
-                        if (null != a.LiveLeader) actor_stats.Add("<span style='background-color:black; color:cyan'>F:" + a.LiveLeader.Name + "</span>");
+                        if (a.LiveLeader is not null) actor_stats.Add("<span style='background-color:black; color:cyan'>F:" + a.LiveLeader.Name + "</span>");
 
                         actor_data.Add("<tr><td" + pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + string.Concat(actor_stats) + "</td><td>" + TurnOrderFor(a).ToString() + "</td><td>" + a.ActionPoints.ToString() + "</td><td>" + a.HitPoints.ToString() + "</td><td class='inv'>" + (a.Inventory.IsEmpty() ? "" : a.Inventory.ToString()) + "</td></tr>");
                         ascii_map[y][x] = a_str;
@@ -218,7 +218,7 @@ namespace djack.RogueSurvivor.Data
 
             static bool is_problem_corpse(Corpse c) { return 0 < c.DeadGuy.InfectionPercent; }
             var corpse_catalog = FilterCorpses(is_problem_corpse);
-            if (null != corpse_catalog) dest.WriteLine("<pre>Problematic corpses:\n" + corpse_catalog.to_s() + "</pre>");
+            if (corpse_catalog is not null) dest.WriteLine("<pre>Problematic corpses:\n" + corpse_catalog.to_s() + "</pre>");
 
             if (0 >= inv_data.Count && 0 >= actor_data.Count) return;
             if (0 < actor_data.Count) {

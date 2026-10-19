@@ -56,7 +56,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      if (null != m_Grenade) ThrowGrenadeUnprimed();
+      if (m_Grenade is not null) ThrowGrenadeUnprimed();
       else ThrowGrenadePrimed();
     }
 
@@ -71,7 +71,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public Data.Model.Explosive ModelThrow {
         get {
-          if (null != m_Grenade) return m_Grenade.Model;
+          if (m_Grenade is not null) return m_Grenade.Model;
           else return m_Primed.Unprimed;
         }
     }
@@ -91,7 +91,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     private string ReasonCouldntThrowTo(Point pos)
     {
       m_LoF.Clear();
-      if (null == m_Loc.Map || Rules.GridDistance(m_Actor.Location.Position, in pos) > maxRange) return "out of throwing range";
+      if (m_Loc.Map is null || Rules.GridDistance(m_Actor.Location.Position, in pos) > maxRange) return "out of throwing range";
       if (!LOS.CanTraceThrowLine(m_Actor.Location, in pos, maxRange, m_LoF)) return "no line of throwing";
       return "";
     }
@@ -120,7 +120,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
       var a_witness = m_Actor.PlayersInLOS();
       var d_witness = RogueGame.PlayersInLOS(m_Loc);
-      if (null != a_witness || null != d_witness) RogueGame.Game.UI_ThrowGrenadeUnprimed(m_Actor, m_ThrowPos, m_Grenade, a_witness, d_witness);
+      if (a_witness is not null || d_witness is not null) RogueGame.Game.UI_ThrowGrenadeUnprimed(m_Actor, m_ThrowPos, m_Grenade, a_witness, d_witness);
     }
 
     private void ThrowGrenadePrimed() {
@@ -146,7 +146,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
       var a_witness = m_Actor.PlayersInLOS();
       var d_witness = RogueGame.PlayersInLOS(m_Loc);
-      if (null != a_witness || null != d_witness) RogueGame.Game.UI_ThrowGrenadePrimed(m_Actor, m_ThrowPos, m_Primed, a_witness, d_witness);
+      if (a_witness is not null || d_witness is not null) RogueGame.Game.UI_ThrowGrenadePrimed(m_Actor, m_ThrowPos, m_Primed, a_witness, d_witness);
     }
   }
 }

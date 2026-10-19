@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public IEnumerable<Actor>? KnownBy {
       get {
-        if (null != m_Known) {
+        if (m_Known is not null) {
           m_Known.OnlyIfNot(Actor.IsDeceased);
           if (0 >= m_Known.Count) m_Known = null;
         }
@@ -77,8 +77,8 @@ namespace djack.RogueSurvivor.Engine.Items
         base.toJsonFields(writer, options);
         if (m_IsActivated) writer.WriteBoolean("Activated", true);
         if (m_IsTriggered) writer.WriteBoolean("Triggered", true);
-        if (null != m_Owner) writer.WriteRef("Owner", m_Owner);
-        if (null != m_Known && 0 < m_Known.Count) writer.WriteRefs("KnownBy", m_Known);
+        if (m_Owner is not null) writer.WriteRef("Owner", m_Owner);
+        if (m_Known is not null && 0 < m_Known.Count) writer.WriteRefs("KnownBy", m_Known);
     }
 
 #region UsableItem implementation
@@ -121,7 +121,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool IsSafeFor(Actor a)  // alpha10 was Actor::IsSafeFrom
     {
       if (m_Known?.Contains(a) ?? false) return true;
-      if (null != m_Owner) {
+      if (m_Owner is not null) {
         if (a == m_Owner) return true;
         if (a.IsInGroupWith(m_Owner)) { // XXX telepathy
           (m_Known ??= new List<Actor>()).Add(a);
@@ -145,13 +145,13 @@ namespace djack.RogueSurvivor.Engine.Items
       // \todo register die handler which auto-cleans m_Owner and m_KnownBy?
       // \todo global-scan ground inventories and request invalidation?
       var allies = a.FilterAllies(m_Known, may_ask);
-      if (null != m_Owner && may_ask(m_Owner)) (allies ??= new List<Actor>(1)).Add(m_Owner);
-      if (null == allies) return false; // intentionally unrealistically don't burn UI on automatic failure
-      if (null == is_real) return true;
+      if (m_Owner is not null && may_ask(m_Owner)) (allies ??= new List<Actor>(1)).Add(m_Owner);
+      if (allies is null) return false; // intentionally unrealistically don't burn UI on automatic failure
+      if (is_real is null) return true;
       void overheard_trap_instructions(Actor overhear) {
         // The complexity of the instructions is roughly comparable to the plausibility of triggering the trap without help
         // cf. Rules::CheckTrapTriggers (we intentionally allow a low plausibility even for 100% trigger chance)
-        if ((null== m_Known || !m_Known.Contains(overhear)) && !Rules.Get.RollChance(TriggerChanceFor(overhear) + 1)) {
+        if ((m_Known is null || !m_Known.Contains(overhear)) && !Rules.Get.RollChance(TriggerChanceFor(overhear) + 1)) {
           (m_Known ??= new List<Actor>(1)).Add(overhear);
           if (overhear.Model.Abilities.HasSanity) overhear.RegenSanity(Rules.SANITY_RECOVER_CHAT_OR_TRADE / 15);
         }
@@ -241,7 +241,7 @@ namespace djack.RogueSurvivor.Engine.Items
       // cleanup dead owner ref
       if (m_Owner?.IsDead ?? false) m_Owner = null;
 
-      if (null != m_Known) {
+      if (m_Known is not null) {
         m_Known.OnlyIfNot(Actor.IsDeceased);
         if (0 >= m_Known.Count) m_Known = null;
       }

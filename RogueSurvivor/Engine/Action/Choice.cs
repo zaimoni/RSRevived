@@ -14,7 +14,7 @@ namespace djack.RogueSurvivor.Engine._Action
 
         [Conditional("DEBUG")]
         private void _RejectEmptyActions(IEnumerable<ActorAction> src) {
-            if (null == src || 0 >= src.Count()) throw new ArgumentNullException(nameof(src));
+            if (src is null || 0 >= src.Count()) throw new ArgumentNullException(nameof(src));
         }
 
         public Choice(Actor actor, IEnumerable<ActorAction> src) : base(actor) {

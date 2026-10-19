@@ -98,16 +98,16 @@ namespace djack.RogueSurvivor.Engine.Actions
 
       { // deal with exits first; cf BaseAI::BehaviorUseExit
       var exit = m_Origin.Exit;
-      if (null != exit && exit.Location == m_NewLocation) {
+      if (exit is not null && exit.Location == m_NewLocation) {
         if (!see_dest || exit.IsNotBlocked(m_Actor)) return new ActionUseExit(m_Actor, in m_Origin);  // all failures of this test require sight information
-        if (null != actorAt) return null;   // should be in combat if enemy; don't have good options for allies
+        if (actorAt is not null) return null;   // should be in combat if enemy; don't have good options for allies
         return ActionBreak.schedule(m_Actor, obj);
       }
       }
 
       if (m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model, out m_FailReason)) working = ActionMoveStep.schedule(m_Actor, m_NewLocation);
 
-      if (null != actorAt) {
+      if (actorAt is not null) {
         if (m_Actor.IsEnemyOf(actorAt)) return null; // should be in combat processing
         // player as leader should be able to switch with player as follower
         // NPCs shouldn't be leading players anyway
@@ -125,7 +125,7 @@ namespace djack.RogueSurvivor.Engine.Actions
            bool push_legal = 1<=push_dest.Count;
            if (push_legal) {
              var self_block = (m_Actor.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(actorAt.Location);
-             if (null != self_block && 1==self_block.Count) {
+             if (self_block is not null && 1==self_block.Count) {
                push_dest.OnlyIf(pt => !self_block.Contains(pt));
                push_legal = 1<=push_dest.Count;
              }
@@ -134,7 +134,7 @@ namespace djack.RogueSurvivor.Engine.Actions
              bool i_am_in_his_way = false;
              bool i_can_help = false;
              var help_him = (actorAt.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(actorAt.Location);
-             if (null != help_him) {
+             if (help_him is not null) {
                i_am_in_his_way = help_him.Contains(m_Actor.Location);
                if (push_dest.NontrivialFilter(x => help_him.Contains(x.Key))) push_dest.OnlyIf(pt => help_him.Contains(pt));
                i_can_help = help_him.Contains(push_dest.First().Key);
@@ -145,36 +145,36 @@ namespace djack.RogueSurvivor.Engine.Actions
              var candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(m_Actor.Location, pt.Key));
              var candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(m_Actor.Location, pt.Key));
              var candidates = (i_can_help && candidates_2.Any()) ? candidates_2.ToList() : null;
-             if (null == candidates && !i_am_in_his_way && i_can_help && candidates_1.Any()) candidates = candidates_1.ToList();
-             if (null == candidates && i_am_in_his_way) {
+             if (candidates is null && !i_am_in_his_way && i_can_help && candidates_1.Any()) candidates = candidates_1.ToList();
+             if (candidates is null && i_am_in_his_way) {
                // HMM...maybe step aside instead?
                var considering = m_Actor.MutuallyAdjacentFor(actorAt.Location);
-               if (null != considering) {
+               if (considering is not null) {
                  considering = considering.FindAll(pt => pt.IsWalkableFor(m_Actor));
                  if (0 < considering.Count) return ActionMoveStep.schedule(m_Actor, rules.DiceRoller.Choose(considering));
                }
              }
 
              // legacy initialization
-             if (null == candidates && candidates_2.Any()) candidates = candidates_2.ToList();
-             if (null == candidates && candidates_1.Any()) candidates = candidates_1.ToList();
+             if (candidates is null && candidates_2.Any()) candidates = candidates_2.ToList();
+             if (candidates is null && candidates_1.Any()) candidates = candidates_1.ToList();
              // end function target
 
-             if (null != candidates) return new ActionShove(m_Actor,actorAt, rules.DiceRoller.Choose(candidates).Value);
+             if (candidates is not null) return new ActionShove(m_Actor,actorAt, rules.DiceRoller.Choose(candidates).Value);
            }
         }
         // check for mutual-advantage switching place between ais.  Proposing always succeeds, here (unlike pathfinding)
         if (actorAt.Controller is Gameplay.AI.OrderableAI oai && !oai.RejectSwitchPlaces(m_Actor.Location)) {
           return new ActionSwitchPlaceEmergency(m_Actor,actorAt);    // this is an AI cheat so shouldn't be happening that much
         }
-      } else if (null != obj) {
+      } else if (obj is not null) {
            if (obj is DoorWindow door) {
              if (door.BarricadePoints > 0) {
                // pathfinding livings will break barricaded doors (they'll prefer to go around it)
                var act_bash = ActionBashDoor.schedule(m_Actor, door);
-               if (null != act_bash) return act_bash;
+               if (act_bash is not null) return act_bash;
                var act_break = ActionBreak.schedule(m_Actor, door);
-               if (null != act_break) {
+               if (act_break is not null) {
                  if (act_break.IsPerformable()) return act_break;
                  if ("tired" == act_break.FailReason) return new ActionWait(m_Actor);
                }
@@ -201,17 +201,17 @@ namespace djack.RogueSurvivor.Engine.Actions
            bool push_legal = (1 <= push_dest.Count); // always adjacent
            if (push_legal) {
                var self_block = (m_Actor.Controller as Gameplay.AI.ObjectiveAI)?.WantToGoHere(m_Actor.Location);
-               if (null != self_block) push_dest.OnlyIf(pt => !self_block.Contains(pt));
+               if (self_block is not null) push_dest.OnlyIf(pt => !self_block.Contains(pt));
 
                var candidates = Rules.PreferNonAdjacent(push_dest, m_Actor.Location);
-               if (null != candidates) {
+               if (candidates is not null) {
                  Rules.MaximizeVisibility(ref candidates, m_Actor, obj);
                  return ActionPush.Random(m_Actor, obj);
                }
            }
            // proceed with pull if we can't push safely
            var pull_dests = obj.Location.Adjacent(loc => 1 == Rules.GridDistance(m_Actor.Location, loc));
-           if (null != pull_dests) return new ActionPull(m_Actor,obj, rules.DiceRoller.Choose(pull_dests));
+           if (pull_dests is not null) return new ActionPull(m_Actor,obj, rules.DiceRoller.Choose(pull_dests));
          }
          return null;
         }
@@ -307,7 +307,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         public override bool IsRelevant(Location loc) { return m_Origin == loc; }
         public override bool IsSuppressed(Actor a)
         {   // \todo more sophisticated response to enemies in sight (might need configuring)
-            return null != a.Controller.enemies_in_FOV;
+            return a.Controller.enemies_in_FOV is not null;
         }
 
         public bool IsCompleted(Actor src) { return m_NewLocation == src.Location; }
@@ -317,7 +317,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         public override KeyValuePair<ActorAction, WorldUpdate?>? BindReduce(Actor src)
         {
             var act = Bind(src);
-            if (null == act) return null;
+            if (act is null) return null;
             return new(act, null);
         }
 

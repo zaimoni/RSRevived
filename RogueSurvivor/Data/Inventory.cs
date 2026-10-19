@@ -109,13 +109,13 @@ namespace djack.RogueSurvivor.Data
     public bool CanAddAll(Item it) {
       if (!IsFull) return true;
       var itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
-      return null != itemsStackableWith && stackedQuantity >= it.Quantity;
+      return itemsStackableWith is not null && stackedQuantity >= it.Quantity;
     }
 
     public bool CanAddAny(Item it) {
       if (!IsFull) return true;
       var itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
-      return null != itemsStackableWith && stackedQuantity >= 1;
+      return itemsStackableWith is not null && stackedQuantity >= 1;
     }
 
     public bool AddAll(Item it)
@@ -125,7 +125,7 @@ namespace djack.RogueSurvivor.Data
 #endif
       RejectContains(it, "already had ");
       var itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
-      if (null != itemsStackableWith) { // also have 0<stackedQuantity
+      if (itemsStackableWith is not null) { // also have 0<stackedQuantity
         int quantity = stackedQuantity;
         foreach (Item to in itemsStackableWith) {
           int addThis = Math.Min(to.TopOffStack, quantity);
@@ -151,7 +151,7 @@ namespace djack.RogueSurvivor.Data
       int quantity = it.Quantity;
       int quantityAdded = 0;
       var itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
-      if (null != itemsStackableWith) {
+      if (itemsStackableWith is not null) {
         foreach (Item to in itemsStackableWith) {
           int stack = AddToStack(it, it.Quantity - quantityAdded, to);
           quantityAdded += stack;
@@ -234,7 +234,7 @@ namespace djack.RogueSurvivor.Data
       if (!Contains(it)) throw new InvalidOperationException("item not here");
 #endif
       var d_inv = dest.Inventory;
-      if (null != d_inv) return transfer(it, d_inv);
+      if (d_inv is not null) return transfer(it, d_inv);
       // null inventory is a location whose ground inventory is empty
       dest.Location.Drop(it);
       RemoveAllQuantity(it);
@@ -291,10 +291,10 @@ namespace djack.RogueSurvivor.Data
 
       foreach (Item it in m_Items) {
         if (it is _T_ obj) {
-          if (null == smallest || obj.Quantity < smallest.Quantity) smallest = obj;
+          if (smallest is null || obj.Quantity < smallest.Quantity) smallest = obj;
         }
       }
-      if (null == smallest) throw new InvalidOperationException("not found");
+      if (smallest is null) throw new InvalidOperationException("not found");
       return smallest;
     }
 
@@ -302,7 +302,7 @@ namespace djack.RogueSurvivor.Data
     {
       Item? obj = null;
       foreach (Item mItem in m_Items) {
-        if (mItem.Model == it && (obj == null || mItem.Quantity < obj.Quantity))
+        if (mItem.Model == it && (obj is null || mItem.Quantity < obj.Quantity))
           obj = mItem;
       }
       return obj;
@@ -312,7 +312,7 @@ namespace djack.RogueSurvivor.Data
     {
       Item? obj = null;
       foreach (Item mItem in m_Items) {
-        if (mItem.Model == it && (obj == null || mItem.Quantity > obj.Quantity))
+        if (mItem.Model == it && (obj is null || mItem.Quantity > obj.Quantity))
           obj = mItem;
       }
       return obj;
@@ -409,7 +409,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool Contains(Item it) => m_Items.Contains(it);
-    public bool Contains(Gameplay.Item_IDs id) => null != GetFirst(id);
+    public bool Contains(Gameplay.Item_IDs id) => GetFirst(id) is not null;
 
 
         // alpha10
@@ -513,12 +513,12 @@ namespace djack.RogueSurvivor.Data
 
     public bool Has<_T_>() where _T_ : Item
     {
-      return null != GetFirst<_T_>();
+      return GetFirst<_T_>() is not null;
     }
 
     public bool Has<_T_>(Predicate<_T_> ok) where _T_ : Item
     {
-      return null != GetFirst<_T_>(ok);
+      return GetFirst<_T_>(ok) is not null;
     }
 
     public _T_? GetFirst<_T_>() where _T_ : Item
@@ -554,7 +554,7 @@ namespace djack.RogueSurvivor.Data
       return num;
     }
 
-    public bool Has(Gameplay.Item_IDs id) => null != GetFirst(id);
+    public bool Has(Gameplay.Item_IDs id) => GetFirst(id) is not null;
 
     public Item? GetFirst(Gameplay.Item_IDs id)
     {
@@ -562,7 +562,7 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    public bool HasPrecise(Gameplay.Item_IDs id) => null != GetFirstPrecise(id);
+    public bool HasPrecise(Gameplay.Item_IDs id) => GetFirstPrecise(id) is not null;
 
     public Item? GetFirstPrecise(Gameplay.Item_IDs id)
     {
@@ -633,7 +633,7 @@ namespace djack.RogueSurvivor.Data
       _T_? ret = null;
       foreach (Item obj in m_Items) {
         if (obj is _T_ tmp && ok(tmp)) {
-          if (null == ret || lt(ret,tmp)) ret = tmp;
+          if (ret is null || lt(ret,tmp)) ret = tmp;
         }
       }
       return ret;
@@ -800,10 +800,10 @@ namespace djack.RogueSurvivor.Data
         static public Model.InvOrigin? Inv(this Location loc, Gameplay.Item_IDs item_type)
         {
             var ret = loc.ShelfInv();
-            if (null != ret && ret.Value.Inventory!.HasPrecise(item_type)) return ret;
+            if (ret is not null && ret.Value.Inventory!.HasPrecise(item_type)) return ret;
             var ret2 = loc.GroundInv();
-            if (null != ret2 && ret2.Value.Inventory!.HasPrecise(item_type)) return ret2;
-            if (null != ret) return ret;
+            if (ret2 is not null && ret2.Value.Inventory!.HasPrecise(item_type)) return ret2;
+            if (ret is not null) return ret;
             return ret2;
         }
 
@@ -820,7 +820,7 @@ namespace djack.RogueSurvivor.Data
         static public Model.InvOrigin DropOntoInventory(this Location origin)
         {
             var shelf = origin.MapObject as ShelfLike;
-            if (null != shelf && shelf.IsJumpable) return new(shelf);
+            if (shelf is not null && shelf.IsJumpable) return new(shelf);
             return new(origin);
         }
 
@@ -858,11 +858,11 @@ namespace djack.RogueSurvivor.Data
 
         public Item? GetFirst(Gameplay.Item_IDs id)
         {
-            foreach (Item? it in m_Items) if (null != it && id == it.ModelID) return it;
+            foreach (Item? it in m_Items) if (it is not null && id == it.ModelID) return it;
             return null;
         }
 
-        public bool Contains(Gameplay.Item_IDs id) => null != GetFirst(id);
+        public bool Contains(Gameplay.Item_IDs id) => GetFirst(id) is not null;
 
         public bool Remove(Item it) {
           var ub = m_Items.Length;
@@ -883,13 +883,13 @@ namespace djack.RogueSurvivor.Data
 
         public bool SetIfNull(int index, Item it) {
           if (index < 0 || index >= m_Items.Length) throw new ArgumentOutOfRangeException("tracing");
-          if (null != m_Items[index]) return false;
+          if (m_Items[index] is not null) return false;
           m_Items[index] = it;
           return true;
         }
 
         public bool Transfer(int index, Model.InvOrigin dest) {
-            if (null == m_Items[index]) return true;
+            if (m_Items[index] is null) return true;
 
             if (dest.Take(m_Items[index])) {
                 m_Items[index] = null;
@@ -901,7 +901,7 @@ namespace djack.RogueSurvivor.Data
         // JSON: an array with one entry per slot, null where the slot is empty.  Our owner writes us only when !IsEmpty.
         public bool IsEmpty {
             get {
-                foreach (var it in m_Items) if (null != it) return false;
+                foreach (var it in m_Items) if (it is not null) return false;
                 return true;
             }
         }
@@ -910,7 +910,7 @@ namespace djack.RogueSurvivor.Data
         {
             writer.WriteStartArray();
             foreach (var it in m_Items) {
-                if (null == it) writer.WriteNullValue();
+                if (it is null) writer.WriteNullValue();
                 else JsonSerializer.Serialize(writer, it, options);
             }
             writer.WriteEndArray();

@@ -125,7 +125,7 @@ namespace djack.RogueSurvivor.Engine
                 {
                 start += alt_step;
                 numerator -= 2*needRange;
-                if ((null != blacklist[0] && blacklist[0] == start) || !fn(start)) return false;
+                if ((blacklist[0] is not null && blacklist[0] == start) || !fn(start)) return false;
                 line?.Add(start);
                 if (1 == alt_step.Index % 2 && !fn(start+tmp)) blacklist[2] = start+tmp+alt_step;
                 continue;
@@ -133,7 +133,7 @@ namespace djack.RogueSurvivor.Engine
             else if (numerator < needRange)
                 {
                 start += tmp;
-                if ((null != blacklist[0] && blacklist[0] == start) || !fn(start)) return false;
+                if ((blacklist[0] is not null && blacklist[0] == start) || !fn(start)) return false;
                 line?.Add(start);
                 if (1 == tmp.Index % 2 && !fn(start+alt_step)) blacklist[2] = start+tmp+alt_step;
                 continue;
@@ -141,7 +141,7 @@ namespace djack.RogueSurvivor.Engine
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+tmp;
-                if ((null != blacklist[0] && blacklist[0]==test) || !fn(test)) {
+                if ((blacklist[0] is not null && blacklist[0]==test) || !fn(test)) {
                   knightmove_parity = -1;
                   foreach(int fix_me in knight_moves) {
                     // earlier steps must be revised
@@ -153,9 +153,9 @@ namespace djack.RogueSurvivor.Engine
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+alt_step;
-                if ((null != blacklist[0] && blacklist[0] == test) || !fn(test)) knightmove_parity = 1;
+                if ((blacklist[0] is not null && blacklist[0] == test) || !fn(test)) knightmove_parity = 1;
                 }
-            if (0==knightmove_parity && null!=line) knight_moves.Add(line.Count);
+            if (0==knightmove_parity && line is not null) knight_moves.Add(line.Count);
             if (-1==knightmove_parity)
                 {
                 start += alt_step;
@@ -223,7 +223,7 @@ namespace djack.RogueSurvivor.Engine
                 {
                 start += alt_step;
                 numerator -= 2*needRange;
-                if ((null != blacklist[0] && blacklist[0] == start) || !fn(start)) return false;
+                if ((blacklist[0] is not null && blacklist[0] == start) || !fn(start)) return false;
                 visible(start);
                 if (1 == alt_step.Index % 2 && !fn(start+tmp)) blacklist[2] = start+tmp+alt_step;
                 continue;
@@ -231,7 +231,7 @@ namespace djack.RogueSurvivor.Engine
             else if (numerator < needRange)
                 {
                 start += tmp;
-                if ((null != blacklist[0] && blacklist[0] == start) || !fn(start)) return false;
+                if ((blacklist[0] is not null && blacklist[0] == start) || !fn(start)) return false;
                 visible(start);
                 if (1 == tmp.Index % 2 && !fn(start+alt_step)) blacklist[2] = start+tmp+alt_step;
                 continue;
@@ -239,12 +239,12 @@ namespace djack.RogueSurvivor.Engine
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+tmp;
-                if ((null != blacklist[0] && blacklist[0]==test) || !fn(test)) knightmove_parity = -1;
+                if ((blacklist[0] is not null && blacklist[0]==test) || !fn(test)) knightmove_parity = -1;
                 }
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
                 Point test = start+alt_step;
-                if ((null != blacklist[0] && blacklist[0] == test) || !fn(test)) knightmove_parity = 1;
+                if ((blacklist[0] is not null && blacklist[0] == test) || !fn(test)) knightmove_parity = 1;
                 }
             if (-1==knightmove_parity)
                 {
@@ -300,7 +300,7 @@ namespace djack.RogueSurvivor.Engine
     public static Location[] IdealFireLine(Location from, Location to, int maxRange)
     {
       Location? test = from.Map.Denormalize(in to);
-      if (null == test) return null;
+      if (test is null) return null;
       return IdealFireLine(in from, test.Value.Position, maxRange);
     }
 
@@ -326,7 +326,7 @@ namespace djack.RogueSurvivor.Engine
     public static Location[]? AbstractFireLine(Location from, Location to)
     {
       Location? test = from.Map.Denormalize(in to);
-      if (null == test) return null;
+      if (test is null) return null;
       int dist = Rules.InteractionDistance(in from, test.Value);
       return AbstractFireLine(in from, test.Value.Position);
     }
@@ -347,7 +347,7 @@ namespace djack.RogueSurvivor.Engine
     public static bool CanTraceHypotheticalFireLine(in Location from, Location to, int maxRange, Actor shooter, List<Point>? line=null)
     {
       Location? test = from.Map.Denormalize(in to);
-      if (null == test) return false;
+      if (test is null) return false;
       return CanTraceHypotheticalFireLine(in from, test.Value.Position, maxRange, shooter, line);
     }
 
@@ -362,7 +362,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (fromLocation.Map==toLocation.Map) return CanTraceFireLine(in fromLocation, toLocation.Position, maxRange, line);
       Location? tmp = fromLocation.Map.Denormalize(in toLocation);
-      if (null == tmp) return false;
+      if (tmp is null) return false;
       return CanTraceFireLine(in fromLocation, tmp.Value.Position, maxRange, line);
     }
 
@@ -420,7 +420,7 @@ namespace djack.RogueSurvivor.Engine
       foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>pt+position)) {
         if (visibleSet.Contains(point1)) continue;
         var tile_loc = map.GetTileModelLocation(point1);
-        if (null == tile_loc.Key) continue;
+        if (tile_loc.Key is null) continue;
         if (!FOVSub(in a_loc, point1)) {
             bool flag = false;
             TileModel tileModel = tile_loc.Key;
@@ -437,7 +437,7 @@ namespace djack.RogueSurvivor.Engine
         if (position.X == point2.X) continue;   // due N/S
         if (position.Y == point2.Y) continue;   // due E/W
         Point diag = VisibilityCheck(position, point2, out var lateral);
-        if (null == lateral) continue;  // due NE/NW/SE/SW
+        if (lateral is null) continue;  // due NE/NW/SE/SW
 
         // tests for due NE/NW/SE/SW are more complex.  Unfortunately, the legacy postprocessing fails with barricaded glass doors
         // ..@.
@@ -482,7 +482,7 @@ namespace djack.RogueSurvivor.Engine
       foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>pt+position)) {
         if (visibleSet.Contains(point1)) continue;
         var tile_loc = map.GetTileModelLocation(point1);
-        if (null == tile_loc.Key) continue;
+        if (tile_loc.Key is null) continue;
         if (!FOVSub(in a_loc, point1)) {
             bool flag = false;
             TileModel tileModel = tile_loc.Key;
@@ -499,7 +499,7 @@ namespace djack.RogueSurvivor.Engine
         if (position.X == point2.X) continue;   // due N/S
         if (position.Y == point2.Y) continue;   // due E/W
         Point diag = VisibilityCheck(position, point2, out var lateral);
-        if (null == lateral) continue;  // due NE/NW/SE/SW
+        if (lateral is null) continue;  // due NE/NW/SE/SW
 
         // tests for due NE/NW/SE/SW are more complex.  Unfortunately, the legacy postprocessing fails with barricaded glass doors
         // ..@.

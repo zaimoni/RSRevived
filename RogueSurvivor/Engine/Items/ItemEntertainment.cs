@@ -35,13 +35,13 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
         base.toJsonFields(writer, options);
-        if (null != m_BoringFor) writer.WriteArray("BoringFor", m_BoringFor, options);
+        if (m_BoringFor is not null) writer.WriteArray("BoringFor", m_BoringFor, options);
     }
 
 
     public void AddBoringFor(in ActorTag a)
     {
-      if (null == m_BoringFor) m_BoringFor = new List<ActorTag> { a };
+      if (m_BoringFor is null) m_BoringFor = new List<ActorTag> { a };
       else if (!m_BoringFor.Contains(a)) m_BoringFor.Add(a);
     }
 

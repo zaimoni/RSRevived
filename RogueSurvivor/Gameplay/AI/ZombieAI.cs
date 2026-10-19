@@ -54,11 +54,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       JsonSerializer.Serialize(writer, m_MemLOSSensor, options);
       writer.WritePropertyName("Smell");
       JsonSerializer.Serialize(writer, m_LivingSmellSensor, options);
-      if (null != m_MasterSmellSensor) {
+      if (m_MasterSmellSensor is not null) {
         writer.WritePropertyName("MasterSmell");
         JsonSerializer.Serialize(writer, m_MasterSmellSensor, options);
       }
-      if (null != m_Exploration && !m_Exploration.IsEmpty) {
+      if (m_Exploration is not null && !m_Exploration.IsEmpty) {
         writer.WritePropertyName("Exploration");
         m_Exploration.toJson(writer, options);
       }
@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (src.TryGetProperty("Exploration", out x)) m_Exploration = new(x, options);
     }
 
-    protected override bool HasJsonState { get => (null != m_Exploration && !m_Exploration.IsEmpty) || base.HasJsonState; }
+    protected override bool HasJsonState { get => (m_Exploration is not null && !m_Exploration.IsEmpty) || base.HasJsonState; }
     #endregion
 
     public override List<Percept> UpdateSensors()
@@ -95,28 +95,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (tmp_abilities.ZombieAI_Explore && m_Actor.Location != PrevLocation) m_Exploration.Update(m_Actor.Location);
 
       ActorAction? tmpAction;
-      if (null != (_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors()))))) {
+      if ((_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors())))) is not null) {
         tmpAction = TargetGridMelee(FilterCurrent(_enemies));
-        if (null != tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
         tmpAction = TargetGridMelee(FilterOld(_enemies));
-        if (null != tmpAction) return tmpAction;
+        if (tmpAction is not null) return tmpAction;
       }
       tmpAction = BehaviorGoEatCorpse(_all);
-      if (null != tmpAction) return tmpAction;
+      if (tmpAction is not null) return tmpAction;
 
       var rules = Rules.Get;
       if (tmp_abilities.AI_CanUseAIExits && rules.RollChance(USE_EXIT_CHANCE)) {
         tmpAction = BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES | UseExitFlags.DONT_BACKTRACK);
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           m_MemLOSSensor.Clear();
           return tmpAction;
         }
       }
       if (!tmp_abilities.IsUndeadMaster) {
         var percept = FilterNearest(_all.FilterT<Actor>(a => a.Model.Abilities.IsUndeadMaster));
-        if (percept != null) {
+        if (percept is not null) {
           tmpAction = BehaviorStupidBumpToward(RandomPositionNear(rules, percept.Location, 3), true, true);
-          if (null != tmpAction) {
+          if (tmpAction is not null) {
             m_Actor.TargetedActivity(Activity.FOLLOWING, percept.Percepted as Actor);
             return tmpAction;
           }
@@ -124,26 +124,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (!tmp_abilities.IsUndeadMaster) {
         tmpAction = BehaviorTrackScent(m_MasterSmellSensor.Scents);
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           m_Actor.Activity = Activity.TRACKING;
           return tmpAction;
         }
       }
       tmpAction = BehaviorTrackScent(m_LivingSmellSensor.Scents);
-      if (null != tmpAction) {
+      if (tmpAction is not null) {
         m_Actor.Activity = Activity.TRACKING;
         return tmpAction;
       }
       if (m_Actor.AbleToPush && rules.RollChance(PUSH_OBJECT_CHANCE)) {
         tmpAction = BehaviorPushNonWalkableObject();
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
       }
       if (tmp_abilities.ZombieAI_Explore) {
         tmpAction = BehaviorExplore(m_Exploration);
-        if (null != tmpAction) {
+        if (tmpAction is not null) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
