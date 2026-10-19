@@ -3905,7 +3905,7 @@ namespace djack.RogueSurvivor.Engine
               }
             };
 
-            Map entryMap = World.Get[x, y].EntryMap;
+            Map entryMap = World.Get[pt].EntryMap;
             var zoneByPartialName1 = entryMap.GetZoneByPartialName("Subway Station");
             if (zoneByPartialName1 is not null) {
               render(Color.Blue, zoneByPartialName1.Name);
@@ -4931,7 +4931,7 @@ namespace djack.RogueSurvivor.Engine
     {
       var corpse = MouseToCorpse(mousePos);
       if (corpse is null) return false;
-      if (!player.CanRevive(corpse, out string reason)) {
+      if (!ActionReviveCorpse.Can(player, corpse, out var reason)) {
         ErrorPopup(string.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, reason));
         return false;
       }

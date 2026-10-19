@@ -28,12 +28,55 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return m_Actor.CanRevive(m_Target, out m_FailReason);
+      m_FailReason = ReasonIllegal(m_Actor) ?? ReasonIllegal(m_Target);
+      return string.IsNullOrEmpty(m_FailReason);
+    }
+
+    public override bool IsPerformable()
+    {
+      if (!IsLegal()) return false;
+      m_FailReason = ReasonCant(m_Actor, m_Target);
+      return string.IsNullOrEmpty(m_FailReason);
     }
 
     public override void Perform()
     {
       RogueGame.Game.DoReviveCorpse(m_Actor, m_Target);
     }
+
+    public static string? ReasonIllegal(Actor actor) {
+      if (0 == actor.MySkills.GetSkillLevel(Gameplay.Skills.IDs.MEDIC)) return "lack medic skill";
+      if (!actor.Inventory.Has(Gameplay.Item_IDs.MEDICINE_MEDIKIT)) return "no medikit";
+      return null;
+    }
+
+    public static string? ReasonIllegal(Corpse corpse) {
+      if (0 < corpse.RotLevel) return "corpse not fresh";
+      return null;
+    }
+
+    public static string? ReasonCant(Actor actor, Corpse corpse)
+    {
+      if (corpse.Location != actor.Location) return "not there";
+      return null;
+    }
+
+    private static string ReasonCannot(Actor actor, Corpse corpse)
+    {
+      return ReasonIllegal(actor) ?? ReasonIllegal(corpse) ?? ReasonCant(actor, corpse) ?? "";
+    }
+
+    public static bool Can(Actor actor, Corpse corpse, out string? reason)
+    {
+      reason = ReasonCannot(actor, corpse);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public static bool Can(Actor actor, Corpse corpse)
+    {
+      return string.IsNullOrEmpty(ReasonCannot(actor, corpse));
+    }
+
+
   }
 }

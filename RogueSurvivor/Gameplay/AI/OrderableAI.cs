@@ -3835,25 +3835,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #else
       if (!Session.HasCorpses) return null;
 #endif
-      if (0 == m_Actor.MySkills.GetSkillLevel(Skills.IDs.MEDIC)) return null;
-      if (!m_Actor.HasItemOfModel(GameItems.MEDIKIT)) return null;
-      var corpsePercepts = percepts?.FilterT<List<Corpse>>()?.Filter(p =>
-      {
-        foreach (Corpse corpse in p.Percepted as List<Corpse>) {
-          if (m_Actor.CanRevive(corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
-            return true;
-        }
-        return false;
-      });
-      if (corpsePercepts is null) return null;
-      var percept = FilterNearest(corpsePercepts);
-      if (m_Actor.Location.Position==percept.Location.Position) {
-        foreach (Corpse corpse in (percept.Percepted as List<Corpse>)) {
-          if (m_Actor.CanRevive(corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
-            return new ActionReviveCorpse(m_Actor, corpse);
+      if (percepts is null) return null;
+      if (!string.IsNullOrEmpty(ActionReviveCorpse.ReasonIllegal(m_Actor))) return null;
+
+      List<Percept_<Corpse>> could_revive = new();
+      foreach(var p in percepts) {
+        if (p.Percepted is List<Corpse> corpses) {
+            foreach(var c in corpses) {
+                if (!string.IsNullOrEmpty(ActionReviveCorpse.ReasonIllegal(c))) continue;
+                if (m_Actor.IsEnemyOf(c.DeadGuy)) continue;
+                could_revive.Add(new(c, p.Turn, p.Location));
+            }
         }
       }
-      return BehaviorHeadFor(percept.Location,false,false);
+      if (0 >= could_revive.Count) return null;
+
+      var revive_me = FilterNearest(could_revive)!;
+      if (!string.IsNullOrEmpty(ActionReviveCorpse.ReasonCant(m_Actor, revive_me.Percepted)))
+          return new ActionReviveCorpse(m_Actor, revive_me.Percepted);
+      return BehaviorHeadFor(revive_me.Location, false, false);
     }
 
 #region ground inventory stacks

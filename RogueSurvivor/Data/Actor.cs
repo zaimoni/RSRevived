@@ -2970,29 +2970,9 @@ namespace djack.RogueSurvivor.Data
       return baseEffect + (int)Math.Ceiling(/* (double) */ SKILL_MEDIC_BONUS * /* (int) */ (MySkills.GetSkillLevel(Skills.IDs.MEDIC) * baseEffect));
     }
 
-    private string ReasonCantRevive(Corpse corpse)
-    {
-      if (0 == MySkills.GetSkillLevel(Skills.IDs.MEDIC)) return "lack medic skill";
-      if (corpse.Location != Location) return "not there";
-      if (corpse.RotLevel > 0) return "corpse not fresh";
-      if (!m_Inventory.Has(Gameplay.Item_IDs.MEDICINE_MEDIKIT)) return "no medikit";
-      return "";
-    }
-
-    public bool CanRevive(Corpse corpse, out string reason)
-    {
-      reason = ReasonCantRevive(corpse);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanRevive(Corpse corpse)
-    {
-      return string.IsNullOrEmpty(ReasonCantRevive(corpse));
-    }
-
     public int ReviveChance(Corpse corpse)
     {
-      if (!CanRevive(corpse)) return 0;
+      if (!ActionReviveCorpse.Can(this, corpse)) return 0;
       return corpse.FreshnessPercent / 4 + MySkills.GetSkillLevel(Skills.IDs.MEDIC) * SKILL_MEDIC_REVIVE_BONUS;
     }
 
