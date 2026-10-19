@@ -444,7 +444,7 @@ namespace djack.RogueSurvivor.Engine
 
         // check for mutual-advantage switching place between ais
         if (actor.Controller is Gameplay.AI.OrderableAI myai && myai.ProposeSwitchPlaces(actorAt.Location)) {
-          if (actorAt.Controller is Gameplay.AI.OrderableAI oai && !oai.RejectSwitchPlaces(actor.Location)) {
+          if (actorAt.Controller is Gameplay.AI.OrderableAI other_ai && !other_ai.RejectSwitchPlaces(actor.Location)) {
             return new ActionSwitchPlaceEmergency(actor,actorAt);    // this is an AI cheat so shouldn't be happening that much
           }
         }
