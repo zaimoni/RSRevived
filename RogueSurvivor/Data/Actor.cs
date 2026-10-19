@@ -3631,12 +3631,8 @@ final_exit:
       return (short)Math.Max(MINIMAL_FOV, FOV);
     }
 
-    private short LightBonus {
-      get {
-        if (GetEquippedItem(DollPart.LEFT_HAND) is ItemLight light && 0 < light.Batteries) return light.FovBonus;
-        return 0;
-      }
-    }
+    private short LightBonus => GetEquippedItem(DollPart.LEFT_HAND)?.NotUseless<ItemLight>()?.FovBonus ?? 0;
+
     private static bool UsingLight(Actor a) => 0 < a.LightBonus;
 
     public short FOVrange(WorldTime time, Weather weather)
