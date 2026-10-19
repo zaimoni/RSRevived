@@ -1071,7 +1071,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool command_line()
       {
-        if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return false;
+        if (!Session.CommandLineOptions.TryGetValue("spawn",out var x)) return false;
         switch(x.Substring(0,1))
         {
 #if false
@@ -1165,7 +1165,7 @@ namespace djack.RogueSurvivor.Engine
 
       static bool? command_line()
       {
-        if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
+        if (!Session.CommandLineOptions.TryGetValue("spawn",out var x)) return null;
         switch(x.Substring(1,1))
         {
         case "L": return false;
@@ -1177,7 +1177,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       bool? ret = command_line();
-      if (null != ret) return ret;
+      if (ret is not null) return ret;
 
       Func<int,bool?> setup_handler = (currentChoice => {
         m_UI.ClearScreen();
@@ -1224,7 +1224,7 @@ namespace djack.RogueSurvivor.Engine
 
       static bool? command_line()
       {
-        if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
+        if (!Session.CommandLineOptions.TryGetValue("spawn",out var x)) return null;
         switch(x.Substring(2,1))
         {
         case "M": return true;
@@ -1234,7 +1234,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       bool? ret = command_line();
-      if (null != ret) return ret;
+      if (ret is not null) return ret;
 
       const int gx = 0;
       int gy = 0;

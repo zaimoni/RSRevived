@@ -2144,17 +2144,17 @@ namespace djack.RogueSurvivor.Data
       var ret = new Dictionary<Point, ActorAction>(9);
       foreach(var pt in p.Adjacent()) {
         if (already.TryGetValue(pt, out var relay)) {
-          ret[pt] = relay;
+          ret.Add(pt, relay);
           continue;
         }
         Location dest = new Location(m,pt);
         if (!Map.Canonical(ref dest)) continue;
         if (Location==dest) {
-          ret[pt] = ActionMoveStep.schedule(this, dest)!;
+          ret.Add(pt, ActionMoveStep.schedule(this, dest)!);
           continue;
         }
-        ActorAction tmp = Rules.IsPathableFor(this, in dest) ?? ActionMoveDelta.schedule(this, dest, new Location(m, p));
-        if (tmp is not null) ret[pt] = tmp;
+        ActorAction? tmp = Rules.IsPathableFor(this, in dest) ?? ActionMoveDelta.schedule(this, dest, new Location(m, p));
+        if (tmp is not null) ret.Add(pt, tmp);
       }
       return ret;
     }

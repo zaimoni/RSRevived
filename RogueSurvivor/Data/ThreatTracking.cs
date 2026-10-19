@@ -211,7 +211,7 @@ namespace djack.RogueSurvivor.Data
           if (0 < crossdistrict_ok) {
             Point pos = map.DistrictPos;   // only used in denormalized cases
             var world = World.Get;
-            District test = null;
+            District? test = null;
             // subway may be null
             if (0 > view.Left) {
               if (null != (test = world.At(pos + Direction.W))) {
@@ -371,7 +371,7 @@ namespace djack.RogueSurvivor.Data
         public void RecordTaint(Actor a, Map m, IEnumerable<Point> pts)
         {
           List<Point> local = new(pts.Count());
-          List<Point> other = null;
+          List<Point>? other = null;
           foreach(Point pt in pts) {
             (m.IsInBounds(pt) ? local : (other ??= new(pts.Count()))).Add(pt);
           }
@@ -570,7 +570,7 @@ namespace djack.RogueSurvivor.Data
           // cheating move handler
           private void HandleMove(object sender, EventArgs e)
           {
-            Actor moving = (sender as Actor);
+            var moving = (sender as Actor);
             var tmp = moving.OneStepRange();
             if (tmp is null) return;
             tmp.Add(moving.Location);

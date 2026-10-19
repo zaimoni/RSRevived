@@ -91,7 +91,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     // works like pathing rather than bumping
     private ActorAction _resolve()
     {
-      ActorAction working = null;
+      ActorAction? working = null;
       bool see_dest = m_Actor.Controller.CanSee(in m_NewLocation);
       var obj = see_dest ? m_NewLocation.MapObject : null;
       var actorAt = see_dest ? m_NewLocation.Actor : null;

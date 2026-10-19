@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Zaimoni.Data
 {
@@ -21,7 +22,7 @@ namespace Zaimoni.Data
         }
       }
 
-      public bool TryGetValue(K key, out V? value)
+      public bool TryGetValue(K key, [NotNullWhen(true)] out V? value)
       {
         lock(_map) {
           if (_map[_now].TryGetValue(key,out value)) return true;

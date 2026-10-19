@@ -232,7 +232,7 @@ namespace djack.RogueSurvivor.Engine
       var actors_in_way = actor.GetMoveBlockingActors(point);
       var melee = actors_in_way.CanBumpMelee(actor, point, out reason);
       if (null != melee) return melee;
-      if (actors_in_way.TryGetValue(point,out Actor actorAt)) {
+      if (actors_in_way.TryGetValue(point,out var actorAt)) {
         // player as leader should be able to switch with player as follower
         // NPCs shouldn't be leading players anyway
         if ((actor.IsPlayer || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))

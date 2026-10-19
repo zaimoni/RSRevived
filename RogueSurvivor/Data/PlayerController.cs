@@ -630,12 +630,12 @@ namespace djack.RogueSurvivor.Data
         }));
       }
 
-      ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Gameplay.GameItems.PILLS_STA) as ItemMedicine);
-      if (null != stim) {
-        MapObject car = null;
+      ItemMedicine? stim = (m_Actor?.Inventory.GetBestDestackable(Gameplay.GameItems.PILLS_STA) as ItemMedicine);
+      if (stim is not null) {
+        MapObject? car = null;
         foreach(var pt in m_Actor.Location.Position.Adjacent()) {
           var tmp = m_Actor.Location.Map.GetMapObjectAtExt(pt);
-          if (null == tmp) continue;
+          if (tmp is null) continue;
           switch(tmp.ID) {
           case MapObject.IDs.CAR1:
           case MapObject.IDs.CAR2:
@@ -647,7 +647,7 @@ namespace djack.RogueSurvivor.Data
           }
           break;
         }
-        if (null != car) {
+        if (car is not null) {
           int threshold = m_Actor.MaxSTA-m_Actor.ScaleMedicineEffect(stim.StaminaBoost)+2;
           // currently all wrecked cars have weight 100
           if (Actor.STAMINA_MIN_FOR_ACTIVITY+MapObject.CAR_WEIGHT < threshold) threshold = Actor.STAMINA_MIN_FOR_ACTIVITY + MapObject.CAR_WEIGHT;   // no-op at 30 turns/hour, but not at 900 turns/hour

@@ -770,8 +770,8 @@ namespace djack.RogueSurvivor.Data
         }
       }
       // following fails if district size strictly less than the half-view radius
-      Map dest = World.Get[new_district.X,new_district.Y].CrossDistrictViewing(map_code);
-      if (null==dest) return null;
+      Map? dest = World.Get[new_district.X,new_district.Y].CrossDistrictViewing(map_code);
+      if (dest is null) return null;
       if (1==district_delta.X) pt.X -= Width;
       else if (-1==district_delta.X) pt.X += dest.Width;
       if (1==district_delta.Y) pt.Y -= Height;
