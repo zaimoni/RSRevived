@@ -16,9 +16,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Numerics;
-using Zaimoni.Data;
 using System.Text.Json;
+using Zaimoni.Data;
 using Zaimoni.JSON;
 using static Zaimoni.Data.Functor;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -889,14 +888,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorUseExit(e, useFlags);
     }
 
-    protected ActorAction? BehaviorGoEatFoodOnGround(List<Percept>? stacksPercepts)
+    protected ActorAction? BehaviorGoEatFoodOnGround(List<Percept_<Inventory>>? stacksPercepts)
     {
       if (stacksPercepts is null) return null;
-      var percepts = stacksPercepts.FilterT<Inventory>(inv => inv.Has<ItemFood>());
-      if (percepts is null) return null;
       var firstByType = m_Actor.Location.Items?.GetFirst<ItemFood>();
       if (firstByType is not null) return new ActionEatFoodOnGround(m_Actor, firstByType);
-      var percept = FilterNearest(percepts);
+      var percept = FilterNearest(stacksPercepts);
       return BehaviorStupidBumpToward(percept.Location,false,false);
     }
 

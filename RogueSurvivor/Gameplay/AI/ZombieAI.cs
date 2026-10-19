@@ -113,11 +113,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (!tmp_abilities.IsUndeadMaster) {
-        var percept = FilterNearest(_all.FilterT<Actor>(a => a.Model.Abilities.IsUndeadMaster));
+        var percept = FilterNearest(_all?.FilterCast<Actor>(a => a.Model.Abilities.IsUndeadMaster));
         if (percept is not null) {
           tmpAction = BehaviorStupidBumpToward(RandomPositionNear(rules, percept.Location, 3), true, true);
           if (tmpAction is not null) {
-            m_Actor.TargetedActivity(Activity.FOLLOWING, percept.Percepted as Actor);
+            m_Actor.TargetedActivity(Activity.FOLLOWING, percept.Percepted);
             return tmpAction;
           }
         }

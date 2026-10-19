@@ -21,7 +21,7 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal class FeralDogAI : BaseAI, IJsonStaged<FeralDogAI>
+  internal sealed class FeralDogAI : BaseAI, IJsonStaged<FeralDogAI>
   {
     // JSON: saves $type only so far (the AI reloads with amnesia)
     static FeralDogAI IJsonStaged<FeralDogAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new FeralDogAI(JsonOwner));
@@ -105,7 +105,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (m_Actor.IsAlmostHungry) {
-        tmpAction = BehaviorGoEatFoodOnGround(_all?.FilterT<Inventory>());
+        tmpAction = BehaviorGoEatFoodOnGround(_all?.FilterCast<Inventory>());
         if (tmpAction is not null) {
           m_Actor.Run();
           m_Actor.Activity = Activity.IDLE;
@@ -132,13 +132,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorWander();
     }
 
-    protected void RunToIfCloseTo(Location loc, int closeDistance)
+    private void RunToIfCloseTo(Location loc, int closeDistance)
     {
       if (Rules.GridDistance(m_Actor.Location, in loc) <= closeDistance) {
         m_Actor.Run();
       } else {
         m_Actor.Walk();
       }
+    }
+
+    private ActorAction? BehaviorGoEatFoodOnGround(List<Percept_<Inventory>>? stacksPercepts)
+    {
+      if (stacksPercepts is null) return null;
+      var firstByType = m_Actor.Location.Items?.GetFirst<Engine.Items.ItemFood>();
+      if (firstByType is not null) return new ActionEatFoodOnGround(m_Actor, firstByType);
+      var percept = FilterNearest(stacksPercepts);
+      return BehaviorStupidBumpToward(percept.Location, false, false);
     }
   }
 }
