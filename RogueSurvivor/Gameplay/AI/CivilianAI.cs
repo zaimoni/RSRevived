@@ -527,8 +527,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // convention: a null map has been blacklisted
         // if the final return value is null, we know the map was blacklisted and do not need to expand from it
         var update_path = ForceLambdaPath();
-        Func<Map,HashSet<Point>> pathing_targets = null;
-        ThreatTracking threats = m_Actor.Threats;
+        Func<Map,HashSet<Point>>? pathing_targets = null;
+        ThreatTracking? threats = m_Actor.Threats;
 
         HashSet<Point> hunt_threat(Map m) {
           if (District.IsSewersMap(m) && Session.Get.HasZombiesInSewers) return new HashSet<Point>(); // unclearable

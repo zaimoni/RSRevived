@@ -220,7 +220,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (_enemies is null) {
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
-        var mayStealFrom = FilterCurrent(_all).FilterT<Actor>(a =>
+        var mayStealFrom = FilterCurrent(_all)?.FilterCast<Actor>(a =>
         {
           if (a.Inventory.IsEmpty() || IsFriendOf(a)) return false;
           if (!a.IsUnsuspiciousFor(m_Actor)) return HasAnyInterestingItem(a.Inventory);
@@ -232,9 +232,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // gangs can break & push stuff
           FilterOutUnreachable(ref mayStealFrom, RouteFinder.SpecialActions.ADJ_TO_DEST_IS_GOAL | RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.BREAK | RouteFinder.SpecialActions.PUSH);
           if (0 < mayStealFrom.Count) {
-            Percept victimize = FilterNearest(mayStealFrom);
-            Actor target = victimize.Percepted as Actor;
-            Item obj = target.Inventory?.GetFirstMatching<Item>(it => IsInterestingItem(it));
+            var victimize = FilterNearest(mayStealFrom);
+            Actor target = victimize.Percepted;
+            Item? obj = target.Inventory?.GetFirstMatching<Item>(it => IsInterestingItem(it));
             game.DoMakeAggression(m_Actor, target);
             m_Actor.TargetedActivity(Activity.CHASING, target);
             return new ActionSay(m_Actor, target, string.Format("Hey! That's some nice {0} you have here!", obj.Model.SingleName), Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER); // takes turn for game balance

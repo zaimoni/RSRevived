@@ -153,7 +153,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // Mysteriously, CHAR guards do not throw grenades even though their offices stock them.
 
-      ActorAction tmpAction = null;
+      ActorAction? tmpAction = null;
 
       if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, (_enemies is null ? "null == _enemies" : _enemies.Count.ToString()+" enemies"));
 

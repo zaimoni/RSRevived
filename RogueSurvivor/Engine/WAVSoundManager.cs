@@ -68,7 +68,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!IsMusicEnabled) return;
       if (MusicPriority.PRIORITY_BGM > priority) return;
-      if (!m_Musics.TryGetValue(musicname, out SoundPlayer music)) return;
+      if (!m_Musics.TryGetValue(musicname, out SoundPlayer? music)) return;
       if (MusicPriority.PRIORITY_BGM == priority) {
         m_BackgroundAudio = music;
         m_BackgroundLoop = false;
@@ -125,7 +125,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!IsMusicEnabled) return;
       if (MusicPriority.PRIORITY_BGM > priority) return;
-      if (!m_Musics.TryGetValue(musicname, out SoundPlayer music)) return;
+      if (!m_Musics.TryGetValue(musicname, out SoundPlayer? music)) return;
       if (MusicPriority.PRIORITY_BGM == priority) {
         m_BackgroundAudio = music;
         m_BackgroundLoop = true;
