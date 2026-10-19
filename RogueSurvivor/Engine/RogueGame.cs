@@ -4240,8 +4240,8 @@ namespace djack.RogueSurvivor.Engine
         Actor a = allies[index];
         if (a.IsSleeping) PanViewportTo(a.Location);
         else PanViewportTo(a);
-        var tmp = new List<string>{a.Name};
-        ItemMeleeWeapon best_melee = a.GetBestMeleeWeapon();
+        List<string> tmp = [a.Name];
+        var best_melee = a.GetBestMeleeWeapon();
         tmp.Add("melee: "+(best_melee is null ? "unarmed" : best_melee.ModelID.ToString()));
         var ranged = a.Inventory.GetItemsByType<ItemRangedWeapon>();
         if (ranged is not null) {
