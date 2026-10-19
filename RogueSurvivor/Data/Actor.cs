@@ -1415,11 +1415,12 @@ namespace djack.RogueSurvivor.Data
     public void Tracks(ref Span<bool> find_us)
     {
         find_us[(int)ItemTrackerModel.TrackingOffset.POLICE_FACTION] = IsFaction(GameFactions.IDs.ThePolice);
-        if (GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker track && !track.IsUseless) track.Model.Tracks(ref find_us);
+
+        GetEquippedItem(DollPart.LEFT_HAND)?.NotUseless<ItemTracker>()?.Model.Tracks(ref find_us);
 
         // the police radio
-        track = GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker;
-        if (null != track && !track.IsUseless) track.Model.Tracks(ref find_us);
+        GetEquippedItem(DollPart.HIP_HOLSTER)?.NotUseless<ItemTracker>()?.Model.Tracks(ref find_us);
+
         // Tracking leaders makes sense, but not in single PC mode
         if (0 >= CountFollowers && null != LiveLeader) find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER] = false;
     }

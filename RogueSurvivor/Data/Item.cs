@@ -182,4 +182,8 @@ namespace djack.RogueSurvivor.Data
       return ModelID.ToString();
     }
   }
+
+  internal static partial class ext_RSRevived {
+    public static T? NotUseless<T>(this Item it) where T:Item => (it is T obj && !obj.IsUseless) ? obj : null;
+  }
 }
