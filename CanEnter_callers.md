@@ -35,8 +35,8 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MovesTo | Data/Actor.cs:2036 | ok | the destination itself |
-| Actor.MayEnter(ref Location) | Data/Actor.cs:2830 | ok | beyond adjacency |
+| Actor.MovesTo | Data/Actor.cs:2037 | ok | the destination itself |
+| Actor.MayEnter(ref Location) | Data/Actor.cs:2831 | ok | beyond adjacency |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:232 | ok | |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:234 | ok | |
 | ActorModel.CastToInventoryAccessibleDestinations(,) | Data/ActorModel.cs:251 | ok | excludes shelf-like objects separately |
@@ -79,7 +79,7 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MutuallyAdjacentFor | Data/Actor.cs:2842 | ok | by ref |
+| Actor.MutuallyAdjacentFor | Data/Actor.cs:2843 | ok | by ref |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | ok | throws on the destination |
 | _Action.MoveStep._runFrom | Engine/Action/MoveStep.cs:192 | ok | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:249 | ok | |
@@ -99,8 +99,8 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3301 | ok | local function install_moves; its row had gone missing |
 | ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4210 | ok | by ref |
 | ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4497 | ok | |
-| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:71 | ok | throws via Spotlight on the origin |
-| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:72 | ok | throws via Spotlight on the destination |
+| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:143 | ok | throws via Spotlight on the origin |
+| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:144 | ok | throws via Spotlight on the destination |
 
 # cleanup tasks
 
