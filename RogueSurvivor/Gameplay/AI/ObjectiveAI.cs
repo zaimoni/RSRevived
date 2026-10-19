@@ -1367,7 +1367,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endregion
 
     public List<Location> WantToGoHere(Location loc) {
-      List<Location> ret = PathToTarget.WantToGoHere(GetMinStepPath<Location>(), loc);
+      var ret = PathToTarget.WantToGoHere(GetMinStepPath<Location>(), loc);
       if (ret is not null) return ret;
       var path = GetLambdaPath();
       if (path is not null) path.WantToGoHere(in loc,this);
@@ -3204,7 +3204,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
       var friends = friends_in_FOV;
       if (friends is not null) {
-         ItemRangedWeapon rw;
+         ItemRangedWeapon? rw;
          Location[] line;
          foreach(var ally in friends.Values) {
            if ((rw = (ally.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo()) is null) continue;
@@ -3258,12 +3258,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       void unlink(in Location dest)
       {
          if (!inverted_move_plans.TryGetValue(dest,out var cache)) return;
-         List<Location> staging = null;
+         List<Location>? staging = null;
          foreach(var x in cache) {
            if (!move_plans.TryGetValue(x.Key,out var test)) continue;
            test.Value.Remove(dest);
            if (0 >= test.Value.Count) {
-             (staging ??= new List<Location>()).Add(x.Key);
+             (staging ??= new()).Add(x.Key);
              move_plans[x.Key] = new KeyValuePair<int, Dictionary<Location, ActionMoveDelta>?>(test.Key,null);
            }
          }
@@ -3560,7 +3560,7 @@ Restart:
             if (ub < dist.X) continue;
             if (ub > dist.Y) {
               ub = dist.Y;
-              List<Location> remove = null;
+              List<Location>? remove = null;
               foreach(var x in min_dist) {
                 if (ub < x.Value) {
                   (remove ??= new List<Location>(min_dist.Count)).Add(x.Key);
@@ -3726,9 +3726,9 @@ Restart:
       return map_goals;
     }
 
-    private Predicate<Location> BlacklistFunction(Dictionary<Location,int> goals, HashSet<Map> excluded, List<ZoneLoc> excluded_zones)
+    private Predicate<Location>? BlacklistFunction(Dictionary<Location,int> goals, HashSet<Map> excluded, List<ZoneLoc> excluded_zones)
     {
-       Predicate<Location> ret = null;
+       Predicate<Location>? ret = null;
 
       // map prefilter -- essentially a functional blacklist rather than an enumerated one
       var my_map = m_Actor.Location.Map;
@@ -3925,7 +3925,7 @@ retry:
     {
       if (navigate is null) return null;
       if (!navigate.Domain.Contains(m_Actor.Location)) return null;
-      Dictionary<Location,int> costs = null;
+      Dictionary<Location,int>? costs = null;
       var path = navigate.MinStepPathTo(m_Actor.Location,m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, World.Get.Weather));
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "path: "+path.to_s());
