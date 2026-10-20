@@ -815,6 +815,7 @@ namespace djack.RogueSurvivor.Data
 
             var shelf = obj as ShelfLike;
             if (obj.IsJumpable && shelf is not null) return new(shelf);
+            if (obj.IsWalkable) return new(origin);
             return null;
         }
 
