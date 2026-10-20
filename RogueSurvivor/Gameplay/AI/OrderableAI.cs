@@ -3486,7 +3486,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (tracing && !RogueGame.IsSimulating) {
               RogueGame.Game.InfoPopup("scheduling sleep:" + m_Actor.CanSleep().ToString());
             }
-            SetObjective(new Engine.Goal.NextAction(m_Actor, null, new ActionSleep(m_Actor)));
+            SetObjective(new Engine.Goal.NextAction(m_Actor, (ActorAction?)null, new ActionSleep(m_Actor)));
           }
         }
         return act;
