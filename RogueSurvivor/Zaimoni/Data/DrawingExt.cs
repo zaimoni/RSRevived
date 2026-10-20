@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace Zaimoni.Data
 {
@@ -153,10 +154,10 @@ namespace Zaimoni.Data
       return new KeyValuePair<bool, bool>(yes, no);
     }
 
-    public static KeyValuePair<Value, Value> MinMax<Key, Value>(this List<KeyValuePair<Key, Value>> src) where Value : IComparable<Value>
+    public static KeyValuePair<Value, Value> MinMax<Key, Value>(this List<KeyValuePair<Key, Value>> src) where Value : IComparable<Value>, IMinMaxValue<Value>
     {
-      var min = (Value)typeof(Value).GetField("MaxValue").GetValue(default(Value));
-      var max = (Value)typeof(Value).GetField("MinValue").GetValue(default(Value));
+      var min = Value.MaxValue;
+      var max = Value.MinValue;
       foreach(var x in src) {
         if (0 < min.CompareTo(x.Value)) min = x.Value;
         if (0 > max.CompareTo(x.Value)) max = x.Value;
@@ -447,12 +448,12 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static void OnlyIfMinimal<Key,Value>(this Dictionary<Key,Value> src) where Key:notnull where Value:IComparable<Value>
+    public static void OnlyIfMinimal<Key,Value>(this Dictionary<Key,Value> src) where Key:notnull where Value:IComparable<Value>, IMinMaxValue<Value>
     {
       if (1 >= src.Count) return;
       var reject = new List<Key>();
       var accept = new List<Key>();
-      Value num1 = (Value)typeof(Value).GetField("MaxValue").GetValue(default(Value));
+      Value num1 = Value.MaxValue;
       foreach(var x in src) {
         int comp = num1.CompareTo(x.Value);
         if (0>comp) {
@@ -469,12 +470,12 @@ namespace Zaimoni.Data
       foreach(var x in reject) src.Remove(x);
     }
 
-    public static void OnlyIfMaximal<Key,Value>(this Dictionary<Key,Value> src) where Key:notnull where Value:IComparable<Value>
+    public static void OnlyIfMaximal<Key,Value>(this Dictionary<Key,Value> src) where Key:notnull where Value:IComparable<Value>, IMinMaxValue<Value>
     {
       if (1 >= src.Count) return;
       var reject = new List<Key>();
       var accept = new List<Key>();
-      Value num1 = (Value)typeof(Value).GetField("MinValue").GetValue(default(Value));
+      Value num1 = Value.MinValue;
       foreach(var x in src) {
         int comp = num1.CompareTo(x.Value);
         if (0<comp) {
@@ -504,13 +505,13 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static T Minimize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>
+    public static T Minimize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>, IMinMaxValue<R>
     {
 #if DEBUG
       if (metric is null) throw new ArgumentNullException(nameof(metric));
       if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
-      R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
+      R num1 = R.MaxValue;
       T ret = default;
       foreach(T test in src) {
          R num2 = metric(test);
@@ -522,13 +523,13 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static T Maximize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>
+    public static T Maximize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>, IMinMaxValue<R>
     {
 #if DEBUG
       if (metric is null) throw new ArgumentNullException(nameof(metric));
       if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
-      R num1 = (R)typeof(R).GetField("MinValue").GetValue(default(R));
+      R num1 = R.MinValue;
       T ret = default;
       foreach(T test in src) {
          R num2 = metric(test);
@@ -557,14 +558,14 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<U,R> metric) where R:IComparable<R>
+    public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<U,R> metric) where R:IComparable<R>, IMinMaxValue<R>
     {
 #if DEBUG
       if (metric is null) throw new ArgumentNullException(nameof(metric));
       if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
       if (1 >= src.Count) return src;
-      R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
+      R num1 = R.MaxValue;
       var ret = new Dictionary<T, U>();
       foreach(var x in src) {
          R num2 = metric(x.Value);
@@ -579,14 +580,14 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<T,R> metric) where R:IComparable<R>
+    public static Dictionary<T,U> CloneOnlyMinimal<T,U,R>(this Dictionary<T, U> src,Func<T,R> metric) where R:IComparable<R>, IMinMaxValue<R>
     {
 #if DEBUG
       if (metric is null) throw new ArgumentNullException(nameof(metric));
       if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
       if (1 >= src.Count) return src;
-      R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
+      R num1 = R.MaxValue;
       var ret = new Dictionary<T, U>();
       foreach(var x in src) {
          R num2 = metric(x.Key);

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Numerics;
 using System.Text.Json;
 using Zaimoni.JSON;
 
@@ -586,9 +587,9 @@ namespace djack.RogueSurvivor.Data
       return tList;
     }
 
-    public _T_? Maximize<_T_, R>(Func<_T_, R> metric) where _T_ : Item where R:IComparable<R>
+    public _T_? Maximize<_T_, R>(Func<_T_, R> metric) where _T_ : Item where R : IComparable<R>, IMinMaxValue<R>
     {
-      R num1 = (R)typeof(R).GetField("MinValue").GetValue(default(R));
+      R num1 = R.MinValue;
       _T_? ret = default;
       foreach(var it in m_Items) {
          if (!(it is _T_ test)) continue;
@@ -601,9 +602,9 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public _T_? Minimize<_T_, R>(Predicate<_T_> ok,Func<_T_, R> metric) where _T_ : Item where R : IComparable<R>
+    public _T_? Minimize<_T_, R>(Predicate<_T_> ok,Func<_T_, R> metric) where _T_ : Item where R : IComparable<R>, IMinMaxValue<R>
     {
-      R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
+      R num1 = R.MaxValue;
       _T_? ret = default;
       foreach(var it in m_Items) {
          if (!(it is _T_ test) || !ok(test)) continue;

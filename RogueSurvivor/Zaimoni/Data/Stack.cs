@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace Zaimoni.Data
 {
@@ -16,9 +17,9 @@ namespace Zaimoni.Data
         public void Clear() { ub = 0; }
         public T this[int n] { get { return _x[n]; } }
 
-        public Value Min<Value>(Func<T, Value> xform) where Value:IComparable<Value>
+        public Value Min<Value>(Func<T, Value> xform) where Value : IComparable<Value>, IMinMaxValue<Value>
         {
-            Value ret = (Value)typeof(Value).GetField("MaxValue").GetValue(default(Value));
+            Value ret = Value.MaxValue;
             int i = ub;
             Value test;
             while (0 <= --i) {
@@ -27,9 +28,9 @@ namespace Zaimoni.Data
             return ret;
         }
 
-        public Value Max<Value>(Func<T, Value> xform) where Value : IComparable<Value>
+        public Value Max<Value>(Func<T, Value> xform) where Value : IComparable<Value>, IMinMaxValue<Value>
         {
-            Value ret = (Value)typeof(Value).GetField("MinValue").GetValue(default(Value));
+            Value ret = Value.MinValue;
             int i = ub;
             Value test;
             while (0 <= --i) {
