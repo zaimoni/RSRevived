@@ -42,6 +42,8 @@ namespace djack.RogueSurvivor.Data
     public readonly string PluralName;
     public readonly Abilities Abilities;
     public readonly Type DefaultController;
+    private static readonly Type[] _controller_signature = [typeof(Actor)];
+    private readonly System.Reflection.ConstructorInfo _ctor_actor;
     public readonly int ScoreValue;
     public readonly string FlavorDescription;
     // migrated from ActorSheet
@@ -100,6 +102,7 @@ namespace djack.RogueSurvivor.Data
       PluralName = pluralName;
       Abilities = abilities;
       DefaultController = defaultController;
+      _ctor_actor = DefaultController.GetConstructor(_controller_signature) ?? throw new InvalidOperationException("tracing");
       ScoreValue = scoreValue;
       FlavorDescription = flavor;
       // migrated from ActorSheet
@@ -143,11 +146,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // should be private, but savefile auto-repair contraindicates
-    static readonly private Type[] _controller_signature = new Type[] { typeof(Actor) };
-    public ActorController InstanciateController(Actor a)
-    {
-      return (DefaultController.GetConstructor(_controller_signature).Invoke(new object[] { a }) as ActorController)!;
-    }
+    public ActorController InstanciateController(Actor a) => (_ctor_actor.Invoke([a]) as ActorController)!;
 
     public Actor CreateAnonymous(Faction faction, int spawnTime)
     {
