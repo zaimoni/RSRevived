@@ -2452,13 +2452,14 @@ namespace djack.RogueSurvivor.Engine
         return null;
     }
 
+    private static readonly List<Actor> s_FaustTrack = new();
     private void PlaceRefugeeParty(ZoneLoc dest) {
       var party = ConstructRefugeeParty();
       var leader = party[0];
       if (!SpawnIn(leader, dest, 1)) {
         s_RefugeePool!.AddRange(party);
         return;
-      }
+      } else s_FaustTrack.Add(leader);
 
       // If the leader does not use advanced pathing (e.g., police), point him at the city
       if (leader.Threats is null) {
@@ -2476,7 +2477,7 @@ namespace djack.RogueSurvivor.Engine
         if (!SpawnIn(fo, dest, 1)) {
           s_RefugeePool!.AddRange(party);
           return;
-        }
+        } else s_FaustTrack.Add(fo);
         party.RemoveAt(0);
         leader.AddFollower(fo);
       }
@@ -2495,6 +2496,7 @@ namespace djack.RogueSurvivor.Engine
 
       lock(lock_RefugeePool) {
         if (s_RefugeePool is null) return;
+        s_FaustTrack.Clear();   // just in case
 
         // count: enemies of police, police
         // if have enemies of police, but no police, try to gate-crash on foot
@@ -2534,6 +2536,11 @@ namespace djack.RogueSurvivor.Engine
           PlaceRefugeeParty(s_RefugeeSpawnZones![(int)dir]);
           if (0 >= s_RefugeePool.Count) {
             Interlocked.Exchange(ref s_RefugeePool, null);
+            if (FaustExamineNewLivings) {
+              s_FaustTrack.OnlyIf(a => FaustNominates(a));
+              FaustTogglePC(s_FaustTrack);
+            }
+            s_FaustTrack.Clear();
             return;
           }
           if (numerator*numerator < dr) return;
@@ -2541,6 +2548,11 @@ namespace djack.RogueSurvivor.Engine
         // select for right/bottom spawn zone
         PlaceRefugeeParty(s_RefugeeSpawnZones![(int)dir + 1]);
         if (0 >= s_RefugeePool.Count) Interlocked.Exchange(ref s_RefugeePool, null);
+        if (FaustExamineNewLivings) {
+          s_FaustTrack.OnlyIf(a => FaustNominates(a));
+          FaustTogglePC(s_FaustTrack);
+        }
+        s_FaustTrack.Clear();
       }
     }
 
@@ -4613,7 +4625,6 @@ namespace djack.RogueSurvivor.Engine
     /// stays open and relabels; ESC leaves it.  The actor whose turn it is cannot be unseated from inside its own turn.</summary>
     private void HandleFaustToggle()
     {
-      var player_backup = Player;
       List<Actor> candidates = new();
       World.Get.DoForAllActors(a => {
         if (a.IsDead) return;
@@ -4623,6 +4634,15 @@ namespace djack.RogueSurvivor.Engine
         ErrorPopup("The spirits see no one.");
         return;
       }
+
+      FaustTogglePC(candidates);
+    }
+
+    private void FaustTogglePC(List<Actor> candidates)
+    {
+      if (0 >= candidates.Count) return;
+      var player_backup = Player;
+
       candidates.Sort((lhs, rhs) => {   // PCs first, then by district, then by name
         int cmp = rhs.IsPlayer.CompareTo(lhs.IsPlayer);
         if (0 != cmp) return cmp;
