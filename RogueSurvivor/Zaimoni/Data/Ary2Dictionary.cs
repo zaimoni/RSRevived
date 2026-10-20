@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Zaimoni.Data
@@ -41,7 +42,7 @@ namespace Zaimoni.Data
             return false;
         }
 
-        public bool HaveEverSeen(Key1 key, out Range value) {
+        public bool HaveEverSeen(Key1 key, [MaybeNullWhen(false)] out Range value) {
             lock (_no_entries) { if (_no_entries.TryGetValue(key, out value)) return true; }
             lock (_first_second_dict) {
                 if (_first_second_dict.TryGetValue(key, out var x)) {

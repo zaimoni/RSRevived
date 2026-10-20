@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         }
 
         // We are not a primary owning authority for inventories, so don't do the auto-repair before save
-        void OnDeserialized() => oai = m_Actor.Controller as ObjectiveAI;
+        void OnDeserialized() => oai = m_Actor.Controller as ObjectiveAI ?? throw new InvalidOperationException("invalid save");
 
         public void Add(in Data.Model.InvOrigin src, Item_IDs take) {
             KeyValuePair<Data.Model.InvOrigin, Item_IDs> stage = new(src, take);

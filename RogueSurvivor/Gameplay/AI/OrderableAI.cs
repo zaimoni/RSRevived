@@ -123,8 +123,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [Serializable]
     internal class Goal_NextCombatAction : Objective, IJsonStaged<Goal_NextCombatAction>
     {
-        public readonly ActorAction Intent_engaged;
-        public readonly ActorAction Intent_disengaged;
+        public readonly ActorAction? Intent_engaged;
+        public readonly ActorAction? Intent_disengaged;
 
         #region JSON save/load
 

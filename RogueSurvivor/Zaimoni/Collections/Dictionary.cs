@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Zaimoni.Data;
@@ -307,7 +308,7 @@ namespace Zaimoni.Collections
         public Enumerator GetEnumerator() => new(this, Enumerator.KeyValuePair);
         IEnumerator<KeyValuePair<Key, Value>> IEnumerable<KeyValuePair<Key, Value>>.GetEnumerator() => new Enumerator(this, Enumerator.KeyValuePair);
 
-        public bool TryGetValue(Key key, out Value value)
+        public bool TryGetValue(Key key, [MaybeNullWhen(false)] out Value value)
         {
             int i = FindEntry(key);
             if (0 <= i) {

@@ -150,7 +150,7 @@ namespace djack.RogueSurvivor.Data
 
           switch (code) {
           case 1:
-              m_Name = reader.GetString();
+              m_Name = reader.GetString() ?? throw new JsonException();
               break;
           case 2:
               relay_WorldPos = JsonSerializer.Deserialize<Point>(ref reader, options);
