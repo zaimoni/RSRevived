@@ -1528,9 +1528,6 @@ namespace djack.RogueSurvivor.Engine
       RedrawPlayScreen(new UI.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", Player.Name), 0, Color.White));
 
       HandleFaust();
-      if (FaustExamineNewLivings) {
-        World.Get.DoForAllActors(FaustExamineLiving);
-      }
 
       play_timer.Start();
       StopSimThread(false);  // alpha10 stop-start
@@ -2496,7 +2493,6 @@ namespace djack.RogueSurvivor.Engine
 
       lock(lock_RefugeePool) {
         if (s_RefugeePool is null) return;
-        s_FaustTrack.Clear();   // just in case
 
         // count: enemies of police, police
         // if have enemies of police, but no police, try to gate-crash on foot
@@ -2543,7 +2539,14 @@ namespace djack.RogueSurvivor.Engine
             s_FaustTrack.Clear();
             return;
           }
-          if (numerator*numerator < dr) return;
+          if (numerator*numerator < dr) {
+            if (FaustExamineNewLivings) {
+              s_FaustTrack.OnlyIf(a => FaustNominates(a));
+              FaustTogglePC(s_FaustTrack);
+            }
+            s_FaustTrack.Clear();
+            return;
+          }
         }
         // select for right/bottom spawn zone
         PlaceRefugeeParty(s_RefugeeSpawnZones![(int)dir + 1]);
