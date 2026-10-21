@@ -111,7 +111,7 @@ namespace djack.RogueSurvivor.Engine._Action
                 if (obj.IsCarrying(take)) return Cast(new Data.Model.InvOrigin(obj), actor, give, take);
             }
             var a = loc.Actor;
-            if (!a?.IsPlayer ?? false) {
+            if (a is not null && !a.IsPlayer) {
                 if (a.IsCarrying(take)) return Cast(new Data.Model.InvOrigin(a), actor, give, take);
             }
 

@@ -62,12 +62,12 @@ namespace djack.RogueSurvivor.Engine.Actions
     static public ActionMoveStep? create(Actor actor, Location to)
     {
       var ret = schedule(actor, to);
-      return ret.IsPerformable() ? ret : null;
+      return (ret is not null && ret.IsPerformable()) ? ret : null;
     }
 
     static public ActionMoveStep? create(Actor actor, Point to) {
       var ret = schedule(actor, to);
-      return ret.IsPerformable() ? ret : null;
+      return (ret is not null && ret.IsPerformable()) ? ret : null;
     } 
   }
 }

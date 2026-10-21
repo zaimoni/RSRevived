@@ -47,12 +47,11 @@ namespace djack.RogueSurvivor.Engine
 
     public List<string[]> Parse(string[] lines)
     {
-      int ub = (lines?.Length) ?? 0;
-      if (0 >= ub) return new List<string[]>();
-      var strArrayList = new List<string[]>(ub);
-      foreach (string line in lines)
-        strArrayList.Add(Parse(line));
-      return strArrayList;
+      int ub;
+      if (lines is null || 0 >= (ub = lines.Length)) return new();
+      List<string[]> ret = new(ub);
+      foreach (string line in lines) ret.Add(Parse(line));
+      return ret;
     }
 
     public CSVTable ParseToTable(string[] lines, int nbFields)
