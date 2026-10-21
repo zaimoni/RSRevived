@@ -37,16 +37,16 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 |---|---|---|---|
 | Actor.MovesTo | Data/Actor.cs:2037 | ok | the destination itself |
 | Actor.MayEnter(ref Location) | Data/Actor.cs:2831 | ok | beyond adjacency |
-| ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:232 | ok | |
-| ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:234 | ok | |
-| ActorModel.CastToInventoryAccessibleDestinations(,) | Data/ActorModel.cs:251 | ok | excludes shelf-like objects separately |
-| ActorModel.CastToInventoryAccessibleDestinations(,) | Data/ActorModel.cs:254 | ok | |
-| ActorModel.CastToInventoryAccessibleDestinations() | Data/ActorModel.cs:268 | ok | a shelf: any neighbour |
-| ActorModel.CastToInventoryAccessibleDestinations() | Data/ActorModel.cs:274 | ok | a ground stack: the tile itself |
-| ActorModel.CastToInventoryAccessibleDestinations() | Data/ActorModel.cs:280 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
-| ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:292 | ok | a shelf: any neighbour |
-| ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:298 | ok | a ground stack: the tile itself |
-| ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:303 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
+| ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:231 | ok | |
+| ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:233 | ok | |
+| ActorModel.CastToInventoryAccessibleDestinations(,) | Data/ActorModel.cs:250 | ok | excludes shelf-like objects separately |
+| ActorModel.CastToInventoryAccessibleDestinations(,) | Data/ActorModel.cs:253 | ok | |
+| ActorModel.CastToInventoryAccessibleDestinations() | Data/ActorModel.cs:267 | ok | a shelf: any neighbour |
+| ActorModel.CastToInventoryAccessibleDestinations() | Data/ActorModel.cs:273 | ok | a ground stack: the tile itself |
+| ActorModel.CastToInventoryAccessibleDestinations() | Data/ActorModel.cs:279 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
+| ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:291 | ok | a shelf: any neighbour |
+| ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:297 | ok | a ground stack: the tile itself |
+| ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:302 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
 | Map.WouldBlacklistFor | Data/Map.cs:1164 | ok | receiver is the actor parameter |
 | Map.PathfindLocSteps | Data/Map.cs:1178 | ok | StrictCanEnter, in the flood-fill's lambda; receiver is actor.Model |
 | Map.TrapWouldSealBuilding | Data/Map.cs:2152 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
@@ -63,11 +63,11 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ActionMoveDelta.schedule(Actor, Location) | Engine/Actions/ActionMoveDelta.cs:255 | ok | destination; the overload without an origin |
 | ActionMoveStep.schedule(Actor, Location) | Engine/Actions/ActionMoveStep.cs:52 | ok | |
 | ActionMoveStep.schedule(Actor, Point) | Engine/Actions/ActionMoveStep.cs:58 | ok | |
-| RogueGame.HandleItemInfo | Engine/RogueGame.cs:4151 | ok | local function `details`; receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13416 | ok | receiver a follower, chosen by index |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13441 | ok | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13449 | ok | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13471 | ok | receiver Player |
+| RogueGame.HandleItemInfo | Engine/RogueGame.cs:4163 | ok | local function `details`; receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13436 | ok | receiver a follower, chosen by index |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13461 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13469 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13491 | ok | receiver Player |
 | AcquireLineOfSight..ctor(Actor, in Location) | Gameplay/AI/Goals/AcquireLineOfSight.cs:46 | ok | throws via Spotlight: "unpathable"; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, IEnumerable) | Gameplay/AI/Goals/AcquireLineOfSight.cs:55 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:65 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
