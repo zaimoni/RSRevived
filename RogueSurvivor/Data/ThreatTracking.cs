@@ -433,14 +433,13 @@ namespace djack.RogueSurvivor.Data
         public void Cleared(IEnumerable<Location> locs)
         { // assume all values of locs are in canonical form
           var staging = new Dictionary<Map, HashSet<Point>>();
-          Map? last_map = null;
-          HashSet<Point>? last_pts = null;
+          KeyValuePair<Map, HashSet<Point>>? last = null;
           foreach(var loc in locs) {
-            if (last_map == loc.Map) last_pts.Add(loc.Position);
+            if (last is not null) last.Value.Value.Add(loc.Position);
             else {
-              last_map = loc.Map;
-              if (!staging.TryGetValue(last_map, out last_pts)) staging.Add(last_map, (last_pts = new HashSet<Point>()));
-              last_pts.Add(loc.Position);
+              if (!staging.TryGetValue(loc.Map, out var pts)) staging.Add(loc.Map, (pts = new()));
+              pts.Add(loc.Position);
+              last = new(loc.Map, pts);
             }
           }
           Cleared(staging);
