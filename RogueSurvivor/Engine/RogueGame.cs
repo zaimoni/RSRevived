@@ -2449,14 +2449,16 @@ namespace djack.RogueSurvivor.Engine
         return null;
     }
 
-    private static readonly List<Actor> s_FaustTrack = new();
-    private void PlaceRefugeeParty(ZoneLoc dest) {
+    /// <returns>the actors placed, in placement order: the leader first.  Whoever could not be placed went back to the pool.</returns>
+    private List<Actor> PlaceRefugeeParty(ZoneLoc dest) {
       var party = ConstructRefugeeParty();
+      var arrived = new List<Actor>(party.Count);
       var leader = party[0];
       if (!SpawnIn(leader, dest, 1)) {
         s_RefugeePool!.AddRange(party);
-        return;
-      } else s_FaustTrack.Add(leader);
+        return arrived;
+      }
+      arrived.Add(leader);
 
       // If the leader does not use advanced pathing (e.g., police), point him at the city
       if (leader.Threats is null) {
@@ -2473,12 +2475,13 @@ namespace djack.RogueSurvivor.Engine
         var fo = party[0];
         if (!SpawnIn(fo, dest, 1)) {
           s_RefugeePool!.AddRange(party);
-          return;
-        } else s_FaustTrack.Add(fo);
+          return arrived;
+        }
+        arrived.Add(fo);
         party.RemoveAt(0);
         leader.AddFollower(fo);
       }
-      return;
+      return arrived;
     }
 
     // two options here (district must be on edge of reality bubble)
@@ -2491,6 +2494,7 @@ namespace djack.RogueSurvivor.Engine
       var code = world.EdgeCode(district);
       if (0 == code) return;    // can only walk in through outer district
 
+      List<Actor> arrived = new();   // offered to the spirits after the lock is released: the menu is modal
       lock(lock_RefugeePool) {
         if (s_RefugeePool is null) return;
 
@@ -2527,35 +2531,18 @@ namespace djack.RogueSurvivor.Engine
         var dr = (numerator<denominator) ? rules.DiceRoller.Roll(0, denominator * denominator) : 0;
         if (dr >= 2 * numerator*denominator - numerator*numerator) return;
 
+        bool second = true;   // the right/bottom spawn zone
         if (dr <= numerator * denominator) {
           // select for left/top spawn zone
-          PlaceRefugeeParty(s_RefugeeSpawnZones![(int)dir]);
-          if (0 >= s_RefugeePool.Count) {
-            Interlocked.Exchange(ref s_RefugeePool, null);
-            if (FaustExamineNewLivings) {
-              s_FaustTrack.OnlyIf(a => FaustNominates(a));
-              FaustTogglePC(s_FaustTrack);
-            }
-            s_FaustTrack.Clear();
-            return;
-          }
-          if (numerator*numerator < dr) {
-            if (FaustExamineNewLivings) {
-              s_FaustTrack.OnlyIf(a => FaustNominates(a));
-              FaustTogglePC(s_FaustTrack);
-            }
-            s_FaustTrack.Clear();
-            return;
-          }
+          arrived.AddRange(PlaceRefugeeParty(s_RefugeeSpawnZones![(int)dir]));
+          second = 0 < s_RefugeePool.Count && numerator*numerator >= dr;
         }
-        // select for right/bottom spawn zone
-        PlaceRefugeeParty(s_RefugeeSpawnZones![(int)dir + 1]);
+        if (second) arrived.AddRange(PlaceRefugeeParty(s_RefugeeSpawnZones![(int)dir + 1]));
         if (0 >= s_RefugeePool.Count) Interlocked.Exchange(ref s_RefugeePool, null);
-        if (FaustExamineNewLivings) {
-          s_FaustTrack.OnlyIf(a => FaustNominates(a));
-          FaustTogglePC(s_FaustTrack);
-        }
-        s_FaustTrack.Clear();
+      }
+      if (FaustExamineNewLivings && 0 < arrived.Count) {
+        arrived.OnlyIf(a => FaustNominates(a));
+        FaustTogglePC(arrived);
       }
     }
 
