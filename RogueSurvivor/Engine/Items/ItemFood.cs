@@ -14,22 +14,18 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   public sealed class ItemFood : Item, UsableItem, IJsonStaged<ItemFood>
     {
-    public struct WrapPerishable {
-      public readonly WorldTime Expires;
-
-      public WrapPerishable(int t0) { Expires = new(t0); }
-      public WrapPerishable(WorldTime t0) { Expires = t0 ?? throw new ArgumentNullException(nameof(t0)); }
-      public bool IsStillFreshAt(int turnCounter) => turnCounter < Expires.TurnCounter;
-
-      public bool IsExpiredAt(int turnCounter) {
-        int t0 = Expires.TurnCounter;
-        return turnCounter >= t0 && turnCounter < 2*t0;
-      }
-
-      public bool IsSpoiledAt(int turnCounter) => turnCounter >= 2 * Expires.TurnCounter;
+    /// <summary>A perishable food's expiry turn, and the rule for what follows it: expired (reduced nutrition) until twice that
+    /// turn, spoiled after.  That rule is the legacy one, cf. the (?!) below; this is the place to replace it with a shelf life from
+    /// the model.  Saved as the bare expiry turn, which is also how a WorldTime saves.</summary>
+    public readonly record struct ShelfLife(int ExpiresAt)
+    {
+      public bool IsStillFreshAt(int turnCounter) => turnCounter < ExpiresAt;
+      public bool IsExpiredAt(int turnCounter) => turnCounter >= ExpiresAt && turnCounter < 2 * ExpiresAt;
+      public bool IsSpoiledAt(int turnCounter) => turnCounter >= 2 * ExpiresAt;
+      public override string ToString() => new WorldTime(ExpiresAt).ToString();
     }
 
-    public readonly WrapPerishable? BestBefore;
+    public readonly ShelfLife? BestBefore;
 
     new public ItemFoodModel Model { get {return (base.Model as ItemFoodModel)!; } }
     public bool IsPerishable { get { return Model.IsPerishable; } }
@@ -65,7 +61,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     private ItemFood(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<ItemFoodModel>();
-        if (src.TryGetProperty("BestBefore", out var relay)) BestBefore = new(relay.Deserialize<WorldTime>(options));
+        if (src.TryGetProperty("BestBefore", out var relay)) BestBefore = new(relay.GetInt32());
         if (IsPerishable && BestBefore is null) throw new JsonException("perishable food without BestBefore: " + ModelID.ToString());
     }
 
@@ -73,10 +69,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
         base.toJsonFields(writer, options);
-        if (BestBefore is not null) {
-            writer.WritePropertyName("BestBefore");
-            JsonSerializer.Serialize(writer, BestBefore.Value.Expires, options);
-        }
+        if (BestBefore is { } life) writer.WriteNumber("BestBefore", life.ExpiresAt);
     }
 
 #region UsableItem implementation
@@ -124,13 +117,13 @@ namespace djack.RogueSurvivor.Engine.Items
 #endregion
 
     public override Data.Item_s toStruct() {
-      if (BestBefore is not null) return new Data.Item_s(ModelID, BestBefore.Value.Expires.TurnCounter);
+      if (BestBefore is { } life) return new Data.Item_s(ModelID, life.ExpiresAt);
       return base.toStruct();
     }
 
     public override string ToString()
     {
-      return ModelID.ToString()+(BestBefore is not null ? " (" + BestBefore.Value.Expires.ToString() + ")" : "");
+      return ModelID.ToString()+(BestBefore is { } life ? " (" + life.ToString() + ")" : "");
     }
   }
 }

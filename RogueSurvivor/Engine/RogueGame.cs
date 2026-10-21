@@ -8391,11 +8391,11 @@ namespace djack.RogueSurvivor.Engine
     {
       var lines = new List<string>{ "> food" };
       int turn = Session.Get.WorldTime.TurnCounter;
-      if (f.IsPerishable) {
-        if (f.IsStillFreshAt(turn)) lines.Add("Fresh.");
-        else if (f.IsExpiredAt(turn)) lines.Add("*Expired*");
-        else if (f.IsSpoiledAt(turn)) lines.Add("**SPOILED**");
-        lines.Add(string.Format("Best-Before : {0}", f.BestBefore.ToString()));
+      if (f.BestBefore is { } life) {
+        if (life.IsStillFreshAt(turn)) lines.Add("Fresh.");
+        else if (life.IsExpiredAt(turn)) lines.Add("*Expired*");
+        else if (life.IsSpoiledAt(turn)) lines.Add("**SPOILED**");
+        lines.Add(string.Format("Best-Before : {0}", life.ToString()));
       } else
         lines.Add("Always fresh.");
       int baseValue = f.NutritionAt(turn);
