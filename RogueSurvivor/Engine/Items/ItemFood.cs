@@ -14,31 +14,31 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   public sealed class ItemFood : Item, UsableItem, IJsonStaged<ItemFood>
     {
-    public readonly WorldTime? BestBefore;
+    public struct WrapPerishable {
+      public readonly WorldTime Expires;
+
+      public WrapPerishable(int t0) { Expires = new(t0); }
+      public WrapPerishable(WorldTime t0) { Expires = t0 ?? throw new ArgumentNullException(nameof(t0)); }
+      public bool IsStillFreshAt(int turnCounter) => turnCounter < Expires.TurnCounter;
+
+      public bool IsExpiredAt(int turnCounter) {
+        int t0 = Expires.TurnCounter;
+        return turnCounter >= t0 && turnCounter < 2*t0;
+      }
+
+      public bool IsSpoiledAt(int turnCounter) => turnCounter >= 2 * Expires.TurnCounter;
+    }
+
+    public readonly WrapPerishable? BestBefore;
 
     new public ItemFoodModel Model { get {return (base.Model as ItemFoodModel)!; } }
     public bool IsPerishable { get { return Model.IsPerishable; } }
     public int Nutrition { get { return Model.Nutrition; } }
 
     // if those groceries expire on day 100, they will not spoil until day 200(?!)
-    public bool IsStillFreshAt(int turnCounter)
-    {
-      if (!IsPerishable) return true;
-      return turnCounter < BestBefore.TurnCounter;
-    }
-
-    public bool IsExpiredAt(int turnCounter)
-    {
-      if (!IsPerishable) return false;
-      int t0 = BestBefore.TurnCounter;
-      return turnCounter >= t0 && turnCounter < 2*t0;
-    }
-
-    public bool IsSpoiledAt(int turnCounter)
-    {
-      if (!IsPerishable) return false;
-      return turnCounter >= 2 * BestBefore.TurnCounter;
-    }
+    public bool IsStillFreshAt(int turnCounter) => BestBefore?.IsStillFreshAt(turnCounter) ?? true;
+    public bool IsExpiredAt(int turnCounter) => BestBefore?.IsExpiredAt(turnCounter) ?? false;
+    public bool IsSpoiledAt(int turnCounter) => BestBefore?.IsSpoiledAt(turnCounter) ?? false;
 
     public int NutritionAt(int turnCounter)
     {
@@ -60,12 +60,12 @@ namespace djack.RogueSurvivor.Engine.Items
       if (0 > bestBefore) throw new InvalidOperationException("expired in past");
       if (!model.IsPerishable) throw new InvalidOperationException("wrong constructor");
 #endif
-      BestBefore = new WorldTime(bestBefore);
+      BestBefore = new(bestBefore);
     }
 
     private ItemFood(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         RequireModel<ItemFoodModel>();
-        if (src.TryGetProperty("BestBefore", out var relay)) BestBefore = relay.Deserialize<WorldTime>(options);
+        if (src.TryGetProperty("BestBefore", out var relay)) BestBefore = new(relay.Deserialize<WorldTime>(options));
         if (IsPerishable && BestBefore is null) throw new JsonException("perishable food without BestBefore: " + ModelID.ToString());
     }
 
@@ -75,7 +75,7 @@ namespace djack.RogueSurvivor.Engine.Items
         base.toJsonFields(writer, options);
         if (BestBefore is not null) {
             writer.WritePropertyName("BestBefore");
-            JsonSerializer.Serialize(writer, BestBefore, options);
+            JsonSerializer.Serialize(writer, BestBefore.Value.Expires, options);
         }
     }
 
@@ -124,13 +124,13 @@ namespace djack.RogueSurvivor.Engine.Items
 #endregion
 
     public override Data.Item_s toStruct() {
-      if (IsPerishable) return new Data.Item_s(ModelID, BestBefore.TurnCounter);
+      if (IsPerishable) return new Data.Item_s(ModelID, BestBefore.Value.Expires.TurnCounter);
       return base.toStruct();
     }
 
     public override string ToString()
     {
-      return ModelID.ToString()+(IsPerishable ? " (" + BestBefore.ToString() + ")" : "");
+      return ModelID.ToString()+(BestBefore is not null ? " (" + BestBefore.Value.Expires.ToString() + ")" : "");
     }
   }
 }
