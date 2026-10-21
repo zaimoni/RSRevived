@@ -124,7 +124,7 @@ namespace djack.RogueSurvivor.Engine.Items
 #endregion
 
     public override Data.Item_s toStruct() {
-      if (IsPerishable) return new Data.Item_s(ModelID, BestBefore.Value.Expires.TurnCounter);
+      if (BestBefore is not null) return new Data.Item_s(ModelID, BestBefore.Value.Expires.TurnCounter);
       return base.toStruct();
     }
 
