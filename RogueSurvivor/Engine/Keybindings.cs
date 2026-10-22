@@ -256,18 +256,18 @@ namespace djack.RogueSurvivor.Engine
         m_UI.ClearScreen();
         game.DrawHeader();
         gy += BOLD_LINE_SPACING;
-        m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy, new Color?());
+        m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy);
         gy += BOLD_LINE_SPACING;
         game.DrawMenuOrOptions(currentChoice, Color.White, entries, (Color.LightGreen, values), gx, ref gy);
         if (CheckForConflict()) {
-          m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy, new Color?());
+          m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy);
           gy += BOLD_LINE_SPACING;
         }
         m_UI.DrawFootnote("cursor to move, ENTER to rebind a key, ESC to save and leave");
         return null;
       });
       Func<int, bool?> choice_handler = (currentChoice => {
-        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("rebinding {0}, press the new key.", command_labels[currentChoice].Key), gx, gy, new Color?());
+        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("rebinding {0}, press the new key.", command_labels[currentChoice].Key), gx, gy);
         m_UI.UI_Repaint();
         Keys key = Keys.None;
         while(true) {
