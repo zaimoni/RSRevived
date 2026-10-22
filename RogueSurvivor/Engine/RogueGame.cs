@@ -3371,7 +3371,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryInsanity(pc) && !HandlePlayerBuildFortification(player, false);
                 break;
               case PlayerCommand.CLEAR_WAYPOINT:
-                HandlePlayerClearWaypoint(player);
+                HandlePlayerClearWaypoint(pc);
                 break;
               case PlayerCommand.CLOSE_DOOR:
                 flag1 = !TryInsanity(pc) && !HandlePlayerCloseDoor(player);
@@ -6379,7 +6379,12 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerOrderMode(PlayerController pc)
     {
       var player = pc.ControlledActor; // backward compatibiblity
-      var n_followers = player.CountFollowers;
+      var followers = player.Followers;
+      if (followers is null) {
+        ErrorPopup("No followers to give orders to.");
+        return false;
+      }
+      var n_followers = followers.Count();
       if (0 == n_followers) {
         ErrorPopup("No followers to give orders to.");
         return false;
@@ -6388,12 +6393,10 @@ namespace djack.RogueSurvivor.Engine
       HashSet<Point>[] pointSetArray = new HashSet<Point>[n_followers];
       bool[] flagArray = new bool[n_followers];
       int index1 = 0;
-      foreach (Actor follower in player.Followers) {
+      foreach (Actor follower in followers) {
         actorArray[index1] = follower;
         pointSetArray[index1] = LOS.ComputeFOVFor(follower);
-        bool flag1 = pointSetArray[index1].Contains(player.Location.Position) && player.Controller.CanSee(follower.Location);
-        bool flag2 = AreLinkedByPhone(player, follower);
-        flagArray[index1] = (player.Controller as PlayerController).InCommunicationWith(follower);
+        flagArray[index1] = pc.InCommunicationWith(follower);
         ++index1;
       }
       if (1 == n_followers && flagArray[0]) {
@@ -10587,13 +10590,8 @@ namespace djack.RogueSurvivor.Engine
       it.Unequip();
       var invspec = dest.DropOntoInventory();
 
-      if (invspec.obj_owner is null) {
-         dest.Drop(it);
-         return;
-      }
-
-      if (!invspec.Inventory.IsFull) {
-         invspec.Inventory.AddAll(it);
+      if (invspec.CanAddAll(it)) {
+         invspec.AddAll(it);
          return;
       }
 
@@ -10601,12 +10599,7 @@ namespace djack.RogueSurvivor.Engine
       dest.Drop(it);
     }
 
-    static private void DropItem(Actor actor, Item it)
-    {
-      actor.Remove(it);
-      _Drop(it, actor.Location);
-    }
-
+    static private void DropItem(Actor actor, Item it) => DropItem(actor, it, actor.Location);
     static private void DropItem(Actor actor, Item it, in Location dest)
     {
       actor.Remove(it);
@@ -10614,12 +10607,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 
-    static private void DropCloneItem(Actor actor, Item it, Item clone)
-    {
-      actor.Inventory.Consume(it);
-      _Drop(clone, actor.Location);
-    }
-
+    static private void DropCloneItem(Actor actor, Item it, Item clone) => DropCloneItem(actor, it, clone, actor.Location);
     static private void DropCloneItem(Actor actor, Item it, Item clone, in Location dest)
     {
       actor.Inventory.Consume(it);
@@ -10905,8 +10893,11 @@ restart:
 
     private void DoPushPullFollowersHelp(Actor actor, MapObject mapObj, bool isPulling, ref int staCost)    // alpha10
     {
+      var folowers = actor.Followers;
+      if (folowers is null) return;
+
       List<Actor>? helpers = null;
-      foreach (Actor fo in actor.Followers) {
+      foreach (Actor fo in folowers) {
         // follower can help if: not sleeping, idle and adj to map object.
         if (!fo.IsSleeping && fo.IsAvailableToHelp && Rules.IsAdjacent(fo.Location, mapObj.Location)) {
           (helpers ??= new(actor.CountFollowers)).Add(fo);
@@ -11411,7 +11402,7 @@ restart:
       Session.Get.Police.OnKilled(deadGuy, killer);
       Session.Get.Police.Record(police_relevant);
 
-      if (deadGuy.IsPlayer && (!killer?.IsPlayer ?? false)) {
+      if (deadGuy.IsPlayer && killer is not null && !killer.IsPlayer) {
         // this may need to be multi-thread aware
         Actor reinc = killer.LiveLeader ?? killer;
         if (!reinc.IsPlayer && Session.Get.Scoring.ReincarnationNumber < s_Options.MaxReincarnations) {
@@ -12055,7 +12046,7 @@ restart:
       if (deadVictim is null) throw new ArgumentNullException(nameof(deadVictim));
       if (isStartingGame && zombifier is not null) throw new InvalidOperationException(nameof(isStartingGame)+" && null!="+nameof(zombifier));
 #endif
-      Actor actor = BaseTownGenerator.MakeZombified(zombifier, deadVictim, isStartingGame ? 0 : deadVictim.Location.Map.LocalTime.TurnCounter);
+      Actor actor = BaseTownGenerator.MakeZombified(zombifier, deadVictim, deadVictim.Location.Map?.LocalTime.TurnCounter ?? 0);
       if (deadVictim.IsPlayer) {
         Session.Get.Scoring_fatality?.SetZombifiedPlayer(actor);
         if (Session.Get.Scoring.ReincarnationNumber < s_Options.MaxReincarnations) {
@@ -12636,7 +12627,7 @@ restart:
     public void DrawCorpsesList(List<Corpse> list, string title, int gx, int gy)
     {
       var is_dragging = Player.DraggedCorpse;
-      int num2 = list is null ? 0 : list.Count;
+      int num2 = list?.Count ?? 0;
       if (num2 > 0) title += " : " + num2;
       m_UI.UI_DrawStringBold(Color.White, title, gx, gy - BOLD_LINE_SPACING);
       int gx1 = gx;
@@ -12691,8 +12682,8 @@ restart:
 
     public void DrawPlayerActorTargets(Actor player)
     {
-      if (player.Sees(player.TargetActor) is not null) {
-        var screen = MapToScreen(player.TargetActor.Location);
+      if (player.Sees(player.TargetActor) is Actor p_target) {
+        var screen = MapToScreen(p_target.Location);
         m_UI.UI_DrawImage(GameImages.ICON_IS_TARGET, screen.X, screen.Y);
       }
       Actor? actor;
@@ -13549,9 +13540,9 @@ restart:
       // try a green tint
     }
 
-    private void HandlePlayerClearWaypoint(Actor player)
+    private void HandlePlayerClearWaypoint(PlayerController pc)
     {
-      var pc = player.Controller as PlayerController;
+      var player = pc.ControlledActor;
       var w_pts = pc.Waypoints;
       if (w_pts is null) {
         ErrorPopup("No waypoints set.");
@@ -13623,7 +13614,9 @@ restart:
           return viewing;
         }
       }
-      if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
+      if (Player.Controller is PlayerController pc) {
+        if (!viewing.Contains(pc)) PanViewportTo(viewing);
+      }
       return viewing;
     }
 
@@ -13631,7 +13624,9 @@ restart:
     {
       var viewing = actor.PlayersInLOS();
       if (viewing is null) return null;
-      if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
+      if (Player.Controller is PlayerController pc) {
+        if (!viewing.Contains(pc)) PanViewportTo(viewing);
+      }
       return viewing;
     }
 
@@ -13664,7 +13659,9 @@ restart:
       var viewing = PlayersInLOS(view);
       if (viewing is null) return false;
 
-      if (!viewing.Contains(Player.Controller as PlayerController)) PanViewportTo(viewing);
+      if (Player.Controller is PlayerController pc) {
+        if (!viewing.Contains(pc)) PanViewportTo(viewing);
+      }
       return true;
     }
 
