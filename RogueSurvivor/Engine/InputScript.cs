@@ -42,13 +42,13 @@ namespace djack.RogueSurvivor.Engine
     {
       string? text = null;
       foreach (var prefix in new[] { "--input=", "--keys=" }) {
-        if (arg.StartsWith(prefix)) {
+        if (arg.StartsWith(prefix, StringComparison.Ordinal)) {
           text = arg.Substring(prefix.Length);
           break;
         }
       }
       if (text is null) return false;
-      if (text.StartsWith("@")) text = File.ReadAllText(text.Substring(1));
+      if (text.StartsWith("@", StringComparison.Ordinal)) text = File.ReadAllText(text.Substring(1));
       foreach (var line in text.Split('\n')) {
         var code = line;
         var comment = code.IndexOf('#');
@@ -250,9 +250,9 @@ namespace djack.RogueSurvivor.Engine
       if (0 >= name.Length) return null;
       var lower = name.ToLowerInvariant();
       if (s_W3CKey.TryGetValue(lower, out var w3c)) return w3c;
-      if (4 == lower.Length && lower.StartsWith("key") && char.IsAsciiLetterLower(lower[3])) return Keys.A + (lower[3] - 'a');
-      if (6 == lower.Length && lower.StartsWith("digit") && char.IsAsciiDigit(lower[5])) return Keys.D0 + (lower[5] - '0');
-      if (7 == lower.Length && lower.StartsWith("numpad") && char.IsAsciiDigit(lower[6])) return Keys.NumPad0 + (lower[6] - '0');
+      if (4 == lower.Length && lower.StartsWith("key", StringComparison.Ordinal) && char.IsAsciiLetterLower(lower[3])) return Keys.A + (lower[3] - 'a');
+      if (6 == lower.Length && lower.StartsWith("digit", StringComparison.Ordinal) && char.IsAsciiDigit(lower[5])) return Keys.D0 + (lower[5] - '0');
+      if (7 == lower.Length && lower.StartsWith("numpad", StringComparison.Ordinal) && char.IsAsciiDigit(lower[6])) return Keys.NumPad0 + (lower[6] - '0');
       if (!Enum.TryParse<Keys>(name, true, out var key)) return null;   // a System.Windows.Forms.Keys member: NumPad8, D8, Return, F1, ...
       if (Keys.None == (key & Keys.KeyCode) || Keys.None != (key & Keys.Modifiers)) return null;   // a modifier flag or a mask, not a key
       if (s_ModifierKeys.Contains(key)) return null;

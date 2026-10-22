@@ -14922,7 +14922,7 @@ retry:
       if (3>Session.Get.ScriptStage_HospitalPowerup) {
         Session.Get.ScriptStage_HospitalPowerup = 3;    // hospital has regained power
         foreach(var z in storage.Zones) {
-          if (!z.Name.StartsWith("storage@")) continue;
+          if (!z.Name.StartsWith("storage@", StringComparison.Ordinal)) continue;
           foreach (var pt in z.Bounds) {
             if (!storage.GetTileModelAt(pt).IsWalkable) continue;  // storage.IsWalkable(pt) fails for intact containers
             if (storage.AnyAdjacent<DoorWindow>(pt)) continue;

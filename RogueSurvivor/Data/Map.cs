@@ -1311,11 +1311,11 @@ retry:
 
 #if FAIL
       // XXX topology of these special locations has to be accounted for as they're more than 1 level deep
-      bool is_special = name.StartsWith("Police Station - ");
-      bool dest_is_special = name.StartsWith("Police Station - ");
+      bool is_special = name.StartsWith("Police Station - ", StringComparison.Ordinal);
+      bool dest_is_special = name.StartsWith("Police Station - ", StringComparison.Ordinal);
       // ...
-      bool is_special = name.StartsWith("Hospital - ");
-      bool dest_is_special = name.StartsWith("Hospital - ");
+      bool is_special = name.StartsWith("Hospital - ", StringComparison.Ordinal);
+      bool dest_is_special = name.StartsWith("Hospital - ", StringComparison.Ordinal);
       // ...
 #endif
 
@@ -1377,7 +1377,7 @@ retry:
     {
       foreach(var z in m_Zones) {
         if (!z.Bounds.Contains(pos)) continue;
-        if (z.Name.StartsWith(partOfName)) return true;
+        if (z.Name.StartsWith(partOfName, StringComparison.Ordinal)) return true;
       }
       return false;
     }
@@ -1387,7 +1387,7 @@ retry:
       foreach(var z in m_Zones) {
         if (!z.Bounds.Contains(pos)) continue;
         foreach(var prefix in prefixes) {
-          if (z.Name.StartsWith(prefix)) return true;
+          if (z.Name.StartsWith(prefix, StringComparison.Ordinal)) return true;
         }
       }
       return false;
@@ -1451,7 +1451,7 @@ retry:
           test = new ZoneLoc(this, z);
           m_CanonicalZones.Add(z.Bounds, test);
           // walkways and roads are questionable (outside width-1)
-          if (z.Name.StartsWith("road@") || z.Name.StartsWith("walkway@")) continue;
+          if (z.Name.StartsWith("road@", StringComparison.Ordinal) || z.Name.StartsWith("walkway@", StringComparison.Ordinal)) continue;
           if (3 <= z.Bounds.Width && 3 <= z.Bounds.Height) {
             var rect = new Rectangle(z.Bounds.Location+Direction.SE, z.Bounds.Size+2*Direction.NW); // proper interior
             if ((new ZoneLoc(this, rect)).Any(loc => loc.BlocksLivingPathfinding)) continue;

@@ -32,16 +32,16 @@ namespace djack.RogueSurvivor
             reading_PC = false;
           }
           if (Engine.TestDrive.Parse(tmp)) continue;   // how to run the program; not part of the game, so not in CommandLineOptions
-          if (tmp.StartsWith("--seed=") && 0 == Engine.Session.COMMAND_LINE_SEED) {
+          if (tmp.StartsWith("--seed=", StringComparison.Ordinal) && 0 == Engine.Session.COMMAND_LINE_SEED) {
             if (int.TryParse(tmp.Substring(7), out int tmp2)) Engine.Session.COMMAND_LINE_SEED = tmp2;
           }
-          if (tmp.StartsWith("--spawn=") && !Engine.Session.CommandLineOptions.ContainsKey("spawn")) {
+          if (tmp.StartsWith("--spawn=", StringComparison.Ordinal) && !Engine.Session.CommandLineOptions.ContainsKey("spawn")) {
             Engine.Session.CommandLineOptions["spawn"] = tmp.Substring(8);
           }
-          if (tmp.StartsWith("--spawn-district=") && !Engine.Session.CommandLineOptions.ContainsKey("spawn-district")) {
+          if (tmp.StartsWith("--spawn-district=", StringComparison.Ordinal) && !Engine.Session.CommandLineOptions.ContainsKey("spawn-district")) {
             Engine.Session.CommandLineOptions["spawn-district"] = tmp.Substring(17);
           }
-          if (tmp.StartsWith("--city=") && !Engine.Session.CommandLineOptions.ContainsKey("city")) {
+          if (tmp.StartsWith("--city=", StringComparison.Ordinal) && !Engine.Session.CommandLineOptions.ContainsKey("city")) {
             Engine.Session.CommandLineOptions["city"] = tmp.Substring(7);
           }
           if ("--subway-cop"==tmp) Engine.Session.CommandLineOptions["subway-cop"] = "";    // key just has to exist
