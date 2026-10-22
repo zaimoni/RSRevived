@@ -353,8 +353,8 @@ namespace djack.RogueSurvivor.Engine
     private Actor? m_ZombifiedPlayer;
     public readonly string DeathPlace;
 
-    public List<Actor>? FollowersWhendDied { get { return m_FollowersWhenDied; } }
-    public Actor? ZombifiedPlayer { get { return m_ZombifiedPlayer; } }
+    public List<Actor>? FollowersWhenDied => m_FollowersWhenDied;
+    public Actor? ZombifiedPlayer => m_ZombifiedPlayer;
 
     public Scoring_fatality(Actor killer, Actor victim) // historically victim is a player, but we don't check that here
     {

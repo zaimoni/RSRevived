@@ -11638,7 +11638,7 @@ restart:
       textFile.Append(" ");
       textFile.Append("> FOLLOWERS");
       { // scoping brace
-      var followers = Session.Get.Scoring_fatality.FollowersWhendDied;
+      var followers = Session.Get.Scoring_fatality.FollowersWhenDied;
       if (followers is null) {
         textFile.Append(string.Format("{0} was doing fine alone. Or everyone else was dead.", str1));
       } else {
@@ -14636,13 +14636,18 @@ retry:
       switch (reincMode) {
         case GameOptions.ReincMode.RANDOM_FOLLOWER:
           { // scoping brace
-          int count_followers = Session.Get.Scoring_fatality.FollowersWhendDied?.Count ?? 0;
+          var followers = Session.Get.Scoring_fatality.FollowersWhenDied;
+          if (followers is null) {
+            matchingActors = 0;
+            return null;
+          }
+          int count_followers = followers.Count;
           if (0 >= count_followers) {
             matchingActors = 0;
             return null;
           }
-          var actorList1 = new List<Actor>(count_followers);
-          foreach (Actor a in Session.Get.Scoring_fatality.FollowersWhendDied) {
+          List<Actor> actorList1 = new(count_followers);
+          foreach (Actor a in followers) {
             if (IsSuitableReincarnation(a, true)) actorList1.Add(a);
           }
           matchingActors = actorList1.Count;
