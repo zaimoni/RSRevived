@@ -1074,7 +1074,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return Rules.Get.DiceRoller.Choose(ret_from);
     }
 
-    protected bool IsValidFleeingAction(ActorAction? a)
+    protected bool IsValidFleeingAction([NotNullWhen(true)] ActorAction? a)
     {
       if (a is null) return false;
       if (a is Resolvable res) return IsValidFleeingAction(res.ConcreteAction);
