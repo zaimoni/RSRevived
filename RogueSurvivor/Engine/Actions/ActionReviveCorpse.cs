@@ -66,12 +66,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       return ReasonIllegal(actor) ?? ReasonIllegal(corpse) ?? ReasonCant(actor, corpse) ?? "";
     }
 
-    public static bool Can(Actor actor, Corpse corpse, out string? reason)
-    {
-      reason = ReasonCannot(actor, corpse);
-      return string.IsNullOrEmpty(reason);
-    }
-
     public static bool Can(Actor actor, Corpse corpse)
     {
       return string.IsNullOrEmpty(ReasonCannot(actor, corpse));

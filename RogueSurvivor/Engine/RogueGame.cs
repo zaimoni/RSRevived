@@ -4916,11 +4916,12 @@ namespace djack.RogueSurvivor.Engine
     {
       var corpse = MouseToCorpse(mousePos);
       if (corpse is null) return false;
-      if (!ActionReviveCorpse.Can(player, corpse, out var reason)) {
-        ErrorPopup(string.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, reason));
+      var act = new ActionReviveCorpse(player, corpse);
+      if (!act.IsPerformable()) {
+        ErrorPopup(string.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, act.FailReason));
         return false;
       }
-      DoReviveCorpse(player, corpse);
+      act.Perform();
       return true;
     }
 
