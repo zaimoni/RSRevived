@@ -1416,7 +1416,7 @@ namespace djack.RogueSurvivor.Engine
       gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, "Rank | Name, Skills, Death       |  Score |Difficulty|Survival|  Kills |Achievm.|      Game Time | Playing time", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      if (saveToTextfile) {
+      if (textFile is not null) {
         textFile.Append(SetupConfig.GAME_NAME_CAPS+" "+SetupConfig.GAME_VERSION);
         textFile.Append("Hi Scores");
         textFile.Append("Rank | Name, Skills, Death       |  Score |Difficulty|Survival|  Kills |Achievm.|      Game Time | Playing time");
@@ -1433,7 +1433,7 @@ namespace djack.RogueSurvivor.Engine
         gy1 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(color, string.Format("     | {0}.", hiScore.Death), 0, gy1, new Color?());
         gy1 += BOLD_LINE_SPACING;
-        if (saveToTextfile) {
+        if (textFile is not null) {
           textFile.Append(hr);
           textFile.Append(str);
           textFile.Append(string.Format("     | {0}", hiScore.SkillsDescription));
@@ -1441,7 +1441,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       string scoreTextFilePath = GetUserHiScoreTextFilePath();
-      if (saveToTextfile) textFile.Save(scoreTextFilePath);
+      textFile?.Save(scoreTextFilePath);
       m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
       if (saveToTextfile) m_UI.UI_DrawStringBold(Color.White, scoreTextFilePath, 0, gy1, new Color?());
@@ -1454,7 +1454,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.DrawHeadNote("Loading hiscores table...");
       m_HiScoreTable = HiScoreTable.Load(GetUserHiScoreFilePath());
       bool regen_table = (m_HiScoreTable is null);
-      if (!regen_table) {
+      if (m_HiScoreTable is not null) {
         for (int index = 0; index < m_HiScoreTable.Count; ++index) {
           HiScore hiScore = m_HiScoreTable[index];
           if (!hiScore.is_valid()) {
@@ -1984,26 +1984,6 @@ namespace djack.RogueSurvivor.Engine
         if (!m_IsGameRunning || m_HasLoadedGame || 0>= World.Get.PlayerCount) return;
         if (!nextActorToAct.IsDead) CheckSpecialPlayerEventsAfterAction(nextActorToAct);
       } else {
-#if PROTOTYPE
-        // alpha10 ai loop bug detection; not multi-thread aware.  \todo fix this
-        if (actor == m_DEBUG_prevAiActor) {
-          if (++m_DEBUG_sameAiActorCount >= DEBUG_AI_ACTOR_LOOP_COUNT_WARNING) {
-            // TO DEVS: you might want to add a debug breakpoint here ->
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "WARNING: AI actor " + actor.Name + " is probably looping!!");
-#if DEBUG
-            // in debug keep going to let us debug the ai
-#else
-            // in release throw an exception as infinite loop is a fatal bug
-            Exception e = new InvalidOperationException("an AI actor is looping, please report the exception details");
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "AI stacktrace:" + e.StackTrace);
-#endif
-          }
-        } else {
-          m_DEBUG_sameAiActorCount = 0;
-          m_DEBUG_prevAiActor = actor;
-        }
-#endif
-
         HandleAiActor(nextActorToAct.Controller);
         CancelFaustClairvoyance(nextActorToAct);
       }
@@ -2213,7 +2193,7 @@ namespace djack.RogueSurvivor.Engine
             actor.ModifyTrustInLeader(a_leader.TrustIncrease, false);
             if (actor.HasBondWith(a_leader) && rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
               actor.RegenSanity(actor.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
-              actor.Leader.RegenSanity(a_leader.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
+              a_leader.RegenSanity(a_leader.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
               if (ForceVisibleToPlayer(actor))
                 AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", VERB_FEEL.Conjugate(actor), a_leader.Name, actor.HimOrHer)));
               if (ForceVisibleToPlayer(a_leader))
@@ -8391,6 +8371,9 @@ namespace djack.RogueSurvivor.Engine
     {
       var lines = new List<string>{ "> food" };
       int turn = Session.Get.WorldTime.TurnCounter;
+      // 2026-10-21: CPU micro-optimization.  IsPerishable controls whether BestBefore is non-null.
+      // Since we are accessing BestBefore for UI purposes, we can hard-code the forwarding
+      // calls here.
       if (f.BestBefore is { } life) {
         if (life.IsStillFreshAt(turn)) lines.Add("Fresh.");
         else if (life.IsExpiredAt(turn)) lines.Add("*Expired*");
