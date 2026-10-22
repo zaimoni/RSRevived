@@ -457,7 +457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override void TakeControl()
     {
       base.TakeControl();
-      ReviewItemRatings();
+      if (m_Actor.Model.Abilities.CanUseItems) ReviewItemRatings();
     }
 
     public enum SparseData {

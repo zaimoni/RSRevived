@@ -3461,7 +3461,7 @@ namespace djack.RogueSurvivor.Engine
                 };
                 break;
               case PlayerCommand.CITY_INFO:
-                HandleCityInfo();
+                HandleCityInfo(pc);
                 break;
               case PlayerCommand.ITEM_INFO:
                 HandleItemInfo();
@@ -3799,21 +3799,19 @@ namespace djack.RogueSurvivor.Engine
       m_UI.WaitEscape();
     }
 
-    private void HandleCityInfo()
+    private void HandleCityInfo(PlayerController pc)
     {
+      var Player = pc.ControlledActor;
+      if (Player.Model.Abilities.IsUndead) {
+        ErrorPopup(["You can't remember where you are...", "Must be that rotting brain of yours..."]);
+        return;
+      }
+
       int gx = 0;
       int gy = 0;
       m_UI.ClearScreen();
       m_UI.UI_DrawStringBold(Color.White, "CITY INFORMATION -- "+Session.Seed.ToString()+" "+ Session.DescGameMode(Session.Get.GameMode), gx, gy, new Color?());
       gy = 2* BOLD_LINE_SPACING;
-      if (Player.Model.Abilities.IsUndead) {
-        m_UI.UI_DrawStringBold(Color.Red, "You can't remember where you are...", gx, gy, new Color?());
-        gy += BOLD_LINE_SPACING;
-        m_UI.UI_DrawStringBold(Color.Red, "Must be that rotting brain of yours...", gx, gy, new Color?());
-        m_UI.RenderFootnote("press ESC to leave");
-        m_UI.WaitEscape();
-        return;
-      }
 
       m_UI.UI_DrawStringBold(Color.White, "> DISTRICTS LAYOUT", gx, gy, new Color?());
       gy += BOLD_LINE_SPACING;
@@ -3848,16 +3846,14 @@ namespace djack.RogueSurvivor.Engine
       int num3 = gy + BOLD_LINE_SPACING;
       const int num4 = 32;
       int num5 = num3;
-      for (int index1 = 0; index1 < World.Get.Size; ++index1) {
-        for (int index2 = 0; index2 < World.Get.Size; ++index2) {
-          District district = World.Get[index2, index1];
+      foreach(var pt in World.Get.Extent) {
+          District district = World.Get[pt];
           char ch = district == CurrentMap.District ? '*' : (Player.ActorScoring.HasVisited(district.EntryMap) ? '-' : '?');
           var cs = DistrictToColorCode(district.Kind);
           string text = "".PadLeft(5,ch);
-          m_UI.UI_DrawStringBold(cs.Key, text, num4 + index2 * 48, num5 + index1 * 3 * BOLD_LINE_SPACING, new Color?());
-          m_UI.UI_DrawStringBold(cs.Key, string.Format("{0}{1}{2}", ch, cs.Value, ch), num4 + index2 * 48, num5 + (index1 * 3 + 1) * BOLD_LINE_SPACING, new Color?());
-          m_UI.UI_DrawStringBold(cs.Key, text, num4 + index2 * 48, num5 + (index1 * 3 + 2) * BOLD_LINE_SPACING, new Color?());
-        }
+          m_UI.UI_DrawStringBold(cs.Key, text, num4 + pt.X * 48, num5 + pt.Y * 3 * BOLD_LINE_SPACING);
+          m_UI.UI_DrawStringBold(cs.Key, string.Format("{0}{1}{2}", ch, cs.Value, ch), num4 + pt.X * 48, num5 + (pt.Y * 3 + 1) * BOLD_LINE_SPACING);
+          m_UI.UI_DrawStringBold(cs.Key, text, num4 + pt.X * 48, num5 + (pt.Y * 3 + 2) * BOLD_LINE_SPACING);
       }
 
         int num6 = World.Get.Size / 2;
@@ -3888,25 +3884,25 @@ namespace djack.RogueSurvivor.Engine
             };
 
             Map entryMap = World.Get[pt].EntryMap;
-            var zoneByPartialName1 = entryMap.GetZoneByPartialName("Subway Station");
-            if (zoneByPartialName1 is not null) {
-              render(Color.Blue, zoneByPartialName1.Name);
-            }
-            var zoneByPartialName2 = entryMap.GetZoneByPartialName("Sewers Maintenance");
-            if (zoneByPartialName2 is not null) {
-              render(Color.Green, zoneByPartialName2.Name);
-            }
-            if (entryMap == Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap) {
+            var zone = entryMap.GetZoneByPartialName("Subway Station");
+            if (zone is not null) render(Color.Blue, zone.Name);
+            zone = entryMap.GetZoneByPartialName("Sewers Maintenance");
+            if (zone is not null) render(Color.Green, zone.Name);
+
+            var sess = Session.Get;
+            var unique_maps = sess.UniqueMaps;
+            if (entryMap == unique_maps.PoliceStation_OfficesLevel.TheMap.District.EntryMap) {
               render(Color.CadetBlue, "Police Station.");
             }
-            if (entryMap == Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap) {
+            if (entryMap == unique_maps.Hospital_Admissions.TheMap.District.EntryMap) {
               render(Color.White, "Hospital.");
             }
-            if (Session.Get.PlayerKnows_CHARUndergroundFacilityLocation && entryMap == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap) {
+            if (   sess.PlayerKnows_CHARUndergroundFacilityLocation
+                && entryMap == unique_maps.CHARUndergroundFacility.TheMap.District.EntryMap) {
               render(Color.Red, Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Name);
             }
-            var vip = Session.Get.UniqueActors.TheSewersThing.TheActor;
-            if ((Player.Controller as PlayerController).KnowsWhere(vip) && entryMap == vip.Location.Map.District.EntryMap) {
+            var vip = sess.UniqueActors.TheSewersThing.TheActor;
+            if (pc.KnowsWhere(vip) && entryMap == vip.Location.Map.District.EntryMap) {
               render(Color.Red, "The Sewers Thing lives down there.");
             }
         }
