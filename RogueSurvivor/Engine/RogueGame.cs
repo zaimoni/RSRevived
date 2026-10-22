@@ -4229,35 +4229,34 @@ namespace djack.RogueSurvivor.Engine
           }
           tmp.Add(msg);
         }
-        var items = (a.Controller as ObjectiveAI).WhatHaveISeen();
 
-        var critical = (a.Controller as ObjectiveAI).WhatDoINeedNow();
-        if (items is not null) critical.IntersectWith(items);
-        else critical.Clear();
-;       if (0<critical.Count) {
-          string msg = "need now:";
-          foreach(var x in critical) {
-            if (60<msg.Length) {
-              tmp.Add(msg);
-              msg = "need now:";
-            }
-            msg += " "+x.ToString();
-          }
-          tmp.Add(msg);
-        } else {
-          critical = (a.Controller as ObjectiveAI).WhatDoIWantNow();
-          if (items is not null) critical.IntersectWith(items);
-          else critical.Clear();
-          if (0<critical.Count) {
-            string msg = "want now:";
-            foreach(var x in critical) {
-              if (60<msg.Length) {
+        if (a.Controller is ObjectiveAI oai) {
+          var items = oai.WhatHaveISeen();
+          var critical = oai.WhatDoINeedNow();
+
+          bool describe(string header, HashSet<Item_IDs> src) {
+            if (0 >= src.Count) return false;
+
+            string msg = header;
+            foreach(var x in src) {
+              var append = x.ToString();
+              if (TEXTFILE_CHARS_PER_LINE/2 < msg.Length + 1 + append.Length) {
                 tmp.Add(msg);
-                msg = "want now:";
+                msg = header;
               }
-              msg += " "+x.ToString();
+              msg += " "+append;
             }
             tmp.Add(msg);
+            return true;
+          }
+
+          if (items is not null) critical.IntersectWith(items);
+          else critical.Clear();
+  ;       if (!describe("need now:", critical)) {
+            critical = oai.WhatDoIWantNow();
+            if (items is not null) critical.IntersectWith(items);
+            else critical.Clear();
+            describe("want now:", critical);
           }
         }
 
