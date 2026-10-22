@@ -4821,13 +4821,14 @@ namespace djack.RogueSurvivor.Engine
 
       if (Player.Location.InventoryAtFeet()?.NullIfEmpty() is not Data.Model.InvOrigin invspec) return null;
 
-      var itemsAt = invspec.Inventory;
+      var itemsAt = invspec.Inventory!;
       var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen);
       int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
       if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
-      if (itemsAt[index2] is null) return null;
+      var it = itemsAt[index2];
+      if (it is null) return null;
       // hard crash if this inventory is flagged as seen by player
-      return new(new(invspec, itemsAt[index2]), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
+      return new(new(invspec, it), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
     }
 
     private bool HandleMouseOverCorpses(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
@@ -5312,18 +5313,19 @@ namespace djack.RogueSurvivor.Engine
           ErrorPopup(string.Format("Can't give {0} to {1} : {2}.", invSpec.Value.Key.it!.TheName, actorAt.TheName, reason));
           return false;
         }
-        if (src[0].obj_owner is not null) {
-          var reason = src[0].obj_owner.ReasonCantPutItemIn(player);
+        var shelf = src[0].obj_owner;
+        if (shelf is not null) {
+          var reason = shelf.ReasonCantPutItemIn(player);
           if (string.IsNullOrEmpty(reason)) {
             player.StandUp();
-            DoPutItemInContainer(player, src[0].obj_owner, invSpec.Value.Key.it!);
+            DoPutItemInContainer(player, shelf, invSpec.Value.Key.it!);
             return true;
           }
-          ErrorPopup(string.Format("Can't put {0} in {1} : {2}.", invSpec.Value.Key.it!.TheName, src[0].obj_owner.TheName, reason));
+          ErrorPopup(string.Format("Can't put {0} in {1} : {2}.", invSpec.Value.Key.it!.TheName, shelf.TheName, reason));
           return false;
         }
-        if (src[0].loc is not null) {
-          DoDropItem(player, invSpec.Value.Key.it!, src[0].loc.Value);
+        if (src[0].loc is Location loc) {
+          DoDropItem(player, invSpec.Value.Key.it!, loc);
           return true;
         }
         return false;
@@ -5693,7 +5695,7 @@ namespace djack.RogueSurvivor.Engine
             return null;
           case Keys.F:
             if (flag3) {
-              (player.Controller as PlayerController).Exec_RangedAttack(currentTarget, LoF, mode);
+              pc.Exec_RangedAttack(currentTarget, LoF, mode);
               return true;
             } else
               ErrorPopup(string.Format("Can't fire at {0} : {1}.", currentTarget.TheName, reason));
