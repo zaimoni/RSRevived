@@ -3801,8 +3801,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleCityInfo(PlayerController pc)
     {
-      var Player = pc.ControlledActor;
-      if (Player.Model.Abilities.IsUndead) {
+      var player = pc.ControlledActor;
+      if (player.Model.Abilities.IsUndead) {
         ErrorPopup(["You can't remember where you are...", "Must be that rotting brain of yours..."]);
         return;
       }
@@ -3817,13 +3817,13 @@ namespace djack.RogueSurvivor.Engine
       gy += BOLD_LINE_SPACING;
       int num2 = gy + BOLD_LINE_SPACING;
       for (int index = 0; index < World.Get.Size; ++index) {
-        Color color = index == Player.Location.Map.DistrictPos.Y ? Color.LightGreen : Color.White;
+        Color color = index == player.Location.Map.DistrictPos.Y ? Color.LightGreen : Color.White;
         m_UI.UI_DrawStringBold(color, index.ToString(), 20, num2 + index * 3 * BOLD_LINE_SPACING + BOLD_LINE_SPACING);
         m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * BOLD_LINE_SPACING);
         m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * BOLD_LINE_SPACING + 2* BOLD_LINE_SPACING);
       }
       for (int index = 0; index < World.Get.Size; ++index)
-        m_UI.UI_DrawStringBold(index == Player.Location.Map.DistrictPos.X ? Color.LightGreen : Color.White, string.Format("..{0}..", (char)(65 + index)), 32 + index * 48, gy);
+        m_UI.UI_DrawStringBold(index == player.Location.Map.DistrictPos.X ? Color.LightGreen : Color.White, string.Format("..{0}..", (char)(65 + index)), 32 + index * 48, gy);
 
       static ColorString DistrictToColorCode(DistrictKind d)
       {
@@ -3848,7 +3848,7 @@ namespace djack.RogueSurvivor.Engine
       int num5 = num3;
       foreach(var pt in World.Get.Extent) {
           District district = World.Get[pt];
-          char ch = district == CurrentMap.District ? '*' : (Player.ActorScoring.HasVisited(district.EntryMap) ? '-' : '?');
+          char ch = district == CurrentMap.District ? '*' : (player.ActorScoring.HasVisited(district.EntryMap) ? '-' : '?');
           var cs = DistrictToColorCode(district.Kind);
           string text = "".PadLeft(5,ch);
           m_UI.UI_DrawStringBold(cs.Key, text, num4 + pt.X * 48, num5 + pt.Y * 3 * BOLD_LINE_SPACING);
@@ -5269,7 +5269,7 @@ namespace djack.RogueSurvivor.Engine
       var candidates = Map.GetAccessibleAdjacentInventoryOrigins(player.Location);
       if (candidates is null) return false;
       foreach (var x in candidates) {
-        var rws = x.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo);
+        var rws = x.Inventory!.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo);
         if (rws is null) continue;
         foreach (var rw in rws) unload_these.Add(new(x, rw));
       }
