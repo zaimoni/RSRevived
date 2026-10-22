@@ -4207,7 +4207,7 @@ namespace djack.RogueSurvivor.Engine
       }
       var player_backup = Player;
       List<Actor> allies = player_allies.ToList();
-      allies.Sort((a,b)=> string.Compare(a.Name,b.Name));
+      allies.Sort((a,b)=> string.CompareOrdinal(a.Name,b.Name));
 
       string label_a(Actor a) {
         var leader = a.LiveLeader;

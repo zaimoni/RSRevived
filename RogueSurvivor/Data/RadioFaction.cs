@@ -500,7 +500,7 @@ namespace djack.RogueSurvivor.Data
                 if (0 != code) return -code;
                 code = lhs.Value.t0.CompareTo(rhs.Value.t0);
                 if (0 != code) return -code;
-                return lhs.Key.Name.CompareTo(rhs.Key.Name);
+                return string.CompareOrdinal(lhs.Key.Name, rhs.Key.Name);
             }
 
             List<KeyValuePair<ActorTag, Ranking>> ret = m_Quick.ToList();
@@ -515,7 +515,7 @@ namespace djack.RogueSurvivor.Data
                 if (0 != code) return -code;
                 code = lhs.Value.Key.t0.CompareTo(rhs.Value.Key.t0);
                 if (0 != code) return -code;
-                return lhs.Key.Name.CompareTo(rhs.Key.Name);
+                return string.CompareOrdinal(lhs.Key.Name, rhs.Key.Name);
             }
 
             List<KeyValuePair<ActorTag, KeyValuePair<Ranking, Demise>>> ret = m_Dead.ToList();
