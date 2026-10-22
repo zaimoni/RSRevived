@@ -3899,7 +3899,7 @@ namespace djack.RogueSurvivor.Engine
             }
             if (   sess.PlayerKnows_CHARUndergroundFacilityLocation
                 && entryMap == unique_maps.CHARUndergroundFacility.TheMap.District.EntryMap) {
-              render(Color.Red, Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Name);
+              render(Color.Red, unique_maps.CHARUndergroundFacility.TheMap.Name);
             }
             var vip = sess.UniqueActors.TheSewersThing.TheActor;
             if (pc.KnowsWhere(vip) && entryMap == vip.Location.Map.District.EntryMap) {
@@ -4221,7 +4221,7 @@ namespace djack.RogueSurvivor.Engine
         List<string> tmp = [a.Name];
         var best_melee = a.GetBestMeleeWeapon();
         tmp.Add("melee: "+(best_melee is null ? "unarmed" : best_melee.ModelID.ToString()));
-        var ranged = a.Inventory.GetItemsByType<ItemRangedWeapon>();
+        var ranged = a.Inventory?.GetItemsByType<ItemRangedWeapon>();
         if (ranged is not null) {
           string msg = "ranged:";
           foreach(ItemRangedWeapon rw in ranged) {
@@ -4252,7 +4252,7 @@ namespace djack.RogueSurvivor.Engine
 
           if (items is not null) critical.IntersectWith(items);
           else critical.Clear();
-  ;       if (!describe("need now:", critical)) {
+          if (!describe("need now:", critical)) {
             critical = oai.WhatDoIWantNow();
             if (items is not null) critical.IntersectWith(items);
             else critical.Clear();
