@@ -4210,19 +4210,20 @@ restart:
       return _recordPathfinding(BehaviorPathTo(goals),goals);
     }
 
-    public ActorAction BehaviorPathTo(HashSet<Location> goals)
+    public ActorAction? BehaviorPathTo(HashSet<Location> goals)
     {
-      if (0 >= (goals?.Count ?? 0)) return null;
+      if (goals is null || 0 >= goals.Count) return null;
 #if DEBUG
       if (goals.Contains(m_Actor.Location)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s()));
 #endif
       bool moveloop_risk = (_last_move is not null && goals.Contains(_last_move.origin));
+      var distance_1 = goals.Where(loc => 1 == Rules.InteractionDistance(loc, m_Actor.Location)).ToList();
 
       const bool tracing = false;
 
       {
       var moves = m_Actor.OnePath(m_Actor.Location);    // this usage needs to know about invalid moves
-      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: checking for moves " + (moves?.to_s() ?? "null") + " to adjacent goals " + goals.to_s());
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: checking for moves " + (moves?.to_s() ?? "null") + " to adjacent goals " + goals.to_s());
       {
       bool null_return = false;
       ActorAction? movelooping = null;
@@ -4245,7 +4246,51 @@ restart:
       moves.OnlyIf(action => action.IsPerformable() && !VetoAction(action));
       if (0 >= moves.Count) return null;    // possibly ActionWait instead
 
+      ActorAction? make_time(Location blocked) {
+        var actorAt = blocked.Actor;
+        if (actorAt is null) {
+          var act_break = ActionBreak.create(m_Actor, blocked.MapObject);
+          if (act_break is not null) return act_break;
+        } else if (!m_Actor.IsEnemyOf(actorAt)) {
+          var act = BehaviorMakeTime();
+          if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, act is null ? "null" : act.ToString());
+          return act;
+        }
+        return null;
+      }
+
       // if we couldn't path to an adjacent goal, wait
+#if true
+      if (distance_1.Any()) {
+        Dictionary<Location, ActorAction> failover = new();
+        bool actor_saturated = true;
+        foreach(var loc in distance_1) {
+#if DEBUG
+          if (1 >= FastestTrapKill(loc))  throw new InvalidOperationException("tracing");
+#endif
+          var act = make_time(loc);
+          if (act is not null) {
+#if DEBUG
+            if (!act.IsPerformable()) throw new InvalidOperationException("tracing");
+            if (VetoAction(act)) throw new InvalidOperationException("tracing");
+#endif
+            failover.Add(loc, act);
+          } else {
+            if (loc.Actor is null) actor_saturated = false;
+          }
+        }
+        if (1 <= failover.Count) return Rules.Get.DiceRoller.Choose(failover).Value;
+        if (actor_saturated) {
+          foreach(var x in moves) {
+            if (1 == Map.PathfinderMoveCosts(x.Value)) failover.Add(x.Key, x.Value);
+            else if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, x.Value.ToString()+": "+ Map.PathfinderMoveCosts(x.Value).ToString());
+          }
+          if (1 <= failover.Count) return Rules.Get.DiceRoller.Choose(failover).Value;
+        }
+
+        throw m_Actor.Spotlight(new InvalidProgramException("non-pathing to adjacent location: " + distance_1.to_s()));
+      }
+#else
       if (goals.Any(loc => Rules.IsAdjacent(m_Actor.Location, in loc))) {
         var e = m_Actor.Location.Exit;
         if (e is not null && goals.Contains(e.Location)) {
@@ -4269,11 +4314,12 @@ restart:
           return new ActionWait(m_Actor);
         }
 #if DEBUG
-        throw m_Actor.Spotlight(new InvalidProgramException("non-pathing to adjacent location: "+goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s()));
+        throw m_Actor.Spotlight(new InvalidProgramException("non-pathing to adjacent location: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s()));
 #else
         return new ActionWait(m_Actor); // completely inappropriate for a z on the other side of an exit
 #endif
       }
+#endif
 
       // check for pre-existing relevant path (approaching dead code)
       {
