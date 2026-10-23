@@ -1941,7 +1941,7 @@ namespace djack.RogueSurvivor.Data
       (Controller as Gameplay.AI.ObjectiveAI)?.OnMove();  // 2019-08-24: both calls required to pass regression test
       // inline Map::IsTrapCoveringMapObjectAt
       var obj = Location.MapObject;
-      if (obj is null || obj.CoversTraps) {
+      if (obj is null || !obj.CoversTraps) {
         if (0 == Location.OnReachInto(this)) return; // no further processing if dead
       }
       Location.Map.OnEnterTile(this);
