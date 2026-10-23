@@ -4217,7 +4217,7 @@ restart:
       if (goals.Contains(m_Actor.Location)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s()));
 #endif
       bool moveloop_risk = (_last_move is not null && goals.Contains(_last_move.origin));
-      var distance_1 = goals.Where(loc => 1 == Rules.InteractionDistance(loc, m_Actor.Location)).ToList();
+      var distance_1 = goals.Where(loc => 1 == Rules.InteractionDistance(m_Actor.Location, in loc)).ToList();
 
       const bool tracing = false;
 
@@ -4256,12 +4256,15 @@ restart:
           if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, act is null ? "null" : act.ToString());
           return act;
         }
+#if DEBUG
+        else throw m_Actor.Spotlight(new InvalidProgramException("adjacent enemy should have prevented pathfinding: " + distance_1.to_s()));
+#endif
         return null;
       }
 
       // if we couldn't path to an adjacent goal, wait
 #if true
-      if (distance_1.Any()) {
+      if (0 < distance_1.Count) {
         Dictionary<Location, ActorAction> failover = new();
         bool actor_saturated = true;
         foreach(var loc in distance_1) {
@@ -4282,13 +4285,24 @@ restart:
         if (1 <= failover.Count) return Rules.Get.DiceRoller.Choose(failover).Value;
         if (actor_saturated) {
           foreach(var x in moves) {
+            if (x.Value is ActionUseExit) continue;
             if (1 == Map.PathfinderMoveCosts(x.Value)) failover.Add(x.Key, x.Value);
             else if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, x.Value.ToString()+": "+ Map.PathfinderMoveCosts(x.Value).ToString());
           }
           if (1 <= failover.Count) return Rules.Get.DiceRoller.Choose(failover).Value;
+          foreach(var x in moves) {
+            if (x.Value is ActionUseExit) continue;
+            else if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, x.Value.ToString()+": "+ Map.PathfinderMoveCosts(x.Value).ToString());
+          }
+          if (1 <= failover.Count) return Rules.Get.DiceRoller.Choose(failover).Value;
+          if (1 <= moves.Count) return Rules.Get.DiceRoller.Choose(moves).Value;
         }
 
+#if DEBUG
         throw m_Actor.Spotlight(new InvalidProgramException("non-pathing to adjacent location: " + distance_1.to_s()));
+#else
+        return null;
+#endif
       }
 #else
       if (goals.Any(loc => Rules.IsAdjacent(m_Actor.Location, in loc))) {

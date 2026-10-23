@@ -525,7 +525,7 @@ namespace djack.RogueSurvivor.Data
         RogueGame.DamnCHARtoPoliceInvestigation();
         return "Just following ORDERS!";
       }
-      return base.AggressedBy(aggressor);
+      return "";  // traditionally do not act like NPC, i.e. base.AggressedBy(aggressor)
     }
 
     public override ActorAction? GetAction() => throw new InvalidOperationException("do not call PlayerController.GetAction()");
