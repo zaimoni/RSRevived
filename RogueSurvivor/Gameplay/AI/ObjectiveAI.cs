@@ -4292,7 +4292,7 @@ restart:
           if (1 <= failover.Count) return Rules.Get.DiceRoller.Choose(failover).Value;
           foreach(var x in moves) {
             if (x.Value is ActionUseExit) continue;
-            else if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, x.Value.ToString()+": "+ Map.PathfinderMoveCosts(x.Value).ToString());
+            failover.Add(x.Key, x.Value);
           }
           if (1 <= failover.Count) return Rules.Get.DiceRoller.Choose(failover).Value;
           if (1 <= moves.Count) return Rules.Get.DiceRoller.Choose(moves).Value;
