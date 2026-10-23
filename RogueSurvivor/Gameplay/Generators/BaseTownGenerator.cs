@@ -905,7 +905,7 @@ restart:
     }
 
     // geometry is a Godel-encoded series of compass-point line segments
-    public List<Block> GetSubwayStationBlocks(Map entryMap, uint geometry)
+    public List<Block>? GetSubwayStationBlocks(Map entryMap, uint geometry)
     {
       // subway station code isn't meant to handle the diagnonals so bail on those early
       List<Block>? blockList = null;
@@ -966,7 +966,7 @@ restart:
         }
 //      break;
       }
-      if (1 >= (blockList?.Count ?? 0)) return blockList;
+      if (blockList is null || 1 >= blockList.Count) return blockList;
       // further postprocessing here -- would like to minimize distance to rails *from the stairs*
       // Block is a class (extra work for dictionary), but Rectangle is a struct (and thus ok)
       var tmp = new List<Block>();
@@ -1123,7 +1123,7 @@ restart:
 #endregion
 
 #region 2. Make station linked to surface.
-      List<Block> blockList = GetSubwayStationBlocks(entryMap, layout);
+      var blockList = GetSubwayStationBlocks(entryMap, layout);
       if (blockList is not null) {
         block = m_DiceRoller.Choose(blockList);
         ClearRectangle(entryMap, block.BuildingRect);   // had been wiping out stores, etc as late-generation
@@ -3058,7 +3058,7 @@ restart:
         do {
           var pt = m_DiceRoller.Choose(officeZone.Bounds);
           var zonesAt = surfaceMap.GetZonesAt(pt);
-          if (0 < (zonesAt?.Count ?? 0)) {
+          if (zonesAt is not null && 0 < zonesAt.Count) {
             foreach (Zone zone2 in zonesAt) {
               if (zone2.Name.Contains("room")) {
                 zone1 = zone2;

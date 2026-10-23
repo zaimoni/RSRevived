@@ -42,6 +42,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public ZombieAI(Actor src) : base(src)
     {
       m_MemLOSSensor = new MemorizedSensor<LOSSensor>(new LOSSensor(VISION_SEES, src), LOS_MEMORY);
+      // this allows replacing the property testing, with corresponding null-testing
       if (!m_Actor.Model.Abilities.IsUndeadMaster) m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
       if (m_Actor.Model.Abilities.ZombieAI_Explore) m_Exploration = new ExplorationData();
     }
@@ -74,7 +75,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (src.TryGetProperty("Exploration", out x)) m_Exploration = new(x, options);
     }
 
-    protected override bool HasJsonState { get => (m_Exploration is not null && !m_Exploration.IsEmpty) || base.HasJsonState; }
+    protected override bool HasJsonState => base.HasJsonState || (m_Exploration is not null && !m_Exploration.IsEmpty);
     #endregion
 
     public override List<Percept> UpdateSensors()
@@ -92,7 +93,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction SelectAction()
     {
       var tmp_abilities = m_Actor.Model.Abilities;
-      if (tmp_abilities.ZombieAI_Explore && m_Actor.Location != PrevLocation) m_Exploration.Update(m_Actor.Location);
+      if (m_Exploration is not null && m_Actor.Location != PrevLocation) m_Exploration.Update(m_Actor.Location);
 
       ActorAction? tmpAction;
       if ((_enemies = SortByGridDistance(FilterEnemies(_all = FilterSameMap(UpdateSensors())))) is not null) {
@@ -122,7 +123,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (!tmp_abilities.IsUndeadMaster) {
+      if (m_MasterSmellSensor is not null /* !tmp_abilities.IsUndeadMaster */) {
         tmpAction = BehaviorTrackScent(m_MasterSmellSensor.Scents);
         if (tmpAction is not null) {
           m_Actor.Activity = Activity.TRACKING;
@@ -141,7 +142,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      if (tmp_abilities.ZombieAI_Explore) {
+      if (m_Exploration is not null) {
         tmpAction = BehaviorExplore(m_Exploration);
         if (tmpAction is not null) {
           m_Actor.Activity = Activity.IDLE;
