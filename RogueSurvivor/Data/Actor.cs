@@ -276,6 +276,7 @@ namespace djack.RogueSurvivor.Data
         m_Controller = new PlayerController(this);
         m_Controller.TakeControl();
         m_Location.Map?.Players.Recalc();
+        m_Location.Map?.Viewpoints.Recalc();
     }
 
     public void UpgradePC() {
