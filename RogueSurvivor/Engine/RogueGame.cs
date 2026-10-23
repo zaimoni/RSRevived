@@ -10184,8 +10184,6 @@ namespace djack.RogueSurvivor.Engine
       if (!target.IsCarrying(trade.Value.Value)) throw new InvalidOperationException("no longer have item");
       if (!speaker.IsCarrying(trade.Value.Key)) throw new InvalidOperationException("no longer have item");
 #endif
-      speaker.Inventory.RepairContains(trade.Value.Value, "already had ");
-      target.Inventory.RepairContains(trade.Value.Key, "already had ");
 
       bool wantedItem = true;
       bool flag3 = target_c.IsInterestingTradeItem(speaker, trade.Value.Key);
@@ -10432,13 +10430,9 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.Inventory.Contains(gift)) throw new InvalidOperationException("no longer had gift");
 #endif
       var target = t_ordai.ControlledActor;
-      if (received is not null) {
 #if DEBUG
-        if (!target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
+      if (received is not null && !target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
 #endif
-        actor.Inventory.RepairContains(received, "already had received ");
-      }
-      target.Inventory.RepairContains(gift, "already had ");
 
       bool do_not_crash_on_target_turn = (0 < target.ActionPoints && target.Location.Map.NextActorToAct == target);  // XXX \todo fix this in cross-map case, or verify that this inexplicably works anyway
       // try to trade with NPC first
@@ -10449,7 +10443,6 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
           if (!target.Inventory.Contains(trade.Value.Value)) throw new InvalidOperationException("no longer had recieved");
 #endif
-          actor.Inventory.RepairContains(trade.Value.Value, "already had recieved ");
           DoTrade(src_ordai, trade, t_ordai, false);
           return;
         }
@@ -10469,12 +10462,9 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
           received = parse_recovery(recover);
-          if (received is not null) {
 #if DEBUG
-            if (!target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
+          if (received is not null && !target.Inventory.Contains(received)) throw new InvalidOperationException("no longer had recieved");
 #endif
-            actor.Inventory.RepairContains(received, "already had received ");
-          }
         }
 
         if (received is not null) {

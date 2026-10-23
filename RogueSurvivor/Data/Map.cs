@@ -2368,7 +2368,6 @@ retry:
       if (0 >= it.Quantity) throw new InvalidOperationException("already zero");
 #endif
       var itemsAt = GetItemsAt(position);
-      itemsAt?.RepairContains(it, "already had ");
       if (itemsAt is null) {
         Inventory g_inv = new(GROUND_INVENTORY_SLOTS);
         m_GroundItemsByPosition.Add(position, g_inv);

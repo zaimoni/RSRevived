@@ -124,7 +124,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (0 >= it.Quantity) throw new InvalidOperationException("already zero");
 #endif
-      RejectContains(it, "already had ");
+      RepairContains(it, "already had ");
       var itemsStackableWith = GetItemsStackableWith(it, out int stackedQuantity);
       if (itemsStackableWith is not null) { // also have 0<stackedQuantity
         int quantity = stackedQuantity;
