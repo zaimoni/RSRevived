@@ -405,7 +405,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         // expire if the offending item is not in LoS
         var stacks = m_Actor.Controller.items_in_FOV;
-        if (stacks is not null) foreach(var inv in stacks.Values) if (inv.Inventory.Has(Avoid)) return false;
+        if (stacks is not null) foreach(var inv in stacks.Values) if (inv.Has(Avoid)) return false;
 //      if (m_Actor.Inventory.Has(Avoid)) return false; // checking whether this is actually needed
         _isExpired = true;  // but expire if the offending item is not in LOS or inventory
         return false;

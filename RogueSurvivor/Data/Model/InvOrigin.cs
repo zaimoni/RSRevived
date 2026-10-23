@@ -219,6 +219,8 @@ namespace djack.RogueSurvivor.Data.Model
             return false;
         }
 
+        public bool Has(Gameplay.Item_IDs id) => GetFirst(id) is not null;
+
         public Data.Item? GetFirst(Gameplay.Item_IDs id)
         {
             var inv = Inventory;

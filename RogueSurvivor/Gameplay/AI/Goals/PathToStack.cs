@@ -115,7 +115,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                         continue;
                     }
                     // no longer has target
-                    if (!_stacks[i].Key.Inventory.Has(_stacks[i].Value)) {
+                    if (!_stacks[i].Key.Has(_stacks[i].Value)) {
                         leader?.Controller.ReportNotThere(_stacks[i].Key, _stacks[i].Value, m_Actor);
                         _stacks.RemoveAt(i);
                         oai.ClearLastMove(); // unsure if this is needed
@@ -155,25 +155,17 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         }
 
         public override bool UrgentAction_readonly(out ActorAction? ret)
-
         {
-
           ret = null;
 
-          _stacks.RemoveAll(x => !x.Key.Exists || !(x.Key.Inventory?.Has(x.Value) ?? false));   // gone, or not there: nothing to report at a save
-
+          _stacks.RemoveAll(x => !x.Key.Exists || !x.Key.Has(x.Value));   // gone, or not there: nothing to report at a save
           if (0 >= _stacks.Count) {
-
             _isExpired = true;
-
             return true;
-
           }
 
           return false;
-
         }
-
 
         public override bool UrgentAction(out ActorAction? ret)
         {
