@@ -525,7 +525,7 @@ namespace djack.RogueSurvivor.Data
         RogueGame.DamnCHARtoPoliceInvestigation();
         return "Just following ORDERS!";
       }
-      return null;
+      return base.AggressedBy(aggressor);
     }
 
     public override ActorAction? GetAction() => throw new InvalidOperationException("do not call PlayerController.GetAction()");
@@ -569,7 +569,7 @@ namespace djack.RogueSurvivor.Data
     // This is too dangerous to provide a member function for in ObjectiveAI.
     // We duplicate this code fragment from CivilianAI::SelectAction and siblings to support a reasonable replacement 
     // for the wait command (which has been removed as a cause of 1-keystroke deaths)
-    public ActorAction AutoPilot()
+    public ActorAction? AutoPilot()
     {
       if (0 >= Objectives.Count) return null;
       _all = FilterSameMap(UpdateSensors());

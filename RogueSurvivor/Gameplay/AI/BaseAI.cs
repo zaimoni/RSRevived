@@ -194,7 +194,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // firearms use grid i.e. L-infinity distance
-    protected List<_T_>? SortByGridDistance<_T_>(List<_T_>? percepts) where _T_:ILocation
+    [return: NotNullIfNotNull(nameof(percepts))] protected List<_T_>? SortByGridDistance<_T_>(List<_T_>? percepts) where _T_:ILocation
     {
       Location from = m_Actor.Location;
       return percepts?.SortIncreasing(p => Rules.InteractionDistance(p.Location, from));

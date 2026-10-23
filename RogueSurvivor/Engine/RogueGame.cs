@@ -3182,7 +3182,7 @@ namespace djack.RogueSurvivor.Engine
         else m_Status2 = null;
         RedrawPlayScreen();
 
-        ActorAction tmpAction = pc.AutoPilot();
+        ActorAction? tmpAction = pc.AutoPilot();
         if (tmpAction is not null) {
           play_timer.Start();
           tmpAction.Perform();
