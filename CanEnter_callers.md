@@ -35,8 +35,8 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MovesTo | Data/Actor.cs:2037 | ok | the destination itself |
-| Actor.MayEnter(ref Location) | Data/Actor.cs:2831 | ok | beyond adjacency |
+| Actor.MovesTo | Data/Actor.cs:2038 | ok | the destination itself |
+| Actor.MayEnter(ref Location) | Data/Actor.cs:2832 | ok | beyond adjacency |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:231 | ok | |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:233 | ok | |
 | ActorModel.CastToInventoryAccessibleDestinations(,) | Data/ActorModel.cs:250 | ok | excludes shelf-like objects separately |
@@ -64,22 +64,22 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ActionMoveStep.schedule(Actor, Location) | Engine/Actions/ActionMoveStep.cs:52 | ok | |
 | ActionMoveStep.schedule(Actor, Point) | Engine/Actions/ActionMoveStep.cs:58 | ok | |
 | RogueGame.HandleItemInfo | Engine/RogueGame.cs:4129 | ok | local function `details`; receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13404 | ok | receiver a follower, chosen by index |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13429 | ok | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13437 | ok | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13459 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13388 | ok | receiver a follower, chosen by index |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13413 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13421 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13443 | ok | receiver Player |
 | AcquireLineOfSight..ctor(Actor, in Location) | Gameplay/AI/Goals/AcquireLineOfSight.cs:46 | ok | throws via Spotlight: "unpathable"; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, IEnumerable) | Gameplay/AI/Goals/AcquireLineOfSight.cs:55 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:65 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4728 | ok | two calls: N and S of the trap |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4731 | ok | two calls: E and W of the trap |
-| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4771 | ok | by ref |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4788 | ok | two calls: N and S of the trap |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4791 | ok | two calls: E and W of the trap |
+| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4831 | ok | by ref |
 
 ## Actor.CanEnter
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MutuallyAdjacentFor | Data/Actor.cs:2843 | ok | by ref |
+| Actor.MutuallyAdjacentFor | Data/Actor.cs:2844 | ok | by ref |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | ok | throws on the destination |
 | _Action.MoveStep._runFrom | Engine/Action/MoveStep.cs:192 | ok | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:249 | ok | |
@@ -98,7 +98,7 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3227 | ok | local function destination_melee_safe |
 | ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3282 | ok | local function install_moves; its row had gone missing |
 | ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4185 | ok | by ref |
-| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4472 | ok | |
+| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4532 | ok | |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:143 | ok | throws via Spotlight on the origin |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:144 | ok | throws via Spotlight on the destination |
 
