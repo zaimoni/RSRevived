@@ -74,9 +74,15 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             if (m_Actor.Controller.InCombat) return false;  // suspend if in combat
 
             // prior legality checks
+            var ordai = Controller as OrderableAI;
+
             int i = _whom.Count;
             while (0 < i) {
                 if (_whom[--i].IsDead) {
+                    _whom.RemoveAt(i);
+                    continue;
+                }
+                if (ordai is not null && ordai.IsActorTabooTrade(_whom[i])) {
                     _whom.RemoveAt(i);
                     continue;
                 }
