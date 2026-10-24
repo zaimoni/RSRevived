@@ -24,6 +24,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
             m_Actor = who;
             _whom.AddRange(src.Require("Whom").RequireRefs<LivingActor>());
+            // Both parties are NPCs run by OrderableAI, as ActionTrade requires.  The controllers are shells by now (two-phase load).
+            if (who.Controller is not OrderableAI) throw new JsonException("Trade: " + who.UnmodifiedName + " is not run by an OrderableAI");
+            foreach (var a in _whom) if (a.Controller is not OrderableAI) throw new JsonException("Trade: " + a.UnmodifiedName + " is not run by an OrderableAI");
 
         }
 
@@ -48,7 +51,14 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         {
             m_Actor = who;
             _whom.Add(target);
+#if DEBUG
+            if (who.Controller is not OrderableAI) throw new InvalidOperationException(who.UnmodifiedName + " is not run by an OrderableAI");
+            if (target.Controller is not OrderableAI) throw new InvalidOperationException(target.UnmodifiedName + " is not run by an OrderableAI");
+#endif
         }
+
+        /// <summary>Both parties of a trade are NPCs run by OrderableAI, as ActionTrade's constructor requires.</summary>
+        static private OrderableAI TraderAI(LivingActor who) => who.Controller as OrderableAI ?? throw new InvalidOperationException(who.UnmodifiedName + " is not run by an OrderableAI");
 
         public override bool UrgentAction_readonly(out ActorAction? ret)
 
@@ -71,18 +81,17 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         {
             ret = null;
             if (_isExpired) return true;
-            if (m_Actor.Controller.InCombat) return false;  // suspend if in combat
+            var ordai = OrderableController;
+            if (ordai.InCombat) return false;  // suspend if in combat
 
             // prior legality checks
-            var ordai = Controller as OrderableAI;
-
             int i = _whom.Count;
             while (0 < i) {
                 if (_whom[--i].IsDead) {
                     _whom.RemoveAt(i);
                     continue;
                 }
-                if (ordai is not null && ordai.IsActorTabooTrade(_whom[i])) {
+                if (ordai.IsActorTabooTrade(_whom[i])) {
                     _whom.RemoveAt(i);
                     continue;
                 }
@@ -93,9 +102,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             }
 
             // closely related to OrderableAI::GetTradingTargets.  We'll use the pathfinder if minstep pathing fails.
-            var oai = Controller;
-            if (oai.IsFocused) return false;
-            var TradeableItems = oai.GetTradeableItems();   // may need revision for player....
+            if (ordai.IsFocused) return false;
+            var TradeableItems = ordai.GetTradeableItems();   // may need revision for player....
             if (TradeableItems is null || 0 >= TradeableItems.Count) {
                 _isExpired = true;
                 return true;
@@ -108,24 +116,24 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                     _whom.RemoveAt(i);
                     continue;
                 }
-                if (oai.CanSee(actor.Location) && m_Actor.MinStepPathTo(m_Actor.Location, actor.Location) is null) {
+                if (ordai.CanSee(actor.Location) && m_Actor.MinStepPathTo(m_Actor.Location, actor.Location) is null) {
                     _whom.RemoveAt(i);
                     continue;
                 }
-                var a_oai = (actor.Controller as ObjectiveAI)!;
+                var a_ordai = TraderAI(actor);
                 if (1 == TradeableItems.Count) {
-                    var other_TradeableItems = a_oai.GetTradeableItems();
+                    var other_TradeableItems = a_ordai.GetTradeableItems();
                     if (other_TradeableItems is null) continue;
                     if (1 == other_TradeableItems.Count && TradeableItems[0].ModelID == other_TradeableItems[0].ModelID) {
                         _whom.RemoveAt(i);
                         continue;
                     }
                 }
-                if (a_oai is OrderableAI ai && !ai.HasAnyInterestingItem(TradeableItems)) {
+                if (!a_ordai.HasAnyInterestingItem(TradeableItems)) {
                     _whom.RemoveAt(i);
                     continue;
                 }
-                if (!oai.HaveTradeOptions(actor)) {
+                if (!ordai.HaveTradeOptions(actor)) {
                     _whom.RemoveAt(i);
                     continue;
                 }
@@ -138,22 +146,22 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             var adjacent = _whom.FindAll(act => Rules.IsAdjacent(m_Actor.Location, act.Location));
             if (0 < adjacent.Count) {
                 var actor = Rules.Get.DiceRoller.Choose(adjacent);
-                (oai as OrderableAI)?.MarkActorAsRecentTrade(actor);
-                (actor.Controller as OrderableAI)?.MarkActorAsRecentTrade(m_Actor);   // try to reduce trading spam: one trade per pair, not two
+                ordai.MarkActorAsRecentTrade(actor);
+                TraderAI(actor).MarkActorAsRecentTrade(m_Actor);   // try to reduce trading spam: one trade per pair, not two
                 m_Actor.Say(actor, string.Format("Hey {0}, let's make a deal!", actor), Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
                 ret = new ActionTrade(m_Actor, actor);
                 return true;
             }
 
             var find_us = _whom.Select(act => act.Location);
-            var find_visible = find_us.Where(loc => oai.CanSee(loc));
-            var act = oai.BehaviorHeadFor(find_visible, false, false);
+            var find_visible = find_us.Where(loc => ordai.CanSee(loc));
+            var act = ordai.BehaviorHeadFor(find_visible, false, false);
             if (act is not null) {
                 m_Actor.TargetedActivity(Activity.FOLLOWING, Rules.Get.DiceRoller.Choose(find_visible).Actor); // XXX possibly misleading
                 ret = act;
                 return true;
             }
-            act = oai.BehaviorPathTo(new HashSet<Location>(find_us));
+            act = ordai.BehaviorPathTo(new HashSet<Location>(find_us));
             if (act is not null) {
                 m_Actor.TargetedActivity(Activity.FOLLOWING, Rules.Get.DiceRoller.Choose(_whom)); // XXX possibly misleading
                 ret = act;
@@ -162,7 +170,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             return false;
         }
 
-        public void Add(LivingActor target) { if (!_whom.Contains(target)) _whom.Add(target); }
+        public void Add(LivingActor target) {
+#if DEBUG
+            if (target.Controller is not OrderableAI) throw new InvalidOperationException(target.UnmodifiedName + " is not run by an OrderableAI");
+#endif
+            if (!_whom.Contains(target)) _whom.Add(target);
+        }
         public void Remove(LivingActor target) { _whom.Remove(target); }
     }
 }
