@@ -138,7 +138,7 @@ namespace djack.RogueSurvivor.Engine.Goal
         {
             ret = null;
             _isExpired = true;
-            if (m_Actor.Controller.enemies_in_FOV is null) {
+            if (Controller.enemies_in_FOV is null) {
                 ret = _intentDisengaged();
             } else {
                 ret = _intentEngaged();

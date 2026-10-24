@@ -99,7 +99,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _isExpired = true;
         return true;
       }
-      ret = (m_Actor.Controller as ObjectiveAI).DoctrineRecoverSTA(targetSTA);
+      ret = Controller.DoctrineRecoverSTA(targetSTA);
       if (ret is null) _isExpired = true;
       return true;
     }
@@ -123,7 +123,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _isExpired = true;
         return true;
       }
-      ret = (m_Actor.Controller as ObjectiveAI).DoctrineMedicateSLP();
+      ret = Controller.DoctrineMedicateSLP();
       if (ret is null) _isExpired = true;
       return true;
     }
@@ -147,7 +147,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _isExpired = true;
         return true;
       }
-      ret = (m_Actor.Controller as ObjectiveAI).DoctrineMedicateHP();
+      ret = Controller.DoctrineMedicateHP();
       if (ret is null) _isExpired = true;
       return true;
     }
@@ -185,7 +185,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var recharge = m_Actor is LivingActor living ? ActionRechargeItemBattery.WantsToRecharge(living) : null;
       if (recharge is not null) {
-          ret = (m_Actor.Controller as ObjectiveAI)?.DoctrineRechargeToFull(recharge);
+          ret = Controller.DoctrineRechargeToFull(recharge);
           if (ret is not null) return true;
       }
 
@@ -242,7 +242,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _isExpired = true;
         return true;
       }
-      ret = (m_Actor.Controller as ObjectiveAI)?.DoctrineButcher(_corpse);
+      ret = Controller.DoctrineButcher(_corpse);
       if (ret is null) _isExpired = true;
       return true;
     }
@@ -379,7 +379,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override void loadJsonFields(JsonElement src, JsonSerializerOptions options)
     {
       base.loadJsonFields(src, options);
-      if (src.TryGetProperty("Objectives", out var x)) Objectives.AddRange(x.Deserialize<List<Objective>>(options) ?? throw new JsonException("null Objectives"));
+      if (src.TryGetProperty("Objectives", out var x)) {
+        Objectives.AddRange(x.Deserialize<List<Objective>>(options) ?? throw new JsonException("null Objectives"));
+        foreach (var o in Objectives) if (o.Actor == m_Actor) o.Adopt(this);   // a shared objective of another actor stays theirs
+      }
       if (src.TryGetProperty("FOVevents", out x)) foreach (var o in x.EnumerateArray()) o.ReadRef<Observer<Location[]>>(FOVevents.Add);   // after the constructor's watchers, as in the live game
       if (src.TryGetProperty("PlannedMoves", out x)) {
         foreach (var plan in x.EnumerateArray()) {
@@ -455,7 +458,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override void RepairLoad()
     {
-      foreach(var o in Objectives) o.RepairLoad();
+      foreach(var o in Objectives) {
+#if DEBUG
+        if (o.Actor == m_Actor && !o.IsAdoptedBy(this)) throw new InvalidOperationException(m_Actor.Name + ": objective not adopted by its owner");
+#endif
+        o.RepairLoad();
+      }
     }
 
     public override void TakeControl()
@@ -557,10 +565,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #else
         return;
 #endif
+      src.Adopt(this);
       // for now, treat this as "early"
       Objectives.Insert(InsertObjectiveAt(src), src);
     }
 
+    /// <summary>for an objective shared by several actors' controllers (FleeExplosive): the thrower's, so not adopted</summary>
     public void SetUnownedObjective(Objective src) {
 #if DEBUG
       if (src is null) throw new ArgumentNullException(nameof(src));
@@ -3440,6 +3450,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (1 < loc.Map.destination_maps.Get.Count) {
               if (exit_veto is null) {
                 exit_veto = new Goals.BlacklistExits(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, e);
+                exit_veto.Adopt(this);
                 Objectives.Add(exit_veto);
               } else exit_veto.Blacklist(e);
             }
@@ -3649,6 +3660,7 @@ Restart:
             if (1 < m2.destination_maps.Get.Count) {
               if (exit_veto is null) {
                 exit_veto = new Goals.BlacklistExits(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, e);
+                exit_veto.Adopt(this);
                 Objectives.Add(exit_veto);
               } else exit_veto.Blacklist(e);
             }
@@ -5564,7 +5576,7 @@ restart_chokepoints:
       if (Item_IDs.EXPLOSIVE_GRENADE == it.ID && !UsesExplosives) return true;
 
       // only civilians use stench killer
-      if (Item_IDs.SCENT_SPRAY_STENCH_KILLER == it.ID && !(m_Actor.Controller is CivilianAI)) return true;
+      if (Item_IDs.SCENT_SPRAY_STENCH_KILLER == it.ID && this is not CivilianAI) return true;
 
       // police have implicit police trackers
       if (Item_IDs.TRACKER_POLICE_RADIO == it.ID && !(m_Living?.WantPoliceRadio ?? false)) return true;

@@ -14,7 +14,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     internal class PathToStack : Objective, LatePathable, PreciseCountermand, IJsonStaged<PathToStack>
     {
         private readonly List<KeyValuePair<Data.Model.InvOrigin, Item_IDs>> _stacks = new(1);
-        [NonSerialized] private ObjectiveAI oai;
         [NonSerialized] private List<KeyValuePair<Data.Model.InvOrigin, ActorAction>>? _inventory_actions = null;
 
 #if DEAD_FUNC
@@ -32,7 +31,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 _stacks.Add(new(x[0].Deserialize<Data.Model.InvOrigin>(options), JSON_ext.ParseEnum<Item_IDs>(x[1].GetString())));
             }
 
-            OnDeserialized();
         }
 
         static PathToStack IJsonStaged<PathToStack>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new PathToStack(JsonActor(src), src, options));
@@ -66,15 +64,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
         public PathToStack(Actor who, in Data.Model.InvOrigin src, Item_IDs take) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
-            if (!(who.Controller is ObjectiveAI ai)) throw new InvalidOperationException("need an ai with inventory");
-            oai = ai;
+            if (who.Controller is not ObjectiveAI) throw new InvalidOperationException("need an ai with inventory");
 
             KeyValuePair<Data.Model.InvOrigin, Item_IDs> stage = new(src, take);
             if (!_stacks.Contains(stage)) _stacks.Add(stage);
         }
 
         // We are not a primary owning authority for inventories, so don't do the auto-repair before save
-        void OnDeserialized() => oai = m_Actor.Controller as ObjectiveAI ?? throw new InvalidOperationException("invalid save");
 
         public void Add(in Data.Model.InvOrigin src, Item_IDs take) {
             KeyValuePair<Data.Model.InvOrigin, Item_IDs> stage = new(src, take);
@@ -107,38 +103,38 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             while (0 < i--) {
                 // no longer exists
                 var loc = _stacks[i].Key.Location;
-                if (m_Actor.Controller.CanSee(in loc)) {
+                if (Controller.CanSee(in loc)) {
                     if (!_stacks[i].Key.Exists) {
                         leader?.Controller.ReportGone(_stacks[i].Key, m_Actor);
                         _stacks.RemoveAt(i);
-                        oai.ClearLastMove(); // unsure if this is needed
+                        Controller.ClearLastMove(); // unsure if this is needed
                         continue;
                     }
                     // no longer has target
                     if (!_stacks[i].Key.Has(_stacks[i].Value)) {
                         leader?.Controller.ReportNotThere(_stacks[i].Key, _stacks[i].Value, m_Actor);
                         _stacks.RemoveAt(i);
-                        oai.ClearLastMove(); // unsure if this is needed
+                        Controller.ClearLastMove(); // unsure if this is needed
                         continue;
                     }
                     // blocked!
                     if (m_Actor.StackIsBlocked(in loc)) {
                         leader?.Controller.ReportBlocked(_stacks[i].Key, m_Actor);
                         _stacks.RemoveAt(i);
-                        oai.ClearLastMove(); // unsure if this is needed
+                        Controller.ClearLastMove(); // unsure if this is needed
                         continue;
                     }
                 }
                 // need special handling for Actor on stack, but that may not rate amnesia
 
                 if (!_stacks[i].Key.IsAccessible(m_Actor.Location)) continue;
-                var need_override = oai.SetRatingOverride(_stacks[i].Value, 3, 2);
+                var need_override = Controller.SetRatingOverride(_stacks[i].Value, 3, 2);
                 var act = m_Actor is LivingActor who ? Take(who, _stacks[i].Key, _stacks[i].Value) : null;
                 if (act is not null && act.IsPerformable()) {
                     (_inventory_actions ??= new()).Add(new(_stacks[i].Key, act));
                 } else if (need_override is not null) {
-                    oai.UnsetRatingOverride(_stacks[i].Value, 2);
-                    if (0 < need_override.Value.Value) oai.SetRatingOverride(_stacks[i].Value, need_override.Value.Key, need_override.Value.Value);
+                    Controller.UnsetRatingOverride(_stacks[i].Value, 2);
+                    if (0 < need_override.Value.Value) Controller.SetRatingOverride(_stacks[i].Value, need_override.Value.Key, need_override.Value.Value);
                 }
 
             }
@@ -176,7 +172,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 return true;
             }
 
-            if (m_Actor.Controller.IsEngaged) return false;
+            if (Controller.IsEngaged) return false;
 
             if (_inventory_actions is not null)
             {
@@ -193,10 +189,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                         {
                             var take = ExtractTake(_inventory_actions[i].Value);
                             if (take is null) continue;
-                            if (oai.RHSMoreInteresting(take.Take, upper_take.Take)) {
+                            if (Controller.RHSMoreInteresting(take.Take, upper_take.Take)) {
                                 _inventory_actions.RemoveAt(i);
                                 break;
-                            } else if (oai.RHSMoreInteresting(upper_take.Take, take.Take)) {
+                            } else if (Controller.RHSMoreInteresting(upper_take.Take, take.Take)) {
                                 _inventory_actions.RemoveAt(ub);
                                 break;
                             }
@@ -224,7 +220,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             var _locs = _stacks.Select(p => p.Key.Location).Where(loc => !loc.StrictHasActorAt);
             if (!_locs.Any()) return null;
 
-            var ret = oai.BehaviorPathTo(new HashSet<Location>(_locs));
+            var ret = Controller.BehaviorPathTo(new HashSet<Location>(_locs));
             return (ret?.IsPerformable() ?? false) ? ret : null;
         }
 

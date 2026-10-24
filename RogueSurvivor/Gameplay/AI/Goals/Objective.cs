@@ -15,11 +15,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       protected int turn;   // turn count of WorldTime .. will need a more complex representation at some point.
       protected readonly Actor m_Actor;   // owning actor is likely important
+      [NonSerialized] private ObjectiveAI? m_Controller;   // the ObjectiveAI whose list we are in: set by Adopt, never saved
       protected bool _isExpired;
 
       public int TurnCounter { get { return turn; } }
       public bool IsExpired { get { return _isExpired; } }
       public Actor Actor { get { return m_Actor; } }
+
+      /// <summary>The ObjectiveAI that owns us.  Until adopted (an objective only probed, or shared by SetUnownedObjective),
+      /// the actor's current controller, which the constructor requires to be an ObjectiveAI.  The two differ while a PC's
+      /// subconscious acts: its objectives belong to it, not to the PlayerController.</summary>
+      public ObjectiveAI Controller => m_Controller ?? m_Actor.Controller as ObjectiveAI ?? throw new InvalidOperationException(m_Actor.Name + " not controlled by an ObjectiveAI");
+
+      /// <summary>for the goals the OrderableAI family installs</summary>
+      protected OrderableAI OrderableController => Controller as OrderableAI ?? throw new InvalidOperationException(m_Actor.Name + " not controlled by an OrderableAI");
+
+      /// <summary>The ObjectiveAI putting us in its list says so.  Only our own actor's controller may.</summary>
+      internal void Adopt(ObjectiveAI owner)
+      {
+#if DEBUG
+        if (owner.ControlledActor != m_Actor) throw new InvalidOperationException(owner.ControlledActor.Name + " adopting an objective of " + m_Actor.Name);
+#endif
+        m_Controller = owner;
+      }
+
+      public bool IsAdoptedBy(ObjectiveAI owner) => m_Controller == owner;
 
       protected Objective(int t0, Actor who)
       {

@@ -87,7 +87,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             }
 
             // closely related to OrderableAI::GetTradingTargets.  We'll use the pathfinder if minstep pathing fails.
-            var oai = (m_Actor.Controller as ObjectiveAI)!;
+            var oai = Controller;
             if (oai.IsFocused) return false;
             var TradeableItems = oai.GetTradeableItems();   // may need revision for player....
             if (TradeableItems is null || 0 >= TradeableItems.Count) {

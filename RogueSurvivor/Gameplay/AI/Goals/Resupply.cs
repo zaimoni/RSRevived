@@ -13,7 +13,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     {
         private readonly Item_IDs[] critical;
         private readonly Location[] dests;
-        [NonSerialized] private ObjectiveAI oai;
 
         #region JSON save/load
 
@@ -25,7 +24,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             critical = kinds.ToArray();
             dests = src.Require("Destinations").Deserialize<Location[]>(options) ?? throw new JsonException("null Destinations");
 
-            OnDeserialized();
         }
 
         static Resupply IJsonStaged<Resupply>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Resupply(JsonActor(src), src, options));
@@ -51,19 +49,16 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
         public Resupply(Actor who, IEnumerable<Item_IDs> what, IEnumerable<Location> head_for) : base(who.Location.Map.LocalTime.TurnCounter, who)
         {
-            if (!(who.Controller is ObjectiveAI ai)) throw new InvalidOperationException("need an ai with inventory");
-            oai = ai;
+            if (who.Controller is not ObjectiveAI) throw new InvalidOperationException("need an ai with inventory");
 
             critical = what.ToArray();
             dests = head_for.ToArray();
         }
 
-        void OnDeserialized() => oai = (m_Actor.Controller as ObjectiveAI)!;
-
         private bool desires_changed(HashSet<Item_IDs> src) {
             if (critical.Length != src.Count) return true;
             foreach (var x in critical) if (!src.Contains(x)) return true;
-            var seen = oai.items_in_FOV;
+            var seen = Controller.items_in_FOV;
             if (seen is not null) {
                 foreach (var x in seen) {
                     foreach (var it in critical) {
@@ -89,7 +84,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         {
             ret = null;
 
-            if (m_Actor.Controller.IsEngaged) { // expire now
+            if (Controller.IsEngaged) { // expire now
                 _isExpired = true;
                 return true;
             }
@@ -98,9 +93,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 return true;
             }
 
-            var items = oai.WhatHaveISeen();
-            var need = oai.WhatDoINeedNow();
-            var want = oai.WhatDoIWantNow();
+            var items = Controller.WhatHaveISeen();
+            var need = Controller.WhatDoINeedNow();
+            var want = Controller.WhatDoIWantNow();
 
             need.IntersectWith(items!);
             want.IntersectWith(items!);
@@ -127,7 +122,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             var _locs = dests.Where(loc => !loc.StrictHasActorAt);
             if (!_locs.Any()) return null;
 
-            var ret = oai.BehaviorPathTo(new(_locs));
+            var ret = Controller.BehaviorPathTo(new(_locs));
             return (ret?.IsPerformable() ?? false) ? ret : null;
         }
     }

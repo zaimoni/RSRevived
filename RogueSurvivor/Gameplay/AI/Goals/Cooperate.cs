@@ -199,7 +199,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             }
             var goals = m_Plan.Goals(m_Actor);
             if (goals is not null) {
-                ret = (m_Actor.Controller as ObjectiveAI).BehaviorPathTo(goals);
+                ret = Controller.BehaviorPathTo(goals);
                 return ret is not null;
             }
             return false;

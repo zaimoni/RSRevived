@@ -20,7 +20,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     {
         private readonly ZoneLoc m_Zone;
         private readonly HashSet<Point> m_Unverified = new HashSet<Point>();
-        [NonSerialized] private ObjectiveAI oai;
         [NonSerialized] private ThreatTracking threats;
         [NonSerialized] private LocationSet tourism;
 
@@ -33,7 +32,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
             if (src.TryGetProperty("Unverified", out var x)) foreach (var pt in x.EnumerateArray()) m_Unverified.Add(pt.ReadPoint());
 
-            OnDeserialized();
         }
 
         static ClearZone IJsonStaged<ClearZone>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ClearZone(JsonActor(src), src, options));
@@ -76,15 +74,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             Func<Point,bool> ok = pt => m_Zone.Rect.Contains(pt);
             m_Unverified.UnionWith(threats.ThreatWhere(dest.m).Where(ok));
             m_Unverified.UnionWith(tourism.In(dest.m).Where(ok));
-            // nonserialized fields
-            oai = (m_Actor.Controller as ObjectiveAI)
-#if DEBUG
-              ?? throw new ArgumentNullException("who.Controller is ObjectiveAI")
-#endif
-            ;
         }
-
-        private void OnDeserialized() => oai = (m_Actor.Controller as ObjectiveAI)!;
 
         public override void RepairLoad()
         {
@@ -152,13 +142,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 _isExpired = true;
                 return true;
             }
-            if (0 < oai.InterruptLongActivity()) return false;
+            if (0 < Controller.InterruptLongActivity()) return false;
             ret = Pathing();
             return true;
         }
 
         public bool update(Location[] fov) {
-            if (    oai.enemies_in_FOV is not null // expire immediately if enemy sighted
+            if (    Controller.enemies_in_FOV is not null // expire immediately if enemy sighted
                 || !m_Zone.Contains(m_Actor.Location)) { // we left the zone for some reason
                 _isExpired = true;
                 return true;
@@ -178,7 +168,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             if (m_Actor.IsPlayer) return null;  // just advise AIs, don't remove player agency
             var goals = new HashSet<Location>();
             foreach (var pt in m_Unverified) goals.Add(new Location(m_Zone.m, pt));
-            return oai.BehaviorPathTo(goals); // would need value-copy anyway of goals
+            return Controller.BehaviorPathTo(goals); // would need value-copy anyway of goals
         }
     }
 }

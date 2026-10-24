@@ -76,8 +76,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
           return true;
         }
 
-        var ai = m_Actor.Controller as ObjectiveAI;
-        if (m_Actor.Controller.enemies_in_FOV is not null) {
+        if (Controller.enemies_in_FOV is not null) {
           _isExpired = true;    // cancel: something urgent
           return true;
         }
@@ -89,7 +88,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         var dests = _locs.Where(loc => !loc.StrictHasActorAt);
         if (!dests.Any()) return null;
 
-        var oai = m_Actor.Controller as ObjectiveAI;
+        var oai = Controller;
         var ret = oai.BehaviorPathTo(new HashSet<Location>(_locs));
         if (!(ret?.IsPerformable() ?? false)) {
           _isExpired = true;    // cancel: buggy

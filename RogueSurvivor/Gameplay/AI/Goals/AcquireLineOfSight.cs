@@ -13,14 +13,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     class AcquireLineOfSight : Objective, LatePathable, Observer<Location[]>, IJsonStaged<AcquireLineOfSight>
     {
         readonly private HashSet<Location> _locs;
-        [NonSerialized] ObjectiveAI oai;
 
         #region JSON save/load
 
         private AcquireLineOfSight(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src) {
             _locs = src.Require("Locations").Deserialize<HashSet<Location>>(options) ?? throw new JsonException("null Locations");
 
-            OnDeserialized();
         }
 
 
@@ -46,7 +44,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             if (!who.Model.CanEnter(loc)) throw who.Spotlight(new InvalidOperationException("unpathable"));
 #endif
             _locs = new HashSet<Location> { loc };
-            OnDeserialized();
         }
 
         public AcquireLineOfSight(Actor who, IEnumerable<Location> locs) : base(who.Location.Map.LocalTime.TurnCounter, who)
@@ -56,7 +53,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 #if DEBUG
             if (0 >= _locs.Count) throw new ArgumentNullException(nameof(locs));
 #endif
-            OnDeserialized();
         }
 
         public AcquireLineOfSight(Actor who, HashSet<Location> locs) : base(who.Location.Map.LocalTime.TurnCounter, who)
@@ -66,13 +62,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 #if DEBUG
             if (0 >= _locs.Count) throw new ArgumentNullException(nameof(locs));
 #endif
-            OnDeserialized();
-        }
-
-        private void OnDeserialized()
-        {
-            if (m_Actor.Controller is ObjectiveAI ai) oai = ai;
-            else throw new ArgumentNullException(nameof(oai));
         }
 
         public override bool UrgentAction(out ActorAction? ret)
@@ -82,7 +71,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
             var allies = (m_Actor as LivingActor)?.Allies;
             if (allies is not null) foreach (var friend in allies) { // if any in-communication ally can see the location, clear it
-                if (!oai.InCommunicationWith(friend)) continue;
+                if (!Controller.InCommunicationWith(friend)) continue;
                 if (_locs.Any(loc => friend.Controller.CanSee(in loc))) {
                     _isExpired = true;
                     return true;
@@ -93,7 +82,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             return false;
         }
 
-        public ActorAction? Pathing() { return 0 < oai.InterruptLongActivity() ? null : oai.BehaviorPathTo(_locs); }
+        public ActorAction? Pathing() { return 0 < Controller.InterruptLongActivity() ? null : Controller.BehaviorPathTo(_locs); }
 
         public bool update(Location[] src) {
             if (_locs.Any(x => 0 <= Array.IndexOf(src, x))) {

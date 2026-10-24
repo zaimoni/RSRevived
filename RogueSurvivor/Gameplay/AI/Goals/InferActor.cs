@@ -107,10 +107,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             } else dest = new();
 
             foreach (var p in needed) {
-                if (m_Actor.Controller.CanSee(p.Location)) {
+                if (Controller.CanSee(p.Location)) {
                     // oops, not here
                     ZoneLoc scan = new(p.Location.Map, new Rectangle(p.Location.Position + Direction.NW, (Size)3));
-                    var where_is = scan.Where(loc => !m_Actor.Controller.CanSee(loc) && loc.IsWalkableFor(p.Percepted) && loc.IsWalkableFor(m_Actor)).ToList();
+                    var where_is = scan.Where(loc => !Controller.CanSee(loc) && loc.IsWalkableFor(p.Percepted) && loc.IsWalkableFor(m_Actor)).ToList();
                     // \todo: handle exits, when usable by both sides
                     tracked.Remove(p);
                     if (0 >= where_is.Count) continue; // lost track

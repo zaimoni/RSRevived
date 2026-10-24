@@ -61,10 +61,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         ret = null;
         if (Intent.IsPerformable() && !Intent.Abort()) {
           // XXX need some sense of what a combat action is
-          var ai = m_Actor.Controller;
-          if (ai.enemies_in_FOV is not null) return false;
+          var oai = Controller;
+          if (oai.enemies_in_FOV is not null) return false;
 
-          var oai = (ai as ObjectiveAI)!;
           if (!oai.VetoAction(Intent)) oai.Stage(Intent);
         }
        _isExpired = true;

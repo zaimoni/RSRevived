@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Engine.Goal
             // Cf. Rules::IsPathableFor
             var ub = banned.Count;
             while (0 <= --ub) {
-                if (1 < m_Actor.Controller.FastestTrapKill(banned[ub])) {
+                if (1 < Controller.FastestTrapKill(banned[ub])) {
                     banned.RemoveAt(ub);    // no longer deathtrapped
                 }
             }

@@ -108,8 +108,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
         // XXX need some sense of what a combat action is
-        if (m_Actor.Controller.enemies_in_FOV is not null) return false;
-        if ((m_Actor.Controller as ObjectiveAI).VetoAction(Intent)) {
+        if (Controller.enemies_in_FOV is not null) return false;
+        if (Controller.VetoAction(Intent)) {
           _isExpired = true;
           return true;
         }
@@ -198,7 +198,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             } else {
                 if (Intent_engaged is not null && Intent_engaged.IsPerformable()) ret = Intent_engaged;  // \todo may need to call auxilliary function instead
             }
-            if (ret is ActionMoveStep step && m_Actor.Controller is ObjectiveAI ai) m_Actor.IsRunning = ai.RunIfAdvisable(step.dest);
+            if (ret is ActionMoveStep step) m_Actor.IsRunning = Controller.RunIfAdvisable(step.dest);
             return true;
         }
     }
@@ -340,7 +340,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           _isExpired = true;
           return true;
         }
-        if ((m_Actor.Controller as ObjectiveAI).VetoAction(Intent)) {
+        if (Controller.VetoAction(Intent)) {
           _isExpired = true;
           return true;
         }
@@ -395,8 +395,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction(out ActorAction? ret)
       {
         ret = null;
-        var dont_ignore_these = (m_Actor.Controller as ObjectiveAI).WhatDoINeedNow();
-        dont_ignore_these.UnionWith((m_Actor.Controller as ObjectiveAI).WhatDoIWantNow());
+        var dont_ignore_these = Controller.WhatDoINeedNow();
+        dont_ignore_these.UnionWith(Controller.WhatDoIWantNow());
         if (dont_ignore_these.Contains(Avoid)) {
           // instantly expire if critical.
           _isExpired = true;
@@ -477,8 +477,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ret = null;
         var fov = m_Actor.Controller.FOVloc;
         if (!fov.Any(loc => _locs.Contains(loc))) return true;
-        if (ObjectiveAI.ReactionCode.SLEEPY < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) return false;
-        ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(_locs, null);
+        if (ObjectiveAI.ReactionCode.SLEEPY < Controller.InterruptLongActivity()) return false;
+        ret = OrderableController.BehaviorWalkAwayFrom(_locs, null);
         return true;
       }
 
@@ -607,7 +607,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.Controller.enemies_in_FOV is not null) return false;    // we do use InterruptLongActivity later.  Don't want non-combat interrupts to interfere here
         if (SuppressVisibleFor(m_Actor)) return true;
 
-        ObjectiveAI ai = m_Actor.Controller as ObjectiveAI; // invariant: non-null
+        var ai = Controller;
         // if any in-communication ally can see the location, clear it
         var allies = (m_Actor as LivingActor)?.Allies;
         if (allies is not null) {
@@ -722,7 +722,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
 
-        var ai = m_Actor.Controller as ObjectiveAI;
+        var ai = Controller;
         if (ObjectiveAI.ReactionCode.NONE != ai.InterruptLongActivity() || ai.InCombat) {
           _isExpired = true;    // cancel: something urgent
           return true;
@@ -747,7 +747,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     internal class Goal_PathToStack : Objective,LatePathable, IJsonStaged<Goal_PathToStack>
     {
       private readonly List<Data.Model.InvOrigin> _stacks = new(1);
-      [NonSerialized] private OrderableAI ordai;
       [NonSerialized] private List<KeyValuePair<Data.Model.InvOrigin, ActorAction>>? _inventory_actions = null;
 
       private void _flushEmpty() {
@@ -771,7 +770,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       private Goal_PathToStack(Actor who, JsonElement src, JsonSerializerOptions options) : base(who, src) {
         foreach (var x in src.Require("Stacks").EnumerateArray()) _stacks.Add(x.Deserialize<Data.Model.InvOrigin>(options));
 
-        OnDeserialized();
       }
 
 
@@ -793,12 +791,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       public Goal_PathToStack(Actor who, in Data.Model.InvOrigin src) : base(who.Location.Map.LocalTime.TurnCounter, who)
       {
-        if (who.Controller is not OrderableAI ai) throw new InvalidOperationException("need an ai with inventory");
-        ordai = ai;
+        if (who.Controller is not OrderableAI) throw new InvalidOperationException("need an ai with inventory");
         newStack(in src);
       }
-
-      void OnDeserialized() => ordai = m_Actor.Controller as OrderableAI;
 
       /// <returns>true if and only if no stacks remain</returns>
       private bool _removeInvalidStacks()
@@ -815,9 +810,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int i = _stacks.Count;
         while(0 < i--) {
           // XXX telepathy
-          if (ordai.BehaviorWouldGrabFrom(_stacks[i]) is null) {
+          if (OrderableController.BehaviorWouldGrabFrom(_stacks[i]) is null) {
             _stacks.RemoveAt(i);
-            ordai.ClearLastMove();
+            OrderableController.ClearLastMove();
             continue;
           }
         }
@@ -825,18 +820,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         while(0 < i--) {
           if (!m_Actor.Model.HasAnyInventoryAccessibleDestinations(_stacks[i])) {
             _stacks.RemoveAt(i);
-            ordai.ClearLastMove();
+            OrderableController.ClearLastMove();
             continue;
           }
           var loc = _stacks[i].Location;
           if (m_Actor.Controller.CanSee(loc) && m_Actor.StackIsBlocked(loc)) {
               _stacks.RemoveAt(i);
-              ordai.ClearLastMove();
+              OrderableController.ClearLastMove();
               continue;
           }
 
           {
-            var act = ordai.WouldGrabFromAccessibleStack(_stacks[i]);
+            var act = OrderableController.WouldGrabFromAccessibleStack(_stacks[i]);
             if (act is null || !act.IsLegal()) {
               if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "removing (illegal) " + _stacks[i].to_s());
               _stacks.RemoveAt(i);
@@ -897,10 +892,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   if (_inventory_actions[i].Value is ActionChain chain) take = chain.LastAction as ActorTake;
                 }
                 if (take is null) continue;
-                if (ordai.RHSMoreInteresting(take.Take, upper_take.Take)) {
+                if (OrderableController.RHSMoreInteresting(take.Take, upper_take.Take)) {
                   _inventory_actions.RemoveAt(i);
                   break;
-                } else if (ordai.RHSMoreInteresting(upper_take.Take, take.Take)) {
+                } else if (OrderableController.RHSMoreInteresting(upper_take.Take, take.Take)) {
                   _inventory_actions.RemoveAt(ub);
                   break;
                 }
@@ -930,7 +925,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var _locs = _stacks.Select(p => p.Location).Where(loc => !loc.StrictHasActorAt);
         if (!_locs.Any()) return null;
 
-        var ret = ordai.BehaviorPathTo(new HashSet<Location>(_locs));
+        var ret = OrderableController.BehaviorPathTo(new HashSet<Location>(_locs));
         return (ret?.IsPerformable() ?? false) ? ret : null;
       }
 
@@ -1048,7 +1043,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var goals = new Dictionary<Point, int>{
             [test.Value.Position] = Rules.GridDistance(test.Value, m_Actor.Location)
           };
-          ActorAction head_for = (m_Actor.Controller as OrderableAI).BehaviorEfficientlyHeadFor(goals);
+          ActorAction head_for = OrderableController.BehaviorEfficientlyHeadFor(goals);
           if (head_for is null || !head_for.IsLegal()) {
            _isExpired = true;
             return null;
@@ -1057,7 +1052,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         IEnumerable<Point> dest_pts = m_Actor.Location.Position.Adjacent().Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor));
-        ActorAction? ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == m_Actor.Location.Map ? new HashSet<Point>(dest_pts) : new HashSet<Point>()));
+        ActorAction? ret = OrderableController.BehaviorPathTo(m => (m == m_Actor.Location.Map ? new HashSet<Point>(dest_pts) : new HashSet<Point>()));
         if (ret is null || !ret.IsLegal()) {
          _isExpired = true;
           return null;
@@ -1176,7 +1171,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           }
         }
-        if (ObjectiveAI.ReactionCode.SLEEPY < (m_Actor.Controller as ObjectiveAI).InterruptLongActivity()) {
+        if (ObjectiveAI.ReactionCode.SLEEPY < Controller.InterruptLongActivity()) {
           _isExpired = true;    // cancel: something urgent
           return true;
         }
@@ -1266,7 +1261,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         if (0 < move_to.Count) {
-          ret = (m_Actor.Controller as ObjectiveAI).BehaviorPathTo(m => (m == _dest.Map ? move_to : new HashSet<Point>()));
+          ret = Controller.BehaviorPathTo(m => (m == _dest.Map ? move_to : new HashSet<Point>()));
           return true;
         }
         return false;
