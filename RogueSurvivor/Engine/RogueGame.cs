@@ -2370,8 +2370,9 @@ namespace djack.RogueSurvivor.Engine
 
         var uas = Session.Get.UniqueActors;
         lock (uas) {
-          var candidates = uas.DraftPool(a => a.IsWithRefugees && !a.IsSpawned && !s_RefugeePool.Contains(a.TheActor) /* && !a.TheActor.IsDead */);
-          if (0 < candidates.Count) s_RefugeePool.Add(rules.DiceRoller.Choose(candidates).TheActor);
+          List<Actor> candidates = new();   // never placed (so not dead either), and not already waiting
+          foreach (var a in uas.Refugees) if (a.Location.Map is null && !a.IsDead && !s_RefugeePool.Contains(a)) candidates.Add(a);
+          if (0 < candidates.Count) s_RefugeePool.Add(rules.DiceRoller.Choose(candidates));
         }
       }
     }
@@ -2525,42 +2526,6 @@ namespace djack.RogueSurvivor.Engine
         FaustTogglePC(arrived);
       }
     }
-
-    // \todo re-wire the non-spawn part of this in
-#if DEAD_FUNC
-    private void FireEvent_UniqueActorArrive(Map map, UniqueActor unique)
-    {
-      if (!SpawnActorOnMapBorder(map, unique.TheActor, SPAWN_DISTANCE_TO_PLAYER)) return;
-      unique.IsSpawned = true;
-      if (map != Player.Location.Map || Player.IsSleeping || Player.Model.Abilities.IsUndead) return;
-      PlayUniqueActorMusicAndMessage(unique, true);
-      // XXX \todo district event
-      Player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, unique.TheActor.Name + " arrived.");
-    }
-
-        private void PlayUniqueActorMusicAndMessage(UniqueActor unique, bool hasArrived)    // alpha10: uses parameter to signal arrival (true) or first sighting (false).  \todo: implement first sighting
-        {
-            if (unique.EventMessage is not null) {
-                Overlay? highlightOverlay = null;
-
-                if (unique.EventThemeMusic is not null) {
-                    m_MusicManager.Stop();
-                    m_MusicManager.Play(unique.EventThemeMusic, MusicPriority.PRIORITY_EVENT);
-                }
-
-                ClearMessages();
-                AddMessage(new Data.Message(unique.EventMessage, Session.Get.WorldTime.TurnCounter, Color.Pink));
-                if (hasArrived) AddMessage((Player.Controller as PlayerController).MakeCentricMessage("Seems to come from", unique.TheActor.Location));
-                else {
-                    highlightOverlay = new OverlayRect(Color.Pink, new GDI_Rectangle(MapToScreen(unique.TheActor.Location.Position), SIZE_OF_TILE));
-                    AddOverlay(highlightOverlay);
-                }
-                AddMessagePressEnter();
-                ClearMessages();
-                if (highlightOverlay is not null) RemoveOverlay(highlightOverlay);
-            }
-        }
-#endif
 
     // VAPORWARE: helicopter events: National Guard, supply drop, Black Ops
     // VAPORWARE: land vehicle events: Bikers (motorcycles), Gangsters (cars), Survivors (vans)
@@ -3167,10 +3132,9 @@ namespace djack.RogueSurvivor.Engine
         }
 
 #region Theme music
-        foreach(var unique in Session.Get.UniqueActors.ToArray()) {
-          if (unique.EventThemeMusic is null) continue;
-          if ((unique.TheActor==player || player.Sees(unique.TheActor) is not null) && m_MusicManager.Music != unique.EventThemeMusic) m_MusicManager.Play(unique.EventThemeMusic, MusicPriority.PRIORITY_EVENT);
-          else if (m_MusicManager.Music==unique.EventThemeMusic) m_MusicManager.Stop();
+        foreach(var x in Session.Get.UniqueActors.ThemeMusic) {
+          if ((x.Key==player || player.Sees(x.Key) is not null) && m_MusicManager.Music != x.Value) m_MusicManager.Play(x.Value, MusicPriority.PRIORITY_EVENT);
+          else if (m_MusicManager.Music==x.Value) m_MusicManager.Stop();
         }
 #endregion
 
@@ -3901,7 +3865,7 @@ namespace djack.RogueSurvivor.Engine
                 && entryMap == unique_maps.CHARUndergroundFacility.TheMap.District.EntryMap) {
               render(Color.Red, unique_maps.CHARUndergroundFacility.TheMap.Name);
             }
-            var vip = sess.UniqueActors.TheSewersThing.TheActor;
+            var vip = sess.UniqueActors.TheSewersThing;
             if (pc.KnowsWhere(vip) && entryMap == vip.Location.Map.District.EntryMap) {
               render(Color.Red, "The Sewers Thing lives down there.");
             }
@@ -4326,11 +4290,11 @@ namespace djack.RogueSurvivor.Engine
                     // Each CHAR office is to have one copy of the CHAR Operation Dead Hand document (the CHAR Guard Manual)
                     // XXX if the CHAR default orders document has been read then this text should be revised
                     display.Add("Something's very wrong; CHAR guards are attacking us cops.");
-                    if (1 == Session.Get.ScriptStage_PoliceCHARrelations && 2 > Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, may not be.  We need a civilian to make " + Session.Get.UniqueActors.PoliceStationPrisoner.TheActor.HimOrHer + " squawk.");
+                    if (1 == Session.Get.ScriptStage_PoliceCHARrelations && 2 > Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, may not be.  We need a civilian to make " + Session.Get.UniqueActors.PoliceStationPrisoner.HimOrHer + " squawk.");
                     // XXX ok for police to invade CHAR Offices at this point.
                     // XXX police will be able to aggress CHAR without risking murder at this point
          }
-         if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, was a framed experimental subject; " + Session.Get.UniqueActors.PoliceStationPrisoner.TheActor.HeOrShe + " was contaminated by a ZM transformer agent.");
+         if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, was a framed experimental subject; " + Session.Get.UniqueActors.PoliceStationPrisoner.HeOrShe + " was contaminated by a ZM transformer agent.");
          if (2 <= Session.Get.ScriptStage_PoliceCHARrelations) {
                     // XXX should record sighting officer
                     // VAPORWARE the cell phone(?) used for last contact should be down here (plausibly not an artifact, however)
@@ -11376,7 +11340,7 @@ restart:
 
         // achievement: killing the Sewers Thing
         // XXX \todo this achievement is newsworthy.
-        if (deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) {
+        if (deadGuy == Session.Get.UniqueActors.TheSewersThing) {
           ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, killer);
           var hero_team = killer.ChainOfCommand;
           if (hero_team is not null && killer.Controller is ObjectiveAI ai) {
@@ -14397,7 +14361,7 @@ retry:
       // Acceptable factions are civilians and survivors.
       // Even if the player is of an unacceptable faction, he will be thanked if not an enemy.
       if (p_map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && 2 > Session.Get.ScriptStage_PoliceStationPrisoner && 0 <= Session.Get.ScriptStage_PoliceStationPrisoner) {
-        Actor prisoner = Session.Get.UniqueActors.PoliceStationPrisoner.TheActor;
+        Actor prisoner = Session.Get.UniqueActors.PoliceStationPrisoner;
         if (prisoner.IsDead) Session.Get.ScriptStage_PoliceStationPrisoner = -1;    // disable processing; police will never realize the framing w/o other evidence
         else {
           switch(Session.Get.ScriptStage_PoliceStationPrisoner) {
@@ -14614,7 +14578,7 @@ retry:
 
     static private bool IsSuitableReincarnation(Actor? a, bool asLiving)
     {
-      if (a is null || a.IsDead || a.IsPlayer || a.Location.Map.DistrictPos != CurrentMap.DistrictPos || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisoner.TheActor || District.IsSewersMap(a.Location.Map)))
+      if (a is null || a.IsDead || a.IsPlayer || a.Location.Map.DistrictPos != CurrentMap.DistrictPos || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisoner || District.IsSewersMap(a.Location.Map)))
         return false;
       if (asLiving)
         return !a.Model.Abilities.IsUndead && (!s_Options.IsLivingReincRestricted || a.IsFaction(GameFactions.IDs.TheCivilians));

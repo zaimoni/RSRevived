@@ -3810,7 +3810,7 @@ restart:
         map.PlaceAt(MakeObjPowerGenerator(), pt);
       }
       Session.Get.UniqueActors.init_JasonMyers();
-      map.PlaceAt(Session.Get.UniqueActors.JasonMyers.TheActor, new Point(POWER_WIDTH / 2, POWER_HEIGHT / 2));
+      map.PlaceAt(Session.Get.UniqueActors.JasonMyers, new Point(POWER_WIDTH / 2, POWER_HEIGHT / 2));
       return map;
     }
 

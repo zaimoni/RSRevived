@@ -197,7 +197,6 @@
     <Compile Include="Engine\GameMode.cs" />
     <Compile Include="Engine\RaidType.cs" />
     <Compile Include="Engine\AdvisorHint.cs" />
-    <Compile Include="Engine\UniqueActor.cs" />
     <Compile Include="Engine\UniqueActors.cs" />
     <Compile Include="Engine\UniqueItem.cs" />
     <Compile Include="Engine\UniqueItems.cs" />

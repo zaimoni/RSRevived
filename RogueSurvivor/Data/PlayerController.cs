@@ -425,8 +425,8 @@ namespace djack.RogueSurvivor.Data
     public static void Reset()
     {
       s_BeforeAction = new List<EventUnconditional>{ // set up cosmetic UI handlers
-        new UIOnSighting(Session.Get.UniqueActors.TheSewersThing.TheActor, "Hey! What's that THING!?", Gameplay.GameMusics.FIGHT),
-        new UIOnSighting(Session.Get.UniqueActors.JasonMyers.TheActor, "Nice axe you have there!")
+        new UIOnSighting(Session.Get.UniqueActors.TheSewersThing, "Hey! What's that THING!?", Gameplay.GameMusics.FIGHT),
+        new UIOnSighting(Session.Get.UniqueActors.JasonMyers, "Nice axe you have there!")
       };
 
       s_AfterAction = new List<EventUnconditional>(s_BeforeAction); // all cosmetic handlers should be safe to execute both before/after action

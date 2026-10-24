@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using djack.RogueSurvivor.Gameplay;
 using Zaimoni.JSON;
@@ -25,48 +26,47 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   public class UniqueActors
   {
-    public UniqueActor BigBear { get; private set; }
-    public UniqueActor Duckman { get; private set; }
-    public UniqueActor FamuFataru { get; private set; }
-    public UniqueActor FatherTime { get; private set; }
-    public UniqueActor HansVonHanz { get; private set; }
-    public UniqueActor JasonMyers { get; private set; }
-    public UniqueActor PoliceStationPrisoner { get; private set; }
-    public UniqueActor Roguedjack { get; private set; }
-    public UniqueActor Santaman { get; private set; }
-    public UniqueActor TheSewersThing { get; private set; }
+    public Actor BigBear { get; private set; }
+    public Actor Duckman { get; private set; }
+    public Actor FamuFataru { get; private set; }
+    public Actor FatherTime { get; private set; }
+    public Actor HansVonHanz { get; private set; }
+    public Actor JasonMyers { get; private set; }
+    public Actor PoliceStationPrisoner { get; private set; }
+    public Actor Roguedjack { get; private set; }
+    public Actor Santaman { get; private set; }
+    public Actor TheSewersThing { get; private set; }
 
-    // This must be a value copy anyway (i.e. we gain almost nothing from having the authoritative storage be an array rather than auto properties)
-    public UniqueActor[] ToArray()
-    {
-      return new UniqueActor[] {
-        BigBear,
-        Duckman,
-        FamuFataru,
-        FatherTime,
-        HansVonHanz,
-        PoliceStationPrisoner,
-        Roguedjack,
-        Santaman,
-        TheSewersThing,
-        JasonMyers  // alpha10
-      };
+    /// <summary>The free uniques: not placed when the town is generated, they arrive with a refugee wave.
+    /// Arrival flavor text, from the retired FireEvent_UniqueActorArrive, for when arrivals are re-wired:
+    /// Big Bear "You hear an angry man shouting 'FOOLS!'"; Duckman "You hear loud demented QUACKS.";
+    /// Famu Fataru "You hear a woman laughing."; Father Time "You hear new year's music.";
+    /// Hans von Hanz "You hear a man barking orders in German."; Roguedjack "You hear a man shouting in French.";
+    /// Santaman "You hear christmas music and drunken vomiting."</summary>
+    public IEnumerable<Actor> Refugees {
+      get {
+        yield return BigBear;
+        yield return Duckman;
+        yield return FamuFataru;
+        yield return FatherTime;
+        yield return HansVonHanz;
+        yield return Roguedjack;
+        yield return Santaman;
+      }
     }
 
-    public Zaimoni.Data.Stack<UniqueActor> DraftPool(Predicate<UniqueActor> test) {
-      var ret = new Zaimoni.Data.Stack<UniqueActor>(new UniqueActor[10]);
-      // \todo this warrants a linear data structure
-      if (test(BigBear)) ret.push(BigBear);
-      if (test(Duckman)) ret.push(Duckman);
-      if (test(FamuFataru)) ret.push(FamuFataru);
-      if (test(FatherTime)) ret.push(FatherTime);
-      if (test(HansVonHanz)) ret.push(HansVonHanz);
-      if (test(PoliceStationPrisoner)) ret.push(PoliceStationPrisoner);
-      if (test(Roguedjack)) ret.push(Roguedjack);
-      if (test(Santaman)) ret.push(Santaman);
-      if (test(TheSewersThing)) ret.push(TheSewersThing);
-      if (test(JasonMyers)) ret.push(JasonMyers);
-      return ret;
+    /// <summary>The uniques whose presence has theme music, in the historical priority order.</summary>
+    public IEnumerable<KeyValuePair<Actor, string>> ThemeMusic {
+      get {
+        yield return new(BigBear, GameMusics.BIGBEAR_THEME_SONG);
+        yield return new(Duckman, GameMusics.DUCKMAN_THEME_SONG);
+        yield return new(FamuFataru, GameMusics.FAMU_FATARU_THEME_SONG);
+        // \todo Father Time: GameMusics.FATHER_TIME_THEME_SONG (Auld Lang Syne?)
+        yield return new(HansVonHanz, GameMusics.HANS_VON_HANZ_THEME_SONG);
+        yield return new(Roguedjack, GameMusics.ROGUEDJACK_THEME_SONG);
+        yield return new(Santaman, GameMusics.SANTAMAN_THEME_SONG);
+        yield return new(JasonMyers, GameMusics.INSANE);  // alpha10
+      }
     }
 
     // Bound uniques.  These uniques are generated at the same time as their map.
@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Engine
       newCivilian.Name = "The Prisoner Who Should Not Be";
       for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
         newCivilian.Take(GameItems.ARMY_RATION.instantiate());
-      PoliceStationPrisoner = new UniqueActor(newCivilian,true);
+      PoliceStationPrisoner = newCivilian;
     }
 
     public void init_JasonMyers()
@@ -94,7 +94,7 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.AGILE,3);
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,3);
       named.Take(new ItemMeleeWeapon(GameItems.UNIQUE_JASON_MYERS_AXE));
-      JasonMyers = new UniqueActor(named, true, false, GameMusics.INSANE);
+      JasonMyers = named;
     }
 
     // Free/unbound uniques.  These are not assigned to a specific map at the time the map is generated.
@@ -115,7 +115,7 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
       named.Take(new ItemMeleeWeapon(GameItems.UNIQUE_FATHER_TIME_SCYTHE));
       named.Take(GameItems.ARMY_RATION.instantiate());    // Doesn't want to be a target, so only one ration
-      FatherTime = new UniqueActor(named,false,true,null, "You hear new year's music.");  // XXX \todo GameMusics.FATHER_TIME_THEME_SONG (Auld Lang Syne?)
+      FatherTime = named;  // XXX \todo GameMusics.FATHER_TIME_THEME_SONG (Auld Lang Syne?)
     }
 
     private void init_SewersThing(BaseTownGenerator tgen)
@@ -140,7 +140,7 @@ namespace djack.RogueSurvivor.Engine
           "- In case of emergency, take refuge here.",
           "- Do not let other people interact with it!"
         }));
-      TheSewersThing = new UniqueActor(named,true);
+      TheSewersThing = named;
     }
 
     private static readonly string[] BIG_BEAR_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
@@ -167,7 +167,7 @@ namespace djack.RogueSurvivor.Engine
       named.Take(tgen.MakeItemCannedFood());
       named.Take(tgen.MakeItemCannedFood());
       named.Take(tgen.MakeItemCannedFood());
-      BigBear = new UniqueActor(named,false,true, GameMusics.BIGBEAR_THEME_SONG, "You hear an angry man shouting 'FOOLS!'");
+      BigBear = named;
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(BIG_BEAR_EMOTES);
     }
 
@@ -196,7 +196,7 @@ namespace djack.RogueSurvivor.Engine
       named.Take(tgen.MakeItemCannedFood());
       named.Take(tgen.MakeItemCannedFood());
       named.Take(tgen.MakeItemCannedFood());
-      FamuFataru = new UniqueActor(named,false,true, GameMusics.FAMU_FATARU_THEME_SONG, "You hear a woman laughing.");
+      FamuFataru = named;
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(FAMU_FATARU_EMOTES);
     }
 
@@ -223,7 +223,7 @@ namespace djack.RogueSurvivor.Engine
       foreach(var x in default_inv) named.Take(x.create());
       named.Take(tgen.MakeItemCannedFood());
       named.Take(tgen.MakeItemCannedFood());
-      Santaman = new UniqueActor(named,false,true, GameMusics.SANTAMAN_THEME_SONG, "You hear christmas music and drunken vomiting.");
+      Santaman = named;
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(SANTAMAN_EMOTES);
     }
 
@@ -251,7 +251,7 @@ namespace djack.RogueSurvivor.Engine
       named.Take(tgen.MakeItemCannedFood());
       named.Take(tgen.MakeItemCannedFood());
       named.Take(tgen.MakeItemCannedFood());
-      Roguedjack = new UniqueActor(named,false,true, GameMusics.ROGUEDJACK_THEME_SONG, "You hear a man shouting in French.");
+      Roguedjack = named;
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(ROGUEDJACK_EMOTES);
     }
 
@@ -280,7 +280,7 @@ namespace djack.RogueSurvivor.Engine
       named.Take(tgen.MakeItemCannedFood());
       named.Take(tgen.MakeItemCannedFood());
       named.Take(tgen.MakeItemCannedFood());
-      Duckman = new UniqueActor(named,false,true, GameMusics.DUCKMAN_THEME_SONG, "You hear loud demented QUACKS.");
+      Duckman = named;
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(DUCKMAN_EMOTES);
     }
 
@@ -308,7 +308,7 @@ namespace djack.RogueSurvivor.Engine
       named.Take(tgen.MakeItemCannedFood());
       named.Take(tgen.MakeItemCannedFood());
       named.Take(tgen.MakeItemCannedFood());
-      HansVonHanz = new UniqueActor(named,false,true,GameMusics.HANS_VON_HANZ_THEME_SONG, "You hear a man barking orders in German.");
+      HansVonHanz = named;
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(HANS_VON_HANZ_EMOTES);
     }
 
@@ -327,28 +327,18 @@ namespace djack.RogueSurvivor.Engine
 #region JSON save/load
     // We must be saved after the World.  A unique that is on a map, or has a corpse, was saved there and is a reference here.
     // Any other (not spawned yet; or dead, with its corpse gone) is saved here in full, and so loads with no map.
-    static private void save(Utf8JsonWriter writer, string name, UniqueActor src, JsonSerializerOptions options)
+    static private void save(Utf8JsonWriter writer, string name, Actor src, JsonSerializerOptions options)
     {
-      if (src is null) return;  // not generated yet
       writer.WritePropertyName(name);
-      writer.WriteStartObject();
-      writer.WritePropertyName("Actor");
-      JsonSerializer.Serialize(writer, src.TheActor, options);
-      writer.WriteBoolean("Spawned", src.IsSpawned);
-      if (src.IsWithRefugees) writer.WriteBoolean("WithRefugees", true);
-      if (src.EventThemeMusic is not null) writer.WriteString("Music", src.EventThemeMusic);
-      if (src.EventMessage is not null) writer.WriteString("Message", src.EventMessage);
-      writer.WriteEndObject();
+      JsonSerializer.Serialize(writer, src, options);
     }
 
-    static private UniqueActor load(JsonElement src, string name, JsonSerializerOptions options)
+    /// <remarks>Before 2026-10-24 the actor was wrapped in an object with its event flags.  Those were constants per identity, or dead.</remarks>
+    static private Actor load(JsonElement src, string name, JsonSerializerOptions options)
     {
-      if (!src.TryGetProperty(name, out var relay)) return null;
-      return new UniqueActor(relay.Require("Actor").Deserialize<Actor>(options) ?? throw new JsonException("null unique actor: " + name),
-                             relay.Require("Spawned").GetBoolean(),
-                             relay.TryGetProperty("WithRefugees", out var x) && x.GetBoolean(),
-                             relay.TryGetProperty("Music", out x) ? x.GetString() : null,
-                             relay.TryGetProperty("Message", out x) ? x.GetString() : null);
+      var relay = src.Require(name);
+      if (relay.TryGetProperty("Actor", out var legacy)) relay = legacy;
+      return relay.Deserialize<Actor>(options) ?? throw new JsonException("null unique actor: " + name);
     }
 
     public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
