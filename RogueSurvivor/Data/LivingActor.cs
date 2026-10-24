@@ -68,7 +68,7 @@ namespace djack.RogueSurvivor.Data
       return itemMeleeWeapon1;
     }
 
-    public override ItemMeleeWeapon? GetBestMeleeWeapon(MapObject toBreak)    // XXX don't actually use this parameter, just controls overload
+    public override ItemMeleeWeapon? GetBestMeleeWeapon(MapObject toBreak)
     {
       var tmp = m_Inventory.GetItemsByType<ItemMeleeWeapon>();
       if (tmp is null) return null;
@@ -233,10 +233,6 @@ final_exit:
     {
       if (m_Inventory.IsEmpty) return 0;
       int num = 0;
-      foreach (Item obj in m_Inventory) {
-        if (obj.IsUseless) continue;
-        if (obj.GetType() == tt) ++num;
-      }
       foreach (Item obj in m_Inventory) {
         if (obj.IsUseless) continue;
         if (obj.GetType() == tt) ++num;
