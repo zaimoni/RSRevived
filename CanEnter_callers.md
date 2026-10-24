@@ -47,9 +47,9 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:315 | ok | a shelf: any neighbour |
 | ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:321 | ok | a ground stack: the tile itself |
 | ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:326 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
-| Map.WouldBlacklistFor | Data/Map.cs:1164 | ok | receiver is the actor parameter |
-| Map.PathfindLocSteps | Data/Map.cs:1178 | ok | StrictCanEnter, in the flood-fill's lambda; receiver is actor.Model |
-| Map.TrapWouldSealBuilding | Data/Map.cs:2152 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
+| Map.WouldBlacklistFor | Data/Map.cs:1167 | ok | receiver is the actor parameter |
+| Map.PathfindLocSteps | Data/Map.cs:1181 | ok | StrictCanEnter, in the flood-fill's lambda; receiver is actor.Model |
+| Map.TrapWouldSealBuilding | Data/Map.cs:2155 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | ok | origin; was Actor.CanEnter until 81a9544a |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
 | _Action.MoveStep.schedule | Engine/Action/MoveStep.cs:173 | ok | destination; was Actor.CanEnter until 81a9544a |
