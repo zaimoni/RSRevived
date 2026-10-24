@@ -158,6 +158,7 @@
     <Compile Include="Data\Map.cs" />
     <Compile Include="Data\MapKripke.cs" />
     <Compile Include="Data\Actor.cs" />
+    <Compile Include="Data\LivingActor.cs" />
     <Compile Include="Data\World.cs" />
     <Compile Include="Data\BlastAttack.cs" />
     <Compile Include="Data\Defence.cs" />

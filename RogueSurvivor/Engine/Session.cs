@@ -500,7 +500,11 @@ namespace djack.RogueSurvivor.Engine
           items.RequireAllSubtypes();
           s_j_opts.Converters.Add(items);
 
-          s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Actor>());   // its controllers are tracked separately, below
+          var actors = new Zaimoni.JSON.Polymorphic<Actor>();   // their controllers are tracked separately, below
+          actors.Add(new Zaimoni.JsonConvert.Via<Actor, Actor>("Actor"));
+          actors.Add(new Zaimoni.JsonConvert.Via<Actor, LivingActor>("LivingActor"));
+          actors.RequireAllSubtypes();
+          s_j_opts.Converters.Add(actors);
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Sealed<Corpse>(true));
 
           var minds = new Zaimoni.JSON.Polymorphic<ActorController>();

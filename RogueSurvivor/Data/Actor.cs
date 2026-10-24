@@ -57,7 +57,7 @@ namespace djack.RogueSurvivor.Data
     };
 
   [Serializable]
-  public sealed class Actor : IEquatable<Actor>, IInventory, ILocation, Zaimoni.Data.INoun, IJsonStaged<Actor>
+  public class Actor : IEquatable<Actor>, IInventory, ILocation, Zaimoni.Data.INoun, IJsonStaged<Actor>
     {
     public const int BASE_ACTION_COST = 100;
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
@@ -136,8 +136,6 @@ namespace djack.RogueSurvivor.Data
     private ActorController? m_Subconscious = null; // alternate
     private SkillTable m_Skills;
     public readonly int SpawnTime;
-    private Inventory? m_Inventory; // hammerspace inventory
-    private InventorySlots? m_InventorySlots; // Angband-ish inventory
     private Doll m_Doll;
     private int m_HitPoints;
     private int m_previousHitPoints;
@@ -173,6 +171,9 @@ namespace djack.RogueSurvivor.Data
     {
       get { return GameActors.From(m_ModelID); }
       set { // this must be public due to undead evolution
+#if DEBUG
+        if (value.Abilities.HasInventory != (this is LivingActor)) throw new InvalidOperationException(value.Name + " and " + GetType().Name + " disagree about having an inventory");
+#endif
         m_ModelID = value.ID;
         OnModelSet();
       }
@@ -347,8 +348,9 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Inventory? Inventory { get => m_Inventory; }
-    public InventorySlots? InventorySlots { get => m_InventorySlots; }
+    // The inventory belongs to LivingActor (Abilities.HasInventory).  These bridges go when the members using them have moved down.
+    public virtual Inventory? Inventory => null;
+    public virtual InventorySlots? InventorySlots => null;
 
     public int HitPoints { get => m_HitPoints; }
     public int PreviousHitPoints { get => m_previousHitPoints; }
@@ -650,7 +652,7 @@ namespace djack.RogueSurvivor.Data
         // Even if this were not an apocalypse, law enforcement should get some slack in interpreting intent, etc.
         int ret = 0;
         if (m_AggressorOf is not null) {
-          if (IsHungry && !Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => a?.m_Inventory?.GetItemsByType<ItemFood>() is not null);
+          if (IsHungry && !Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => a?.Inventory?.GetItemsByType<ItemFood>() is not null);
           if (!Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => a.Model.Abilities.IsLawEnforcer);
         }
         return ret;
@@ -810,7 +812,16 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Actor(ActorModel model, Faction faction, int spawnTime, string name="")
+    public Actor(ActorModel model, Faction faction, int spawnTime, string name="") : this(model, faction, spawnTime, name, true)
+    {
+#if DEBUG
+      if (model.Abilities.HasInventory) throw new ArgumentException(model.Name + " has an inventory: wants LivingActor", nameof(model));
+#endif
+      InstallDefaultController();
+    }
+
+    /// <summary>Everything but the controller.  A subclass sets its own fields, then calls InstallDefaultController.</summary>
+    protected Actor(ActorModel model, Faction faction, int spawnTime, string name, bool _)
     {
       m_ModelID = model.ID;
       m_FactionID = faction.ID;
@@ -823,8 +834,10 @@ namespace djack.RogueSurvivor.Data
       ActorScoring = new ActorScoring(this);
       CommandLinePlayer();
       OnModelSet();
-      Controller = Model.InstanciateController(this);
     }
+
+    /// <summary>The last step of construction: the controller may look at everything else.</summary>
+    protected void InstallDefaultController() { Controller = Model.InstanciateController(this); }
 
     public void Retype(ActorModel model) { m_ModelID = model.ID; }
 
@@ -840,11 +853,6 @@ namespace djack.RogueSurvivor.Data
       m_FoodPoints = m_previousFoodPoints = model.BaseFoodPoints;
       m_SleepPoints = m_previousSleepPoints = model.BaseSleepPoints;
       m_Sanity = m_previousSanity = model.BaseSanity;
-      m_Inventory = (model.Abilities.HasInventory ? new Inventory(model.BaseInventoryCapacity)
-                                                  : null); // any previous inventory will be irrevocably destroyed
-      // just human-torso slot, for now
-      m_InventorySlots = (model.Abilities.HasInventory ? new InventorySlots(1)
-                                                       : null); // any previous inventory will be irrevocably destroyed
       m_CurrentMeleeAttack = model.UnarmedAttack;
       m_CurrentDefence = Model.BaseDefence;
       m_CurrentRangedAttack = Attack.BLANK;
@@ -885,7 +893,8 @@ namespace djack.RogueSurvivor.Data
     // Implied when omitted: stats at the model's base value, "previous" stats equal to the current ones,
     // action points at the model's speed, counters at zero, flags that are false, an idle Activity,
     // a controller that is what the model would construct.
-    private Actor(JsonElement src, JsonSerializerOptions options)
+    /// <summary>Everything but the controller, which may refer to the inventory: a subclass loads its own fields, then calls FinishLoad.</summary>
+    protected Actor(JsonElement src, JsonSerializerOptions options)
     {
       bool flag(string name) => src.TryGetProperty(name, out var x) && x.GetBoolean();
       int stat(string name, int implied) => src.TryGetProperty(name, out var x) ? x.GetInt32() : implied;
@@ -927,9 +936,6 @@ namespace djack.RogueSurvivor.Data
 
       m_Skills = src.TryGetProperty("Skills", out relay) ? new SkillTable(relay) : new SkillTable();
       m_Doll = src.TryGetProperty("Doll", out relay) ? new Doll(model, relay) : new Doll(model);
-      m_Inventory = src.TryGetProperty("Inventory", out relay) ? relay.Deserialize<Inventory>(options) : null;
-      m_InventorySlots = src.TryGetProperty("Slots", out relay) ? new InventorySlots(relay, options)
-                       : (model.Abilities.HasInventory ? new InventorySlots(1) : null);
       ActorScoring = src.TryGetProperty("Scoring", out relay) ? new ActorScoring(this, relay, options) : new ActorScoring(this);
 
       // Cross-links.  These are filled when the load finishes, in file order; until then they are empty.
@@ -943,13 +949,17 @@ namespace djack.RogueSurvivor.Data
       if (src.TryGetProperty("SelfDefenceFrom", out relay)) relay.ReadRefs(m_SelfDefenceFrom = new());
       if (src.TryGetProperty("Trust", out relay)) relay.ReadRefDictionary(m_TrustDict = new(), options);
       if (src.TryGetProperty("DraggedCorpse", out relay)) relay.ReadRef<Corpse>(c => m_DraggedCorpse = c);
+    }
 
+    /// <summary>The controller, whose state may refer to the inventory, and what follows from the whole.</summary>
+    protected void FinishLoad(JsonElement src, JsonSerializerOptions options)
+    {
       // Assigned directly, bypassing the Controller setter: TakeControl is for a live actor, and belongs to the post-load stage.
       var prior = ActorController.s_LoadOwner;
       ActorController.s_LoadOwner = this;
       try {
-        m_Controller = src.TryGetProperty("Controller", out relay) ? (relay.Deserialize<ActorController>(options) ?? throw new JsonException("null Controller"))
-                     : model.InstanciateController(this);
+        m_Controller = src.TryGetProperty("Controller", out var relay) ? (relay.Deserialize<ActorController>(options) ?? throw new JsonException("null Controller"))
+                     : Model.InstanciateController(this);
         if (src.TryGetProperty("Subconscious", out relay)) m_Subconscious = relay.Deserialize<ActorController>(options);
       } finally {
         ActorController.s_LoadOwner = prior;
@@ -958,7 +968,14 @@ namespace djack.RogueSurvivor.Data
       OnDeserialized();  // whether we eat; current attack and defence, from what we have equipped
     }
 
-    static Actor IJsonStaged<Actor>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+    /// <remarks>A save from before the split carries no $type on a living actor: the model decides, as it does for a new actor.</remarks>
+    static Actor IJsonStaged<Actor>.fromJson(JsonElement src, JsonSerializerOptions options)
+    {
+      if (GameActors.From(src.RequireEnum<GameActors.IDs>("Model")).Abilities.HasInventory) return LivingActor.fromJson(src, options);
+      var ret = new Actor(src, options);
+      ret.FinishLoad(src, options);
+      return ret;
+    }
 
     // Our controller was assigned directly when we were loaded.  These bind it to, and release it from, the live game.
     public void JsonAttach()
@@ -968,6 +985,9 @@ namespace djack.RogueSurvivor.Data
     }
 
     public void JsonDetach() { m_Controller?.LeaveControl(); }
+
+    /// <summary>LivingActor's Inventory and Slots, at the place in the record they have always had.</summary>
+    protected virtual void toJsonInventory(Utf8JsonWriter writer, JsonSerializerOptions options) { }
 
     public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
@@ -1017,14 +1037,7 @@ namespace djack.RogueSurvivor.Data
         writer.WritePropertyName("Doll");
         m_Doll.toJson(writer, options);
       }
-      if (m_Inventory is not null) {
-        writer.WritePropertyName("Inventory");
-        JsonSerializer.Serialize(writer, m_Inventory, options);
-      }
-      if (m_InventorySlots is not null && !m_InventorySlots.IsEmpty) {
-        writer.WritePropertyName("Slots");
-        m_InventorySlots.toJson(writer, options);
-      }
+      toJsonInventory(writer, options);   // before the controller: its state refers to our items
       if (!ActorScoring.IsJsonEmpty) {
         writer.WritePropertyName("Scoring");
         ActorScoring.toJson(writer, options);
@@ -1271,7 +1284,7 @@ namespace djack.RogueSurvivor.Data
 
     public ItemMeleeWeapon? GetBestMeleeWeapon()
     {
-      var tmp = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
+      var tmp = Inventory?.GetItemsByType<ItemMeleeWeapon>();
       if (tmp is null) return null;
       int num1 = UnarmedMeleeAttack().Rating;
       ItemMeleeWeapon? itemMeleeWeapon1 = null;
@@ -1286,7 +1299,7 @@ namespace djack.RogueSurvivor.Data
 
     public ItemMeleeWeapon? GetBestMeleeWeapon(MapObject toBreak)    // XXX don't actually use this parameter, just controls overload
     {
-      var tmp = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
+      var tmp = Inventory?.GetItemsByType<ItemMeleeWeapon>();
       if (tmp is null) return null;
       int num1 = UnarmedMeleeAttack().Rating;
       ItemMeleeWeapon? itemMeleeWeapon1 = null;
@@ -1301,7 +1314,7 @@ namespace djack.RogueSurvivor.Data
 
     public int? GetBestMeleeWeaponRating()
     {
-      var tmp = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
+      var tmp = Inventory?.GetItemsByType<ItemMeleeWeapon>();
       if (tmp is null) return null;
       int martial_arts_rating = UnarmedMeleeAttack().Rating;
       int? ret = null;
@@ -1428,27 +1441,27 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasActiveCellPhone {
       get {
-        return m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader && !it.IsUseless) is not null;
+        return Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader && !it.IsUseless) is not null;
       }
     }
 
     public bool HasCellPhone {
       get {
-        return m_Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless) is not null;
+        return Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless) is not null;
       }
     }
 
     public bool HasActivePoliceRadio {
       get {
         if (GameFactions.IDs.ThePolice==m_FactionID) return true;
-        return m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackPolice) is not null;  // charges on walking so won't stay useless
+        return Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackPolice) is not null;  // charges on walking so won't stay useless
       }
     }
 
     public bool HasPoliceRadio {
       get {
         if (GameFactions.IDs.ThePolice==m_FactionID) return true;
-        return m_Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackPolice) is not null;  // charges on walking so won't stay useless
+        return Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackPolice) is not null;  // charges on walking so won't stay useless
       }
     }
 
@@ -1529,7 +1542,7 @@ namespace djack.RogueSurvivor.Data
 
     public ItemTracker? GetEquippedCellPhone()
     {
-      return m_Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader);
+      return Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader);
     }
 #endregion
 
@@ -2412,8 +2425,8 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCouldntBarricade()
     {
       if (!Model.Abilities.CanBarricade) return "no ability to barricade";
-      if (m_Inventory.IsEmpty()) return "no items";
-      if (!m_Inventory.Has<ItemBarricadeMaterial>()) return "no barricading material";
+      if (Inventory.IsEmpty()) return "no items";
+      if (!Inventory.Has<ItemBarricadeMaterial>()) return "no barricading material";
       return "";
     }
 
@@ -3159,72 +3172,72 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanTake(Item it) {
       if (it is ItemBodyArmor armor) {
-        if (m_InventorySlots[SLOT_H_TORSO] is ItemBodyArmor worn) return worn.Rating < armor.Rating;
+        if (InventorySlots[SLOT_H_TORSO] is ItemBodyArmor worn) return worn.Rating < armor.Rating;
         return true;
       }
       if (it is ItemTrap trap && trap.IsTriggered) return false;
-      return m_Inventory?.CanAddAll(it) ?? false;
+      return Inventory?.CanAddAll(it) ?? false;
     }
 
     private bool Take(ItemBodyArmor armor) {
-      if (m_InventorySlots[SLOT_H_TORSO] is ItemBodyArmor worn) {
+      if (InventorySlots[SLOT_H_TORSO] is ItemBodyArmor worn) {
           // making player act like AI here, is not ideal.
           if (worn.Rating >= armor.Rating) goto final_exit;
-          m_InventorySlots.RemoveAt(SLOT_H_TORSO);
+          InventorySlots.RemoveAt(SLOT_H_TORSO);
           worn.UnequippedBy(this);
-          if (!m_Inventory.AddAll(worn)) Location.Drop(worn);
+          if (!Inventory.AddAll(worn)) Location.Drop(worn);
       }
-      if (m_InventorySlots.SetIfNull(SLOT_H_TORSO, armor)) {
+      if (InventorySlots.SetIfNull(SLOT_H_TORSO, armor)) {
           Equip(armor, m_Location.Map is not null);
           return true;
       }
 final_exit:
-     return m_Inventory?.AddAll(armor) ?? false;
+     return Inventory?.AddAll(armor) ?? false;
     }
 
 
     public bool Take(Item it) {
-     if (m_InventorySlots is not null) {
+     if (InventorySlots is not null) {
         // assume OrderableAI i.e. humanoid inventory, for now
         if (it is ItemBodyArmor armor) return Take(armor);
      }
      if (it is ItemTrap trap) trap.Desactivate();
-     return m_Inventory?.AddAll(it) ?? false;
+     return Inventory?.AddAll(it) ?? false;
     }
 
     public int TakeAsMuchAsPossible(Item it) {
-      if (m_InventorySlots is not null) {
+      if (InventorySlots is not null) {
         // assume OrderableAI i.e. humanoid inventory, for now
         if (it is ItemBodyArmor armor) return Take(armor) ? 1 : 0;
       }
       if (it is ItemTrap trap) trap.Desactivate();
-      return m_Inventory?.AddAsMuchAsPossible(it) ?? 0;
+      return Inventory?.AddAsMuchAsPossible(it) ?? 0;
     }
 
     public bool HasItemOfModel(Model.Item model)
     {
-      return m_Inventory?.HasModel(model) ?? false;
+      return Inventory?.HasModel(model) ?? false;
     }
 
     public int Count(Model.Item model)
     {
-      return m_Inventory?.Count(model) ?? 0;
+      return Inventory?.Count(model) ?? 0;
     }
 
     public int CountQuantityOf<_T_>() where _T_ : Item
     {
-      return m_Inventory?.CountQuantityOf<_T_>() ?? 0;
+      return Inventory?.CountQuantityOf<_T_>() ?? 0;
     }
 
     public int CountItemsOfSameType(Type tt)
     {
-      if (m_Inventory.IsEmpty()) return 0;
+      if (Inventory.IsEmpty()) return 0;
       int num = 0;
-      foreach (Item obj in m_Inventory) {
+      foreach (Item obj in Inventory) {
         if (obj.IsUseless) continue;
         if (obj.GetType() == tt) ++num;
       }
-      foreach (Item obj in m_Inventory) {
+      foreach (Item obj in Inventory) {
         if (obj.IsUseless) continue;
         if (obj.GetType() == tt) ++num;
       }
@@ -3233,29 +3246,29 @@ final_exit:
 
     public int CountItems<_T_>() where _T_ : Item
     {
-      if (m_Inventory.IsEmpty()) return 0;
-      return m_Inventory.Where(it=>it is _T_).Select(it => it.Quantity).Sum();
+      if (Inventory.IsEmpty()) return 0;
+      return Inventory.Where(it=>it is _T_).Select(it => it.Quantity).Sum();
     }
 
     public bool Has<_T_>() where _T_ : Item
     {
-      return m_Inventory?.Has<_T_>() ?? false;
+      return Inventory?.Has<_T_>() ?? false;
     }
 
     public bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
     {
-      if (m_Inventory.IsEmpty()) return false;
-      if (it.Model.IsStackable) return m_Inventory.CountQuantityOf(it.Model) >= n * it.Model.StackingLimit;
+      if (Inventory.IsEmpty()) return false;
+      if (it.Model.IsStackable) return Inventory.CountQuantityOf(it.Model) >= n * it.Model.StackingLimit;
       return CountItemsOfSameType(it.GetType()) >= n;
     }
 
-    public bool HasAtLeastFullStackOf(Model.Item it, int n) => m_Inventory?.HasAtLeastFullStackOf(it, n) ?? false; // release mode IL 20h i.e. would inline
+    public bool HasAtLeastFullStackOf(Model.Item it, int n) => Inventory?.HasAtLeastFullStackOf(it, n) ?? false; // release mode IL 20h i.e. would inline
 //  public bool HasAtLeastFullStackOf(Item it, int n) => HasAtLeastFullStackOf(it.Model, n); // manually inlined below
-    public bool HasAtLeastFullStackOf(Item it, int n) => m_Inventory?.HasAtLeastFullStackOf(it.Model, n) ?? false;
+    public bool HasAtLeastFullStackOf(Item it, int n) => Inventory?.HasAtLeastFullStackOf(it.Model, n) ?? false;
 
     public ItemMeleeWeapon? GetWorstMeleeWeapon()
     {
-      var melee = m_Inventory?.GetItemsByType<ItemMeleeWeapon>();
+      var melee = Inventory?.GetItemsByType<ItemMeleeWeapon>();
       if (melee is null) return null;
       if (1 == melee.Count) return melee[0];
       // some sort of invariant problem here
@@ -3267,17 +3280,17 @@ final_exit:
 
     // the best body armor should be in the inventory slot
     public ItemBodyArmor? GetBestBodyArmor() {
-      if (m_InventorySlots is not null) return m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
+      if (InventorySlots is not null) return InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
       return null;
     } 
     // non-null return implies at least two body armors
-    public ItemBodyArmor? GetWorstBodyArmor() => m_Inventory?.Minimize<ItemBodyArmor, int>(Item.notEquipped, ItemBodyArmor.Rate);
+    public ItemBodyArmor? GetWorstBodyArmor() => Inventory?.Minimize<ItemBodyArmor, int>(Item.notEquipped, ItemBodyArmor.Rate);
 
     public bool HasEnoughFoodFor(int nutritionNeed, ItemFood? exclude=null)
     {
       if (!_has_to_eat) return true;
-      if (m_Inventory.IsEmpty()) return false;
-      var tmp = m_Inventory.GetItemsByType<ItemFood>();
+      if (Inventory.IsEmpty()) return false;
+      var tmp = Inventory.GetItemsByType<ItemFood>();
       if (tmp is null) return false;
       int turnCounter = Location.Map.LocalTime.TurnCounter;
 //    int num = 0;
@@ -3322,13 +3335,13 @@ final_exit:
       if (!buyer.Model.Abilities.CanTrade) throw new InvalidOperationException("cannot trade");
 #endif
 
-      if (buyer.IsPlayer && IsPlayer) return m_Inventory.ToList();
+      if (buyer.IsPlayer && IsPlayer) return Inventory.ToList();
 
       var buyer_ai = buyer.Controller as Gameplay.AI.ObjectiveAI;
       var ai = Controller as Gameplay.AI.ObjectiveAI;
 
       // IsInterestingTradeItem includes a charisma check i.e. RNG invocation, so cannot use .Any() prescreen safely
-      var objList = m_Inventory.Where(it=> buyer_ai.IsInterestingTradeItem(this, it) && ai.IsTradeableItem(it)).ToList();  // \todo upgrade ObjectiveAI::IsTradeableItem to virtual with a PlayerController override
+      var objList = Inventory.Where(it=> buyer_ai.IsInterestingTradeItem(this, it) && ai.IsTradeableItem(it)).ToList();  // \todo upgrade ObjectiveAI::IsTradeableItem to virtual with a PlayerController override
       return 0<objList.Count ? objList : null;
     }
 
@@ -3338,7 +3351,7 @@ final_exit:
       if (!Model.Abilities.CanTrade) throw new InvalidOperationException(Name+" cannot trade");
 #endif
 
-      var objList = m_Inventory.Where(it=> buyer.IsRationalTradeItem(it) && (Controller as Gameplay.AI.OrderableAI).IsTradeableItem(it));
+      var objList = Inventory.Where(it=> buyer.IsRationalTradeItem(it) && (Controller as Gameplay.AI.OrderableAI).IsTradeableItem(it));
       return objList.Any() ? objList.ToList() : null;
     }
 
@@ -3346,20 +3359,20 @@ final_exit:
     public Item? GetEquippedItem(DollPart part)
     {
       if (DollPart.TORSO == part) return GetEquippedArmor();
-      return m_Inventory?.GetFirst<Item>(obj => obj.EquippedPart == part);
+      return Inventory?.GetFirst<Item>(obj => obj.EquippedPart == part);
     }
 
     public Item? GetEquippedItem(Gameplay.Item_IDs id)
     {
-      return m_Inventory?.GetFirst<Item>(obj => obj.ModelID == id && DollPart.NONE != obj.EquippedPart);
+      return Inventory?.GetFirst<Item>(obj => obj.ModelID == id && DollPart.NONE != obj.EquippedPart);
     }
 
     // considering these as change target
     public ItemBodyArmor? GetEquippedArmor()
     {
-      if (m_InventorySlots is not null) return m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
+      if (InventorySlots is not null) return InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
       // legacy implementation
-      return m_Inventory?.GetFirst<ItemBodyArmor>(obj => obj.EquippedPart == DollPart.TORSO);
+      return Inventory?.GetFirst<ItemBodyArmor>(obj => obj.EquippedPart == DollPart.TORSO);
     }
 
     public ItemBodyArmor? UsingCopArmor()
@@ -3374,7 +3387,7 @@ final_exit:
     public bool HasEquipedRangedWeapon() { return GetEquippedWeapon() is ItemRangedWeapon; }
 
     // maybe this should be over on the Inventory object
-    public Item? GetItem(Gameplay.Item_IDs id) { return m_Inventory?.GetFirst(id); }
+    public Item? GetItem(Gameplay.Item_IDs id) { return Inventory?.GetFirst(id); }
 
     private string ReasonCantUseItem(Item it)
     {
@@ -3401,7 +3414,7 @@ final_exit:
     }
 
     public bool CanGetItems() {
-      return Model.Abilities.HasInventory && Model.Abilities.CanUseMapObjects && m_Inventory is not null;
+      return Model.Abilities.HasInventory && Model.Abilities.CanUseMapObjects && Inventory is not null;
     }
 
     private string ReasonCantGet(Item it)
@@ -3409,7 +3422,7 @@ final_exit:
       if (!CanGetItems()) return "no inventory";
       if (!CanTake(it)) {
         if (it is ItemTrap trap && trap.IsTriggered) return "triggered trap";
-        if (m_Inventory.IsFull && !m_Inventory.CanAddAtLeastOne(it)) return "inventory is full";
+        if (Inventory.IsFull && !Inventory.CanAddAtLeastOne(it)) return "inventory is full";
       }
       return "";
     }
@@ -3520,7 +3533,7 @@ final_exit:
       MySkills.AddOrIncreaseSkill(id);
       switch(id)
       {
-      case Skills.IDs.HAULER: if (m_Inventory is not null) m_Inventory.MaxCapacity = MaxInv;
+      case Skills.IDs.HAULER: if (Inventory is not null) Inventory.MaxCapacity = MaxInv;
         break;
       case Skills.IDs.TOUGH: m_HitPoints += SKILL_TOUGH_HP_BONUS;
         break;
@@ -3718,39 +3731,39 @@ final_exit:
     }
 
     public bool IsCarrying(Item it) {
-      if (m_InventorySlots?.Contains(it) ?? false) return true;
-      return m_Inventory?.Contains(it) ?? false;
+      if (InventorySlots?.Contains(it) ?? false) return true;
+      return Inventory?.Contains(it) ?? false;
     }
 
     public bool IsCarrying(Gameplay.Item_IDs id) {
-      if (m_InventorySlots?.Contains(id) ?? false) return true;
-      return m_Inventory?.Contains(id) ?? false;
+      if (InventorySlots?.Contains(id) ?? false) return true;
+      return Inventory?.Contains(id) ?? false;
     }
 
     public void Remove(Item it, bool canMessage=true)
     {
-      if (m_InventorySlots?.Remove(it) ?? false) {
+      if (InventorySlots?.Remove(it) ?? false) {
         it.UnequippedBy(this, canMessage);
         return;
       }
       it.UnequippedBy(this, canMessage);
-      m_Inventory?.RemoveAllQuantity(it);
+      Inventory?.RemoveAllQuantity(it);
     }
 
     public List<ItemRangedWeapon>? GetAvailableRangedWeapons()
     {
-      if (m_Inventory is null) return null;
+      if (Inventory is null) return null;
       if (Model.Abilities.AI_NotInterestedInRangedWeapons) return null;
 
-      return m_Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || m_Inventory.GetCompatibleAmmoItem(rw) is not null);
+      return Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || Inventory.GetCompatibleAmmoItem(rw) is not null);
     }
 
     public List<ItemRangedWeapon>? ReadyRangedWeapons()
     {
-      if (m_Inventory is null) return null;
+      if (Inventory is null) return null;
       if (Model.Abilities.AI_NotInterestedInRangedWeapons) return null;
 
-      return m_Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo);
+      return Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo);
     }
 
     // Note that an event-based Sees implementation (anchored in RogueGame) cannot avoid constructing messages
@@ -3839,7 +3852,7 @@ final_exit:
       m_FoodPoints = MaxFood;
       m_SleepPoints = MaxSleep;
       m_Sanity = MaxSanity;
-      if (m_Inventory is not null) m_Inventory.MaxCapacity = MaxInv;
+      if (Inventory is not null) Inventory.MaxCapacity = MaxInv;
     }
 
     public void CreateCivilianDeductFoodSleep() {

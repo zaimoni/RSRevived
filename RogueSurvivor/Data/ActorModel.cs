@@ -141,7 +141,7 @@ namespace djack.RogueSurvivor.Data
     private Actor Create(Faction faction, int spawnTime, string properName="")
     {
       ++CreatedCount;
-      // \todo? subclassing actor (e.g. on inventory existence which is an ActorModel property) would be done here
+      if (Abilities.HasInventory) return new LivingActor(this, faction, spawnTime, properName);
       return new Actor(this, faction, spawnTime, properName);
     }
 
