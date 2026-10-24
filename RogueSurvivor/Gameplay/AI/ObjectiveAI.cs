@@ -251,7 +251,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   public abstract class ObjectiveAI : BaseAI
   {
+    /// <summary>Our actor, when it has an inventory.  Null for a zombie PC: PlayerController derives from us and a Faust PC can be a zombie.</summary>
+    protected readonly LivingActor? m_Living;
+
     protected ObjectiveAI(Actor src) : base(src) {
+      m_Living = src as LivingActor;
       // implicit police radio, and trained to use it properly
       if (m_Actor.IsFaction(GameFactions.IDs.ThePolice)) {
         var session = Session.Loading ?? Session.Get;   // a JSON load constructs us before its session is the live one
@@ -847,7 +851,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var double_compromised = new Dictionary<Location,int>(compromised); 
 
       foreach(var x in enemies) {
-        var rws = m_Actor?.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || m_Actor.Inventory.GetCompatibleAmmoItem(rw) is not null);
+        var rws = m_Living is { } who ? who.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || who.Inventory.GetCompatibleAmmoItem(rw) is not null) : null;
         if (rws is not null) continue;  // bail for now on ranged weapons
         int e_moves = m_Actor.HowManyTimesOtherActs(1,x.Value);
         if (0 < e_moves) {
@@ -1000,7 +1004,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (_rating_overrides is not null) {
         List<Item_IDs> doomed = new();
         foreach(var x in _rating_overrides) {
-          if (!m_Actor.Inventory.Has(x.Key)) doomed.Add(x.Key);
+          if (!(m_Living?.Inventory.Has(x.Key) ?? false)) doomed.Add(x.Key);
         }
         foreach(var x in doomed) _rating_overrides.Remove(x);
         if (0 >= _rating_overrides.Count) _rating_overrides = null;
@@ -1566,7 +1570,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if (1 < Rules.InteractionDistance(_enemies[0].Location, m_Actor.Location)) return null;
       // something adjacent...check for one-shotting
-      var tmp_melee = m_Actor.GetBestMeleeWeapon();
+      var tmp_melee = m_Living?.GetBestMeleeWeapon();
       if (tmp_melee is not null) {
         foreach (var p in _enemies) {
           if (!Rules.IsAdjacent(p.Location, m_Actor.Location)) return null;
@@ -1798,11 +1802,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return it.Batteries<burn_time;
     }
 
-    public bool WantToRecharge() { return m_Actor.Inventory.Has<ItemLight>(it => WantToRecharge(it)); }
+    public bool WantToRecharge() { return m_Living?.Inventory.Has<ItemLight>(it => WantToRecharge(it)) ?? false; }
 
     public ActorAction? RechargeWithAdjacentGenerator()
     {
-      var recharge = m_Actor.Inventory.GetFirstMatching<ItemLight>(it => it.MaxBatteries - it.Batteries >= (it as BatteryPowered).RechargeRate);
+      if (m_Living is not { } who) return null;
+      var recharge = who.Inventory.GetFirstMatching<ItemLight>(it => it.MaxBatteries - it.Batteries >= (it as BatteryPowered).RechargeRate);
       if (recharge is null) return null;
       HashSet<Location> recharge_at = new();
       foreach(var gen in m_Actor.Location.Map.PowerGenerators.Get) {
@@ -2661,13 +2666,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     protected ActorAction? BehaviorTradeWithinClan() {
+      if (m_Living is not { } who) return null;
       // somewhat like BehaviorRequestCriticalFromGroup
       var clan = m_Actor.ChainOfCommand;
       if (clan is not null) {
          var adj_clan = clan.Where(who => Rules.IsAdjacent(m_Actor.Location, who.Location));
          foreach(var a in adj_clan) {
             if (a.IsPlayer) continue;
-            var they_want = m_Actor.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(a));
+            var they_want = who.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(a));
             if (!they_want.Any()) continue;
             var defend = they_want.Where(it => it is UsableItem use && use.UseBeforeDrop(m_Actor));
             if (defend.Any()) {
@@ -2701,10 +2707,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     protected ActorAction? BehaviorMakeTime() {
+      if (m_Living is not { } who) return null;
       // canned food is too valuable to just eat
       const bool tracing = false; // debugging hook
 
-      var microoptimize_items = m_Actor.Inventory!.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor));
+      var microoptimize_items = who.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor));
       if (microoptimize_items.Any()) {
         var obj = microoptimize_items.First();
         if (obj is ItemAmmo ammo) return UseAmmo(ammo, ammo.rw);
@@ -4946,7 +4953,7 @@ restart_chokepoints:
     {
 #if DEBUG
       if (CombatUnready()) throw new InvalidOperationException("cannot consider terminate order when combat unready");
-      if (m_Actor.Inventory.IsEmpty) throw new ArgumentNullException(nameof(m_Actor));
+      if (m_Living is null || m_Living.Inventory.IsEmpty) throw new ArgumentNullException(nameof(m_Actor));
 #endif
       var test = Goal<Goal_Terminate>();
       if (test is null) {
@@ -5340,6 +5347,7 @@ restart_chokepoints:
     // close to the inverse of IsInterestingItem
     public bool IsTradeableItem(Item it)
     {
+      if (m_Living is not { } who) return false;
 #if DEBUG
         if (it is null) throw new ArgumentNullException(nameof(it));
         if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(m_Actor.Name+" cannot trade");
@@ -5350,7 +5358,7 @@ restart_chokepoints:
             if (!m_Actor.Model.Abilities.HasToEat) return true;
             if (m_Actor.IsHungry) return false;
             // only should trade away food that doesn't drop below threshold
-            if (!m_Actor.HasEnoughFoodFor(m_Actor.Model.BaseFoodPoints / 2, food))
+            if (!who.HasEnoughFoodFor(m_Actor.Model.BaseFoodPoints / 2, food))
               return food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
             return true;
             }
@@ -5358,24 +5366,24 @@ restart_chokepoints:
             {
             if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return true;
             if (0 < rw.Ammo) return false;
-            if (m_Actor.Inventory.GetCompatibleAmmoItem(rw) is not null) return false;
+            if (who.Inventory.GetCompatibleAmmoItem(rw) is not null) return false;
             return true;    // more work needed
             }
         if (it is ItemAmmo am)
             {
-            if (m_Actor.Inventory.GetCompatibleRangedWeapon(am) is null) return true;
-            return m_Actor.HasAtLeastFullStackOf(it, 2);
+            if (who.Inventory.GetCompatibleRangedWeapon(am) is null) return true;
+            return who.HasAtLeastFullStackOf(it, 2);
             }
         if (it is ItemMeleeWeapon melee)
             {
             if (m_Actor.MeleeWeaponAttack(melee.Model).Rating <= m_Actor.UnarmedMeleeAttack().Rating) return true;
-            if (2<=m_Actor.Inventory.Count(it.Model)) return true;  // trading away a spare is ok
+            if (2<=who.Inventory.Count(it.Model)) return true;  // trading away a spare is ok
             // do not trade away the best melee weapon.  Others ok.
-            return m_Actor.GetBestMeleeWeapon() != it;  // return value should not be null
+            return who.GetBestMeleeWeapon() != it;  // return value should not be null
             }
         if (it is ItemLight)
             {
-            if (!m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2)) return false;
+            if (!who.HasAtLeastFullStackOfItemTypeOrModel(it, 2)) return false;
             // XXX more work needed
             return true;
             }
@@ -5391,8 +5399,8 @@ restart_chokepoints:
 
     public List<Item>? GetTradeableItems()
     {
-      var inv = m_Actor.Inventory;
-      if (inv is null) return null;
+      if (m_Living is not { } who) return null;
+      var inv = who.Inventory;
       IEnumerable<Item> ret = inv.Where(it => IsTradeableItem(it));
       return ret.Any() ? ret.ToList() : null;
     }
@@ -5424,7 +5432,8 @@ restart_chokepoints:
 
     public List<KeyValuePair<Item, Item>> TradeOptions(Actor target)
     {
-      var wants = m_Actor.GetInterestingTradeableItems(target);  // charisma check involved for these
+      if (m_Living is not { } who) return null;
+      var wants = who.GetInterestingTradeableItems(target);  // charisma check involved for these
       if (wants is not null && 0 < wants.Count) return null;
       var offers = target.GetInterestingTradeableItems(m_Actor);
       if (offers is not null && 0 < offers.Count) return null;
@@ -5442,7 +5451,8 @@ restart_chokepoints:
 
     public bool HaveTradeOptions(Actor target)
     {
-      var wants = m_Actor.GetInterestingTradeableItems(target);  // charisma check involved for these
+      if (m_Living is not { } who) return false;
+      var wants = who.GetInterestingTradeableItems(target);  // charisma check involved for these
       if (wants is not null && 0 < wants.Count) return false;
       var offers = target.GetInterestingTradeableItems(m_Actor);
       if (offers is not null && 0 < offers.Count) return false;
@@ -5488,7 +5498,7 @@ restart_chokepoints:
 #if DEBUG
       if (rw.AmmoType != ammo.AmmoType) throw new InvalidOperationException("ammunition types must agree");
 #endif
-      if (m_Actor.Inventory.Contains(ammo)) rw.EquippedBy(m_Actor);
+      if (m_Living is { } who && who.Inventory.Contains(ammo)) rw.EquippedBy(m_Actor);
       return new ActionUseItem(m_Actor, ammo);
     }
 
@@ -5498,7 +5508,7 @@ restart_chokepoints:
         // traps are usable, but don't do well with the use heuristic
         if (it is ItemTrap) return null;
 #if DEBUG
-        if (!m_Actor.IsCarrying(it)) throw new InvalidOperationException("invariant violation");
+        if (!(m_Living?.IsCarrying(it) ?? false)) throw new InvalidOperationException("invariant violation");
 #endif
         if (it is UsableItem obj) {
           if (obj.CouldUse() && obj.CouldUse(m_Actor) && obj.UseBeforeDrop(m_Actor)) {  // \todo first two tests may be redundant
@@ -5562,6 +5572,7 @@ restart_chokepoints:
     // Would be the lowest priority level of an item, except that it conflates "useless to everyone" and "useless to me"
     public bool ItemIsUseless(Item it)
     {
+      if (m_Living is not { } who) return true;
 #if DEBUG
       if (it is null) throw new ArgumentNullException(nameof(it));
 #endif
@@ -5571,7 +5582,7 @@ restart_chokepoints:
       if (it.IsUseless || it is Data._Item.PrimedExplosive) return true;
       if (it is ItemEntertainment ent && ent.IsBoringFor(m_Actor)) return true;
       if (it is ItemRangedWeapon rw && 0==rw.Ammo) {
-        Inventory inv = m_Actor.Inventory;
+        Inventory inv = who.Inventory;
         if (inv.GetCompatibleAmmoItem(rw) is null && inv.IsFull) return true;
       }
       return false;
@@ -5579,21 +5590,23 @@ restart_chokepoints:
 
     private int ItemRatingCode_generic(Item it)
     {
-        Inventory inv = m_Actor.Inventory;
+      if (m_Living is not { } who) return 0;
+        Inventory inv = who.Inventory;
         if (!inv.Contains(it) && inv.HasAtLeastFullStackOf(it, 1)) return 0;
         return 1;
     }
 
-    private int ItemRatingCode_generic(Data.Model.Item it) => m_Actor.HasAtLeastFullStackOf(it, 1) ? 0 : 1;
+    private int ItemRatingCode_generic(Data.Model.Item it) => m_Living is { } who && !who.HasAtLeastFullStackOf(it, 1) ? 1 : 0;
 
     private int ItemRatingCode(ItemTracker it)
     {
+      if (m_Living is not { } who) return 0;
       var ok_trackers = new Zaimoni.Data.Stack<Item_IDs>(stackalloc Item_IDs[2]);
       if (m_Actor.NeedActiveCellPhone) ok_trackers.push(Item_IDs.TRACKER_CELL_PHONE);
       if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(Item_IDs.TRACKER_POLICE_RADIO);
 
       // AI does not yet use z-trackers or blackops trackers correctly; possible only threat-aware AIs use them
-      Inventory inv = m_Actor.Inventory;
+      Inventory inv = who.Inventory;
       if (inv.Contains(it)) return (ok_trackers.Contains(it.ModelID) && m_Actor.LiveLeader is not null) ? 2 : 1;
       if (inv.Any(obj => !obj.IsUseless && obj.Model == it.Model)) return 0;
       return (ok_trackers.Contains(it.ModelID) && m_Actor.LiveLeader is not null) ? 2 : 1;
@@ -5617,13 +5630,15 @@ restart_chokepoints:
 
     private int ItemRatingCode(ItemEntertainment it)
     {
-      if (!m_Actor.Inventory.Contains(it) && m_Actor.HasAtLeastFullStackOf(it, 1)) return 0;
+      if (m_Living is not { } who) return 0;
+      if (!who.Inventory.Contains(it) && who.HasAtLeastFullStackOf(it, 1)) return 0;
       return WantRestoreSAN;
     }
 
     private int ItemRatingCode(ItemLight it)
     {
-      Inventory inv = m_Actor.Inventory;
+      if (m_Living is not { } who) return 0;
+      Inventory inv = who.Inventory;
       if (inv.Contains(it)) return 2;
       if (inv.Has<ItemLight>(obj => !obj.IsUseless)) return 0; // XXX \todo fix; could want to swap out, for instance
       return 2;   // historically low priority but ideal kit has one
@@ -5633,8 +5648,9 @@ restart_chokepoints:
     // XXX sanity pills should be treated like entertainment
     private int ItemRatingCode(ItemMedicine it)
     {
+      if (m_Living is not { } who) return 0;
       // simulate historical usage (alpha 9)
-      Inventory inv = m_Actor.Inventory;
+      Inventory inv = who.Inventory;
       if (inv.Contains(it)) return 1;
       if (inv.HasAtLeastFullStackOf(it, inv.IsFull ? 1 : 2)) return 0;
       if (0 < it.SanityCure) {  // we would need to account for side effects mainly for mods or "realism"
@@ -5650,7 +5666,8 @@ restart_chokepoints:
 
     private int ItemRatingCode(ItemBodyArmor armor)
     {
-      var best = m_Actor.GetBestBodyArmor();
+      if (m_Living is not { } who) return 0;
+      var best = who.GetBestBodyArmor();
       if (best is null) return 3; // want 3, but historically RHSMoreInteresting  says 2
       if (best == armor) return 3;
       return best.Rating < armor.Rating ? 2 : 0; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
@@ -5658,18 +5675,19 @@ restart_chokepoints:
 
     private int ItemRatingCode(ItemMeleeWeapon melee)
     {
+      if (m_Living is not { } who) return 0;
       int rating = m_Actor.MeleeWeaponAttack(melee.Model).Rating;
       if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return 0;
-      var best = m_Actor.GetBestMeleeWeapon();
+      var best = who.GetBestMeleeWeapon();
       if (best is null) return 2;  // martial arts invalidates starting baton for police
       int best_rating = m_Actor.MeleeWeaponAttack(best.Model).Rating;    // rely on OrderableAI doing the right thing
       if (best_rating < rating) return 2;
       if (best_rating > rating) return 1;
       if (melee == best) return 2;
-      int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
-      if (m_Actor.Inventory.Contains(melee)) return 1 == melee_count ? 2 : 1;
+      int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
+      if (who.Inventory.Contains(melee)) return 1 == melee_count ? 2 : 1;
       if (2 <= melee_count) {
-        var worst = m_Actor.GetWorstMeleeWeapon();
+        var worst = who.GetWorstMeleeWeapon();
         return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating ? 1 : 0;
       }
       return 1;
@@ -5677,13 +5695,14 @@ restart_chokepoints:
 
     private int ItemRatingCode(ItemFood food)
     {
+      if (m_Living is not { } who) return 0;
 //    if (!m_Actor.Model.Abilities.HasToEat) return 0;    // redundant; for documentation
       if (m_Actor.IsHungry) return 3;
       if (food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter)) return 0;
       // if the preemptive eat behavior would trigger, that is 3.
       // XXX \todo account for travel tiem
       if (food.IsPerishable && (m_Actor.CurrentNutritionOf(food) <= (m_Actor.MaxFood - m_Actor.FoodPoints))) return 3;
-      if (m_Actor.HasEnoughFoodFor(m_Actor.Model.BaseFoodPoints / 2, food)) return 1;
+      if (who.HasEnoughFoodFor(m_Actor.Model.BaseFoodPoints / 2, food)) return 1;
       return 2;
     }
 
@@ -5701,7 +5720,8 @@ restart_chokepoints:
 
     private int ItemRatingCode(ItemAmmo am)
     {
-      Inventory inv = m_Actor.Inventory;
+      if (m_Living is not { } who) return 0;
+      Inventory inv = who.Inventory;
       bool is_in_inventory = inv.Contains(am);
 
       var rw = inv.GetCompatibleRangedWeapon(am);
@@ -5722,7 +5742,8 @@ restart_chokepoints:
 
     private int ItemRatingCode(ItemRangedWeapon rw)
     { // similar to IsInterestingItem(rw)
-      Inventory inv = m_Actor.Inventory;
+      if (m_Living is not { } who) return 0;
+      Inventory inv = who.Inventory;
       if (inv.Contains(rw)) return 0<rw.Ammo ? 3 : 1;
       int rws_w_ammo = inv.CountType(ItemRangedWeapon.is_not_empty);
       if (0 < rws_w_ammo) {
@@ -5745,7 +5766,8 @@ restart_chokepoints:
 
     private int ItemRatingCode(ItemGrenade grenade)
     {
-      Inventory inv = m_Actor.Inventory;
+      if (m_Living is not { } who) return 0;
+      Inventory inv = who.Inventory;
       if (inv.Contains(grenade)) return inv.HasAtLeastFullStackOf(grenade, 1) ? 1 : 2;  // \todo fix not quite...stack of 6 w/no spares should be 2
       if (inv.IsFull) return 1;
       if (inv.HasAtLeastFullStackOf(grenade, 1)) return 1;
@@ -5759,6 +5781,7 @@ restart_chokepoints:
     // 3: need
     protected int ItemRatingCode(Item it, Location? loc=null)
     {
+      if (m_Living is not { } who) return 0;
 #if DEBUG
       if (it is null) throw new ArgumentNullException(nameof(it));
 #endif
@@ -5776,7 +5799,7 @@ restart_chokepoints:
         int ret = ItemRatingCode(am);
         if (int.MaxValue == ret) {
           if (BehaviorMakeRoomFor(it) is null) return 0;  // BehaviorMakeRoomFor triggers recursion
-          return m_Actor.Inventory.GetCompatibleRangedWeapon(am) is not null || KnowRelevantInventory(am) ? 2 : 1;
+          return who.Inventory.GetCompatibleRangedWeapon(am) is not null || KnowRelevantInventory(am) ? 2 : 1;
         }
         return ret;
       }
@@ -5826,6 +5849,7 @@ restart_chokepoints:
     // there are cases working off of item model ID that do not belong here)
     private int ItemRatingCode(Data.Model.Item it)
     {
+      if (m_Living is not { } who) return 0;
 #if DEBUG
       if (it is null) throw new ArgumentNullException(nameof(it));
 #endif
@@ -5841,20 +5865,20 @@ restart_chokepoints:
         if (m_Actor.NeedActiveCellPhone) ok_trackers.push(Item_IDs.TRACKER_CELL_PHONE);
         if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(Item_IDs.TRACKER_POLICE_RADIO);
         // AI does not yet use z-trackers or blackops trackers correctly; possible only threat-aware AIs use them
-        if (m_Actor.Inventory.Any(obj => !obj.IsUseless && obj.Model == it)) return 0;
+        if (who.Inventory.Any(obj => !obj.IsUseless && obj.Model == it)) return 0;
         return (ok_trackers.Contains(it.ID) && m_Actor.LiveLeader is not null) ? 2 : 1;
       }
 
       if (it is ItemEntertainmentModel) {
         if (!m_Actor.Model.Abilities.HasSanity) return 0;
-        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return 0;
+        if (who.HasAtLeastFullStackOf(it, 1)) return 0;
         if (m_Actor.IsDisturbed) return 3;
         if (m_Actor.Sanity < 3 * m_Actor.MaxSanity / 4) return 2;   // gateway expression for using entertainment
         return 1;
       }
       {
       if (it is ItemLightModel) {
-        if (m_Actor.Inventory.Any(obj => !obj.IsUseless && obj is ItemLight)) return 0;
+        if (who.Inventory.Any(obj => !obj.IsUseless && obj is ItemLight)) return 0;
         return 2;   // historically low priority but ideal kit has one
       }
       }
@@ -5869,12 +5893,12 @@ restart_chokepoints:
           return 2; // first aid
         }
 
-        if (m_Actor.HasAtLeastFullStackOf(it, m_Actor.Inventory.IsFull ? 1 : 2)) return 0;
+        if (who.HasAtLeastFullStackOf(it, who.Inventory.IsFull ? 1 : 2)) return 0;
         return 1;
       }
       {
       if (it is Data.Model.BodyArmor armor) {
-        var best = m_Actor.GetBestBodyArmor();
+        var best = who.GetBestBodyArmor();
         if (best is null) return 2; // want 3, but RHSMoreInteresting  says 2
         return best.Rating < armor.Rating ? 2 : 0; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
       }
@@ -5883,13 +5907,13 @@ restart_chokepoints:
       if (it is ItemMeleeWeaponModel melee) {
         int rating = m_Actor.MeleeWeaponAttack(melee).Rating;
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return 0;
-        int? best_rating = m_Actor.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
+        int? best_rating = who.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
         if (best_rating is null) return 2;  // martial arts invalidates starting baton for police
         if (best_rating < rating) return 2;
         if (best_rating > rating) return 1;
-        int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
+        int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
         if (2 <= melee_count) {
-          ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
+          ItemMeleeWeapon worst = who.GetWorstMeleeWeapon();
           return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating ? 1 : 0;
         }
         return 1;
@@ -5900,21 +5924,21 @@ restart_chokepoints:
 //      if (!m_Actor.Model.Abilities.HasToEat) return false;    // redundant; for documentation
         if (m_Actor.IsHungry) return 3;
         // we don't do the pre-emptive eat test here due to lack of information re expiration date
-        if (m_Actor.HasEnoughFoodFor(m_Actor.Model.BaseFoodPoints / 2)) return 1;
+        if (who.HasEnoughFoodFor(m_Actor.Model.BaseFoodPoints / 2)) return 1;
         return 2;
       }
       }
 
       { // similar to IsInterestingItem(ItemAmmo)
       if (it is ItemAmmoModel am) {
-        Inventory inv = m_Actor.Inventory;
+        Inventory inv = who.Inventory;
         ItemRangedWeapon? rw = inv.GetCompatibleRangedWeapon(am);
-        if (rw is null) return 0 < m_Actor.Inventory.Count(am) ? 0 : 1;
+        if (rw is null) return 0 < who.Inventory.Count(am) ? 0 : 1;
 
         if (inv.GetCompatibleAmmoItem(rw) is null && !AmmoAtLimit) return 3;
 
         if (rw.Ammo < rw.Model.MaxAmmo) return 2;
-        if (m_Actor.HasAtLeastFullStackOf(am, 2)) return 0;
+        if (who.HasAtLeastFullStackOf(am, 2)) return 0;
         if (inv.GetFirstByModel<ItemAmmo>(am,am2=>am2.Quantity<am.MaxQuantity) is not null) return 2;
         if (AmmoAtLimit) return 0;  // doesn't completely work yet
         return 2;
@@ -5925,8 +5949,8 @@ restart_chokepoints:
       }
       {
       if (it is Data.Model.Explosive grenade) {
-        if (m_Actor.Inventory.IsFull) return 1;
-        if (m_Actor.HasAtLeastFullStackOf(grenade, 1)) return 1;
+        if (who.Inventory.IsFull) return 1;
+        if (who.HasAtLeastFullStackOf(grenade, 1)) return 1;
         return 2;
       }
       }
@@ -5959,10 +5983,11 @@ restart_chokepoints:
 
     private int ItemRatingCode(Item_IDs x)
     {
+      if (m_Living is not { } who) return 0;
        var model = GameItems.From(x);
        if (_rating_overrides is not null) {
          if (_rating_overrides.TryGetValue(x, out var cache)) {
-           if (1>=m_Actor.Inventory.Count(model)) return cache.Key;
+           if (1>=who.Inventory.Count(model)) return cache.Key;
          }
        }
 
@@ -5985,28 +6010,29 @@ restart_chokepoints:
 
     protected ActorAction? BehaviorDropUselessItem() // XXX would be convenient if this were fast-failing
     {
-      Inventory inv = m_Actor.Inventory;
+      if (m_Living is not { } who) return null;
+      Inventory inv = who.Inventory;
       if (inv.IsEmpty) return null;
       foreach (Item it in inv) {
         if (ItemIsUseless(it)) return BehaviorDropItem(it); // allows recovering cleanly from bugs and charismatic trades
       }
 
       // strict domination checks
-      var armor = m_Actor.GetWorstBodyArmor();
+      var armor = who.GetWorstBodyArmor();
       if (armor is not null) return BehaviorDropItem(armor);
 
-      var weapon = m_Actor.GetWorstMeleeWeapon();
+      var weapon = who.GetWorstMeleeWeapon();
       if (weapon is not null) {
         if (m_Actor.MeleeWeaponAttack(weapon.Model).Rating <= m_Actor.UnarmedMeleeAttack().Rating) return BehaviorDropItem(weapon);
       }
 
-      var rw = inv.GetFirstMatching<ItemRangedWeapon>(it => 0==it.Ammo && 2<=m_Actor.Count(it.Model));
+      var rw = inv.GetFirstMatching<ItemRangedWeapon>(it => 0==it.Ammo && 2<=who.Count(it.Model));
       if (rw is not null) return BehaviorDropItem(rw);
 
 #if FALSE_POSITIVE
-      if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemAmmo>()) {
-        if (0 < m_Actor.Inventory.CountType<ItemRangedWeapon>()) {
-          ItemAmmo am = m_Actor.Inventory.GetFirstMatching<ItemAmmo>(it => m_Actor.Inventory.GetCompatibleRangedWeapon(it) is null);
+      if (who.Inventory.MaxCapacity-5 <= who.Inventory.CountType<ItemAmmo>()) {
+        if (0 < who.Inventory.CountType<ItemRangedWeapon>()) {
+          ItemAmmo am = who.Inventory.GetFirstMatching<ItemAmmo>(it => who.Inventory.GetCompatibleRangedWeapon(it) is null);
           if (am is not null) return BehaviorDropItem(am);
         }
       }
@@ -6017,10 +6043,11 @@ restart_chokepoints:
 
     private ActorAction? _BehaviorDropOrExchange(Item give, Item take, in Data.Model.InvOrigin stack, bool use_ok=true)
     {
+      if (m_Living is not { } who) return null;
 #if DEBUG
       if (stack.obj_owner is null && stack.loc is null) throw new InvalidOperationException("do not try to exchange with actor inventory");
 #endif
-      if (give.Model.IsStackable) give = m_Actor.Inventory.GetBestDestackable(give);    // should be non-null
+      if (give.Model.IsStackable) give = who.Inventory.GetBestDestackable(give);    // should be non-null
       var tmp = _PrefilterDrop(give, use_ok);
       if (tmp is not null) return tmp;
       var trade = BehaviorTradeWithinClan(give);
@@ -6034,7 +6061,8 @@ restart_chokepoints:
 
     private ActorAction? _BehaviorDropOrExchange(Item give, Item take, Location? position, bool use_ok=true)
     {
-      if (give.Model.IsStackable) give = m_Actor.Inventory.GetBestDestackable(give);    // should be non-null
+      if (m_Living is not { } who) return null;
+      if (give.Model.IsStackable) give = who.Inventory.GetBestDestackable(give);    // should be non-null
       var tmp = _PrefilterDrop(give, use_ok);
       if (tmp is not null) return tmp;
       var trade = BehaviorTradeWithinClan(give);
@@ -6048,11 +6076,12 @@ restart_chokepoints:
 
     public bool RHSMoreInteresting(Item lhs, Item rhs)
     {
+      if (m_Living is not { } who) return false;
 #if DEBUG
       if (lhs is null) throw new ArgumentNullException(nameof(lhs));
       if (rhs is null) throw new ArgumentNullException(nameof(rhs));
-      if (!m_Actor.IsCarrying(lhs) && !IsInterestingItem(lhs)) throw new InvalidOperationException(lhs.ToString()+" not interesting to "+m_Actor.Name);
-      if (!m_Actor.IsCarrying(rhs) && !IsInterestingItem(rhs)) throw new InvalidOperationException(rhs.ToString()+" not interesting to "+m_Actor.Name);
+      if (!who.IsCarrying(lhs) && !IsInterestingItem(lhs)) throw new InvalidOperationException(lhs.ToString()+" not interesting to "+m_Actor.Name);
+      if (!who.IsCarrying(rhs) && !IsInterestingItem(rhs)) throw new InvalidOperationException(rhs.ToString()+" not interesting to "+m_Actor.Name);
 #endif
       if (lhs.ModelID == rhs.ModelID) {
         if (lhs.Quantity < rhs.Quantity) return true;
@@ -6096,12 +6125,12 @@ restart_chokepoints:
         {
         int rating = m_Actor.MeleeWeaponAttack(rhs_melee.Model).Rating;
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return false;
-        int? best_rating = m_Actor.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
+        int? best_rating = who.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
         if (best_rating is null) return true;
         if (best_rating.Value < rating) return true;
-        int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
+        int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
         if (2<=melee_count) {
-          ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
+          ItemMeleeWeapon worst = who.GetWorstMeleeWeapon();
           return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating;
         }
         if (lhs is ItemMeleeWeapon lhs_melee) return m_Actor.MeleeWeaponAttack(lhs_melee.Model).Rating < rating;
@@ -6110,12 +6139,12 @@ restart_chokepoints:
       else if (lhs is ItemMeleeWeapon lhs_melee) {
         int rating = m_Actor.MeleeWeaponAttack(lhs_melee.Model).Rating;
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return true;
-        int? best_rating = m_Actor.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
+        int? best_rating = who.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
         if (best_rating is null) return false;
         if (best_rating.Value < rating) return false;
-        int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
+        int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
         if (2<=melee_count) {
-          ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
+          ItemMeleeWeapon worst = who.GetWorstMeleeWeapon();
           return m_Actor.MeleeWeaponAttack(worst.Model).Rating >= rating;
         }
         return true;
@@ -6173,6 +6202,7 @@ restart_chokepoints:
 
     public ActorAction? BehaviorMakeRoomFor(Item it, in Data.Model.InvOrigin stack, bool use_ok=true)
     {
+      if (m_Living is not { } who) return null;
 #if DEBUG
       if (it is null) throw new ArgumentNullException(nameof(it));
       if (m_Actor.CanGet(it)) throw new InvalidOperationException("already could get "+it.ToString());
@@ -6180,7 +6210,7 @@ restart_chokepoints:
       if (stack.obj_owner is null && stack.loc is null) throw new InvalidOperationException("do not try to grab from actor inventory");
       // also should require IsInterestingItem(it), but that's infinite recursion for reasonable use cases
 #endif
-      Inventory inv = m_Actor.Inventory;
+      Inventory inv = who.Inventory;
       { // drop useless item doesn't always happen in a timely fashion
       var useless = inv.GetFirst<Item>(obj => ItemIsUseless(obj));
       if (useless is not null) return _BehaviorDropOrExchange(useless, it, in stack, use_ok);
@@ -6188,14 +6218,14 @@ restart_chokepoints:
 
       // not-best body armor can be dropped
       {
-      var armor = m_Actor.GetWorstBodyArmor();
+      var armor = who.GetWorstBodyArmor();
       if (armor is not null) return _BehaviorDropOrExchange(armor, it, in stack, use_ok);
       }
 
       { // not-best melee weapon can be dropped
         List<ItemMeleeWeapon> melee = inv.GetItemsByType<ItemMeleeWeapon>();
         if (melee is not null) {
-          ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
+          ItemMeleeWeapon weapon = who.GetWorstMeleeWeapon();
           if (2<=melee.Count) return _BehaviorDropOrExchange(weapon, it, in stack);
           if (it is ItemMeleeWeapon new_melee && m_Actor.MeleeWeaponAttack(weapon.Model).Rating < m_Actor.MeleeWeaponAttack(new_melee.Model).Rating) return _BehaviorDropOrExchange(weapon, it, in stack);
         }
@@ -6231,7 +6261,7 @@ restart_chokepoints:
 
         int i = 0;
         while(++i < it_rating) {
-          var worst = GetWorst(m_Actor.Inventory.Where(obj => ItemRatingCode_no_recursion(obj) == i && !TradeVeto(obj,it) && !InventoryTradeVeto(it,obj)));
+          var worst = GetWorst(who.Inventory.Where(obj => ItemRatingCode_no_recursion(obj) == i && !TradeVeto(obj,it) && !InventoryTradeVeto(it,obj)));
           if (worst is null) continue;
           return _BehaviorDropOrExchange(worst, it, in stack, use_ok);
         }
@@ -6239,7 +6269,7 @@ restart_chokepoints:
       }
 
       if (it is ItemAmmo am) {
-        var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
+        var rw = who.Inventory.GetCompatibleRangedWeapon(am);
         if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) {
           // we really do need to reload this.
           if (stack.IsAccessible(m_Actor.Location) && use_ok) { // only do this when right on top of the inventory containing the ammo
@@ -6261,7 +6291,7 @@ restart_chokepoints:
           if (drop is null) drop = inv.GetFirst<ItemAmmo>();
           if (drop is null) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
           if (drop is not null) {
-            if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
+            if (drop.Model.IsStackable) drop = who.Inventory.GetBestDestackable(drop);    // should be non-null
             List<ActorAction> recover = new(3);
             if (stack.IsAccessible(m_Actor.Location)) {
               ActorAction? tmp = _PrefilterDrop(drop, use_ok);
@@ -6301,7 +6331,7 @@ restart_chokepoints:
           if (drop is null) drop = inv.GetFirst<ItemAmmo>();
           if (drop is null) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
           if (drop is not null) {
-            if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
+            if (drop.Model.IsStackable) drop = who.Inventory.GetBestDestackable(drop);    // should be non-null
             List<ActorAction> recover = new(3);
             if (stack.IsAccessible(m_Actor.Location)) {
               ActorAction? tmp = _PrefilterDrop(drop, use_ok);
@@ -6342,7 +6372,7 @@ restart_chokepoints:
             if (drop is null) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
           }
           if (drop is not null) {
-            if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
+            if (drop.Model.IsStackable) drop = who.Inventory.GetBestDestackable(drop);    // should be non-null
             if (stack.IsAccessible(m_Actor.Location)) return _BehaviorDropOrExchange(drop, it, in stack);
             var recover = new List<ActorAction> {
                 new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
@@ -6365,7 +6395,7 @@ restart_chokepoints:
 
       // dropping body armor to get a better one should be ok
       if (it is ItemBodyArmor old_armor) {
-        var armor = m_Actor.GetBestBodyArmor();
+        var armor = who.GetBestBodyArmor();
         if (armor is not null && armor.Rating < old_armor.Rating) return _BehaviorDropOrExchange(armor, it, stack, use_ok);
       }
 
@@ -6373,7 +6403,7 @@ restart_chokepoints:
       foreach(var x in GameItems.medicine) {
         if (it.ModelID == x) continue;
         var model = GameItems.From(x);
-        if (2>m_Actor.Count(model)) continue;
+        if (2>who.Count(model)) continue;
         Item? tmp = inv.GetBestDestackable(model);
         if (tmp is not null) return _BehaviorDropOrExchange(tmp, it, stack, use_ok);
       }
@@ -6409,12 +6439,12 @@ restart_chokepoints:
 
       if (it is ItemLight) {
         if (1 >= it_rating) return null;
-        Item? worst = GetWorst(m_Actor.Inventory.Where(obj => 1 >= ItemRatingCode(obj)));
+        Item? worst = GetWorst(who.Inventory.Where(obj => 1 >= ItemRatingCode(obj)));
         if (worst is not null) return _BehaviorDropOrExchange(worst, it, in stack, use_ok);
         // at this point...try finding something that loses importance when it's dropped
-        var rws = m_Actor.Inventory.Has<ItemLight>() ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
+        var rws = who.Inventory.Has<ItemLight>() ? null : who.Inventory.GetItemsByType<ItemRangedWeapon>();
         if (rws is not null && 1 < rws.Count) {
-          var no_ammo_rws = rws.FindAll(rw => m_Actor.Inventory.GetCompatibleAmmoItem(rw) is null);
+          var no_ammo_rws = rws.FindAll(rw => who.Inventory.GetCompatibleAmmoItem(rw) is null);
           if (0 < no_ammo_rws.Count) {
             ItemRangedWeapon? drop = (1 == no_ammo_rws.Count ? no_ammo_rws[0] : null);
             if (drop is not null) return _BehaviorDropOrExchange(drop, it, in stack, use_ok);
@@ -6451,10 +6481,10 @@ restart_chokepoints:
       {
       ItemAmmo? tmpAmmo;
       if (it is ItemRangedWeapon rw && rw.Ammo<rw.Model.MaxAmmo) {
-        tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => m_Actor.Inventory.GetCompatibleRangedWeapon(ammo) is null && ammo.AmmoType!=rw.AmmoType);  // not quite the full check here.  Problematic if no ranged weapons at all.
+        tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => who.Inventory.GetCompatibleRangedWeapon(ammo) is null && ammo.AmmoType!=rw.AmmoType);  // not quite the full check here.  Problematic if no ranged weapons at all.
         if (tmpAmmo is not null) return _BehaviorDropOrExchange(tmpAmmo, it, in stack, use_ok);
         if (use_ok) {
-          tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => m_Actor.Inventory.GetCompatibleRangedWeapon(ammo) is null && ammo.AmmoType==rw.AmmoType);
+          tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => who.Inventory.GetCompatibleRangedWeapon(ammo) is null && ammo.AmmoType==rw.AmmoType);
           if (tmpAmmo is not null) {
             Item? drop = inv.GetFirst<ItemFood>();
             if (drop is null) drop = inv.GetFirst<ItemEntertainment>();
@@ -6469,7 +6499,7 @@ restart_chokepoints:
             if (drop is null) drop = inv.GetFirst<ItemAmmo>(ammo => ammo.AmmoType != rw.AmmoType);
             if (drop is null) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
             if (drop is not null) {
-              if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
+              if (drop.Model.IsStackable) drop = who.Inventory.GetBestDestackable(drop);    // should be non-null
               if (stack.IsAccessible(m_Actor.Location)) return _BehaviorDropOrExchange(drop, it, in stack);
               var recover = new List<ActorAction> {
                   new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
@@ -6480,7 +6510,7 @@ restart_chokepoints:
           }
         }
       } else {
-        tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => m_Actor.Inventory.GetCompatibleRangedWeapon(ammo) is null);  // not quite the full check here.  Problematic if no ranged weapons at all.
+        tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => who.Inventory.GetCompatibleRangedWeapon(ammo) is null);  // not quite the full check here.  Problematic if no ranged weapons at all.
 //      tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => !IsInterestingItem(ammo));  // full check, triggers infinite recursion
         if (tmpAmmo is not null) return _BehaviorDropOrExchange(tmpAmmo, it, in stack, use_ok);
       }
@@ -6496,7 +6526,7 @@ restart_chokepoints:
       if (it is ItemMeleeWeapon || it is ItemFood) {
         foreach(var x in GameItems.ammo) {
           var model = GameItems.From(x);
-          if (2<=m_Actor.Count(model)) {
+          if (2<=who.Count(model)) {
             ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
             return _BehaviorDropOrExchange(ammo, it, in stack, use_ok);
           }
@@ -6512,7 +6542,7 @@ restart_chokepoints:
       }
 
       // if inventory is full and the problem is ammo at this point, ignore if we already have a full clip
-      if (it is ItemAmmo && 1<=m_Actor.Count(it.Model)) return null;
+      if (it is ItemAmmo && 1<=who.Count(it.Model)) return null;
       if (it is ItemAmmo && AmmoAtLimit) return null;
 
       // if inventory is full and the problem is ranged weapon at this point, ignore if we already have one
@@ -6531,7 +6561,7 @@ restart_chokepoints:
 
       // ok to drop second food item for ammo
       if (it is ItemAmmo) {
-        if (2<=m_Actor.Inventory.CountType<ItemFood>()) {
+        if (2<=who.Inventory.CountType<ItemFood>()) {
           var discard = inv.GetFirstMatching<ItemFood>();
           if (discard is not null) return _BehaviorDropOrExchange(discard, it, in stack, use_ok);
         }
@@ -6574,29 +6604,30 @@ restart_chokepoints:
 #endif
     }
 
-    public ActorAction BehaviorMakeRoomFor(Item it, Location? position=null, bool use_ok=true)
+    public ActorAction? BehaviorMakeRoomFor(Item it, Location? position=null, bool use_ok=true)
     {
+      if (m_Living is not { } who) return null;
 #if DEBUG
       if (it is null) throw new ArgumentNullException(nameof(it));
       if (m_Actor.CanGet(it)) throw new InvalidOperationException("already could get "+it.ToString());
       if (ItemIsUseless(it)) throw new InvalidOperationException(it.ToString()+" is useless and need not have room made for it");
       // also should require IsInterestingItem(it), but that's infinite recursion for reasonable use cases
 #endif
-      Inventory inv = m_Actor.Inventory;
+      Inventory inv = who.Inventory;
       { // drop useless item doesn't always happen in a timely fashion
       var useless = inv.GetFirst<Item>(obj => ItemIsUseless(obj));
       if (useless is not null) return _BehaviorDropOrExchange(useless, it, position, use_ok);
       }
 
       { // not-best body armor can be dropped
-      var armor = m_Actor.GetWorstBodyArmor();
+      var armor = who.GetWorstBodyArmor();
       if (armor is not null) return _BehaviorDropOrExchange(armor,it,position, use_ok);
       }
 
       { // not-best melee weapon can be dropped
         var melee = inv.GetItemsByType<ItemMeleeWeapon>();
         if (melee is not null) {
-          ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
+          ItemMeleeWeapon weapon = who.GetWorstMeleeWeapon();
           if (2<=melee.Count) return _BehaviorDropOrExchange(weapon, it, position);
           if (it is ItemMeleeWeapon new_melee && m_Actor.MeleeWeaponAttack(weapon.Model).Rating < m_Actor.MeleeWeaponAttack(new_melee.Model).Rating) return _BehaviorDropOrExchange(weapon, it, position, use_ok);
         }
@@ -6632,7 +6663,7 @@ restart_chokepoints:
 
         int i = 0;
         while(++i < it_rating) {
-          Item? worst = GetWorst(m_Actor.Inventory.Where(obj => ItemRatingCode_no_recursion(obj) == i && !TradeVeto(obj,it) && !InventoryTradeVeto(it,obj)));
+          Item? worst = GetWorst(who.Inventory.Where(obj => ItemRatingCode_no_recursion(obj) == i && !TradeVeto(obj,it) && !InventoryTradeVeto(it,obj)));
           if (worst is null) continue;
           return _BehaviorDropOrExchange(worst, it, position, use_ok);
         }
@@ -6640,7 +6671,7 @@ restart_chokepoints:
       }
 
       if (it is ItemAmmo am) {
-        var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(am);
+        var rw = who.Inventory.GetCompatibleRangedWeapon(am);
         if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) {
           // we really do need to reload this.
           if (position is not null && use_ok) { // only do this when right on top of the inventory containing the ammo
@@ -6662,7 +6693,7 @@ restart_chokepoints:
           if (drop is null) drop = inv.GetFirst<ItemAmmo>();
           if (drop is null) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
           if (drop is not null) {
-            if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
+            if (drop.Model.IsStackable) drop = who.Inventory.GetBestDestackable(drop);    // should be non-null
             List<ActorAction> recover = new List<ActorAction>(3);
             if (position is not null) {
               ActorAction? tmp = _PrefilterDrop(drop, use_ok);
@@ -6703,7 +6734,7 @@ restart_chokepoints:
           if (drop is null) drop = inv.GetFirst<ItemAmmo>();
           if (drop is null) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
           if (drop is not null) {
-            if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
+            if (drop.Model.IsStackable) drop = who.Inventory.GetBestDestackable(drop);    // should be non-null
             List<ActorAction> recover = new List<ActorAction>(3);
             if (position is not null) {
               ActorAction? tmp = _PrefilterDrop(drop, use_ok);
@@ -6744,7 +6775,7 @@ restart_chokepoints:
             if (drop is null) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
           }
           if (drop is not null) {
-            if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
+            if (drop.Model.IsStackable) drop = who.Inventory.GetBestDestackable(drop);    // should be non-null
             if (position is not null) return _BehaviorDropOrExchange(drop,it,position.Value);
             var recover = new List<ActorAction>{
                 new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
@@ -6767,7 +6798,7 @@ restart_chokepoints:
 
       // dropping body armor to get a better one should be ok
       if (it is ItemBodyArmor old_armor) {
-        var armor = m_Actor.GetBestBodyArmor();
+        var armor = who.GetBestBodyArmor();
         if (armor is not null && armor.Rating < old_armor.Rating) return _BehaviorDropOrExchange(armor, it, position, use_ok);
       }
 
@@ -6775,8 +6806,8 @@ restart_chokepoints:
       foreach(var x in GameItems.medicine) {
         if (it.ModelID == x) continue;
         var model = GameItems.From(x);
-        if (2>m_Actor.Count(model)) continue;
-        Item? tmp = m_Actor.Inventory.GetBestDestackable(model);
+        if (2>who.Count(model)) continue;
+        Item? tmp = who.Inventory.GetBestDestackable(model);
         if (tmp is not null) return _BehaviorDropOrExchange(tmp, it, position, use_ok);
       }
 
@@ -6811,12 +6842,12 @@ restart_chokepoints:
 
       if (it is ItemLight) {
         if (1 >= it_rating) return null;
-        Item? worst = GetWorst(m_Actor.Inventory.Where(obj => 1 >= ItemRatingCode(obj)));
+        Item? worst = GetWorst(who.Inventory.Where(obj => 1 >= ItemRatingCode(obj)));
         if (worst is not null) return _BehaviorDropOrExchange(worst, it, position, use_ok);
         // at this point...try finding something that loses importance when it's dropped
-        var rws = m_Actor.Inventory.Has<ItemLight>() ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
+        var rws = who.Inventory.Has<ItemLight>() ? null : who.Inventory.GetItemsByType<ItemRangedWeapon>();
         if (rws is not null && 1 < rws.Count) {
-          var no_ammo_rws = rws.FindAll(rw => m_Actor.Inventory.GetCompatibleAmmoItem(rw) is null);
+          var no_ammo_rws = rws.FindAll(rw => who.Inventory.GetCompatibleAmmoItem(rw) is null);
           if (0 < no_ammo_rws.Count) {
             ItemRangedWeapon? drop = (1 == no_ammo_rws.Count ? no_ammo_rws[0] : null);
             if (drop is not null) return _BehaviorDropOrExchange(drop, it, position, use_ok);
@@ -6853,10 +6884,10 @@ restart_chokepoints:
       {
       ItemAmmo? tmpAmmo;
       if (it is ItemRangedWeapon rw && rw.Ammo<rw.Model.MaxAmmo) {
-        tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => m_Actor.Inventory.GetCompatibleRangedWeapon(ammo) is null && ammo.AmmoType!=rw.AmmoType);  // not quite the full check here.  Problematic if no ranged weapons at all.
+        tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => who.Inventory.GetCompatibleRangedWeapon(ammo) is null && ammo.AmmoType!=rw.AmmoType);  // not quite the full check here.  Problematic if no ranged weapons at all.
         if (tmpAmmo is not null) return _BehaviorDropOrExchange(tmpAmmo, it, position, use_ok);
         if (use_ok) {
-          tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => m_Actor.Inventory.GetCompatibleRangedWeapon(ammo) is null && ammo.AmmoType==rw.AmmoType);
+          tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => who.Inventory.GetCompatibleRangedWeapon(ammo) is null && ammo.AmmoType==rw.AmmoType);
           if (tmpAmmo is not null) {
             Item? drop = inv.GetFirst<ItemFood>();
             if (drop is null) drop = inv.GetFirst<ItemEntertainment>();
@@ -6871,7 +6902,7 @@ restart_chokepoints:
             if (drop is null) drop = inv.GetFirst<ItemAmmo>(ammo => ammo.AmmoType != rw.AmmoType);
             if (drop is null) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
             if (drop is not null) {
-              if (drop.Model.IsStackable) drop = m_Actor.Inventory.GetBestDestackable(drop);    // should be non-null
+              if (drop.Model.IsStackable) drop = who.Inventory.GetBestDestackable(drop);    // should be non-null
               if (position is not null) return _BehaviorDropOrExchange(drop,it,position.Value);
               List<ActorAction> recover = new List<ActorAction> {
                   new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
@@ -6882,7 +6913,7 @@ restart_chokepoints:
           }
         }
       } else {
-        tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => m_Actor.Inventory.GetCompatibleRangedWeapon(ammo) is null);  // not quite the full check here.  Problematic if no ranged weapons at all.
+        tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => who.Inventory.GetCompatibleRangedWeapon(ammo) is null);  // not quite the full check here.  Problematic if no ranged weapons at all.
 //      tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => !IsInterestingItem(ammo));  // full check, triggers infinite recursion
         if (tmpAmmo is not null) return _BehaviorDropOrExchange(tmpAmmo, it, position, use_ok);
       }
@@ -6898,7 +6929,7 @@ restart_chokepoints:
       if (it is ItemMeleeWeapon || it is ItemFood) {
         foreach(var x in GameItems.ammo) {
           var model = GameItems.From(x);
-          if (2<=m_Actor.Count(model)) {
+          if (2<=who.Count(model)) {
             ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
             return _BehaviorDropOrExchange(ammo, it, position, use_ok);
           }
@@ -6914,7 +6945,7 @@ restart_chokepoints:
       }
 
       // if inventory is full and the problem is ammo at this point, ignore if we already have a full clip
-      if (it is ItemAmmo && 1<=m_Actor.Count(it.Model)) return null;
+      if (it is ItemAmmo && 1<=who.Count(it.Model)) return null;
       if (it is ItemAmmo && AmmoAtLimit) return null;
 
       // if inventory is full and the problem is ranged weapon at this point, ignore if we already have one
@@ -6933,7 +6964,7 @@ restart_chokepoints:
 
       // ok to drop second food item for ammo
       if (it is ItemAmmo) {
-        if (2<=m_Actor.Inventory.CountType<ItemFood>()) {
+        if (2<=who.Inventory.CountType<ItemFood>()) {
           var discard = inv.GetFirstMatching<ItemFood>();
           if (discard is not null) return _BehaviorDropOrExchange(discard, it, position, use_ok);
         }
@@ -6985,7 +7016,8 @@ restart_chokepoints:
 
     public bool IsInterestingItem(ItemRangedWeapon rw)
     {
-      Inventory inv = m_Actor.Inventory!;
+      if (m_Living is not { } who) return false;
+      Inventory inv = who.Inventory;
       if (inv.Contains(rw)) {
         if (0 < rw.Ammo) return true;
         // should not have ammo in inventory at this point
@@ -7009,10 +7041,11 @@ restart_chokepoints:
 
     private bool AmmoAtLimit {
       get {
+        if (m_Living is not { } who) return false;
         // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
         // but equipped armor now is in the torso slot
         // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
-        Inventory inv = m_Actor.Inventory;
+        Inventory inv = who.Inventory;
         int limit = inv.MaxCapacity;
         if (0< inv.CountType<ItemLight>()) limit--;
         if (0< inv.CountType<ItemFood>()) limit--;
@@ -7027,7 +7060,8 @@ restart_chokepoints:
 
     public bool IsInterestingItem(ItemAmmo am)
     {
-      Inventory inv = m_Actor.Inventory;
+      if (m_Living is not { } who) return false;
+      Inventory inv = who.Inventory;
       var rw = inv.GetCompatibleRangedWeapon(am);
       if (rw is null) {
         if (0 < inv.Count(am.Model)) return false;    // only need one clip to prime AI to look for empty ranged weapons
@@ -7044,12 +7078,13 @@ restart_chokepoints:
     // so we can do post-condition testing cleanly
     private bool _IsInterestingItem(Item it)
     {
+      if (m_Living is not { } who) return false;
       // note that CHAR guards and soldiers don't need to eat like civilians, so they would not be interested in food
       if (it is ItemFood food) {
 //      if (!m_Actor.Model.Abilities.HasToEat) return false;    // redundant; for documentation
         if (m_Actor.IsHungry) return true;
         if (food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter)) return false;
-        if (!m_Actor.HasEnoughFoodFor(m_Actor.Model.BaseFoodPoints / 2, food)) return true;
+        if (!who.HasEnoughFoodFor(m_Actor.Model.BaseFoodPoints / 2, food)) return true;
         // only interesting if pre-emptive eating would kick in
         return food.IsPerishable && m_Actor.CurrentNutritionOf(food)<= m_Actor.MaxFood - m_Actor.FoodPoints;
       }
@@ -7066,7 +7101,7 @@ restart_chokepoints:
         int item_rating = ItemRatingCode(it);   // may need to be no-recursion form here?
         if (1 >= item_rating) return false;
         // check inventory for less-interesting item.  Force high visibility in debugger.
-        foreach(Item obj in m_Actor.Inventory) {
+        foreach(Item obj in who.Inventory) {
           int test_rating = ItemRatingCode(obj);   // may need to be no-recursion form here?
           if (test_rating < item_rating) return true;
         }
@@ -7075,51 +7110,51 @@ restart_chokepoints:
       if (it is ItemMeleeWeapon melee) {
         int rating = m_Actor.MeleeWeaponAttack(melee.Model).Rating;
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return false;
-        int? best_rating = m_Actor.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
+        int? best_rating = who.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
         if (best_rating is null) return true;
         if (best_rating.Value < rating) return true;
-        int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
+        int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
 #if DEBUG
         if (0 >= melee_count) throw new InvalidOperationException("inconsistent return values");
 #endif
         if (2<= melee_count) {
-          ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
+          ItemMeleeWeapon worst = who.GetWorstMeleeWeapon();
           return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating;
         }
-        return !m_Actor.Inventory.IsFull;
+        return !who.Inventory.IsFull;
       }
       if (it is ItemBodyArmor new_armor) {
-        var armor = m_Actor.GetBestBodyArmor();
+        var armor = who.GetBestBodyArmor();
         return armor is null || armor.Rating < new_armor.Rating; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
       }
 
       // No specific heuristic.
       if (it is ItemTracker) {
-        if (1<=m_Actor.Inventory.Count(it.Model)) return false;
+        if (1<=who.Inventory.Count(it.Model)) return false;
       } else if (it is ItemLight) {
-        if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1)) return false;
+        if (who.HasAtLeastFullStackOfItemTypeOrModel(it, 1)) return false;
       } else if (it is ItemMedicine med) {
         // XXX easy to action-loop if inventory full
-        if (m_Actor.HasAtLeastFullStackOf(it, m_Actor.Inventory.IsFull ? 1 : 2)) return false;
+        if (who.HasAtLeastFullStackOf(it, who.Inventory.IsFull ? 1 : 2)) return false;
         if (0<med.SanityCure && 2<=WantRestoreSAN) return true;
       } else if (it is ItemTrap trap) {
-        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+        if (who.HasAtLeastFullStackOf(it, 1)) return false;
         if (trap.IsActivated) return false;
       } else if (it is ItemEntertainment) {
-        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+        if (who.HasAtLeastFullStackOf(it, 1)) return false;
         if (2<=WantRestoreSAN) return true;
 #if DEBUG
       } else if (it is ItemBarricadeMaterial) {
-        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+        if (who.HasAtLeastFullStackOf(it, 1)) return false;
       } else if (it is ItemSprayScent) {
-        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+        if (who.HasAtLeastFullStackOf(it, 1)) return false;
       } else if (it is ItemGrenade) {
-        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+        if (who.HasAtLeastFullStackOf(it, 1)) return false;
       } else {
         throw new InvalidOperationException("coverage hole");
 #else
       } else {
-        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+        if (who.HasAtLeastFullStackOf(it, 1)) return false;
 #endif
       }
 
@@ -7128,6 +7163,7 @@ restart_chokepoints:
 
     public bool IsInterestingItem(Item it)
     {
+      if (m_Living is not { } who) return false;
 #if DEBUG
       if (it is null) throw new ArgumentNullException(nameof(it));
       if (!m_Actor.Model.Abilities.HasInventory) throw new InvalidOperationException("inventory required");   // CHAR guards: wander action can get item from containers
@@ -7147,9 +7183,9 @@ restart_chokepoints:
       bool ret = _IsInterestingItem(it);
       int item_rating = ItemRatingCode(it);
       if (ret && 1>item_rating) throw new InvalidOperationException("interesting item thought to have no use");
-      if (!ret && 1<item_rating && !m_Actor.Inventory.Has(it.ModelID)) {
+      if (!ret && 1<item_rating && !who.Inventory.Has(it.ModelID)) {
         // check inventory for less-interesting item.  Force high visibility in debugger.
-        foreach(Item obj in m_Actor.Inventory) {
+        foreach(Item obj in who.Inventory) {
           if (it.Model == obj.Model) continue;
           int test_rating = ItemRatingCode(obj);
           if (test_rating < item_rating) throw new InvalidOperationException("uninteresting item thought to have a clear use");
@@ -7228,7 +7264,8 @@ restart_chokepoints:
     // issue w/recovery logic and ammo
     protected ActorAction? InventoryStackTactics(Location loc)
     {
-      Inventory inv = m_Actor.Inventory;
+      if (m_Living is not { } who) return null;
+      Inventory inv = who.Inventory;
       if (inv.IsEmpty) return null;
 
       // The index case.
@@ -7372,6 +7409,7 @@ restart_chokepoints:
     /// <remark>Intentionally asymmetric.  Ground inventories can't object.</remark>
     public bool InventoryTradeVeto(Item mine, Item theirs)
     {
+      if (m_Living is not { } who) return false;
       // do not trade away weapon for own ammo
       if (    mine.Model is ItemRangedWeaponModel rw_model
           && (Item_IDs)((int)rw_model.AmmoType + (int)Item_IDs.AMMO_LIGHT_PISTOL) == theirs.ModelID) return true;
@@ -7379,9 +7417,9 @@ restart_chokepoints:
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok (don't reverse this)
       // InventoryTradeVeto: reject sole melee for 2nd ammo [has no other uses so easier to manipulate]
       if (mine is ItemAmmo am) {
-        var already_have = m_Actor.Count(am.Model);
+        var already_have = who.Count(am.Model);
         if (1 <= already_have) {
-          if (theirs is ItemMeleeWeapon melee && melee==m_Actor.GetBestMeleeWeapon()) return true;
+          if (theirs is ItemMeleeWeapon melee && melee==who.GetBestMeleeWeapon()) return true;
           // could need to test for food as well, but no test case (yet)
         }
       }
@@ -7394,7 +7432,7 @@ restart_chokepoints:
         if (GameItems.ranged.Contains(src)) {
             var model = (GameItems.From(src) as ItemRangedWeaponModel)!;
             var ammo_type = (Item_IDs)((int)model.AmmoType + (int)Item_IDs.AMMO_LIGHT_PISTOL);
-            if (m_Actor.Inventory.Has(ammo_type)) dest.Add(src.UnloadedVersion());
+            if (m_Living?.Inventory.Has(ammo_type) ?? false) dest.Add(src.UnloadedVersion());
         }
     }
 
@@ -7433,10 +7471,11 @@ restart_chokepoints:
 
     public KeyValuePair<List<Item_IDs>?, List<Item_IDs>?> NonCriticalInInventory()
     {
+      if (m_Living is not { } who) return default;
       List<Item_IDs> insurance = new((int)Item_IDs._COUNT);   // bloated, but it'll garbage-collect shortly anyway and this would be expected to prevent in-build reallocations
       List<Item_IDs> want = new((int)Item_IDs._COUNT);
       var i = Item_IDs._COUNT;
-      Inventory inv = m_Actor.Inventory;
+      Inventory inv = who.Inventory;
       Data.Model.Item model;
       while(0 < i--) {
         if (inv.GetBestDestackable((model = GameItems.From(i))) is null) continue;   // not really in inventory
@@ -7512,7 +7551,7 @@ restart_chokepoints:
 
     public bool CombatUnready()
     {
-      if (m_Actor.Inventory!.GetFirst<ItemRangedWeapon>(rw => m_Actor.Inventory.GetCompatibleAmmoItem(rw) is not null) is not null) return false;
+      if (m_Living is { } who && who.Inventory.GetFirst<ItemRangedWeapon>(rw => who.Inventory.GetCompatibleAmmoItem(rw) is not null) is not null) return false;
       // further one-on-one evaluation requires either an actor model, or an actor, as target
       return true;
     }
@@ -7521,11 +7560,12 @@ restart_chokepoints:
     // that is, a null action return is defined to mean the doctrine is invalid
     public ActorAction? DoctrineRecoverSTA(int targetSTA)
     {
+      if (m_Living is not { } who) return null;
        int tmp;
        if ((tmp = m_Actor.MaxSTA) < targetSTA) targetSTA = tmp;
        if ((tmp = m_Actor.StaminaPoints) >= targetSTA) return null;
        if (tmp < targetSTA - 4 && m_Actor.CanActNextTurn) {
-         var stim = m_Actor.Inventory!.GetBestDestackable(GameItems.PILLS_STA);
+         var stim = who.Inventory.GetBestDestackable(GameItems.PILLS_STA);
          if (stim is not null) return new ActionUseItem(m_Actor,stim);
        }
        return new ActionWait(m_Actor);
@@ -7533,7 +7573,8 @@ restart_chokepoints:
 
     public ActorAction? DoctrineMedicateSLP()
     {
-       if (!(m_Actor.Inventory?.GetBestDestackable(GameItems.PILLS_SLP) is ItemMedicine stim)) return null;
+      if (m_Living is not { } who) return null;
+       if (!(who.Inventory?.GetBestDestackable(GameItems.PILLS_SLP) is ItemMedicine stim)) return null;
        if (m_Actor.SleepPoints > (m_Actor.MaxSleep - m_Actor.ScaleMedicineEffect(stim.SleepBoost))) return null;
        if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
        return new ActionUseItem(m_Actor,stim);
@@ -7541,10 +7582,11 @@ restart_chokepoints:
 
     public ActorAction? DoctrineMedicateHP()
     {
+      if (m_Living is not { } who) return null;
        int delta = m_Actor.MaxHPs - m_Actor.HitPoints;
        if (0 >= delta) return null;
-       var bandage = m_Actor.Inventory?.GetBestDestackable(GameItems.BANDAGE) as ItemMedicine;
-       var medikit = m_Actor.Inventory?.GetBestDestackable(GameItems.MEDIKIT) as ItemMedicine;
+       var bandage = who.Inventory?.GetBestDestackable(GameItems.BANDAGE) as ItemMedicine;
+       var medikit = who.Inventory?.GetBestDestackable(GameItems.MEDIKIT) as ItemMedicine;
        if (bandage is null && medikit is null) return null;
        if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
        if (medikit is null) return new ActionUseItem(m_Actor, bandage);
@@ -7552,7 +7594,7 @@ restart_chokepoints:
        if (medikit_help <= delta) return new ActionUseItem(m_Actor, medikit);
        if (bandage is not null) {
          int bandage_help = m_Actor.ScaleMedicineEffect(bandage.Healing);
-         int bandage_total = m_Actor.Inventory!.CountQuantityOf(GameItems.BANDAGE); // automated static analysis failure 2020-09-12
+         int bandage_total = who.Inventory.CountQuantityOf(GameItems.BANDAGE); // automated static analysis failure 2020-09-12
          if (delta <= bandage_help*bandage_total) return new ActionUseItem(m_Actor, bandage);
        }
        // \todo this is problematic for AI; relying on player control here to not initiate inappropriately
@@ -7579,7 +7621,7 @@ restart_chokepoints:
       if (!string.IsNullOrEmpty(ActionButcher.ReasonCant(m_Actor, c))) return null;
       if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
 
-      m_Actor.GetBestMeleeWeapon()?.EquippedBy(m_Actor);
+      m_Living?.GetBestMeleeWeapon()?.EquippedBy(m_Actor);
       return new ActionButcher(m_Actor,c);
     }
 
@@ -7591,7 +7633,8 @@ restart_chokepoints:
     // XXX should also have concept of hoardable item (suitable for transporting to a safehouse)
     public ItemRangedWeapon? GetBestRangedWeaponWithAmmo()
     {
-      var inv = m_Actor.Inventory;  // PC zombies won't have inventory
+      if (m_Living is not { } who) return null;  // PC zombies have no inventory
+      var inv = who.Inventory;
       if (inv.IsEmpty()) return null;
       var rws = inv.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || inv.GetItemsByType<ItemAmmo>(am => am.AmmoType == rw.AmmoType) is not null);
       return rws?.Maximize(ScoreRangedWeapon);
@@ -7618,8 +7661,9 @@ restart_chokepoints:
 
     public Dictionary<int,Attack>? GetBestRangedAttacks(Actor target)
     {
-      var inv = m_Actor.Inventory;
-      if (inv.IsEmpty()) return null;  // PC zombies won't have inventory
+      if (m_Living is not { } who) return null;  // PC zombies have no inventory
+      var inv = who.Inventory;
+      if (inv.IsEmpty()) return null;
       var rws = inv.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo|| inv.GetItemsByType<ItemAmmo>(am => am.AmmoType == rw.AmmoType) is not null);
       if (rws is null) return null;
       var ret = new Dictionary<int, Attack>();
@@ -7718,15 +7762,16 @@ restart_chokepoints:
     /// </summary>
     /// <returns>true if can impersonate a cop enough to become one</returns>
     public bool CanBecomeCop() {
+      if (m_Living is not { } who) return false;
         if (DisqualifiedForBecomingCop()) return false;
         var skills = m_Actor.MySkills;
            // 1) required skills: Firearms 1, Leadership 1
         return 1 <= skills.GetSkillLevel(Skills.IDs.FIREARMS) && 1 <= skills.GetSkillLevel(Skills.IDs.LEADERSHIP)
            // 2) must have equipped: police radio, police armor
-           && m_Actor.GetEquippedItem(Item_IDs.TRACKER_POLICE_RADIO) is not null
+           && who.GetEquippedItem(Item_IDs.TRACKER_POLICE_RADIO) is not null
            && m_Actor.UsingCopArmor() is not null
            // 3) must have in inventory: one of pistol or shotgun
-           && (m_Actor.GetItem(Item_IDs.RANGED_PISTOL) is not null || m_Actor.GetItem(Item_IDs.RANGED_SHOTGUN) is not null);
+           && (who.GetItem(Item_IDs.RANGED_PISTOL) is not null || who.GetItem(Item_IDs.RANGED_SHOTGUN) is not null);
     }
 
     /// <summary>
@@ -7734,6 +7779,7 @@ restart_chokepoints:
     /// </summary>
     /// <returns>true if there was prior item memory and the controller needs re-creation</returns>
     public bool BecomeCop() {
+      if (m_Living is not { } who) return false;
 #if DEBUG
       if (!CanBecomeCop()) throw new InvalidOperationException(m_Actor.Name+" tried to become cop while unable to impersonate one");
 #else
@@ -7749,8 +7795,8 @@ restart_chokepoints:
         // than they were requested, but that would replace LocationSet with another type
       }
       m_Actor.Faction = GameFactions.ThePolice;
-      var it = m_Actor.GetEquippedItem(Item_IDs.TRACKER_POLICE_RADIO); // now implicit; possible RogueGame::DiscardItem is on wrong class
-      m_Actor.Remove(it);
+      var it = who.GetEquippedItem(Item_IDs.TRACKER_POLICE_RADIO); // now implicit; possible RogueGame::DiscardItem is on wrong class
+      who.Remove(it);
       m_Actor.PrefixName("Cop"); // adjust job title
       m_Actor.Doll.AddDecoration(DollPart.HEAD, GameImages.POLICE_HAT); // XXX should selectively remove clothes when re-clothing
       m_Actor.Doll.AddDecoration(DollPart.TORSO, GameImages.POLICE_UNIFORM);
