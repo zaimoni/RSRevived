@@ -297,7 +297,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       var choiceEval = ChooseExtended(Direction.COMPASS, dir => {
         Location next = m_Actor.Location + dir;
-        ActorAction a = Rules.IsBumpableFor(m_Actor, in next);
+        ActorAction? a = Rules.IsBumpableFor(m_Actor, in next);
         if (a is null) {
           if (m_Actor.Model.Abilities.IsUndead && m_Actor.AbleToPush) {
             var mapObjectAt = next.MapObject;

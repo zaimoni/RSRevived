@@ -237,7 +237,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // map manipulation
-    protected void AddMap(Map map)
+    private void AddMap(Map map)
     {
 #if DEBUG
       if (map.District != this) throw new InvalidOperationException("map.District != this");

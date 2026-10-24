@@ -4940,7 +4940,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       var inv = actor.Inventory;
-      Item firstMatching = inv.GetFirstByModel(GameItems.MEDIKIT);
+      Item? firstMatching = inv.GetFirstByModel(GameItems.MEDIKIT);
       inv.Consume(firstMatching);
       var rules = Rules.Get;
       if (rules.RollChance(actor.ReviveChance(corpse))) {

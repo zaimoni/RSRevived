@@ -4110,7 +4110,7 @@ retry:
         return new KeyValuePair<Dictionary<Location, int>, Dictionary<Location, int>>(safe_exposed,exposed);
     }
 
-    private ActorAction _recordPathfinding(ActorAction act, HashSet<Location> goals)
+    private ActorAction? _recordPathfinding(ActorAction? act, HashSet<Location> goals)
     {
       if (act is not null) {
         if (goals.ValueEqual(GetPreviousGoals()) && act is ActorDest test && _last_move is not null && test.dest == _last_move.origin) {
@@ -6134,9 +6134,8 @@ restart_chokepoints:
         {
         int rating = m_Actor.MeleeWeaponAttack(rhs_melee.Model).Rating;
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return false;
-        int? best_rating = who.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
-        if (best_rating is null) return true;
-        if (best_rating.Value < rating) return true;
+        if (who.GetBestMeleeWeaponRating() is not int best_rating) return true; // rely on OrderableAI doing the right thing
+        if (best_rating < rating) return true;
         int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
         if (2<=melee_count) {
           ItemMeleeWeapon worst = who.GetWorstMeleeWeapon();
@@ -6148,9 +6147,8 @@ restart_chokepoints:
       else if (lhs is ItemMeleeWeapon lhs_melee) {
         int rating = m_Actor.MeleeWeaponAttack(lhs_melee.Model).Rating;
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return true;
-        int? best_rating = who.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
-        if (best_rating is null) return false;
-        if (best_rating.Value < rating) return false;
+        if (who.GetBestMeleeWeaponRating() is not int best_rating) return false; // rely on OrderableAI doing the right thing
+        if (best_rating < rating) return false;
         int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
         if (2<=melee_count) {
           ItemMeleeWeapon worst = who.GetWorstMeleeWeapon();
@@ -6232,7 +6230,7 @@ restart_chokepoints:
       }
 
       { // not-best melee weapon can be dropped
-        List<ItemMeleeWeapon> melee = inv.GetItemsByType<ItemMeleeWeapon>();
+        var melee = inv.GetItemsByType<ItemMeleeWeapon>();
         if (melee is not null) {
           ItemMeleeWeapon weapon = who.GetWorstMeleeWeapon();
           if (2<=melee.Count) return _BehaviorDropOrExchange(weapon, it, in stack);
@@ -6541,7 +6539,7 @@ restart_chokepoints:
           }
         }
         // if we have two clips of any type, trading the smaller one for a melee weapon or food is ok
-        ItemAmmo test = null;
+        ItemAmmo? test = null;
         foreach(var x in GameItems.ammo) {
           if (inv.GetBestDestackable(GameItems.From(x)) is ItemAmmo ammo) {
              if (test is null || test.Quantity>ammo.Quantity) test = ammo;
