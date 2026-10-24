@@ -1435,13 +1435,13 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    public List<Actor>? FilterAllies(IEnumerable<Actor>? src, Predicate<Actor>? test = null)
+    public List<T>? FilterAllies<T>(IEnumerable<T>? src, Predicate<T>? test = null) where T : Actor
     {
         if (src is null || !src.Any()) return null;
-        List<Actor>? ret = null;
+        List<T>? ret = null;
         foreach(var a in src) {
           if (!IsAlly(a)) continue;
-          if (test is null || test(a)) (ret ??= new List<Actor>(src.Count())).Add(a);
+          if (test is null || test(a)) (ret ??= new List<T>(src.Count())).Add(a);
         }
         return ret;
     }

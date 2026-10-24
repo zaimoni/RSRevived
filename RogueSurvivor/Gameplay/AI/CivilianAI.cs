@@ -555,7 +555,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var allies = m_Actor.Allies;
         void already_handled(Map m, HashSet<Point> target) {
           foreach(var a in allies) {
-            if (a is LivingActor la && la.HasLeader && 0 >= la.CountFollowers) continue; // bottom of chain of command, no authority to clear zones on own
+            if (a.HasLeader && 0 >= a.CountFollowers) continue; // bottom of chain of command, no authority to clear zones on own
             if (a.IsSleeping) continue; // not expected to do anything useful
             var handled = (a.Controller as ObjectiveAI)?.ClearingThisZone();
             if (handled is null) continue;

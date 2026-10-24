@@ -611,7 +611,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // if any in-communication ally can see the location, clear it
         var allies = (m_Actor as LivingActor)?.Allies;
         if (allies is not null) {
-          foreach(Actor friend in allies) {
+          foreach(var friend in allies) {
             if (!ai.InCommunicationWith(friend)) continue;
             if (friend.Controller.enemies_in_FOV is not null) continue;
             if (SuppressVisibleFor(friend)) return true;

@@ -456,16 +456,16 @@ namespace djack.RogueSurvivor.Data
 
     static public void Reset() => s_Recent = new World();
 
-    public HashSet<Actor>? PoliceInRadioRange(Location loc, Predicate<Actor>? test =null)
+    public HashSet<LivingActor>? PoliceInRadioRange(Location loc, Predicate<LivingActor>? test =null)
     {
       Location radio_pos = Engine.Rules.PoliceRadioLocation(loc);
-      HashSet<Actor>? ret = null;
+      HashSet<LivingActor>? ret = null;
       DoForAllMaps(m=> {
           foreach (var a in m.Police.Get) {
               if (a.Location == loc) continue;
               if (test is not null && !test(a)) continue;
               Location other_radio_pos = Engine.Rules.PoliceRadioLocation(a.Location);
-              if (Engine.RogueGame.POLICE_RADIO_RANGE >= Engine.Rules.GridDistance(radio_pos, in other_radio_pos)) (ret ??= new HashSet<Actor>()).Add(a); //  \todo change target for range reduction from being underground
+              if (Engine.RogueGame.POLICE_RADIO_RANGE >= Engine.Rules.GridDistance(radio_pos, in other_radio_pos)) (ret ??= new HashSet<LivingActor>()).Add(a); //  \todo change target for range reduction from being underground
           }
       });
       return ret;

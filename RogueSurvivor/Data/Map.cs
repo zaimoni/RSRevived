@@ -79,7 +79,7 @@ namespace djack.RogueSurvivor.Data
     // AI support caches, etc.
     [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
     [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Viewpoints;
-    [NonSerialized] public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Police;
+    [NonSerialized] public readonly NonSerializedCache<List<Actor>, LivingActor, ReadOnlyCollection<LivingActor>> Police;
     [NonSerialized] public readonly NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
     [NonSerialized] public readonly NonSerializedCache<Map, Map, HashSet<Map>> destination_maps;
     // map geometry
@@ -142,9 +142,12 @@ namespace djack.RogueSurvivor.Data
       return new ReadOnlyCollection<Actor>(src.FindAll(a => a.IsViewpoint && !a.IsDead));
     }
 
-    private static ReadOnlyCollection<Actor> _findPolice(List<Actor> src)
+    private static ReadOnlyCollection<LivingActor> _findPolice(List<Actor> src)
     {
-      return new ReadOnlyCollection<Actor>(src.FindAll(a => a.IsFaction(GameFactions.IDs.ThePolice) && !a.IsDead));
+#if DEBUG
+      if (src.Any(a => a is not LivingActor && a.IsFaction(GameFactions.IDs.ThePolice))) throw new InvalidOperationException("police officer without an inventory");
+#endif
+      return new ReadOnlyCollection<LivingActor>(src.OfType<LivingActor>().Where(a => a.IsFaction(GameFactions.IDs.ThePolice) && !a.IsDead).ToList());
     }
 
     private static ReadOnlyCollection<Engine.MapObjects.PowerGenerator> _findPowerGenerators(Dictionary<Point, MapObject> src)
@@ -181,7 +184,7 @@ namespace djack.RogueSurvivor.Data
       m_IsInside = new byte[(width*height-1)/8+1];
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Viewpoints = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findViewpoints);
-      Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
+      Police = new NonSerializedCache<List<Actor>, LivingActor, ReadOnlyCollection<LivingActor>>(m_ActorsList, _findPolice);
       PowerGenerators = new NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsByPosition, _findPowerGenerators);
       destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
       OnConstructed();
@@ -330,7 +333,7 @@ namespace djack.RogueSurvivor.Data
             // readonly block, as for the other constructors.  These are lazy: nothing is computed until used.
             Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
             Viewpoints = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findViewpoints);
-            Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
+            Police = new NonSerializedCache<List<Actor>, LivingActor, ReadOnlyCollection<LivingActor>>(m_ActorsList, _findPolice);
             PowerGenerators = new NonSerializedCache<Dictionary<Point, MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsByPosition, _findPowerGenerators);
             destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(m_Exits.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
             DistrictPos = m_District.WorldPosition;

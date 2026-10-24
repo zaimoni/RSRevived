@@ -4169,22 +4169,22 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
       var player_backup = Player;
-      List<Actor> allies = player_allies.ToList();
+      var allies = player_allies.ToList();
       allies.Sort((a,b)=> string.CompareOrdinal(a.Name,b.Name));
 
-      string label_a(Actor a) {
-        var leader = (a as LivingActor)?.LiveLeader;
-        return a.Name + (a.IsSleeping ? " (ZZZ)" : "") + ((a as LivingActor)?.Followers is null ? "" : "[L]") + (leader is not null ? "(leader " + leader.Name + ")" : "");
+      string label_a(LivingActor a) {
+        var leader = a.LiveLeader;
+        return a.Name + (a.IsSleeping ? " (ZZZ)" : "") + (a.Followers is null ? "" : "[L]") + (leader is not null ? "(leader " + leader.Name + ")" : "");
       }
       string label(int index) { return label_a(allies[index]); }
       bool details(int index) {
-        Actor a = allies[index];
+        var a = allies[index];
         if (a.IsSleeping) PanViewportTo(a.Location);
         else PanViewportTo(a);
         List<string> tmp = [a.Name];
         var best_melee = a.GetBestMeleeWeapon();
         tmp.Add("melee: "+(best_melee is null ? "unarmed" : best_melee.ModelID.ToString()));
-        var ranged = (a as LivingActor)?.Inventory.GetItemsByType<ItemRangedWeapon>();
+        var ranged = a.Inventory.GetItemsByType<ItemRangedWeapon>();
         if (ranged is not null) {
           string msg = "ranged:";
           foreach(ItemRangedWeapon rw in ranged) {
@@ -6571,11 +6571,11 @@ namespace djack.RogueSurvivor.Engine
       }
 
       if (follower.IsPlayer || !follower.Controller.InCombat) {
-        bool could_lead(Actor ally) {
+        bool could_lead(LivingActor ally) {
           var oai = ally.Controller as ObjectiveAI;
           if (oai is null) return false;
 //          InfoPopup(ally.Name+" : "+ ally.CountFollowers.ToString());
-          if (ally is not LivingActor la || la.CountFollowers >= la.MaxFollowers) return false;
+          if (ally.CountFollowers >= ally.MaxFollowers) return false;
 //          InfoPopup((!ally.IsPlayer && ally.Controller.InCombat).ToString());
           if (!ally.IsPlayer && ally.Controller.InCombat) return false;
 //          InfoPopup((!ally.IsPlayer && ally.Controller.InCombat).ToString());
@@ -6600,7 +6600,7 @@ namespace djack.RogueSurvivor.Engine
         }
 
         var allies = (player as LivingActor)?.Allies;
-        var donate_to = player.FilterAllies(allies, could_lead)?.ConvertAll(a => (LivingActor)a);   // could_lead passed only the living
+        var donate_to = player.FilterAllies(allies, could_lead);
         if (donate_to is not null) {
           orders.Add(new("Follow ...", () => {
             string label(int index) { return donate_to[index].Name; }

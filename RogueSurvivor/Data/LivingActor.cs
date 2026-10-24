@@ -544,9 +544,9 @@ final_exit:
     }
 
     // We do not handle the enemy relations here.
-    public HashSet<Actor>? Allies {
+    public HashSet<LivingActor>? Allies {
       get {
-        var ret = new HashSet<Actor>();
+        var ret = new HashSet<LivingActor>();
         // 1) police have all other police as allies.
         if (IsFaction(GameFactions.IDs.ThePolice)) ret = (World.Get.PoliceInRadioRange(Location) ?? ret);
         // 2) leader/follower cliques are allies.

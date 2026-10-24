@@ -5207,9 +5207,9 @@ restart_chokepoints:
           observers[friend] = ally_threat;
         }
       }
-      HashSet<Actor>? allies = m_Living?.Allies; // XXX thrashes garbage collector, possibly should be handled by LoS sensor for the leader only?
+      var allies = m_Living?.Allies; // XXX thrashes garbage collector, possibly should be handled by LoS sensor for the leader only?
       if (allies is not null) {
-        foreach(Actor friend in allies) {
+        foreach(var friend in allies) {
           ThreatTracking? ally_threat = friend.Threats;
           if (ally_threat is null || m_Actor.Threats == ally_threat) continue;
           if (!InCommunicationWith(friend)) continue;

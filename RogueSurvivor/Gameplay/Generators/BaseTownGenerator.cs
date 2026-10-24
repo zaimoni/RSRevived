@@ -3445,13 +3445,13 @@ restart:
       // sort leadership 2 up front to increase plausibility of their getting backup guns
       var impressive_cops = map.Police.Get.Where(a=> 2<=a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP)).ToList();
       if (0<impressive_cops.Count) {
-        foreach(Actor cop in impressive_cops) map.MoveActorToFirstPosition(cop);
+        foreach(var cop in impressive_cops) map.MoveActorToFirstPosition(cop);
       }
 
       // now, to set up the marching order
       List<LivingActor> leaders = new();
       List<LivingActor> followers = new();
-      var typical = map.Police.Get.OfType<LivingActor>().ToList();
+      var typical = map.Police.Get.ToList();
 
       static LivingActor DraftLeader(List<LivingActor> pool) {
         // first: leadership + backup weapons
@@ -3522,7 +3522,7 @@ restart:
         ideal = new Point[5] { new Point(1,1), new Point(2,1), new Point(2,5), new Point(1,5), new Point(2,9) };
       }
 
-      typical = map.Police.Get.OfType<LivingActor>().ToList();
+      typical = map.Police.Get.ToList();
       for (int index = 0; index < 5; ++index) {
         map.PlaceAt(typical[index], in ideal[index]);
       }

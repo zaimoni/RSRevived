@@ -94,7 +94,7 @@ namespace djack.RogueSurvivor.Engine._Action
                 if (actor is not null) {
                     var allies = m_Actor.Allies;
                     if (allies is null) return false;
-                    if (!allies.Contains(actor)) return false;
+                    if (actor is not LivingActor ally || !allies.Contains(ally)) return false;
                 }
             }
             return true;
