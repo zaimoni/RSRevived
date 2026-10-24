@@ -29,6 +29,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
            ?? throw new ArgumentNullException(nameof(who))
 #endif
          ;
+#if DEBUG
+         if (who.Controller is not ObjectiveAI) throw new InvalidOperationException(who.Name + " not controlled by an ObjectiveAI");
+#endif
       }
 
       public virtual void RepairLoad() {}
