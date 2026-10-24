@@ -126,7 +126,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_ZSTRONG_DMG_BONUS = 2;
 
     // humanoid inventory slots
-    private const int SLOT_H_TORSO = 0;
+    protected const int SLOT_H_TORSO = 0;
 
     private Flags m_Flags;
     private GameActors.IDs m_ModelID;
@@ -165,7 +165,7 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized] private Attack m_CurrentMeleeAttack;    // dataflow candidate
     [NonSerialized] private Attack m_CurrentRangedAttack;    // dataflow candidate
     [NonSerialized] private Defence m_CurrentDefence;    // dataflow candidate
-    [NonSerialized] private bool _has_to_eat;
+    [NonSerialized] protected bool _has_to_eat;
 
     public ActorModel Model
     {
@@ -652,7 +652,7 @@ namespace djack.RogueSurvivor.Data
         // Even if this were not an apocalypse, law enforcement should get some slack in interpreting intent, etc.
         int ret = 0;
         if (m_AggressorOf is not null) {
-          if (IsHungry && !Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => a?.Inventory?.GetItemsByType<ItemFood>() is not null);
+          if (IsHungry && !Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => (a as LivingActor)?.Inventory.GetItemsByType<ItemFood>() is not null);
           if (!Model.Abilities.IsLawEnforcer) ret += m_AggressorOf.Count(a => a.Model.Abilities.IsLawEnforcer);
         }
         return ret;
@@ -1282,50 +1282,13 @@ namespace djack.RogueSurvivor.Data
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
     }
 
-    public ItemMeleeWeapon? GetBestMeleeWeapon()
-    {
-      var tmp = Inventory?.GetItemsByType<ItemMeleeWeapon>();
-      if (tmp is null) return null;
-      int num1 = UnarmedMeleeAttack().Rating;
-      ItemMeleeWeapon? itemMeleeWeapon1 = null;
-      foreach (ItemMeleeWeapon obj in tmp) {
-        int num2 = MeleeWeaponAttack(obj.Model).Rating;
-        if (num2 <= num1) continue;
-        num1 = num2;
-        itemMeleeWeapon1 = obj;
-      }
-      return itemMeleeWeapon1;
-    }
-
-    public ItemMeleeWeapon? GetBestMeleeWeapon(MapObject toBreak)    // XXX don't actually use this parameter, just controls overload
-    {
-      var tmp = Inventory?.GetItemsByType<ItemMeleeWeapon>();
-      if (tmp is null) return null;
-      int num1 = UnarmedMeleeAttack().Rating;
-      ItemMeleeWeapon? itemMeleeWeapon1 = null;
-      foreach (ItemMeleeWeapon obj in tmp) {
-        int num2 = MeleeWeaponAttack(obj.Model, toBreak).Rating;
-        if (num2 <= num1) continue;
-        num1 = num2;
-        itemMeleeWeapon1 = obj;
-      }
-      return itemMeleeWeapon1;
-    }
-
-    public int? GetBestMeleeWeaponRating()
-    {
-      var tmp = Inventory?.GetItemsByType<ItemMeleeWeapon>();
-      if (tmp is null) return null;
-      int martial_arts_rating = UnarmedMeleeAttack().Rating;
-      int? ret = null;
-      foreach (ItemMeleeWeapon obj in tmp) {
-        int num2 = MeleeWeaponAttack(obj.Model).Rating;
-        if (num2 <= martial_arts_rating) continue;
-        if (ret is not null && num2 <= ret.Value) continue;
-        ret = num2;
-      }
-      return ret;
-    }
+    // Bridges to LivingActor, until the callers holding an Actor are retyped.  The base answer is the inventory-less one.
+    public virtual ItemMeleeWeapon? GetBestMeleeWeapon() => null;
+    public virtual ItemMeleeWeapon? GetBestMeleeWeapon(MapObject toBreak) => null;    // XXX don't actually use this parameter, just controls overload
+    public virtual int? GetBestMeleeWeaponRating() => null;
+    public virtual ItemMeleeWeapon? GetWorstMeleeWeapon() => null;
+    public virtual ItemBodyArmor? GetBestBodyArmor() => null;
+    public virtual ItemBodyArmor? GetWorstBodyArmor() => null;
 
     // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
     // of the equipped weapon which OrderableAI *will* want to vary when choosing an appropriate weapon
@@ -1439,31 +1402,11 @@ namespace djack.RogueSurvivor.Data
         if (0 >= CountFollowers && LiveLeader is not null) find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER] = false;
     }
 
-    public bool HasActiveCellPhone {
-      get {
-        return Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader && !it.IsUseless) is not null;
-      }
-    }
-
-    public bool HasCellPhone {
-      get {
-        return Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless) is not null;
-      }
-    }
-
-    public bool HasActivePoliceRadio {
-      get {
-        if (GameFactions.IDs.ThePolice==m_FactionID) return true;
-        return Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackPolice) is not null;  // charges on walking so won't stay useless
-      }
-    }
-
-    public bool HasPoliceRadio {
-      get {
-        if (GameFactions.IDs.ThePolice==m_FactionID) return true;
-        return Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackPolice) is not null;  // charges on walking so won't stay useless
-      }
-    }
+    public virtual bool HasActiveCellPhone => false;
+    public virtual bool HasCellPhone => false;
+    public virtual bool HasActivePoliceRadio => GameFactions.IDs.ThePolice == m_FactionID;   // implicit, for the police
+    public virtual bool HasPoliceRadio => GameFactions.IDs.ThePolice == m_FactionID;
+    public virtual ItemTracker? GetEquippedCellPhone() => null;
 
     // For now, entirely implicit.  It's also CHAR technology so recharges like a police radio.
     public bool HasActiveArmyRadio {
@@ -1540,10 +1483,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public ItemTracker? GetEquippedCellPhone()
-    {
-      return Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader);
-    }
 #endregion
 
     public void MessageAllInDistrictByRadio(Action<Actor> op, Func<Actor, bool> test, Action<PlayerController> msg_player, Action<PlayerController> defer_msg_player, Func<Actor, bool> msg_player_test, Location? origin=null)
@@ -2422,13 +2361,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // we have a for loop that requires splitting CanBarricade into two halves for efficiency
-    private string ReasonCouldntBarricade()
-    {
-      if (!Model.Abilities.CanBarricade) return "no ability to barricade";
-      if (Inventory.IsEmpty()) return "no items";
-      if (!Inventory.Has<ItemBarricadeMaterial>()) return "no barricading material";
-      return "";
-    }
+    protected virtual string ReasonCouldntBarricade() => "no ability to barricade";
 
 #if DEAD_FUNC
     public bool CouldBarricade(out string reason)
@@ -3170,139 +3103,18 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool CanTake(Item it) {
-      if (it is ItemBodyArmor armor) {
-        if (InventorySlots[SLOT_H_TORSO] is ItemBodyArmor worn) return worn.Rating < armor.Rating;
-        return true;
-      }
-      if (it is ItemTrap trap && trap.IsTriggered) return false;
-      return Inventory?.CanAddAll(it) ?? false;
-    }
-
-    private bool Take(ItemBodyArmor armor) {
-      if (InventorySlots[SLOT_H_TORSO] is ItemBodyArmor worn) {
-          // making player act like AI here, is not ideal.
-          if (worn.Rating >= armor.Rating) goto final_exit;
-          InventorySlots.RemoveAt(SLOT_H_TORSO);
-          worn.UnequippedBy(this);
-          if (!Inventory.AddAll(worn)) Location.Drop(worn);
-      }
-      if (InventorySlots.SetIfNull(SLOT_H_TORSO, armor)) {
-          Equip(armor, m_Location.Map is not null);
-          return true;
-      }
-final_exit:
-     return Inventory?.AddAll(armor) ?? false;
-    }
-
-
-    public bool Take(Item it) {
-     if (InventorySlots is not null) {
-        // assume OrderableAI i.e. humanoid inventory, for now
-        if (it is ItemBodyArmor armor) return Take(armor);
-     }
-     if (it is ItemTrap trap) trap.Desactivate();
-     return Inventory?.AddAll(it) ?? false;
-    }
-
-    public int TakeAsMuchAsPossible(Item it) {
-      if (InventorySlots is not null) {
-        // assume OrderableAI i.e. humanoid inventory, for now
-        if (it is ItemBodyArmor armor) return Take(armor) ? 1 : 0;
-      }
-      if (it is ItemTrap trap) trap.Desactivate();
-      return Inventory?.AddAsMuchAsPossible(it) ?? 0;
-    }
-
-    public bool HasItemOfModel(Model.Item model)
-    {
-      return Inventory?.HasModel(model) ?? false;
-    }
-
-    public int Count(Model.Item model)
-    {
-      return Inventory?.Count(model) ?? 0;
-    }
-
-    public int CountQuantityOf<_T_>() where _T_ : Item
-    {
-      return Inventory?.CountQuantityOf<_T_>() ?? 0;
-    }
-
-    public int CountItemsOfSameType(Type tt)
-    {
-      if (Inventory.IsEmpty()) return 0;
-      int num = 0;
-      foreach (Item obj in Inventory) {
-        if (obj.IsUseless) continue;
-        if (obj.GetType() == tt) ++num;
-      }
-      foreach (Item obj in Inventory) {
-        if (obj.IsUseless) continue;
-        if (obj.GetType() == tt) ++num;
-      }
-      return num;
-    }
-
-    public int CountItems<_T_>() where _T_ : Item
-    {
-      if (Inventory.IsEmpty()) return 0;
-      return Inventory.Where(it=>it is _T_).Select(it => it.Quantity).Sum();
-    }
-
-    public bool Has<_T_>() where _T_ : Item
-    {
-      return Inventory?.Has<_T_>() ?? false;
-    }
-
-    public bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
-    {
-      if (Inventory.IsEmpty()) return false;
-      if (it.Model.IsStackable) return Inventory.CountQuantityOf(it.Model) >= n * it.Model.StackingLimit;
-      return CountItemsOfSameType(it.GetType()) >= n;
-    }
-
-    public bool HasAtLeastFullStackOf(Model.Item it, int n) => Inventory?.HasAtLeastFullStackOf(it, n) ?? false; // release mode IL 20h i.e. would inline
-//  public bool HasAtLeastFullStackOf(Item it, int n) => HasAtLeastFullStackOf(it.Model, n); // manually inlined below
-    public bool HasAtLeastFullStackOf(Item it, int n) => Inventory?.HasAtLeastFullStackOf(it.Model, n) ?? false;
-
-    public ItemMeleeWeapon? GetWorstMeleeWeapon()
-    {
-      var melee = Inventory?.GetItemsByType<ItemMeleeWeapon>();
-      if (melee is null) return null;
-      if (1 == melee.Count) return melee[0];
-      // some sort of invariant problem here
-      // NOTE: martial arts influences the apparent rating considerably
-      int rate(ItemMeleeWeapon w) { return MeleeWeaponAttack(w.Model).Rating; }
-
-      return melee.Where(Item.notEquipped).Minimize(rate) ?? melee.Minimize(rate);
-    }
-
-    // the best body armor should be in the inventory slot
-    public ItemBodyArmor? GetBestBodyArmor() {
-      if (InventorySlots is not null) return InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
-      return null;
-    } 
-    // non-null return implies at least two body armors
-    public ItemBodyArmor? GetWorstBodyArmor() => Inventory?.Minimize<ItemBodyArmor, int>(Item.notEquipped, ItemBodyArmor.Rate);
-
-    public bool HasEnoughFoodFor(int nutritionNeed, ItemFood? exclude=null)
-    {
-      if (!_has_to_eat) return true;
-      if (Inventory.IsEmpty()) return false;
-      var tmp = Inventory.GetItemsByType<ItemFood>();
-      if (tmp is null) return false;
-      int turnCounter = Location.Map.LocalTime.TurnCounter;
-//    int num = 0;
-      int num = m_FoodPoints-FOOD_HUNGRY_LEVEL;
-      if (num >= nutritionNeed) return true;
-      foreach (ItemFood tmpFood in tmp) {
-        if (exclude==tmpFood) continue;
-        num += tmpFood.NutritionAt(turnCounter)*tmpFood.Quantity;
-        if (num >= nutritionNeed) return true;
-      }
-      return false;
-    }
+    public virtual bool CanTake(Item it) => false;
+    public virtual bool Take(Item it) => false;
+    public virtual int TakeAsMuchAsPossible(Item it) => 0;
+    public virtual int Count(Model.Item model) => 0;
+    public virtual int CountItems<_T_>() where _T_ : Item => 0;
+    public virtual bool Has<_T_>() where _T_ : Item => false;
+    public virtual int CountQuantityOf<_T_>() where _T_ : Item => 0;
+    public virtual bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n) => false;
+    public virtual bool HasAtLeastFullStackOf(Model.Item it, int n) => false;
+    public virtual bool HasAtLeastFullStackOf(Item it, int n) => false;
+    public virtual Item? GetItem(Gameplay.Item_IDs id) => null;
+    public virtual bool HasEnoughFoodFor(int nutritionNeed, ItemFood? exclude=null) => !_has_to_eat;
 
     public int ItemNutritionValue(int baseValue)
     {
@@ -3328,52 +3140,15 @@ final_exit:
       }
     }
 
-    public List<Item>? GetInterestingTradeableItems(Actor buyer) // called from RogueGame::PickItemToTrade so forced to be public no matter where
-    {
-#if DEBUG
-      if (!Model.Abilities.CanTrade) throw new InvalidOperationException("cannot trade");
-      if (!buyer.Model.Abilities.CanTrade) throw new InvalidOperationException("cannot trade");
-#endif
-
-      if (buyer.IsPlayer && IsPlayer) return Inventory.ToList();
-
-      var buyer_ai = buyer.Controller as Gameplay.AI.ObjectiveAI;
-      var ai = Controller as Gameplay.AI.ObjectiveAI;
-
-      // IsInterestingTradeItem includes a charisma check i.e. RNG invocation, so cannot use .Any() prescreen safely
-      var objList = Inventory.Where(it=> buyer_ai.IsInterestingTradeItem(this, it) && ai.IsTradeableItem(it)).ToList();  // \todo upgrade ObjectiveAI::IsTradeableItem to virtual with a PlayerController override
-      return 0<objList.Count ? objList : null;
-    }
-
-    public List<Item>? GetRationalTradeableItems(Gameplay.AI.OrderableAI buyer)    // only called from AI trading decision making
-    {
-#if DEBUG
-      if (!Model.Abilities.CanTrade) throw new InvalidOperationException(Name+" cannot trade");
-#endif
-
-      var objList = Inventory.Where(it=> buyer.IsRationalTradeItem(it) && (Controller as Gameplay.AI.OrderableAI).IsTradeableItem(it));
-      return objList.Any() ? objList.ToList() : null;
-    }
+    public virtual List<Item>? GetInterestingTradeableItems(Actor buyer) => null; // called from RogueGame::PickItemToTrade so forced to be public no matter where
+    public virtual List<Item>? GetRationalTradeableItems(Gameplay.AI.OrderableAI buyer) => null;    // only called from AI trading decision making
 
     // equipped items
-    public Item? GetEquippedItem(DollPart part)
-    {
-      if (DollPart.TORSO == part) return GetEquippedArmor();
-      return Inventory?.GetFirst<Item>(obj => obj.EquippedPart == part);
-    }
-
-    public Item? GetEquippedItem(Gameplay.Item_IDs id)
-    {
-      return Inventory?.GetFirst<Item>(obj => obj.ModelID == id && DollPart.NONE != obj.EquippedPart);
-    }
+    public virtual Item? GetEquippedItem(DollPart part) => null;
+    public virtual Item? GetEquippedItem(Gameplay.Item_IDs id) => null;
 
     // considering these as change target
-    public ItemBodyArmor? GetEquippedArmor()
-    {
-      if (InventorySlots is not null) return InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
-      // legacy implementation
-      return Inventory?.GetFirst<ItemBodyArmor>(obj => obj.EquippedPart == DollPart.TORSO);
-    }
+    public virtual ItemBodyArmor? GetEquippedArmor() => null;
 
     public ItemBodyArmor? UsingCopArmor()
     {
@@ -3387,8 +3162,6 @@ final_exit:
     public bool HasEquipedRangedWeapon() { return GetEquippedWeapon() is ItemRangedWeapon; }
 
     // maybe this should be over on the Inventory object
-    public Item? GetItem(Gameplay.Item_IDs id) { return Inventory?.GetFirst(id); }
-
     private string ReasonCantUseItem(Item it)
     {
       if (!Model.Abilities.CanUseItems) return "no ability to use items";
@@ -3413,19 +3186,8 @@ final_exit:
       return string.IsNullOrEmpty(ReasonCantUseItem(it));
     }
 
-    public bool CanGetItems() {
-      return Model.Abilities.HasInventory && Model.Abilities.CanUseMapObjects && Inventory is not null;
-    }
-
-    private string ReasonCantGet(Item it)
-    {
-      if (!CanGetItems()) return "no inventory";
-      if (!CanTake(it)) {
-        if (it is ItemTrap trap && trap.IsTriggered) return "triggered trap";
-        if (Inventory.IsFull && !Inventory.CanAddAtLeastOne(it)) return "inventory is full";
-      }
-      return "";
-    }
+    public virtual bool CanGetItems() => false;
+    protected virtual string ReasonCantGet(Item it) => "no inventory";
 
     public bool CanGet(Item it, out string reason)
     {
@@ -3528,13 +3290,11 @@ final_exit:
 
     public bool CanDrop(Item it) => string.IsNullOrEmpty(ReasonCantDrop(it));
 
-    public void SkillUpgrade(Skills.IDs id)
+    public virtual void SkillUpgrade(Skills.IDs id)
     {
       MySkills.AddOrIncreaseSkill(id);
       switch(id)
       {
-      case Skills.IDs.HAULER: if (Inventory is not null) Inventory.MaxCapacity = MaxInv;
-        break;
       case Skills.IDs.TOUGH: m_HitPoints += SKILL_TOUGH_HP_BONUS;
         break;
       case Skills.IDs.Z_TOUGH: m_HitPoints += SKILL_ZTOUGH_HP_BONUS;
@@ -3730,41 +3490,10 @@ final_exit:
       }
     }
 
-    public bool IsCarrying(Item it) {
-      if (InventorySlots?.Contains(it) ?? false) return true;
-      return Inventory?.Contains(it) ?? false;
-    }
-
-    public bool IsCarrying(Gameplay.Item_IDs id) {
-      if (InventorySlots?.Contains(id) ?? false) return true;
-      return Inventory?.Contains(id) ?? false;
-    }
-
-    public void Remove(Item it, bool canMessage=true)
-    {
-      if (InventorySlots?.Remove(it) ?? false) {
-        it.UnequippedBy(this, canMessage);
-        return;
-      }
-      it.UnequippedBy(this, canMessage);
-      Inventory?.RemoveAllQuantity(it);
-    }
-
-    public List<ItemRangedWeapon>? GetAvailableRangedWeapons()
-    {
-      if (Inventory is null) return null;
-      if (Model.Abilities.AI_NotInterestedInRangedWeapons) return null;
-
-      return Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || Inventory.GetCompatibleAmmoItem(rw) is not null);
-    }
-
-    public List<ItemRangedWeapon>? ReadyRangedWeapons()
-    {
-      if (Inventory is null) return null;
-      if (Model.Abilities.AI_NotInterestedInRangedWeapons) return null;
-
-      return Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo);
-    }
+    public virtual bool IsCarrying(Item it) => false;
+    public virtual bool IsCarrying(Gameplay.Item_IDs id) => false;
+    public virtual void Remove(Item it, bool canMessage=true) => it.UnequippedBy(this, canMessage);
+    public virtual List<ItemRangedWeapon>? ReadyRangedWeapons() => null;
 
     // Note that an event-based Sees implementation (anchored in RogueGame) cannot avoid constructing messages
     // even when no players would recieve them.
@@ -3845,14 +3574,13 @@ final_exit:
       }
     }
 
-    public void RecomputeStartingStats()
+    public virtual void RecomputeStartingStats()
     {
       m_HitPoints = MaxHPs;
       m_StaminaPoints = MaxSTA;
       m_FoodPoints = MaxFood;
       m_SleepPoints = MaxSleep;
       m_Sanity = MaxSanity;
-      if (Inventory is not null) Inventory.MaxCapacity = MaxInv;
     }
 
     public void CreateCivilianDeductFoodSleep() {

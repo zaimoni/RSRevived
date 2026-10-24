@@ -90,8 +90,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private LOSSensor m_LOSSensor;
 
+    protected new readonly LivingActor m_Actor;   // this view is the same object as the base field
+
     public InsaneHumanAI(Actor src) : base(src)
     {
+      m_Actor = (LivingActor)src;
       m_LOSSensor = new LOSSensor(VISION_SEES, src);
     }
 

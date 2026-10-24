@@ -1297,7 +1297,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool DontFollowLeader { get; set; }
 
-    protected OrderableAI(Actor src) : base(src) {}
+    // Every OrderableAI drives a LivingActor (ActorModel asserts it of their models; PlayerController, which can drive a zombie, is
+    // an ObjectiveAI, not one of us).  This view is the same object as the base field.
+    protected new readonly LivingActor m_Actor;
+    public new LivingActor ControlledActor => m_Actor;
+
+    protected OrderableAI(Actor src) : base(src) { m_Actor = (LivingActor)src; }
 
 #region JSON save/load
     public override void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)

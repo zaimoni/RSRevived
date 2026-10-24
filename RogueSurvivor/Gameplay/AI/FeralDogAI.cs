@@ -39,8 +39,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private LOSSensor m_LOSSensor;
     private SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
 
+    private new readonly LivingActor m_Actor;   // a dog has a one-slot inventory; this view is the same object as the base field
+
     public FeralDogAI(Actor src) : base(src)
     {
+      m_Actor = (LivingActor)src;
       m_LOSSensor =  new LOSSensor(VISION_SEES, src);
     }
 
