@@ -4774,13 +4774,13 @@ namespace djack.RogueSurvivor.Engine
 
     private KeyValuePair<Data.Model.InventorySource<Item>, GDI_Point>? MouseToInventoryItem(GDI_Point screen)
     {
-      var inventory = Player.Inventory;
-      if (inventory is null) return null;
+      if (Player is not LivingActor living) return null;
+      var inventory = living.Inventory;
       var inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen);
       int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
       if (index1 >= 0 && index1 < inventory.MaxCapacity) {
         if (inventory[index1] is null) return null;
-        return new(new(new Data.Model.InvOrigin(Player), inventory[index1]), InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1));
+        return new(new(new Data.Model.InvOrigin(living), inventory[index1]), InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1));
       }
 
       if (Player.Location.InventoryAtFeet()?.NullIfEmpty() is not Data.Model.InvOrigin invspec) return null;
@@ -4957,13 +4957,13 @@ namespace djack.RogueSurvivor.Engine
 
     private bool DoPlayerItemSlot(Actor player, int slot, KeyEventArgs key)
     {
-      if ((key.Modifiers & Keys.Control) != Keys.None) return DoPlayerItemSlotUse(player, slot);
+      if ((key.Modifiers & Keys.Control) != Keys.None) return player is LivingActor user && DoPlayerItemSlotUse(user, slot);
       if (key.Shift) return DoPlayerItemSlotTake(player, slot);
-      if (key.Alt) return DoPlayerItemSlotDrop(player, slot);
+      if (key.Alt) return player is LivingActor dropper && DoPlayerItemSlotDrop(dropper, slot);
       return false;
     }
 
-    private bool DoPlayerItemSlotUse(Actor player, int slot)
+    private bool DoPlayerItemSlotUse(LivingActor player, int slot)
     {
       var it = player.Inventory[slot];
       if (it is null) {
@@ -4988,7 +4988,7 @@ namespace djack.RogueSurvivor.Engine
       return Interpret(new _Action.TakeItem(player, player.Location, it));
     }
 
-    private bool DoPlayerItemSlotDrop(Actor player, int slot)
+    private bool DoPlayerItemSlotDrop(LivingActor player, int slot)
     {
       var it = player.Inventory[slot];
       if (it is null) {
@@ -7009,6 +7009,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Map map = Player.Location.Map;
       Point position = Player.Location.Position;
+      var living = Player as LivingActor;   // the item hints do not apply to a zombie PC
       switch (hint)
       {
         case AdvisorHint.MOVE_BASIC: return true;
@@ -7037,38 +7038,38 @@ namespace djack.RogueSurvivor.Engine
           foreach (var it in itemsAt) if (Player.CanGet(it)) return true;
           return false;
         case AdvisorHint.ITEM_UNEQUIP:
-          var inventory1 = Player.Inventory;
+          var inventory1 = living?.Inventory;
           if (inventory1.IsEmpty()) return false;
           foreach (Item it in inventory1) if (Player.CanUnequip(it)) return true;
           return false;
         case AdvisorHint.ITEM_EQUIP:
-          var inventory2 = Player.Inventory;
+          var inventory2 = living?.Inventory;
           if (inventory2.IsEmpty()) return false;
           foreach (Item it in inventory2) if (!it.IsEquipped && Player.CanEquip(it)) return true;
           return false;
         case AdvisorHint.ITEM_TYPE_BARRICADING:
-          var inventory3 = Player.Inventory;
+          var inventory3 = living?.Inventory;
           if (inventory3.IsEmpty()) return false;
           return inventory3.Has<ItemBarricadeMaterial>();
         case AdvisorHint.ITEM_DROP:
-          var inventory4 = Player.Inventory;
+          var inventory4 = living?.Inventory;
           if (inventory4.IsEmpty()) return false;
           foreach (Item it in inventory4) if (Player.CanDrop(it)) return true;
           return false;
         case AdvisorHint.ITEM_USE:
-          var inventory5 = Player.Inventory;
+          var inventory5 = living?.Inventory;
           if (inventory5.IsEmpty()) return false;
           foreach (Item it in inventory5) if (Player.CanUse(it)) return true;
           return false;
-        case AdvisorHint.FLASHLIGHT: return Player.Inventory.Has<ItemLight>();
-        case AdvisorHint.CELLPHONES: return Player.Inventory.GetFirstByModel(GameItems.CELL_PHONE) is not null;
-        case AdvisorHint.SPRAYS_PAINT: return Player.Inventory.Has<ItemSprayPaint>();
-        case AdvisorHint.SPRAYS_SCENT: return Player.Inventory.Has<ItemSprayScent>();
+        case AdvisorHint.FLASHLIGHT: return living?.Inventory.Has<ItemLight>() ?? false;
+        case AdvisorHint.CELLPHONES: return living?.Inventory.GetFirstByModel(GameItems.CELL_PHONE) is not null;
+        case AdvisorHint.SPRAYS_PAINT: return living?.Inventory.Has<ItemSprayPaint>() ?? false;
+        case AdvisorHint.SPRAYS_SCENT: return living?.Inventory.Has<ItemSprayScent>() ?? false;
         case AdvisorHint.WEAPON_FIRE:
           return 0 < ((Player.GetEquippedWeapon() as ItemRangedWeapon)?.Ammo ?? 0);
         case AdvisorHint.WEAPON_RELOAD:
           if (!(Player.GetEquippedWeapon() is ItemRangedWeapon)) return false;
-          var inventory6 = Player.Inventory;
+          var inventory6 = living?.Inventory;
           if (inventory6.IsEmpty()) return false;
           foreach (Item it in inventory6) if (it is ItemAmmo && Player.CanUse(it)) return true;
           return false;
@@ -7099,7 +7100,7 @@ namespace djack.RogueSurvivor.Engine
              return ActionTrade.Can(Player, actorAt);
          });
         case AdvisorHint.NPC_GIVING_ITEM:
-          if (Player.Inventory.IsEmpty()) return false;
+          if ((living?.Inventory).IsEmpty()) return false;
           return map.HasAnyAdjacentInMap(position, pt =>
          {
              var actorAt = map.GetActorAt(pt);
@@ -11580,7 +11581,7 @@ restart:
       textFile.Append(" ");
       textFile.Append("> INVENTORY");
       {
-      var inv = Player.Inventory;
+      var inv = (Player as LivingActor)?.Inventory;
       if (inv.IsEmpty()) {
         textFile.Append(string.Format("{0} was humble. Or dirt poor.", str1));
       } else {
@@ -12092,10 +12093,11 @@ restart:
                   var capital_crimes = Session.Get.Police.CountCapitalCrimes(Player);
                   if (0 < capital_crimes) m_UI.UI_DrawString(Color.White, string.Format("Capital crimes {0}", capital_crimes), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-BOLD_LINE_SPACING);
                   DrawActorStatus(Player, RIGHTPANEL_TEXT_X, RIGHTPANEL_TEXT_Y);
-                  var slots = Player.InventorySlots;
-                  if (slots is not null) DrawInventory(slots, null, false, slots.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y - TILE_SIZE - BOLD_LINE_SPACING);
-                  if (Player.Inventory is not null && Player.Model.Abilities.HasInventory)
-                    DrawInventory(Player.Inventory, "Inventory", true, Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
+                  if (Player is LivingActor pc_living) {
+                    var slots = pc_living.InventorySlots;
+                    DrawInventory(slots, null, false, slots.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y - TILE_SIZE - BOLD_LINE_SPACING);
+                    DrawInventory(pc_living.Inventory, "Inventory", true, pc_living.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
+                  }
                   var invspec = Player.Location.InventoryAtFeet();
                   DrawInventory(invspec?.Inventory, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
                   DrawCorpsesList(Player.Location.Corpses, "Corpses on ground", INVENTORYPANEL_X, CORPSESPANEL_Y);
@@ -14440,7 +14442,7 @@ retry:
       if (District.IsSubwayMap(p_map)) {
         var badge = Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem;
         if (   badge.IsEquipped
-            && player.Inventory.Contains(badge)
+            && player is LivingActor badge_holder && badge_holder.Inventory.Contains(badge)
             && p_map.AnyAdjacent<MapObject>(player.Location.Position, mapObjectAt => MapObject.IDs.IRON_GATE_CLOSED == mapObjectAt.ID)) {
           DoTurnAllGeneratorsOn(p_map, player);
           AddMessage(new("The gate system scanned your badge and turned the power on!", Session.Get.WorldTime.TurnCounter, Color.Green));

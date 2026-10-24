@@ -630,7 +630,7 @@ namespace djack.RogueSurvivor.Data
         }));
       }
 
-      ItemMedicine? stim = (m_Actor?.Inventory.GetBestDestackable(Gameplay.GameItems.PILLS_STA) as ItemMedicine);
+      ItemMedicine? stim = ((m_Actor as LivingActor)?.Inventory.GetBestDestackable(Gameplay.GameItems.PILLS_STA) as ItemMedicine);
       if (stim is not null) {
         MapObject? car = null;
         foreach(var pt in m_Actor.Location.Position.Adjacent()) {
@@ -661,8 +661,8 @@ namespace djack.RogueSurvivor.Data
 
       var generators = m_Actor.Location.Map.PowerGenerators.Get.Where(power => Rules.IsAdjacent(m_Actor.Location,power.Location)).ToList();
       if (0 < generators.Count) {
-        var lights = m_Actor?.Inventory.GetItemsByType<ItemLight>(it => it.MaxBatteries-1>it.Batteries);
-        var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => Gameplay.Item_IDs.TRACKER_POLICE_RADIO != it.ModelID && it.MaxBatteries - 1 > it.Batteries);
+        var lights = (m_Actor as LivingActor)?.Inventory.GetItemsByType<ItemLight>(it => it.MaxBatteries-1>it.Batteries);
+        var trackers = (m_Actor as LivingActor)?.Inventory.GetItemsByType<ItemTracker>(it => Gameplay.Item_IDs.TRACKER_POLICE_RADIO != it.ModelID && it.MaxBatteries - 1 > it.Batteries);
         if (lights is not null || trackers is not null) {
           ret.Add(new("Recharge everything to full", () => {
               SetObjective(new Goal_RechargeAll(m_Actor));
