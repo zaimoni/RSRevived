@@ -889,15 +889,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorUseExit(e, useFlags);
     }
 
-    protected ActorAction? BehaviorGoEatFoodOnGround(List<Percept_<Inventory>>? stacksPercepts)
-    {
-      if (stacksPercepts is null) return null;
-      var firstByType = m_Actor.Location.Items?.GetFirst<ItemFood>();
-      if (firstByType is not null && m_Actor is LivingActor eater) return new ActionEatFoodOnGround(eater, firstByType);
-      var percept = FilterNearest(stacksPercepts);
-      return BehaviorStupidBumpToward(percept.Location,false,false);
-    }
-
     protected ActorAction? BehaviorGoEatCorpse(List<Percept>? percepts)
     {
 #if false
