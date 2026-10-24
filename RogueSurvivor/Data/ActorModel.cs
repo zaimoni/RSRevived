@@ -168,6 +168,30 @@ namespace djack.RogueSurvivor.Data
       return actor;
     }
 
+    // For a model the caller knows has an inventory (the generators do).  The LivingActor constructor rejects any other, in DEBUG.
+    private LivingActor CreateLiving(Faction faction, int spawnTime, string properName="")
+    {
+      ++CreatedCount;
+      return new LivingActor(this, faction, spawnTime, properName);
+    }
+
+    public LivingActor CreateLivingAnonymous(Faction faction, int spawnTime) => CreateLiving(faction, spawnTime);
+
+    public LivingActor CreateLivingNumberedName(Faction faction, int spawnTime)
+    {
+      var actor = CreateLiving(faction, spawnTime);
+      actor.Name += CreatedCount.ToString();
+      actor.IsProperName = true;
+      return actor;
+    }
+
+    public LivingActor CreateLivingNamed(Faction faction, string properName, int spawnTime)
+    {
+      var actor = CreateLiving(faction, spawnTime, properName);
+      actor.IsProperName = true;
+      return actor;
+    }
+
     private string ReasonCantBreak(MapObject mapObj)
     {
       if (!Abilities.CanBreakObjects) return "cannot break objects";

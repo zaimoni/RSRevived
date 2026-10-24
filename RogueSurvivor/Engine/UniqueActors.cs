@@ -11,6 +11,7 @@ using djack.RogueSurvivor.Gameplay;
 using Zaimoni.JSON;
 
 using Actor = djack.RogueSurvivor.Data.Actor;
+using LivingActor = djack.RogueSurvivor.Data.LivingActor;
 using BaseMapGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseMapGenerator;
 using BaseTownGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseTownGenerator;
 using DollPart = djack.RogueSurvivor.Data.DollPart;
@@ -26,15 +27,15 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   public class UniqueActors
   {
-    public Actor BigBear { get; private set; }
-    public Actor Duckman { get; private set; }
-    public Actor FamuFataru { get; private set; }
-    public Actor FatherTime { get; private set; }
-    public Actor HansVonHanz { get; private set; }
-    public Actor JasonMyers { get; private set; }
-    public Actor PoliceStationPrisoner { get; private set; }
-    public Actor Roguedjack { get; private set; }
-    public Actor Santaman { get; private set; }
+    public LivingActor BigBear { get; private set; }
+    public LivingActor Duckman { get; private set; }
+    public LivingActor FamuFataru { get; private set; }
+    public LivingActor FatherTime { get; private set; }
+    public LivingActor HansVonHanz { get; private set; }
+    public LivingActor JasonMyers { get; private set; }
+    public LivingActor PoliceStationPrisoner { get; private set; }
+    public LivingActor Roguedjack { get; private set; }
+    public LivingActor Santaman { get; private set; }
     public Actor TheSewersThing { get; private set; }
 
     /// <summary>The free uniques: not placed when the town is generated, they arrive with a refugee wave.
@@ -43,7 +44,7 @@ namespace djack.RogueSurvivor.Engine
     /// Famu Fataru "You hear a woman laughing."; Father Time "You hear new year's music.";
     /// Hans von Hanz "You hear a man barking orders in German."; Roguedjack "You hear a man shouting in French.";
     /// Santaman "You hear christmas music and drunken vomiting."</summary>
-    public IEnumerable<Actor> Refugees {
+    public IEnumerable<LivingActor> Refugees {
       get {
         yield return BigBear;
         yield return Duckman;
@@ -70,7 +71,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // Bound uniques.  These uniques are generated at the same time as their map.
-    public void init_Prisoner(Actor newCivilian)
+    public void init_Prisoner(LivingActor newCivilian)
     {
 #if DEBUG
       if (PoliceStationPrisoner is not null) throw new InvalidOperationException("only call UniqueActors::init_Prisoner once");
@@ -86,7 +87,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (JasonMyers is not null) throw new InvalidOperationException("only call UniqueActors::init_JasonMyers once");
 #endif
-      Actor named = GameActors.JasonMyers.CreateNamed(GameFactions.ThePsychopaths, "Jason Myers", 0);
+      var named = GameActors.JasonMyers.CreateLivingNamed(GameFactions.ThePsychopaths, "Jason Myers", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_JASON_MYERS);
       named.StartingSkill(Skills.IDs.TOUGH,3);
@@ -106,7 +107,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (FatherTime is not null) throw new InvalidOperationException("only call UniqueActors::init_FatherTime once");
 #endif
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Father Time", 0);
+      var named = GameActors.MaleCivilian.CreateLivingNamed(GameFactions.TheCivilians, "Father Time", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FATHER_TIME);
       named.StartingSkill(Skills.IDs.HAULER,3);
@@ -154,7 +155,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (BigBear is not null) throw new InvalidOperationException("only call UniqueActors::init_BigBear once");
 #endif
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Big Bear", 0);
+      var named = GameActors.MaleCivilian.CreateLivingNamed(GameFactions.TheCivilians, "Big Bear", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_BIG_BEAR);
       named.StartingSkill(Skills.IDs.HAULER,3);
@@ -182,7 +183,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (FamuFataru is not null) throw new InvalidOperationException("only call UniqueActors::init_FamuFataru once");
 #endif
-      Actor named = GameActors.FemaleCivilian.CreateNamed(GameFactions.TheCivilians, "Famu Fataru", 0);
+      var named = GameActors.FemaleCivilian.CreateLivingNamed(GameFactions.TheCivilians, "Famu Fataru", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FAMU_FATARU);
       named.StartingSkill(Skills.IDs.HAULER,3);
@@ -211,7 +212,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (Santaman is not null) throw new InvalidOperationException("only call UniqueActors::init_Santaman once");
 #endif
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Santaman", 0);
+      var named = GameActors.MaleCivilian.CreateLivingNamed(GameFactions.TheCivilians, "Santaman", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_SANTAMAN);
       named.StartingSkill(Skills.IDs.HAULER,3);
@@ -238,7 +239,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (Roguedjack is not null) throw new InvalidOperationException("only call UniqueActors::init_Roguedjack once");
 #endif
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Roguedjack", 0);
+      var named = GameActors.MaleCivilian.CreateLivingNamed(GameFactions.TheCivilians, "Roguedjack", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_ROGUEDJACK);
       named.StartingSkill(Skills.IDs.HAULER,3);
@@ -266,7 +267,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (Duckman is not null) throw new InvalidOperationException("only call UniqueActors::init_Duckman once");
 #endif
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Duckman", 0);
+      var named = GameActors.MaleCivilian.CreateLivingNamed(GameFactions.TheCivilians, "Duckman", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_DUCKMAN);
       named.StartingSkill(Skills.IDs.CHARISMATIC,5);
@@ -295,7 +296,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (HansVonHanz is not null) throw new InvalidOperationException("only call UniqueActors::init_HanzVonHanz once");
 #endif
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Hans von Hanz", 0);
+      var named = GameActors.MaleCivilian.CreateLivingNamed(GameFactions.TheCivilians, "Hans von Hanz", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_HANS_VON_HANZ);
       named.StartingSkill(Skills.IDs.HAULER,3);
@@ -334,11 +335,11 @@ namespace djack.RogueSurvivor.Engine
     }
 
     /// <remarks>Before 2026-10-24 the actor was wrapped in an object with its event flags.  Those were constants per identity, or dead.</remarks>
-    static private Actor load(JsonElement src, string name, JsonSerializerOptions options)
+    static private T load<T>(JsonElement src, string name, JsonSerializerOptions options) where T : Actor
     {
       var relay = src.Require(name);
       if (relay.TryGetProperty("Actor", out var legacy)) relay = legacy;
-      return relay.Deserialize<Actor>(options) ?? throw new JsonException("null unique actor: " + name);
+      return relay.Deserialize<T>(options) ?? throw new JsonException("null unique actor: " + name);
     }
 
     public void toJson(Utf8JsonWriter writer, JsonSerializerOptions options)
@@ -361,16 +362,16 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueActors(JsonElement src, JsonSerializerOptions options)
     {
-      BigBear = load(src, nameof(BigBear), options);
-      Duckman = load(src, nameof(Duckman), options);
-      FamuFataru = load(src, nameof(FamuFataru), options);
-      FatherTime = load(src, nameof(FatherTime), options);
-      HansVonHanz = load(src, nameof(HansVonHanz), options);
-      JasonMyers = load(src, nameof(JasonMyers), options);
-      PoliceStationPrisoner = load(src, nameof(PoliceStationPrisoner), options);
-      Roguedjack = load(src, nameof(Roguedjack), options);
-      Santaman = load(src, nameof(Santaman), options);
-      TheSewersThing = load(src, nameof(TheSewersThing), options);
+      BigBear = load<LivingActor>(src, nameof(BigBear), options);
+      Duckman = load<LivingActor>(src, nameof(Duckman), options);
+      FamuFataru = load<LivingActor>(src, nameof(FamuFataru), options);
+      FatherTime = load<LivingActor>(src, nameof(FatherTime), options);
+      HansVonHanz = load<LivingActor>(src, nameof(HansVonHanz), options);
+      JasonMyers = load<LivingActor>(src, nameof(JasonMyers), options);
+      PoliceStationPrisoner = load<LivingActor>(src, nameof(PoliceStationPrisoner), options);
+      Roguedjack = load<LivingActor>(src, nameof(Roguedjack), options);
+      Santaman = load<LivingActor>(src, nameof(Santaman), options);
+      TheSewersThing = load<Actor>(src, nameof(TheSewersThing), options);
     }
 
     public static UniqueActors fromJson(ref Utf8JsonReader reader, JsonSerializerOptions options)

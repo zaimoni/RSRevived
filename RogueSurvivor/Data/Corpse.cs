@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Data
   {
     public const int ZOMBIFY_DELAY = 6*WorldTime.TURNS_PER_HOUR;
 
-    public readonly Actor DeadGuy;
+    public readonly LivingActor DeadGuy;
     public readonly int Turn;
     public float HitPoints;
     public readonly int MaxHitPoints;
@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Data
       return who.DraggedCorpse == this;
     } }
 
-    public Corpse(Actor deadGuy, float rotation, float scale=1f)
+    public Corpse(LivingActor deadGuy, float rotation, float scale=1f)
     {
       DeadGuy = deadGuy;
       Turn = deadGuy.Location.Map.LocalTime.TurnCounter;
@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Data
     private Corpse(JsonElement src, JsonSerializerOptions options)
     {
       src.RecordRef(this);
-      DeadGuy = src.Require("DeadGuy").Deserialize<Actor>(options) ?? throw new JsonException("null DeadGuy");
+      DeadGuy = src.Require("DeadGuy").Deserialize<LivingActor>(options) ?? throw new JsonException("null DeadGuy");
       Turn = src.Require("Turn").GetInt32();
       HitPoints = src.Require("HitPoints").GetSingle();
       MaxHitPoints = src.TryGetProperty("MaxHitPoints", out var relay) ? relay.GetInt32() : DeadGuy.MaxHPs;

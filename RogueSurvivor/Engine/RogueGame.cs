@@ -281,8 +281,8 @@ namespace djack.RogueSurvivor.Engine
 
     static private KeyValuePair<Map, KeyValuePair<ZoneLoc, HashSet<Point>>>[]? s_Arrival = null;
     static private ZoneLoc[]? s_RefugeeSpawnZones = null;
-    static private List<Actor>? s_RefugeePool = null;
-    static public IEnumerable<Actor>? RefugeePool { get => s_RefugeePool; }   // read-only; for Session to save
+    static private List<LivingActor>? s_RefugeePool = null;
+    static public IEnumerable<LivingActor>? RefugeePool { get => s_RefugeePool; }   // read-only; for Session to save
 
 #if DEBUG
     public static bool IsDebugging;
@@ -342,7 +342,7 @@ namespace djack.RogueSurvivor.Engine
 #region Session save/load assistants
     /// <summary>For a JSON-loaded session going live.  The message log comes with the player's controller (setPlayer);
     /// the counted commands are re-installed by each loaded PlayerController's TakeControl, which follows this.</summary>
-    static public void AfterLoad(Actor? player, List<Actor>? refugees)
+    static public void AfterLoad(Actor? player, List<LivingActor>? refugees)
     {
       if (player is not null) Interlocked.Exchange(ref m_MapView, setPlayer(player).Location.View);
       s_RefugeePool = refugees;
@@ -2208,9 +2208,9 @@ namespace djack.RogueSurvivor.Engine
             var witnesses = _ForceVisibleToPlayer(actor);
             witnesses?.AddMessage(MakePanopticMessage(actor, string.Format("{0} !!", VERB_DIE_FROM_STARVATION.Conjugate(actor))));
             KillActor(null, actor, "starvation");
-            if (!actor.Model.Abilities.IsUndead && Session.Get.HasImmediateZombification && rules.RollChance(s_Options.StarvedZombificationChance)) {
-              map.TryRemoveCorpseOf(actor);
-              Zombify(actor);
+            if (actor is LivingActor victim && Session.Get.HasImmediateZombification && rules.RollChance(s_Options.StarvedZombificationChance)) {
+              map.TryRemoveCorpseOf(victim);
+              Zombify(victim);
               witnesses?.ImportantMessage(MakePanopticMessage(actor, string.Format("{0} into a Zombie!", "turn".Conjugate(actor))), DELAY_LONG);
             }
           }
@@ -2370,7 +2370,7 @@ namespace djack.RogueSurvivor.Engine
 
         var uas = Session.Get.UniqueActors;
         lock (uas) {
-          List<Actor> candidates = new();   // never placed (so not dead either), and not already waiting
+          List<LivingActor> candidates = new();   // never placed (so not dead either), and not already waiting
           foreach (var a in uas.Refugees) if (a.Location.Map is null && !a.IsDead && !s_RefugeePool.Contains(a)) candidates.Add(a);
           if (0 < candidates.Count) s_RefugeePool.Add(rules.DiceRoller.Choose(candidates));
         }
@@ -2382,15 +2382,15 @@ namespace djack.RogueSurvivor.Engine
       return leader.Faction == fo.Faction || !fo.Faction.LeadOnlyBySameFaction;
     }
 
-    private List<Actor> GetRefugeeFollowers(Actor leader)
+    private List<LivingActor> GetRefugeeFollowers(LivingActor leader)
     {
         return s_RefugeePool!.Where(fo => RefugeeCanTakeLeadOf(leader, fo)).ToList();
     }
 
-    private List<Actor> ConstructRefugeeParty()
+    private List<LivingActor> ConstructRefugeeParty()
     {
       var dr = Rules.Get.DiceRoller;
-      List<Actor> ret = new();
+      List<LivingActor> ret = new();
       var leader = dr.ChooseWithoutReplacement(s_RefugeePool);
       ret.Add(leader);
       if (0 == s_RefugeePool!.Count) return ret;
@@ -2431,9 +2431,9 @@ namespace djack.RogueSurvivor.Engine
     }
 
     /// <returns>the actors placed, in placement order: the leader first.  Whoever could not be placed went back to the pool.</returns>
-    private List<Actor> PlaceRefugeeParty(ZoneLoc dest) {
+    private List<LivingActor> PlaceRefugeeParty(ZoneLoc dest) {
       var party = ConstructRefugeeParty();
-      var arrived = new List<Actor>(party.Count);
+      var arrived = new List<LivingActor>(party.Count);
       var leader = party[0];
       if (!SpawnIn(leader, dest, 1)) {
         s_RefugeePool!.AddRange(party);
@@ -2475,7 +2475,7 @@ namespace djack.RogueSurvivor.Engine
       var code = world.EdgeCode(district);
       if (0 == code) return;    // can only walk in through outer district
 
-      List<Actor> arrived = new();   // offered to the spirits after the lock is released: the menu is modal
+      List<LivingActor> arrived = new();   // offered to the spirits after the lock is released: the menu is modal
       lock(lock_RefugeePool) {
         if (s_RefugeePool is null) return;
 
@@ -4567,7 +4567,7 @@ namespace djack.RogueSurvivor.Engine
       FaustTogglePC(candidates);
     }
 
-    private void FaustTogglePC(List<Actor> candidates)
+    private void FaustTogglePC<T>(List<T> candidates) where T : Actor
     {
       if (0 >= candidates.Count) return;
       var player_backup = Player;
@@ -9294,9 +9294,9 @@ namespace djack.RogueSurvivor.Engine
             if (attacker.Model.Abilities.IsUndead && !defender.Model.Abilities.IsUndead)
               SeeingCauseInsanity(attacker, Rules.SANITY_HIT_EATEN_ALIVE, string.Format("{0} eaten alive", defender.Name));
             if (Session.Get.HasImmediateZombification) {
-              if (to_immediately_zombify) {
-                defender.Location.Map.TryRemoveCorpseOf(defender);
-                Zombify(defender, attacker);
+              if (to_immediately_zombify && defender is LivingActor victim) {
+                victim.Location.Map.TryRemoveCorpseOf(victim);
+                Zombify(victim, attacker);
                 if (isDefVisible) {
                   ad_witness?.ImportantMessage(MakeMessage(ad_witness[0], attacker, "turn".Conjugate(attacker), defender, " into a Zombie!"), DELAY_LONG);
                   d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, "turn".Conjugate(attacker), defender, " into a Zombie!"), DELAY_LONG);
@@ -11255,9 +11255,9 @@ restart:
       if (!deadGuy_isUndead.cache) {
         SplatterBlood(deadGuy.Location.Map, deadGuy.Location.Position);
 #if false
-        if (Session.Get.HasCorpses) DropCorpse(deadGuy);
+        if (Session.Get.HasCorpses && deadGuy is LivingActor living) DropCorpse(living);
 #else
-        if (Session.HasCorpses) DropCorpse(deadGuy);
+        if (Session.HasCorpses && deadGuy is LivingActor living) DropCorpse(living);
 #endif
       }
 #if FAIL
@@ -11465,7 +11465,7 @@ restart:
     }
 #endif
 
-    static private void DropCorpse(Actor deadGuy)
+    static private void DropCorpse(LivingActor deadGuy)
     {
       deadGuy.Doll.AddDecoration(DollPart.TORSO, GameImages.BLOODIED);
       var rules = Rules.Get;
@@ -11993,7 +11993,7 @@ restart:
       Player.ActorScoring.AddEvent(turn, string.Format("The weather changed to {0}.", DescribeWeather(world.Weather)));
     }
 
-    private Actor Zombify(Actor deadVictim, Actor? zombifier = null)
+    private Actor Zombify(LivingActor deadVictim, Actor? zombifier = null)
     {
       bool isStartingGame = deadVictim.Location.Map is null;    // backward compability
 #if DEBUG
@@ -14099,7 +14099,7 @@ restart:
             break;
           case GameActors.IDs.UNDEAD_MALE_ZOMBIFIED:
           case GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
-            Actor anonymous = (m_CharGen.UndeadModel.IsFemale() ? GameActors.FemaleCivilian : GameActors.MaleCivilian).CreateAnonymous(GameFactions.TheCivilians, 0);
+            var anonymous = (m_CharGen.UndeadModel.IsFemale() ? GameActors.FemaleCivilian : GameActors.MaleCivilian).CreateLivingAnonymous(GameFactions.TheCivilians, 0);
             BaseMapGenerator.DressCivilian(roller, anonymous);
             BaseMapGenerator.GiveNameToActor(roller, anonymous);
             actor = Zombify(anonymous);
@@ -14361,7 +14361,7 @@ retry:
       // Acceptable factions are civilians and survivors.
       // Even if the player is of an unacceptable faction, he will be thanked if not an enemy.
       if (p_map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && 2 > Session.Get.ScriptStage_PoliceStationPrisoner && 0 <= Session.Get.ScriptStage_PoliceStationPrisoner) {
-        Actor prisoner = Session.Get.UniqueActors.PoliceStationPrisoner;
+        var prisoner = Session.Get.UniqueActors.PoliceStationPrisoner;
         if (prisoner.IsDead) Session.Get.ScriptStage_PoliceStationPrisoner = -1;    // disable processing; police will never realize the framing w/o other evidence
         else {
           switch(Session.Get.ScriptStage_PoliceStationPrisoner) {

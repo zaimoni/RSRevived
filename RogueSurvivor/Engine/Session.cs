@@ -124,7 +124,7 @@ namespace djack.RogueSurvivor.Engine
       World? relay_world = null;
       UniqueItems? relay_uniqueItems = null;
       UniqueActors? relay_uniqueActors = null;
-      List<Actor>? relay_refugees = null;
+      List<LivingActor>? relay_refugees = null;
 
       void read(ref Utf8JsonReader reader) {
           int code = field_code(ref reader);
@@ -196,7 +196,7 @@ namespace djack.RogueSurvivor.Engine
               {
               // these are on no map: no Actor.s_LoadMap
               relay_refugees = new();
-              foreach (var x in JsonElement.ParseValue(ref reader).EnumerateArray()) relay_refugees.Add(x.Deserialize<Actor>(options) ?? throw new JsonException("null refugee"));
+              foreach (var x in JsonElement.ParseValue(ref reader).EnumerateArray()) relay_refugees.Add(x.Deserialize<LivingActor>(options) ?? throw new JsonException("null refugee"));
               }
               break;
           }
@@ -230,7 +230,7 @@ namespace djack.RogueSurvivor.Engine
     // A JSON load stages what it loads here, until JsonTakeLive installs it (or does not: the bootstrap round-trip test re-saves what was loaded).
     [NonSerialized] private World? m_JsonLoadedWorld = null;
     [NonSerialized] private Actor? m_JsonLoadedPlayer = null;   // a cross-link: set when the load finishes
-    [NonSerialized] private List<Actor>? m_JsonLoadedRefugeePool = null;   // the live one is RogueGame's
+    [NonSerialized] private List<LivingActor>? m_JsonLoadedRefugeePool = null;   // the live one is RogueGame's
     [NonSerialized] private List<EventUnconditional>? m_JsonLoadedBeforeAction = null;   // the live ones are PlayerController's
     [NonSerialized] private List<EventUnconditional>? m_JsonLoadedAfterAction = null;
 

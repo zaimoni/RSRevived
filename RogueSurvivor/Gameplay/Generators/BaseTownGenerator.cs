@@ -3557,7 +3557,7 @@ restart:
 
       foreach(Rectangle r in rectangleList) {
         Point dest = r.Anchor(Compass.XCOMlike.NW)+Direction.SE;
-        Actor newCivilian = CreateNewCivilian(0, 0, 1);
+        var newCivilian = CreateNewCivilian(0, 0, 1);
         if (JAILS_WIDTH-3 == dest.X) Session.Get.UniqueActors.init_Prisoner(newCivilian);   // a political prisoner
         else {
           // being held with cause, at least as understood before the z-apocalypse
@@ -3816,7 +3816,7 @@ restart:
 
     private Actor CreateNewHospitalPatient(int spawnTime)
     {
-      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, spawnTime);
+      var numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateLivingNumberedName(GameFactions.TheCivilians, spawnTime);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, "Patient");
       GiveRandomSkillsToActor(numberedName, 1);
@@ -3826,7 +3826,7 @@ restart:
 
     private Actor CreateNewHospitalNurse(int spawnTime)
     {
-      Actor numberedName = GameActors.FemaleCivilian.CreateNumberedName(GameFactions.TheCivilians, spawnTime);
+      var numberedName = GameActors.FemaleCivilian.CreateLivingNumberedName(GameFactions.TheCivilians, spawnTime);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, "Nurse");
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_NURSE_UNIFORM);
@@ -3838,7 +3838,7 @@ restart:
 
     private Actor CreateNewHospitalDoctor(int spawnTime)
     {
-      Actor numberedName = GameActors.MaleCivilian.CreateNumberedName(GameFactions.TheCivilians, spawnTime);
+      var numberedName = GameActors.MaleCivilian.CreateLivingNumberedName(GameFactions.TheCivilians, spawnTime);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, "Doctor");
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_DOCTOR_UNIFORM);
@@ -3919,7 +3919,7 @@ restart:
         Item_IDs.MEDICINE_PILLS_ANTIVIRAL
     };
 
-    private void GiveRandomItemToActor(DiceRoller roller, Actor actor, int spawnTime)
+    private void GiveRandomItemToActor(DiceRoller roller, LivingActor actor, int spawnTime)
     {
       Item equip_this() {
         if (new WorldTime(spawnTime).Day > Rules.GIVE_RARE_ITEM_DAY && roller.RollChance(Rules.GIVE_RARE_ITEM_CHANCE)) {
@@ -3944,9 +3944,9 @@ restart:
       actor.Take(equip_this());
     }
 
-    public Actor CreateNewRefugee(int spawnTime, int itemsToCarry)
+    public LivingActor CreateNewRefugee(int spawnTime, int itemsToCarry)
     {
-      Actor actor;
+      LivingActor actor;
       if (m_DiceRoller.RollChance(Parameters.PolicemanChance)) {
         actor = CreateNewPoliceman(spawnTime);
         for (int index = 0; index < itemsToCarry && !actor.Inventory.IsFull; ++index)
@@ -3959,10 +3959,10 @@ restart:
 
     private static readonly Item_IDs[] survivor_pills = new[]{ Item_IDs.MEDICINE_PILLS_SLP, Item_IDs.MEDICINE_PILLS_STA, Item_IDs.MEDICINE_PILLS_SAN };
 
-    public Actor CreateNewSurvivor(int spawnTime)
+    public LivingActor CreateNewSurvivor(int spawnTime)
     {
       bool flag = m_DiceRoller.Roll(0, 2) == 0;
-      Actor numberedName = (flag ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheSurvivors, spawnTime);
+      var numberedName = (flag ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateLivingNumberedName(GameFactions.TheSurvivors, spawnTime);
       GiveNameToActor(m_DiceRoller, numberedName);
       DressCivilian(m_DiceRoller, numberedName);
       numberedName.Doll.AddDecoration(DollPart.HEAD, flag ? GameImages.SURVIVOR_MALE_BANDANA : GameImages.SURVIVOR_FEMALE_BANDANA);
@@ -3981,9 +3981,9 @@ restart:
       return numberedName;
     }
 
-    public Actor CreateNewCivilian(int spawnTime, int itemsToCarry, int skills)
+    public LivingActor CreateNewCivilian(int spawnTime, int itemsToCarry, int skills)
     {
-      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, spawnTime);
+      var numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateLivingNumberedName(GameFactions.TheCivilians, spawnTime);
       DressCivilian(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       for (int index = 0; index < itemsToCarry; ++index)
@@ -4001,9 +4001,9 @@ restart:
       a.Equip(rw);
     }
 
-    public Actor CreateNewPoliceman(int spawnTime, Data.Model.BodyArmor? armor = null, ItemRangedWeaponModel? rw = null)
+    public LivingActor CreateNewPoliceman(int spawnTime, Data.Model.BodyArmor? armor = null, ItemRangedWeaponModel? rw = null)
     {
-      Actor numberedName = GameActors.Policeman.CreateNumberedName(GameFactions.ThePolice, spawnTime);
+      var numberedName = GameActors.Policeman.CreateLivingNumberedName(GameFactions.ThePolice, spawnTime);
       DressPolice(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, "Cop");
       // Notable skills
@@ -4049,7 +4049,7 @@ restart:
       return actor;
     }
 
-    public static Actor MakeZombified(Actor? zombifier, Actor deadVictim, int turn)
+    public static Actor MakeZombified(Actor? zombifier, LivingActor deadVictim, int turn)
     {
       string properName = string.Format("{0}'s zombie", deadVictim.UnmodifiedName);
       Actor named = (deadVictim.Model.DollBody.IsMale ? GameActors.MaleZombified : GameActors.FemaleZombified).CreateNamed(zombifier is null ? GameFactions.TheUndeads : zombifier.Faction, properName, turn);
@@ -4075,9 +4075,9 @@ restart:
       return GameActors.RatZombie.CreateNumberedName(GameFactions.TheUndeads, spawnTime);
     }
 
-    public Actor CreateNewCHARGuard(int spawnTime)
+    public LivingActor CreateNewCHARGuard(int spawnTime)
     {
-      Actor numberedName = GameActors.CHARGuard.CreateNumberedName(GameFactions.TheCHARCorporation, spawnTime);
+      var numberedName = GameActors.CHARGuard.CreateLivingNumberedName(GameFactions.TheCHARCorporation, spawnTime);
       DressCHARGuard(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, "Gd.");
       CreatePrimaryRanged(numberedName, GameItems.SHOTGUN.create());
@@ -4086,9 +4086,9 @@ restart:
       return numberedName;
     }
 
-    public Actor CreateNewArmyNationalGuard(int spawnTime, string rankName)
+    public LivingActor CreateNewArmyNationalGuard(int spawnTime, string rankName)
     {
-      Actor numberedName = GameActors.NationalGuard.CreateNumberedName(GameFactions.TheArmy, spawnTime);
+      var numberedName = GameActors.NationalGuard.CreateLivingNumberedName(GameFactions.TheArmy, spawnTime);
       DressArmy(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
       CreatePrimaryRanged(numberedName, GameItems.ARMY_RIFLE.create());
@@ -4107,16 +4107,16 @@ restart:
       return numberedName;
     }
 
-    public Actor CreateNewArmyNationalGuard(string rankName, Actor leader)
+    public LivingActor CreateNewArmyNationalGuard(string rankName, Actor leader)
     {
       var actor = CreateNewArmyNationalGuard(leader.SpawnTime, rankName);
       while(leader.FirstFollower(a => a.Name == actor.Name) is not null) GiveNameToActor(m_DiceRoller, actor, rankName);
       return actor;
     }
 
-    public Actor CreateNewBikerMan(int spawnTime, GameGangs.IDs gangId)
+    public LivingActor CreateNewBikerMan(int spawnTime, GameGangs.IDs gangId)
     {
-      Actor numberedName = GameActors.BikerMan.CreateNumberedName(GameFactions.TheBikers, spawnTime);
+      var numberedName = GameActors.BikerMan.CreateLivingNumberedName(GameFactions.TheBikers, spawnTime);
       (numberedName.Controller as AI.GangAI)!.Join(gangId);
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
@@ -4126,16 +4126,16 @@ restart:
       return numberedName;
     }
 
-    public Actor CreateNewBikerMan(Actor leader)
+    public LivingActor CreateNewBikerMan(Actor leader)
     {
       var actor = CreateNewBikerMan(leader.SpawnTime, leader.GangID);
       while(leader.FirstFollower(a => a.Name == actor.Name) is not null) GiveNameToActor(m_DiceRoller, actor);
       return actor;
     }
 
-    public Actor CreateNewGangstaMan(int spawnTime, GameGangs.IDs gangId)
+    public LivingActor CreateNewGangstaMan(int spawnTime, GameGangs.IDs gangId)
     {
-      Actor numberedName = GameActors.GangstaMan.CreateNumberedName(GameFactions.TheGangstas, spawnTime);
+      var numberedName = GameActors.GangstaMan.CreateLivingNumberedName(GameFactions.TheGangstas, spawnTime);
       (numberedName.Controller as AI.GangAI)!.Join(gangId);
       DressGangsta(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
@@ -4145,16 +4145,16 @@ restart:
       return numberedName;
     }
 
-    public Actor CreateNewGangstaMan(Actor leader)
+    public LivingActor CreateNewGangstaMan(Actor leader)
     {
       var actor = CreateNewGangstaMan(leader.SpawnTime, leader.GangID);
       while(leader.FirstFollower(a => a.Name == actor.Name) is not null) GiveNameToActor(m_DiceRoller, actor);
       return actor;
     }
 
-    public Actor CreateNewBlackOps(int spawnTime, string rankName)
+    public LivingActor CreateNewBlackOps(int spawnTime, string rankName)
     {
-      Actor numberedName = GameActors.BlackOps.CreateNumberedName(GameFactions.TheBlackOps, spawnTime);
+      var numberedName = GameActors.BlackOps.CreateLivingNumberedName(GameFactions.TheBlackOps, spawnTime);
       DressBlackOps(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
       CreatePrimaryRanged(numberedName, GameItems.PRECISION_RIFLE.create());
@@ -4165,16 +4165,16 @@ restart:
       return numberedName;
     }
 
-    public Actor CreateNewBlackOps(string rankName, Actor leader)
+    public LivingActor CreateNewBlackOps(string rankName, Actor leader)
     {
       var actor = CreateNewBlackOps(leader.SpawnTime, rankName);
       while(leader.FirstFollower(a => a.Name == actor.Name) is not null) GiveNameToActor(m_DiceRoller, actor, rankName);
       return actor;
     }
 
-    public Actor CreateNewFeralDog(int spawnTime)
+    public LivingActor CreateNewFeralDog(int spawnTime)
     {
-      Actor numberedName = GameActors.FeralDog.CreateNumberedName(GameFactions.TheFerals, spawnTime);
+      var numberedName = GameActors.FeralDog.CreateLivingNumberedName(GameFactions.TheFerals, spawnTime);
       SkinDog(m_DiceRoller, numberedName);
       return numberedName;
     }
