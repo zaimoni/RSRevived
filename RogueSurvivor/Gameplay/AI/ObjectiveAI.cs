@@ -7780,7 +7780,7 @@ restart_chokepoints:
         return 1 <= skills.GetSkillLevel(Skills.IDs.FIREARMS) && 1 <= skills.GetSkillLevel(Skills.IDs.LEADERSHIP)
            // 2) must have equipped: police radio, police armor
            && who.GetEquippedItem(Item_IDs.TRACKER_POLICE_RADIO) is not null
-           && m_Actor.UsingCopArmor() is not null
+           && who.UsingCopArmor() is not null
            // 3) must have in inventory: one of pistol or shotgun
            && (who.GetItem(Item_IDs.RANGED_PISTOL) is not null || who.GetItem(Item_IDs.RANGED_SHOTGUN) is not null);
     }

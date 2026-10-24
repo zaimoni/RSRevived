@@ -497,7 +497,7 @@ namespace djack.RogueSurvivor.Data
       return baseChance;
     }
 
-    public bool IsUnsuspiciousFor(Actor observer) { return Rules.Get.RollChance(UnsuspicousForChance(observer)); }
+    public bool IsUnsuspiciousFor(LivingActor observer) { return Rules.Get.RollChance(UnsuspicousForChance(observer)); }
 
     public bool IgnoredByPolice(Actor observer) {
       if (100 <= UnsuspicousForChance(observer)) return true;
@@ -1182,7 +1182,6 @@ namespace djack.RogueSurvivor.Data
 
 #region Tracker management
     public virtual bool HasActiveCellPhone => false;
-    public virtual bool HasCellPhone => false;
     public virtual bool HasActivePoliceRadio => GameFactions.IDs.ThePolice == m_FactionID;   // implicit, for the police
     public virtual bool HasPoliceRadio => GameFactions.IDs.ThePolice == m_FactionID;
     public virtual ItemTracker? GetEquippedCellPhone() => null;
@@ -2676,17 +2675,9 @@ namespace djack.RogueSurvivor.Data
 
     // equipped items
     public virtual Item? GetEquippedItem(DollPart part) => null;
-    public virtual Item? GetEquippedItem(Gameplay.Item_IDs id) => null;
 
     // considering these as change target
     public virtual ItemBodyArmor? GetEquippedArmor() => null;
-
-    public ItemBodyArmor? UsingCopArmor()
-    {
-      var ret = GetEquippedArmor();
-      if (ret is not null && ret.IsFriendlyForCops()) return ret;
-      return null;
-    }
 
     // this cannot be side-effecting (martial arts, grenades)
     public Item? GetEquippedWeapon() { return GetEquippedItem(DollPart.RIGHT_HAND); }

@@ -161,7 +161,7 @@ namespace djack.RogueSurvivor.Data
       return m_Inventory.GetFirst<Item>(obj => obj.EquippedPart == part);
     }
 
-    public override Item? GetEquippedItem(Gameplay.Item_IDs id) => m_Inventory.GetFirst<Item>(obj => obj.ModelID == id && DollPart.NONE != obj.EquippedPart);
+    public Item? GetEquippedItem(Gameplay.Item_IDs id) => m_Inventory.GetFirst<Item>(obj => obj.ModelID == id && DollPart.NONE != obj.EquippedPart);
 
     // considering these as change target
     public override ItemBodyArmor? GetEquippedArmor()
@@ -170,11 +170,19 @@ namespace djack.RogueSurvivor.Data
       // legacy implementation
       return m_Inventory.GetFirst<ItemBodyArmor>(obj => obj.EquippedPart == DollPart.TORSO);
     }
+
+    public ItemBodyArmor? UsingCopArmor()
+    {
+      var ret = GetEquippedArmor();
+      if (ret is not null && ret.IsFriendlyForCops()) return ret;
+      return null;
+    }
+
 #endregion
 
 #region radios
     public override bool HasActiveCellPhone => m_Inventory.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader && !it.IsUseless) is not null;
-    public override bool HasCellPhone => m_Inventory.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless) is not null;
+    public bool HasCellPhone => m_Inventory.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless) is not null;
     public override bool HasActivePoliceRadio => base.HasActivePoliceRadio || m_Inventory.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackPolice) is not null;  // charges on walking so won't stay useless
     public override bool HasPoliceRadio => base.HasPoliceRadio || m_Inventory.GetFirstMatching<ItemTracker>(it => it.CanTrackPolice) is not null;  // charges on walking so won't stay useless
     public override ItemTracker? GetEquippedCellPhone() => m_Inventory.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader);
