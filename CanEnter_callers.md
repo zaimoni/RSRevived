@@ -29,14 +29,14 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:299 | ok | throws on the destination |
 | UpdateMoveDelta.toDest | Engine/Actions/ActionMoveDelta.cs:328 | ok | |
 | UpdateMoveDelta.fromOrigin | Engine/Actions/ActionMoveDelta.cs:335 | ok | |
-| PathToTarget.Unstage | Gameplay/AI/Goals/Objective.cs:191 | ok | |
+| PathToTarget.Unstage | Gameplay/AI/Goals/Objective.cs:192 | ok | |
 
 ## ActorModel.CanEnter
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MovesTo | Data/Actor.cs:1621 | ok | the destination itself |
-| Actor.MayEnter(ref Location) | Data/Actor.cs:2409 | ok | beyond adjacency |
+| Actor.MovesTo | Data/Actor.cs:1613 | ok | the destination itself |
+| Actor.MayEnter(ref Location) | Data/Actor.cs:2331 | ok | beyond adjacency |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:255 | ok | |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:257 | ok | |
 | ActorModel.CastToInventoryAccessibleDestinations(,) | Data/ActorModel.cs:274 | ok | excludes shelf-like objects separately |
@@ -64,10 +64,10 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ActionMoveStep.schedule(Actor, Location) | Engine/Actions/ActionMoveStep.cs:52 | ok | |
 | ActionMoveStep.schedule(Actor, Point) | Engine/Actions/ActionMoveStep.cs:58 | ok | |
 | RogueGame.HandleItemInfo | Engine/RogueGame.cs:4092 | ok | local function `details`; receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13357 | ok | receiver a follower, chosen by index |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13382 | ok | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13390 | ok | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13412 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13356 | ok | receiver a follower, chosen by index |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13381 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13389 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13411 | ok | receiver Player |
 | AcquireLineOfSight..ctor(Actor, in Location) | Gameplay/AI/Goals/AcquireLineOfSight.cs:46 | ok | throws via Spotlight: "unpathable"; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, IEnumerable) | Gameplay/AI/Goals/AcquireLineOfSight.cs:55 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:65 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
@@ -79,7 +79,7 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MutuallyAdjacentFor | Data/Actor.cs:2421 | ok | by ref |
+| Actor.MutuallyAdjacentFor | Data/Actor.cs:2343 | ok | by ref |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | ok | throws on the destination |
 | _Action.MoveStep._runFrom | Engine/Action/MoveStep.cs:192 | ok | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:249 | ok | |
