@@ -4225,7 +4225,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
     }
 
-    private ActorAction BehaviorRequestCriticalFromGroup()
+    private ActorAction? BehaviorRequestCriticalFromGroup()
     {
         var clan = m_Actor.ChainOfCommand;
         if (clan is null) return null;
@@ -4342,7 +4342,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    private ActorAction BehaviorDefendFromRequestCriticalFromGroup()
+    private ActorAction? BehaviorDefendFromRequestCriticalFromGroup()
     {
         var clan = m_Actor.ChainOfCommand;
         if (clan is null) return null;
@@ -4438,7 +4438,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
     }
 
-    protected ActorAction BehaviorTrading()
+    protected ActorAction? BehaviorTrading()
     {
 #if DEBUG
         if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException("must want to trade");
@@ -4454,7 +4454,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
     }
 
-    protected ActorAction BehaviorRangedInventory()
+    protected ActorAction? BehaviorRangedInventory()
     {
       if (_enemies is not null) return null;
       const bool tracing = false;
