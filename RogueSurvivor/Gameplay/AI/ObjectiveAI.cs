@@ -5407,7 +5407,7 @@ restart_chokepoints:
       return ret.Any() ? ret.ToList() : null;
     }
 
-    public Dictionary<Location, Actor> GetTradingTargets(Dictionary<Location,Actor> friends) // Waterfall Lifecycle: retain this parameter for contrafactual use
+    public Dictionary<Location, Actor>? GetTradingTargets(Dictionary<Location,Actor> friends) // Waterfall Lifecycle: retain this parameter for contrafactual use
     {
         if (friends is null || 0 >= friends.Count) return null;
         if (!m_Actor.Model.Abilities.CanTrade) return null; // arguably an invariant but not all PCs are overriding appropriate base AIs
@@ -5432,13 +5432,13 @@ restart_chokepoints:
         return 0<ret.Count ? ret : null;
     }
 
-    public List<KeyValuePair<Item, Item>> TradeOptions(Actor target)
+    public List<KeyValuePair<Item, Item>>? TradeOptions(Actor target)
     {
       if (m_Living is not { } who) return null;
       var wants = who.GetInterestingTradeableItems(target);  // charisma check involved for these
-      if (wants is not null && 0 < wants.Count) return null;
+      if (wants is null || 0 >= wants.Count) return null;
       var offers = target.GetInterestingTradeableItems(m_Actor);
-      if (offers is not null && 0 < offers.Count) return null;
+      if (offers is null || 0 >= offers.Count) return null;
       var negotiate = new List<KeyValuePair<Item,Item>>(wants.Count*offers.Count);   // relies on "small" inventory to avoid arithmetic overflow
       foreach(var s_item in wants) {
         foreach(var b_item in offers) {
@@ -5455,9 +5455,9 @@ restart_chokepoints:
     {
       if (m_Living is not { } who) return false;
       var wants = who.GetInterestingTradeableItems(target);  // charisma check involved for these
-      if (wants is not null && 0 < wants.Count) return false;
+      if (wants is null || 0 >= wants.Count) return false;
       var offers = target.GetInterestingTradeableItems(m_Actor);
-      if (offers is not null && 0 < offers.Count) return false;
+      if (offers is null || 0 >= offers.Count) return false;
       foreach(var s_item in wants) {
         foreach(var b_item in offers) {
           if (TradeVeto(s_item,b_item)) continue;
