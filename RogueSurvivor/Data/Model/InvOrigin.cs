@@ -7,15 +7,14 @@ namespace djack.RogueSurvivor.Data.Model
     [Serializable]
     public readonly record struct InvOrigin : IInventory, ILocation_readonly
     {
-        public readonly Actor? a_owner = null;
+        public readonly LivingActor? a_owner = null;
         public readonly ShelfLike? obj_owner = null;
         public readonly Location? loc = null;
 
-        public InvOrigin(Actor owner)
+        public InvOrigin(LivingActor owner)
         {
 #if DEBUG
             a_owner = owner ?? throw new ArgumentNullException(nameof(owner));
-            if (owner.Inventory is null) throw new ArgumentNullException("owner.Inventory");
 #else
             a_owner = owner;
 #endif
@@ -30,11 +29,10 @@ namespace djack.RogueSurvivor.Data.Model
 #endif
         }
 
-        public InvOrigin(Location src, Actor agent) : this(src)
+        public InvOrigin(Location src, LivingActor agent) : this(src)
         {
 #if DEBUG
             a_owner = agent ?? throw new ArgumentNullException(nameof(agent));
-            if (agent.Inventory is null) throw new ArgumentNullException("agent.Inventory");
 #else
             a_owner = agent;
 #endif
@@ -62,7 +60,7 @@ namespace djack.RogueSurvivor.Data.Model
             return;
         }
 
-        public InvOrigin(Actor? _a_owner, ShelfLike? _obj_owner, Location? _loc)
+        public InvOrigin(LivingActor? _a_owner, ShelfLike? _obj_owner, Location? _loc)
         {
             a_owner = _a_owner;
             obj_owner = _obj_owner;
@@ -311,7 +309,7 @@ namespace Zaimoni.JsonConvert
         public override djack.RogueSurvivor.Data.Model.InvOrigin Read(ref Utf8JsonReader reader, Type src, JsonSerializerOptions options)
         {
             var stage = JsonElement.ParseValue(ref reader);
-            var actor = stage.TryGetProperty("Actor", out var x) ? x.RequireRef<djack.RogueSurvivor.Data.Actor>() : null;
+            var actor = stage.TryGetProperty("Actor", out var x) ? x.RequireRef<djack.RogueSurvivor.Data.LivingActor>() : null;
             var shelf = stage.TryGetProperty("Shelf", out x) ? x.RequireRef<djack.RogueSurvivor.Data.ShelfLike>() : null;
             djack.RogueSurvivor.Data.Location? loc = stage.TryGetProperty("Location", out x) ? x.Deserialize<djack.RogueSurvivor.Data.Location>(options) : null;
             if (actor is null && shelf is null && loc is null) throw new JsonException("inventory origin of nothing: " + stage.GetRawText());

@@ -19,17 +19,20 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public Item Give { get => m_GiveItem; }
         public Item Take { get => m_TakeItem; }
-        public Actor? Whom { get => m_dest.a_owner; }
+        public Actor? Whom { get => m_dest.a_owner; }   // TargetActor.Whom; a_owner is a LivingActor
 
         #region JSON save/load
-        private TradeItem(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+        private new readonly LivingActor m_Actor;   // the same object as the base field
+
+        private TradeItem(LivingActor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
         {
+            m_Actor = actor;
             m_GiveItem = src.Require("Give").RequireRef<Item>();
             m_TakeItem = src.Require("Take").RequireRef<Item>();
             m_dest = src.Require("Dest").Deserialize<Data.Model.InvOrigin>(options);
         }
 
-        static TradeItem IJsonStaged<TradeItem>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new TradeItem(JsonActor(src), src, options));
+        static TradeItem IJsonStaged<TradeItem>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new TradeItem(JsonLivingActor(src), src, options));
 
         public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
         {
@@ -41,8 +44,9 @@ namespace djack.RogueSurvivor.Engine._Action
         }
         #endregion
 
-        private TradeItem(Actor actor, Item give, Item take, in Data.Model.InvOrigin dest) : base(actor)
+        private TradeItem(LivingActor actor, Item give, Item take, in Data.Model.InvOrigin dest) : base(actor)
         {
+            m_Actor = actor;
 #if DEBUG
             if (give is null) throw new ArgumentNullException(nameof(give));
             if (take is null) throw new ArgumentNullException(nameof(take));
@@ -71,7 +75,7 @@ namespace djack.RogueSurvivor.Engine._Action
                 var actor = m_dest.Location.Actor;
                 if (actor is not null)
                 {
-                    var allies = (m_Actor as LivingActor)?.Allies;
+                    var allies = m_Actor.Allies;
                     if (allies is null) return false;
                     if (!allies.Contains(actor)) return false;
                 }
@@ -98,20 +102,19 @@ namespace djack.RogueSurvivor.Engine._Action
             RogueGame.Game.UI_TradeItem(m_Actor, m_GiveItem, m_TakeItem);
         }
 
-        static public TradeItem? Cast(in Data.Model.InvOrigin dest, Actor actor, Item give, Item take)
+        static public TradeItem? Cast(in Data.Model.InvOrigin dest, LivingActor actor, Item give, Item take)
         {
             var stage = new TradeItem(actor, give, take, in dest);
             if (!stage.IsPerformable()) return null;
             return stage;
         }
 
-        static public TradeItem? Cast(Location loc, Actor actor, Item give, Item take)
+        static public TradeItem? Cast(Location loc, LivingActor actor, Item give, Item take)
         {
             if (loc.MapObject is ShelfLike obj) {
                 if (obj.IsCarrying(take)) return Cast(new Data.Model.InvOrigin(obj), actor, give, take);
             }
-            var a = loc.Actor;
-            if (a is not null && !a.IsPlayer) {
+            if (loc.Actor is LivingActor a && !a.IsPlayer) {
                 if (a.IsCarrying(take)) return Cast(new Data.Model.InvOrigin(a), actor, give, take);
             }
 
@@ -123,7 +126,7 @@ namespace djack.RogueSurvivor.Engine._Action
             return null;
         }
 
-        static public TradeItem? ScheduleCast(in Data.Model.InvOrigin dest, Actor actor, Item give, Item take)
+        static public TradeItem? ScheduleCast(in Data.Model.InvOrigin dest, LivingActor actor, Item give, Item take)
         {
             var stage = new TradeItem(actor, give, take, in dest);
             if (!stage.IsLegal()) return null;

@@ -4,11 +4,13 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
     internal class PlayerTakeFrom : ActorAction
     {
+        private new readonly LivingActor m_Actor;   // the same object as the base field
         private readonly Data.Model.InvOrigin m_Src;
 
         // error checks in ...::create
-        private PlayerTakeFrom(PlayerController pc, Data.Model.InvOrigin obj) : base(pc.ControlledActor)
+        private PlayerTakeFrom(LivingActor player, Data.Model.InvOrigin obj) : base(player)
         {
+            m_Actor = player;
             m_Src = obj;
         }
 
@@ -49,9 +51,8 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (inv.IsEmpty()) return null;
             var obj = loc.MapObject;
             if (obj is not null && obj.BlocksReachInto()) return null;
-            var player = pc.ControlledActor;
+            if (pc.ControlledActor is not LivingActor player) return null;
             var p_inv = player.Inventory;
-            if (p_inv is null) return null;
             if (p_inv.IsFull) {
                 var ok = false;
                 foreach (var it in inv) {
@@ -62,16 +63,15 @@ namespace djack.RogueSurvivor.Engine.Actions
                 }
                 if (!ok) return null;
             }
-            return new PlayerTakeFrom(pc, new(loc));
+            return new PlayerTakeFrom(player, new(loc));
         }
 
         static public PlayerTakeFrom? create(PlayerController pc, ShelfLike obj)
         {
             var inv = obj?.NonEmptyInventory;
             if (inv is null) return null;
-            var player = pc.ControlledActor;
+            if (pc.ControlledActor is not LivingActor player) return null;
             var p_inv = player.Inventory;
-            if (p_inv is null) return null;
             if (p_inv.IsFull) {
                 var ok = false;
                 foreach (var it in inv) {
@@ -82,7 +82,7 @@ namespace djack.RogueSurvivor.Engine.Actions
                 }
                 if (!ok) return null;
             }
-            return new PlayerTakeFrom(pc, new(obj));
+            return new PlayerTakeFrom(player, new(obj));
         }
 
         public override string ToString() => "take from: " + m_Src + "; "+m_Src.Inventory;

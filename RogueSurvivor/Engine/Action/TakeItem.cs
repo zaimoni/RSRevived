@@ -8,18 +8,20 @@ namespace djack.RogueSurvivor.Engine._Action
     [Serializable]
     internal class TakeItem : ActorAction, ActorTake, Target<MapObject?>, IJsonStaged<TakeItem>
     {
+        private new readonly LivingActor m_Actor;   // the same object as the base field
         private readonly Data.Model.InvOrigin m_src;
         private readonly Item m_Item;
         [NonSerialized] private bool m_Crouching = false;
 
         #region JSON save/load
-        private TakeItem(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+        private TakeItem(LivingActor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
         {
+            m_Actor = actor;
             m_src = src.Require("Source").Deserialize<Data.Model.InvOrigin>(options);
             m_Item = src.Require("Item").RequireRef<Item>();
         }
 
-        static TakeItem IJsonStaged<TakeItem>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new TakeItem(JsonActor(src), src, options));
+        static TakeItem IJsonStaged<TakeItem>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new TakeItem(JsonLivingActor(src), src, options));
 
         public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
         {
@@ -30,8 +32,9 @@ namespace djack.RogueSurvivor.Engine._Action
         }
         #endregion
 
-        public TakeItem(Actor actor, in Location loc, Item it) : base(actor)
+        public TakeItem(LivingActor actor, in Location loc, Item it) : base(actor)
         {
+            m_Actor = actor;
 #if DEBUG
             if (actor.Controller is not Gameplay.AI.ObjectiveAI ai) throw new ArgumentNullException(nameof(ai));  // not for a trained dog fetching something
             if (!m_Actor.CanGetItems()) throw new InvalidOperationException("!m_Actor.CanGetItems()");
@@ -41,8 +44,9 @@ namespace djack.RogueSurvivor.Engine._Action
             m_Item = it;
         }
 
-        public TakeItem(Actor actor, ShelfLike shelf, Item it) : base(actor)
+        public TakeItem(LivingActor actor, ShelfLike shelf, Item it) : base(actor)
         {
+            m_Actor = actor;
 #if DEBUG
             if (actor.Controller is not Gameplay.AI.ObjectiveAI ai) throw new ArgumentNullException(nameof(ai));  // not for a trained dog fetching something
             if (!m_Actor.CanGetItems()) throw new InvalidOperationException("!m_Actor.CanGetItems()");
@@ -52,8 +56,9 @@ namespace djack.RogueSurvivor.Engine._Action
             m_Item = it;
         }
 
-        public TakeItem(Actor actor, in Data.Model.InvOrigin stack, Item it) : base(actor)
+        public TakeItem(LivingActor actor, in Data.Model.InvOrigin stack, Item it) : base(actor)
         {
+            m_Actor = actor;
 #if DEBUG
             if (actor.Controller is not Gameplay.AI.ObjectiveAI ai) throw new ArgumentNullException(nameof(ai));  // not for a trained dog fetching something
             if (!m_Actor.CanGetItems()) throw new InvalidOperationException("!m_Actor.CanGetItems()");
@@ -73,7 +78,7 @@ namespace djack.RogueSurvivor.Engine._Action
                 m_FailReason = "does not contain";
                 return false;
             }
-            m_Actor.Inventory!.RejectContains(m_Item, "have already taken ");
+            m_Actor.Inventory.RejectContains(m_Item, "have already taken ");
             return m_Actor.CanGet(m_Item, out m_FailReason);
         }
 
@@ -87,7 +92,7 @@ namespace djack.RogueSurvivor.Engine._Action
                 if (!m_Actor.CanCrouch(out m_FailReason)) return false;
                 var actor = m_src.Location.Actor;
                 if (actor is not null) {
-                    var allies = (m_Actor as LivingActor)?.Allies;
+                    var allies = m_Actor.Allies;
                     if (allies is null) return false;
                     if (!allies.Contains(actor)) return false;
                 }

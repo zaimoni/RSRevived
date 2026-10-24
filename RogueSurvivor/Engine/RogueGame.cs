@@ -4755,7 +4755,7 @@ namespace djack.RogueSurvivor.Engine
         if (isPlayerInventory) return _HandlePlayerInventory(Player, it);
 
 //      var fetch_from = Player.Location.InventoryAtFeet(); // want this, but compile error
-        return Interpret(new _Action.TakeItem(Player, Player.Location, it));
+        return Player is LivingActor living && Interpret(new _Action.TakeItem(living, living.Location, it));
       }
 
       ClearOverlays();
@@ -4957,7 +4957,7 @@ namespace djack.RogueSurvivor.Engine
     private bool DoPlayerItemSlot(Actor player, int slot, KeyEventArgs key)
     {
       if ((key.Modifiers & Keys.Control) != Keys.None) return player is LivingActor user && DoPlayerItemSlotUse(user, slot);
-      if (key.Shift) return DoPlayerItemSlotTake(player, slot);
+      if (key.Shift) return player is LivingActor taker && DoPlayerItemSlotTake(taker, slot);
       if (key.Alt) return player is LivingActor dropper && DoPlayerItemSlotDrop(dropper, slot);
       return false;
     }
@@ -4972,7 +4972,7 @@ namespace djack.RogueSurvivor.Engine
       return _HandlePlayerInventory(player, it);
     }
 
-    private bool DoPlayerItemSlotTake(Actor player, int slot)
+    private bool DoPlayerItemSlotTake(LivingActor player, int slot)
     {
       var itemsAt = player.Location.Items;
       if (itemsAt is null) {
@@ -5098,7 +5098,8 @@ namespace djack.RogueSurvivor.Engine
 
         RemoveOverlay(aux);
 
-        var relay = src.Inventory!.Where(obj => pc.ControlledActor.CanGet(obj));
+        if (pc.ControlledActor is not LivingActor taker) { ClearOverlays(); return false; }
+        var relay = src.Inventory!.Where(obj => taker.CanGet(obj));
 
         var it = Choose(relay, "Taking...");
         if (it is null) {
@@ -5109,7 +5110,7 @@ namespace djack.RogueSurvivor.Engine
         ClearOverlays();
         RedrawPlayScreen();
 
-        var act = new _Action.TakeItem(pc.ControlledActor, src, it);
+        var act = new _Action.TakeItem(taker, src, it);
         bool ret = act.IsPerformable();
         if (ret) act.Perform();
 
@@ -5201,7 +5202,7 @@ namespace djack.RogueSurvivor.Engine
         return ret;
     }
 
-    private bool UnloadItem(Actor player, Data.Model.InventorySource<ItemRangedWeapon> src) {
+    private bool UnloadItem(LivingActor player, Data.Model.InventorySource<ItemRangedWeapon> src) {
       // try unloading to our own inventory first
       if (DoUnload(player, src, new(player))) return true;
 
@@ -5222,7 +5223,7 @@ namespace djack.RogueSurvivor.Engine
 
       Data.Model.InventorySource<ItemRangedWeapon> src = new(invSpec.Value.Key.Origin, rw);
 
-      return UnloadItem(pc.ControlledActor, new(invSpec.Value.Key.Origin, rw));
+      return pc.ControlledActor is LivingActor unloader && UnloadItem(unloader, new(invSpec.Value.Key.Origin, rw));
     }
 
     private bool HandlePlayerMenuUnload(PlayerController pc)
@@ -5244,7 +5245,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool details(int index)
       {
-        return UnloadItem(player, unload_these[index]);
+        return player is LivingActor unloader && UnloadItem(unloader, unload_these[index]);
       }
 
       return PagedPopup("Unloading:", unload_these.Count, label, details, false);
@@ -10089,7 +10090,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoTrade(PlayerController pc, Item itSpeaker, Data.Model.InvOrigin target)
     {
-      var speaker = pc.ControlledActor;
+      if (pc.ControlledActor is not LivingActor speaker) return;   // a zombie PC has nothing to trade
       if (speaker.Location != target.Location) {
         if (target.loc is not null) {
           if (!speaker.IsCrouching) {

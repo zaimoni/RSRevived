@@ -61,6 +61,7 @@ namespace djack.RogueSurvivor.Data
     // An action's actor is the one whose controller is being saved or loaded.  Only a different one is written.
     protected void toJsonActor(Utf8JsonWriter writer) => ActorController.WriteActorUnlessOwner(writer, m_Actor);
     static protected Actor JsonActor(JsonElement src) => ActorController.ActorOrOwner(src);
+    static protected LivingActor JsonLivingActor(JsonElement src) => (LivingActor)ActorController.ActorOrOwner(src);
 
     // for the subclasses' fromJson
     static protected T JsonLoaded<T>(JsonElement src, T ret) where T : ActorAction

@@ -2313,7 +2313,7 @@ retry:
       if (!Canonical(ref dest)) return null;
       var actor = dest.Actor;
       if (actor is not null) {
-        if (!actor.Inventory.IsEmpty() && !a.IsEnemyOf(actor)) ret.Add(new(actor));
+        if (actor is LivingActor living && !living.Inventory.IsEmpty && !a.IsEnemyOf(actor)) ret.Add(new(living));
         return 0<ret.Count ? ret : null;
       }
 
@@ -2348,8 +2348,7 @@ retry:
       if (!Canonical(ref dest)) return null;
       var actor = dest.Actor;
       if (actor is not null) {
-        var a_inv = actor.Inventory;
-        if (a_inv is not null && !a.IsEnemyOf(actor)) ret.Add(new(actor));
+        if (actor is LivingActor living && !a.IsEnemyOf(actor)) ret.Add(new(living));
         return 0<ret.Count ? ret : null;
       }
 

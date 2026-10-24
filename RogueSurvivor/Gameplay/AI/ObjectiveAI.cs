@@ -2683,7 +2683,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             var i_want = a.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
-            return TradeItem.Cast(new Data.Model.InvOrigin(a), m_Actor, they_want.First(), i_want.First());
+            return TradeItem.Cast(new Data.Model.InvOrigin(a), who, they_want.First(), i_want.First());
          }
       }
       return null;
@@ -2701,7 +2701,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (!use.UseBeforeDrop(a)) continue;
             var i_want = a.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
-            return TradeItem.Cast(new Data.Model.InvOrigin(a), m_Actor, give, i_want.First());
+            return TradeItem.Cast(new Data.Model.InvOrigin(a), who, give, i_want.First());
          }
       }
       return null;
@@ -6055,7 +6055,7 @@ restart_chokepoints:
       var trade = BehaviorTradeWithinClan(give);
       if (trade is not null) return trade;
       if (stack.IsAccessible(m_Actor.Location)) {
-        var act = TradeItem.Cast(stack, m_Actor, give, take);
+        var act = TradeItem.Cast(stack, who, give, take);
         if (act is not null) return act;
       }
       return BehaviorDropItem(give);
@@ -6070,7 +6070,7 @@ restart_chokepoints:
       var trade = BehaviorTradeWithinClan(give);
       if (trade is not null) return trade;
       if (position is not null) {
-        var act = TradeItem.Cast(position.Value, m_Actor, give, take);
+        var act = TradeItem.Cast(position.Value, who, give, take);
         if (act is not null) return act;
       }
       return BehaviorDropItem(give);
@@ -6300,14 +6300,14 @@ restart_chokepoints:
               if (tmp is not null) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
-              tmp = TradeItem.Cast(in stack, m_Actor, drop, it);
+              tmp = TradeItem.Cast(in stack, who, drop, it);
               if (tmp is not null) recover.Add(tmp);
             }
             if (0 == recover.Count) {
               // 3a) drop target without triggering the no-pickup schema
               recover.Add(new ActionDropItem(m_Actor,drop));
               // 3b) pick up ammo
-              recover.Add(new ActionTake(m_Actor,it.ModelID));
+              recover.Add(new ActionTake(who,it.ModelID));
             }
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
             recover.Add(new ActionUse(m_Actor, it.ModelID));
@@ -6340,14 +6340,14 @@ restart_chokepoints:
               if (tmp is not null) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
-              tmp = TradeItem.Cast(in stack, m_Actor, drop, it);
+              tmp = TradeItem.Cast(in stack, who, drop, it);
               if (tmp is not null) recover.Add(tmp);
             }
             if (0 == recover.Count) {
               // 3a) drop target without triggering the no-pickup schema
               recover.Add(new ActionDropItem(m_Actor,drop));
               // 3b) pick up ammo
-              recover.Add(new ActionTake(m_Actor,it.ModelID));
+              recover.Add(new ActionTake(who,it.ModelID));
             }
 
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
@@ -6378,7 +6378,7 @@ restart_chokepoints:
             if (stack.IsAccessible(m_Actor.Location)) return _BehaviorDropOrExchange(drop, it, in stack);
             var recover = new List<ActorAction> {
                 new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
-                new ActionTake(m_Actor,it.ModelID) // 3b) pick up food
+                new ActionTake(who,it.ModelID) // 3b) pick up food
             };
             return new ActionChain(m_Actor,recover);
           }
@@ -6505,7 +6505,7 @@ restart_chokepoints:
               if (stack.IsAccessible(m_Actor.Location)) return _BehaviorDropOrExchange(drop, it, in stack);
               var recover = new List<ActorAction> {
                   new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
-                  new ActionTake(m_Actor,it.ModelID) // 3b) pick up food
+                  new ActionTake(who,it.ModelID) // 3b) pick up food
               };
               return new ActionChain(m_Actor,recover);
             }
@@ -6578,12 +6578,12 @@ restart_chokepoints:
           // flashlights tend to not be very disruptive to other pathing
           var discard = inv.GetFirstMatching<ItemLight>();
           if (discard is not null) {
-            var initiate = TradeItem.Cast(in stack, m_Actor, discard, it);
+            var initiate = TradeItem.Cast(in stack, who, discard, it);
             if (initiate is not null) {
               var actions = new List<ActorAction> { initiate };
               actions.Add(new ActionUseItem(m_Actor, it)); // won't be performable, but would be after initiation
               if (1 < it.Quantity) { }  // \todo abstract version of trade with cast
-              else actions.Add(new ActionTake(m_Actor, discard.ModelID));
+              else actions.Add(new ActionTake(who, discard.ModelID));
               return new ActionChain(m_Actor, actions);
             }
           }
@@ -6703,14 +6703,14 @@ restart_chokepoints:
 
               // 3a) drop target without triggering the no-pickup schema
               // 3a) drop target without triggering the no-pickup schema
-              tmp = TradeItem.Cast(position.Value, m_Actor, drop, it);
+              tmp = TradeItem.Cast(position.Value, who, drop, it);
               if (tmp is not null) recover.Add(tmp);
             }
             if (0 == recover.Count) {
               // 3a) drop target without triggering the no-pickup schema
               recover.Add(new ActionDropItem(m_Actor,drop));
               // 3b) pick up ammo
-              recover.Add(new ActionTake(m_Actor,it.ModelID));
+              recover.Add(new ActionTake(who,it.ModelID));
             }
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
             recover.Add(new ActionUse(m_Actor, it.ModelID));
@@ -6743,14 +6743,14 @@ restart_chokepoints:
               if (tmp is not null) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
-              tmp = TradeItem.Cast(position.Value, m_Actor, drop, it);
+              tmp = TradeItem.Cast(position.Value, who, drop, it);
               if (tmp is not null) recover.Add(tmp);
             }
             if (0 == recover.Count) {
               // 3a) drop target without triggering the no-pickup schema
               recover.Add(new ActionDropItem(m_Actor,drop));
               // 3b) pick up ammo
-              recover.Add(new ActionTake(m_Actor,it.ModelID));
+              recover.Add(new ActionTake(who,it.ModelID));
             }
 
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
@@ -6781,7 +6781,7 @@ restart_chokepoints:
             if (position is not null) return _BehaviorDropOrExchange(drop,it,position.Value);
             var recover = new List<ActorAction>{
                 new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
-                new ActionTake(m_Actor,it.ModelID) // 3b) pick up food
+                new ActionTake(who,it.ModelID) // 3b) pick up food
             };
             return new ActionChain(m_Actor,recover);
           }
@@ -6908,7 +6908,7 @@ restart_chokepoints:
               if (position is not null) return _BehaviorDropOrExchange(drop,it,position.Value);
               List<ActorAction> recover = new List<ActorAction> {
                   new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
-                  new ActionTake(m_Actor,it.ModelID) // 3b) pick up food
+                  new ActionTake(who,it.ModelID) // 3b) pick up food
               };
               return new ActionChain(m_Actor,recover);
             }
@@ -6980,12 +6980,12 @@ restart_chokepoints:
         // flashlights tend to not be very disruptive to other pathing
         var discard = inv.GetFirstMatching<ItemLight>();
         if (discard is not null) {
-          var initiate = TradeItem.Cast(position.Value, m_Actor, discard, it);
+          var initiate = TradeItem.Cast(position.Value, who, discard, it);
           if (initiate is not null) {
             var actions = new List<ActorAction> { initiate };
             actions.Add(new ActionUseItem(m_Actor, it)); // won't be legal but would be after initiation
             if (1 < it.Quantity) { }  // \todo abstract version of trade with cast
-            else actions.Add(new ActionTake(m_Actor, discard.ModelID));
+            else actions.Add(new ActionTake(who, discard.ModelID));
             return new ActionChain(m_Actor, actions);
           }
         }
@@ -7287,7 +7287,7 @@ restart_chokepoints:
       if (ground_inv is null) return null;
 
       // set up pattern-matching for ranged weapons
-      Data.Model.InvOrigin viewpoint_inventory = new(m_Actor); // intentionally chosen to be impossible, as a flag
+      Data.Model.InvOrigin viewpoint_inventory = new(who); // intentionally chosen to be impossible, as a flag
       Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> best_rw = new();
       Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> reload_empty_rw = new();
       Dictionary<Data.Model.InvOrigin, ItemRangedWeapon[]> discard_empty_rw = new();
@@ -7306,7 +7306,7 @@ restart_chokepoints:
             foreach(var stack in ground_inv) {
              var remote_ammo = stack.Inventory!.GetCompatibleAmmoItem(local_rw);
              if (remote_ammo is null) continue;
-             SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(m_Actor, (Item_IDs)(i + (int)Item_IDs.AMMO_LIGHT_PISTOL))));
+             SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(who, (Item_IDs)(i + (int)Item_IDs.AMMO_LIGHT_PISTOL))));
              return UseAmmo(local_ammo, local_rw);
             }
           }
@@ -7340,7 +7340,7 @@ restart_chokepoints:
               }
             }
           }
-          if (test is not null) return TradeItem.Cast(dest.Value, m_Actor, src, test);
+          if (test is not null) return TradeItem.Cast(dest.Value, who, src, test);
         }
 
         // optimization: swap for most-loaded ranged weapon taking same ammo
@@ -7365,7 +7365,7 @@ restart_chokepoints:
               }
             }
           }
-          if (test is not null) return TradeItem.Cast(dest.Value, m_Actor, src, test);
+          if (test is not null) return TradeItem.Cast(dest.Value, who, src, test);
         }
       }
 

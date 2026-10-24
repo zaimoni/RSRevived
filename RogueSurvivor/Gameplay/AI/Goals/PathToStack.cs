@@ -81,11 +81,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             if (!_stacks.Contains(stage)) _stacks.Add(stage);
         }
 
-        private static ActorAction? Take(Actor who, in Data.Model.InvOrigin src, Item_IDs what) {
+        private static ActorAction? Take(LivingActor who, in Data.Model.InvOrigin src, Item_IDs what) {
           var take = src.Inventory.GetWorstDestackable(GameItems.From(what));
           if (take is null) return null;
           bool src_is_inanimate = src.loc is not null || src.obj_owner is not null;
-          if (!who.Inventory!.IsFull) {
+          if (!who.Inventory.IsFull) {
             if (src_is_inanimate) return new Engine._Action.TakeItem(who, in src, take);
           }
           // will have to trade.
@@ -133,7 +133,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
                 if (!_stacks[i].Key.IsAccessible(m_Actor.Location)) continue;
                 var need_override = oai.SetRatingOverride(_stacks[i].Value, 3, 2);
-                var act = Take(m_Actor, _stacks[i].Key, _stacks[i].Value);
+                var act = m_Actor is LivingActor who ? Take(who, _stacks[i].Key, _stacks[i].Value) : null;
                 if (act is not null && act.IsPerformable()) {
                     (_inventory_actions ??= new()).Add(new(_stacks[i].Key, act));
                 } else if (need_override is not null) {

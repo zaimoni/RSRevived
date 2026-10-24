@@ -4239,8 +4239,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return false;
         });
         if (0 >= critical.Count) return null;
-        Dictionary<Actor, Item_IDs> insurance = new();   // trading CPU for lower GC might be empirically ok here (null with alloc on first use)
-        Dictionary<Actor, Item_IDs> want = new();
+        Dictionary<LivingActor, Item_IDs> insurance = new();   // trading CPU for lower GC might be empirically ok here (null with alloc on first use)
+        Dictionary<LivingActor, Item_IDs> want = new();
         foreach (var a in clan) {
             if (!CanSee(a.Location)) continue;  // don't want to mention this sort of thing over radio
             if (!InCommunicationWith(a)) continue;
