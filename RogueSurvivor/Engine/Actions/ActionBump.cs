@@ -47,20 +47,13 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform() => m_ConcreteAction.Perform();
 
-    static public ActionBump? create(Actor actor, Direction direction) {
+    static public ActionBump? create(Actor actor, Direction direction, out string? reason) {
         var denorm_loc = actor.Location + direction;
-        var act = Rules.IsBumpableFor(actor, in denorm_loc, out var reason);
+        var act = Rules.IsBumpableFor(actor, in denorm_loc, out reason);
         if (act is null || !act.IsPerformable()) return null;
         return new(actor, direction, act);
     }
-
-    static public (ActionBump?, string?) create(ActorController controller, Direction direction) {
-        Actor actor = controller.ControlledActor;
-        var denorm_loc = actor.Location + direction;
-        var act = Rules.IsBumpableFor(actor, in denorm_loc, out var reason);
-        if (act is null || !act.IsPerformable()) return (null, reason);
-        return (new(actor, direction, act), null);
-    }
+    static public ActionBump? create(Actor actor, Direction direction) => create(actor, direction, out var _);
 
     public override string ToString() { return m_ConcreteAction.ToString(); }
   }

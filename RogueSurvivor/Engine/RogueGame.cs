@@ -8962,7 +8962,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool DoPlayerBump(Actor player, Direction direction)
     {
-      (var actionBump, var reason) = ActionBump.create(player.Controller, direction);
+      ActionBump? actionBump = ActionBump.create(player, direction, out var reason);
       if (actionBump is not null) {
         actionBump.Perform();
         return true;
