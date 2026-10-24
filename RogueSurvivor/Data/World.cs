@@ -972,11 +972,11 @@ restart:
 
     private void _RejectActorActorInventoryCrossLink(List<string> errors, Actor origin)
     {
-      var o_inv = origin.Inventory;
+      var o_inv = (origin as LivingActor)?.Inventory;
       if (o_inv.IsEmpty()) return;
       DoForAllActors(a => {
         if (a == origin) return;
-        var err = a.Inventory?._HasCrossLink(o_inv);
+        var err = (a as LivingActor)?.Inventory._HasCrossLink(o_inv);
         if (!string.IsNullOrEmpty(err)) errors.Add(origin.Name +", " + a.Name +" " + err);
       });
     }
@@ -1008,7 +1008,7 @@ restart:
 
     private void _RejectActorGroundInventoryCrossLink(List<string> errors, Actor origin)
     {
-      var o_inv = origin.Inventory;
+      var o_inv = (origin as LivingActor)?.Inventory;
       if (o_inv.IsEmpty()) return;
       DoForAllGroundInventories((loc, inv) => {
         if (inv.IsEmpty) return;
@@ -1025,16 +1025,16 @@ restart:
     private void _RejectActorInventoryZero(List<string> errors)
     {
       DoForAllActors(a => {
-        var err = a.Inventory?._HasZeroQuantityOrDuplicate();
-        if (!string.IsNullOrEmpty(err)) errors.Add(a.Name +": " + err +": " + a.Inventory);
+        var err = (a as LivingActor)?.Inventory._HasZeroQuantityOrDuplicate();
+        if (!string.IsNullOrEmpty(err)) errors.Add(a.Name +": " + err +": " + (a as LivingActor)?.Inventory);
       });
     }
 
     private void _RejectActorInventoryMultiEquipped(List<string> errors)
     {
       DoForAllActors(a => {
-        var err = a.Inventory?._HasMultiEquippedItems();
-        if (!string.IsNullOrEmpty(err)) errors.Add(a.Name +": " + err +": " + a.Inventory);
+        var err = (a as LivingActor)?.Inventory._HasMultiEquippedItems();
+        if (!string.IsNullOrEmpty(err)) errors.Add(a.Name +": " + err +": " + (a as LivingActor)?.Inventory);
       });
     }
 

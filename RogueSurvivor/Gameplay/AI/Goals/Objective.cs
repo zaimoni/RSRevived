@@ -42,6 +42,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // An objective's actor is the one whose controller is being saved or loaded.  Only a different one is written.
       static protected Actor JsonActor(JsonElement src) => ActorController.ActorOrOwner(src);
+      static protected LivingActor JsonLivingActor(JsonElement src) => (LivingActor)ActorController.ActorOrOwner(src);
 
       static protected T JsonLoaded<T>(JsonElement src, T ret) where T : Objective
       {

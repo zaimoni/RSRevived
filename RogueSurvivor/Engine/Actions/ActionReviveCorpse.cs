@@ -14,8 +14,11 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Corpse m_Target;
 
-    public ActionReviveCorpse(Actor actor, Corpse target) : base(actor)
+    private new readonly LivingActor m_Actor;   // the same object as the base field
+
+    public ActionReviveCorpse(LivingActor actor, Corpse target) : base(actor)
     {
+      m_Actor = actor;
       m_Target = target
 #if DEBUG
         ?? throw new ArgumentNullException(nameof(target))
@@ -24,7 +27,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
 
     public Corpse What { get { return m_Target; } }
-    public ItemMedicine Use { get { return m_Actor.Inventory?.GetFirst(Gameplay.Item_IDs.MEDICINE_MEDIKIT) as ItemMedicine; } } // assume legal
+    public ItemMedicine Use { get { return m_Actor.Inventory.GetFirst(Gameplay.Item_IDs.MEDICINE_MEDIKIT) as ItemMedicine; } } // assume legal
 
     public override bool IsLegal()
     {
@@ -44,7 +47,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       RogueGame.Game.DoReviveCorpse(m_Actor, m_Target);
     }
 
-    public static string? ReasonIllegal(Actor actor) {
+    public static string? ReasonIllegal(LivingActor actor) {
       if (0 == actor.MySkills.GetSkillLevel(Gameplay.Skills.IDs.MEDIC)) return "lack medic skill";
       if (!actor.Inventory.Has(Gameplay.Item_IDs.MEDICINE_MEDIKIT)) return "no medikit";
       return null;
@@ -55,18 +58,18 @@ namespace djack.RogueSurvivor.Engine.Actions
       return null;
     }
 
-    public static string? ReasonCant(Actor actor, Corpse corpse)
+    public static string? ReasonCant(LivingActor actor, Corpse corpse)
     {
       if (corpse.Location != actor.Location) return "not there";
       return null;
     }
 
-    private static string ReasonCannot(Actor actor, Corpse corpse)
+    private static string ReasonCannot(LivingActor actor, Corpse corpse)
     {
       return ReasonIllegal(actor) ?? ReasonIllegal(corpse) ?? ReasonCant(actor, corpse) ?? "";
     }
 
-    public static bool Can(Actor actor, Corpse corpse)
+    public static bool Can(LivingActor actor, Corpse corpse)
     {
       return string.IsNullOrEmpty(ReasonCannot(actor, corpse));
     }

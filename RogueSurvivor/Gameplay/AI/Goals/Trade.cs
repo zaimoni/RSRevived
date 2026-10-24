@@ -13,20 +13,22 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
     [Serializable]
     class Trade : Objective, IJsonStaged<Trade>
     {
-        readonly List<Actor> _whom = new List<Actor>(1);
+        readonly List<LivingActor> _whom = new List<LivingActor>(1);
+        private new readonly LivingActor m_Actor;   // the same object as the base field
 
         #region JSON save/load
 
-        private Trade(Actor who, JsonElement src) : base(who, src)
+        private Trade(LivingActor who, JsonElement src) : base(who, src)
 
         {
 
-            _whom.AddRange(src.Require("Whom").RequireRefs<Actor>());
+            m_Actor = who;
+            _whom.AddRange(src.Require("Whom").RequireRefs<LivingActor>());
 
         }
 
 
-        static Trade IJsonStaged<Trade>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Trade(JsonActor(src), src));
+        static Trade IJsonStaged<Trade>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new Trade(JsonLivingActor(src), src));
 
 
         public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
@@ -42,8 +44,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         #endregion
 
 
-        public Trade(int t0, Actor who, Actor target) : base(t0, who)
+        public Trade(int t0, LivingActor who, LivingActor target) : base(t0, who)
         {
+            m_Actor = who;
             _whom.Add(target);
         }
 
@@ -153,7 +156,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             return false;
         }
 
-        public void Add(Actor target) { if (!_whom.Contains(target)) _whom.Add(target); }
-        public void Remove(Actor target) { _whom.Remove(target); }
+        public void Add(LivingActor target) { if (!_whom.Contains(target)) _whom.Add(target); }
+        public void Remove(LivingActor target) { _whom.Remove(target); }
     }
 }

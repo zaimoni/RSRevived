@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Engine.Items
     new public ItemAmmoModel Model { get {return (base.Model as ItemAmmoModel)!; } }
     public AmmoType AmmoType { get { return Model.AmmoType; } }
     public ItemRangedWeapon rw { get { return _rw!; } }
-    private ItemRangedWeapon? test_rw(Actor a) {
+    private ItemRangedWeapon? test_rw(LivingActor a) {
       var rw = a.Inventory.GetCompatibleRangedWeapon(this);
       if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) {
         _rw = rw;
@@ -39,12 +39,12 @@ namespace djack.RogueSurvivor.Engine.Items
 
 #region UsableItem implementation
     public bool CouldUse() { return true; }
-    public bool CouldUse(Actor a) {
+    public bool CouldUse(LivingActor a) {
       if (a.Model.Abilities.AI_NotInterestedInRangedWeapons) return false; // bikers
       return test_rw(a) is not null;
     }
-    public bool CanUse(Actor a) { return CouldUse(a); }
-    public void Use(Actor actor, Inventory inv) {
+    public bool CanUse(LivingActor a) { return CouldUse(a); }
+    public void Use(LivingActor actor, Inventory inv) {
 #if DEBUG
       if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain "+ToString());
 #endif
@@ -65,7 +65,7 @@ namespace djack.RogueSurvivor.Engine.Items
       actor.PlayersInLOS()?.RedrawPlayScreen(RogueGame.MakePanopticMessage(actor, RogueGame.VERB_RELOAD.Conjugate(actor), rw));
       _rw = null;
     }
-    public string ReasonCantUse(Actor a) {
+    public string ReasonCantUse(LivingActor a) {
       if (!a.Inventory.Contains(_rw)) _rw = null;
       if (_rw is not null) return "";   // already cleared
       if (test_rw(a) is not null) return "";  // ok
@@ -73,8 +73,8 @@ namespace djack.RogueSurvivor.Engine.Items
       if (rw.Ammo >= rw.Model.MaxAmmo) return "weapon already fully loaded";
       return "";
     }
-    public bool UseBeforeDrop(Actor a) { return test_rw(a) is not null; }
-    public bool FreeSlotByUse(Actor a) { return false; } // handled by other behaviors
+    public bool UseBeforeDrop(LivingActor a) { return test_rw(a) is not null; }
+    public bool FreeSlotByUse(LivingActor a) { return false; } // handled by other behaviors
 #endregion
 
     static public ItemAmmo make(Gameplay.Item_IDs x)

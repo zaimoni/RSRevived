@@ -213,8 +213,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
         var mayStealFrom = FilterCurrent(_all)?.FilterCast<Actor>(a =>
         {
-          if (a.Inventory.IsEmpty() || IsFriendOf(a)) return false;
-          if (!a.IsUnsuspiciousFor(m_Actor)) return HasAnyInterestingItem(a.Inventory);
+          if (a is not LivingActor mark || mark.Inventory.IsEmpty || IsFriendOf(a)) return false;
+          if (!a.IsUnsuspiciousFor(m_Actor)) return HasAnyInterestingItem(mark.Inventory);
           game.DoEmote(a, string.Format("moves unnoticed by {0}.", m_Actor.Name));
           return false;
         });
@@ -225,7 +225,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (0 < mayStealFrom.Count) {
             var victimize = FilterNearest(mayStealFrom);
             Actor target = victimize.Percepted;
-            Item? obj = target.Inventory?.GetFirstMatching<Item>(it => IsInterestingItem(it));
+            Item? obj = (target as LivingActor)?.Inventory.GetFirstMatching<Item>(it => IsInterestingItem(it));
             game.DoMakeAggression(m_Actor, target);
             m_Actor.TargetedActivity(Activity.CHASING, target);
             return new ActionSay(m_Actor, target, string.Format("Hey! That's some nice {0} you have here!", obj.Model.SingleName), Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER); // takes turn for game balance

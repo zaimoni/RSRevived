@@ -22,12 +22,12 @@ namespace djack.RogueSurvivor.Data
     public interface UsableItem
     {
         bool CouldUse(); // i.e., Legal, item-only
-        bool CouldUse(Actor actor); // i.e. Legal, actor-dependent
-        bool CanUse(Actor actor);   // i.e. Performable
-        void Use(Actor actor, Inventory inv);
-        string ReasonCantUse(Actor actor);
-        bool UseBeforeDrop(Actor a);
-        bool FreeSlotByUse(Actor a);
+        bool CouldUse(LivingActor actor); // i.e. Legal, actor-dependent
+        bool CanUse(LivingActor actor);   // i.e. Performable
+        void Use(LivingActor actor, Inventory inv);
+        string ReasonCantUse(LivingActor actor);
+        bool UseBeforeDrop(LivingActor a);
+        bool FreeSlotByUse(LivingActor a);
     }
 
     [Serializable]
@@ -159,7 +159,7 @@ namespace djack.RogueSurvivor.Data
       var already = actor.GetEquippedItem(Model.EquipmentPart);
       if (already == this) return;
 #if DEBUG
-      if (!actor.IsCarrying(this)) throw new ArgumentNullException("actor.Inventory?.Contains(this)");
+      if (!((actor as LivingActor)?.IsCarrying(this) ?? false)) throw new ArgumentNullException("actor.Inventory?.Contains(this)");
 #endif
       already?.UnequippedBy(actor);
       actor.Equip(this, true);

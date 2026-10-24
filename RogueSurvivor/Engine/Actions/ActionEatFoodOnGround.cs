@@ -12,9 +12,11 @@ namespace djack.RogueSurvivor.Engine.Actions
   internal class ActionEatFoodOnGround : ActorAction
   {
     private readonly ItemFood m_Item;
+    private new readonly LivingActor m_Actor;   // the same object as the base field
 
-    public ActionEatFoodOnGround(Actor actor, ItemFood it) : base(actor)
+    public ActionEatFoodOnGround(LivingActor actor, ItemFood it) : base(actor)
     {
+      m_Actor = actor;
       m_Item = it;
     }
 

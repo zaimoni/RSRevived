@@ -15,22 +15,25 @@ namespace djack.RogueSurvivor.Engine.Actions
   [Serializable]
   internal class ActionTrade : ActorAction, IJsonStaged<ActionTrade>
   {
-    private readonly Actor m_Target;
+    private readonly LivingActor m_Target;
 #if PROTOTYPE_TRADE_RAM_FOR_CPU_OR_IL_SIZE
     [NonSerialized] OrderableAI actor_ordai;
     [NonSerialized] OrderableAI target_ordai;
 #endif
 
     #region JSON save/load
-    private ActionTrade(Actor actor, JsonElement src) : base(actor)
+    private new readonly LivingActor m_Actor;   // the same object as the base field
+
+    private ActionTrade(LivingActor actor, JsonElement src) : base(actor)
     {
-      m_Target = src.Require("Target").RequireRef<Actor>();
+      m_Actor = actor;
+      m_Target = src.Require("Target").RequireRef<LivingActor>();
       // Perform needs OrderableAI controllers on both sides: a trade is between NPCs.  The controllers are shells by now (two-phase load).
       if (actor.Controller is not OrderableAI) throw new JsonException("ActionTrade: " + actor.UnmodifiedName + " is not run by an OrderableAI");
       if (m_Target.Controller is not OrderableAI) throw new JsonException("ActionTrade: " + m_Target.UnmodifiedName + " is not run by an OrderableAI");
     }
 
-    static ActionTrade IJsonStaged<ActionTrade>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionTrade(JsonActor(src), src));
+    static ActionTrade IJsonStaged<ActionTrade>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionTrade(JsonLivingActor(src), src));
 
     public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
@@ -39,8 +42,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
     #endregion
 
-    public ActionTrade(Actor actor, Actor target) : base(actor)
+    public ActionTrade(LivingActor actor, LivingActor target) : base(actor)
     {
+      m_Actor = actor;
       m_Target = target
 #if DEBUG
         ?? throw new ArgumentNullException(nameof(target))
@@ -71,10 +75,8 @@ namespace djack.RogueSurvivor.Engine.Actions
       RogueGame.Game.DoTrade(speaker_c, RogueGame.PickItemsToTrade(speaker_c, m_Target), target_c, false);
     }
 
-        private static string? ReasonIllegal(Actor src, Actor target)
+        private static string? ReasonIllegal(LivingActor src, LivingActor target)
         {
-            if (src.Inventory is null) return "nothing to offer";
-            if (target.Inventory is null) return "has nothing to trade";
             if (!src.IsPlayer && target.IsPlayer) return "target is player";
             if (!src.Model.Abilities.CanTrade && (target as LivingActor)?.Leader != src) return "can't trade";
             if (!target.Model.Abilities.CanTrade && (src as LivingActor)?.Leader != target) return "target can't trade";
@@ -101,7 +103,7 @@ namespace djack.RogueSurvivor.Engine.Actions
             return null;
         }
 
-        private static string? ReasonCant(Actor src, Actor target)
+        private static string? ReasonCant(LivingActor src, LivingActor target)
         {
             if (src.Inventory.IsEmpty) return "nothing to offer";
             if (target.Inventory.IsEmpty) return "has nothing to trade";
@@ -136,18 +138,18 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         // For historical reasons, even though using a PC would hard-error Perform()
         // the Can predicate allows PCs
-        private static string ReasonCannot(Actor src, Actor target)
+        private static string ReasonCannot(LivingActor src, LivingActor target)
         {
             return ReasonIllegal(src, target) ?? ReasonCant(src, target) ?? "";
         }
 
-        public static bool Can(Actor src, Actor target, out string reason)
+        public static bool Can(LivingActor src, LivingActor target, out string reason)
         {
             reason = ReasonCannot(src, target);
             return string.IsNullOrEmpty(reason);
         }
 
-        public static bool Can(Actor src, Actor target)
+        public static bool Can(LivingActor src, LivingActor target)
         {
             return string.IsNullOrEmpty(ReasonCannot(src, target));
         }

@@ -183,7 +183,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return true;
       }
 
-      var recharge = ActionRechargeItemBattery.WantsToRecharge(m_Actor);
+      var recharge = m_Actor is LivingActor living ? ActionRechargeItemBattery.WantsToRecharge(living) : null;
       if (recharge is not null) {
           ret = (m_Actor.Controller as ObjectiveAI)?.DoctrineRechargeToFull(recharge);
           if (ret is not null) return true;
@@ -1814,7 +1814,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // design decision to not turn on here
         if (gen.IsOn) {
           if (Rules.IsAdjacent(m_Actor.Location, gen.Location)) {
-            return ActionRechargeItemBattery.Recharge(m_Actor, recharge);
+            return ActionRechargeItemBattery.Recharge(who, recharge);
           } else {
             var candidates = gen.Location.Adjacent(loc => loc.IsWalkableFor(m_Actor));
             if (candidates is not null) recharge_at.UnionWith(candidates);
@@ -2675,13 +2675,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (a.IsPlayer) continue;
             var they_want = who.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(a));
             if (!they_want.Any()) continue;
-            var defend = they_want.Where(it => it is UsableItem use && use.UseBeforeDrop(m_Actor));
+            var defend = they_want.Where(it => it is UsableItem use && use.UseBeforeDrop(who));
             if (defend.Any()) {
-               var act = new ActionUseItem(m_Actor, defend.First());
+               var act = new ActionUseItem(who, defend.First());
                if (act.IsPerformable()) return act;
                continue;
             }
-            var i_want = a.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
+            var i_want = a.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(who) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
             return TradeItem.Cast(new Data.Model.InvOrigin(a), who, they_want.First(), i_want.First());
          }
@@ -2691,15 +2691,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected TradeItem? BehaviorTradeWithinClan(Item give) {
       // somewhat like BehaviorRequestCriticalFromGroup
-      if (!(give is UsableItem use && !use.UseBeforeDrop(m_Actor))) return null;
       if (m_Living is not { } who) return null;
+      if (!(give is UsableItem use && !use.UseBeforeDrop(who))) return null;
       var clan = who.ChainOfCommand;
       if (clan is not null) {
          var adj_clan = clan.Where(member => Rules.IsAdjacent(m_Actor.Location, member.Location));
          foreach(var a in adj_clan) {
             if (a.IsPlayer) continue;
             if (!use.UseBeforeDrop(a)) continue;
-            var i_want = a.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
+            var i_want = a.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(who) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
             return TradeItem.Cast(new Data.Model.InvOrigin(a), who, give, i_want.First());
          }
@@ -2712,11 +2712,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // canned food is too valuable to just eat
       const bool tracing = false; // debugging hook
 
-      var microoptimize_items = who.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor));
+      var microoptimize_items = who.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(who));
       if (microoptimize_items.Any()) {
         var obj = microoptimize_items.First();
         if (obj is ItemAmmo ammo) return UseAmmo(ammo, ammo.rw);
-        else return new ActionUseItem(m_Actor, obj);
+        else return new ActionUseItem(who, obj);
       }
 
       var trade = BehaviorTradeWithinClan();
@@ -5407,37 +5407,39 @@ restart_chokepoints:
       return ret.Any() ? ret.ToList() : null;
     }
 
-    public Dictionary<Location, Actor>? GetTradingTargets(Dictionary<Location,Actor> friends) // Waterfall Lifecycle: retain this parameter for contrafactual use
+    public Dictionary<Location, LivingActor>? GetTradingTargets(Dictionary<Location,Actor> friends) // Waterfall Lifecycle: retain this parameter for contrafactual use
     {
         if (friends is null || 0 >= friends.Count) return null;
+        if (m_Living is not { } who) return null;
         if (!m_Actor.Model.Abilities.CanTrade) return null; // arguably an invariant but not all PCs are overriding appropriate base AIs
         var TradeableItems = GetTradeableItems();
         if (TradeableItems is null || 0>=TradeableItems.Count) return null;
 
-        var ret = new Dictionary< Location, Actor >(friends.Count);
+        var ret = new Dictionary< Location, LivingActor >(friends.Count);
         foreach(var x in friends) {
           if (x.Value.IsPlayer) continue;
-          if (this is OrderableAI ai && ai.IsActorTabooTrade(x.Value)) continue;
-          if (!ActionTrade.Can(m_Actor, x.Value)) continue;
+          if (x.Value is not LivingActor partner) continue;
+          if (this is OrderableAI ai && ai.IsActorTabooTrade(partner)) continue;
+          if (!ActionTrade.Can(who, partner)) continue;
           if (m_Actor.MinStepPathTo(m_Actor.Location, x.Key) is null) continue;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
           if (1 == TradeableItems.Count) {
             var other_TradeableItems = (x.Value.Controller as OrderableAI).GetTradeableItems();
             if (other_TradeableItems is null) continue;
             if (1 == other_TradeableItems.Count && TradeableItems[0].ModelID== other_TradeableItems[0].ModelID) continue;
           }
-          if (!(x.Value.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) continue;
-          if (!HaveTradeOptions(x.Value)) continue;
-          ret.Add(x.Key,x.Value);
+          if (!(partner.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) continue;
+          if (!HaveTradeOptions(partner)) continue;
+          ret.Add(x.Key,partner);
         }
         return 0<ret.Count ? ret : null;
     }
 
-    public List<KeyValuePair<Item, Item>>? TradeOptions(Actor target)
+    public List<KeyValuePair<Item, Item>>? TradeOptions(LivingActor target)
     {
       if (m_Living is not { } who) return null;
       var wants = who.GetInterestingTradeableItems(target);  // charisma check involved for these
       if (wants is null || 0 >= wants.Count) return null;
-      var offers = target.GetInterestingTradeableItems(m_Actor);
+      var offers = target.GetInterestingTradeableItems(who);
       if (offers is null || 0 >= offers.Count) return null;
       var negotiate = new List<KeyValuePair<Item,Item>>(wants.Count*offers.Count);   // relies on "small" inventory to avoid arithmetic overflow
       foreach(var s_item in wants) {
@@ -5451,12 +5453,12 @@ restart_chokepoints:
       return 0<negotiate.Count ? negotiate : null;
     }
 
-    public bool HaveTradeOptions(Actor target)
+    public bool HaveTradeOptions(LivingActor target)
     {
       if (m_Living is not { } who) return false;
       var wants = who.GetInterestingTradeableItems(target);  // charisma check involved for these
       if (wants is null || 0 >= wants.Count) return false;
-      var offers = target.GetInterestingTradeableItems(m_Actor);
+      var offers = target.GetInterestingTradeableItems(who);
       if (offers is null || 0 >= offers.Count) return false;
       foreach(var s_item in wants) {
         foreach(var b_item in offers) {
@@ -5470,6 +5472,7 @@ restart_chokepoints:
 
     protected bool HaveTradingTargets()
     {
+        if (m_Living is not { } who) return false;
         if (!m_Actor.Model.Abilities.CanTrade) return false; // arguably an invariant but not all PCs are overriding appropriate base AIs
         if (friends_in_FOV is null) return false;
         var TradeableItems = GetTradeableItems();
@@ -5478,16 +5481,17 @@ restart_chokepoints:
         foreach(var ally in friends_in_FOV.Values) {
           if (ally.IsDead) continue;
           if (ally.IsPlayer) continue;
-          if (this is OrderableAI ai && ai.IsActorTabooTrade(ally)) continue;
-          if (!ActionTrade.Can(m_Actor, ally)) continue;
+          if (ally is not LivingActor partner) continue;
+          if (this is OrderableAI ai && ai.IsActorTabooTrade(partner)) continue;
+          if (!ActionTrade.Can(who, partner)) continue;
           if (m_Actor.MinStepPathTo(m_Actor.Location, ally.Location) is null) continue;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
           if (1 == TradeableItems.Count) {
             var other_TradeableItems = (ally.Controller as OrderableAI).GetTradeableItems();
             if (other_TradeableItems is null) continue;
             if (1 == other_TradeableItems.Count && TradeableItems[0].ModelID== other_TradeableItems[0].ModelID) continue;
           }
-          if (!(ally.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) return false;    // other half of m_Actor.GetInterestingTradeableItems(...)
-          return HaveTradeOptions(ally);
+          if (!(partner.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems)) return false;    // other half of m_Actor.GetInterestingTradeableItems(...)
+          return HaveTradeOptions(partner);
         }
         return false;
     }
@@ -5495,27 +5499,29 @@ restart_chokepoints:
     /// <summary>
     /// Strongly prefer to not directly create ActionUseItem for ammo; use this wrapper to bypass a player UI check.
     /// </summary>
-    protected ActionUseItem UseAmmo(ItemAmmo ammo, ItemRangedWeapon rw)
+    protected ActionUseItem? UseAmmo(ItemAmmo ammo, ItemRangedWeapon rw)
     {
 #if DEBUG
       if (rw.AmmoType != ammo.AmmoType) throw new InvalidOperationException("ammunition types must agree");
 #endif
-      if (m_Living is { } who && who.Inventory.Contains(ammo)) rw.EquippedBy(m_Actor);
-      return new ActionUseItem(m_Actor, ammo);
+      if (m_Living is not { } who) return null;
+      if (who.Inventory.Contains(ammo)) rw.EquippedBy(who);
+      return new ActionUseItem(who, ammo);
     }
 
     private ActorAction? _PrefilterDrop(Item it, bool use_ok=true)
     {
         if (!use_ok) return null;
+        if (m_Living is not { } who) return null;
         // traps are usable, but don't do well with the use heuristic
         if (it is ItemTrap) return null;
 #if DEBUG
         if (!(m_Living?.IsCarrying(it) ?? false)) throw new InvalidOperationException("invariant violation");
 #endif
         if (it is UsableItem obj) {
-          if (obj.CouldUse() && obj.CouldUse(m_Actor) && obj.UseBeforeDrop(m_Actor)) {  // \todo first two tests may be redundant
+          if (obj.CouldUse() && obj.CouldUse(who) && obj.UseBeforeDrop(who)) {  // \todo first two tests may be redundant
             if (it is ItemAmmo ammo) { return UseAmmo(ammo, ammo.rw); }
-            else return new ActionUseItem(m_Actor, it);
+            else return new ActionUseItem(who, it);
           }
         }
         return null;
@@ -5524,6 +5530,7 @@ restart_chokepoints:
     protected ActorAction? BehaviorDropItem(Item? it)
     {
       if (it is null) return null;
+      if (m_Living is not { } who) return null;
       var tmp = _PrefilterDrop(it);
       if (tmp is not null) return tmp;
 
@@ -5539,9 +5546,9 @@ restart_chokepoints:
 #endif
         has_container.push(container);
       }
-      if (0 < has_container.Count) return new ActionPutInContainer(m_Actor, it, Rules.Get.DiceRoller.Choose(has_container));
+      if (0 < has_container.Count) return new ActionPutInContainer(who, it, Rules.Get.DiceRoller.Choose(has_container));
 
-      return (m_Actor.CanDrop(it) ? new ActionDropItem(m_Actor, it) : null);
+      return (who.CanDrop(it) ? new ActionDropItem(who, it) : null);
     }
 
     public bool ItemIsUseless(Data.Model.Item it)
@@ -6207,7 +6214,7 @@ restart_chokepoints:
       if (m_Living is not { } who) return null;
 #if DEBUG
       if (it is null) throw new ArgumentNullException(nameof(it));
-      if (m_Actor.CanGet(it)) throw new InvalidOperationException("already could get "+it.ToString());
+      if (who.CanGet(it)) throw new InvalidOperationException("already could get "+it.ToString());
       if (ItemIsUseless(it)) throw new InvalidOperationException(it.ToString()+" is useless and need not have room made for it");
       if (stack.obj_owner is null && stack.loc is null) throw new InvalidOperationException("do not try to grab from actor inventory");
       // also should require IsInterestingItem(it), but that's infinite recursion for reasonable use cases
@@ -6241,7 +6248,7 @@ restart_chokepoints:
       }
       }
 
-      var consume_to_free_slot = inv.Where(obj => obj is UsableItem use && use.FreeSlotByUse(m_Actor));
+      var consume_to_free_slot = inv.Where(obj => obj is UsableItem use && use.FreeSlotByUse(who));
       if (consume_to_free_slot.Any()) {
         var act = _PrefilterDrop(consume_to_free_slot.First(), use_ok);
         if (act is not null) return act;
@@ -6275,7 +6282,7 @@ restart_chokepoints:
         if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) {
           // we really do need to reload this.
           if (stack.IsAccessible(m_Actor.Location) && use_ok) { // only do this when right on top of the inventory containing the ammo
-            if (inv.GetBestDestackable(am) is ItemAmmo already) return new ActionUseItem(m_Actor, already);
+            if (inv.GetBestDestackable(am) is ItemAmmo already) return new ActionUseItem(who, already);
           }
 
           // 1) we would re-pickup food.
@@ -6305,12 +6312,12 @@ restart_chokepoints:
             }
             if (0 == recover.Count) {
               // 3a) drop target without triggering the no-pickup schema
-              recover.Add(new ActionDropItem(m_Actor,drop));
+              recover.Add(new ActionDropItem(who,drop));
               // 3b) pick up ammo
               recover.Add(new ActionTake(who,it.ModelID));
             }
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
-            recover.Add(new ActionUse(m_Actor, it.ModelID));
+            recover.Add(new ActionUse(who, it.ModelID));
             return new ActionChain(m_Actor,recover);
           }
         }
@@ -6345,13 +6352,13 @@ restart_chokepoints:
             }
             if (0 == recover.Count) {
               // 3a) drop target without triggering the no-pickup schema
-              recover.Add(new ActionDropItem(m_Actor,drop));
+              recover.Add(new ActionDropItem(who,drop));
               // 3b) pick up ammo
               recover.Add(new ActionTake(who,it.ModelID));
             }
 
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
-            recover.Add(new ActionUse(m_Actor, it.ModelID));
+            recover.Add(new ActionUse(who, it.ModelID));
             return new ActionChain(m_Actor,recover);
           }
           }
@@ -6377,7 +6384,7 @@ restart_chokepoints:
             if (drop.Model.IsStackable) drop = who.Inventory.GetBestDestackable(drop);    // should be non-null
             if (stack.IsAccessible(m_Actor.Location)) return _BehaviorDropOrExchange(drop, it, in stack);
             var recover = new List<ActorAction> {
-                new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
+                new ActionDropItem(who,drop), // 3a) drop target without triggering the no-pickup schema
                 new ActionTake(who,it.ModelID) // 3b) pick up food
             };
             return new ActionChain(m_Actor,recover);
@@ -6504,7 +6511,7 @@ restart_chokepoints:
               if (drop.Model.IsStackable) drop = who.Inventory.GetBestDestackable(drop);    // should be non-null
               if (stack.IsAccessible(m_Actor.Location)) return _BehaviorDropOrExchange(drop, it, in stack);
               var recover = new List<ActorAction> {
-                  new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
+                  new ActionDropItem(who,drop), // 3a) drop target without triggering the no-pickup schema
                   new ActionTake(who,it.ModelID) // 3b) pick up food
               };
               return new ActionChain(m_Actor,recover);
@@ -6581,7 +6588,7 @@ restart_chokepoints:
             var initiate = TradeItem.Cast(in stack, who, discard, it);
             if (initiate is not null) {
               var actions = new List<ActorAction> { initiate };
-              actions.Add(new ActionUseItem(m_Actor, it)); // won't be performable, but would be after initiation
+              actions.Add(new ActionUseItem(who, it)); // won't be performable, but would be after initiation
               if (1 < it.Quantity) { }  // \todo abstract version of trade with cast
               else actions.Add(new ActionTake(who, discard.ModelID));
               return new ActionChain(m_Actor, actions);
@@ -6611,7 +6618,7 @@ restart_chokepoints:
       if (m_Living is not { } who) return null;
 #if DEBUG
       if (it is null) throw new ArgumentNullException(nameof(it));
-      if (m_Actor.CanGet(it)) throw new InvalidOperationException("already could get "+it.ToString());
+      if (who.CanGet(it)) throw new InvalidOperationException("already could get "+it.ToString());
       if (ItemIsUseless(it)) throw new InvalidOperationException(it.ToString()+" is useless and need not have room made for it");
       // also should require IsInterestingItem(it), but that's infinite recursion for reasonable use cases
 #endif
@@ -6643,7 +6650,7 @@ restart_chokepoints:
       }
       }
 
-      var consume_to_free_slot = inv.Where(obj => obj is UsableItem use && use.FreeSlotByUse(m_Actor));
+      var consume_to_free_slot = inv.Where(obj => obj is UsableItem use && use.FreeSlotByUse(who));
       if (consume_to_free_slot.Any()) {
         var act = _PrefilterDrop(consume_to_free_slot.First(), use_ok);
         if (act is not null) return act;
@@ -6677,7 +6684,7 @@ restart_chokepoints:
         if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) {
           // we really do need to reload this.
           if (position is not null && use_ok) { // only do this when right on top of the inventory containing the ammo
-            if (inv.GetBestDestackable(am) is ItemAmmo already) return new ActionUseItem(m_Actor, already);
+            if (inv.GetBestDestackable(am) is ItemAmmo already) return new ActionUseItem(who, already);
           }
 
           // 1) we would re-pickup food.
@@ -6708,12 +6715,12 @@ restart_chokepoints:
             }
             if (0 == recover.Count) {
               // 3a) drop target without triggering the no-pickup schema
-              recover.Add(new ActionDropItem(m_Actor,drop));
+              recover.Add(new ActionDropItem(who,drop));
               // 3b) pick up ammo
               recover.Add(new ActionTake(who,it.ModelID));
             }
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
-            recover.Add(new ActionUse(m_Actor, it.ModelID));
+            recover.Add(new ActionUse(who, it.ModelID));
             return new ActionChain(m_Actor,recover);
           }
         }
@@ -6748,13 +6755,13 @@ restart_chokepoints:
             }
             if (0 == recover.Count) {
               // 3a) drop target without triggering the no-pickup schema
-              recover.Add(new ActionDropItem(m_Actor,drop));
+              recover.Add(new ActionDropItem(who,drop));
               // 3b) pick up ammo
               recover.Add(new ActionTake(who,it.ModelID));
             }
 
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
-            recover.Add(new ActionUse(m_Actor, it.ModelID));
+            recover.Add(new ActionUse(who, it.ModelID));
             return new ActionChain(m_Actor,recover);
           }
           }
@@ -6780,7 +6787,7 @@ restart_chokepoints:
             if (drop.Model.IsStackable) drop = who.Inventory.GetBestDestackable(drop);    // should be non-null
             if (position is not null) return _BehaviorDropOrExchange(drop,it,position.Value);
             var recover = new List<ActorAction>{
-                new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
+                new ActionDropItem(who,drop), // 3a) drop target without triggering the no-pickup schema
                 new ActionTake(who,it.ModelID) // 3b) pick up food
             };
             return new ActionChain(m_Actor,recover);
@@ -6907,7 +6914,7 @@ restart_chokepoints:
               if (drop.Model.IsStackable) drop = who.Inventory.GetBestDestackable(drop);    // should be non-null
               if (position is not null) return _BehaviorDropOrExchange(drop,it,position.Value);
               List<ActorAction> recover = new List<ActorAction> {
-                  new ActionDropItem(m_Actor,drop), // 3a) drop target without triggering the no-pickup schema
+                  new ActionDropItem(who,drop), // 3a) drop target without triggering the no-pickup schema
                   new ActionTake(who,it.ModelID) // 3b) pick up food
               };
               return new ActionChain(m_Actor,recover);
@@ -6983,7 +6990,7 @@ restart_chokepoints:
           var initiate = TradeItem.Cast(position.Value, who, discard, it);
           if (initiate is not null) {
             var actions = new List<ActorAction> { initiate };
-            actions.Add(new ActionUseItem(m_Actor, it)); // won't be legal but would be after initiation
+            actions.Add(new ActionUseItem(who, it)); // won't be legal but would be after initiation
             if (1 < it.Quantity) { }  // \todo abstract version of trade with cast
             else actions.Add(new ActionTake(who, discard.ModelID));
             return new ActionChain(m_Actor, actions);
@@ -7009,7 +7016,8 @@ restart_chokepoints:
 
     private bool _InterestingItemPostprocess(Item it)
     {
-      if (!m_Actor.CanGet(it, out var err)) {
+      if (m_Living is not { } who) return false;
+      if (!who.CanGet(it, out var err)) {
         if ("inventory is full" == err) return BehaviorMakeRoomFor(it) is not null;
         return false;
       }
@@ -7568,7 +7576,7 @@ restart_chokepoints:
        if ((tmp = m_Actor.StaminaPoints) >= targetSTA) return null;
        if (tmp < targetSTA - 4 && m_Actor.CanActNextTurn) {
          var stim = who.Inventory.GetBestDestackable(GameItems.PILLS_STA);
-         if (stim is not null) return new ActionUseItem(m_Actor,stim);
+         if (stim is not null) return new ActionUseItem(who,stim);
        }
        return new ActionWait(m_Actor);
     }
@@ -7579,7 +7587,7 @@ restart_chokepoints:
        if (!(who.Inventory?.GetBestDestackable(GameItems.PILLS_SLP) is ItemMedicine stim)) return null;
        if (m_Actor.SleepPoints > (m_Actor.MaxSleep - m_Actor.ScaleMedicineEffect(stim.SleepBoost))) return null;
        if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
-       return new ActionUseItem(m_Actor,stim);
+       return new ActionUseItem(who,stim);
     }
 
     public ActorAction? DoctrineMedicateHP()
@@ -7591,20 +7599,21 @@ restart_chokepoints:
        var medikit = who.Inventory?.GetBestDestackable(GameItems.MEDIKIT) as ItemMedicine;
        if (bandage is null && medikit is null) return null;
        if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
-       if (medikit is null) return new ActionUseItem(m_Actor, bandage);
+       if (medikit is null) return new ActionUseItem(who, bandage);
        int medikit_help = m_Actor.ScaleMedicineEffect(medikit.Healing);
-       if (medikit_help <= delta) return new ActionUseItem(m_Actor, medikit);
+       if (medikit_help <= delta) return new ActionUseItem(who, medikit);
        if (bandage is not null) {
          int bandage_help = m_Actor.ScaleMedicineEffect(bandage.Healing);
          int bandage_total = who.Inventory.CountQuantityOf(GameItems.BANDAGE); // automated static analysis failure 2020-09-12
-         if (delta <= bandage_help*bandage_total) return new ActionUseItem(m_Actor, bandage);
+         if (delta <= bandage_help*bandage_total) return new ActionUseItem(who, bandage);
        }
        // \todo this is problematic for AI; relying on player control here to not initiate inappropriately
-       return new ActionUseItem(m_Actor, medikit);
+       return new ActionUseItem(who, medikit);
     }
 
     public ActorAction? DoctrineRechargeToFull(Item it)
     {
+      if (m_Living is not { } who) return null;
       var obj = it as BatteryPowered;
 #if DEBUG
       if (obj is null) throw new ArgumentNullException(nameof(obj));
@@ -7615,7 +7624,7 @@ restart_chokepoints:
       var generators_on = generators.FindAll(power => power.IsOn);
       if (0 >= generators_on.Count) return new ActionSwitchPowerGenerator(m_Actor,generators[0]);
       if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
-      return ActionRechargeItemBattery.Recharge(m_Actor, it);
+      return ActionRechargeItemBattery.Recharge(who, it);
     }
 
     public ActorAction? DoctrineButcher(Corpse c)

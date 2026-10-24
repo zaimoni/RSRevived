@@ -15,14 +15,18 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Location m_Dest;
     private readonly bool m_IsLarge;
 
-    public ActionBuildFortification(Actor actor, in Location dest, bool isLarge) : base(actor)
+    private new readonly LivingActor m_Actor;   // the same object as the base field
+
+    public ActionBuildFortification(LivingActor actor, in Location dest, bool isLarge) : base(actor)
     {
+      m_Actor = actor;
       m_Dest = dest;
       m_IsLarge = isLarge;
     }
 
-    public ActionBuildFortification(Actor actor, Direction dir, bool isLarge) : base(actor)
+    public ActionBuildFortification(LivingActor actor, Direction dir, bool isLarge) : base(actor)
     {
+      m_Actor = actor;
       m_Dest = m_Actor.Location + dir;
       m_IsLarge = isLarge;
     }
@@ -36,7 +40,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       m_Actor.SpendActionPoints();
-      var inv = m_Actor.Inventory!;
+      var inv = m_Actor.Inventory;
       int num = m_Actor.BarricadingMaterialNeedForFortification(m_IsLarge);
       while(0 <= --num) inv.Consume(inv.GetSmallestStackOf<Engine.Items.ItemBarricadeMaterial>());
       var fortification = new Engine.MapObjects.Fortification(m_IsLarge);
@@ -46,7 +50,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       fortification.OnEnterTile();
     }
 
-    static public string? ReasonCant(Actor a, bool isLarge)
+    static public string? ReasonCant(LivingActor a, bool isLarge)
     {
       if (0 >= a.MySkills.GetSkillLevel(Gameplay.Skills.IDs.CARPENTRY)) return "no skill in carpentry";
 
@@ -62,6 +66,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       return null;
     }
 
-    static public string? ReasonCant(Actor a, in Location loc, bool isLarge) => ReasonCant(a, isLarge) ?? ReasonCant(in loc);
+    static public string? ReasonCant(LivingActor a, in Location loc, bool isLarge) => ReasonCant(a, isLarge) ?? ReasonCant(in loc);
   }
 }

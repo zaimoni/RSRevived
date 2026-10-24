@@ -488,14 +488,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorBuildTrap()
     {
-      var trap = m_Actor.Inventory.GetFirst<ItemTrap>();
+      if (m_Actor is not LivingActor living) return null;
+      var trap = living.Inventory.GetFirst<ItemTrap>();
       if (trap is null) return null;
 
       if (!IsGoodTrapSpot(m_Actor.Location, out string reason)) return null;
 
-      if (!trap.IsActivated && !trap.Model.ActivatesWhenDropped) return new ActionUseItem(m_Actor, trap);
+      if (!trap.IsActivated && !trap.Model.ActivatesWhenDropped) return new ActionUseItem(living, trap);
       RogueGame.Game.DoEmote(m_Actor, string.Format("{0} {1}!", reason, trap.AName), true);
-      return new ActionDropItem(m_Actor, trap);
+      return new ActionDropItem(living, trap);
     }
 
     private bool IsGoodTrapSpot(Location loc, out string reason)
@@ -892,7 +893,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (stacksPercepts is null) return null;
       var firstByType = m_Actor.Location.Items?.GetFirst<ItemFood>();
-      if (firstByType is not null) return new ActionEatFoodOnGround(m_Actor, firstByType);
+      if (firstByType is not null && m_Actor is LivingActor eater) return new ActionEatFoodOnGround(eater, firstByType);
       var percept = FilterNearest(stacksPercepts);
       return BehaviorStupidBumpToward(percept.Location,false,false);
     }

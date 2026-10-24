@@ -20,12 +20,15 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     #region JSON save/load
     // the live constructor also resets the actor's activity: not for a load
-    private ActionDropItem(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+    private new readonly LivingActor m_Actor;   // the same object as the base field
+
+    private ActionDropItem(LivingActor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
     {
+      m_Actor = actor;
       m_Item = src.Require("Item").RequireRef<Item>();
     }
 
-    static ActionDropItem IJsonStaged<ActionDropItem>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionDropItem(JsonActor(src), src, options));
+    static ActionDropItem IJsonStaged<ActionDropItem>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionDropItem(JsonLivingActor(src), src, options));
 
     public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
@@ -34,8 +37,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
     #endregion
 
-    public ActionDropItem(Actor actor, Item it) : base(actor)
+    public ActionDropItem(LivingActor actor, Item it) : base(actor)
     {
+      m_Actor = actor;
       m_Item = it
 #if DEBUG
         ?? throw new ArgumentNullException(nameof(it))

@@ -83,9 +83,9 @@ namespace djack.RogueSurvivor.Engine.Items
 
 #region UsableItem implementation
     public bool CouldUse() { return Model.UseToActivate; }
-    public bool CouldUse(Actor a) { return true; }
-    public bool CanUse(Actor a) { return CouldUse(a); }
-    public void Use(Actor actor, Inventory inv) {
+    public bool CouldUse(LivingActor a) { return true; }
+    public bool CanUse(LivingActor a) { return CouldUse(a); }
+    public void Use(LivingActor actor, Inventory inv) {
 #if DEBUG
       if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain "+ToString());
 #endif
@@ -94,14 +94,14 @@ namespace djack.RogueSurvivor.Engine.Items
       else Activate(actor); 
       actor.PlayersInLOS()?.RedrawPlayScreen(RogueGame.MakePanopticMessage(actor, (IsActivated ? RogueGame.VERB_ACTIVATE : RogueGame.VERB_DESACTIVATE).Conjugate(actor), this));
      }
-     public string ReasonCantUse(Actor a) {
+     public string ReasonCantUse(LivingActor a) {
       if (!CouldUse()) return "does not activate manually";
       return "";
     }
 
     // Cf. ObjectiveAI::_PrefilterDrop for what can go wrong with this
-    public bool UseBeforeDrop(Actor a) { return false; }
-    public bool FreeSlotByUse(Actor a) { return false; }
+    public bool UseBeforeDrop(LivingActor a) { return false; }
+    public bool FreeSlotByUse(LivingActor a) { return false; }
 #endregion
 
     // alpha10

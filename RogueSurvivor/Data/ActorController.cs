@@ -206,7 +206,7 @@ namespace djack.RogueSurvivor.Data
           if (tmp is null) continue;
         }
         // cheating post-filter: reject dead flashlights at full inventory (these look useless as items but the type may not be useless)
-        if (m_Actor.Inventory.IsFull) {
+        if (m_Actor is LivingActor living && living.Inventory.IsFull) {
           if (it_model is ItemLightModel || it_model is ItemTrackerModel) {   // want to say "the item type this model is for, is BatteryPowered" without thrashing garbage collector
             tmp = Filter(tmp, inv => {
               var test = inv.GetFirstByModel(it_model);

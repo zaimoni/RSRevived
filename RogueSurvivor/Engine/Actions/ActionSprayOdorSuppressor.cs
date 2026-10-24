@@ -12,8 +12,11 @@ namespace djack.RogueSurvivor.Engine.Actions
         private readonly ItemSprayScent m_Spray;
         private readonly Actor m_SprayOn;
 
-        public ActionSprayOdorSuppressor(Actor actor, ItemSprayScent spray, Actor sprayOn) : base(actor)
+        private new readonly LivingActor m_Actor;   // the same object as the base field
+
+        public ActionSprayOdorSuppressor(LivingActor actor, ItemSprayScent spray, Actor sprayOn) : base(actor)
         {
+          m_Actor = actor;
 #if DEBUG
             if (!actor.Model.Abilities.CanUseItems) throw new InvalidOperationException("cannot use items");
             if (!actor.Inventory.Contains(spray)) throw new InvalidOperationException("spray not in inventory");

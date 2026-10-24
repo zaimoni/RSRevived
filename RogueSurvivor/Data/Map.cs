@@ -1691,7 +1691,7 @@ retry:
     {
       foreach (var x in m_GroundItemsByPosition.Values) op(x);
       foreach (var actor in m_ActorsList) {
-        var inv = actor.Inventory;
+        var inv = (actor as LivingActor)?.Inventory;
         if (inv is not null) op(inv);
       }
     }
@@ -1711,7 +1711,7 @@ retry:
 
       foreach (var x in m_GroundItemsByPosition.Values) ret += xform(x);
       foreach (var actor in m_ActorsList) {
-        var inv = actor.Inventory;
+        var inv = (actor as LivingActor)?.Inventory;
         if (inv is not null) ret += xform(inv);
       }
 
@@ -1729,7 +1729,7 @@ retry:
         }
       }
       foreach (var actor in m_ActorsList) {
-        var inv = actor.Inventory;
+        var inv = (actor as LivingActor)?.Inventory;
         if (inv is not null && test(inv,actor.Location)) return true;
       }
       return false;

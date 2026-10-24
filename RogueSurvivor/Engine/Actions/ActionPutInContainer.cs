@@ -10,8 +10,11 @@ namespace djack.RogueSurvivor.Engine.Actions
         public Item Give { get { return m_Item; } }
         public MapObject What { get { return m_Container; } }
 
-        public ActionPutInContainer(Actor actor, Item it, ShelfLike container) : base(actor)
+        private new readonly LivingActor m_Actor;   // the same object as the base field
+
+        public ActionPutInContainer(LivingActor actor, Item it, ShelfLike container) : base(actor)
         {
+            m_Actor = actor;
             m_Item = it;
             m_Container = container;
             actor.Activity = Activity.IDLE;

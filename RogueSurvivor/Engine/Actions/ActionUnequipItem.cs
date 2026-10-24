@@ -13,8 +13,11 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Item m_Item;
 
-    public ActionUnequipItem(Actor actor, Item it) : base(actor)
+    private new readonly LivingActor m_Actor;   // the same object as the base field
+
+    public ActionUnequipItem(LivingActor actor, Item it) : base(actor)
     {
+      m_Actor = actor;
       m_Item = it
 #if DEBUG
         ?? throw new ArgumentNullException(nameof(it))

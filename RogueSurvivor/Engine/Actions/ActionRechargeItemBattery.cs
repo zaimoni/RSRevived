@@ -14,8 +14,11 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Item m_Item;
     private readonly BatteryPowered _batt;
 
-    private ActionRechargeItemBattery(Actor actor, Item it) : base(actor)
+    private new readonly LivingActor m_Actor;   // the same object as the base field
+
+    private ActionRechargeItemBattery(LivingActor actor, Item it) : base(actor)
     {
+      m_Actor = actor;
       _batt = it as BatteryPowered ?? throw new ArgumentNullException(nameof(it));
       m_Item = it;
     }
@@ -32,13 +35,13 @@ namespace djack.RogueSurvivor.Engine.Actions
       RogueGame.Game.UI_RechargeItemBattery(m_Actor, m_Item);
     }
 
-    public static Item? WantsToRecharge(Actor whom) {
+    public static Item? WantsToRecharge(LivingActor whom) {
       Item? it = whom.Inventory.GetFirstMatching<Items.ItemLight>(obj => obj.MaxBatteries - 1 > obj.Batteries);
       if (it is not null) return it;
       return whom.Inventory.GetFirstMatching<Items.ItemTracker>(obj => Gameplay.Item_IDs.TRACKER_POLICE_RADIO != obj.ModelID && obj.MaxBatteries - 1 > obj.Batteries);
     }
 
-    public static ActionRechargeItemBattery? Recharge(Actor whom, Item? it) {
+    public static ActionRechargeItemBattery? Recharge(LivingActor whom, Item? it) {
       // inline Actor::CanRecharge
 #if DEBUG
       if (!whom.Model.Abilities.CanUseItems) return null;

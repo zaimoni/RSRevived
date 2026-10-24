@@ -14,13 +14,16 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly DoorWindow m_Door;
 
-    public ActionBarricadeDoor(Actor actor, DoorWindow door) : base(actor)
+    private new readonly LivingActor m_Actor;   // the same object as the base field
+
+    public ActionBarricadeDoor(LivingActor actor, DoorWindow door) : base(actor)
     {
+      m_Actor = actor;
       m_Door = door;
     }
 
     public DoorWindow What { get { return m_Door; } }
-    public ItemBarricadeMaterial Use { get { return m_Actor.Inventory?.GetSmallestStackOf<ItemBarricadeMaterial>()!; } } // assume legal/performable
+    public ItemBarricadeMaterial Use { get { return m_Actor.Inventory.GetSmallestStackOf<ItemBarricadeMaterial>()!; } } // assume legal/performable
 
     public override bool IsLegal()
     {

@@ -511,12 +511,12 @@ namespace djack.RogueSurvivor.Engine
 
         // \todo consider eliminating power generators as a pathable target (rely on behaviors instead and path to adjacent squares)
         if (mapObjectAt is PowerGenerator powGen) {
-          if (powGen.IsOn) {
-            var charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.LEFT_HAND));   // normal lights and trackers
+          if (powGen.IsOn && actor is LivingActor owner) {
+            var charge = ActionRechargeItemBattery.Recharge(owner, owner.GetEquippedItem(DollPart.LEFT_HAND));   // normal lights and trackers
             if (charge is not null) return charge;
-            charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.RIGHT_HAND));  // formal correctness
+            charge = ActionRechargeItemBattery.Recharge(owner, owner.GetEquippedItem(DollPart.RIGHT_HAND));  // formal correctness
             if (charge is not null) return charge;
-            charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.HIP_HOLSTER)); // the police tracker
+            charge = ActionRechargeItemBattery.Recharge(owner, owner.GetEquippedItem(DollPart.HIP_HOLSTER)); // the police tracker
             if (charge is not null) return charge;
           }
           if (actor.CanSwitch(powGen, out reason)) {
@@ -799,12 +799,12 @@ retry:
         if (act_break is not null) return act_break;
       }
       if (mapObjectAt is PowerGenerator powGen) {
-          if (powGen.IsOn) {
-            var charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.LEFT_HAND));   // normal lights and trackers
+          if (powGen.IsOn && actor is LivingActor owner) {
+            var charge = ActionRechargeItemBattery.Recharge(owner, owner.GetEquippedItem(DollPart.LEFT_HAND));   // normal lights and trackers
             if (charge is not null) return charge;
-            charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.RIGHT_HAND));  // formal correctness
+            charge = ActionRechargeItemBattery.Recharge(owner, owner.GetEquippedItem(DollPart.RIGHT_HAND));  // formal correctness
             if (charge is not null) return charge;
-            charge = ActionRechargeItemBattery.Recharge(actor, actor.GetEquippedItem(DollPart.HIP_HOLSTER)); // the police tracker
+            charge = ActionRechargeItemBattery.Recharge(owner, owner.GetEquippedItem(DollPart.HIP_HOLSTER)); // the police tracker
             if (charge is not null) return charge;
           }
           if (actor.CanSwitch(powGen, out reason)) {

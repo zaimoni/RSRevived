@@ -209,7 +209,7 @@ namespace djack.RogueSurvivor.Data
                         if (0 < ((a as LivingActor)?.CountFollowers ?? 0)) actor_stats.Add("<span style='background-color:black; color:cyan'>L</span>");
                         if ((a as LivingActor)?.LiveLeader is { } leader) actor_stats.Add("<span style='background-color:black; color:cyan'>F:" + leader.Name + "</span>");
 
-                        actor_data.Add("<tr><td" + pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + string.Concat(actor_stats) + "</td><td>" + TurnOrderFor(a).ToString() + "</td><td>" + a.ActionPoints.ToString() + "</td><td>" + a.HitPoints.ToString() + "</td><td class='inv'>" + (a.Inventory.IsEmpty() ? "" : a.Inventory.ToString()) + "</td></tr>");
+                        actor_data.Add("<tr><td" + pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + string.Concat(actor_stats) + "</td><td>" + TurnOrderFor(a).ToString() + "</td><td>" + a.ActionPoints.ToString() + "</td><td>" + a.HitPoints.ToString() + "</td><td class='inv'>" + (a is LivingActor la && !la.Inventory.IsEmpty ? la.Inventory.ToString() : "") + "</td></tr>");
                         ascii_map[y][x] = a_str;
                     }
 #endregion

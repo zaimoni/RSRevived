@@ -459,10 +459,7 @@ namespace djack.RogueSurvivor.Data
 
     public string ReasonCantPutItemIn(Actor actor)
     {
-      if (   !actor.Model.Abilities.HasInventory
-          || !actor.Model.Abilities.CanUseMapObjects
-          ||  actor.Inventory is null)
-          return "cannot take an item";
+      if (actor is not LivingActor || !actor.Model.Abilities.CanUseMapObjects) return "cannot take an item";
       if (m_Inventory.IsFull) return "container is full";
       return "";
     }

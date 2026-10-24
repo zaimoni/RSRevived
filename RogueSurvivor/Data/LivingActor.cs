@@ -1,4 +1,5 @@
-﻿using djack.RogueSurvivor.Engine.Items;
+﻿using djack.RogueSurvivor.Engine.Actions;
+using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Gameplay;
 using djack.RogueSurvivor.Engine;
 using System.Threading;
@@ -10,14 +11,17 @@ using Zaimoni.Data;
 using Zaimoni.JSON;
 
 using Color = System.Drawing.Color;
+using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
+using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
+using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Data
 {
   /// <summary>An actor whose model has an inventory (Abilities.HasInventory): the living, humans and dogs.  The undead,
-  /// rats and the Sewers Thing are plain Actors.  Members marked override have a bridge on Actor, for callers that
-  /// still hold an Actor; the bridge answers as an actor without an inventory.</summary>
+  /// rats and the Sewers Thing are plain Actors.  Equipment and attack reads, and communications, are virtuals of
+  /// Actor overridden here; everything else that needs the inventory lives only here.</summary>
   [Serializable]
-  public sealed class LivingActor : Actor, IJsonStaged<LivingActor>
+  public sealed class LivingActor : Actor, IInventory, IJsonStaged<LivingActor>
   {
     private readonly Inventory m_Inventory; // hammerspace inventory
     private readonly InventorySlots m_InventorySlots; // Angband-ish inventory
@@ -26,8 +30,8 @@ namespace djack.RogueSurvivor.Data
     private Dictionary<LivingActor,int>? m_TrustDict;
     [NonSerialized] private LivingActor? m_Leader;              // Backpointer
 
-    public override Inventory Inventory => m_Inventory;
-    public override InventorySlots InventorySlots => m_InventorySlots;
+    public Inventory Inventory => m_Inventory;
+    public InventorySlots InventorySlots => m_InventorySlots;
 
     public LivingActor(ActorModel model, Faction faction, int spawnTime, string name = "") : base(model, faction, spawnTime, name, true)
     {
@@ -106,7 +110,7 @@ namespace djack.RogueSurvivor.Data
       return itemMeleeWeapon1;
     }
 
-    public override int? GetBestMeleeWeaponRating()
+    public int? GetBestMeleeWeaponRating()
     {
       var tmp = m_Inventory.GetItemsByType<ItemMeleeWeapon>();
       if (tmp is null) return null;
@@ -121,7 +125,7 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public override ItemMeleeWeapon? GetWorstMeleeWeapon()
+    public ItemMeleeWeapon? GetWorstMeleeWeapon()
     {
       var melee = m_Inventory.GetItemsByType<ItemMeleeWeapon>();
       if (melee is null) return null;
@@ -134,9 +138,9 @@ namespace djack.RogueSurvivor.Data
     }
 
     // the best body armor should be in the inventory slot
-    public override ItemBodyArmor? GetBestBodyArmor() => m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
+    public ItemBodyArmor? GetBestBodyArmor() => m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;
     // non-null return implies at least two body armors
-    public override ItemBodyArmor? GetWorstBodyArmor() => m_Inventory.Minimize<ItemBodyArmor, int>(Item.notEquipped, ItemBodyArmor.Rate);
+    public ItemBodyArmor? GetWorstBodyArmor() => m_Inventory.Minimize<ItemBodyArmor, int>(Item.notEquipped, ItemBodyArmor.Rate);
 
     public List<ItemRangedWeapon>? GetAvailableRangedWeapons()
     {
@@ -144,7 +148,7 @@ namespace djack.RogueSurvivor.Data
       return m_Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || m_Inventory.GetCompatibleAmmoItem(rw) is not null);
     }
 
-    public override List<ItemRangedWeapon>? ReadyRangedWeapons()
+    public List<ItemRangedWeapon>? ReadyRangedWeapons()
     {
       if (Model.Abilities.AI_NotInterestedInRangedWeapons) return null;
       return m_Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo);
@@ -177,7 +181,7 @@ namespace djack.RogueSurvivor.Data
 #endregion
 
 #region taking, having, counting
-    public override bool CanTake(Item it) {
+    public bool CanTake(Item it) {
       if (it is ItemBodyArmor armor) {
         if (m_InventorySlots[SLOT_H_TORSO] is ItemBodyArmor worn) return worn.Rating < armor.Rating;
         return true;
@@ -202,21 +206,21 @@ final_exit:
       return m_Inventory.AddAll(armor);
     }
 
-    public override bool Take(Item it) {
+    public bool Take(Item it) {
       if (it is ItemBodyArmor armor) return Take(armor);   // assume OrderableAI i.e. humanoid inventory, for now
       if (it is ItemTrap trap) trap.Desactivate();
       return m_Inventory.AddAll(it);
     }
 
-    public override int TakeAsMuchAsPossible(Item it) {
+    public int TakeAsMuchAsPossible(Item it) {
       if (it is ItemBodyArmor armor) return Take(armor) ? 1 : 0;   // assume OrderableAI i.e. humanoid inventory, for now
       if (it is ItemTrap trap) trap.Desactivate();
       return m_Inventory.AddAsMuchAsPossible(it);
     }
 
-    public override bool CanGetItems() => Model.Abilities.CanUseMapObjects;
+    public bool CanGetItems() => Model.Abilities.CanUseMapObjects;
 
-    protected override string ReasonCantGet(Item it)
+    private string ReasonCantGet(Item it)
     {
       if (!CanGetItems()) return "no inventory";
       if (!CanTake(it)) {
@@ -226,7 +230,7 @@ final_exit:
       return "";
     }
 
-    protected override string ReasonCouldntBarricade()
+    private string ReasonCouldntBarricade()
     {
       if (!Model.Abilities.CanBarricade) return "no ability to barricade";
       if (m_Inventory.IsEmpty) return "no items";
@@ -234,10 +238,10 @@ final_exit:
       return "";
     }
 
-    public override bool IsCarrying(Item it) => m_InventorySlots.Contains(it) || m_Inventory.Contains(it);
-    public override bool IsCarrying(Gameplay.Item_IDs id) => m_InventorySlots.Contains(id) || m_Inventory.Contains(id);
+    public bool IsCarrying(Item it) => m_InventorySlots.Contains(it) || m_Inventory.Contains(it);
+    public bool IsCarrying(Gameplay.Item_IDs id) => m_InventorySlots.Contains(id) || m_Inventory.Contains(id);
 
-    public override void Remove(Item it, bool canMessage=true)
+    public void Remove(Item it, bool canMessage=true)
     {
       if (m_InventorySlots.Remove(it)) {
         it.UnequippedBy(this, canMessage);
@@ -247,10 +251,10 @@ final_exit:
       m_Inventory.RemoveAllQuantity(it);
     }
 
-    public override Item? GetItem(Gameplay.Item_IDs id) => m_Inventory.GetFirst(id);
+    public Item? GetItem(Gameplay.Item_IDs id) => m_Inventory.GetFirst(id);
     public bool HasItemOfModel(Model.Item model) => m_Inventory.HasModel(model);
-    public override int Count(Model.Item model) => m_Inventory.Count(model);
-    public override int CountQuantityOf<_T_>() => m_Inventory.CountQuantityOf<_T_>();
+    public int Count(Model.Item model) => m_Inventory.Count(model);
+    public int CountQuantityOf<_T_>() where _T_ : Item => m_Inventory.CountQuantityOf<_T_>();
 
     public int CountItemsOfSameType(Type tt)
     {
@@ -263,26 +267,26 @@ final_exit:
       return num;
     }
 
-    public override int CountItems<_T_>()
+    public int CountItems<_T_>() where _T_ : Item
     {
       if (m_Inventory.IsEmpty) return 0;
       return m_Inventory.Where(it=>it is _T_).Select(it => it.Quantity).Sum();
     }
 
-    public override bool Has<_T_>() => m_Inventory.Has<_T_>();
+    public bool Has<_T_>() where _T_ : Item => m_Inventory.Has<_T_>();
 
-    public override bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
+    public bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
     {
       if (m_Inventory.IsEmpty) return false;
       if (it.Model.IsStackable) return m_Inventory.CountQuantityOf(it.Model) >= n * it.Model.StackingLimit;
       return CountItemsOfSameType(it.GetType()) >= n;
     }
 
-    public override bool HasAtLeastFullStackOf(Model.Item it, int n) => m_Inventory.HasAtLeastFullStackOf(it, n); // release mode IL 20h i.e. would inline
+    public bool HasAtLeastFullStackOf(Model.Item it, int n) => m_Inventory.HasAtLeastFullStackOf(it, n); // release mode IL 20h i.e. would inline
 //  public bool HasAtLeastFullStackOf(Item it, int n) => HasAtLeastFullStackOf(it.Model, n); // manually inlined below
-    public override bool HasAtLeastFullStackOf(Item it, int n) => m_Inventory.HasAtLeastFullStackOf(it.Model, n);
+    public bool HasAtLeastFullStackOf(Item it, int n) => m_Inventory.HasAtLeastFullStackOf(it.Model, n);
 
-    public override bool HasEnoughFoodFor(int nutritionNeed, ItemFood? exclude=null)
+    public bool HasEnoughFoodFor(int nutritionNeed, ItemFood? exclude=null)
     {
       if (!_has_to_eat) return true;
       if (m_Inventory.IsEmpty) return false;
@@ -672,8 +676,174 @@ final_exit:
 #endregion
 
 
+#region can we (inventory-dependent)
+    public int ReviveChance(Corpse corpse)
+    {
+      if (!ActionReviveCorpse.Can(this, corpse)) return 0;
+      return corpse.FreshnessPercent / 4 + MySkills.GetSkillLevel(Skills.IDs.MEDIC) * SKILL_MEDIC_REVIVE_BONUS;
+    }
+
+    public bool CouldBarricade() => string.IsNullOrEmpty(ReasonCouldntBarricade());
+
+    private string ReasonCantBarricade(DoorWindow door)
+    {
+      if (!door.CanBarricade(out string reason)) return reason;
+      return ReasonCouldntBarricade();
+    }
+
+    public bool CanBarricade(DoorWindow door, out string reason)
+    {
+      reason = ReasonCantBarricade(door);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanBarricade(DoorWindow door)
+    {
+      return string.IsNullOrEmpty(ReasonCantBarricade(door));
+    }
+
+    
+
+
+    private string ReasonCantBuildFortification(Point pos, bool isLarge)
+    {
+      if (0 >= MySkills.GetSkillLevel(Skills.IDs.CARPENTRY)) return "no skill in carpentry";
+
+      Map map = Location.Map;
+      if (!map.GetTileModelAtExt(pos)?.IsWalkable ?? true) return  "cannot build on walls";
+
+      int num = BarricadingMaterialNeedForFortification(isLarge);
+      if (CountItems<ItemBarricadeMaterial>() < num) return string.Format("not enough barricading material, need {0}.", (object) num);
+      if (map.HasMapObjectAt(pos) || map.HasActorAt(in pos)) return "blocked";
+      return "";
+    }
+
+    public bool CanBuildFortification(Point pos, bool isLarge, out string reason)
+    {
+      reason = ReasonCantBuildFortification(pos,isLarge);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanBuildFortification(in Point pos, bool isLarge)
+    {
+      return string.IsNullOrEmpty(ReasonCantBuildFortification(pos,isLarge));
+    }
+
+    // keep the unused parameter -- would need it if alternate materials possible
+    private string ReasonCantRepairFortification(Fortification fort)
+    {
+      if (!Model.Abilities.CanUseMapObjects) return "cannot use map objects";
+      if (0 >= CountItems<ItemBarricadeMaterial>()) return "no barricading material";
+      return "";
+    }
+
+    public bool CanRepairFortification(Fortification fort, out string reason)
+    {
+      reason = ReasonCantRepairFortification(fort);
+      return string.IsNullOrEmpty(reason);
+    }
+
+#if DEAD_FUNC
+    public bool CanRepairFortification(Fortification fort)
+    {
+      return string.IsNullOrEmpty(ReasonCantRepairFortification(fort));
+    }
+#endif
+
+
+    // maybe this should be over on the Inventory object
+    private string ReasonCantUseItem(Item it)
+    {
+      if (!Model.Abilities.CanUseItems) return "no ability to use items";
+      if (it is ItemWeapon) return "to use a weapon, equip it";
+      if (it is ItemBodyArmor) return "to use armor, wear it";
+      if (it is ItemBarricadeMaterial) return "to use material, build a barricade";
+      if (!(it is UsableItem obj)) return "not a usable item type"; // cannot throw due to insane actions
+      var err = obj.ReasonCantUse(this);
+      if (!string.IsNullOrEmpty(err)) return err;
+      if (!IsCarrying(it)) return "not in inventory";
+      return "";
+    }
+
+    public bool CanUse(Item it, out string reason)
+    {
+      reason = ReasonCantUseItem(it);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanUse(Item it)
+    {
+      return string.IsNullOrEmpty(ReasonCantUseItem(it));
+    }
+
+
+    public bool CanGet(Item it, out string reason)
+    {
+      reason = ReasonCantGet(it);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanGet(Item it)
+    {
+      return string.IsNullOrEmpty(ReasonCantGet(it));
+    }
+
+
+    private string ReasonCantGiveTo(LivingActor target, Item gift)
+    {
+      if (IsEnemyOf(target)) return "enemy";
+      if (gift.IsEquipped) return "equipped";
+      if (target.IsSleeping) return "sleeping";
+      return target.ReasonCantGet(gift);
+    }
+
+    public bool CanGiveTo(LivingActor target, Item gift, out string reason)
+    {
+      reason = ReasonCantGiveTo(target,gift);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanGiveTo(LivingActor target, Item gift) => string.IsNullOrEmpty(ReasonCantGiveTo(target, gift));
+
+
+    private string ReasonCantUnequip(Item it)
+    {
+      if (!it.IsEquipped) return "not equipped";
+      if (!IsCarrying(it)) return "not in inventory";
+      return "";
+    }
+
+    public bool CanUnequip(Item it, out string reason)
+    {
+      reason = ReasonCantUnequip(it);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanUnequip(Item it)
+    {
+      return string.IsNullOrEmpty(ReasonCantUnequip(it));
+    }
+
+
+    private string ReasonCantDrop(Item it)
+    {
+      if (it.IsEquipped && Controller is PlayerController) return "unequip first";  // AI doesn't need that UI safety
+      if (!IsCarrying(it)) return "not in inventory";
+      return "";
+    }
+
+    public bool CanDrop(Item it, out string reason)
+    {
+      reason = ReasonCantDrop(it);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanDrop(Item it) => string.IsNullOrEmpty(ReasonCantDrop(it));
+
+#endregion
+
 #region trading
-    public override List<Item>? GetInterestingTradeableItems(Actor buyer) // called from RogueGame::PickItemToTrade so forced to be public no matter where
+    public List<Item>? GetInterestingTradeableItems(Actor buyer) // called from RogueGame::PickItemToTrade so forced to be public no matter where
     {
 #if DEBUG
       if (!Model.Abilities.CanTrade) throw new InvalidOperationException("cannot trade");
@@ -690,7 +860,7 @@ final_exit:
       return 0<objList.Count ? objList : null;
     }
 
-    public override List<Item>? GetRationalTradeableItems(Gameplay.AI.OrderableAI buyer)    // only called from AI trading decision making
+    public List<Item>? GetRationalTradeableItems(Gameplay.AI.OrderableAI buyer)    // only called from AI trading decision making
     {
 #if DEBUG
       if (!Model.Abilities.CanTrade) throw new InvalidOperationException(Name+" cannot trade");

@@ -33,9 +33,9 @@ namespace djack.RogueSurvivor.Engine.Items
 
 #region UsableItem implementation
     public bool CouldUse() { return true; }
-    public bool CouldUse(Actor a) { return !a.Model.Abilities.IsUndead; } // currently redundant, but in RS Alpha 9
-    public bool CanUse(Actor a) { return CouldUse(a); }
-    public void Use(Actor actor, Inventory inv) {
+    public bool CouldUse(LivingActor a) { return !a.Model.Abilities.IsUndead; } // currently redundant, but in RS Alpha 9
+    public bool CanUse(LivingActor a) { return CouldUse(a); }
+    public void Use(LivingActor actor, Inventory inv) {
 #if DEBUG
       if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain "+ToString());
 #endif
@@ -48,11 +48,11 @@ namespace djack.RogueSurvivor.Engine.Items
       inv.Consume(this);
       actor.PlayersInLOS()?.RedrawPlayScreen(RogueGame.MakePanopticMessage(actor, RogueGame.VERB_HEAL_WITH.Conjugate(actor), this));
     }
-    public string ReasonCantUse(Actor a) {
+    public string ReasonCantUse(LivingActor a) {
       if (!CouldUse(a)) return "undeads cannot use medecine";
       return "";
     }
-    public bool UseBeforeDrop(Actor a) {
+    public bool UseBeforeDrop(LivingActor a) {
       // this will need re-visiting when building more more complex medicines
       if (0<SleepBoost) {
         int need = a.MaxSleep - a.SleepPoints;
@@ -64,7 +64,7 @@ namespace djack.RogueSurvivor.Engine.Items
         return 2 <= oai.WantRestoreSAN;
 //      if (2 <= oai.WantRestoreSAN) return true;
       }
-      if (0< StaminaBoost && a.Inventory!.Contains(this)) {
+      if (0< StaminaBoost && a.Inventory.Contains(this)) {
         int need = a.MaxSTA - a.StaminaPoints;
         int num4 = a.ScaleMedicineEffect(StaminaBoost)+4; // plan on two turns after this
         return num4 <= need;
@@ -79,7 +79,7 @@ namespace djack.RogueSurvivor.Engine.Items
       }
       return false;
     }
-    public bool FreeSlotByUse(Actor a) {
+    public bool FreeSlotByUse(LivingActor a) {
       // this will need re-visiting when building more more complex medicines
       if (0<SleepBoost) {
         int need = a.MaxSleep - a.SleepPoints;
@@ -91,7 +91,7 @@ namespace djack.RogueSurvivor.Engine.Items
         return 2 <= oai.WantRestoreSAN;
 //      if (2 <= oai.WantRestoreSAN) return true;
       }
-      if (0<StaminaBoost && a.Inventory!.Contains(this)) {
+      if (0<StaminaBoost && a.Inventory.Contains(this)) {
         int need = a.MaxSTA - a.StaminaPoints;
         int num4 = a.ScaleMedicineEffect(StaminaBoost)+4; // plan on two turns after this
         return Quantity <= need/num4;

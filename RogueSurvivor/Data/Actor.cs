@@ -57,7 +57,7 @@ namespace djack.RogueSurvivor.Data
     };
 
   [Serializable]
-  public class Actor : IEquatable<Actor>, IInventory, ILocation, Zaimoni.Data.INoun, IJsonStaged<Actor>
+  public class Actor : IEquatable<Actor>, ILocation, Zaimoni.Data.INoun, IJsonStaged<Actor>
     {
     public const int BASE_ACTION_COST = 100;
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
@@ -343,10 +343,6 @@ namespace djack.RogueSurvivor.Data
         Set(Flags.IS_CROUCHING);
       }
     }
-
-    // The inventory belongs to LivingActor (Abilities.HasInventory).  These bridges go when the members using them have moved down.
-    public virtual Inventory? Inventory => null;
-    public virtual InventorySlots? InventorySlots => null;
 
     public int HitPoints { get => m_HitPoints; }
     public int PreviousHitPoints { get => m_previousHitPoints; }
@@ -1082,13 +1078,9 @@ namespace djack.RogueSurvivor.Data
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
     }
 
-    // Bridges to LivingActor, until the callers holding an Actor are retyped.  The base answer is the inventory-less one.
+    // Equipment and attack reads stay virtual: an actor without an inventory wields nothing.
     public virtual ItemMeleeWeapon? GetBestMeleeWeapon() => null;
     public virtual ItemMeleeWeapon? GetBestMeleeWeapon(MapObject toBreak) => null;    // XXX don't actually use this parameter, just controls overload
-    public virtual int? GetBestMeleeWeaponRating() => null;
-    public virtual ItemMeleeWeapon? GetWorstMeleeWeapon() => null;
-    public virtual ItemBodyArmor? GetBestBodyArmor() => null;
-    public virtual ItemBodyArmor? GetWorstBodyArmor() => null;
 
     // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
     // of the equipped weapon which OrderableAI *will* want to vary when choosing an appropriate weapon
@@ -1974,26 +1966,6 @@ namespace djack.RogueSurvivor.Data
       return baseBarricadingPoints + barBonus;
     }
 
-    private string ReasonCantBarricade(DoorWindow door)
-    {
-      if (!door.CanBarricade(out string reason)) return reason;
-      return ReasonCouldntBarricade();
-    }
-
-    public bool CanBarricade(DoorWindow door, out string reason)
-    {
-      reason = ReasonCantBarricade(door);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanBarricade(DoorWindow door)
-    {
-      return string.IsNullOrEmpty(ReasonCantBarricade(door));
-    }
-
-    // we have a for loop that requires splitting CanBarricade into two halves for efficiency
-    protected virtual string ReasonCouldntBarricade() => "no ability to barricade";
-
 #if DEAD_FUNC
     public bool CouldBarricade(out string reason)
     {
@@ -2001,11 +1973,6 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 #endif
-
-    public bool CouldBarricade()
-    {
-      return string.IsNullOrEmpty(ReasonCouldntBarricade());
-    }
 
     private string ReasonCantBash(DoorWindow door)
     {
@@ -2044,51 +2011,6 @@ namespace djack.RogueSurvivor.Data
     {
       return Math.Max(1, (isLarge ? 4 : 2) - (MySkills.GetSkillLevel(Skills.IDs.CARPENTRY) >= 3 ? SKILL_CARPENTRY_LEVEL3_BUILD_BONUS : 0));
     }
-
-    private string ReasonCantBuildFortification(Point pos, bool isLarge)
-    {
-      if (0 >= MySkills.GetSkillLevel(Skills.IDs.CARPENTRY)) return "no skill in carpentry";
-
-      Map map = Location.Map;
-      if (!map.GetTileModelAtExt(pos)?.IsWalkable ?? true) return  "cannot build on walls";
-
-      int num = BarricadingMaterialNeedForFortification(isLarge);
-      if (CountItems<ItemBarricadeMaterial>() < num) return string.Format("not enough barricading material, need {0}.", (object) num);
-      if (map.HasMapObjectAt(pos) || map.HasActorAt(in pos)) return "blocked";
-      return "";
-    }
-
-    public bool CanBuildFortification(Point pos, bool isLarge, out string reason)
-    {
-      reason = ReasonCantBuildFortification(pos,isLarge);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanBuildFortification(in Point pos, bool isLarge)
-    {
-      return string.IsNullOrEmpty(ReasonCantBuildFortification(pos,isLarge));
-    }
-
-    // keep the unused parameter -- would need it if alternate materials possible
-    private string ReasonCantRepairFortification(Fortification fort)
-    {
-      if (!Model.Abilities.CanUseMapObjects) return "cannot use map objects";
-      if (0 >= CountItems<ItemBarricadeMaterial>()) return "no barricading material";
-      return "";
-    }
-
-    public bool CanRepairFortification(Fortification fort, out string reason)
-    {
-      reason = ReasonCantRepairFortification(fort);
-      return string.IsNullOrEmpty(reason);
-    }
-
-#if DEAD_FUNC
-    public bool CanRepairFortification(Fortification fort)
-    {
-      return string.IsNullOrEmpty(ReasonCantRepairFortification(fort));
-    }
-#endif
 
     // leave the dead parameter in there, for now.
     // E.g., non-CHAR power generators might actually *need fuel*
@@ -2548,12 +2470,6 @@ namespace djack.RogueSurvivor.Data
       return baseEffect + (int)Math.Ceiling(/* (double) */ SKILL_MEDIC_BONUS * /* (int) */ (MySkills.GetSkillLevel(Skills.IDs.MEDIC) * baseEffect));
     }
 
-    public int ReviveChance(Corpse corpse)
-    {
-      if (!ActionReviveCorpse.Can(this, corpse)) return 0;
-      return corpse.FreshnessPercent / 4 + MySkills.GetSkillLevel(Skills.IDs.MEDIC) * SKILL_MEDIC_REVIVE_BONUS;
-    }
-
     public int DamageVsCorpses {
       get => m_CurrentMeleeAttack.DamageValue / 2 + SKILL_NECROLOGY_CORPSE_BONUS * MySkills.GetSkillLevel(Skills.IDs.NECROLOGY);
     }
@@ -2700,9 +2616,8 @@ namespace djack.RogueSurvivor.Data
 
       if (Model.Abilities.CanTire) m_StaminaPoints -= dmg;
       var game = RogueGame.Game;
-      var worn = GetEquippedArmor();
-      if (worn is not null && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
-        Remove(worn, false);
+      if (this is LivingActor living && living.GetEquippedArmor() is { } worn && Rules.Get.RollChance(BODY_ARMOR_BREAK_CHANCE)) {
+        living.Remove(worn, false);
         game.UI_ItemBreaks(this, worn);
       }
       if (IsSleeping) game.DoWakeUp(this);
@@ -2734,18 +2649,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public virtual bool CanTake(Item it) => false;
-    public virtual bool Take(Item it) => false;
-    public virtual int TakeAsMuchAsPossible(Item it) => 0;
-    public virtual int Count(Model.Item model) => 0;
-    public virtual int CountItems<_T_>() where _T_ : Item => 0;
-    public virtual bool Has<_T_>() where _T_ : Item => false;
-    public virtual int CountQuantityOf<_T_>() where _T_ : Item => 0;
-    public virtual bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n) => false;
-    public virtual bool HasAtLeastFullStackOf(Model.Item it, int n) => false;
-    public virtual bool HasAtLeastFullStackOf(Item it, int n) => false;
-    public virtual Item? GetItem(Gameplay.Item_IDs id) => null;
-    public virtual bool HasEnoughFoodFor(int nutritionNeed, ItemFood? exclude=null) => !_has_to_eat;
 
     public int ItemNutritionValue(int baseValue)
     {
@@ -2771,9 +2674,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public virtual List<Item>? GetInterestingTradeableItems(Actor buyer) => null; // called from RogueGame::PickItemToTrade so forced to be public no matter where
-    public virtual List<Item>? GetRationalTradeableItems(Gameplay.AI.OrderableAI buyer) => null;    // only called from AI trading decision making
-
     // equipped items
     public virtual Item? GetEquippedItem(DollPart part) => null;
     public virtual Item? GetEquippedItem(Gameplay.Item_IDs id) => null;
@@ -2791,45 +2691,6 @@ namespace djack.RogueSurvivor.Data
     // this cannot be side-effecting (martial arts, grenades)
     public Item? GetEquippedWeapon() { return GetEquippedItem(DollPart.RIGHT_HAND); }
     public bool HasEquipedRangedWeapon() { return GetEquippedWeapon() is ItemRangedWeapon; }
-
-    // maybe this should be over on the Inventory object
-    private string ReasonCantUseItem(Item it)
-    {
-      if (!Model.Abilities.CanUseItems) return "no ability to use items";
-      if (it is ItemWeapon) return "to use a weapon, equip it";
-      if (it is ItemBodyArmor) return "to use armor, wear it";
-      if (it is ItemBarricadeMaterial) return "to use material, build a barricade";
-      if (!(it is UsableItem obj)) return "not a usable item type"; // cannot throw due to insane actions
-      var err = obj.ReasonCantUse(this);
-      if (!string.IsNullOrEmpty(err)) return err;
-      if (!IsCarrying(it)) return "not in inventory";
-      return "";
-    }
-
-    public bool CanUse(Item it, out string reason)
-    {
-      reason = ReasonCantUseItem(it);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanUse(Item it)
-    {
-      return string.IsNullOrEmpty(ReasonCantUseItem(it));
-    }
-
-    public virtual bool CanGetItems() => false;
-    protected virtual string ReasonCantGet(Item it) => "no inventory";
-
-    public bool CanGet(Item it, out string reason)
-    {
-      reason = ReasonCantGet(it);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanGet(Item it)
-    {
-      return string.IsNullOrEmpty(ReasonCantGet(it));
-    }
 
     public bool MayTakeFrom(in Data.Model.InvOrigin stack)
     {
@@ -2854,22 +2715,6 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    private string ReasonCantGiveTo(Actor target, Item gift)
-    {
-      if (IsEnemyOf(target)) return "enemy";
-      if (gift.IsEquipped) return "equipped";
-      if (target.IsSleeping) return "sleeping";
-      return target.ReasonCantGet(gift);
-    }
-
-    public bool CanGiveTo(Actor target, Item gift, out string reason)
-    {
-      reason = ReasonCantGiveTo(target,gift);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanGiveTo(Actor target, Item gift) => string.IsNullOrEmpty(ReasonCantGiveTo(target, gift));
-
     private string ReasonCantEquip(Item it)
     {
       if (!Model.Abilities.CanUseItems) return "no ability to use items";
@@ -2887,39 +2732,6 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantEquip(it));
     }
-
-    private string ReasonCantUnequip(Item it)
-    {
-      if (!it.IsEquipped) return "not equipped";
-      if (!IsCarrying(it)) return "not in inventory";
-      return "";
-    }
-
-    public bool CanUnequip(Item it, out string reason)
-    {
-      reason = ReasonCantUnequip(it);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanUnequip(Item it)
-    {
-      return string.IsNullOrEmpty(ReasonCantUnequip(it));
-    }
-
-    private string ReasonCantDrop(Item it)
-    {
-      if (it.IsEquipped && Controller is PlayerController) return "unequip first";  // AI doesn't need that UI safety
-      if (!IsCarrying(it)) return "not in inventory";
-      return "";
-    }
-
-    public bool CanDrop(Item it, out string reason)
-    {
-      reason = ReasonCantDrop(it);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanDrop(Item it) => string.IsNullOrEmpty(ReasonCantDrop(it));
 
     public virtual void SkillUpgrade(Skills.IDs id)
     {
@@ -3121,10 +2933,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public virtual bool IsCarrying(Item it) => false;
-    public virtual bool IsCarrying(Gameplay.Item_IDs id) => false;
-    public virtual void Remove(Item it, bool canMessage=true) => it.UnequippedBy(this, canMessage);
-    public virtual List<ItemRangedWeapon>? ReadyRangedWeapons() => null;
 
     // Note that an event-based Sees implementation (anchored in RogueGame) cannot avoid constructing messages
     // even when no players would recieve them.

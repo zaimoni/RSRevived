@@ -3993,7 +3993,7 @@ restart:
       return numberedName;
     }
 
-    private void CreatePrimaryRanged(Actor a, ItemRangedWeapon rw) {
+    private void CreatePrimaryRanged(LivingActor a, ItemRangedWeapon rw) {
       // While auto-equip here would be nice, it is unclear that RogueForm.Game.DoEquipItem is safe to call here.
       // Inline the functional part instead.
       a.Take(rw);

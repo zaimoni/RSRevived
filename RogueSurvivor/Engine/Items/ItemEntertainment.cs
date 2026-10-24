@@ -52,24 +52,24 @@ namespace djack.RogueSurvivor.Engine.Items
 
 #region UsableItem implementation
     public bool CouldUse() { return true; }
-    public bool CouldUse(Actor a) { return a.Model.Abilities.IsIntelligent && !IsBoringFor(a); }
-    public bool CanUse(Actor a) { return CouldUse(a); }
-    public void Use(Actor actor, Inventory inv) {
+    public bool CouldUse(LivingActor a) { return a.Model.Abilities.IsIntelligent && !IsBoringFor(a); }
+    public bool CanUse(LivingActor a) { return CouldUse(a); }
+    public void Use(LivingActor actor, Inventory inv) {
 #if DEBUG
       if (!inv.Contains(this)) throw new InvalidOperationException("inventory did not contain "+ToString());
 #endif
       RogueGame.Game.DoUseEntertainmentItem(actor, this);   // forward to RogueGame -- CHAR manual is bloated
     }
-    public string ReasonCantUse(Actor a) {
+    public string ReasonCantUse(LivingActor a) {
       if (!a.Model.Abilities.IsIntelligent) return "not intelligent";
       if (IsBoringFor(a)) return "bored by this";
       return "";
     }
-    public bool UseBeforeDrop(Actor a) {
+    public bool UseBeforeDrop(LivingActor a) {
       if (a.Controller is ObjectiveAI oai) return 2<=oai.WantRestoreSAN;
       return false;
     }
-    public bool FreeSlotByUse(Actor a) { return false; } // not quite correct
+    public bool FreeSlotByUse(LivingActor a) { return false; } // not quite correct
 #endregion
   }
 }

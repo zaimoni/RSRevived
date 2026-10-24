@@ -17,8 +17,11 @@ namespace djack.RogueSurvivor.Engine._Action
         public readonly ItemRangedWeapon rw;
         public readonly FireMode FMode;
 
-        private RangedAttack(Actor actor, ItemRangedWeapon _rw, Location origin, Location target, FireMode mode, Location[] line) : base(actor)
+        private new readonly LivingActor m_Actor;   // the same object as the base field
+
+        private RangedAttack(LivingActor actor, ItemRangedWeapon _rw, Location origin, Location target, FireMode mode, Location[] line) : base(actor)
         {
+          m_Actor = actor;
             src = origin;
             dest = target;
             LoF = line;
@@ -90,7 +93,7 @@ namespace djack.RogueSurvivor.Engine._Action
         public bool CanFireAt(Actor target) => string.IsNullOrEmpty(ReasonCantFireAt(target));
 
 
-        static public RangedAttack? ScheduleCast(Actor actor, Location dest, FireMode mode, ItemRangedWeapon? rw = null, Location? origin = null) {
+        static public RangedAttack? ScheduleCast(LivingActor actor, Location dest, FireMode mode, ItemRangedWeapon? rw = null, Location? origin = null) {
             Location src = origin is null ? actor.Location : origin.Value;
             if (rw is null) rw = actor.GetEquippedWeapon() as ItemRangedWeapon;
             if (rw is null) return null;
@@ -100,7 +103,7 @@ namespace djack.RogueSurvivor.Engine._Action
             return new RangedAttack(actor, rw, src, dest, mode, test);
         }
 
-        static public RangedAttack? Cast(Actor actor, Location dest, FireMode mode, ItemRangedWeapon? rw = null, Location? origin = null)
+        static public RangedAttack? Cast(LivingActor actor, Location dest, FireMode mode, ItemRangedWeapon? rw = null, Location? origin = null)
         {
             Location src = origin is null ? actor.Location : origin.Value;
             if (rw is null) rw = actor.GetEquippedWeapon() as ItemRangedWeapon;
@@ -114,35 +117,37 @@ namespace djack.RogueSurvivor.Engine._Action
 
         static public void Coverage(Data.Model.CombatActor en, List<Location> dests, FireMode mode, List<ItemRangedWeapon> rws, List<Engine.Actions.CombatAction> catalog)
         {
+            if (en.who is not LivingActor shooter) return;   // the ready weapons come from an inventory
             Location src = en.Location;
             foreach (var dest in dests) {
                 var test = LOS.AbstractFireLine(src, dest);
                 if (test is null) continue;
                 foreach (var rw in rws) {
                     if (test.Length > rw.Model.Attack.Range) continue;
-                    catalog.Add(new RangedAttack(en.who, rw, src, dest, mode, test));
+                    catalog.Add(new RangedAttack(shooter, rw, src, dest, mode, test));
                 }
             }
         }
 
         static public void Coverage(Data.Model.CombatActor en, List<Location> dests, List<ItemRangedWeapon> rws, List<Engine.Actions.CombatAction> catalog, List<KeyValuePair<Engine.Actions.CombatAction, Engine.Actions.CombatAction>> double_attack, List<KeyValuePair<Engine._Action.MoveStep, Engine.Actions.CombatAction>> dash_attack, List<KeyValuePair<Engine.Actions.CombatAction, Engine._Action.MoveStep>> potshot)
         {
+            if (en.who is not LivingActor shooter) return;   // the ready weapons come from an inventory
             Location src = en.Location;
             foreach (var dest in dests) {
                 var test = LOS.AbstractFireLine(src, dest);
                 if (test is null) continue;
                 foreach (var rw in rws) {
                     if (test.Length > rw.Model.Attack.Range) continue;
-                    var aimed = new RangedAttack(en.who, rw, src, dest, FireMode.AIMED, test);
+                    var aimed = new RangedAttack(shooter, rw, src, dest, FireMode.AIMED, test);
                     catalog.Add(aimed);
-                    var rapid = new RangedAttack(en.who, rw, src, dest, FireMode.RAPID, test);
+                    var rapid = new RangedAttack(shooter, rw, src, dest, FireMode.RAPID, test);
                     double_attack.Add(new(rapid, rapid));
                     double_attack.Add(new(rapid, aimed));
                     var dash = en.RunSteps;
                     if (dash is null) continue;
                     foreach (var move in dash) {
                         potshot.Add(new(rapid, move));
-                        var snipe = ScheduleCast(en.who, dest, FireMode.RAPID, rw, move.dest);
+                        var snipe = ScheduleCast(shooter, dest, FireMode.RAPID, rw, move.dest);
                         if (snipe is null) continue;
                         dash_attack.Add(new(move, snipe));
                     }

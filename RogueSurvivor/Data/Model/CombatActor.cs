@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Data.Model
 
             run_steps = Engine._Action.MoveStep.RunFrom(src.Location, src);
             runaway = m_Location.LinfCircle(RunIsFreeMove ? 2 : 1);
-            ready_rw = who.ReadyRangedWeapons();
+            ready_rw = (who as LivingActor)?.ReadyRangedWeapons();
 #if PROTOTYPE
             defense_dist = Rules.SkillProbabilityDistribution(who.Defence.Value);
             var melee_attack = who.BestMeleeAttack();

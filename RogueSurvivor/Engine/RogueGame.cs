@@ -3322,16 +3322,16 @@ namespace djack.RogueSurvivor.Engine
                 DoWait(player);
                 break;
               case PlayerCommand.BARRICADE_MODE:
-                flag1 = !TryInsanity(pc) && !HandlePlayerBarricade(player);
+                flag1 = !TryInsanity(pc) && !(player is LivingActor builder && HandlePlayerBarricade(builder));
                 break;
               case PlayerCommand.BREAK_MODE:
                 flag1 = !TryInsanity(pc) && !HandlePlayerBreak(player);
                 break;
               case PlayerCommand.BUILD_LARGE_FORTIFICATION:
-                flag1 = !TryInsanity(pc) && !HandlePlayerBuildFortification(player, true);
+                flag1 = !TryInsanity(pc) && !(player is LivingActor large_builder && HandlePlayerBuildFortification(large_builder, true));
                 break;
               case PlayerCommand.BUILD_SMALL_FORTIFICATION:
-                flag1 = !TryInsanity(pc) && !HandlePlayerBuildFortification(player, false);
+                flag1 = !TryInsanity(pc) && !(player is LivingActor small_builder && HandlePlayerBuildFortification(small_builder, false));
                 break;
               case PlayerCommand.CLEAR_WAYPOINT:
                 HandlePlayerClearWaypoint(pc);
@@ -3346,7 +3346,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryInsanity(pc) && !HandlePlayerFireMode(pc);
                 break;
               case PlayerCommand.GIVE_ITEM:
-                flag1 = !TryInsanity(pc) && !HandlePlayerGiveItem(player, point);
+                flag1 = !TryInsanity(pc) && !(player is LivingActor giver && HandlePlayerGiveItem(giver, point));
                 break;
               case PlayerCommand.TAKE_ITEM:
                 flag1 = !TryInsanity(pc) && !HandlePlayerTakeItem(pc);
@@ -3391,7 +3391,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryInsanity(pc) && !HandlePlayerPush(player);
                 break;
               case PlayerCommand.REVIVE_CORPSE:
-                flag1 = !TryInsanity(pc) && !HandlePlayerReviveCorpse(player, point);
+                flag1 = !TryInsanity(pc) && !(player is LivingActor medic && HandlePlayerReviveCorpse(medic, point));
                 break;
               case PlayerCommand.SET_WAYPOINT:
                 HandlePlayerSetWaypoint(player);
@@ -4184,7 +4184,7 @@ namespace djack.RogueSurvivor.Engine
         List<string> tmp = [a.Name];
         var best_melee = a.GetBestMeleeWeapon();
         tmp.Add("melee: "+(best_melee is null ? "unarmed" : best_melee.ModelID.ToString()));
-        var ranged = a.Inventory?.GetItemsByType<ItemRangedWeapon>();
+        var ranged = (a as LivingActor)?.Inventory.GetItemsByType<ItemRangedWeapon>();
         if (ranged is not null) {
           string msg = "ranged:";
           foreach(ItemRangedWeapon rw in ranged) {
@@ -4693,7 +4693,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 
-    private bool _HandlePlayerInventory(Actor player, Item it)
+    private bool _HandlePlayerInventory(LivingActor player, Item it)
     {
       if (it.IsEquipped) {
         if (player.CanUnequip(it, out string reason)) {
@@ -4741,9 +4741,9 @@ namespace djack.RogueSurvivor.Engine
 
       bool OnRMBItem(Item it)
       {
-        if (!isPlayerInventory) return false;
-        if (Player.CanDrop(it, out string reason)) {
-          DoDropItem(Player, it);
+        if (!isPlayerInventory || Player is not LivingActor living) return false;
+        if (living.CanDrop(it, out string reason)) {
+          DoDropItem(living, it);
           return true;
         }
         ErrorPopup(string.Format("Cannot drop {0} : {1}.", it.TheName, reason));
@@ -4752,7 +4752,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool OnLMBItem(Item it)
       {
-        if (isPlayerInventory) return _HandlePlayerInventory(Player, it);
+        if (isPlayerInventory) return Player is LivingActor me && _HandlePlayerInventory(me, it);
 
 //      var fetch_from = Player.Location.InventoryAtFeet(); // want this, but compile error
         return Player is LivingActor living && Interpret(new _Action.TakeItem(living, living.Location, it));
@@ -4876,7 +4876,7 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    private bool HandlePlayerReviveCorpse(Actor player, GDI_Point mousePos)
+    private bool HandlePlayerReviveCorpse(LivingActor player, GDI_Point mousePos)
     {
       var corpse = MouseToCorpse(mousePos);
       if (corpse is null) return false;
@@ -4927,7 +4927,7 @@ namespace djack.RogueSurvivor.Engine
       SeeingCauseInsanity(a, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE, string.Format("{0} eating {1}", a.Name, c.DeadGuy.Name));
     }
 
-    public void DoReviveCorpse(Actor actor, Corpse corpse)
+    public void DoReviveCorpse(LivingActor actor, Corpse corpse)
     {
       bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints();
@@ -5251,7 +5251,7 @@ namespace djack.RogueSurvivor.Engine
       return PagedPopup("Unloading:", unload_these.Count, label, details, false);
     }
 
-    private bool HandlePlayerGiveItem(Actor player, GDI_Point screen)
+    private bool HandlePlayerGiveItem(LivingActor player, GDI_Point screen)
     {
       const string GIVE_MODE_TEXT = "GIVE MODE - directions to give item to someone, ESC cancels";
 
@@ -5269,9 +5269,9 @@ namespace djack.RogueSurvivor.Engine
         }
 
         var actorAt = src[0].a_owner; // backward compatibility
-        if (actorAt is LivingActor receiver && player is LivingActor giver) {
+        if (actorAt is not null) {
           if (player.CanGiveTo(actorAt, invSpec.Value.Key.it!, out string reason)) {
-            DoGiveItemTo(giver, receiver, invSpec.Value.Key.it!);
+            DoGiveItemTo(player, actorAt, invSpec.Value.Key.it!);
             return true;
           }
           ErrorPopup(string.Format("Can't give {0} to {1} : {2}.", invSpec.Value.Key.it!.TheName, actorAt.TheName, reason));
@@ -5303,8 +5303,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePlayerRequestTrade(PlayerController pc)
     {
-      var player = pc.ControlledActor;
-      if (!player.Model.Abilities.CanTrade) {
+      if (pc.ControlledActor is not LivingActor player || !player.Model.Abilities.CanTrade) {
         ErrorPopup("Incapable of trading.");
         return;
       }
@@ -5319,7 +5318,7 @@ namespace djack.RogueSurvivor.Engine
       var actorList = can_trade_with.Values.ToList();
       int index = 0;
       do {
-        Actor target = actorList[index];
+        var target = actorList[index];
         ClearOverlays();
         AddOverlay(new UI.OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
         AddOverlay(new UI.OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET));
@@ -5346,7 +5345,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerInitiateTrade(PlayerController pc, GDI_Point screen)
     {
-      var player = pc.ControlledActor;
+      if (pc.ControlledActor is not LivingActor player) return false;
       var invSpec = MouseToInventoryItem(screen);
       if (invSpec is null || invSpec.Value.Key.Origin.a_owner != player) return false;
 
@@ -5415,7 +5414,7 @@ namespace djack.RogueSurvivor.Engine
       return actionDone;
     }
 
-    private bool HandlePlayerBarricade(Actor player)
+    private bool HandlePlayerBarricade(LivingActor player)
     {
       const string BARRICADE_MODE_TEXT = "BARRICADE/REPAIR MODE - directions to barricade/repair, ESC cancels";
 
@@ -5535,7 +5534,7 @@ namespace djack.RogueSurvivor.Engine
       return actionDone;
     }
 
-    private bool HandlePlayerBuildFortification(Actor player, bool isLarge)
+    private bool HandlePlayerBuildFortification(LivingActor player, bool isLarge)
     {
       const string BUILD_LARGE_FORT_MODE_TEXT = "BUILD LARGE FORTIFICATION MODE - directions to build, ESC cancels";
       const string BUILD_SMALL_FORT_MODE_TEXT = "BUILD SMALL FORTIFICATION MODE - directions to build, ESC cancels";
@@ -5574,7 +5573,7 @@ namespace djack.RogueSurvivor.Engine
       var player = pc.ControlledActor;  // backward compability
 
       if (player.GetEquippedWeapon() is ItemGrenade || player.GetEquippedWeapon() is Data._Item.PrimedExplosive)
-        return HandlePlayerThrowGrenade(player);
+        return player is LivingActor thrower && HandlePlayerThrowGrenade(thrower);
       if (!(player.GetEquippedWeapon() is ItemRangedWeapon itemRangedWeapon)) {
         ErrorPopup("No weapon ready to fire.");
         return false;
@@ -5814,7 +5813,7 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
     }
 
-    private bool HandlePlayerThrowGrenade(Actor player)
+    private bool HandlePlayerThrowGrenade(LivingActor player)
     {
       const string THROW_GRENADE_MODE_TEXT = "THROW GRENADE MODE - directions to select, F to fire,  ESC cancels";
 
@@ -6215,7 +6214,7 @@ namespace djack.RogueSurvivor.Engine
         if (equippedItem is ItemSprayPaint s_paint) return HandlePlayerTag(player, s_paint);
         if (equippedItem is ItemSprayScent spray) {
           // alpha10 new way to use stench killer
-          return HandlePlayerSprayOdorSuppressor(player, spray);
+          return player is LivingActor sprayer && HandlePlayerSprayOdorSuppressor(sprayer, spray);
         }
       }
       ErrorPopup("No spray equipped.");
@@ -6271,7 +6270,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // alpha10 new way to use stench killer
-    private bool HandlePlayerSprayOdorSuppressor(Actor player, ItemSprayScent spray)
+    private bool HandlePlayerSprayOdorSuppressor(LivingActor player, ItemSprayScent spray)
     {
       const string SPRAY_MODE_TEXT = "SPRAY MODE - directions to spray or wait key to spray on yourself, ESC cancels";  // alpha10
 
@@ -6550,9 +6549,9 @@ namespace djack.RogueSurvivor.Engine
       }
 
       // old-style but valid for PCs
-      if (FollowerCannotGiveItems(player, follower) is null) {
+      if (player is LivingActor receiver && FollowerCannotGiveItems(receiver, follower) is null) {
         orders.Add(new("Give me...", () => {
-            return HandlePlayerOrderFollowerToGiveItems(player, follower);
+            return HandlePlayerOrderFollowerToGiveItems(receiver, follower);
         }));
       }
 
@@ -6886,14 +6885,14 @@ namespace djack.RogueSurvivor.Engine
       return flag2;
     }
 
-    private string? FollowerCannotGiveItems(Actor player, Actor follower) {
-      if (follower.Inventory.IsEmpty()) return string.Format("{0} has no items to give.", follower.TheName);
+    private string? FollowerCannotGiveItems(LivingActor player, LivingActor follower) {
+      if (follower.Inventory.IsEmpty) return string.Format("{0} has no items to give.", follower.TheName);
       if (!Rules.IsAdjacent(player.Location, follower.Location))
         return string.Format("{0} is not next to you.", follower.TheName);
       return null;
     }
 
-    private bool HandlePlayerOrderFollowerToGiveItems(Actor player, LivingActor follower)
+    private bool HandlePlayerOrderFollowerToGiveItems(LivingActor player, LivingActor follower)
     {
 #if DEBUG
       var err = FollowerCannotGiveItems(player, follower);
@@ -7035,12 +7034,12 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.ITEM_GRAB_FLOOR:
           var itemsAt = map.GetItemsAt(position);
           if (itemsAt is null) return false;
-          foreach (var it in itemsAt) if (Player.CanGet(it)) return true;
+          foreach (var it in itemsAt) if (living is not null && living.CanGet(it)) return true;
           return false;
         case AdvisorHint.ITEM_UNEQUIP:
-          var inventory1 = living?.Inventory;
-          if (inventory1.IsEmpty()) return false;
-          foreach (Item it in inventory1) if (Player.CanUnequip(it)) return true;
+          if (living is null || living.Inventory.IsEmpty) return false;
+          var inventory1 = living.Inventory;
+          foreach (Item it in inventory1) if (living.CanUnequip(it)) return true;
           return false;
         case AdvisorHint.ITEM_EQUIP:
           var inventory2 = living?.Inventory;
@@ -7052,14 +7051,14 @@ namespace djack.RogueSurvivor.Engine
           if (inventory3.IsEmpty()) return false;
           return inventory3.Has<ItemBarricadeMaterial>();
         case AdvisorHint.ITEM_DROP:
-          var inventory4 = living?.Inventory;
-          if (inventory4.IsEmpty()) return false;
-          foreach (Item it in inventory4) if (Player.CanDrop(it)) return true;
+          if (living is null || living.Inventory.IsEmpty) return false;
+          var inventory4 = living.Inventory;
+          foreach (Item it in inventory4) if (living.CanDrop(it)) return true;
           return false;
         case AdvisorHint.ITEM_USE:
-          var inventory5 = living?.Inventory;
-          if (inventory5.IsEmpty()) return false;
-          foreach (Item it in inventory5) if (Player.CanUse(it)) return true;
+          if (living is null || living.Inventory.IsEmpty) return false;
+          var inventory5 = living.Inventory;
+          foreach (Item it in inventory5) if (living.CanUse(it)) return true;
           return false;
         case AdvisorHint.FLASHLIGHT: return living?.Inventory.Has<ItemLight>() ?? false;
         case AdvisorHint.CELLPHONES: return living?.Inventory.GetFirstByModel(GameItems.CELL_PHONE) is not null;
@@ -7069,11 +7068,11 @@ namespace djack.RogueSurvivor.Engine
           return 0 < ((Player.GetEquippedWeapon() as ItemRangedWeapon)?.Ammo ?? 0);
         case AdvisorHint.WEAPON_RELOAD:
           if (!(Player.GetEquippedWeapon() is ItemRangedWeapon)) return false;
-          var inventory6 = living?.Inventory;
-          if (inventory6.IsEmpty()) return false;
-          foreach (Item it in inventory6) if (it is ItemAmmo && Player.CanUse(it)) return true;
+          if (living is null || living.Inventory.IsEmpty) return false;
+          var inventory6 = living.Inventory;
+          foreach (Item it in inventory6) if (it is ItemAmmo && living.CanUse(it)) return true;
           return false;
-        case AdvisorHint.GRENADE: return Player.Has<ItemGrenade>();
+        case AdvisorHint.GRENADE: return living?.Has<ItemGrenade>() ?? false;
         case AdvisorHint.DOORWINDOW_OPEN:
           return map.AnyAdjacent<DoorWindow>(position, door => Player.CanOpen(door));
         case AdvisorHint.DOORWINDOW_CLOSE:
@@ -7083,7 +7082,7 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.OBJECT_BREAK:
           return map.AnyAdjacent<MapObject>(position, mapObjectAt => Player.CanBreak(mapObjectAt));
         case AdvisorHint.BARRICADE:
-          return map.AnyAdjacent<DoorWindow>(position, door => Player.CanBarricade(door));
+          return map.AnyAdjacent<DoorWindow>(position, door => living is not null && living.CanBarricade(door));
         case AdvisorHint.EXIT_STAIRS_LADDERS: return map.HasExitAt(in position);
         case AdvisorHint.EXIT_LEAVING_DISTRICT:
           foreach (var point in position.Adjacent()) {
@@ -7097,7 +7096,7 @@ namespace djack.RogueSurvivor.Engine
          {
              var actorAt = map.GetActorAt(pt);
              if (actorAt is null) return false;
-             return ActionTrade.Can(Player, actorAt);
+             return living is not null && actorAt is LivingActor partner && ActionTrade.Can(living, partner);
          });
         case AdvisorHint.NPC_GIVING_ITEM:
           if ((living?.Inventory).IsEmpty()) return false;
@@ -7115,7 +7114,7 @@ namespace djack.RogueSurvivor.Engine
              return !Player.IsEnemyOf(actorAt);
          });
         case AdvisorHint.BUILD_FORTIFICATION:
-          return map.HasAnyAdjacentInMap(position, pt => Player.CanBuildFortification(in pt, false));
+          return map.HasAnyAdjacentInMap(position, pt => living is not null && living.CanBuildFortification(in pt, false));
         case AdvisorHint.LEADING_NEED_SKILL:
           return map.HasAnyAdjacentInMap(position, pt =>
          {
@@ -7155,7 +7154,7 @@ namespace djack.RogueSurvivor.Engine
 
         case AdvisorHint.SANITY: return  0.80f * Player.MaxSanity > Player.Sanity;
         case AdvisorHint.INFECTION: return 0 < Player.Infection;
-        case AdvisorHint.TRAPS: return Player.Has<ItemTrap>();
+        case AdvisorHint.TRAPS: return living?.Has<ItemTrap>() ?? false;
         default: throw new InvalidOperationException("unhandled hint");
       }
     }
@@ -7972,7 +7971,7 @@ namespace djack.RogueSurvivor.Engine
       if (a_model.Abilities.IsSmall) lines.Add("- Is small and can sneak through things.");
 
       // 9. Inventory.
-      var inv = actor.Inventory;
+      var inv = living?.Inventory;
       if (!inv.IsEmpty()) {
         lines.Add(string.Format("Items {0}/{1} : ", inv.Count(), actor.MaxInv));
         lines.AddRange(DescribeInventory(inv));
@@ -7982,15 +7981,15 @@ namespace djack.RogueSurvivor.Engine
       // 10. Trading options; cf. ObjectiveAI::HaveTradingTargets()
       var TradeableItems = (Player.Controller as ObjectiveAI)?.GetTradeableItems();
       var order_ai = actor.Controller as OrderableAI;
-      bool trade_ok = order_ai is not null && TradeableItems is not null && 0 < TradeableItems.Count && !actor.IsPlayer && ActionTrade.Can(Player, actor) && Player.MinStepPathTo(Player.Location, actor.Location) is not null;
+      bool trade_ok = order_ai is not null && TradeableItems is not null && 0 < TradeableItems.Count && !actor.IsPlayer && Player is LivingActor me && actor is LivingActor them && ActionTrade.Can(me, them) && Player.MinStepPathTo(Player.Location, actor.Location) is not null;
       if (trade_ok && 1== TradeableItems.Count) {
         var other_TradeableItems = order_ai.GetTradeableItems();
         if (other_TradeableItems is null) trade_ok = false;
         else if (1 == other_TradeableItems.Count && TradeableItems[0].ModelID == other_TradeableItems[0].ModelID) trade_ok = false;
       }
-      if (trade_ok && order_ai.HasAnyInterestingItem(TradeableItems)) {
+      if (trade_ok && order_ai.HasAnyInterestingItem(TradeableItems) && Player is LivingActor buyer) {
         // Cf. RogueGame::PickItemsToTrade
-        var negotiate = order_ai.TradeOptions(Player);
+        var negotiate = order_ai.TradeOptions(buyer);
         if (negotiate is not null) {
               lines.Add("would trade with you:");
               while(0 < negotiate.Count) {
@@ -8172,7 +8171,7 @@ namespace djack.RogueSurvivor.Engine
         string.Format("Rise      : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE ? DescribeCorpseLong_DescRiseProbability(2 * c.ZombifyChance(c.DeadGuy.Location.Map.LocalTime, false)) : "???")),
         " ",
         DescribeCorpseLong_DescRotLevel(c.RotLevel),
-        string.Format("Revive    : {0}.", (skills.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? DescribeCorpseLong_DescReviveChance(Player.ReviveChance(c)) : "???"))
+        string.Format("Revive    : {0}.", (skills.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? (Player is LivingActor medic ? DescribeCorpseLong_DescReviveChance(medic.ReviveChance(c)) : "???") : "???"))
       };
       if (isInPlayerTile) {
         lines.Add(" ");
@@ -9254,7 +9253,7 @@ namespace djack.RogueSurvivor.Engine
         // alpha10
         // roll for attacker disarming defender
         if (attacker.Model.Abilities.CanDisarm && rules.RollChance(attack.DisarmChance)) {
-          Item disarmIt = Disarm(defender);
+          Item? disarmIt = defender is LivingActor disarmed ? Disarm(disarmed) : null;
           if (disarmIt is not null) {
             // show
             if (d_witness is not null) {
@@ -9325,9 +9324,9 @@ namespace djack.RogueSurvivor.Engine
         a_only_witness?.ImportantMessage(MakeMessage(a_only_witness[0], attacker, VERB_MISS.Conjugate(attacker), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
         d_only_witness?.ImportantMessage(MakeMessage(d_only_witness[0], attacker, VERB_MISS.Conjugate(attacker), defender), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
       }
-      if (attacker.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE)) {
+      if (attacker is LivingActor armed && armed.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE)) {
         itemMeleeWeapon.UnequippedBy(attacker, false);
-        attacker.Inventory.Consume(itemMeleeWeapon);
+        armed.Inventory.Consume(itemMeleeWeapon);
         a_witness?.ImportantMessage(MakePanopticMessage(attacker, string.Format(": {0} breaks and is now useless!", itemMeleeWeapon.TheName)), isPlayer ? DELAY_NORMAL : DELAY_SHORT);
       }
       if (isVisible) ClearOverlays();  // alpha10: if test
@@ -9734,7 +9733,7 @@ namespace djack.RogueSurvivor.Engine
       Point pos = location.Position;
       var actorAt = map.GetActorAtExt(pos);
       if (actorAt is not null) {
-        ExplosionChainReaction(actorAt.Inventory, in location);
+        ExplosionChainReaction((actorAt as LivingActor)?.Inventory, in location);
         var witnesses = actorAt.PlayersInLOS();
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
         if (dmg > 0) {
@@ -9801,11 +9800,11 @@ namespace djack.RogueSurvivor.Engine
     {
       if (ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target))
         AddMessage(MakeMessage(speaker, VERB_CHAT_WITH.Conjugate(speaker), target));
-      if (speaker.IsPlayer || !ActionTrade.Can(speaker, target)) {
+      if (speaker.IsPlayer || speaker is not LivingActor src || target is not LivingActor dest || !ActionTrade.Can(src, dest)) {
         speaker.SpendActionPoints();
         return;
       }
-      var trade = new ActionTrade(speaker, target);
+      var trade = new ActionTrade(src, dest);
       if (!trade.IsPerformable()) {
         speaker.SpendActionPoints();
         return;
@@ -10039,13 +10038,13 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private bool DoTrade(PlayerController pc, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
+    private bool DoTrade(PlayerController pc, Item itSpeaker, LivingActor target, bool doesTargetCheckForInterestInOffer)
     {
-      var speaker = pc.ControlledActor; // i.e., always visible
+      if (pc.ControlledActor is not LivingActor speaker) return false; // a zombie PC has nothing to trade; the speaker is always visible
 #if DEBUG
       if (itSpeaker is null) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
 #endif
-      target.Inventory!.RejectCrossLink(speaker.Inventory!);
+      target.Inventory.RejectCrossLink(speaker.Inventory);
 
       bool wantedItem = true;
       bool flag3 = (target.Controller as ObjectiveAI).IsInterestingTradeItem(speaker, itSpeaker);
@@ -10183,14 +10182,14 @@ namespace djack.RogueSurvivor.Engine
       target.Take(donate);
     }
 
-    static public KeyValuePair<Item,Item>? PickItemsToTrade(OrderableAI speaker_c, Actor buyer)
+    static public KeyValuePair<Item,Item>? PickItemsToTrade(OrderableAI speaker_c, LivingActor buyer)
     {
       var negotiate = speaker_c.TradeOptions(buyer);
       if (negotiate is null) return null;
       return Rules.Get.DiceRoller.Choose(negotiate);
     }
 
-    static public KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer, Item gift)
+    static public KeyValuePair<Item,Item>? PickItemsToTrade(LivingActor speaker, LivingActor buyer, Item gift)
     {
       var buyer_offers = buyer.GetInterestingTradeableItems(speaker);  // charisma check involved for these
       if (buyer_offers is null || 0 >= buyer_offers.Count) return null;
@@ -10205,7 +10204,7 @@ namespace djack.RogueSurvivor.Engine
       return Rules.Get.DiceRoller.Choose(negotiate);
     }
 
-    static public bool CanPickItemsToTrade(Actor speaker, Actor buyer, Item gift)
+    static public bool CanPickItemsToTrade(LivingActor speaker, LivingActor buyer, Item gift)
     {
       var buyer_offers = buyer.GetInterestingTradeableItems(speaker);  // charisma check involved for these
       if (buyer_offers is null || 0 >=buyer_offers.Count) return false;
@@ -10218,7 +10217,7 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    private Item? PickItemToTrade(Actor speaker, PlayerController buyer_c, Item itSpeaker)
+    private Item? PickItemToTrade(LivingActor speaker, PlayerController buyer_c, Item itSpeaker)
     {
       var buyer = buyer_c.ControlledActor;
 #if DEBUG
@@ -10466,7 +10465,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(actor, string.Format("{0} {1} to", VERB_GIVE.Conjugate(actor), gift.TheName), target));
     }
 
-    public void DoPutItemInContainer(Actor actor, ShelfLike container, Item gift)
+    public void DoPutItemInContainer(LivingActor actor, ShelfLike container, Item gift)
     {
       actor.SpendActionPoints();
       if (container.PutItemIn(gift)) actor.Remove(gift, false);
@@ -10475,7 +10474,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(actor, string.Format("{0} {1} away", VERB_PUT.Conjugate(actor), gift.TheName)));
     }
 
-    public void DoDropItem(Actor actor, Item it)
+    public void DoDropItem(LivingActor actor, Item it)
     {
       if (actor.CanUnequip(it)) it.UnequippedBy(actor,false);
       actor.SpendActionPoints();
@@ -10503,7 +10502,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Location.Items?.RejectCrossLink(actor.Inventory);
     }
 
-    public void DoDropItem(Actor actor, Item it, Location dest)
+    public void DoDropItem(LivingActor actor, Item it, Location dest)
     {
       if (actor.Location != dest) {
           if (!actor.IsCrouching) {
@@ -10555,16 +10554,16 @@ namespace djack.RogueSurvivor.Engine
       dest.Drop(it);
     }
 
-    static private void DropItem(Actor actor, Item it) => DropItem(actor, it, actor.Location);
-    static private void DropItem(Actor actor, Item it, in Location dest)
+    static private void DropItem(LivingActor actor, Item it) => DropItem(actor, it, actor.Location);
+    static private void DropItem(LivingActor actor, Item it, in Location dest)
     {
       actor.Remove(it);
       _Drop(it, in dest);
     }
 
 
-    static private void DropCloneItem(Actor actor, Item it, Item clone) => DropCloneItem(actor, it, clone, actor.Location);
-    static private void DropCloneItem(Actor actor, Item it, Item clone, in Location dest)
+    static private void DropCloneItem(LivingActor actor, Item it, Item clone) => DropCloneItem(actor, it, clone, actor.Location);
+    static private void DropCloneItem(LivingActor actor, Item it, Item clone, in Location dest)
     {
       actor.Inventory.Consume(it);
       _Drop(clone, in dest);
@@ -10604,7 +10603,7 @@ restart:
     }
 
     // At low time resolutions, it would make sense to allow using from adjacent reachable inventories
-    public void DoUseItem(Actor actor, Item it)
+    public void DoUseItem(LivingActor actor, Item it)
     {
       // alpha10 defrag ai inventories
       bool defragInventory = !actor.IsPlayer && it.Model.IsStackable;
@@ -10620,13 +10619,13 @@ restart:
       if (actor.IsPlayer) RedrawPlayScreen();
     }
 
-    private void DoUseFoodItem(Actor actor, ItemFood food)
+    private void DoUseFoodItem(LivingActor actor, ItemFood food)
     {
       if (Player == actor && actor.FoodPoints >= actor.MaxFood - 1) ErrorPopup("Don't waste food!");
       else food.Use(actor, actor.Inventory);
     }
 
-    private void DoUseMedicineItem(Actor actor, ItemMedicine med)
+    private void DoUseMedicineItem(LivingActor actor, ItemMedicine med)
     {
       if (Player == actor) {
         int num1 = actor.MaxHPs - actor.HitPoints;
@@ -10643,7 +10642,7 @@ restart:
       med.Use(actor, actor.Inventory);
     }
 
-    public void DoUseEntertainmentItem(Actor actor, ItemEntertainment ent)
+    public void DoUseEntertainmentItem(LivingActor actor, ItemEntertainment ent)
     {
       var witnesses = _ForceVisibleToPlayer(actor);
       actor.SpendActionPoints();
@@ -10676,7 +10675,7 @@ restart:
       witnesses?.AddMessage(MakePanopticMessage(actor, VERB_ENJOY.Conjugate(actor), ent));
       int boreChance = ent.Model.BoreChance;
       if (boreChance == 100) {
-        actor.Inventory!.Consume(ent);
+        actor.Inventory.Consume(ent);
         witnesses?.AddMessage(MakePanopticMessage(actor, VERB_DISCARD.Conjugate(actor), ent));
       } else if (Rules.Get.RollChance(boreChance)) {
         ent.AddBoringFor(actor);
@@ -10705,9 +10704,9 @@ restart:
       seen?.AddMessage(MakeMessage(actor, VERB_CLOSE.Conjugate(actor), door));
     }
 
-    public void DoBarricadeDoor(Actor actor, DoorWindow door)
+    public void DoBarricadeDoor(LivingActor actor, DoorWindow door)
     {
-      var inv = actor.Inventory!;
+      var inv = actor.Inventory;
       var barricadeMaterial = inv.GetSmallestStackOf<ItemBarricadeMaterial>();
       inv.Consume(barricadeMaterial);
       door.Barricade(actor.ScaleBarricadingPoints(barricadeMaterial.Model.BarricadingValue));
@@ -10722,9 +10721,9 @@ restart:
       seen?.AddMessage(MakeMessage(actor, string.Format("{0} {1}.", VERB_BUILD.Conjugate(actor), fort.AName)));
     }
 
-    public void DoRepairFortification(Actor actor, Fortification fort)
+    public void DoRepairFortification(LivingActor actor, Fortification fort)
     {
-      var inv = actor.Inventory!;
+      var inv = actor.Inventory;
       var barricadeMaterial = inv.GetSmallestStackOf<ItemBarricadeMaterial>();
       inv.Consume(barricadeMaterial);
       actor.SpendActionPoints();
@@ -11225,20 +11224,20 @@ restart:
 
       Session.Get.Police.Threats.Audit(police_wanted); // cf. RadioFaction.Killed
 
-      if (!deadGuy.Inventory.IsEmpty()) {
+      if (dead_living is not null && !dead_living.Inventory.IsEmpty) {
         // the implicit police radio goes explicit on death, as a generic item
         if (deadGuy.IsFaction(GameFactions.IDs.ThePolice)) {
           var it = GameItems.POLICE_RADIO.instantiate();
           if (Rules.Get.RollChance(ItemSurviveKillProbability(it, reason))) deadGuy.Location.Drop(it);
         }
-        foreach (Item it in deadGuy.Inventory.ToArray()) {
+        foreach (Item it in dead_living.Inventory.ToArray()) {
           if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
           if (it.Model.IsUnbreakable || it.IsUnique || Rules.Get.RollChance(ItemSurviveKillProbability(it, reason)))
-            DropItem(deadGuy, it);
+            DropItem(dead_living, it);
         }
         // pending deciding what "passes through"
-        var slots = deadGuy.InventorySlots;
-        if (slots is not null) {
+        var slots = dead_living.InventorySlots;
+        {
             var ub = slots.Count();
             while(0 <= --ub) {
                 var it = slots[ub];
@@ -11252,7 +11251,7 @@ restart:
                 }
             }
         }
-        deadGuy.Inventory.Clear(); // will stay data-live through corpses otherwise
+        dead_living.Inventory.Clear(); // will stay data-live through corpses otherwise
         Session.Get.Police.Investigate.Record(deadGuy.Location);  // cheating ai: police consider death drops tourism targets
       }
 
@@ -11380,7 +11379,7 @@ restart:
     // alpha10
     /// <param name="actor"></param>
     /// <returns>the disarmed item or null if actor had no equipped item</returns>
-    private Item Disarm(Actor actor)
+    private Item? Disarm(LivingActor actor)
     {
       // pick equipped item to disarm : prefer weapon, then any right handed item(?), then left handed.
       var disarmIt = actor.GetEquippedWeapon();
@@ -11936,12 +11935,12 @@ restart:
           case Skills.IDs.AGILE: return 2;
           case Skills.IDs.AWAKE: return !actor.Model.Abilities.HasToSleep ? 0 : 3;
           case Skills.IDs.BOWS:
-            if ((inv = actor.Inventory) is not null && inv.Has<ItemRangedWeapon>(rw => rw.Model.IsBow)) return 3;
+            if ((inv = (actor as LivingActor)?.Inventory) is not null && inv.Has<ItemRangedWeapon>(rw => rw.Model.IsBow)) return 3;
             return 0;
           case Skills.IDs.CARPENTRY: return 1;
           case Skills.IDs.CHARISMATIC: return ((actor as LivingActor)?.CountFollowers ?? 0) <= 0 ? 0 : 1;    // ???
           case Skills.IDs.FIREARMS:
-            if ((inv = actor.Inventory) is not null && inv.Has<ItemRangedWeapon>(rw => rw.Model.IsFireArm)) return 3;
+            if ((inv = (actor as LivingActor)?.Inventory) is not null && inv.Has<ItemRangedWeapon>(rw => rw.Model.IsFireArm)) return 3;
             return 0;
           case Skills.IDs.HARDY: return !actor.Model.Abilities.HasToSleep ? 0 : 3;
           case Skills.IDs.HAULER: return 3;
@@ -11951,7 +11950,7 @@ restart:
           case Skills.IDs.LIGHT_FEET: return 2;
           case Skills.IDs.LIGHT_SLEEPER: return !actor.Model.Abilities.HasToSleep ? 0 : 2;
           case Skills.IDs.MARTIAL_ARTS:
-            if ((inv = actor.Inventory) is not null && inv.Has<ItemWeapon>()) return 1;
+            if ((inv = (actor as LivingActor)?.Inventory) is not null && inv.Has<ItemWeapon>()) return 1;
             return 2;
           case Skills.IDs.MEDIC: return 1;
           case Skills.IDs.NECROLOGY: return 1;  // alpha10; previously 0
@@ -12486,7 +12485,7 @@ restart:
           SleepIcon(actor)?.DrawIcon(screen, tint);
           HungerIcon(actor)?.DrawIcon(screen, tint);
           SanityIcon(actor)?.DrawIcon(screen, tint);
-          if (ActionTrade.Can(Player, actor)) {
+          if (Player is LivingActor me && actor is LivingActor them && ActionTrade.Can(me, them)) {
 /*          var o_oai = actor.Controller as OrderableAI;
             if (o_oai is not null) {
               // \todo evaluate whether ai actually will accept any trades
@@ -12799,7 +12798,7 @@ restart:
           int detection_range = (rw is not null ? rw.Model.Attack.Range : 1);
           var fr_enemies = fr.Controller.enemies_in_FOV;
           if (fr_enemies is null) continue;
-          if (1 == detection_range && fr.Inventory?.GetFirst(Item_IDs.UNIQUE_FATHER_TIME_SCYTHE) is not null) detection_range=2;
+          if (1 == detection_range && (fr as LivingActor)?.Inventory.GetFirst(Item_IDs.UNIQUE_FATHER_TIME_SCYTHE) is not null) detection_range=2;
           foreach(var en in fr_enemies.Values) {
             if (detection_range < Rules.InteractionDistance(fr.Location, en.Location)) continue;
             if (en.IsDead) continue;
@@ -14648,16 +14647,16 @@ retry:
         case 1: return new ActionBump(actor, rules.RollDirection());
         case 2: return ActionBreak.create(actor, (actor.Location + rules.RollDirection()).MapObject);
         case 3:
-          var inventory = actor.Inventory;
-          if (inventory.IsEmpty()) return null;
+          if (actor is not LivingActor insane || insane.Inventory.IsEmpty) return null;
+          var inventory = insane.Inventory;
           Item it = rules.DiceRoller.Choose(inventory);
-          var use = new ActionUseItem(actor, it);
+          var use = new ActionUseItem(insane, it);
           if (use.IsPerformable()) return use;
           if (it.IsEquipped) {
             it.UnequippedBy(actor);
             return new ActionWait(actor);   // historically, it took 2 insane actions to drop an equipped body armor
           }
-          return new ActionDropItem(actor, it);
+          return new ActionDropItem(insane, it);
         case 4:
           var f_in_fov = actor.Controller.friends_in_FOV;
           if (f_in_fov is null) return null;

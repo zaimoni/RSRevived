@@ -74,10 +74,10 @@ namespace djack.RogueSurvivor.Engine.Items
 
 #region UsableItem implementation
     public bool CouldUse() { return true; }
-    public bool CouldUse(Actor a) { return a.Model.Abilities.HasToEat; }
-    public bool CanUse(Actor a) { return CouldUse(a); }
+    public bool CouldUse(LivingActor a) { return a.Model.Abilities.HasToEat; }
+    public bool CanUse(LivingActor a) { return CouldUse(a); }
     // disallowing dogs from eating canned food should be done at their level
-    public void Use(Actor actor, Inventory inv) {
+    public void Use(LivingActor actor, Inventory inv) {
       const int FOOD_EXPIRED_VOMIT_CHANCE = 25;
 
       actor.SpendActionPoints();
@@ -94,22 +94,22 @@ namespace djack.RogueSurvivor.Engine.Items
       actor.Vomit();
       witnesses?.RedrawPlayScreen(RogueGame.MakePanopticMessage(actor, string.Format("{0} from eating spoiled food!", RogueGame.VERB_VOMIT.Conjugate(actor))));
     }
-    public string ReasonCantUse(Actor a) {
+    public string ReasonCantUse(LivingActor a) {
       if (!CouldUse(a)) return "no ability to eat";
       return "";
     }
-    public bool UseBeforeDrop(Actor a) {
+    public bool UseBeforeDrop(LivingActor a) {
       // other behaviors handle pre-emptive eating of perishables
       if (IsPerishable) return false;
-      if (!a.Inventory!.Contains(this) && a.HasEnoughFoodFor(a.Model.BaseFoodPoints / 2, this)) return false;
+      if (!a.Inventory.Contains(this) && a.HasEnoughFoodFor(a.Model.BaseFoodPoints / 2, this)) return false;
       int need = a.MaxFood - a.FoodPoints;
       int num4 = a.CurrentNutritionOf(this);
       return num4 <= need;
     }
-    public bool FreeSlotByUse(Actor a) {
+    public bool FreeSlotByUse(LivingActor a) {
       // other behaviors handle pre-emptive eating of perishables
       if (IsPerishable) return false;
-      if (!a.Inventory!.Contains(this) && a.HasEnoughFoodFor(a.Model.BaseFoodPoints / 2, this)) return false;
+      if (!a.Inventory.Contains(this) && a.HasEnoughFoodFor(a.Model.BaseFoodPoints / 2, this)) return false;
       int need = a.MaxFood - a.FoodPoints;
       int num4 = a.CurrentNutritionOf(this);
       return Quantity <= need/num4;

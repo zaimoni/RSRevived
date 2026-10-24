@@ -24,8 +24,11 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly List<Point> m_LoF = new();
     private readonly int maxRange;
 
-    public ActionThrowGrenade(Actor actor, Point throwPos, ItemGrenade it) : base(actor)
+    private new readonly LivingActor m_Actor;   // the same object as the base field
+
+    public ActionThrowGrenade(LivingActor actor, Point throwPos, ItemGrenade it) : base(actor)
     {
+      m_Actor = actor;
 #if DEBUG
       if (!actor.Inventory.Contains(it)) throw new InvalidOperationException("tracing");
 #endif
@@ -36,8 +39,9 @@ namespace djack.RogueSurvivor.Engine.Actions
       maxRange = actor.MaxThrowRange(ModelThrow.MaxThrowDistance);
     }
 
-    public ActionThrowGrenade(Actor actor, Point throwPos, PrimedExplosive it) : base(actor)
+    public ActionThrowGrenade(LivingActor actor, Point throwPos, PrimedExplosive it) : base(actor)
     {
+      m_Actor = actor;
 #if DEBUG
       if (!actor.Inventory.Contains(it)) throw new InvalidOperationException("tracing");
 #endif
