@@ -35,8 +35,8 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MovesTo | Data/Actor.cs:1613 | ok | the destination itself |
-| Actor.MayEnter(ref Location) | Data/Actor.cs:2331 | ok | beyond adjacency |
+| Actor.MovesTo | Data/Actor.cs:1612 | ok | the destination itself |
+| Actor.MayEnter(ref Location) | Data/Actor.cs:2330 | ok | beyond adjacency |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:255 | ok | |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:257 | ok | |
 | ActorModel.CastToInventoryAccessibleDestinations(,) | Data/ActorModel.cs:274 | ok | excludes shelf-like objects separately |
@@ -79,7 +79,7 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MutuallyAdjacentFor | Data/Actor.cs:2343 | ok | by ref |
+| Actor.MutuallyAdjacentFor | Data/Actor.cs:2342 | ok | by ref |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | ok | throws on the destination |
 | _Action.MoveStep._runFrom | Engine/Action/MoveStep.cs:192 | ok | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:249 | ok | |
