@@ -35,8 +35,8 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MovesTo | Data/Actor.cs:1990 | ok | the destination itself |
-| Actor.MayEnter(ref Location) | Data/Actor.cs:2778 | ok | beyond adjacency |
+| Actor.MovesTo | Data/Actor.cs:1621 | ok | the destination itself |
+| Actor.MayEnter(ref Location) | Data/Actor.cs:2409 | ok | beyond adjacency |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:255 | ok | |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:257 | ok | |
 | ActorModel.CastToInventoryAccessibleDestinations(,) | Data/ActorModel.cs:274 | ok | excludes shelf-like objects separately |
@@ -63,23 +63,23 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ActionMoveDelta.schedule(Actor, Location) | Engine/Actions/ActionMoveDelta.cs:255 | ok | destination; the overload without an origin |
 | ActionMoveStep.schedule(Actor, Location) | Engine/Actions/ActionMoveStep.cs:52 | ok | |
 | ActionMoveStep.schedule(Actor, Point) | Engine/Actions/ActionMoveStep.cs:58 | ok | |
-| RogueGame.HandleItemInfo | Engine/RogueGame.cs:4093 | ok | local function `details`; receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13354 | ok | receiver a follower, chosen by index |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13379 | ok | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13387 | ok | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13409 | ok | receiver Player |
+| RogueGame.HandleItemInfo | Engine/RogueGame.cs:4092 | ok | local function `details`; receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13356 | ok | receiver a follower, chosen by index |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13381 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13389 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13411 | ok | receiver Player |
 | AcquireLineOfSight..ctor(Actor, in Location) | Gameplay/AI/Goals/AcquireLineOfSight.cs:46 | ok | throws via Spotlight: "unpathable"; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, IEnumerable) | Gameplay/AI/Goals/AcquireLineOfSight.cs:55 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:65 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4795 | ok | two calls: N and S of the trap |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4798 | ok | two calls: E and W of the trap |
-| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4838 | ok | by ref |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4796 | ok | two calls: N and S of the trap |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4799 | ok | two calls: E and W of the trap |
+| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4839 | ok | by ref |
 
 ## Actor.CanEnter
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MutuallyAdjacentFor | Data/Actor.cs:2790 | ok | by ref |
+| Actor.MutuallyAdjacentFor | Data/Actor.cs:2421 | ok | by ref |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | ok | throws on the destination |
 | _Action.MoveStep._runFrom | Engine/Action/MoveStep.cs:192 | ok | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:249 | ok | |
@@ -95,10 +95,10 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 |---|---|---|---|
 | SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:102 | ok | RemoveWhere lambda; comment says it matters for burning cars |
 | ObjectiveAI.WantToGoHere | Gameplay/AI/ObjectiveAI.cs:1376 | ok | by ref |
-| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3234 | ok | local function destination_melee_safe |
-| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3289 | ok | local function install_moves; its row had gone missing |
-| ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4192 | ok | by ref |
-| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4539 | ok | |
+| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3235 | ok | local function destination_melee_safe |
+| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3290 | ok | local function install_moves; its row had gone missing |
+| ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4193 | ok | by ref |
+| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4540 | ok | |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:143 | ok | throws via Spotlight on the origin |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:144 | ok | throws via Spotlight on the destination |
 
