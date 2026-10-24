@@ -8962,8 +8962,8 @@ namespace djack.RogueSurvivor.Engine
 
     public bool DoPlayerBump(Actor player, Direction direction)
     {
-      var actionBump = new ActionBump(player, direction);
-      if (actionBump.IsPerformable()) {
+      (var actionBump, var reason) = ActionBump.create(player.Controller, direction);
+      if (actionBump is not null) {
         actionBump.Perform();
         return true;
       }
@@ -8979,7 +8979,7 @@ namespace djack.RogueSurvivor.Engine
         ErrorPopup("Too tired to tear down the barricade.");
         return false;
       }
-      ErrorPopup(string.Format("Cannot do that : {0}.", actionBump.FailReason));
+      ErrorPopup(string.Format("Cannot do that : {0}.", reason));
       return false;
     }
 
@@ -14643,7 +14643,7 @@ retry:
       var rules = Rules.Get;
       switch (rules.Roll(0, 5)) {
         case 0: return new ActionShout(actor, "AAAAAAAAAAA!!!");
-        case 1: return new ActionBump(actor, rules.RollDirection());
+        case 1: return ActionBump.create(actor, rules.RollDirection());
         case 2: return ActionBreak.create(actor, (actor.Location + rules.RollDirection()).MapObject);
         case 3:
           if (actor is not LivingActor insane || insane.Inventory.IsEmpty) return null;

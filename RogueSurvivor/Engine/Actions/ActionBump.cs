@@ -15,31 +15,51 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Location m_NewLocation;
     private readonly ActorAction m_ConcreteAction;
 
-    public Location dest { get { return m_NewLocation; } }
+    public Location dest => m_NewLocation;
+    public Direction Direction => m_Direction;
+    public ActorAction ConcreteAction => m_ConcreteAction;
 
-    public Direction Direction { get { return m_Direction; } }
-    public ActorAction ConcreteAction { get { return m_ConcreteAction; } }
-
-    public ActionBump(Actor actor, Direction direction) : base(actor)
+    private ActionBump(Actor actor, Direction direction, ActorAction act) : base(actor)
     {
       m_Direction = direction;
       m_NewLocation = actor.Location + direction;   // tentatively excluding this ActionBump class from IsPerformable upgrade due to this
-      m_ConcreteAction = Rules.IsBumpableFor(m_Actor, in m_NewLocation, out m_FailReason);
 #if DEBUG
-      if (m_ConcreteAction is not null && !m_ConcreteAction.IsPerformable()) throw new ArgumentOutOfRangeException(nameof(m_ConcreteAction), m_ConcreteAction, "not performable");
+      if (!Map.Canonical(ref m_NewLocation)) throw new InvalidOperationException("legal action with denormalized destination");
+#else
+      Map.Canonical(ref m_NewLocation);  // should be true for a legal action
 #endif
+      m_ConcreteAction = act;
     }
 
     public override bool IsLegal()
     {
-      if (m_ConcreteAction is null) return false;
-      return m_ConcreteAction.IsLegal();
+      bool ret = m_ConcreteAction.IsLegal();
+      if (!ret) m_FailReason = m_ConcreteAction.FailReason;
+      return ret;
     }
 
-    public override void Perform()
+    public override bool IsPerformable()
     {
-      if (m_ConcreteAction is null) return;
-      m_ConcreteAction.Perform();
+      bool ret = m_ConcreteAction.IsPerformable();
+      if (!ret) m_FailReason = m_ConcreteAction.FailReason;
+      return ret;
+    }
+
+    public override void Perform() => m_ConcreteAction.Perform();
+
+    static public ActionBump? create(Actor actor, Direction direction) {
+        var denorm_loc = actor.Location + direction;
+        var act = Rules.IsBumpableFor(actor, in denorm_loc, out var reason);
+        if (act is null || !act.IsPerformable()) return null;
+        return new(actor, direction, act);
+    }
+
+    static public (ActionBump?, string?) create(ActorController controller, Direction direction) {
+        Actor actor = controller.ControlledActor;
+        var denorm_loc = actor.Location + direction;
+        var act = Rules.IsBumpableFor(actor, in denorm_loc, out var reason);
+        if (act is null || !act.IsPerformable()) return (null, reason);
+        return (new(actor, direction, act), null);
     }
 
     public override string ToString() { return m_ConcreteAction.ToString(); }

@@ -245,12 +245,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       var opts = Direction.COMPASS.Candidates(dir => {
-          var act = new ActionBump(m_Actor, dir);
-          var next = act.dest;
+          var act = ActionBump.create(m_Actor, dir);
+          if (act is null) return null;
+          Location next = act.dest;
           if (goodWanderLocFn is not null && !goodWanderLocFn(next)) return null;
-          if (!Map.Canonical(ref next)) return null;
           if (!IsValidWanderAction(act.ConcreteAction)) return null;
-          if (!act.IsPerformable()) return null;
 
           return act;
       });
@@ -441,25 +440,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals)
+    protected ActorAction? BehaviorWalkAwayFrom(IEnumerable<Point> goals)
     {
       var leader = (m_Actor as LivingActor)?.LiveLeader;
+      Dictionary<Direction, ActionBump> cache = new();
       var choiceEval = Choose(Direction.COMPASS, dir => {
-        Location location = m_Actor.Location + dir;
-        var bump = Rules.IsBumpableFor(m_Actor, in location);
+        var bump = ActionBump.create(m_Actor, dir);
+        if (bump is null) return float.NaN;
         if (!IsValidFleeingAction(bump)) return float.NaN;
-#if DEBUG
-        if (!bump.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("non-null non-performable bump"));
-#else
-        if (!bump.IsPerformable()) return float.NaN;
-#endif
+        Location location = m_Actor.Location + dir;
         float num = SafetyFrom(location.Position, goals);
         if (leader is not null) {
           num -= (float)Rules.StdDistance(in location, leader.Location);
         }
+        cache.Add(dir, bump);
         return num;
       }, (a, b) => a > b);
-      return ((choiceEval is not null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
+      return ((choiceEval is not null) ? cache[choiceEval.Choice] : null);
     }
 
     protected ActionMeleeAttack? BehaviorMeleeAttack(Actor target)
@@ -812,7 +809,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // the intelligent callers are using the override at OrderableAI
-    protected virtual ActorAction BehaviorExplore(ExplorationData exploration)
+    protected virtual ActorAction? BehaviorExplore(ExplorationData exploration)
     {
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position - m_prevLocation.Position);
 
@@ -842,11 +839,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       var opts = Direction.COMPASS.Candidates(dir => {
-          var act = new ActionBump(m_Actor, dir);
-          var next = act.dest;
-          if (!Map.Canonical(ref next)) return null;
+          var act = ActionBump.create(m_Actor, dir);
+          if (act is null) return null;
           if (!IsValidMoveTowardGoalAction(act.ConcreteAction)) return null;
-          if (!act.IsPerformable()) return null;
 
           return act;
       });

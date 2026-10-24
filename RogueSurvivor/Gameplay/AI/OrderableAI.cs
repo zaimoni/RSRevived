@@ -2697,24 +2697,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
           LOS.CanTraceFireLine(leader.Location, actor.Location, rw.Model.Attack.Range, leaderLoF);
         }
       }
+      Dictionary<Direction, ActionBump> cache = new();
       var choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
-        var bump = Rules.IsBumpableFor(m_Actor, in location);
+        var bump = ActionBump.create(m_Actor, dir);
+        if (bump is null) return float.NaN;
         if (!IsValidFleeingAction(bump)) return float.NaN;
-#if DEBUG
-        if (!bump.IsPerformable()) throw m_Actor.Spotlight(new InvalidOperationException("non-null non-performable bump"));
-#else
-        if (!bump.IsPerformable()) return float.NaN;
-#endif
+
         float num = SafetyFrom(in location, goals);
         if (LoF_reserve?.Contains(location.Position) ?? false) --num;
         if (leader is not null) {
           num -= (float)Rules.StdDistance(in location, leader.Location);
           if (leaderLoF?.Contains(location.Position) ?? false) num -= (float)IN_LEADER_LOF_SAFETY_PENALTY;
         }
+        cache.Add(dir, bump);
         return num;
       }, (a, b) => a > b);
-      return choiceEval is not null ? new ActionBump(m_Actor, choiceEval.Choice) : null;
+      return choiceEval is not null ? cache[choiceEval.Choice] : null;
     }
 
     private ActorAction? BehaviorFlee(Actor enemy, HashSet<Point>? LoF_reserve, bool doRun, string[] emotes)
@@ -3660,7 +3659,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionWait(m_Actor);
     }
 
-    protected override ActorAction BehaviorExplore(ExplorationData exploration)
+    protected override ActorAction? BehaviorExplore(ExplorationData exploration)
     {
       ActorCourage courage = Directives_nocreate?.Courage ?? ActorDirective.Courage_default;
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position - PrevLocation.Position);
@@ -3700,11 +3699,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       var opts = Direction.COMPASS.Candidates(dir => {
-          var act = new ActionBump(m_Actor, dir);
-          var next = act.dest;
-          if (!Map.Canonical(ref next)) return null;
+          var act = ActionBump.create(m_Actor, dir);
+          if (act is null) return null;
           if (!IsValidMoveTowardGoalAction(act.ConcreteAction)) return null;
-          if (!act.IsPerformable()) return null;
+
+          Location next = act.dest;
           Map map = next.Map;
           Point position = next.Position;
           int trap_max_damage = m_Actor.Model.Abilities.IsIntelligent ? map.TrapsUnavoidableMaxDamageAtFor(position, m_Actor) : 0;
