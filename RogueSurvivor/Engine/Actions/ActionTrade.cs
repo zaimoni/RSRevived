@@ -116,22 +116,23 @@ namespace djack.RogueSurvivor.Engine.Actions
                 if (!target.IsPlayer) return "in combat";
             }
 
-            if (!src.IsPlayer && !target.IsPlayer) {
-                var theirs = target.GetRationalTradeableItems(src.Controller as Gameplay.AI.OrderableAI);
-                if (theirs is null) return "target unwilling to trade";
-                var mine = src.GetRationalTradeableItems(target.Controller as Gameplay.AI.OrderableAI);
-                if (mine is null) return "unwilling to trade";
-                bool ok = false;
-                foreach (var want in theirs) {
-                    foreach (var have in mine) {
-                        if (   !Gameplay.AI.ObjectiveAI.TradeVeto(have, want)
-                            && !Gameplay.AI.ObjectiveAI.TradeVeto(want, have)) {
-                            ok = true;
-                            break;
+            if (src.Controller is OrderableAI speaker_c) {
+                if (target.Controller is OrderableAI target_c) {
+                    var theirs = target_c.GetRationalTradeableItems(speaker_c);
+                    if (theirs is null) return "target unwilling to trade";
+                    var mine = speaker_c.GetRationalTradeableItems(target_c);
+                    if (mine is null) return "unwilling to trade";
+                    bool ok = false;
+                    foreach (var want in theirs) {
+                        foreach (var have in mine) {
+                            if (!ObjectiveAI.TradeVeto(have, want) && !ObjectiveAI.TradeVeto(want, have)) {
+                                ok = true;
+                                break;
+                            }
                         }
                     }
+                    if (!ok) return "no mutually acceptable trade";
                 }
-                if (!ok) return "no mutually acceptable trade";
             }
             return null;
         }

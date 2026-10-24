@@ -867,16 +867,6 @@ final_exit:
       var objList = m_Inventory.Where(it=> buyer_ai.IsInterestingTradeItem(this, it) && ai.IsTradeableItem(it)).ToList();  // \todo upgrade ObjectiveAI::IsTradeableItem to virtual with a PlayerController override
       return 0<objList.Count ? objList : null;
     }
-
-    public List<Item>? GetRationalTradeableItems(Gameplay.AI.OrderableAI buyer)    // only called from AI trading decision making
-    {
-#if DEBUG
-      if (!Model.Abilities.CanTrade) throw new InvalidOperationException(Name+" cannot trade");
-#endif
-
-      var objList = m_Inventory.Where(it=> buyer.IsRationalTradeItem(it) && (Controller as Gameplay.AI.OrderableAI).IsTradeableItem(it));
-      return objList.Any() ? objList.ToList() : null;
-    }
 #endregion
 
     public override void SkillUpgrade(Skills.IDs id)

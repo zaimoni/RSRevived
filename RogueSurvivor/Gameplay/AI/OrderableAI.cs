@@ -1599,6 +1599,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionSay(m_Actor, m_Actor.Leader, text, default);
     }
 
+#region trading
     public bool IsRationalTradeItem(Item offeredItem)    // Cf. ActorControllerAI::IsInterestingTradeItem
     {
 #if DEBUG
@@ -1606,6 +1607,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       return IsInterestingItem(offeredItem);
     }
+
+    public List<Item>? GetRationalTradeableItems(OrderableAI buyer)    // only called from AI trading decision making
+    {
+#if DEBUG
+      if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(Name+" cannot trade");
+#endif
+
+      var objList = m_Actor.Inventory.Where(it=> buyer.IsRationalTradeItem(it) && IsTradeableItem(it));
+      return objList.Any() ? objList.ToList() : null;
+    }
+#endregion
 
     private void MaximizeRangedTargets(List<Point> dests, List<Percept_<Actor>> enemies)
     {
