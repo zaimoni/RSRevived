@@ -1903,12 +1903,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected Dictionary<Point, int> PlanApproach(Zaimoni.Data.FloodfillPathfinder<Point> navigate)
     {
       PlannedMoves.Clear();
-      var dest = navigate.Approach(m_Actor.Location.Position);
-      if (dest is null) return null;
+      if (navigate.Approach(m_Actor.Location.Position) is not { } dest) return null;
       PlannedMoves[m_Actor.Location.Position] = dest;
       foreach(Point pt in dest.Keys) {
         if (0>navigate.Cost(pt)) continue;
-        PlannedMoves[pt] = navigate.Approach(pt);
+        if (navigate.Approach(pt) is { } dest2) PlannedMoves[pt] = dest2;
       }
       return new Dictionary<Point,int>(dest);
     }
@@ -5928,8 +5927,8 @@ restart_chokepoints:
       if (it is ItemMeleeWeaponModel melee) {
         int rating = m_Actor.MeleeWeaponAttack(melee).Rating;
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return 0;
-        int? best_rating = who.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
-        if (best_rating is null) return 2;  // martial arts invalidates starting baton for police
+        // rely on OrderableAI doing the right thing
+        if (who.GetBestMeleeWeaponRating() is not int best_rating) return 2; // martial arts invalidates starting baton for police
         if (best_rating < rating) return 2;
         if (best_rating > rating) return 1;
         int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete

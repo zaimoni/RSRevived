@@ -5066,7 +5066,6 @@ namespace djack.RogueSurvivor.Engine
 
         var player = pc.ControlledActor;
         Data.Model.InvOrigin src = default;
-        Data.Model.InvOrigin dest = default;
 
         Data.Model.InvOrigin? take_from(Direction dir) {
           if (dir == Direction.NEUTRAL) {

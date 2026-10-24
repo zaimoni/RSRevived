@@ -285,7 +285,7 @@ namespace djack.RogueSurvivor.UI
 
     private Pen GetPen(Color color)
     {
-      if (!m_PensCache.TryGetValue(color, out Pen pen)) {
+      if (!m_PensCache.TryGetValue(color, out var pen)) {
         pen = new Pen(color);
         m_PensCache.Add(color, pen);
       }
@@ -294,7 +294,7 @@ namespace djack.RogueSurvivor.UI
 
     public static Brush GetColorBrush(Color color)
     {
-      if (!m_BrushesCache.TryGetValue(color, out Brush brush)) {
+      if (!m_BrushesCache.TryGetValue(color, out var brush)) {
         brush = new SolidBrush(color);
         m_BrushesCache.Add(color, brush);
       }
