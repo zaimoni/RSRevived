@@ -2557,7 +2557,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected (ActorAction act, Actor target)? BehaviorDontLeaveFollowersBehind(int distance)
+    protected (ActorAction act, LivingActor target)? BehaviorDontLeaveFollowersBehind(int distance)
     {
       // Scan the group:
       // - Find nearst member of the group that isn't near enough
@@ -3785,9 +3785,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       const int USE_STENCH_KILLER_CHANCE = 75;
       if (Rules.Get.RollChance(USE_STENCH_KILLER_CHANCE)) {  // compromise between burning RNG and very high false negative rate
       // first check if want to use it on self, then check on adj leader/follower
-      Actor? sprayOn = null;
+      LivingActor? sprayOn = null;
 
-      bool WantsToSprayOn(Actor a)
+      bool WantsToSprayOn(LivingActor a)
       {
         // never spray on player, could mess with his tactics   \todo good use of a directive, if that wasn't obsolete
         if (a.IsPlayer) return false;

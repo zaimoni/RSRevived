@@ -10851,8 +10851,8 @@ restart:
       var folowers = actor.Followers;
       if (folowers is null) return;
 
-      List<Actor>? helpers = null;
-      foreach (Actor fo in folowers) {
+      List<LivingActor>? helpers = null;
+      foreach (var fo in folowers) {
         // follower can help if: not sleeping, idle and adj to map object.
         if (!fo.IsSleeping && fo.IsAvailableToHelp && Rules.IsAdjacent(fo.Location, mapObj.Location)) {
           (helpers ??= new(actor.CountFollowers)).Add(fo);
@@ -10862,7 +10862,7 @@ restart:
         // share the sta cost.
         staCost = mapObj.Weight / (1 + helpers.Count);
         var o_witness = _ForceVisibleToPlayer(mapObj);
-        foreach (Actor h in helpers) {
+        foreach (var h in helpers) {
           h.SpendActionPoints();
           h.SpendStaminaPoints(staCost);
           if (o_witness is not null) o_witness.AddMessage(MakeMessage(h, string.Format("{0} {1} {2} {3}.", VERB_HELP.Conjugate(h), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
@@ -14604,8 +14604,8 @@ retry:
             matchingActors = 0;
             return null;
           }
-          List<Actor> actorList1 = new(count_followers);
-          foreach (Actor a in followers) {
+          List<LivingActor> actorList1 = new(count_followers);
+          foreach (var a in followers) {
             if (IsSuitableReincarnation(a, true)) actorList1.Add(a);
           }
           matchingActors = actorList1.Count;
@@ -15174,11 +15174,11 @@ retry:
       return lines.ToArray();
     }
 
-    static public void DoTheyEnterMap(this IEnumerable<Actor> followers, Location to, in Location from)
+    static public void DoTheyEnterMap(this IEnumerable<LivingActor> followers, Location to, in Location from)
     {
       var map = to.Map;
       List<Point>? pointList;    // \todo? candidate for GC micro-optimization, but cold path
-      foreach(Actor fo in followers) {
+      foreach(var fo in followers) {
         var fo_map = fo.Location.Map;
         if (fo_map == map) continue;  // already in destination, ok
         if (fo_map.DistrictPos != map.DistrictPos) continue;  // cross-district change

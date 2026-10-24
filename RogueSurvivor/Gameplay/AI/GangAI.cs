@@ -91,7 +91,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override Dictionary<Location, Actor>? enemies_in_FOV { get => m_MemLOSSensor.Sensor.enemies; }
     public override Dictionary<Location, Data.Model.InvOrigin>? items_in_FOV { get => m_MemLOSSensor.Sensor.items; }
     // return value must contain a {0} placeholder for the target name
-    private string LeaderText_NotLeavingBehind(Actor target)
+    private string LeaderText_NotLeavingBehind(LivingActor target)
     {
       if (target.IsSleeping) return "patiently waits for {0} to wake up.";
       else if (CanSee(target.Location)) return "Hey {0}! Fucking move!";

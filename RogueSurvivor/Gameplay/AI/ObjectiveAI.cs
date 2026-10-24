@@ -4981,9 +4981,9 @@ restart_chokepoints:
       return false;
     }
 
-    public List<Actor>? AvailableFollowers
+    public List<LivingActor>? AvailableFollowers
     { get {
-        List<Actor> ret = new();
+        List<LivingActor> ret = new();
         var p_fos = m_Living?.Followers;
         if (p_fos is not null) {
           foreach(var fo in p_fos) {
