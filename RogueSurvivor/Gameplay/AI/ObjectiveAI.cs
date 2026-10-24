@@ -665,7 +665,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     public void HandlePlayerCountermand() {
-      if (!m_Actor.LiveLeader.IsPlayer) {
+      if (m_Living?.LiveLeader?.IsPlayer is not true) {
 #if DEBUG
         throw new InvalidOperationException("not a player-led follower");
 #else
@@ -2668,9 +2668,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorTradeWithinClan() {
       if (m_Living is not { } who) return null;
       // somewhat like BehaviorRequestCriticalFromGroup
-      var clan = m_Actor.ChainOfCommand;
+      var clan = who.ChainOfCommand;
       if (clan is not null) {
-         var adj_clan = clan.Where(who => Rules.IsAdjacent(m_Actor.Location, who.Location));
+         var adj_clan = clan.Where(member => Rules.IsAdjacent(m_Actor.Location, member.Location));
          foreach(var a in adj_clan) {
             if (a.IsPlayer) continue;
             var they_want = who.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(a));
@@ -2681,7 +2681,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                if (act.IsPerformable()) return act;
                continue;
             }
-            var i_want = a.Inventory!.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
+            var i_want = a.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
             return TradeItem.Cast(new Data.Model.InvOrigin(a), m_Actor, they_want.First(), i_want.First());
          }
@@ -2692,13 +2692,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected TradeItem? BehaviorTradeWithinClan(Item give) {
       // somewhat like BehaviorRequestCriticalFromGroup
       if (!(give is UsableItem use && !use.UseBeforeDrop(m_Actor))) return null;
-      var clan = m_Actor.ChainOfCommand;
+      if (m_Living is not { } who) return null;
+      var clan = who.ChainOfCommand;
       if (clan is not null) {
-         var adj_clan = clan.Where(who => Rules.IsAdjacent(m_Actor.Location, who.Location));
+         var adj_clan = clan.Where(member => Rules.IsAdjacent(m_Actor.Location, member.Location));
          foreach(var a in adj_clan) {
             if (a.IsPlayer) continue;
             if (!use.UseBeforeDrop(a)) continue;
-            var i_want = a.Inventory!.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
+            var i_want = a.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(m_Actor) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
             return TradeItem.Cast(new Data.Model.InvOrigin(a), m_Actor, give, i_want.First());
          }
@@ -4922,7 +4923,7 @@ restart_chokepoints:
             var tenable = coordinate_this.UrgentAction(out var next_action);
             if (next_action is not null) {
               if (!coordinate_this.IsExpired) {
-                var allies = m_Actor.Allies;
+                var allies = m_Living?.Allies;
                 if (allies is not null) {
                   var zone = m_Actor.Location.Map.ClearableZoneAt(m_Actor.Location.Position);
                   foreach(var ally in allies) {
@@ -4983,7 +4984,7 @@ restart_chokepoints:
     public List<Actor>? AvailableFollowers
     { get {
         List<Actor> ret = new();
-        var p_fos = m_Actor.Followers;
+        var p_fos = m_Living?.Followers;
         if (p_fos is not null) {
           foreach(var fo in p_fos) {
             if (InCommunicationWith(fo)) ret.Add(fo);
@@ -5021,10 +5022,10 @@ restart_chokepoints:
       }
 
       var responders = new List<Actor>();
-      var test_actor = m_Actor.LiveLeader;
+      var test_actor = m_Living?.LiveLeader;
       if (is_available(test_actor, ReactionCode.ENEMY)) responders.Add(test_actor);
-      if (0<m_Actor.CountFollowers) {
-        foreach(Actor fo in m_Actor.Followers) {
+      if (m_Living?.Followers is { } fos) {
+        foreach(var fo in fos) {
           if (is_available(fo, ReactionCode.ENEMY)) responders.Add(fo);
         }
       }
@@ -5044,107 +5045,108 @@ restart_chokepoints:
       }
     }
 
-    protected List<Actor>? RecruitableLOS() {
+    protected List<LivingActor>? RecruitableLOS() {
       var in_LOS = m_Actor.Controller.friends_in_FOV;
       if (in_LOS is null) return null;
-      if (!string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) return null;
-      List<Actor> want_leader = new();
+      if (m_Living is not { } who || !string.IsNullOrEmpty(who.ReasonCannotLead())) return null;
+      List<LivingActor> want_leader = new();
       var am_police = m_Actor.Model.Abilities.IsLawEnforcer ? Session.Get.Police : null;
       foreach (var x in in_LOS) {
-        if (!m_Actor.CanTakeLeadOf(x.Value)) continue;
+        if (x.Value is not LivingActor la || !who.CanTakeLeadOf(la)) continue;
         if (am_police is not null && am_police.IsTargeted(x.Value)) continue; // do not allow police to lead capital criminals
-        want_leader.Add(x.Value);
+        want_leader.Add(la);
       }
       FilterOutUnreachable(ref want_leader, Tools.RouteFinder.SpecialActions.DOORS | Tools.RouteFinder.SpecialActions.JUMP);
       return 0< want_leader.Count ? want_leader : null;
     }
 
-    protected List<Actor>? CanRecruitMeLOS() {
+    protected List<LivingActor>? CanRecruitMeLOS() {
       var in_LOS = m_Actor.Controller.friends_in_FOV;
       if (in_LOS is null) return null;
-      List<Actor> want_leader = new();
+      List<LivingActor> want_leader = new();
       bool no_police = Session.Get.Police.IsTargeted(m_Actor);
       foreach (var x in in_LOS) {
-        if (!x.Value.CanTakeLeadOf(m_Actor)) continue;
+        if (m_Living is null || x.Value is not LivingActor la || !la.CanTakeLeadOf(m_Living)) continue;
         if (no_police && x.Value.Model.Abilities.IsLawEnforcer) continue; // do not allow police to lead capital criminals
-        want_leader.Add(x.Value);
+        want_leader.Add(la);
       }
       FilterOutUnreachable(ref want_leader, Tools.RouteFinder.SpecialActions.DOORS | Tools.RouteFinder.SpecialActions.JUMP);
       return 0< want_leader.Count ? want_leader : null;
     }
 
-    protected List<Actor>? LegallyRecruitableLOS() {
+    protected List<LivingActor>? LegallyRecruitableLOS() {
       var in_LOS = m_Actor.Controller.friends_in_FOV;
       if (in_LOS is null) return null;
-      List<Actor> want_leader = new();
+      List<LivingActor> want_leader = new();
       var am_police = m_Actor.Model.Abilities.IsLawEnforcer ? Session.Get.Police : null;
       foreach (var x in in_LOS) {
-        if (!m_Actor.LegalToTakeLeadOf(x.Value)) continue;
+        if (m_Living is null || x.Value is not LivingActor la || !m_Living.LegalToTakeLeadOf(la)) continue;
         if (am_police is not null && am_police.IsTargeted(x.Value)) continue; // do not allow police to lead capital criminals
-        want_leader.Add(x.Value);
+        want_leader.Add(la);
       }
       FilterOutUnreachable(ref want_leader, Tools.RouteFinder.SpecialActions.DOORS | Tools.RouteFinder.SpecialActions.JUMP);
       return 0< want_leader.Count ? want_leader : null;
     }
 
-    protected List<Actor>? CanLegallyRecruitMeLOS() {
+    protected List<LivingActor>? CanLegallyRecruitMeLOS() {
       var in_LOS = m_Actor.Controller.friends_in_FOV;
       if (in_LOS is null) return null;
-      List<Actor> want_leader = new();
+      List<LivingActor> want_leader = new();
       bool no_police = Session.Get.Police.IsTargeted(m_Actor);
       foreach (var x in in_LOS) {
-        if (!x.Value.LegalToTakeLeadOf(m_Actor)) continue;
+        if (m_Living is null || x.Value is not LivingActor la || !la.LegalToTakeLeadOf(m_Living)) continue;
         if (no_police && x.Value.Model.Abilities.IsLawEnforcer) continue; // do not allow police to lead capital criminals
-        want_leader.Add(x.Value);
+        want_leader.Add(la);
       }
       FilterOutUnreachable(ref want_leader, Tools.RouteFinder.SpecialActions.DOORS | Tools.RouteFinder.SpecialActions.JUMP);
       return 0< want_leader.Count ? want_leader : null;
     }
 
 
-    public List<Actor>? RecruitableRadio() {
+    public List<LivingActor>? RecruitableRadio() {
       if (!m_Actor.HasActivePoliceRadio) return null;
-      if (!string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) return null;
-      List<Actor> want_leader = new();
+      if (m_Living is not { } who || !string.IsNullOrEmpty(who.ReasonCannotLead())) return null;
+      List<LivingActor> want_leader = new();
       var am_police = m_Actor.Model.Abilities.IsLawEnforcer ? Session.Get.Police : null;
       var test = World.Get.EveryoneInPoliceRadioRange(m_Actor.Location /*, Predicate<Actor> ? test = null */);
       if (test is null) return null;
       foreach (var a in test) {
-        if (!m_Actor.CanTakeLeadOf(a)) continue;
+        if (a is not LivingActor la || !who.CanTakeLeadOf(la)) continue;
         if (am_police is not null && am_police.IsTargeted(a)) continue; // do not allow police to lead capital criminals
         var compete = (a.Controller as ObjectiveAI)?.LegallyRecruitableLOS();
         if (compete is not null) continue;
         compete = (a.Controller as ObjectiveAI)?.CanLegallyRecruitMeLOS();
         if (compete is not null) continue;
-        want_leader.Add(a);
+        want_leader.Add(la);
       }
       return 0< want_leader.Count ? want_leader : null;
     }
 
-    protected List<Actor>? CanRecruitMeRadio() {
+    protected List<LivingActor>? CanRecruitMeRadio() {
       if (!m_Actor.HasActivePoliceRadio) return null;
-      List<Actor> want_leader = new();
+      List<LivingActor> want_leader = new();
       bool no_police = Session.Get.Police.IsTargeted(m_Actor);
       var test = World.Get.EveryoneInPoliceRadioRange(m_Actor.Location /*, Predicate<Actor> ? test = null */);
       if (test is null) return null;
       foreach (var a in test) {
-        if (!a.CanTakeLeadOf(m_Actor)) continue;
+        if (m_Living is null || a is not LivingActor la || !la.CanTakeLeadOf(m_Living)) continue;
         if (no_police && a.Model.Abilities.IsLawEnforcer) continue; // do not allow police to lead capital criminals
-        want_leader.Add(a);
+        want_leader.Add(la);
       }
       return 0< want_leader.Count ? want_leader : null;
     }
 
-    protected virtual Actor? RecruitLOSchoose(List<Actor> candidates) => FilterNearest(candidates);
+    protected virtual LivingActor? RecruitLOSchoose(List<LivingActor> candidates) => FilterNearest(candidates);
 
     public ActorAction? RecruitLOS() {
+      if (m_Living is not { } who) return null;
       var candidates = RecruitableLOS();
       if (candidates is null) return null;
       var target = RecruitLOSchoose(candidates);
       if (target is null) return null;
 
-      if (Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionTakeLead(m_Actor, target);
-      if (m_Actor.HasActivePoliceRadio && target.HasActivePoliceRadio) return new ActionTakeLead(m_Actor, target);
+      if (Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionTakeLead(who, target);
+      if (m_Actor.HasActivePoliceRadio && target.HasActivePoliceRadio) return new ActionTakeLead(who, target);
       var ret = BehaviorIntelligentBumpToward(target.Location, false, false);
       if (ret is not null && !m_Actor.WillActAgainBefore(target)) {
         // ai only can lead ai (would need extra handling for dogs since they're not ObjectiveAI anyway)
@@ -5158,29 +5160,29 @@ restart_chokepoints:
     }
 
     public ActorAction? RecruitedLOS() {
-      if (!string.IsNullOrEmpty(m_Actor.ReasonCannotBeLed())) return null;
+      if (m_Living is not { } who || !string.IsNullOrEmpty(who.ReasonCannotBeLed())) return null;
       var candidates = CanRecruitMeLOS();
       if (candidates is null) return null;
       var target = FilterNearest(candidates); // AI vs. PC control target
       if (target is null) return null;
 
-//    if (Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionTakeLead(m_Actor, target);
+//    if (Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionTakeLead(who, target);
       if (Rules.IsAdjacent(m_Actor.Location, target.Location)) return new ActionWait(m_Actor);
       var ret = BehaviorIntelligentBumpToward(target.Location, false, false);
       if (ret is not null) m_Actor.TargetActor = target;
       return ret;
     }
 
-    protected virtual Actor? RecruitRadioChoose(List<Actor> candidates) => FilterNearest(candidates);
+    protected virtual LivingActor? RecruitRadioChoose(List<LivingActor> candidates) => FilterNearest(candidates);
 
     public ActorAction? RecruitRadio() {
-      if (!string.IsNullOrEmpty(m_Actor.ReasonCannotLead())) return null;
+      if (m_Living is not { } who || !string.IsNullOrEmpty(who.ReasonCannotLead())) return null;
       var candidates = RecruitableRadio();
       if (candidates is null) return null;
       var target = RecruitRadioChoose(candidates);
       if (target is null) return null;
 
-      return new ActionTakeLead(m_Actor, target);
+      return new ActionTakeLead(who, target);
     }
 
     protected void AdviseFriendsOfSafety()
@@ -5205,7 +5207,7 @@ restart_chokepoints:
           observers[friend] = ally_threat;
         }
       }
-      HashSet<Actor>? allies = m_Actor.Allies; // XXX thrashes garbage collector, possibly should be handled by LoS sensor for the leader only?
+      HashSet<Actor>? allies = m_Living?.Allies; // XXX thrashes garbage collector, possibly should be handled by LoS sensor for the leader only?
       if (allies is not null) {
         foreach(Actor friend in allies) {
           ThreatTracking? ally_threat = friend.Threats;
@@ -5227,7 +5229,7 @@ restart_chokepoints:
 #if DEBUG
       if (0 >= (stacks?.Count ?? 0)) throw new ArgumentNullException(nameof(stacks));
 #endif
-      var cell = m_Actor.ChainOfCommand;  // Cf. Robert Heinlein, "The Moon is a Harsh Mistress"
+      var cell = m_Living?.ChainOfCommand;  // Cf. Robert Heinlein, "The Moon is a Harsh Mistress"
       if (cell is null) return;
       foreach(Actor ally in cell) {
         if (!(ally.Controller is OrderableAI ai)) continue;
@@ -5558,8 +5560,8 @@ restart_chokepoints:
       if (Item_IDs.SCENT_SPRAY_STENCH_KILLER == it.ID && !(m_Actor.Controller is CivilianAI)) return true;
 
       // police have implicit police trackers
-      if (Item_IDs.TRACKER_POLICE_RADIO == it.ID && !m_Actor.WantPoliceRadio) return true;
-      if (Item_IDs.TRACKER_CELL_PHONE == it.ID && !m_Actor.WantCellPhone) return true;
+      if (Item_IDs.TRACKER_POLICE_RADIO == it.ID && !(m_Living?.WantPoliceRadio ?? false)) return true;
+      if (Item_IDs.TRACKER_CELL_PHONE == it.ID && !(m_Living?.WantCellPhone ?? false)) return true;
 
       if (it is ItemFoodModel && !m_Actor.Model.Abilities.HasToEat) return true; // Soldiers and CHAR guards.  There might be a serum for this.
       if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {    // Bikers
@@ -5602,14 +5604,14 @@ restart_chokepoints:
     {
       if (m_Living is not { } who) return 0;
       var ok_trackers = new Zaimoni.Data.Stack<Item_IDs>(stackalloc Item_IDs[2]);
-      if (m_Actor.NeedActiveCellPhone) ok_trackers.push(Item_IDs.TRACKER_CELL_PHONE);
-      if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(Item_IDs.TRACKER_POLICE_RADIO);
+      if (who.NeedActiveCellPhone) ok_trackers.push(Item_IDs.TRACKER_CELL_PHONE);
+      if (who.NeedActivePoliceRadio) ok_trackers.push(Item_IDs.TRACKER_POLICE_RADIO);
 
       // AI does not yet use z-trackers or blackops trackers correctly; possible only threat-aware AIs use them
       Inventory inv = who.Inventory;
-      if (inv.Contains(it)) return (ok_trackers.Contains(it.ModelID) && m_Actor.LiveLeader is not null) ? 2 : 1;
+      if (inv.Contains(it)) return (ok_trackers.Contains(it.ModelID) && who.LiveLeader is not null) ? 2 : 1;
       if (inv.Any(obj => !obj.IsUseless && obj.Model == it.Model)) return 0;
-      return (ok_trackers.Contains(it.ModelID) && m_Actor.LiveLeader is not null) ? 2 : 1;
+      return (ok_trackers.Contains(it.ModelID) && who.LiveLeader is not null) ? 2 : 1;
     }
 
     /// <returns>the item rating code for a generic sanity-restoring item</returns>
@@ -5862,11 +5864,11 @@ restart_chokepoints:
       {
       if (it is ItemTrackerModel) {
         var ok_trackers = new Zaimoni.Data.Stack<Item_IDs>(stackalloc Item_IDs[2]);
-        if (m_Actor.NeedActiveCellPhone) ok_trackers.push(Item_IDs.TRACKER_CELL_PHONE);
-        if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(Item_IDs.TRACKER_POLICE_RADIO);
+        if (who.NeedActiveCellPhone) ok_trackers.push(Item_IDs.TRACKER_CELL_PHONE);
+        if (who.NeedActivePoliceRadio) ok_trackers.push(Item_IDs.TRACKER_POLICE_RADIO);
         // AI does not yet use z-trackers or blackops trackers correctly; possible only threat-aware AIs use them
         if (who.Inventory.Any(obj => !obj.IsUseless && obj.Model == it)) return 0;
-        return (ok_trackers.Contains(it.ID) && m_Actor.LiveLeader is not null) ? 2 : 1;
+        return (ok_trackers.Contains(it.ID) && who.LiveLeader is not null) ? 2 : 1;
       }
 
       if (it is ItemEntertainmentModel) {
@@ -6175,8 +6177,8 @@ restart_chokepoints:
       else if (lhs_low_priority) return false;
 
       var ok_trackers = new Zaimoni.Data.Stack<Item_IDs>(stackalloc Item_IDs[2]);
-      if (m_Actor.NeedActiveCellPhone) ok_trackers.push(Item_IDs.TRACKER_CELL_PHONE);
-      if (m_Actor.NeedActivePoliceRadio) ok_trackers.push(Item_IDs.TRACKER_POLICE_RADIO);
+      if (who.NeedActiveCellPhone) ok_trackers.push(Item_IDs.TRACKER_CELL_PHONE);
+      if (who.NeedActivePoliceRadio) ok_trackers.push(Item_IDs.TRACKER_POLICE_RADIO);
 
       if (rhs is ItemTracker)
         {
@@ -6411,8 +6413,8 @@ restart_chokepoints:
       // trackers (mainly because AI can't use properly), but cell phones are trackers
       // XXX this is triggering a coverage failure; we need to be more sophisticated about trackers
       List<Item_IDs> ok_trackers = new();
-      if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(Item_IDs.TRACKER_CELL_PHONE);
-      if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(Item_IDs.TRACKER_POLICE_RADIO);
+      if (who.NeedActiveCellPhone) ok_trackers.Add(Item_IDs.TRACKER_CELL_PHONE);
+      if (who.NeedActivePoliceRadio) ok_trackers.Add(Item_IDs.TRACKER_POLICE_RADIO);
       if (it is ItemTracker) {
         if (!ok_trackers.Contains(it.ModelID)) return null;   // tracker normally not worth clearing a slot for
       }
@@ -6814,8 +6816,8 @@ restart_chokepoints:
       // trackers (mainly because AI can't use properly), but cell phones are trackers
       // XXX this is triggering a coverage failure; we need to be more sophisticated about trackers
       List<Item_IDs> ok_trackers = new();
-      if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(Item_IDs.TRACKER_CELL_PHONE);
-      if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(Item_IDs.TRACKER_POLICE_RADIO);
+      if (who.NeedActiveCellPhone) ok_trackers.Add(Item_IDs.TRACKER_CELL_PHONE);
+      if (who.NeedActivePoliceRadio) ok_trackers.Add(Item_IDs.TRACKER_POLICE_RADIO);
       if (it is ItemTracker) {
         if (!ok_trackers.Contains(it.ModelID)) return null;   // tracker normally not worth clearing a slot for
       }
@@ -7689,7 +7691,7 @@ restart_chokepoints:
       }
 
       install_break(this);
-      m_Actor.DoForAllFollowers(fo => {
+      m_Living?.DoForAllFollowers(fo => {
           if (InCommunicationWith(fo) && fo.Controller is OrderableAI ai) install_break(ai);   // excludes players
       });
     }
@@ -7699,7 +7701,7 @@ restart_chokepoints:
         var threat = m_Actor.Threats;
         if (threat is null) return null;
         Span<bool> find_us = stackalloc bool[(int)ItemTrackerModel.TrackingOffset.STRICT_UB];
-        m_Actor.Tracks(ref find_us);
+        m_Living?.Tracks(ref find_us);
         if (!find_us[(int)ItemTrackerModel.TrackingOffset.UNDEADS]) return null;
         var scan = new ZoneLoc(origin.Map, new Rectangle(origin.Position - (Point)Rules.ZTRACKINGRADIUS, (Point)(2 * Rules.ZTRACKINGRADIUS + 1)));
         var image = threat.ImageThreat(scan, a => a.Model.Abilities.IsUndead);
@@ -7727,7 +7729,7 @@ restart_chokepoints:
         if (threat is null) return;
 
         Span<bool> find_us = stackalloc bool[(int)Engine.Items.ItemTrackerModel.TrackingOffset.STRICT_UB];
-        m_Actor.Tracks(ref find_us);
+        m_Living?.Tracks(ref find_us);
 
         if (find_us[(int)Engine.Items.ItemTrackerModel.TrackingOffset.UNDEADS]) {
             var scan = new ZoneLoc(m_Actor.Location.Map, new Rectangle(m_Actor.Location.Position - (Point)Rules.ZTRACKINGRADIUS, (Point)(2 * Rules.ZTRACKINGRADIUS + 1)));

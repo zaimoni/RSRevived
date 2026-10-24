@@ -609,7 +609,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         ObjectiveAI ai = m_Actor.Controller as ObjectiveAI; // invariant: non-null
         // if any in-communication ally can see the location, clear it
-        var allies = m_Actor.Allies;
+        var allies = (m_Actor as LivingActor)?.Allies;
         if (allies is not null) {
           foreach(Actor friend in allies) {
             if (!ai.InCommunicationWith(friend)) continue;

@@ -321,7 +321,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           && !m_Actor.Has<ItemFood>())) {
         var target = FilterNearest(current.FilterCast<Actor>(a =>
         {
-          if (a == m_Actor || a.IsDead || a.Inventory.IsEmpty() || (a.Leader == m_Actor || m_Actor.Leader == a))
+          if (a == m_Actor || a.IsDead || a.Inventory.IsEmpty() || ((a as LivingActor)?.Leader == m_Actor || m_Actor.Leader == a))
             return false;
           if (a.Inventory.Has<ItemFood>()) return true;
           return a.Location.Items?.Has<ItemFood>() ?? false;
@@ -340,7 +340,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               } // XXX the target needs an AI modifier to handle this appropriately
             }
             RogueGame.PropagateSight(m_Actor.Location, a => {
-              if (a.Leader != m_Actor && m_Actor.Leader != a) {
+              if ((a as LivingActor)?.Leader != m_Actor && m_Actor.Leader != a) {
                 if (a.Faction.ID.ExtortionIsAggression()) {
                   a.Say(m_Actor, string.Format("ATTEMPTED MURDER! {0} HAS AGGRESSED {1}!", m_Actor.TheName, m_Actor.TargetActor.TheName), Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
                   game.RadioNotifyAggression(a, m_Actor, "(police radio, {0}) Executing {1} for attempted murder."); // XXX \todo correct name for radio
@@ -555,7 +555,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var allies = m_Actor.Allies;
         void already_handled(Map m, HashSet<Point> target) {
           foreach(var a in allies) {
-            if (a.HasLeader && 0 >= a.CountFollowers) continue; // bottom of chain of command, no authority to clear zones on own
+            if (a is LivingActor la && la.HasLeader && 0 >= la.CountFollowers) continue; // bottom of chain of command, no authority to clear zones on own
             if (a.IsSleeping) continue; // not expected to do anything useful
             var handled = (a.Controller as ObjectiveAI)?.ClearingThisZone();
             if (handled is null) continue;

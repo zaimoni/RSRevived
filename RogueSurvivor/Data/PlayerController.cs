@@ -546,8 +546,8 @@ namespace djack.RogueSurvivor.Data
         return src[0];
     }
 
-    protected override Actor? RecruitLOSchoose(List<Actor> candidates) => RogueGame.Game.RecruitLOSchoose(SortByGridDistance(candidates));
-    protected override Actor? RecruitRadioChoose(List<Actor> candidates) => RogueGame.Game.RecruitRadioChoose(SortByGridDistance(candidates));
+    protected override LivingActor? RecruitLOSchoose(List<LivingActor> candidates) => RogueGame.Game.RecruitLOSchoose(SortByGridDistance(candidates));
+    protected override LivingActor? RecruitRadioChoose(List<LivingActor> candidates) => RogueGame.Game.RecruitRadioChoose(SortByGridDistance(candidates));
 
     // originally in Actor
     static private string ReasonCantGetFromContainer(Location loc)

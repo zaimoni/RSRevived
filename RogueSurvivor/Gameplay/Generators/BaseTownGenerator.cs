@@ -3449,13 +3449,13 @@ restart:
       }
 
       // now, to set up the marching order
-      List<Actor> leaders = new();
-      List<Actor> followers = new();
-      var typical = map.Police.Get.ToList();
+      List<LivingActor> leaders = new();
+      List<LivingActor> followers = new();
+      var typical = map.Police.Get.OfType<LivingActor>().ToList();
 
-      static Actor DraftLeader(List<Actor> pool) {
+      static LivingActor DraftLeader(List<LivingActor> pool) {
         // first: leadership + backup weapons
-        Actor? awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        LivingActor? awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (awesome is not null) return awesome;
 
         // leadership+pistol
@@ -3478,8 +3478,8 @@ restart:
         return pool.FirstOrDefault();
       }
 
-      static void Draft(List<Actor> dest, List<Actor> pool) {
-        Actor leader = DraftLeader(pool);
+      static void Draft(List<LivingActor> dest, List<LivingActor> pool) {
+        var leader = DraftLeader(pool);
         dest.Add(leader);
         pool.Remove(leader);
       }
@@ -3522,7 +3522,7 @@ restart:
         ideal = new Point[5] { new Point(1,1), new Point(2,1), new Point(2,5), new Point(1,5), new Point(2,9) };
       }
 
-      typical = map.Police.Get.ToList();
+      typical = map.Police.Get.OfType<LivingActor>().ToList();
       for (int index = 0; index < 5; ++index) {
         map.PlaceAt(typical[index], in ideal[index]);
       }
@@ -4107,7 +4107,7 @@ restart:
       return numberedName;
     }
 
-    public LivingActor CreateNewArmyNationalGuard(string rankName, Actor leader)
+    public LivingActor CreateNewArmyNationalGuard(string rankName, LivingActor leader)
     {
       var actor = CreateNewArmyNationalGuard(leader.SpawnTime, rankName);
       while(leader.FirstFollower(a => a.Name == actor.Name) is not null) GiveNameToActor(m_DiceRoller, actor, rankName);
@@ -4126,7 +4126,7 @@ restart:
       return numberedName;
     }
 
-    public LivingActor CreateNewBikerMan(Actor leader)
+    public LivingActor CreateNewBikerMan(LivingActor leader)
     {
       var actor = CreateNewBikerMan(leader.SpawnTime, leader.GangID);
       while(leader.FirstFollower(a => a.Name == actor.Name) is not null) GiveNameToActor(m_DiceRoller, actor);
@@ -4145,7 +4145,7 @@ restart:
       return numberedName;
     }
 
-    public LivingActor CreateNewGangstaMan(Actor leader)
+    public LivingActor CreateNewGangstaMan(LivingActor leader)
     {
       var actor = CreateNewGangstaMan(leader.SpawnTime, leader.GangID);
       while(leader.FirstFollower(a => a.Name == actor.Name) is not null) GiveNameToActor(m_DiceRoller, actor);
@@ -4165,7 +4165,7 @@ restart:
       return numberedName;
     }
 
-    public LivingActor CreateNewBlackOps(string rankName, Actor leader)
+    public LivingActor CreateNewBlackOps(string rankName, LivingActor leader)
     {
       var actor = CreateNewBlackOps(leader.SpawnTime, rankName);
       while(leader.FirstFollower(a => a.Name == actor.Name) is not null) GiveNameToActor(m_DiceRoller, actor, rankName);

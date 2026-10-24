@@ -76,8 +76,8 @@ namespace djack.RogueSurvivor.Engine.Actions
             if (src.Inventory is null) return "nothing to offer";
             if (target.Inventory is null) return "has nothing to trade";
             if (!src.IsPlayer && target.IsPlayer) return "target is player";
-            if (!src.Model.Abilities.CanTrade && target.Leader != src) return "can't trade";
-            if (!target.Model.Abilities.CanTrade && src.Leader != target) return "target can't trade";
+            if (!src.Model.Abilities.CanTrade && (target as LivingActor)?.Leader != src) return "can't trade";
+            if (!target.Model.Abilities.CanTrade && (src as LivingActor)?.Leader != target) return "target can't trade";
             if (src.IsEnemyOf(target)) return "is an enemy";
             if (target.IsSleeping) return "is sleeping";
 

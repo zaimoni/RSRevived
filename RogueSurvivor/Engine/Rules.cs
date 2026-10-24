@@ -683,21 +683,21 @@ namespace djack.RogueSurvivor.Engine
       if (killer.Faction.IsEnemyOf(victim.Faction)) return false;
 
       // If your leader is a cop i.e. First Class Citizen, killing his enemies should not trigger murder charges.
-      var killer_leader = killer.LiveLeader;
+      var killer_leader = (killer as LivingActor)?.LiveLeader;
       if (!k_first_class) {
         if (killer_leader is not null && killer_leader.IsFirstClassCitizen()) return IsMurder(killer_leader, victim);
       }
 
       // Framed for murder.  Since this is an apocalypse, self-defence doesn't count no matter what the law was pre-apocalypse
       if (victim.IsFirstClassCitizen()) return true;
-      if (victim.LiveLeader?.IsFirstClassCitizen() ?? false) return true;
+      if ((victim as LivingActor)?.LiveLeader?.IsFirstClassCitizen() ?? false) return true;
 
       // resume old definition
       if (killer.IsSelfDefenceFrom(victim)) return false;
 
       // XXX RS Alpha 9; went away in RS Alpha 10.  The important case (police leading civilian) is handled above.  May need reimplementing (cf. Actor::ChainOfCommand)
       if (killer_leader?.IsSelfDefenceFrom(victim) ?? false) return false;
-      if (killer.FirstFollower(fo => !fo.IsSelfDefenceFrom(victim)) is not null) return false;
+      if ((killer as LivingActor)?.FirstFollower(fo => !fo.IsSelfDefenceFrom(victim)) is not null) return false;
 
       return true;
     }

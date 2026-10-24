@@ -150,9 +150,6 @@ namespace djack.RogueSurvivor.Data
     private Location m_Location;
     private int m_ActionPoints;
     private Actor? m_TargetActor;
-    private List<Actor>? m_Followers; // leadership fields are AI-specific (ObjectiveAI and dogs).
-    private int m_TrustInLeader;
-    private Dictionary<Actor,int>? m_TrustDict;
     private List<Actor>? m_AggressorOf;
     private List<Actor>? m_SelfDefenceFrom;
     private int m_Infection;
@@ -161,7 +158,6 @@ namespace djack.RogueSurvivor.Data
     public readonly Engine.ActorScoring ActorScoring;
     public Activity Activity;
 
-    [NonSerialized] private Actor? m_Leader;              // Backpointer
     [NonSerialized] private Attack m_CurrentMeleeAttack;    // dataflow candidate
     [NonSerialized] private Attack m_CurrentRangedAttack;    // dataflow candidate
     [NonSerialized] private Defence m_CurrentDefence;    // dataflow candidate
@@ -392,189 +388,6 @@ namespace djack.RogueSurvivor.Data
     public ref Attack CurrentRangedAttack { get => ref m_CurrentRangedAttack; }
     public ref Defence CurrentDefence { get => ref m_CurrentDefence; }
 
-    // Leadership
-    public Actor? Leader { get => m_Leader; }
-    public Actor? LiveLeader { get => (m_Leader is not null && !m_Leader.IsDead) ? m_Leader : null; }
-    public bool HasLeader { get => !(m_Leader?.IsDead ?? true); }
-    // null != LiveLeader is equivalent to HasLeader
-
-    public int TrustInLeader {
-      get => m_TrustInLeader;
-      set { m_TrustInLeader = value; }  // \todo 4 change targets to eliminate public setter; CPU cost may be excessive
-    }
-
-    public bool IsTrustingLeader {
-      get => HasLeader && TRUST_TRUSTING_THRESHOLD <= m_TrustInLeader;
-    }
-
-    public bool HasBondWith(Actor target)
-    {
-      if (m_Leader == target)      return TRUST_BOND_THRESHOLD <= m_TrustInLeader;
-      if (target.m_Leader == this) return TRUST_BOND_THRESHOLD <= target.m_TrustInLeader;
-      return false;
-    }
-
-    public void ModifyTrustInLeader(int mod, bool addMessage)
-    {
-      m_TrustInLeader += mod;
-      if (m_TrustInLeader > Rules.TRUST_MAX) m_TrustInLeader = Rules.TRUST_MAX;
-      else if (m_TrustInLeader < Rules.TRUST_MIN) m_TrustInLeader = Rules.TRUST_MIN;
-      if (addMessage && Leader?.Controller is PlayerController pc)
-        pc.AddMessage(new(string.Format("({0} trust with {1})", mod, TheName), Session.Get.WorldTime.TurnCounter, Color.White));
-    }
-
-    public IEnumerable<Actor>? Followers { get { return m_Followers; } }
-
-    public Actor? FirstFollower(Predicate<Actor> test) {
-      if (m_Followers is not null) foreach(var fo in m_Followers) if (test(fo)) return fo;
-      return null;
-    }
-
-    public void DoForAllFollowers(Action<Actor> op)
-    {
-      if (m_Followers is not null) foreach(var fo in m_Followers) op(fo);
-    }
-
-    public int CountFollowers { get { return m_Followers?.Count ?? 0; } }
-
-    public int MaxFollowers {
-      get {
-        return SKILL_LEADERSHIP_FOLLOWER_BONUS * MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP);
-      }
-    }
-
-    public List<KeyValuePair<int, Actor>>? DistantFollowers(int max_dist, int want_nearby)
-    {
-        if (m_Followers is null) return null;
-        if (0 >= want_nearby) return null;
-
-        List<KeyValuePair<int, Actor>> ret = new();
-        int closeCount = 0;
-        foreach (Actor follower in m_Followers) {
-            int dist = Rules.InteractionDistance(follower.Location, in m_Location);
-            if (dist <= max_dist && ++closeCount >= want_nearby) return null;
-            ret.Add(new(dist, follower));
-        }
-        return ret;
-    }
-
-    public string ReasonCannotBeLed()
-    {
-      if (Model.Abilities.IsUndead) return "undead";
-      if (IsSleeping) return "sleeping";
-      if (HasLeader) return "already has a leader";
-      if (CountFollowers > 0) return "is a leader";  // XXX organized force would have a chain of command
-      if (Controller.InCombat && !IsPlayer) return Name+" in combat";
-      return "";
-    }
-
-    public string ReasonCannotLead()
-    {
-      int num = MaxFollowers;
-      if (num == 0) return "can't lead";
-      if (CountFollowers >= num) return "too many followers";
-      if (HasLeader) return "already has a leader";
-      // this should need refinement (range 1 might be ok)
-      if (!IsPlayer && Controller.InCombat) return "in combat";
-      return "";
-    }
-
-    public string ReasonCannotLead(Actor target)
-    {
-#if DEBUG
-      if (target is null) throw new ArgumentNullException(nameof(target));
-#endif
-      if (IsEnemyOf(target)) return "enemy";
-      if (Faction != target.Faction && target.Faction.LeadOnlyBySameFaction) return string.Format("{0} can't lead {1}", Faction.Name, target.Faction.Name);
-      // to support savefile hacking.  AI in charge of player is a problem.
-      if (target.IsPlayer && !IsPlayer) return "is player";
-      return "";
-    }
-
-    private string ReasonCantTakeLeadOf(Actor target)
-    {
-#if DEBUG
-      if (target is null) throw new ArgumentNullException(nameof(target));
-#endif
-      var ret = target.ReasonCannotBeLed();
-      if (!string.IsNullOrEmpty(ret)) return ret;
-      ret = ReasonCannotLead();
-      if (!string.IsNullOrEmpty(ret)) return ret;
-      return ReasonCannotLead(target);
-    }
-
-    public bool CanTakeLeadOf(Actor target, out string reason)
-    {
-      reason = ReasonCantTakeLeadOf(target);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanTakeLeadOf(Actor target)
-    {
-      return string.IsNullOrEmpty(ReasonCantTakeLeadOf(target));
-    }
-
-    private string ReasonIllegalToBeLed()
-    {
-      if (Model.Abilities.IsUndead) return "undead";
-      if (IsSleeping) return "sleeping";
-      if (HasLeader) return "already has a leader";
-      if (CountFollowers > 0) return "is a leader";  // XXX organized force would have a chain of command
-      return "";
-    }
-
-    private string ReasonIllegalToLead()
-    {
-      int num = MaxFollowers;
-      if (num == 0) return "can't lead";
-      if (CountFollowers >= num) return "too many followers";
-      // this should need refinement (range 1 might be ok)
-      return "";
-    }
-
-    private string ReasonIllegalToLead(Actor target)
-    {
-#if DEBUG
-      if (target is null) throw new ArgumentNullException(nameof(target));
-#endif
-      var ret = target.ReasonIllegalToBeLed();
-      if (!string.IsNullOrEmpty(ret)) return ret;
-      ret = ReasonIllegalToLead();
-      if (!string.IsNullOrEmpty(ret)) return ret;
-      return ReasonCannotLead(target);
-    }
-
-    public bool LegalToTakeLeadOf(Actor target, out string reason)
-    {
-      reason = ReasonIllegalToLead(target);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool LegalToTakeLeadOf(Actor target)
-    {
-      return string.IsNullOrEmpty(ReasonIllegalToLead(target));
-    }
-
-    private string ReasonCantCancelLead(Actor target)
-    {
-      if (target.Leader != this) return "not your follower";
-      if (target.IsSleeping) return "sleeping";
-      return "";
-    }
-
-    public bool CanCancelLead(Actor target, out string reason)
-    {
-      reason = ReasonCantCancelLead(target);
-      return string.IsNullOrEmpty(reason);
-    }
-
-#if DEAD_FUNC
-    public bool CanCancelLead(Actor target)
-    {
-      return string.IsNullOrEmpty(ReasonCantCancelLead(target));
-    }
-#endif
-
     private string ReasonCantShout()    // this is here because there could be equipment that blocks shouting
     {
       if (!Model.Abilities.CanTalk) return "can't talk";
@@ -620,7 +433,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (target is null) throw new ArgumentNullException(nameof(target));
 #endif
-      if (target.Leader != this) return "not your follower";
+      if ((target as LivingActor)?.Leader != this) return "not your follower";
       if (target.IsSleeping) return "sleeping";
       return "";
     }
@@ -713,7 +526,7 @@ namespace djack.RogueSurvivor.Data
 
     public string? AIwillNotMurder { get {
             if (Model.Abilities.IsLawEnforcer) return "police do not murder";
-            var leader = LiveLeader;
+            var leader = (this as LivingActor)?.LiveLeader;
             if (leader is not null && leader.Model.Abilities.IsLawEnforcer) return "deputies do not murder";
             if (Faction.ID.ExtortionIsAggression()) return "authorities do not murder";
             return null;
@@ -931,7 +744,6 @@ namespace djack.RogueSurvivor.Data
       m_ActionPoints = stat("ActionPoints", model.DollBody.Speed);
       m_Infection = stat("Infection", 0);
       OdorSuppressorCounter = stat("OdorSuppressorCounter", 0);
-      m_TrustInLeader = stat("TrustInLeader", 0);
       Activity = src.TryGetProperty("Activity", out _) ? src.RequireEnum<Activity>("Activity") : Activity.IDLE;
 
       m_Skills = src.TryGetProperty("Skills", out relay) ? new SkillTable(relay) : new SkillTable();
@@ -939,15 +751,10 @@ namespace djack.RogueSurvivor.Data
       ActorScoring = src.TryGetProperty("Scoring", out relay) ? new ActorScoring(this, relay, options) : new ActorScoring(this);
 
       // Cross-links.  These are filled when the load finishes, in file order; until then they are empty.
-      // Our leader is not saved: the leader's Followers sets it.
+      // A living actor's leader is not saved: the leader's Followers sets it.
       if (src.TryGetProperty("Target", out relay)) relay.ReadRef<Actor>(a => m_TargetActor = a);
-      if (src.TryGetProperty("Followers", out relay)) {
-        m_Followers = new();
-        foreach (var x in relay.EnumerateArray()) x.ReadRef<Actor>(fo => { m_Followers.Add(fo); fo.m_Leader = this; });
-      }
       if (src.TryGetProperty("AggressorOf", out relay)) relay.ReadRefs(m_AggressorOf = new());
       if (src.TryGetProperty("SelfDefenceFrom", out relay)) relay.ReadRefs(m_SelfDefenceFrom = new());
-      if (src.TryGetProperty("Trust", out relay)) relay.ReadRefDictionary(m_TrustDict = new(), options);
       if (src.TryGetProperty("DraggedCorpse", out relay)) relay.ReadRef<Corpse>(c => m_DraggedCorpse = c);
     }
 
@@ -986,8 +793,8 @@ namespace djack.RogueSurvivor.Data
 
     public void JsonDetach() { m_Controller?.LeaveControl(); }
 
-    /// <summary>LivingActor's Inventory and Slots, at the place in the record they have always had.</summary>
-    protected virtual void toJsonInventory(Utf8JsonWriter writer, JsonSerializerOptions options) { }
+    /// <summary>LivingActor's own fields: Inventory and Slots at the place in the record they have always had, then leadership.</summary>
+    protected virtual void toJsonLiving(Utf8JsonWriter writer, JsonSerializerOptions options) { }
 
     public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
@@ -1026,7 +833,6 @@ namespace djack.RogueSurvivor.Data
       stat("ActionPoints", m_ActionPoints, model.DollBody.Speed);
       stat("Infection", m_Infection, 0);
       stat("OdorSuppressorCounter", OdorSuppressorCounter, 0);
-      stat("TrustInLeader", m_TrustInLeader, 0);
       if (Activity.IDLE != Activity) writer.WriteString("Activity", Activity.ToString());
 
       if (0 < m_Skills.CountSkills) {
@@ -1037,7 +843,7 @@ namespace djack.RogueSurvivor.Data
         writer.WritePropertyName("Doll");
         m_Doll.toJson(writer, options);
       }
-      toJsonInventory(writer, options);   // before the controller: its state refers to our items
+      toJsonLiving(writer, options);   // before the controller: its state refers to our items
       if (!ActorScoring.IsJsonEmpty) {
         writer.WritePropertyName("Scoring");
         ActorScoring.toJson(writer, options);
@@ -1045,14 +851,8 @@ namespace djack.RogueSurvivor.Data
 
       // cross-links: other actors, who are saved by whatever owns them
       if (m_TargetActor is not null) writer.WriteRef("Target", m_TargetActor);
-      if (m_Followers is not null && 0 < m_Followers.Count) writer.WriteRefs("Followers", m_Followers);
       if (m_AggressorOf is not null && 0 < m_AggressorOf.Count) writer.WriteRefs("AggressorOf", m_AggressorOf);
       if (m_SelfDefenceFrom is not null && 0 < m_SelfDefenceFrom.Count) writer.WriteRefs("SelfDefenceFrom", m_SelfDefenceFrom);
-      if (m_TrustDict is not null) {
-        // The dead are skipped unless they still have a corpse: the corpse saves them, and they may be revived.  Otherwise nothing owns them.
-        var live = m_TrustDict.Where(x => !x.Key.IsDead || (x.Key.m_Location.Map?.HasCorpseOf(x.Key) ?? false)).ToList();
-        if (0 < live.Count) writer.WriteRefDictionary("Trust", live, options);
-      }
       if (m_DraggedCorpse is not null) writer.WriteRef("DraggedCorpse", m_DraggedCorpse);
 
       var prior = ActorController.s_SaveOwner;
@@ -1389,19 +1189,6 @@ namespace djack.RogueSurvivor.Data
     }
 
 #region Tracker management
-    public void Tracks(ref Span<bool> find_us)
-    {
-        find_us[(int)ItemTrackerModel.TrackingOffset.POLICE_FACTION] = IsFaction(GameFactions.IDs.ThePolice);
-
-        GetEquippedItem(DollPart.LEFT_HAND)?.NotUseless<ItemTracker>()?.Model.Tracks(ref find_us);
-
-        // the police radio
-        GetEquippedItem(DollPart.HIP_HOLSTER)?.NotUseless<ItemTracker>()?.Model.Tracks(ref find_us);
-
-        // Tracking leaders makes sense, but not in single PC mode
-        if (0 >= CountFollowers && LiveLeader is not null) find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER] = false;
-    }
-
     public virtual bool HasActiveCellPhone => false;
     public virtual bool HasCellPhone => false;
     public virtual bool HasActivePoliceRadio => GameFactions.IDs.ThePolice == m_FactionID;   // implicit, for the police
@@ -1419,66 +1206,6 @@ namespace djack.RogueSurvivor.Data
     public bool HasArmyRadio {
       get {
         if (GameFactions.IDs.TheArmy==m_FactionID) return true;
-        return false;
-      }
-    }
-
-    public bool NeedActivePoliceRadio {
-      get {
-        if (GameFactions.IDs.ThePolice==m_FactionID) return false; // implicit
-        // XXX disallow murderers under certain conditions, etc
-        var leader = LiveLeader;
-        if (leader is not null) return leader.HasActivePoliceRadio; // XXX \todo change target: deep chain of command
-        if (m_Followers is not null) foreach(Actor fo in m_Followers) if (fo.HasPoliceRadio) return true;
-        return false;
-      }
-    }
-
-    public bool NeedActiveCellPhone {
-      get {
-        if (!WantCellPhone) return false;
-        var leader = LiveLeader;
-        if (leader is not null) return leader.HasActiveCellPhone; // XXX \todo change target: deep chain of command
-        if (m_Followers is not null) foreach(Actor fo in m_Followers) if (fo.HasCellPhone) return true;
-        return false;
-      }
-    }
-
-    public bool WantPoliceRadio {
-      get {
-        if (GameFactions.IDs.ThePolice == m_FactionID) return false; // police have implicit police radios
-        bool have_cellphone = HasCellPhone;
-        bool have_army = HasArmyRadio;
-        if (!have_cellphone && !have_army) return true;
-
-        bool out_of_comm(Actor a) {
-          if (have_cellphone && a.HasCellPhone) return false;
-          if (have_army && a.HasArmyRadio) return false;
-          return true;
-        }
-
-        var leader = LiveLeader;
-        if (leader is not null) return out_of_comm(leader); // XXX \todo change target: deep chain of command
-        if (m_Followers is not null) foreach(Actor fo in m_Followers) if (out_of_comm(fo)) return true;
-        return false;
-      }
-    }
-
-    public bool WantCellPhone {
-      get {
-        bool have_police = HasPoliceRadio;
-        bool have_army = HasArmyRadio;
-        if (!have_police && !have_army) return true;
-
-        bool out_of_comm(Actor a) {
-          if (have_police && a.HasPoliceRadio) return false;
-          if (have_army && a.HasArmyRadio) return false;
-          return true;
-        }
-
-        var leader = LiveLeader;
-        if (leader is not null) return out_of_comm(leader); // XXX \todo change target: deep chain of command
-        if (m_Followers is not null) foreach(Actor fo in m_Followers) if (out_of_comm(fo)) return true;
         return false;
       }
     }
@@ -1543,60 +1270,6 @@ namespace djack.RogueSurvivor.Data
       if (this == a) return null;
       if (a.IsDead) return null;
       return (Controller.IsVisibleTo(a) ? a : null);  // inline IsVisibleToPlayer here, for generality
-    }
-
-    // leadership/follower handling
-    public void AddFollower(Actor other)
-    {
-      if (m_Followers is null) m_Followers = new List<Actor>(1);
-      else if (m_Followers.Contains(other)) throw new ArgumentException("other is already a follower");
-      m_Followers.Add(other);
-      other.Leader?.RemoveFollower(other);
-      other.m_Leader = this;
-    }
-
-    // 2020-01-26 public void AddLeader(Actor leader) didn't work out in release mode IL: operator ?. doesn't actually reduce bytecode for the caller
-
-    // 2022-05-13 having problems with multi-threading or out-of-order instructions within Actor::RemoveAllFollowers.
-    // handled by refactoring out Actor::_NoLongerFollower
-    private void _NoLongerFollower()
-    {
-      Interlocked.Exchange(ref m_Leader, null);
-      (Controller as Gameplay.AI.OrderableAI)?.LeaderWasSetNull_handler();
-    }
-
-    public void RemoveFollower(Actor other)
-    {
-      var followers = m_Followers;
-      if (followers is null) throw new InvalidOperationException(Name+": no followers");
-      other._NoLongerFollower();
-      followers.Remove(other);
-//    other._NoLongerFollower(); // multi-threaded race condition when here?
-      if (0 == followers.Count) Interlocked.Exchange(ref m_Followers, null);
-    }
-
-    public void RemoveAllFollowers()
-    {
-      var followers = m_Followers;
-      if (followers is not null) {
-        foreach(var fo in followers) fo._NoLongerFollower();
-        Interlocked.Exchange(ref m_Followers, null);
-      }
-    }
-
-    public void SetTrustIn(Actor other, int trust) => (m_TrustDict ??= new())[other] = trust;
-
-    public int GetTrustIn(Actor other)
-    {
-      if (m_TrustDict is null) return 0;
-      if (m_TrustDict.TryGetValue(other,out int trust)) return trust;
-      return 0;
-    }
-
-    public int TrustIncrease {
-      get {
-        return 1 + SKILL_CHARISMATIC_TRUST_BONUS * MySkills.GetSkillLevel(Skills.IDs.CHARISMATIC);
-      }
     }
 
     public ThreatTracking? Threats {
@@ -1708,8 +1381,8 @@ namespace djack.RogueSurvivor.Data
       // my followers enemies are my enemies
       static bool IsEnemyOfMyFollowers(Actor groupActor, Actor target)
       {
-        if (groupActor.m_Followers is null) return false;
-        foreach (Actor follower in groupActor.m_Followers)
+        if (groupActor is not LivingActor living || living.Followers is not { } followers) return false;
+        foreach (var follower in followers)
           if (follower.IsEnemyOf(target, false)) return true;
         return false;
       }
@@ -1718,7 +1391,7 @@ namespace djack.RogueSurvivor.Data
       // my mates enemies are my enemies.
       static bool IsEnemyOfMyLeaderOrMates(Actor groupActor, Actor target)
       {
-        var leader = groupActor.LiveLeader;
+        var leader = (groupActor as LivingActor)?.LiveLeader;
         if (leader is null) return false;
         if (leader.IsEnemyOf(target, false)) return true;
         return IsEnemyOfMyFollowers(leader, target);
@@ -1756,55 +1429,13 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    // We do not handle the enemy relations here.
-    public HashSet<Actor>? Allies {
-      get {
-        var ret = new HashSet<Actor>();
-        // 1) police have all other police as allies.
-        if (IsFaction(GameFactions.IDs.ThePolice)) ret = (World.Get.PoliceInRadioRange(Location) ?? ret);
-        // 2) leader/follower cliques are allies.
-        m_Followers?.AppendTo(ret);
-        var leader = LiveLeader;
-        if (leader is not null) { // 2019-08-14: currently mutually exclusive with above for NPCs
-          ret.Add(leader);
-          leader.m_Followers?.AppendTo(ret);
-          ret.Remove(this);
-        }
-        return (0<ret.Count ? ret : null);
-      }
-    }
-
-    // ignores faction alliances
-    public HashSet<Actor>? ChainOfCommand {
-      get {
-        var ret = new HashSet<Actor>();
-        m_Followers?.AppendTo(ret);
-        var leader = LiveLeader;
-        if (leader is not null) {
-          ret.Add(leader);
-          leader.m_Followers?.AppendTo(ret);
-          ret.Remove(this);
-        }
-        return (0<ret.Count ? ret : null);
-      }
-    }
-
     // alpha10
     /// <summary>
     /// Is this other actor our leader, a follower or a mate.
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
-    public bool IsInGroupWith(Actor other)
-    {
-      var leader = LiveLeader;
-      if (leader is not null) {
-        if (   other == leader   // my leader?
-            || other.Leader == leader)    // a mate?
-          return true;
-      }
-      return m_Followers?.Contains(other) ?? false; // a follower?
-    }
+    public bool IsInGroupWith(Actor other) => this is LivingActor me && me.InGroupWith(other);
 
     public bool IsAlly(Actor other)
     {
@@ -3631,21 +3262,13 @@ namespace djack.RogueSurvivor.Data
 
     // This prepares an actor for being a PC.  Note that hacking the player controller in
     // by hex-editing does work flawlessly at the Actor level.
-    public void PrepareForPlayerControl()
-    {
-      var leader = Leader;
-      if (leader is not null && !leader.IsPlayer) leader.RemoveFollower(this);   // needed if leader is NPC
-    }
+    public virtual void PrepareForPlayerControl() { }
 
     // This is a backstop for bugs elsewhere.
     // Just optimize everything that's an Actor or contains an Actor.
-    private void OptimizeBeforeSaving()
+    protected virtual void OptimizeBeforeSaving()
     {
       if (m_TargetActor?.IsDead ?? false) m_TargetActor = null;
-      if (m_Leader?.IsDead ?? false) m_Leader = null;
-      // \todo match RS alpha 10's prune of trust entries in dead actors (m_TrustDict for us)
-      // to avoid weirdness we want to drop only if no revivable corpse is in-game
-      m_Followers = m_Followers?.Optimize();
       m_AggressorOf = m_AggressorOf?.Optimize();
       m_SelfDefenceFrom = m_SelfDefenceFrom?.Optimize();
     }
@@ -3693,7 +3316,7 @@ namespace djack.RogueSurvivor.Data
 
     // this ref, or ref this, patameter with void return would have been best,
     // but that's a compile error in C# 14
-    public static List<Actor>? Optimize(this List<Actor> src)
+    public static List<T>? Optimize<T>(this List<T> src) where T : Actor
     {
       src.OnlyIfNot(Actor.IsDeceased);
       if (0 >= src.Count) return null;

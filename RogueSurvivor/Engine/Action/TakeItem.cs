@@ -87,7 +87,7 @@ namespace djack.RogueSurvivor.Engine._Action
                 if (!m_Actor.CanCrouch(out m_FailReason)) return false;
                 var actor = m_src.Location.Actor;
                 if (actor is not null) {
-                    var allies = m_Actor.Allies;
+                    var allies = (m_Actor as LivingActor)?.Allies;
                     if (allies is null) return false;
                     if (!allies.Contains(actor)) return false;
                 }

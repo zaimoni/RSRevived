@@ -1,11 +1,15 @@
 ﻿using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Gameplay;
+using djack.RogueSurvivor.Engine;
+using System.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Zaimoni.Data;
 using Zaimoni.JSON;
+
+using Color = System.Drawing.Color;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -17,6 +21,10 @@ namespace djack.RogueSurvivor.Data
   {
     private readonly Inventory m_Inventory; // hammerspace inventory
     private readonly InventorySlots m_InventorySlots; // Angband-ish inventory
+    private List<LivingActor>? m_Followers; // leadership fields are AI-specific (ObjectiveAI and dogs).
+    private int m_TrustInLeader;
+    private Dictionary<LivingActor,int>? m_TrustDict;
+    [NonSerialized] private LivingActor? m_Leader;              // Backpointer
 
     public override Inventory Inventory => m_Inventory;
     public override InventorySlots InventorySlots => m_InventorySlots;
@@ -37,18 +45,33 @@ namespace djack.RogueSurvivor.Data
       m_Inventory = src.TryGetProperty("Inventory", out var relay) ? (relay.Deserialize<Inventory>(options) ?? throw new JsonException("null Inventory"))
                   : new Inventory(Model.BaseInventoryCapacity);
       m_InventorySlots = src.TryGetProperty("Slots", out relay) ? new InventorySlots(relay, options) : new InventorySlots(1);
+      m_TrustInLeader = src.TryGetProperty("TrustInLeader", out relay) ? relay.GetInt32() : 0;
+      // Cross-links, filled when the load finishes.  Our leader is not saved: the leader's Followers sets it.
+      if (src.TryGetProperty("Followers", out relay)) {
+        m_Followers = new();
+        foreach (var x in relay.EnumerateArray()) x.ReadRef<LivingActor>(fo => { m_Followers.Add(fo); fo.m_Leader = this; });
+      }
+      if (src.TryGetProperty("Trust", out relay)) relay.ReadRefDictionary(m_TrustDict = new(), options);
       FinishLoad(src, options);
     }
 
     public static LivingActor fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
 
-    protected override void toJsonInventory(Utf8JsonWriter writer, JsonSerializerOptions options)
+    protected override void toJsonLiving(Utf8JsonWriter writer, JsonSerializerOptions options)
     {
       writer.WritePropertyName("Inventory");
       JsonSerializer.Serialize(writer, m_Inventory, options);
       if (!m_InventorySlots.IsEmpty) {
         writer.WritePropertyName("Slots");
         m_InventorySlots.toJson(writer, options);
+      }
+      if (0 != m_TrustInLeader) writer.WriteNumber("TrustInLeader", m_TrustInLeader);
+      // cross-links: other actors, who are saved by whatever owns them
+      if (m_Followers is not null && 0 < m_Followers.Count) writer.WriteRefs("Followers", m_Followers);
+      if (m_TrustDict is not null) {
+        // The dead are skipped unless they still have a corpse: the corpse saves them, and they may be revived.  Otherwise nothing owns them.
+        var live = m_TrustDict.Where(x => !x.Key.IsDead || (x.Key.Location.Map?.HasCorpseOf(x.Key) ?? false)).ToList();
+        if (0 < live.Count) writer.WriteRefDictionary("Trust", live, options);
       }
     }
 
@@ -277,6 +300,377 @@ final_exit:
       return false;
     }
 #endregion
+
+#region leadership
+    public LivingActor? Leader { get => m_Leader; }
+    public LivingActor? LiveLeader { get => (m_Leader is not null && !m_Leader.IsDead) ? m_Leader : null; }
+    public bool HasLeader { get => !(m_Leader?.IsDead ?? true); }
+    // null != LiveLeader is equivalent to HasLeader
+
+    public int TrustInLeader {
+      get => m_TrustInLeader;
+      set { m_TrustInLeader = value; }  // \todo 4 change targets to eliminate public setter; CPU cost may be excessive
+    }
+
+    public bool IsTrustingLeader {
+      get => HasLeader && TRUST_TRUSTING_THRESHOLD <= m_TrustInLeader;
+    }
+
+    public bool HasBondWith(LivingActor target)
+    {
+      if (m_Leader == target)      return TRUST_BOND_THRESHOLD <= m_TrustInLeader;
+      if (target.m_Leader == this) return TRUST_BOND_THRESHOLD <= target.m_TrustInLeader;
+      return false;
+    }
+
+    public void ModifyTrustInLeader(int mod, bool addMessage)
+    {
+      m_TrustInLeader += mod;
+      if (m_TrustInLeader > Rules.TRUST_MAX) m_TrustInLeader = Rules.TRUST_MAX;
+      else if (m_TrustInLeader < Rules.TRUST_MIN) m_TrustInLeader = Rules.TRUST_MIN;
+      if (addMessage && Leader?.Controller is PlayerController pc)
+        pc.AddMessage(new(string.Format("({0} trust with {1})", mod, TheName), Session.Get.WorldTime.TurnCounter, Color.White));
+    }
+
+    public IEnumerable<LivingActor>? Followers { get { return m_Followers; } }
+
+    public LivingActor? FirstFollower(Predicate<LivingActor> test) {
+      if (m_Followers is not null) foreach(var fo in m_Followers) if (test(fo)) return fo;
+      return null;
+    }
+
+    public void DoForAllFollowers(Action<LivingActor> op)
+    {
+      if (m_Followers is not null) foreach(var fo in m_Followers) op(fo);
+    }
+
+    public int CountFollowers { get { return m_Followers?.Count ?? 0; } }
+
+    public int MaxFollowers {
+      get {
+        return SKILL_LEADERSHIP_FOLLOWER_BONUS * MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP);
+      }
+    }
+
+    public List<KeyValuePair<int, LivingActor>>? DistantFollowers(int max_dist, int want_nearby)
+    {
+        if (m_Followers is null) return null;
+        if (0 >= want_nearby) return null;
+
+        List<KeyValuePair<int, LivingActor>> ret = new();
+        int closeCount = 0;
+        foreach (var follower in m_Followers) {
+            int dist = Rules.InteractionDistance(follower.Location, Location);
+            if (dist <= max_dist && ++closeCount >= want_nearby) return null;
+            ret.Add(new(dist, follower));
+        }
+        return ret;
+    }
+
+    public string ReasonCannotBeLed()
+    {
+      if (Model.Abilities.IsUndead) return "undead";
+      if (IsSleeping) return "sleeping";
+      if (HasLeader) return "already has a leader";
+      if (CountFollowers > 0) return "is a leader";  // XXX organized force would have a chain of command
+      if (Controller.InCombat && !IsPlayer) return Name+" in combat";
+      return "";
+    }
+
+    public string ReasonCannotLead()
+    {
+      int num = MaxFollowers;
+      if (num == 0) return "can't lead";
+      if (CountFollowers >= num) return "too many followers";
+      if (HasLeader) return "already has a leader";
+      // this should need refinement (range 1 might be ok)
+      if (!IsPlayer && Controller.InCombat) return "in combat";
+      return "";
+    }
+
+    public string ReasonCannotLead(Actor target)
+    {
+#if DEBUG
+      if (target is null) throw new ArgumentNullException(nameof(target));
+#endif
+      if (IsEnemyOf(target)) return "enemy";
+      if (Faction != target.Faction && target.Faction.LeadOnlyBySameFaction) return string.Format("{0} can't lead {1}", Faction.Name, target.Faction.Name);
+      // to support savefile hacking.  AI in charge of player is a problem.
+      if (target.IsPlayer && !IsPlayer) return "is player";
+      return "";
+    }
+
+    private string ReasonCantTakeLeadOf(LivingActor target)
+    {
+#if DEBUG
+      if (target is null) throw new ArgumentNullException(nameof(target));
+#endif
+      var ret = target.ReasonCannotBeLed();
+      if (!string.IsNullOrEmpty(ret)) return ret;
+      ret = ReasonCannotLead();
+      if (!string.IsNullOrEmpty(ret)) return ret;
+      return ReasonCannotLead(target);
+    }
+
+    public bool CanTakeLeadOf(LivingActor target, out string reason)
+    {
+      reason = ReasonCantTakeLeadOf(target);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanTakeLeadOf(LivingActor target)
+    {
+      return string.IsNullOrEmpty(ReasonCantTakeLeadOf(target));
+    }
+
+    private string ReasonIllegalToBeLed()
+    {
+      if (Model.Abilities.IsUndead) return "undead";
+      if (IsSleeping) return "sleeping";
+      if (HasLeader) return "already has a leader";
+      if (CountFollowers > 0) return "is a leader";  // XXX organized force would have a chain of command
+      return "";
+    }
+
+    private string ReasonIllegalToLead()
+    {
+      int num = MaxFollowers;
+      if (num == 0) return "can't lead";
+      if (CountFollowers >= num) return "too many followers";
+      // this should need refinement (range 1 might be ok)
+      return "";
+    }
+
+    private string ReasonIllegalToLead(LivingActor target)
+    {
+#if DEBUG
+      if (target is null) throw new ArgumentNullException(nameof(target));
+#endif
+      var ret = target.ReasonIllegalToBeLed();
+      if (!string.IsNullOrEmpty(ret)) return ret;
+      ret = ReasonIllegalToLead();
+      if (!string.IsNullOrEmpty(ret)) return ret;
+      return ReasonCannotLead(target);
+    }
+
+    public bool LegalToTakeLeadOf(LivingActor target, out string reason)
+    {
+      reason = ReasonIllegalToLead(target);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool LegalToTakeLeadOf(LivingActor target)
+    {
+      return string.IsNullOrEmpty(ReasonIllegalToLead(target));
+    }
+
+    private string ReasonCantCancelLead(LivingActor target)
+    {
+      if (target.Leader != this) return "not your follower";
+      if (target.IsSleeping) return "sleeping";
+      return "";
+    }
+
+    public bool CanCancelLead(LivingActor target, out string reason)
+    {
+      reason = ReasonCantCancelLead(target);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    // leadership/follower handling
+    public void AddFollower(LivingActor other)
+    {
+      if (m_Followers is null) m_Followers = new List<LivingActor>(1);
+      else if (m_Followers.Contains(other)) throw new ArgumentException("other is already a follower");
+      m_Followers.Add(other);
+      other.Leader?.RemoveFollower(other);
+      other.m_Leader = this;
+    }
+
+    // 2020-01-26 public void AddLeader(Actor leader) didn't work out in release mode IL: operator ?. doesn't actually reduce bytecode for the caller
+
+    // 2022-05-13 having problems with multi-threading or out-of-order instructions within Actor::RemoveAllFollowers.
+    // handled by refactoring out Actor::_NoLongerFollower
+    private void _NoLongerFollower()
+    {
+      Interlocked.Exchange(ref m_Leader, null);
+      (Controller as Gameplay.AI.OrderableAI)?.LeaderWasSetNull_handler();
+    }
+
+    public void RemoveFollower(LivingActor other)
+    {
+      var followers = m_Followers;
+      if (followers is null) throw new InvalidOperationException(Name+": no followers");
+      other._NoLongerFollower();
+      followers.Remove(other);
+//    other._NoLongerFollower(); // multi-threaded race condition when here?
+      if (0 == followers.Count) Interlocked.Exchange(ref m_Followers, null);
+    }
+
+    public void RemoveAllFollowers()
+    {
+      var followers = m_Followers;
+      if (followers is not null) {
+        foreach(var fo in followers) fo._NoLongerFollower();
+        Interlocked.Exchange(ref m_Followers, null);
+      }
+    }
+
+    public void SetTrustIn(LivingActor other, int trust) => (m_TrustDict ??= new())[other] = trust;
+
+    public int GetTrustIn(LivingActor other)
+    {
+      if (m_TrustDict is null) return 0;
+      if (m_TrustDict.TryGetValue(other,out int trust)) return trust;
+      return 0;
+    }
+
+    public int TrustIncrease {
+      get {
+        return 1 + SKILL_CHARISMATIC_TRUST_BONUS * MySkills.GetSkillLevel(Skills.IDs.CHARISMATIC);
+      }
+    }
+
+    // We do not handle the enemy relations here.
+    public HashSet<Actor>? Allies {
+      get {
+        var ret = new HashSet<Actor>();
+        // 1) police have all other police as allies.
+        if (IsFaction(GameFactions.IDs.ThePolice)) ret = (World.Get.PoliceInRadioRange(Location) ?? ret);
+        // 2) leader/follower cliques are allies.
+        m_Followers?.AppendTo(ret);
+        var leader = LiveLeader;
+        if (leader is not null) { // 2019-08-14: currently mutually exclusive with above for NPCs
+          ret.Add(leader);
+          leader.m_Followers?.AppendTo(ret);
+          ret.Remove(this);
+        }
+        return (0<ret.Count ? ret : null);
+      }
+    }
+
+    // ignores faction alliances
+    public HashSet<LivingActor>? ChainOfCommand {
+      get {
+        var ret = new HashSet<LivingActor>();
+        m_Followers?.AppendTo(ret);
+        var leader = LiveLeader;
+        if (leader is not null) {
+          ret.Add(leader);
+          leader.m_Followers?.AppendTo(ret);
+          ret.Remove(this);
+        }
+        return (0<ret.Count ? ret : null);
+      }
+    }
+
+    // alpha10
+    /// <summary>Is this other actor our leader, a follower or a mate.  Actor.IsInGroupWith is the entry point.</summary>
+    internal bool InGroupWith(Actor other)
+    {
+      var leader = LiveLeader;
+      if (leader is not null) {
+        if (   other == leader   // my leader?
+            || (other as LivingActor)?.Leader == leader)    // a mate?
+          return true;
+      }
+      return other is LivingActor living && (m_Followers?.Contains(living) ?? false); // a follower?
+    }
+
+    // This prepares an actor for being a PC.  Note that hacking the player controller in
+    // by hex-editing does work flawlessly at the Actor level.
+    public override void PrepareForPlayerControl()
+    {
+      var leader = Leader;
+      if (leader is not null && !leader.IsPlayer) leader.RemoveFollower(this);   // needed if leader is NPC
+    }
+
+    protected override void OptimizeBeforeSaving()
+    {
+      base.OptimizeBeforeSaving();
+      if (m_Leader?.IsDead ?? false) m_Leader = null;
+      // \todo match RS alpha 10's prune of trust entries in dead actors (m_TrustDict for us)
+      // to avoid weirdness we want to drop only if no revivable corpse is in-game
+      m_Followers = m_Followers?.Optimize();
+    }
+#endregion
+
+#region trackers and radios
+    public void Tracks(ref Span<bool> find_us)
+    {
+        find_us[(int)ItemTrackerModel.TrackingOffset.POLICE_FACTION] = IsFaction(GameFactions.IDs.ThePolice);
+
+        // the cell phone
+        GetEquippedItem(DollPart.LEFT_HAND)?.NotUseless<ItemTracker>()?.Model.Tracks(ref find_us);
+
+        // the police radio
+        GetEquippedItem(DollPart.HIP_HOLSTER)?.NotUseless<ItemTracker>()?.Model.Tracks(ref find_us);
+
+        // Tracking leaders makes sense, but not in single PC mode
+        if (0 >= CountFollowers && LiveLeader is not null) find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER] = false;
+    }
+
+    public bool NeedActivePoliceRadio {
+      get {
+        if (IsFaction(GameFactions.IDs.ThePolice)) return false; // implicit
+        // XXX disallow murderers under certain conditions, etc
+        var leader = LiveLeader;
+        if (leader is not null) return leader.HasActivePoliceRadio; // XXX \todo change target: deep chain of command
+        if (m_Followers is not null) foreach(var fo in m_Followers) if (fo.HasPoliceRadio) return true;
+        return false;
+      }
+    }
+
+    public bool NeedActiveCellPhone {
+      get {
+        if (!WantCellPhone) return false;
+        var leader = LiveLeader;
+        if (leader is not null) return leader.HasActiveCellPhone; // XXX \todo change target: deep chain of command
+        if (m_Followers is not null) foreach(var fo in m_Followers) if (fo.HasCellPhone) return true;
+        return false;
+      }
+    }
+
+    public bool WantPoliceRadio {
+      get {
+        if (IsFaction(GameFactions.IDs.ThePolice)) return false; // police have implicit police radios
+        bool have_cellphone = HasCellPhone;
+        bool have_army = HasArmyRadio;
+        if (!have_cellphone && !have_army) return true;
+
+        bool out_of_comm(LivingActor a) {
+          if (have_cellphone && a.HasCellPhone) return false;
+          if (have_army && a.HasArmyRadio) return false;
+          return true;
+        }
+
+        var leader = LiveLeader;
+        if (leader is not null) return out_of_comm(leader); // XXX \todo change target: deep chain of command
+        if (m_Followers is not null) foreach(var fo in m_Followers) if (out_of_comm(fo)) return true;
+        return false;
+      }
+    }
+
+    public bool WantCellPhone {
+      get {
+        bool have_police = HasPoliceRadio;
+        bool have_army = HasArmyRadio;
+        if (!have_police && !have_army) return true;
+
+        bool out_of_comm(LivingActor a) {
+          if (have_police && a.HasPoliceRadio) return false;
+          if (have_army && a.HasArmyRadio) return false;
+          return true;
+        }
+
+        var leader = LiveLeader;
+        if (leader is not null) return out_of_comm(leader); // XXX \todo change target: deep chain of command
+        if (m_Followers is not null) foreach(var fo in m_Followers) if (out_of_comm(fo)) return true;
+        return false;
+      }
+    }
+#endregion
+
 
 #region trading
     public override List<Item>? GetInterestingTradeableItems(Actor buyer) // called from RogueGame::PickItemToTrade so forced to be public no matter where

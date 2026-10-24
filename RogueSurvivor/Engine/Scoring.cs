@@ -348,12 +348,12 @@ namespace djack.RogueSurvivor.Engine
 
   public sealed class Scoring_fatality
   {
-    private readonly List<Actor>? m_FollowersWhenDied = null;
+    private readonly List<LivingActor>? m_FollowersWhenDied = null;
     public readonly Actor Killer;
     private Actor? m_ZombifiedPlayer;
     public readonly string DeathPlace;
 
-    public List<Actor>? FollowersWhenDied => m_FollowersWhenDied;
+    public List<LivingActor>? FollowersWhenDied => m_FollowersWhenDied;
     public Actor? ZombifiedPlayer => m_ZombifiedPlayer;
 
     public Scoring_fatality(Actor killer, Actor victim) // historically victim is a player, but we don't check that here
@@ -364,7 +364,7 @@ namespace djack.RogueSurvivor.Engine
       var map_name = victim.Location.Map.Name;
       DeathPlace = (zonesAt is not null ? string.Format("{0} at {1}", map_name, zonesAt[0].Name) : map_name);
 
-      m_FollowersWhenDied = victim.Followers?.ToList();
+      m_FollowersWhenDied = (victim as LivingActor)?.Followers?.ToList();
     }
 
     public void SetZombifiedPlayer(Actor z)

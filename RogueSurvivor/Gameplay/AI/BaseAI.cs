@@ -443,7 +443,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals)
     {
-      var leader = m_Actor.LiveLeader;
+      var leader = (m_Actor as LivingActor)?.LiveLeader;
       var choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
         var bump = Rules.IsBumpableFor(m_Actor, in location);
@@ -764,7 +764,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
           if (tmpAction is not null) {
             bool flag3 = true;
-            var leader = m_Actor.LiveLeader;
+            var leader = (m_Actor as LivingActor)?.LiveLeader;
             if (leader is not null) {
               var exitAt = m_Actor.Location.Exit;
               if (exitAt is not null) flag3 = leader.Location.Map == exitAt.ToMap;
@@ -1098,7 +1098,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 */
       if (this is OrderableAI ordai) {
         if (a is ActionChat chat) {
-          return (ordai.Directives_nocreate?.CanTrade ?? ActorDirective.CanTrade_default ) || chat.Target == m_Actor.Leader;
+          return (ordai.Directives_nocreate?.CanTrade ?? ActorDirective.CanTrade_default ) || chat.Target == (m_Actor as LivingActor)?.Leader;
         }
       }
       return false;

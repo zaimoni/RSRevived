@@ -102,7 +102,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         private bool _removeInvalidStacks()
         {
             _inventory_actions = null;
-            var leader = m_Actor.LiveLeader;
+            var leader = (m_Actor as LivingActor)?.LiveLeader;
             int i = _stacks.Count;
             while (0 < i--) {
                 // no longer exists
@@ -207,7 +207,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                 var ret_take = ExtractTake(ret);
                 if (ret_take is not null) {
                     var have = ret_take.Take;
-                    m_Actor.LiveLeader?.Controller.ReportTaken(_inventory_actions[0].Key, have, m_Actor);
+                    (m_Actor as LivingActor)?.LiveLeader?.Controller.ReportTaken(_inventory_actions[0].Key, have, m_Actor);
                 }
                 m_Actor.Activity = Activity.IDLE;
                 _isExpired = true;  // we don't play well with action chains

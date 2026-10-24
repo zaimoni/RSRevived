@@ -12,10 +12,12 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionTakeLead : ActorAction
   {
-    private readonly Actor m_Target;
+    private new readonly LivingActor m_Actor;   // the same object as the base field
+    private readonly LivingActor m_Target;
 
-    public ActionTakeLead(Actor actor, Actor target) : base(actor)
+    public ActionTakeLead(LivingActor actor, LivingActor target) : base(actor)
     {
+      m_Actor = actor;
       m_Target = target
 #if DEBUG
         ?? throw new ArgumentNullException(nameof(target))

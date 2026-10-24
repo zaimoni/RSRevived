@@ -7,11 +7,11 @@ namespace djack.RogueSurvivor.Engine._Action
 {
     internal class TransferFollower : ActorAction
     {
-        private Actor whom;
-        private Actor dest;
-        private Action<Actor, Actor, Actor>? messaging; // rules out saving to hard drive
+        private LivingActor whom;
+        private LivingActor dest;
+        private Action<Actor, LivingActor, LivingActor>? messaging; // rules out saving to hard drive
 
-        public TransferFollower(Actor authority, Actor who, Actor leads, Action<Actor, Actor, Actor>? msg = null) : base(authority) {
+        public TransferFollower(Actor authority, LivingActor who, LivingActor leads, Action<Actor, LivingActor, LivingActor>? msg = null) : base(authority) {
 #if DEBUG
             var prior = who.LiveLeader;
             if (prior is not null && authority != prior) throw new InvalidOperationException("invalid transfer of follower");
@@ -22,12 +22,12 @@ namespace djack.RogueSurvivor.Engine._Action
             messaging = msg;
         }
 
-        static public string ReasonIllegalToBeLed(Actor who)
+        static public string ReasonIllegalToBeLed(LivingActor who)
         {
             if (who.Model.Abilities.IsUndead) return "undead";
             return string.Empty;
         }
-        static public string ReasonCannotBeLed(Actor who)
+        static public string ReasonCannotBeLed(LivingActor who)
         {
           if (who.IsSleeping) return "sleeping";
 //        if (HasLeader) return "already has a leader";
@@ -36,14 +36,14 @@ namespace djack.RogueSurvivor.Engine._Action
           return string.Empty;
         }
 
-        static public string ReasonIllegalToLead(Actor who)
+        static public string ReasonIllegalToLead(LivingActor who)
         {
             int num = who.MaxFollowers;
             if (num == 0) return "can't lead";
             if (who.CountFollowers >= num) return "too many followers";
             return string.Empty;
         }
-        static public string ReasonCannotLead(Actor who)
+        static public string ReasonCannotLead(LivingActor who)
         {
             if (!who.IsPlayer && who.Controller.InCombat) return "in combat";
             return string.Empty;

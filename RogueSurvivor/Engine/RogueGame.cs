@@ -1967,7 +1967,7 @@ namespace djack.RogueSurvivor.Engine
       var police = Session.Get.Police;
       if (police.IsMine(nextActorToAct)) police.onTurnStart(nextActorToAct);
       else {
-        var leader = nextActorToAct.LiveLeader;
+        var leader = (nextActorToAct as LivingActor)?.LiveLeader;
         if (leader is not null && police.IsMine(leader) && (nextActorToAct.Controller as ObjectiveAI).InCommunicationWith(leader))
              police.onTurnStart(nextActorToAct);
       }
@@ -2187,11 +2187,10 @@ namespace djack.RogueSurvivor.Engine
 #endregion
           }
           actor.SpendSanity(1);
-          var a_leader = actor.LiveLeader;
-          if (a_leader is not null) {
+          if (actor is LivingActor living && living.LiveLeader is { } a_leader) {
 #region leader trust & leader/follower bond.
-            actor.ModifyTrustInLeader(a_leader.TrustIncrease, false);
-            if (actor.HasBondWith(a_leader) && rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
+            living.ModifyTrustInLeader(a_leader.TrustIncrease, false);
+            if (living.HasBondWith(a_leader) && rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
               actor.RegenSanity(actor.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
               a_leader.RegenSanity(a_leader.ScaleSanRegen(Rules.SANITY_RECOVER_BOND));
               if (ForceVisibleToPlayer(actor))
@@ -2702,7 +2701,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 >= landing_zones.Count) return;
       n = Rules.Get.DiceRoller.Roll(0, landing_zones.Count); // choose a valid landing zone
       var turn = map.LocalTime.TurnCounter;
-      var party = new Actor[BIKERS_RAID_SIZE];
+      var party = new LivingActor[BIKERS_RAID_SIZE];
       party[BIKERS_RAID_SIZE - 1] = SpawnNewBikerLeader(turn, Rules.Get.DiceRoller.Choose(GameGangs.BIKERS));
 
       var leader = party[BIKERS_RAID_SIZE - 1];
@@ -2757,7 +2756,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 >= landing_zones.Count) return;
       n = Rules.Get.DiceRoller.Roll(0, landing_zones.Count); // choose a valid landing zone
       var turn = map.LocalTime.TurnCounter;
-      var party = new Actor[GANGSTAS_RAID_SIZE ];
+      var party = new LivingActor[GANGSTAS_RAID_SIZE];
       party[GANGSTAS_RAID_SIZE - 1] = SpawnNewGangstaLeader(turn, Rules.Get.DiceRoller.Choose(GameGangs.GANGSTAS));
 
       var leader = party[GANGSTAS_RAID_SIZE - 1];
@@ -2929,7 +2928,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void SpawnNewUndead(Map map, int day)
     {
-      Actor newUndead = m_TownGenerator.CreateNewUndead(map.LocalTime.TurnCounter);
+      var newUndead = m_TownGenerator.CreateNewUndead(map.LocalTime.TurnCounter);
       if (s_Options.AllowUndeadsEvolution && Session.Get.HasEvolution) {
         GameActors.IDs fromModelID = newUndead.Model.ID;
         if (fromModelID != GameActors.IDs.UNDEAD_ZOMBIE_LORD || ZOMBIE_LORD_EVOLUTION_MIN_DAY <= day) {
@@ -2948,7 +2947,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void SpawnNewSewersUndead(Map map)
     {
-      Actor newSewersUndead = m_TownGenerator.CreateNewSewersUndead(map.LocalTime.TurnCounter);
+      var newSewersUndead = m_TownGenerator.CreateNewSewersUndead(map.LocalTime.TurnCounter);
 //    SpawnActorOnMapBorder(map, newSewersUndead, SPAWN_DISTANCE_TO_PLAYER, false); // allows cheesy metagaming
       SpawnActorOnMapBorder(map, newSewersUndead, 1);
     }
@@ -2960,68 +2959,68 @@ namespace djack.RogueSurvivor.Engine
     // The bands remain PC spawn radius shielded, for now.
     private Actor? SpawnNewSurvivor(Map map)
     {
-      Actor newSurvivor = m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
+      var newSurvivor = m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
       return (SpawnActorOnMapBorder(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER) ? newSurvivor : null);
     }
 
     private Actor? SpawnNewSurvivor(Location near)
     {
-      Actor newSurvivor = m_TownGenerator.CreateNewSurvivor(near.Map.LocalTime.TurnCounter);
+      var newSurvivor = m_TownGenerator.CreateNewSurvivor(near.Map.LocalTime.TurnCounter);
       return SpawnActorNear(near, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, 3);
     }
 
-    private Actor? SpawnNewNatGuardLeader(Map map)
+    private LivingActor? SpawnNewNatGuardLeader(Map map)
     {
-      Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Sgt");   // \todo look up some example rank systems -- some would expect Cpl here)
+      var armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Sgt");   // \todo look up some example rank systems -- some would expect Cpl here)
       armyNationalGuard.StartingSkill(Skills.IDs.LEADERSHIP);
       if (map.LocalTime.Day > NATGUARD_ZTRACKER_DAY) armyNationalGuard.Take(GameItems.ZTRACKER.create());
       return (SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER) ? armyNationalGuard : null);
     }
 
-    private Actor? SpawnNewNatGuardTrooper(Actor leader)
+    private LivingActor? SpawnNewNatGuardTrooper(LivingActor leader)
     {
-      Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard("Pvt", leader);
+      var armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard("Pvt", leader);
       armyNationalGuard.Take(Rules.Get.RollChance(50) ? GameItems.COMBAT_KNIFE.create()
                                                       : m_TownGenerator.MakeItemGrenade());  // does not seem hyper-critical to use the town generator's RNG
-      return SpawnActorNear(leader.Location, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, 3);
+      return SpawnActorNear(leader.Location, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, 3) is null ? null : armyNationalGuard;
     }
 
-    private Actor SpawnNewBikerLeader(int turn, GameGangs.IDs gangId)
+    private LivingActor SpawnNewBikerLeader(int turn, GameGangs.IDs gangId)
     {
-      Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(turn, gangId);
+      var newBikerMan = m_TownGenerator.CreateNewBikerMan(turn, gangId);
       newBikerMan.StartingSkill(Skills.IDs.LEADERSHIP);
       newBikerMan.StartingSkill(Skills.IDs.TOUGH,3);
       newBikerMan.StartingSkill(Skills.IDs.STRONG,3);
       return newBikerMan;
     }
 
-    private Actor SpawnNewBiker(Actor leader)
+    private LivingActor SpawnNewBiker(LivingActor leader)
     {
-      Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(leader);
+      var newBikerMan = m_TownGenerator.CreateNewBikerMan(leader);
       newBikerMan.StartingSkill(Skills.IDs.TOUGH);
       newBikerMan.StartingSkill(Skills.IDs.STRONG);
       return newBikerMan;
     }
 
-    private Actor SpawnNewGangstaLeader(int turn, GameGangs.IDs gangId)
+    private LivingActor SpawnNewGangstaLeader(int turn, GameGangs.IDs gangId)
     {
-      Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(turn, gangId);
+      var newGangstaMan = m_TownGenerator.CreateNewGangstaMan(turn, gangId);
       newGangstaMan.StartingSkill(Skills.IDs.LEADERSHIP);
       newGangstaMan.StartingSkill(Skills.IDs.AGILE,3);
       newGangstaMan.StartingSkill(Skills.IDs.FIREARMS);
       return newGangstaMan;
     }
 
-    private Actor SpawnNewGangsta(Actor leader)
+    private LivingActor SpawnNewGangsta(LivingActor leader)
     {
-      Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(leader);
+      var newGangstaMan = m_TownGenerator.CreateNewGangstaMan(leader);
       newGangstaMan.StartingSkill(Skills.IDs.AGILE);
       return newGangstaMan;
     }
 
-    private Actor? SpawnNewBlackOpsLeader(Map map)
+    private LivingActor? SpawnNewBlackOpsLeader(Map map)
     {
-      Actor newBlackOps = m_TownGenerator.CreateNewBlackOps(map.LocalTime.TurnCounter, "Officer");
+      var newBlackOps = m_TownGenerator.CreateNewBlackOps(map.LocalTime.TurnCounter, "Officer");
       newBlackOps.StartingSkill(Skills.IDs.LEADERSHIP);
       newBlackOps.StartingSkill(Skills.IDs.AGILE,3);
       newBlackOps.StartingSkill(Skills.IDs.FIREARMS,3);
@@ -3029,13 +3028,13 @@ namespace djack.RogueSurvivor.Engine
       return (SpawnActorOnMapBorder(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER) ? newBlackOps : null);
     }
 
-    private Actor? SpawnNewBlackOpsTrooper(Actor leader)
+    private LivingActor? SpawnNewBlackOpsTrooper(LivingActor leader)
     {
-      Actor newBlackOps = m_TownGenerator.CreateNewBlackOps("Agent", leader);
+      var newBlackOps = m_TownGenerator.CreateNewBlackOps("Agent", leader);
       newBlackOps.StartingSkill(Skills.IDs.AGILE);
       newBlackOps.StartingSkill(Skills.IDs.FIREARMS);
       newBlackOps.StartingSkill(Skills.IDs.TOUGH);
-      return SpawnActorNear(leader.Location, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, 3);
+      return SpawnActorNear(leader.Location, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, 3) is null ? null : newBlackOps;
     }
 
     public void StopTheWorld()
@@ -3366,7 +3365,7 @@ namespace djack.RogueSurvivor.Engine
                 }
                 break;
               case PlayerCommand.LEAD_MODE:
-                flag1 = !TryInsanity(pc) && !HandlePlayerTakeLead(player);
+                flag1 = !TryInsanity(pc) && !(player is LivingActor leader_pc && HandlePlayerTakeLead(leader_pc));
                 break;
               case PlayerCommand.MARK_ENEMIES_MODE:
                 if (TryInsanity(pc)) {
@@ -3579,10 +3578,10 @@ namespace djack.RogueSurvivor.Engine
       if (!confirm) return false;
       player.RevertToAI();
       Session.Get.Scoring.Deincarnate();
-      player.DoForAllFollowers(fo => {
+      if (player is LivingActor lp) lp.DoForAllFollowers(fo => {
           if (fo.Controller is PlayerController fo_pc) {
               HandleAbandonPC(fo_pc);
-              if (fo.IsPlayer) player.RemoveFollower(fo);  // NPCs cannot lead PCs; cf Actor::PrepareForPlayerControl
+              if (fo.IsPlayer) lp.RemoveFollower(fo);  // NPCs cannot lead PCs; cf Actor::PrepareForPlayerControl
           }
       });
       return 0>= World.Get.PlayerCount;
@@ -4164,7 +4163,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleAlliesInfo()
     {
-      var player_allies = Player.Allies;
+      var player_allies = (Player as LivingActor)?.Allies;
       if (player_allies is null) {
         InfoPopup("You have no nearby allies.");
         return;
@@ -4174,8 +4173,8 @@ namespace djack.RogueSurvivor.Engine
       allies.Sort((a,b)=> string.CompareOrdinal(a.Name,b.Name));
 
       string label_a(Actor a) {
-        var leader = a.LiveLeader;
-        return a.Name + (a.IsSleeping ? " (ZZZ)" : "") + (a.Followers is null ? "" : "[L]") + (leader is not null ? "(leader " + leader.Name + ")" : "");
+        var leader = (a as LivingActor)?.LiveLeader;
+        return a.Name + (a.IsSleeping ? " (ZZZ)" : "") + ((a as LivingActor)?.Followers is null ? "" : "[L]") + (leader is not null ? "(leader " + leader.Name + ")" : "");
       }
       string label(int index) { return label_a(allies[index]); }
       bool details(int index) {
@@ -4606,20 +4605,20 @@ namespace djack.RogueSurvivor.Engine
     {
       player.RevertToAI();
       Session.Get.Scoring.Deincarnate();
-      player.DoForAllFollowers(fo => { if (fo.IsPlayer) AbandonPC(fo); });
+      (player as LivingActor)?.DoForAllFollowers(fo => { if (fo.IsPlayer) AbandonPC(fo); });
     }
 
     private void FaustMC(Actor a) {
         a.MakePC();
         a.Controller.UpdateSensors();
         Session.Get.Scoring.UseReincarnation(); // intentionally unconditional
-        var followers = a.Followers;
+        var followers = (a as LivingActor)?.Followers;
         if (followers is not null) foreach(var fo in followers) FaustMC(fo);
     }
     /// <summary>The Faust pre-screen: who the spirits would ride.  The conversion is FaustMC.</summary>
     private bool FaustNominates(Actor a) {
       if (a.Controller is not OrderableAI) return false;
-      if (a.LiveLeader is not null) return false;
+      if ((a as LivingActor)?.LiveLeader is not null) return false;
 
       if (a.Model.Abilities.IsLawEnforcer) return true;
       if (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) return true;
@@ -5269,9 +5268,9 @@ namespace djack.RogueSurvivor.Engine
         }
 
         var actorAt = src[0].a_owner; // backward compatibility
-        if (actorAt is not null) {
+        if (actorAt is LivingActor receiver && player is LivingActor giver) {
           if (player.CanGiveTo(actorAt, invSpec.Value.Key.it!, out string reason)) {
-            DoGiveItemTo(player, actorAt, invSpec.Value.Key.it!);
+            DoGiveItemTo(giver, receiver, invSpec.Value.Key.it!);
             return true;
           }
           ErrorPopup(string.Format("Can't give {0} to {1} : {2}.", invSpec.Value.Key.it!.TheName, actorAt.TheName, reason));
@@ -5675,14 +5674,14 @@ namespace djack.RogueSurvivor.Engine
       return ret;
     }
 
-    public Actor? RecruitLOSchoose(List<Actor> actorList) {
+    public LivingActor? RecruitLOSchoose(List<LivingActor> actorList) {
       const string RECRUIT_MODE = "RECRUIT FOLLOWERS MODE - R to recruit, T next actor, ESC cancels";
 
       ClearOverlays();
       AddOverlay(new UI.OverlayPopup(RECRUIT_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
       int index = 0;
-      Actor? ret = null;
+      LivingActor? ret = null;
 
       bool? handler(KeyEventArgs key) {
         switch (key.KeyCode) {
@@ -5710,7 +5709,7 @@ namespace djack.RogueSurvivor.Engine
       return ret;
     }
 
-    public Actor? RecruitRadioChoose(List<Actor> actorList) {
+    public LivingActor? RecruitRadioChoose(List<LivingActor> actorList) {
       const string RECRUIT_MODE = "RECRUIT FOLLOWERS MODE - R to recruit, T next actor, ESC cancels";
 
       var player_backup = Player;
@@ -5718,7 +5717,7 @@ namespace djack.RogueSurvivor.Engine
       AddOverlay(new UI.OverlayPopup(RECRUIT_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
       int index = 0;
-      Actor? ret = null;
+      LivingActor? ret = null;
 
       bool? handler(KeyEventArgs key) {
         switch (key.KeyCode) {
@@ -5766,8 +5765,8 @@ namespace djack.RogueSurvivor.Engine
       int index = actorList.Count;
       while(0 <= --index) {
         Actor target = actorList[index];
-        if (   target.Leader == player  // no followers as enemies
-            || player.Leader == target) { // no leaders as enemies
+        if (   (target as LivingActor)?.Leader == player  // no followers as enemies
+            || (player as LivingActor)?.Leader == target) { // no leaders as enemies
             actorList.RemoveAt(index);
         }
       }
@@ -5933,7 +5932,7 @@ namespace djack.RogueSurvivor.Engine
       return actionDone;
     }
 
-    private bool HandlePlayerTakeLead(Actor player)
+    private bool HandlePlayerTakeLead(LivingActor player)
     {
       var test = (player.Controller as ObjectiveAI)?.RecruitLOS();
       if (test is not null) {
@@ -5950,14 +5949,14 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new UI.OverlayPopup(TAKE_LEAD_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
 
-      Actor? lead_whom(Direction dir) {
+      LivingActor? lead_whom(Direction dir) {
         if (dir == Direction.NEUTRAL) return null;
         var loc = player.Location + dir;
         if (!Map.Canonical(ref loc)) return null;
-        return loc.Actor;
+        return loc.Actor as LivingActor;
       }
 
-      bool lead(Actor? actorAt) {
+      bool lead(LivingActor? actorAt) {
         if (actorAt is not null) {
           if (player.CanTakeLeadOf(actorAt, out string reason)) {
             DoTakeLead(player, actorAt);
@@ -6343,7 +6342,7 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerOrderMode(PlayerController pc)
     {
       var player = pc.ControlledActor; // backward compatibiblity
-      var followers = player.Followers;
+      var followers = (player as LivingActor)?.Followers;
       if (followers is null) {
         ErrorPopup("No followers to give orders to.");
         return false;
@@ -6353,11 +6352,11 @@ namespace djack.RogueSurvivor.Engine
         ErrorPopup("No followers to give orders to.");
         return false;
       }
-      Actor[] actorArray = new Actor[n_followers];
+      LivingActor[] actorArray = new LivingActor[n_followers];
       HashSet<Point>[] pointSetArray = new HashSet<Point>[n_followers];
       bool[] flagArray = new bool[n_followers];
       int index1 = 0;
-      foreach (Actor follower in followers) {
+      foreach (var follower in followers) {
         actorArray[index1] = follower;
         pointSetArray[index1] = LOS.ComputeFOVFor(follower);
         flagArray[index1] = pc.InCommunicationWith(follower);
@@ -6380,7 +6379,7 @@ namespace djack.RogueSurvivor.Engine
         int num2;
         for (num2 = 0; num2 < 5 && num1 + num2 < actorArray.Length; ++num2) {
           int index2 = num2 + num1;
-          Actor follower = actorArray[index2];
+          var follower = actorArray[index2];
           string str = DescribePlayerFollowerStatus(follower);
           if (flagArray[index2])
             AddMessage(new(string.Format("{0}. {1}/{2} {3}... {4}.", 1 + num2, index2 + 1, actorArray.Length, follower.Name, str), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -6399,7 +6398,7 @@ namespace djack.RogueSurvivor.Engine
         } else if (choiceNumber >= 1 && choiceNumber <= num2) {
           int index2 = num1 + choiceNumber - 1;
           if (flagArray[index2]) {
-            Actor follower = actorArray[index2];
+            var follower = actorArray[index2];
             if (HandlePlayerOrderFollower(pc, follower)) {
               flag3 = false;
               flag4 = true;
@@ -6464,7 +6463,7 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    private bool HandlePlayerOrderFollower(PlayerController pc, Actor follower)
+    private bool HandlePlayerOrderFollower(PlayerController pc, LivingActor follower)
     {
       var player = pc.ControlledActor;  // backward compatibility
       if (!follower.IsTrustingLeader) {
@@ -6576,7 +6575,7 @@ namespace djack.RogueSurvivor.Engine
           var oai = ally.Controller as ObjectiveAI;
           if (oai is null) return false;
 //          InfoPopup(ally.Name+" : "+ ally.CountFollowers.ToString());
-          if (ally.CountFollowers >= ally.MaxFollowers) return false;
+          if (ally is not LivingActor la || la.CountFollowers >= la.MaxFollowers) return false;
 //          InfoPopup((!ally.IsPlayer && ally.Controller.InCombat).ToString());
           if (!ally.IsPlayer && ally.Controller.InCombat) return false;
 //          InfoPopup((!ally.IsPlayer && ally.Controller.InCombat).ToString());
@@ -6590,7 +6589,7 @@ namespace djack.RogueSurvivor.Engine
           return true;
         }
 
-        void msg(Actor authority, Actor whom, Actor new_leader) {
+        void msg(Actor authority, LivingActor whom, LivingActor new_leader) {
           var authority_whom_code = pc.CommunicationMethodCode(whom);
           var authority_new_leader_code = pc.CommunicationMethodCode(new_leader);
           if (2 == authority_whom_code || 2 == authority_new_leader_code) {
@@ -6600,8 +6599,8 @@ namespace djack.RogueSurvivor.Engine
           }
         }
 
-        var allies = player.Allies;
-        var donate_to = player.FilterAllies(allies, could_lead);
+        var allies = (player as LivingActor)?.Allies;
+        var donate_to = player.FilterAllies(allies, could_lead)?.ConvertAll(a => (LivingActor)a);   // could_lead passed only the living
         if (donate_to is not null) {
           orders.Add(new("Follow ...", () => {
             string label(int index) { return donate_to[index].Name; }
@@ -6893,7 +6892,7 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
-    private bool HandlePlayerOrderFollowerToGiveItems(Actor player, Actor follower)
+    private bool HandlePlayerOrderFollowerToGiveItems(Actor player, LivingActor follower)
     {
 #if DEBUG
       var err = FollowerCannotGiveItems(player, follower);
@@ -6908,7 +6907,7 @@ namespace djack.RogueSurvivor.Engine
 
       string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, can_give.Count, DescribeItemShort(can_give[index])); }
       bool details(int index) {
-        DoGiveItemTo(follower, player, can_give[index]);
+        if (player is LivingActor receiver) DoGiveItemTo(follower, receiver, can_give[index]);
         return true;
       }
 
@@ -7128,10 +7127,10 @@ namespace djack.RogueSurvivor.Engine
          {
              var actorAt = map.GetActorAt(pt);
              if (actorAt is null) return false;
-             return Player.CanTakeLeadOf(actorAt);
+             return living is not null && actorAt is LivingActor la && living.CanTakeLeadOf(la);
          });
         case AdvisorHint.LEADING_GIVE_ORDERS:
-          return Player.CountFollowers > 0;
+          return 0 < (living?.CountFollowers ?? 0);
         case AdvisorHint.LEADING_SWITCH_PLACE:
           return map.HasAnyAdjacentInMap(position, pt =>
          {
@@ -7811,11 +7810,12 @@ namespace djack.RogueSurvivor.Engine
       lines.Add(string.Format("{0} since {1}.", a_model.Abilities.IsUndead ? "Undead" : "Staying alive", new WorldTime(actor.SpawnTime).ToString()));
       var aiController = actor.Controller as OrderableAI;
       if (aiController?.Order is not null) lines.Add(string.Format("Order : {0}.", aiController.Order.ToString())); // 2020-01-15 IL doesn't want temporary for aiController?.Order
-      var leader = actor.LiveLeader;
-      if (leader is not null) {
+      var living = actor as LivingActor;
+      var leader = living?.LiveLeader;
+      if (living is not null && leader is not null) {
         lines.Add(string.Format("Leader : {0}.", leader.Name.Capitalize()));
         if (leader.IsPlayer) {  // \todo should this test be leader == Player ?
-          lines.Add(TrustInLeaderText(actor.TrustInLeader));
+          lines.Add(TrustInLeaderText(living.TrustInLeader));
 
           if (aiController is not null && aiController.DontFollowLeader) lines.Add("Ordered to not follow you.");
           lines.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, actor.HoursUntilHungry));
@@ -7848,7 +7848,7 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         }
-      } else if (leader is not null && leader.IsPlayer && actor.IsTrustingLeader) {
+      } else if (living is not null && leader is not null && leader.IsPlayer && living.IsTrustingLeader) {
         lines.Add(0 < (murders = Session.Get.Police.CountMurders(actor))
                      ? string.Format("* Confess {0}! *", "murder".QtyDesc(murders))
                      : "Has committed no murders.");
@@ -8055,7 +8055,7 @@ namespace djack.RogueSurvivor.Engine
         case Data.Activity.FOLLOWING:
           if (actor.TargetActor is null) return "Following.";
           // alpha10
-          if (actor.Leader == actor.TargetActor) return string.Format("Following {0} leader.", actor.HisOrHer);
+          if ((actor as LivingActor)?.Leader == actor.TargetActor) return string.Format("Following {0} leader.", actor.HisOrHer);
           return string.Format("Following {0}.", actor.TargetActor.Name);
         case Data.Activity.SLEEPING: return "Sleeping.";
         case Data.Activity.FOLLOWING_ORDER: return "Following orders.";
@@ -8069,7 +8069,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    static private string DescribePlayerFollowerStatus(Actor follower)
+    static private string DescribePlayerFollowerStatus(LivingActor follower)
     {
       string desc = string.Format("(trust:{0})", follower.TrustInLeader);
       if (follower.Controller is OrderableAI ai) {
@@ -8885,7 +8885,7 @@ namespace djack.RogueSurvivor.Engine
         actor.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exit_map.District.Name));
       if (need_stamina_regen) actor.PreTurnStart();
       actor.OnEnterTile();
-      actor.Followers?.DoTheyEnterMap(exitAt.Location, in origin);
+      (actor as LivingActor)?.Followers?.DoTheyEnterMap(exitAt.Location, in origin);
       if (   actor.Controller is OrderableAI ai && !is_cross_district
           && exitAt.Location.Map == exitAt.Location.Map.District.EntryMap) {
         ai.Avoid(exitAt.Location.Exit);
@@ -8917,7 +8917,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(actor, VERB_SWITCH_PLACE_WITH.Conjugate(actor), other));
     }
 
-    public void DoTakeLead(Actor actor, Actor other)
+    public void DoTakeLead(LivingActor actor, LivingActor other)
     {
       actor.SpendActionPoints();
       actor.AddFollower(other);
@@ -8938,7 +8938,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DoCancelLead(Actor actor, Actor follower)
+    public void DoCancelLead(LivingActor actor, LivingActor follower)
     {
       actor.SpendActionPoints();
       actor.RemoveFollower(follower);
@@ -9067,7 +9067,7 @@ namespace djack.RogueSurvivor.Engine
       } else  */ if (GameFactions.TheArmy == faction) {
         OnMakeEnemyOfSoldier(aggressor, target, wasAlreadyEnemy);
       }
-      var leader = target.LiveLeader;
+      var leader = (target as LivingActor)?.LiveLeader;
       if (leader is not null) {
         faction = leader.Faction;
         if (faction.IsEnemyOf(aggressor.Faction)) return;   // intercept invariant failure when aggressing a civilian follower of a cop
@@ -9156,7 +9156,7 @@ namespace djack.RogueSurvivor.Engine
       void IsAggressed(Actor a){ aggressor.RecordAggression(a); }
       bool IsAggressable(Actor a) {
         if (a == aggressor) return false;
-        if (a.Leader == aggressor) return false;
+        if ((a as LivingActor)?.Leader == aggressor) return false;
         return a.Faction == faction;
       }
 
@@ -9175,7 +9175,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       bool radio_should_record(Actor a) {
-        if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
+        if (a == aggressor || (a as LivingActor)?.Leader == aggressor) return false;  // aggressor doesn't find this message informative
         if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
         return true;
       }
@@ -10048,7 +10048,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool wantedItem = true;
       bool flag3 = (target.Controller as ObjectiveAI).IsInterestingTradeItem(speaker, itSpeaker);
-      if (target.Leader != speaker && doesTargetCheckForInterestInOffer) wantedItem = flag3;
+      if ((target as LivingActor)?.Leader != speaker && doesTargetCheckForInterestInOffer) wantedItem = flag3;
 
       if (!wantedItem) { // offered item is not of perceived use
         AddMessage(MakeMessage(target, string.Format("is not interested in {0}.", itSpeaker.TheName)));
@@ -10078,7 +10078,7 @@ namespace djack.RogueSurvivor.Engine
 
       witnesses.AddMessage(MakePanopticMessage(speaker, string.Format("{0}.", VERB_ACCEPT_THE_DEAL.Conjugate(speaker))));
 
-      if (target.Leader == speaker && flag3) target.Say(speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
+      if ((target as LivingActor)?.Leader == speaker && flag3) target.Say(speaker, "Thank you for this good deal.", Sayflags.IS_FREE_ACTION);
       speaker.Remove(itSpeaker);
       target.Remove(trade);
       speaker.Take(trade);
@@ -10152,7 +10152,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool wantedItem = true;
       bool flag3 = target_c.IsInterestingTradeItem(speaker, trade.Value.Key);
-      if (target.Leader != speaker && doesTargetCheckForInterestInOffer) wantedItem = flag3;
+      if ((target as LivingActor)?.Leader != speaker && doesTargetCheckForInterestInOffer) wantedItem = flag3;
 
       if (!wantedItem)
       { // offered item is not of perceived use
@@ -10163,7 +10163,7 @@ namespace djack.RogueSurvivor.Engine
       if (flag1)
         AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", VERB_OFFER.Conjugate(target), trade.Value.Value.AName, trade.Value.Key.AName)));
 
-      var leader = target.LiveLeader;
+      var leader = (target as LivingActor)?.LiveLeader;
       bool acceptDeal = leader is null || (target_c.Directives_nocreate?.CanTrade ?? ActorDirective.CanTrade_default);
 
       if (!acceptDeal) {
@@ -10320,7 +10320,7 @@ namespace djack.RogueSurvivor.Engine
       OnLoudNoise(speaker.Location, "A SHOUT");
       // Alpha 10- also allowed shouting through phone...we need to re-think this
       if (/* !AreLinkedByPhone(speaker, Player) && */ !ForceVisibleToPlayer(speaker)) return;
-      if (Player == speaker.Leader && Player.Controller is PlayerController pc) {
+      if (Player == (speaker as LivingActor)?.Leader && Player.Controller is PlayerController pc) {
         pc.Messages.Clear();
         AddOverlay((new UI.OverlayRect(Color.Yellow, new GDI_Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR))));
         DoEmote(speaker, string.Format("{0}!!", VERB_RAISE_ALARM.Conjugate(speaker)), true);
@@ -10442,7 +10442,7 @@ namespace djack.RogueSurvivor.Engine
       DoGiveItemTo(actor,target,gift);
     }
 
-    public void DoGiveItemTo(Actor actor, Actor target, Item gift)
+    public void DoGiveItemTo(LivingActor actor, LivingActor target, Item gift)
     {
       actor.SpendActionPoints();
       if (target.Leader == actor) {
@@ -10846,7 +10846,7 @@ restart:
       }
     }
 
-    private void DoPushPullFollowersHelp(Actor actor, MapObject mapObj, bool isPulling, ref int staCost)    // alpha10
+    private void DoPushPullFollowersHelp(LivingActor actor, MapObject mapObj, bool isPulling, ref int staCost)    // alpha10
     {
       var folowers = actor.Followers;
       if (folowers is null) return;
@@ -10875,7 +10875,7 @@ restart:
     {
       bool flag = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(mapObj);
       int staminaCost = mapObj.Weight;
-      if (actor.CountFollowers > 0) DoPushPullFollowersHelp(actor, mapObj, false, ref staminaCost); // alpha10
+      if (actor is LivingActor leader && leader.CountFollowers > 0) DoPushPullFollowersHelp(leader, mapObj, false, ref staminaCost); // alpha10
       actor.SpendActionPoints();
       actor.SpendStaminaPoints(staminaCost);
 
@@ -10960,7 +10960,7 @@ restart:
       }
 
       // followers help?
-      if (actor.CountFollowers > 0) DoPushPullFollowersHelp(actor, mapObj, true, ref staCost);
+      if (actor is LivingActor leader && leader.CountFollowers > 0) DoPushPullFollowersHelp(leader, mapObj, true, ref staCost);
 
       var a_witness = actor.PlayersInLOS();
       var o_witness = mapObj.PlayersInLOS();
@@ -11177,9 +11177,9 @@ restart:
       }
 
 
-      var clan = deadGuy.ChainOfCommand;    // both leader and immediate followers
-      if (clan is not null) foreach(var a in clan) {
-        if (a.HasBondWith(deadGuy)) {
+      var dead_living = deadGuy as LivingActor;
+      if (dead_living is not null && dead_living.ChainOfCommand is { } clan) foreach(var a in clan) {    // both leader and immediate followers
+        if (a.HasBondWith(dead_living)) {
           a.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
           var witnesses = a.PlayersInLOS();
           if (witnesses is not null) a.Controller.AddMessageForceRead(MakePanopticMessage(a, string.Format("{0} deeply disturbed by {1} sudden death!", VERB_BE.Conjugate(a), deadGuy.Name)), witnesses);
@@ -11198,14 +11198,16 @@ restart:
         setPlayer(m_Player_bak);
         if (0 >= World.Get.PlayerCount) PlayerDied(killer, reason);
       }
-      deadGuy.RemoveAllFollowers();
-      var leader = deadGuy.Leader;
-      if (leader is not null) {
-        leader.ActorScoring.AddEvent(turn,
-            (killer is null
-           ? string.Format("Follower {0} died by {1}!", deadGuy.TheName, reason)
-           : string.Format("Follower {0} was killed by {1} {2}!", deadGuy.TheName, killer.Model.Name, killer.TheName)));
-        leader.RemoveFollower(deadGuy);
+      if (dead_living is not null) {
+        dead_living.RemoveAllFollowers();
+        var leader = dead_living.Leader;
+        if (leader is not null) {
+          leader.ActorScoring.AddEvent(turn,
+              (killer is null
+             ? string.Format("Follower {0} died by {1}!", deadGuy.TheName, reason)
+             : string.Format("Follower {0} was killed by {1} {2}!", deadGuy.TheName, killer.Model.Name, killer.TheName)));
+          leader.RemoveFollower(dead_living);
+        }
       }
       deadGuy.RemoveAllAgressorSelfDefenceRelations();
       deadGuy.RemoveFromMap();
@@ -11216,7 +11218,7 @@ restart:
       static bool police_wanted(Actor a) {
         if (a.Faction.IsEnemyOf(GameFactions.ThePolice)) return true;
         if (a.Aggressors.Any_(who => who.IsFaction(GameFactions.IDs.ThePolice))) return true;
-        if (a.Aggressing.Any_(who => who.IsFaction(GameFactions.IDs.ThePolice) || GameFactions.ThePolice == who.LiveLeader?.Faction)) return true;
+        if (a.Aggressing.Any_(who => who.IsFaction(GameFactions.IDs.ThePolice) || GameFactions.ThePolice == (who as LivingActor)?.LiveLeader?.Faction)) return true;
         return false;
       }
 
@@ -11290,7 +11292,7 @@ restart:
             }
           }
         }
-        killer.DoForAllFollowers(fo => {
+        (killer as LivingActor)?.DoForAllFollowers(fo => {
             if ((fo.TargetActor == deadGuy || fo.IsEnemyOf(deadGuy)) && Rules.IsAdjacent(fo.Location, deadGuy.Location)) {
               fo.Say(killer, "That was close! Thanks for the help!!", Sayflags.IS_FREE_ACTION);
               fo.ModifyTrustInLeader(Rules.TRUST_LEADER_KILL_ENEMY, true);
@@ -11303,7 +11305,7 @@ restart:
 
           // \todo while soldiers won't actively track down murderers, they will respond if it happens in sight
           PropagateSight(killer.Location, a => {
-            if (a.Leader != killer && killer.Leader != a) {
+            if ((a as LivingActor)?.Leader != killer && (killer as LivingActor)?.Leader != a) {
               if (a.Model.Abilities.IsLawEnforcer) {
                 a.Say(killer, string.Format("MURDER! {0} HAS KILLED {1}!", killer.TheName, deadGuy.TheName), Sayflags.IS_IMPORTANT | Sayflags.IS_FREE_ACTION);
                 RadioNotifyAggression(a, killer, "(police radio, {0}) Executing {1} for murder.");
@@ -11343,10 +11345,10 @@ restart:
         // XXX \todo this achievement is newsworthy.
         if (deadGuy == Session.Get.UniqueActors.TheSewersThing) {
           ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, killer);
-          var hero_team = killer.ChainOfCommand;
+          var hero_team = (killer as LivingActor)?.ChainOfCommand;
           if (hero_team is not null && killer.Controller is ObjectiveAI ai) {
             foreach (Actor a in hero_team) {
-              if (!ai.InCommunicationWith(a) && killer.LiveLeader != a) continue;   // historically RS Alpha 9 gave credit to a PC leader for an NPC follower sewers thing kill
+              if (!ai.InCommunicationWith(a) && (killer as LivingActor)?.LiveLeader != a) continue;   // historically RS Alpha 9 gave credit to a PC leader for an NPC follower sewers thing kill
               ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, a);
             }
           }
@@ -11359,7 +11361,7 @@ restart:
 
       if (deadGuy.IsPlayer && killer is not null && !killer.IsPlayer) {
         // this may need to be multi-thread aware
-        Actor reinc = killer.LiveLeader ?? killer;
+        Actor reinc = (killer as LivingActor)?.LiveLeader ?? killer;
         if (!reinc.IsPlayer && Session.Get.Scoring.ReincarnationNumber < s_Options.MaxReincarnations) {
           if (YesNoPopup("Use a reincarnation on your " + (killer == reinc ? " killer " : " killer's leader ") + reinc.Name)) {
             reinc.MakePC();
@@ -11820,7 +11822,7 @@ restart:
     private void HandlePlayerFollowersUpgrade(PlayerController pc)
     {
         var player = pc.ControlledActor;
-        var followers = player.Followers;
+        var followers = (player as LivingActor)?.Followers;
         if (followers is null) return;
         pc.AddMessageForceRead(new("Your followers learned new skills at your side!", Session.Get.WorldTime.TurnCounter, Color.Green));
         foreach (var fo in followers) HandlePlayerDecideUpgrade(pc, fo);
@@ -11828,7 +11830,7 @@ restart:
 
     private void SkillUpgradeLiving(Actor actor) {
       if (actor.Model.Abilities.IsUndead) return;
-      if (actor.LiveLeader?.IsPlayer ?? false) return; // leader triggers upgrade
+      if ((actor as LivingActor)?.LiveLeader?.IsPlayer ?? false) return; // leader triggers upgrade
       if (actor.Controller is PlayerController pc) {
         HandlePlayerDecideUpgrade(pc, actor);
         return;
@@ -11842,7 +11844,7 @@ restart:
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(actor.Model)) return;
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.RatsUpgrade) && GameActors.IsRatBranch(actor.Model)) return;
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(actor.Model)) return;
-      if (actor.LiveLeader?.IsPlayer ?? false) return; // leader triggers upgrade
+      if ((actor as LivingActor)?.LiveLeader?.IsPlayer ?? false) return; // leader triggers upgrade
       if (actor.Controller is PlayerController pc) {
         HandlePlayerDecideUpgrade(pc, actor);
         return;
@@ -11936,14 +11938,14 @@ restart:
             if ((inv = actor.Inventory) is not null && inv.Has<ItemRangedWeapon>(rw => rw.Model.IsBow)) return 3;
             return 0;
           case Skills.IDs.CARPENTRY: return 1;
-          case Skills.IDs.CHARISMATIC: return actor.CountFollowers <= 0 ? 0 : 1;    // ???
+          case Skills.IDs.CHARISMATIC: return ((actor as LivingActor)?.CountFollowers ?? 0) <= 0 ? 0 : 1;    // ???
           case Skills.IDs.FIREARMS:
             if ((inv = actor.Inventory) is not null && inv.Has<ItemRangedWeapon>(rw => rw.Model.IsFireArm)) return 3;
             return 0;
           case Skills.IDs.HARDY: return !actor.Model.Abilities.HasToSleep ? 0 : 3;
           case Skills.IDs.HAULER: return 3;
           case Skills.IDs.HIGH_STAMINA: return 2;   // alpha10 wants 3
-          case Skills.IDs.LEADERSHIP: return !actor.HasLeader ? 1 : 0;    // only because of lack of chain of command
+          case Skills.IDs.LEADERSHIP: return !((actor as LivingActor)?.HasLeader ?? false) ? 1 : 0;    // only because of lack of chain of command
           case Skills.IDs.LIGHT_EATER: return !actor.Model.Abilities.HasToEat ? 0 : 3;
           case Skills.IDs.LIGHT_FEET: return 2;
           case Skills.IDs.LIGHT_SLEEPER: return !actor.Model.Abilities.HasToSleep ? 0 : 2;
@@ -12390,9 +12392,9 @@ restart:
       }
     }
 
-    static private string FollowerIcon(Actor actor)
+    static private string FollowerIcon(LivingActor actor)
     {
-      if (actor.HasBondWith(actor.Leader)) return GameImages.PLAYER_FOLLOWER_BOND;
+      if (actor.Leader is { } leader && actor.HasBondWith(leader)) return GameImages.PLAYER_FOLLOWER_BOND;
       if (actor.IsTrustingLeader) return GameImages.PLAYER_FOLLOWER_TRUST;
       return GameImages.PLAYER_FOLLOWER;
     }
@@ -12456,7 +12458,7 @@ restart:
 #endif
       int gx2 = screen.X;
       int gy2 = screen.Y;
-      if (actor.Leader == Player) m_UI.UI_DrawImage(FollowerIcon(actor), gx2, gy2, tint);
+      if (actor is LivingActor follower && follower.Leader == Player) m_UI.UI_DrawImage(FollowerIcon(follower), gx2, gy2, tint);
 
       if (actor.Model.ImageID is not null) m_UI.UI_DrawImage(actor.Model.ImageID, gx2, gy2, tint);
       else {
@@ -12493,7 +12495,7 @@ restart:
           if (actor.OdorSuppressorCounter > 0) m_UI.UI_DrawImage(GameImages.ICON_ODOR_SUPPRESSED, gx2, gy2, tint);  // alpha10 odor suppressed icon (will overlap with sleep healing but its fine)
 
           if (actor.IsSleeping && (actor.IsOnCouch || 0 < actor.HealChanceBonus)) m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx2, gy2, tint);
-          if (actor.CountFollowers > 0) m_UI.UI_DrawImage(GameImages.ICON_LEADER, gx2, gy2, tint);
+          if (0 < ((actor as LivingActor)?.CountFollowers ?? 0)) m_UI.UI_DrawImage(GameImages.ICON_LEADER, gx2, gy2, tint);
           if (0 < actor.MySkills.GetSkillLevel(Skills.IDs.Z_GRAB)) m_UI.UI_DrawImage(GameImages.ICON_ZGRAB, gx2, gy2, tint); // alpha10: z-grab skill warning icon
           if (!s_Options.IsCombatAssistantOn || actor == Player || !actor.IsEnemyOf(Player)) break;
           m_UI.UI_DrawImage(ThreatIcon(actor), gx2, gy2, tint);
@@ -12512,7 +12514,7 @@ restart:
           goto case Data.Activity.IDLE;
         case Data.Activity.FOLLOWING:
           if (!actor.IsPlayer && actor.TargetActor is not null) {
-            m_UI.UI_DrawImage((actor.TargetActor.IsPlayer ? GameImages.ACTIVITY_FOLLOWING_PLAYER : (actor.TargetActor == actor.Leader ? GameImages.ACTIVITY_FOLLOWING_LEADER : GameImages.ACTIVITY_FOLLOWING)), gx2, gy2);
+            m_UI.UI_DrawImage((actor.TargetActor.IsPlayer ? GameImages.ACTIVITY_FOLLOWING_PLAYER : (actor.TargetActor == (actor as LivingActor)?.Leader ? GameImages.ACTIVITY_FOLLOWING_LEADER : GameImages.ACTIVITY_FOLLOWING)), gx2, gy2);
           }
           goto case Data.Activity.IDLE;
         case Data.Activity.SLEEPING:
@@ -12810,14 +12812,14 @@ restart:
 
         // normal detectors/lights
         Span<bool> find_us = stackalloc bool[(int)ItemTrackerModel.TrackingOffset.STRICT_UB];
-        Player.Tracks(ref find_us);
+        (Player as LivingActor)?.Tracks(ref find_us);
 
         // do not assume tracker capabilities are mutually exclusive.
         if (find_us[(int)ItemTrackerModel.TrackingOffset.FOLLOWER_AND_LEADER]) {
           // VAPORWARE Cell phones are due for a major rethinking anyway.
           // We would like the AI to be able to defend key objectives (e.g. police should want to defend any building w/generators)
           // we then could include cell phone towers as a defensible objective and make the phones actually working depending on that.
-          Player.DoForAllFollowers(fo => {
+          (Player as LivingActor)?.DoForAllFollowers(fo => {
             if (Player.Location.Map.IsInViewRect(fo.Location, view)) {
               if (   fo.GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker tracker
                   && tracker.CanTrackFollowersOrLeader)  {
@@ -12835,7 +12837,7 @@ restart:
         KeyValuePair<string,string>? police_icon(Actor a) {
             if (!a.HasActivePoliceRadio) return null;
             if (a.IsFaction(GameFactions.IDs.ThePolice)) return new(GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_POSITION);
-            var leader = a.LiveLeader;
+            var leader = (a as LivingActor)?.LiveLeader;
             if (leader?.IsFaction(GameFactions.IDs.ThePolice) ?? false) return new(GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_DEPUTY_POSITION);
             bool is_murderer = Player.IsFaction(GameFactions.IDs.ThePolice) && Session.Get.Police.IsTargeted(a);
             if (Player.IsEnemyOf(a)) {
@@ -12927,7 +12929,7 @@ restart:
       Defence defence = actor.Defence;
       return (actor.Model.Abilities.IsUndead
             ? string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", defence.Value, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, World.Get.Weather), actor.Smell, actor.KillsCount)
-            : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, World.Get.Weather), actor.Model.BaseViewRange, actor.CountFollowers, actor.MaxFollowers));
+            : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, World.Get.Weather), actor.Model.BaseViewRange, (actor as LivingActor)?.CountFollowers ?? 0, (actor as LivingActor)?.MaxFollowers ?? 0));
     }
 
     static private string _gameStatus(Actor a) {
@@ -13455,7 +13457,7 @@ restart:
             if (lines is not null) inspect = new(lines, Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
           } else {
             List<string>? lines = null;
-            var allies = Player.Allies;
+            var allies = (Player as LivingActor)?.Allies;
             if (allies is not null) {
                 foreach(var a in allies) {
                     if (viewpoint != a.Location) continue;
@@ -14543,7 +14545,7 @@ retry:
     static private string DescribeAvatar(Actor? a)
     {
       if (a is null) return "(N/A)";
-      return string.Format("{0}, a {1}{2}", a.Name, a.Model.Name, (0 < a.CountFollowers ? ", leader" : (a.HasLeader ? ", follower" : "")));
+      return string.Format("{0}, a {1}{2}", a.Name, a.Model.Name, (a is not LivingActor la ? "" : 0 < la.CountFollowers ? ", leader" : (la.HasLeader ? ", follower" : "")));
     }
 
     private bool AskForReincarnation()
@@ -14660,10 +14662,11 @@ retry:
           if (f_in_fov is null) return null;
           foreach(var renege in f_in_fov.Values) {
             if (!rules.RollChance(50)) continue;
-            var leader = actor.LiveLeader;
-            if (leader is not null) {
-              leader.RemoveFollower(actor);
-              actor.TrustInLeader = 0;
+            var living = actor as LivingActor;
+            var leader = living?.LiveLeader;
+            if (living is not null && leader is not null) {
+              leader.RemoveFollower(living);
+              living.TrustInLeader = 0;
             }
             DoMakeAggression(actor, renege);
             return new ActionSay(actor, renege, "YOU ARE ONE OF THEM!!", Sayflags.IS_IMPORTANT | Sayflags.IS_DANGER);    // this takes a turn unconditionally for game balance.
@@ -14924,7 +14927,7 @@ retry:
 
     static private bool AreLinkedByPhone(Actor speaker, Actor target)
     {
-      if (speaker.Leader != target && target.Leader != speaker) return false;
+      if ((speaker as LivingActor)?.Leader != target && (target as LivingActor)?.Leader != speaker) return false;
       return speaker.HasActiveCellPhone && target.HasActiveCellPhone;
     }
 
