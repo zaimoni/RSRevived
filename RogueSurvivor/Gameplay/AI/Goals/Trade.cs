@@ -47,18 +47,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         #endregion
 
 
-        public Trade(int t0, LivingActor who, LivingActor target) : base(t0, who)
+        /// <summary>Both parties of a trade are NPCs run by OrderableAI, as ActionTrade's constructor requires.</summary>
+        public Trade(int t0, LivingActor who, LivingActor target) : base(t0, who.ControlledBy<OrderableAI>())
         {
             m_Actor = who;
-            _whom.Add(target);
-#if DEBUG
-            if (who.Controller is not OrderableAI) throw new InvalidOperationException(who.UnmodifiedName + " is not run by an OrderableAI");
-            if (target.Controller is not OrderableAI) throw new InvalidOperationException(target.UnmodifiedName + " is not run by an OrderableAI");
-#endif
+            _whom.Add(target.ControlledBy<OrderableAI>());
         }
-
-        /// <summary>Both parties of a trade are NPCs run by OrderableAI, as ActionTrade's constructor requires.</summary>
-        static private OrderableAI TraderAI(LivingActor who) => who.Controller as OrderableAI ?? throw new InvalidOperationException(who.UnmodifiedName + " is not run by an OrderableAI");
 
         public override bool UrgentAction_readonly(out ActorAction? ret)
 
@@ -120,7 +114,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
                     _whom.RemoveAt(i);
                     continue;
                 }
-                var a_ordai = TraderAI(actor);
+                var a_ordai = actor.RunBy<OrderableAI>();
                 if (1 == TradeableItems.Count) {
                     var other_TradeableItems = a_ordai.GetTradeableItems();
                     if (other_TradeableItems is null) continue;
@@ -147,7 +141,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
             if (0 < adjacent.Count) {
                 var actor = Rules.Get.DiceRoller.Choose(adjacent);
                 ordai.MarkActorAsRecentTrade(actor);
-                TraderAI(actor).MarkActorAsRecentTrade(m_Actor);   // try to reduce trading spam: one trade per pair, not two
+                actor.RunBy<OrderableAI>().MarkActorAsRecentTrade(m_Actor);   // try to reduce trading spam: one trade per pair, not two
                 m_Actor.Say(actor, string.Format("Hey {0}, let's make a deal!", actor), Sayflags.IS_FREE_ACTION);  // formerly paid AP cost here rather than in RogueGame::DoTrade
                 ret = new ActionTrade(m_Actor, actor);
                 return true;

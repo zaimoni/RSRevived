@@ -13,8 +13,8 @@ using System.Text.Json;
 using Zaimoni.Data;
 using Zaimoni.JSON;
 
-using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -294,5 +294,20 @@ namespace djack.RogueSurvivor.Data
 
     /// <returns>number of turns of trap activation it takes to kill, or int.MaxValue for no known problem</returns>
     public virtual int FastestTrapKill(in Location loc) { return int.MaxValue; }   // z are unaware of deathtraps.  \todo override for dogs
+  }
+
+  internal static partial class ext_RSRevived {
+    public static AI RunBy<AI>(this Actor? a) where AI : ActorController {
+      return (a?.Controller as AI) ?? throw new InvalidOperationException((a?.UnmodifiedName ?? "null") + " is not run by " + typeof(AI).Name);
+    }
+
+    public static Actor ControlledBy<AI>(this Actor a) where AI : ActorController {
+      return (a is not null && a.Controller is AI) ? a : throw new InvalidOperationException((a?.UnmodifiedName ?? "null") + " is not run by " + typeof(AI).Name);
+    }
+
+    public static LivingActor ControlledBy<AI>(this LivingActor a) where AI : ActorController {
+      return (a is not null && a.Controller is AI) ? a : throw new InvalidOperationException((a?.UnmodifiedName ?? "null") + " is not run by " + typeof(AI).Name);
+    }
+
   }
 }

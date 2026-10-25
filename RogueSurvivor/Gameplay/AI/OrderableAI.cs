@@ -1611,7 +1611,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public List<Item>? GetRationalTradeableItems(OrderableAI buyer)    // only called from AI trading decision making
     {
 #if DEBUG
-      if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(Name+" cannot trade");
+      if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(m_Actor.Name+" cannot trade");
 #endif
 
       var objList = m_Actor.Inventory.Where(it=> buyer.IsRationalTradeItem(it) && IsTradeableItem(it));

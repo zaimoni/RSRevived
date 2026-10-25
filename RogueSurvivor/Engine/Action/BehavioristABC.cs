@@ -1,9 +1,8 @@
 ﻿using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Text.Json;
 using Zaimoni.JSON;
 
@@ -19,7 +18,7 @@ namespace djack.RogueSurvivor.Engine._Action
         [NonSerialized] private ActorAction? _action = null;
 
         #region JSON save/load
-        private BehavioristABC(Actor actor, JsonElement src) : base(actor)
+        private BehavioristABC(Actor actor, JsonElement src) : base(actor.ControlledBy<ObjectiveAI>())
         {
             _reflexCode = src.RequireEnum<ReflexCode>("Reflex");
         }
@@ -33,7 +32,7 @@ namespace djack.RogueSurvivor.Engine._Action
         }
         #endregion
 
-        public BehavioristABC(Actor whom, ReflexCode code) : base(whom) {
+        public BehavioristABC(Actor whom, ReflexCode code) : base(whom.ControlledBy<ObjectiveAI>()) {
             _reflexCode = code;
         }
         public override bool IsLegal() {
@@ -60,7 +59,7 @@ namespace djack.RogueSurvivor.Engine._Action
                 _resolved = true;
                 switch (_reflexCode) {
                 case ReflexCode.RecruitedLOS:
-                    _action = (m_Actor.Controller as Gameplay.AI.ObjectiveAI)?.RecruitedLOS();
+                    _action = m_Actor.RunBy<ObjectiveAI>().RecruitedLOS();
                     return;
                 }
             }

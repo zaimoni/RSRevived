@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     #region JSON save/load
     private new readonly LivingActor m_Actor;   // the same object as the base field
 
-    private ActionTrade(LivingActor actor, JsonElement src) : base(actor)
+    private ActionTrade(LivingActor actor, JsonElement src) : base(actor.ControlledBy<OrderableAI>())
     {
       m_Actor = actor;
       m_Target = src.Require("Target").RequireRef<LivingActor>();
@@ -42,18 +42,10 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
     #endregion
 
-    public ActionTrade(LivingActor actor, LivingActor target) : base(actor)
+    public ActionTrade(LivingActor actor, LivingActor target) : base(actor.ControlledBy<OrderableAI>())
     {
       m_Actor = actor;
-      m_Target = target
-#if DEBUG
-        ?? throw new ArgumentNullException(nameof(target))
-#endif
-      ;
-#if DEBUG
-      if (!(actor.Controller is OrderableAI)) throw new InvalidOperationException("tracing");
-      if (!(target.Controller is OrderableAI)) throw new InvalidOperationException("tracing");
-#endif
+      m_Target = target.ControlledBy<OrderableAI>();
     }
 
      public override bool IsLegal()
