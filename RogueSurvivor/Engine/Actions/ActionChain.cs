@@ -41,9 +41,8 @@ namespace djack.RogueSurvivor.Engine.Actions
             m_FailReason = actions[0].FailReason;
         }
 
-        public ActionChain(ActorAction act0, ActorAction act1) : base(act0)
+        public ActionChain(ActorAction act0, ActorAction act1) : base(act0.Actor.ControlledBy<ObjectiveAI>())
         {
-            m_Actor.ControlledBy<ObjectiveAI>();
 #if DEBUG
             if (!act0.PerformedBy(act1)) throw new ArgumentOutOfRangeException(nameof(act1), act1, "should have same target as " + act0);
 #endif
@@ -67,9 +66,8 @@ namespace djack.RogueSurvivor.Engine.Actions
             m_FailReason = m_Actions[0].FailReason;
         }
 
-        public ActionChain(List<ActorAction> src, int lb) : base(src[0])
+        public ActionChain(List<ActorAction> src, int lb) : base(src[0].Actor.ControlledBy<ObjectiveAI>())
         {
-          m_Actor.ControlledBy<ObjectiveAI>();
 #if DEBUG
           if (src is null || src.Count <= lb) throw new ArgumentNullException(nameof(src));
 #endif

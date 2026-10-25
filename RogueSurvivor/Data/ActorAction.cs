@@ -43,18 +43,15 @@ namespace djack.RogueSurvivor.Data
     protected readonly Actor m_Actor;
     [NonSerialized] protected string? m_FailReason;
 
-    public string? FailReason { get { return m_FailReason; } }
-    public bool PerformedBy(Actor? a) { return m_Actor == a; }
-    public bool PerformedBy(ActorAction act) { return m_Actor == act.m_Actor; }
+    public Actor Actor => m_Actor;
+    public string? FailReason => m_FailReason;
+    // Legacy
+    public bool PerformedBy(Actor? a) => m_Actor == a;
+    public bool PerformedBy(ActorAction act) => m_Actor == act.m_Actor;
 
     protected ActorAction(Actor actor)
     {
       m_Actor = actor;
-    }
-
-    protected ActorAction(ActorAction act)
-    {
-      m_Actor = act.m_Actor;
     }
 
 #region JSON save/load
