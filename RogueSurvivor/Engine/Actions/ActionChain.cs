@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         public ActorAction LastAction { get { return m_Actions[^1]; } }
 
         #region JSON save/load
-        private ActionChain(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+        private ActionChain(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor.ControlledBy<ObjectiveAI>())
         {
             m_Actions = src.Require("Actions").Deserialize<List<ActorAction>>(options) ?? throw new JsonException("null Actions");
         }
@@ -31,11 +31,10 @@ namespace djack.RogueSurvivor.Engine.Actions
         }
         #endregion
 
-        public ActionChain(Actor actor, List<ActorAction> actions) : base(actor)
+        public ActionChain(Actor actor, List<ActorAction> actions) : base(actor.ControlledBy<ObjectiveAI>())
         {
 #if DEBUG
             if (actions is null || 2 > actions.Count) throw new ArgumentNullException(nameof(actions));
-            if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
             if (actions.Count > _forkBefore(actions)) throw new ArgumentOutOfRangeException(nameof(actions), actions, "fork may only terminate an action chain");
 #endif
             m_Actions = actions;
@@ -44,6 +43,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public ActionChain(ActorAction act0, ActorAction act1) : base(act0)
         {
+            m_Actor.ControlledBy<ObjectiveAI>();
 #if DEBUG
             if (!act0.PerformedBy(act1)) throw new ArgumentOutOfRangeException(nameof(act1), act1, "should have same target as " + act0);
 #endif
@@ -69,6 +69,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
         public ActionChain(List<ActorAction> src, int lb) : base(src[0])
         {
+          m_Actor.ControlledBy<ObjectiveAI>();
 #if DEBUG
           if (src is null || src.Count <= lb) throw new ArgumentNullException(nameof(src));
 #endif
@@ -80,20 +81,9 @@ namespace djack.RogueSurvivor.Engine.Actions
           m_Actions = actions;
         }
 
-        public override bool IsLegal()
-        {
-            return m_Actions[0].IsLegal();
-        }
-
-        public override bool IsPerformable()
-        {
-            return m_Actions[0].IsPerformable();
-        }
-
-        public override void Perform()
-        {
-            (m_Actor.Controller as ObjectiveAI).ExecuteActionChain(m_Actions);
-        }
+        public override bool IsLegal() => m_Actions[0].IsLegal();
+        public override bool IsPerformable() => m_Actions[0].IsPerformable();
+        public override void Perform() => m_Actor.RunBy<ObjectiveAI>().ExecuteActionChain(m_Actions);
 
         public override bool Abort()
         {

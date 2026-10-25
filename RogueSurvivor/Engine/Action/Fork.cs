@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Engine._Action
 
       #region JSON save/load
       // options by move cost: [[cost, [actions]], ...]
-      private Fork(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+      private Fork(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor.ControlledBy<ObjectiveAI>())
       {
         foreach (var x in src.Require("Options").EnumerateArray()) {
           if (JsonValueKind.Array != x.ValueKind || 2 != x.GetArrayLength()) throw new JsonException("expected [cost, [actions]]: " + x.GetRawText());
@@ -44,11 +44,8 @@ namespace djack.RogueSurvivor.Engine._Action
       }
       #endregion
 
-      public Fork(Actor actor, List<ActorAction> legal_path) : base(actor)
+      public Fork(Actor actor, List<ActorAction> legal_path) : base(actor.ControlledBy<ObjectiveAI>())
       {
-#if DEBUG
-        if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
-#endif
         foreach (var act in legal_path) Add(act);
       }
 
@@ -104,7 +101,7 @@ namespace djack.RogueSurvivor.Engine._Action
       public override void Perform()
       {
         int act_cost = m_Options.Keys.Min();
-        (m_Actor.Controller as ObjectiveAI).ExecuteActionFork(m_Options[act_cost]);
+        m_Actor.RunBy<ObjectiveAI>().ExecuteActionFork(m_Options[act_cost]);
       }
 
       public override bool Abort()  // \todo want to block double-processing to conserve CPU

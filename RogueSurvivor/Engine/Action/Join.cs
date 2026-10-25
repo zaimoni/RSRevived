@@ -179,7 +179,7 @@ namespace djack.RogueSurvivor.Engine._Action
       [NonSerialized] private List<ActorAction>? _real_options;
 
       #region JSON save/load
-      private Join(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+      private Join(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor.ControlledBy<ObjectiveAI>())
       {
         m_Options = src.Require("Options").Deserialize<List<ActorAction>>(options) ?? throw new JsonException("null Options");
         if (src.TryGetProperty("Sequel", out var x)) m_Sequel = x.Deserialize<WorldUpdate>(options);
@@ -198,7 +198,7 @@ namespace djack.RogueSurvivor.Engine._Action
       }
       #endregion
 
-      public Join(Actor actor, List<ActorAction> options, WorldUpdate? sequel = null) : base(actor)
+      public Join(Actor actor, List<ActorAction> options, WorldUpdate? sequel = null) : base(actor.ControlledBy<ObjectiveAI>())
       {
 #if DEBUG
         if (!(actor.Controller is ObjectiveAI)) throw new InvalidOperationException("controller not smart enough to plan actions");
@@ -229,7 +229,7 @@ namespace djack.RogueSurvivor.Engine._Action
         var sequel = m_Sequel?.Bind(m_Actor);
 
         if (sequel is not null) {
-          (m_Actor.Controller as ObjectiveAI).SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, sequel));
+          m_Actor.RunBy<ObjectiveAI>().SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, sequel));
         }
       }
 
