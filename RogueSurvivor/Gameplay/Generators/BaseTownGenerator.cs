@@ -47,8 +47,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #endregion
 
     public bool update(Actor a) {
-      var oai = a.Controller as ObjectiveAI;
-      if (oai is null) return false;
+      if (a.Controller is not ObjectiveAI oai) return false;
       if (a.IsFaction(GameFactions.IDs.TheCHARCorporation)) return false;
       if (a.ActorScoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE)) return false;
       if (!m_surveiled.Contains(a.Location)) return false;

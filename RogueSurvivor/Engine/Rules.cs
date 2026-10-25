@@ -232,10 +232,11 @@ namespace djack.RogueSurvivor.Engine
       var actors_in_way = actor.GetMoveBlockingActors(point);
       var melee = actors_in_way.CanBumpMelee(actor, point, out reason);
       if (melee is not null) return melee;
+      var pc = actor.Controller as PlayerController;
       if (actors_in_way.TryGetValue(point,out var actorAt)) {
         // player as leader should be able to switch with player as follower
         // NPCs shouldn't be leading players anyway
-        if ((actor.IsPlayer || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))
+        if ((pc is not null || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))
           return new ActionSwitchPlace(actor, actorAt);
         if (!actor.CanChatWith(actorAt, out reason)) return null;
         if (actor.Controller is Gameplay.AI.OrderableAI myai && myai.ProposeSwitchPlaces(actorAt.Location)) {
@@ -248,9 +249,9 @@ namespace djack.RogueSurvivor.Engine
       var mapObjectAt = loc.MapObject;
       if (!map.IsInBounds(point)) {
         if (!actor.CanLeaveMap(point, out reason)) return null;
-        if (actor.IsPlayer) {
-          var obj_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
-          var inv_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(in loc);
+        if (pc is not null) {
+          var obj_act = pc.WouldGetFrom(mapObjectAt as ShelfLike);
+          var inv_act = pc.WouldGetFrom(in loc);
           if (obj_act is not null || inv_act is not null) {
             List<ActorAction> stage = new() { new ActionLeaveMap(actor, in point) };
             if (obj_act is not null) stage.Add(obj_act);
@@ -263,9 +264,9 @@ namespace djack.RogueSurvivor.Engine
       var actionMoveStep = ActionMoveStep.schedule(actor, point);
       if (actionMoveStep.IsPerformable()) {
         reason = "";
-        if (actor.IsPlayer) {
-          var obj_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
-          var inv_act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(in loc);
+        if (pc is not null) {
+          var obj_act = pc.WouldGetFrom(mapObjectAt as ShelfLike);
+          var inv_act = pc.WouldGetFrom(in loc);
           if (obj_act is not null || inv_act is not null) {
             List<ActorAction> stage = new() { actionMoveStep };
             if (obj_act is not null) stage.Add(obj_act);
@@ -808,12 +809,12 @@ retry:
             if (charge is not null) return charge;
           }
           if (actor.CanSwitch(powGen, out reason)) {
-             if (actor.IsPlayer || !powGen.IsOn) return new ActionSwitchPowerGenerator(actor, powGen);
-                }
-                return null;
-            }
-            return null;
-        }
+            if (actor.IsPlayer || !powGen.IsOn) return new ActionSwitchPowerGenerator(actor, powGen);
+          }
+          return null;
+      }
+      return null;
+    }
 
     public static ActionMeleeAttack? CanBumpMelee(this Dictionary<Point, Actor> actors_in_way, Actor actor, Point point, out string? reason) {
 #if B_MOVIE_MARTIAL_ARTS
