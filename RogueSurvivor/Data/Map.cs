@@ -253,7 +253,7 @@ namespace djack.RogueSurvivor.Data
 
     private void RepairHash(ref int hash) => hash = Name.GetHashCode() ^ DistrictPos.GetHashCode();
 
-        private const int field_code_UB = 14;
+        private const int field_code_UB = 15;
         static private int field_code(ref Utf8JsonReader reader)
         {
             if (reader.ValueTextEquals("Name")) return 1;
@@ -269,7 +269,8 @@ namespace djack.RogueSurvivor.Data
             else if (reader.ValueTextEquals("Decorations")) return 11;
             else if (reader.ValueTextEquals("Scents")) return 12;
             else if (reader.ValueTextEquals("Actors")) return 13;
-            else if (reader.ValueTextEquals("Corpses")) return field_code_UB;
+            else if (reader.ValueTextEquals("Corpses")) return 14;
+            else if (reader.ValueTextEquals("OnEnterTile")) return field_code_UB;
 
             Engine.RogueGame.Game.ErrorPopup(reader.GetString());
             throw new JsonException();
@@ -466,6 +467,13 @@ namespace djack.RogueSurvivor.Data
                         }
                         }
                         break;
+                    case 15:
+                        {
+                        // the enter-tile watchers are the generator's (EnterCHAROffice), so they are saved rather than re-derived
+                        var stage = JsonElement.ParseValue(ref reader);
+                        foreach (var x in stage.EnumerateArray()) m_OnEnterTile.Add(x.Deserialize<Observer<Actor>>(options) ?? throw new JsonException("null watcher"));
+                        }
+                        break;
                 }
                 return code;
             }
@@ -655,6 +663,7 @@ namespace djack.RogueSurvivor.Data
       }
       }
       if (0 < m_Timers.Count) writer.WriteArray("Timers", m_Timers, options);
+      if (m_OnEnterTile.Watchers.Any()) writer.WriteArray("OnEnterTile", m_OnEnterTile.Watchers, options);
     }
 
     public string MapName { get { return Name; } }

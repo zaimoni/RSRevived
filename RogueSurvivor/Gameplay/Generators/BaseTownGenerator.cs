@@ -14,7 +14,9 @@ using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Zaimoni.Data;
+using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Rectangle = Zaimoni.Data.Box2D<short>;
@@ -23,13 +25,26 @@ using Size = Zaimoni.Data.Vector2D<short>;
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
   [Serializable]
-  internal class EnterCHAROffice : Observer<Actor>
+  internal class EnterCHAROffice : Observer<Actor>, IJsonStaged<EnterCHAROffice>
   {
     private readonly ZoneLoc m_surveiled;
 
     public EnterCHAROffice(ZoneLoc src) {
       m_surveiled = src;
     }
+
+#region JSON save/load
+    private EnterCHAROffice(JsonElement src, JsonSerializerOptions options) {
+      m_surveiled = src.Require("Zone").Deserialize<ZoneLoc>(options) ?? throw new JsonException("null Zone");
+    }
+
+    static EnterCHAROffice IJsonStaged<EnterCHAROffice>.fromJson(JsonElement src, JsonSerializerOptions options) => new(src, options);
+
+    public void toJsonFields(Utf8JsonWriter writer, JsonSerializerOptions options) {
+      writer.WritePropertyName("Zone");
+      JsonSerializer.Serialize(writer, m_surveiled, options);
+    }
+#endregion
 
     public bool update(Actor a) {
       var oai = a.Controller as ObjectiveAI;

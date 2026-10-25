@@ -619,6 +619,11 @@ namespace djack.RogueSurvivor.Engine
           tasks.RequireAllSubtypes();
           s_j_opts.Converters.Add(tasks);
 
+          var watchers = new Zaimoni.JSON.Polymorphic<Observer<Actor>>(true);   // Map.m_OnEnterTile
+          watchers.Add(new Zaimoni.JsonConvert.Via<Observer<Actor>, djack.RogueSurvivor.Gameplay.Generators.EnterCHAROffice>("EnterCHAROffice"));
+          watchers.RequireAllSubtypes();
+          s_j_opts.Converters.Add(watchers);
+
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Map());
           s_j_opts.Converters.Add(new Zaimoni.JsonConvert.Session());
         }
