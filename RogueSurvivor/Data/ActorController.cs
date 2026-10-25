@@ -312,7 +312,7 @@ namespace djack.RogueSurvivor.Data
 
     [Conditional("DEBUG")]
     public static void ControlledBy<AI>(this IEnumerable<Actor> src) where AI : ActorController {
-      if (src is null || 0 >= src.Count()) return;
+      if (src is null) return;
       foreach(var a in src) if (a.Controller is not AI) throw new InvalidOperationException((a?.UnmodifiedName ?? "null") + " is not run by " + typeof(AI).Name);
     }
   }

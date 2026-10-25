@@ -52,7 +52,9 @@ namespace djack.RogueSurvivor.Engine.Tasks
             if (0 >= _escapees.Count) return;
             _escapees.RemoveAll(a => a.Location.Map==m && _safe_zone.Contains(a.Location.Position));
             if (0 >= _escapees.Count) return;
-            foreach(var a in _escapees) {
+            _escapees.RemoveAll(a => a.Controller is not OrderableAI);
+            if (0 >= _escapees.Count) return;
+            foreach (var a in _escapees) {
               var ai = a.RunBy<OrderableAI>();
               if (ai.Goal<Goal_PathTo>() is not null || ai.Goal<Gameplay.AI.Goals.PathTo>() is not null) continue;
               ai.GoalHeadFor(m,_safe_zone);
