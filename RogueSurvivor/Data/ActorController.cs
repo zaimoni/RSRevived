@@ -8,6 +8,7 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Items;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using Zaimoni.Data;
@@ -309,5 +310,10 @@ namespace djack.RogueSurvivor.Data
       return (a is not null && a.Controller is AI) ? a : throw new InvalidOperationException((a?.UnmodifiedName ?? "null") + " is not run by " + typeof(AI).Name);
     }
 
+    [Conditional("DEBUG")]
+    public static void ControlledBy<AI>(this IEnumerable<Actor> src) where AI : ActorController {
+      if (src is null || 0 >= src.Count()) return;
+      foreach(var a in src) if (a.Controller is not AI) throw new InvalidOperationException((a?.UnmodifiedName ?? "null") + " is not run by " + typeof(AI).Name);
+    }
   }
 }

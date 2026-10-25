@@ -1,4 +1,5 @@
 ﻿using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -11,18 +12,19 @@ namespace djack.RogueSurvivor.Engine.Tasks
     [Serializable]
     class TaskEscapeNanny : TimedTask, IJsonStaged<TaskEscapeNanny>
     {
-        private readonly List<Actor> _escapees;
+        private readonly List<LivingActor> _escapees;
         private readonly HashSet<Point> _safe_zone;
 
-        public TaskEscapeNanny(List<Actor>  escapees, HashSet<Point> safe_zone) : base(1)
+        public TaskEscapeNanny(List<LivingActor>  escapees, HashSet<Point> safe_zone) : base(1)
         {
+          escapees.ControlledBy<OrderableAI>();
           _escapees = escapees;
           _safe_zone = safe_zone;
         }
 
-        public TaskEscapeNanny(Actor escapee, HashSet<Point> safe_zone) : base(1)
+        public TaskEscapeNanny(LivingActor escapee, HashSet<Point> safe_zone) : base(1)
         {
-            _escapees = new() { escapee };
+            _escapees = [escapee.ControlledBy<OrderableAI>()];
             _safe_zone = safe_zone;
         }
 
@@ -51,8 +53,8 @@ namespace djack.RogueSurvivor.Engine.Tasks
             _escapees.RemoveAll(a => a.Location.Map==m && _safe_zone.Contains(a.Location.Position));
             if (0 >= _escapees.Count) return;
             foreach(var a in _escapees) {
-              var ai = a.Controller as Gameplay.AI.ObjectiveAI;
-              if (ai.Goal<Gameplay.AI.Goal_PathTo>() is not null || ai.Goal<Gameplay.AI.Goals.PathTo>() is not null) continue;
+              var ai = a.RunBy<OrderableAI>();
+              if (ai.Goal<Goal_PathTo>() is not null || ai.Goal<Gameplay.AI.Goals.PathTo>() is not null) continue;
               ai.GoalHeadFor(m,_safe_zone);
             }
 

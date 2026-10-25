@@ -2836,7 +2836,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 >= landing_zones.Count) return;
       n = Rules.Get.DiceRoller.Roll(0, landing_zones.Count); // choose a valid landing zone
       var turn = map.LocalTime.TurnCounter;
-      var party = new Actor[SURVIVORS_BAND_SIZE+1];
+      var party = new LivingActor[SURVIVORS_BAND_SIZE+1];
       var i = SURVIVORS_BAND_SIZE + 1;
       while(0 <= --i) party[i] = m_TownGenerator.CreateNewSurvivor(turn);
 
@@ -14807,10 +14807,9 @@ retry:
                 if (dest.IsInsideAt(pt)) continue;
                 safe_zone.Add(pt);
               }
-              var escapees = new List<Actor>();
+              List<LivingActor> escapees = new();
               foreach (var pt in new Rectangle(1,4,17,1)) {
-                Actor? a = map.GetActorAt(pt);
-                if (a is not null) escapees.Add(a);
+                if (map.GetActorAt(pt) is LivingActor a) escapees.Add(a);
               }
               var escape = new Tasks.TaskEscapeNanny(escapees, safe_zone);
               escape.Trigger(dest);
