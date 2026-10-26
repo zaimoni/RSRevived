@@ -5714,11 +5714,10 @@ restart_chokepoints:
       if (best_rating < rating) return 2;
       if (best_rating > rating) return 1;
       if (melee == best) return 2;
-      int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
-      if (who.Inventory.Contains(melee)) return 1 == melee_count ? 2 : 1;
-      if (2 <= melee_count) {
-        var worst = who.GetWorstMeleeWeapon();
-        return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating ? 1 : 0;
+
+      if (who.MeleeWeaponsAndWorst() is (var m_weapons, var worst)) {
+        if (who.Inventory.Contains(melee)) return 1 == m_weapons.Count ? 2 : 1;
+        if (2 <= m_weapons.Count) return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating ? 1 : 0;
       }
       return 1;
     }
@@ -5941,10 +5940,9 @@ restart_chokepoints:
         if (who.GetBestMeleeWeaponRating() is not int best_rating) return 2; // martial arts invalidates starting baton for police
         if (best_rating < rating) return 2;
         if (best_rating > rating) return 1;
-        int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
-        if (2 <= melee_count) {
-          ItemMeleeWeapon worst = who.GetWorstMeleeWeapon();
-          return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating ? 1 : 0;
+
+        if (who.MeleeWeaponsAndWorst() is (var m_weapons, var worst)) {
+          if (2 <= m_weapons.Count) return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating ? 1 : 0;
         }
         return 1;
       }
@@ -6051,9 +6049,8 @@ restart_chokepoints:
       var armor = who.GetWorstBodyArmor();
       if (armor is not null) return BehaviorDropItem(armor);
 
-      var weapon = who.GetWorstMeleeWeapon();
-      if (weapon is not null) {
-        if (m_Actor.MeleeWeaponAttack(weapon.Model).Rating <= m_Actor.UnarmedMeleeAttack().Rating) return BehaviorDropItem(weapon);
+      if (who.MeleeWeaponsAndWorst() is (var _, var worst)) {
+        if (m_Actor.MeleeWeaponAttack(worst.Model).Rating <= m_Actor.UnarmedMeleeAttack().Rating) return BehaviorDropItem(worst);
       }
 
       var rw = inv.GetFirstMatching<ItemRangedWeapon>(it => 0==it.Ammo && 2<=who.Count(it.Model));
@@ -6157,10 +6154,9 @@ restart_chokepoints:
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return false;
         if (who.GetBestMeleeWeaponRating() is not int best_rating) return true; // rely on OrderableAI doing the right thing
         if (best_rating < rating) return true;
-        int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
-        if (2<=melee_count) {
-          ItemMeleeWeapon worst = who.GetWorstMeleeWeapon();
-          return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating;
+
+        if (who.MeleeWeaponsAndWorst() is (var m_weapons, var worst)) {
+          if (2 <= m_weapons.Count) return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating;
         }
         if (lhs is ItemMeleeWeapon lhs_melee) return m_Actor.MeleeWeaponAttack(lhs_melee.Model).Rating < rating;
         return false;
@@ -6170,10 +6166,9 @@ restart_chokepoints:
         if (rating <= m_Actor.UnarmedMeleeAttack().Rating) return true;
         if (who.GetBestMeleeWeaponRating() is not int best_rating) return false; // rely on OrderableAI doing the right thing
         if (best_rating < rating) return false;
-        int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
-        if (2<=melee_count) {
-          ItemMeleeWeapon worst = who.GetWorstMeleeWeapon();
-          return m_Actor.MeleeWeaponAttack(worst.Model).Rating >= rating;
+
+        if (who.MeleeWeaponsAndWorst() is (var m_weapons, var worst)) {
+          if (2 <= m_weapons.Count) return m_Actor.MeleeWeaponAttack(worst.Model).Rating >= rating;
         }
         return true;
       }
@@ -6251,11 +6246,11 @@ restart_chokepoints:
       }
 
       { // not-best melee weapon can be dropped
-        var melee = inv.GetItemsByType<ItemMeleeWeapon>();
-        if (melee is not null) {
-          ItemMeleeWeapon weapon = who.GetWorstMeleeWeapon();
-          if (2<=melee.Count) return _BehaviorDropOrExchange(weapon, it, in stack);
-          if (it is ItemMeleeWeapon new_melee && m_Actor.MeleeWeaponAttack(weapon.Model).Rating < m_Actor.MeleeWeaponAttack(new_melee.Model).Rating) return _BehaviorDropOrExchange(weapon, it, in stack);
+        if (who.MeleeWeaponsAndWorst() is (var m_weapons, var worst)) {
+          if (2 <= m_weapons.Count) return _BehaviorDropOrExchange(worst, it, in stack);
+          if (   it is ItemMeleeWeapon new_melee
+              && m_Actor.MeleeWeaponAttack(worst.Model).Rating < m_Actor.MeleeWeaponAttack(new_melee.Model).Rating)
+              return _BehaviorDropOrExchange(worst, it, in stack);
         }
       }
       {
@@ -6653,11 +6648,11 @@ restart_chokepoints:
       }
 
       { // not-best melee weapon can be dropped
-        var melee = inv.GetItemsByType<ItemMeleeWeapon>();
-        if (melee is not null) {
-          ItemMeleeWeapon weapon = who.GetWorstMeleeWeapon();
-          if (2<=melee.Count) return _BehaviorDropOrExchange(weapon, it, position);
-          if (it is ItemMeleeWeapon new_melee && m_Actor.MeleeWeaponAttack(weapon.Model).Rating < m_Actor.MeleeWeaponAttack(new_melee.Model).Rating) return _BehaviorDropOrExchange(weapon, it, position, use_ok);
+        if (who.MeleeWeaponsAndWorst() is (var m_weapons, var worst)) {
+          if (2 <= m_weapons.Count) return _BehaviorDropOrExchange(worst, it, position);
+          if (   it is ItemMeleeWeapon new_melee
+              && m_Actor.MeleeWeaponAttack(worst.Model).Rating < m_Actor.MeleeWeaponAttack(new_melee.Model).Rating)
+              return _BehaviorDropOrExchange(worst, it, position, use_ok);
         }
       }
       {
@@ -7142,14 +7137,12 @@ restart_chokepoints:
         int? best_rating = who.GetBestMeleeWeaponRating();    // rely on OrderableAI doing the right thing
         if (best_rating is null) return true;
         if (best_rating.Value < rating) return true;
-        int melee_count = who.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
-#if DEBUG
-        if (0 >= melee_count) throw new InvalidOperationException("inconsistent return values");
-#endif
-        if (2<= melee_count) {
-          ItemMeleeWeapon worst = who.GetWorstMeleeWeapon();
+
+        if (who.MeleeWeaponsAndWorst() is (var m_weapons, var worst)
+            && 2 <= m_weapons.Count) {
           return m_Actor.MeleeWeaponAttack(worst.Model).Rating < rating;
         }
+
         return !who.Inventory.IsFull;
       }
       if (it is ItemBodyArmor new_armor) {

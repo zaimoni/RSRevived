@@ -2397,7 +2397,7 @@ retry:
         }
         // the test game series ending with the savefile break on April 28 2018 had a number of stacks with lots of baseball bats.  If there are two or more
         // destructible melee weapons in a stack, the worst one can be destroyed with minimal inconvenience.
-        // Cf. Actor::GetWorstMeleeWeapon
+        // Cf. Actor::MeleeWeaponsAndWorst
         {
         var melee = itemsAt.GetItemsByType<ItemMeleeWeapon>()?.Where(m => !m.Model.IsUnbreakable && !m.IsUnique);
         if (2 <= (melee?.Count() ?? 0)) crushed = melee.Minimize(w => w.Model.Attack.Rating);

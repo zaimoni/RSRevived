@@ -125,16 +125,16 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public ItemMeleeWeapon? GetWorstMeleeWeapon()
+    public (List<ItemMeleeWeapon> all, ItemMeleeWeapon worst)? MeleeWeaponsAndWorst()
     {
       var melee = m_Inventory.GetItemsByType<ItemMeleeWeapon>();
       if (melee is null) return null;
-      if (1 == melee.Count) return melee[0];
+      if (1 == melee.Count) return (melee, melee[0]);
       // some sort of invariant problem here
       // NOTE: martial arts influences the apparent rating considerably
       int rate(ItemMeleeWeapon w) { return MeleeWeaponAttack(w.Model).Rating; }
 
-      return melee.Where(Item.notEquipped).Minimize(rate) ?? melee.Minimize(rate);
+      return (melee, melee.Where(Item.notEquipped).Minimize(rate) ?? melee.Minimize(rate));
     }
 
     // the best body armor should be in the inventory slot
