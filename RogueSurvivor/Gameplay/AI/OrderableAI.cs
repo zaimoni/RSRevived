@@ -3932,7 +3932,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var best_armor = m_Actor.GetEquippedArmor();
           if (best_armor is not null && armor.Rating > best_armor.Rating) {
             // we actually want to wear this (second test redundant now, but not once stockpiling goes in)
-            return TradeItem.Cast(in stack, m_Actor, best_armor, obj);          }
+            return TradeItem.create(in stack, m_Actor, best_armor, obj);          }
         }
 #if DEBUG
         if (is_real && !m_Actor.MayTakeFrom(in stack)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name + " attempted telekinetic take"));

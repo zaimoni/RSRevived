@@ -88,7 +88,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
           if (src_is_inanimate) {
             var recover = (who.Controller as ObjectiveAI)?.BehaviorMakeRoomFor(take, in src, false);
             if (recover is ActorGive give) {
-              return TradeItem.Cast(src, who, give.Give, take);
+              return TradeItem.create(src, who, give.Give, take);
             }
           }
           return null;

@@ -102,31 +102,30 @@ namespace djack.RogueSurvivor.Engine._Action
             RogueGame.Game.UI_TradeItem(m_Actor, m_GiveItem, m_TakeItem);
         }
 
-        static public TradeItem? Cast(in Data.Model.InvOrigin dest, LivingActor actor, Item give, Item take)
+        static public TradeItem? create(in Data.Model.InvOrigin dest, LivingActor actor, Item give, Item take)
         {
-            var stage = new TradeItem(actor, give, take, in dest);
-            if (!stage.IsPerformable()) return null;
-            return stage;
+            var stage = schedule(in dest, actor, give, take);
+            return (stage is not null && stage.IsPerformable()) ? stage : null;
         }
 
-        static public TradeItem? Cast(Location loc, LivingActor actor, Item give, Item take)
+        static public TradeItem? create(Location loc, LivingActor actor, Item give, Item take)
         {
             if (loc.MapObject is ShelfLike obj) {
-                if (obj.IsCarrying(take)) return Cast(new Data.Model.InvOrigin(obj), actor, give, take);
+                if (obj.IsCarrying(take)) return create(new Data.Model.InvOrigin(obj), actor, give, take);
             }
             if (loc.Actor is LivingActor a && !a.IsPlayer) {
-                if (a.IsCarrying(take)) return Cast(new Data.Model.InvOrigin(a), actor, give, take);
+                if (a.IsCarrying(take)) return create(new Data.Model.InvOrigin(a), actor, give, take);
             }
 
             var g_inv = loc.Items;
-            if (g_inv?.Contains(take) ?? false) return Cast(new Data.Model.InvOrigin(loc), actor, give, take);
+            if (g_inv?.Contains(take) ?? false) return create(new Data.Model.InvOrigin(loc), actor, give, take);
 #if DEBUG
             throw new InvalidOperationException("tracing"); // need to verify null return
 #endif
             return null;
         }
 
-        static public TradeItem? ScheduleCast(in Data.Model.InvOrigin dest, LivingActor actor, Item give, Item take)
+        static public TradeItem? schedule(in Data.Model.InvOrigin dest, LivingActor actor, Item give, Item take)
         {
             var stage = new TradeItem(actor, give, take, in dest);
             if (!stage.IsLegal()) return null;
@@ -134,8 +133,8 @@ namespace djack.RogueSurvivor.Engine._Action
         }
 
 #if PROTOTYPE
-        static public TradeItem? ScheduleCast(Location loc, Actor actor, Item give, Item take)
-        {   // if we need this, adapt implementation of Cast
+        static public TradeItem? schedule(Location loc, Actor actor, Item give, Item take)
+        {   // if we need this, adapt implementation of create
         }
 #endif
     }

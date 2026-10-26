@@ -67,7 +67,7 @@ namespace djack.RogueSurvivor.Engine._Action
             return string.IsNullOrEmpty(ReasonCantMeleeAttack(target));
         }
 
-        static public MeleeAttack? ScheduleCast(Actor actor, Location dest, Location? origin = null)
+        static public MeleeAttack? schedule(Actor actor, Location dest, Location? origin = null)
         {
             Location src = origin is null ? actor.Location : origin.Value;
 
@@ -77,24 +77,23 @@ namespace djack.RogueSurvivor.Engine._Action
             if (!in_range && 0 < actor.UsingPolearmInBMovie && 2 == Rules.GridDistance(src, dest)) in_range = true;
             if (!in_range) return null;
 #else
-            if (!Rules.IsAdjacent(origin, dest)) return null;
+            if (!Rules.IsAdjacent(src, dest)) return null;
 #endif
 
             return new MeleeAttack(actor, src, dest);
         }
 
-        static public MeleeAttack? Cast(Actor actor, Location dest, Location? origin = null)
+        static public MeleeAttack? create(Actor actor, Location dest, Location? origin = null)
         {
-            Location src = origin is null ? actor.Location : origin.Value;
-            var ret = new MeleeAttack(actor, src, dest);
-            return ret.IsPerformable() ? ret : null;
+            var ret = schedule(actor, dest, origin);
+            return (ret is not null && ret.IsPerformable()) ? ret : null;
         }
 
         static public void Coverage(Data.Model.CombatActor en, List<Location> dests, List<Engine.Actions.CombatAction> catalog)
         {
             Location src = en.Location;
             foreach (var dest in dests) {
-                var melee = ScheduleCast(en.who, dest);
+                var melee = schedule(en.who, dest);
                 if (melee is null) continue;
                 catalog.Add(melee);
             }
@@ -107,7 +106,7 @@ namespace djack.RogueSurvivor.Engine._Action
             if (dash is null) return;
             foreach (var dest in dests) {
                 foreach (var move in dash) {
-                    var snipe = ScheduleCast(en.who, dest, move.dest);
+                    var snipe = schedule(en.who, dest, move.dest);
                     if (snipe is null) continue;
                     dash_attack.Add(new(move, snipe));
                 }

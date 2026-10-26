@@ -10109,7 +10109,7 @@ namespace djack.RogueSurvivor.Engine
 
       var trade = PickItemToTrade(target.Inventory, pc, itSpeaker);
       if (trade is null) return;
-      var act = _Action.TradeItem.Cast(in target, speaker, itSpeaker, trade);
+      var act = _Action.TradeItem.create(in target, speaker, itSpeaker, trade);
       if (act is null) return;
 
       AddOverlay(new UI.OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));

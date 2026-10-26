@@ -2703,7 +2703,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             var i_want = a.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(who) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
-            return TradeItem.Cast(new Data.Model.InvOrigin(a), who, they_want.First(), i_want.First());
+            return TradeItem.create(new Data.Model.InvOrigin(a), who, they_want.First(), i_want.First());
          }
       }
       return null;
@@ -2721,7 +2721,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (!use.UseBeforeDrop(a)) continue;
             var i_want = a.Inventory.Where(it => !(it is ItemFood) && it is UsableItem use && use.UseBeforeDrop(who) && !use.UseBeforeDrop(a));
             if (!i_want.Any()) continue;
-            return TradeItem.Cast(new Data.Model.InvOrigin(a), who, give, i_want.First());
+            return TradeItem.create(new Data.Model.InvOrigin(a), who, give, i_want.First());
          }
       }
       return null;
@@ -6084,7 +6084,7 @@ restart_chokepoints:
       var trade = BehaviorTradeWithinClan(give);
       if (trade is not null) return trade;
       if (stack.IsAccessible(m_Actor.Location)) {
-        var act = TradeItem.Cast(stack, who, give, take);
+        var act = TradeItem.create(stack, who, give, take);
         if (act is not null) return act;
       }
       return BehaviorDropItem(give);
@@ -6099,7 +6099,7 @@ restart_chokepoints:
       var trade = BehaviorTradeWithinClan(give);
       if (trade is not null) return trade;
       if (position is not null) {
-        var act = TradeItem.Cast(position.Value, who, give, take);
+        var act = TradeItem.create(position.Value, who, give, take);
         if (act is not null) return act;
       }
       return BehaviorDropItem(give);
@@ -6327,7 +6327,7 @@ restart_chokepoints:
               if (tmp is not null) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
-              tmp = TradeItem.Cast(in stack, who, drop, it);
+              tmp = TradeItem.create(in stack, who, drop, it);
               if (tmp is not null) recover.Add(tmp);
             }
             if (0 == recover.Count) {
@@ -6367,7 +6367,7 @@ restart_chokepoints:
               if (tmp is not null) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
-              tmp = TradeItem.Cast(in stack, who, drop, it);
+              tmp = TradeItem.create(in stack, who, drop, it);
               if (tmp is not null) recover.Add(tmp);
             }
             if (0 == recover.Count) {
@@ -6605,7 +6605,7 @@ restart_chokepoints:
           // flashlights tend to not be very disruptive to other pathing
           var discard = inv.GetFirstMatching<ItemLight>();
           if (discard is not null) {
-            var initiate = TradeItem.Cast(in stack, who, discard, it);
+            var initiate = TradeItem.create(in stack, who, discard, it);
             if (initiate is not null) {
               var actions = new List<ActorAction> { initiate };
               actions.Add(new ActionUseItem(who, it)); // won't be performable, but would be after initiation
@@ -6730,7 +6730,7 @@ restart_chokepoints:
 
               // 3a) drop target without triggering the no-pickup schema
               // 3a) drop target without triggering the no-pickup schema
-              tmp = TradeItem.Cast(position.Value, who, drop, it);
+              tmp = TradeItem.create(position.Value, who, drop, it);
               if (tmp is not null) recover.Add(tmp);
             }
             if (0 == recover.Count) {
@@ -6770,7 +6770,7 @@ restart_chokepoints:
               if (tmp is not null) return tmp;
 
               // 3a) drop target without triggering the no-pickup schema
-              tmp = TradeItem.Cast(position.Value, who, drop, it);
+              tmp = TradeItem.create(position.Value, who, drop, it);
               if (tmp is not null) recover.Add(tmp);
             }
             if (0 == recover.Count) {
@@ -7007,7 +7007,7 @@ restart_chokepoints:
         // flashlights tend to not be very disruptive to other pathing
         var discard = inv.GetFirstMatching<ItemLight>();
         if (discard is not null) {
-          var initiate = TradeItem.Cast(position.Value, who, discard, it);
+          var initiate = TradeItem.create(position.Value, who, discard, it);
           if (initiate is not null) {
             var actions = new List<ActorAction> { initiate };
             actions.Add(new ActionUseItem(who, it)); // won't be legal but would be after initiation
@@ -7368,7 +7368,7 @@ restart_chokepoints:
               }
             }
           }
-          if (test is not null) return TradeItem.Cast(dest.Value, who, src, test);
+          if (test is not null) return TradeItem.create(dest.Value, who, src, test);
         }
 
         // optimization: swap for most-loaded ranged weapon taking same ammo
@@ -7393,7 +7393,7 @@ restart_chokepoints:
               }
             }
           }
-          if (test is not null) return TradeItem.Cast(dest.Value, who, src, test);
+          if (test is not null) return TradeItem.create(dest.Value, who, src, test);
         }
       }
 
