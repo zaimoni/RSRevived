@@ -125,17 +125,24 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public (List<ItemMeleeWeapon> all, ItemMeleeWeapon worst)? MeleeWeaponsAndWorst()
-    {
-      var melee = m_Inventory.GetItemsByType<ItemMeleeWeapon>();
-      if (melee is null) return null;
-      if (1 == melee.Count) return (melee, melee[0]);
-      // some sort of invariant problem here
-      // NOTE: martial arts influences the apparent rating considerably
-      int rate(ItemMeleeWeapon w) { return MeleeWeaponAttack(w.Model).Rating; }
 
-      return (melee, melee.Where(Item.notEquipped).Minimize(rate) ?? melee.Minimize(rate));
+    public (List<T> all, T chosen)? ItemsAndChoice<T>(Func<List<T>, T> choose) where T:Item
+    {
+      var all = m_Inventory.GetItemsByType<T>();
+      if (all is null) return null;
+      if (1 == all.Count) return (all, all[0]);
+
+      return (all, choose(all));
     }
+
+    private ItemMeleeWeapon _chooseWorst(List<ItemMeleeWeapon> all) {
+      int rate(ItemMeleeWeapon w) => MeleeWeaponAttack(w.Model).Rating;
+      return all.Where(Item.notEquipped).Minimize(rate) ?? all.Minimize(rate);
+    }
+    public (List<ItemMeleeWeapon> all, ItemMeleeWeapon worst)? MeleeWeaponsAndWorst() => ItemsAndChoice<ItemMeleeWeapon>(_chooseWorst);
+
+    private static ItemLight _chooseWorst(List<ItemLight> all) => all.Minimize(static obj => obj.Batteries);
+    public (List<ItemLight> all, ItemLight worst)? LightsAndWorst() => ItemsAndChoice<ItemLight>(_chooseWorst);
 
     // the best body armor should be in the inventory slot
     public ItemBodyArmor? GetBestBodyArmor() => m_InventorySlots[SLOT_H_TORSO] as ItemBodyArmor;

@@ -6493,11 +6493,10 @@ restart_chokepoints:
       if (tmpMedicine is not null) return _BehaviorDropOrExchange(tmpMedicine, it, in stack, use_ok);
 
       // least charged flashlight goes
-      var lights = inv.GetItemsByType<ItemLight>();
-      if (lights is not null && 2<=lights.Count) {
-        int min_batteries = lights.Min(obj => obj.Batteries);
-        ItemLight discard = lights.Find(obj => obj.Batteries==min_batteries);
-        return BehaviorDropItem(discard);
+      {
+      if (who.LightsAndWorst() is (var lights, var discard)) {
+        if (2 <= lights.Count) return BehaviorDropItem(discard);
+      }
       }
 
       // uninteresting ammo
@@ -6896,11 +6895,10 @@ restart_chokepoints:
       if (tmpMedicine is not null) return _BehaviorDropOrExchange(tmpMedicine, it, position, use_ok);
 
       // least charged flashlight goes
-      var lights = inv.GetItemsByType<ItemLight>();
-      if (lights is not null && 2<=lights.Count) {
-        int min_batteries = lights.Min(obj => obj.Batteries);
-        ItemLight discard = lights.Find(obj => obj.Batteries==min_batteries);
-        return BehaviorDropItem(discard);
+      {
+      if (who.LightsAndWorst() is (var lights, var discard)) {
+        if (2 <= lights.Count) return BehaviorDropItem(discard);
+      }
       }
 
       // uninteresting ammo
