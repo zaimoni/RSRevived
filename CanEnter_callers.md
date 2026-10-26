@@ -71,9 +71,9 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | AcquireLineOfSight..ctor(Actor, in Location) | Gameplay/AI/Goals/AcquireLineOfSight.cs:44 | ok | throws via Spotlight: "unpathable"; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, IEnumerable) | Gameplay/AI/Goals/AcquireLineOfSight.cs:52 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:61 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4807 | ok | two calls: N and S of the trap |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4810 | ok | two calls: E and W of the trap |
-| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4850 | ok | by ref |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4818 | ok | two calls: N and S of the trap |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4821 | ok | two calls: E and W of the trap |
+| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4861 | ok | by ref |
 
 ## Actor.CanEnter
 
@@ -94,11 +94,11 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | caller | site | status | note |
 |---|---|---|---|
 | SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:102 | ok | RemoveWhere lambda; comment says it matters for burning cars |
-| ObjectiveAI.WantToGoHere | Gameplay/AI/ObjectiveAI.cs:1386 | ok | by ref |
-| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3244 | ok | local function destination_melee_safe |
-| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3299 | ok | local function install_moves; its row had gone missing |
-| ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4204 | ok | by ref |
-| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4551 | ok | |
+| ObjectiveAI.WantToGoHere | Gameplay/AI/ObjectiveAI.cs:1397 | ok | by ref |
+| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3255 | ok | local function destination_melee_safe |
+| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3310 | ok | local function install_moves; its row had gone missing |
+| ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4215 | ok | by ref |
+| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4562 | ok | |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:143 | ok | throws via Spotlight on the origin |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:144 | ok | throws via Spotlight on the destination |
 
