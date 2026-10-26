@@ -1227,6 +1227,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _sparse.Set(SparseData.LoF,LoF);
     }
 
+    public void RecordLoF(Location[] LoF)  // XXX access control weakness required by RogueGame
+    {
+      if (0 >= LoF.Length) return;
+      List<Point> relay = new();
+      foreach(var loc in LoF) {
+        if (m_Actor.Location.Map.Denormalize(loc) is not Location image) break; // could throw instead, invariant issue
+        relay.Add(image.Position);
+      }
+      RecordLoF(relay);
+    }
+
     public List<Point>? GetLoF() => _sparse.Get<List<Point>>(SparseData.LoF);   // XXX reference-copy return 
     protected void RecordCloseToActor(Actor a,int maxDist) { _sparse.Set(SparseData.CloseToActor,new KeyValuePair<Actor,int>(a,maxDist)); }
     public KeyValuePair<Actor, int> GetCloseToActor() => _sparse.Get<KeyValuePair<Actor, int>>(SparseData.CloseToActor);

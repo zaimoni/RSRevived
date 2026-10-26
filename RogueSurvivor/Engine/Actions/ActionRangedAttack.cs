@@ -32,15 +32,13 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly List<Point> m_LoF = new List<Point>();
     private readonly Actor m_Target;
     public readonly FireMode FMode;
-    [NonSerialized] ObjectiveAI oai;
 
     #region JSON save/load
-    private ActionRangedAttack(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
+    private ActionRangedAttack(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor.ControlledBy<ObjectiveAI>())
     {
       m_Target = src.Require("Target").RequireRef<Actor>();
       if (src.TryGetProperty("LoF", out var x)) foreach (var pt in x.EnumerateArray()) m_LoF.Add(pt.ReadPoint());
       if (src.TryGetProperty("FireMode", out x)) FMode = JSON_ext.ParseEnum<FireMode>(x.GetString());
-      OnDeserialized();
     }
 
     static ActionRangedAttack IJsonStaged<ActionRangedAttack>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ActionRangedAttack(JsonActor(src), src, options));
@@ -57,28 +55,20 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
     #endregion
 
-    public ActionRangedAttack(Actor actor, Actor target, FireMode mode=default) : base(actor)
+    public ActionRangedAttack(Actor actor, Actor target, FireMode mode=default) : base(actor.ControlledBy<ObjectiveAI>())
     {
       m_Target = target;
       FMode = mode;
-      OnDeserialized();
     }
 
-    public ActionRangedAttack(Actor actor, Actor target, List<Point> lof, FireMode mode) : base(actor)
+    public ActionRangedAttack(Actor actor, Actor target, List<Point> lof, FireMode mode) : base(actor.ControlledBy<ObjectiveAI>())
     {
       m_Target = target;
       m_LoF = lof;
       FMode = mode;
-      OnDeserialized();
     }
 
     public Actor target { get { return m_Target; } }
-
-    private void OnDeserialized()
-    {
-      if (m_Actor.Controller is ObjectiveAI ai) oai = ai;
-      else throw new ArgumentNullException(nameof(oai));
-    }
 
     public override bool IsLegal()
     {
@@ -95,6 +85,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       m_Actor.Aggress(m_Target);
+      var oai = m_Actor.RunBy<ObjectiveAI>();
       oai.RecordLoF(m_LoF);
       switch(FMode) {
         case FireMode.AIMED:

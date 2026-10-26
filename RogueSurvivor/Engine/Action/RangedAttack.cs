@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Engine._Action
 
         private new readonly LivingActor m_Actor;   // the same object as the base field
 
-        private RangedAttack(LivingActor actor, ItemRangedWeapon _rw, Location origin, Location target, FireMode mode, Location[] line) : base(actor)
+        private RangedAttack(LivingActor actor, ItemRangedWeapon _rw, Location origin, Location target, FireMode mode, Location[] line) : base(actor.ControlledBy<ObjectiveAI>())
         {
           m_Actor = actor;
             src = origin;
@@ -50,8 +50,8 @@ namespace djack.RogueSurvivor.Engine._Action
 
             var victim = target!;
             m_Actor.Aggress(victim);
-            var oai = m_Actor.Controller as ObjectiveAI;
-//          oai.RecordLoF(m_LoF);
+            var oai = m_Actor.RunBy<ObjectiveAI>();
+            oai.RecordLoF(LoF);
             switch (FMode)
             {
                 case FireMode.AIMED:
@@ -93,7 +93,7 @@ namespace djack.RogueSurvivor.Engine._Action
         public bool CanFireAt(Actor target) => string.IsNullOrEmpty(ReasonCantFireAt(target));
 
 
-        static public RangedAttack? ScheduleCast(LivingActor actor, Location dest, FireMode mode, ItemRangedWeapon? rw = null, Location? origin = null) {
+        static public RangedAttack? schedule(LivingActor actor, Location dest, FireMode mode, ItemRangedWeapon? rw = null, Location? origin = null) {
             Location src = origin is null ? actor.Location : origin.Value;
             if (rw is null) rw = actor.GetEquippedWeapon() as ItemRangedWeapon;
             if (rw is null) return null;
@@ -103,16 +103,10 @@ namespace djack.RogueSurvivor.Engine._Action
             return new RangedAttack(actor, rw, src, dest, mode, test);
         }
 
-        static public RangedAttack? Cast(LivingActor actor, Location dest, FireMode mode, ItemRangedWeapon? rw = null, Location? origin = null)
+        static public RangedAttack? create(LivingActor actor, Location dest, FireMode mode, ItemRangedWeapon? rw = null, Location? origin = null)
         {
-            Location src = origin is null ? actor.Location : origin.Value;
-            if (rw is null) rw = actor.GetEquippedWeapon() as ItemRangedWeapon;
-            if (rw is null) return null;
-            var test = LOS.AbstractFireLine(src, dest);
-            if (test is null) return null;
-            if (rw.Model.Attack.Range < test.Length) return null;
-            var ret = new RangedAttack(actor, rw, src, dest, mode, test);
-            return ret.IsPerformable() ? ret : null;
+            var ret = schedule(actor, dest, mode, rw, origin);
+            return (ret is not null && ret.IsPerformable()) ? ret : null;
         }
 
         static public void Coverage(Data.Model.CombatActor en, List<Location> dests, FireMode mode, List<ItemRangedWeapon> rws, List<Engine.Actions.CombatAction> catalog)
@@ -147,7 +141,7 @@ namespace djack.RogueSurvivor.Engine._Action
                     if (dash is null) continue;
                     foreach (var move in dash) {
                         potshot.Add(new(rapid, move));
-                        var snipe = ScheduleCast(shooter, dest, FireMode.RAPID, rw, move.dest);
+                        var snipe = schedule(shooter, dest, FireMode.RAPID, rw, move.dest);
                         if (snipe is null) continue;
                         dash_attack.Add(new(move, snipe));
                     }
