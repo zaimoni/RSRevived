@@ -1041,9 +1041,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (act is ActorDest dest && 1==Rules.InteractionDistance(m_Actor.Location,dest.dest)) {  // a movement-type action
         // the one type that actually knows the origin; the legacy actions don't.
-        if (!(act is ActionMoveDelta record)) {
-          record = ActionMoveDelta.schedule(m_Actor,dest.dest);
-        }
+        var record = act as ActionMoveDelta;
+        if (record is null) record = ActionMoveDelta.schedule(m_Actor, dest.dest);
         _last_move = record;
         return;
       }

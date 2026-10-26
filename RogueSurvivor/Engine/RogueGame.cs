@@ -6571,8 +6571,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (follower.IsPlayer || !follower.Controller.InCombat) {
         bool could_lead(LivingActor ally) {
-          var oai = ally.Controller as ObjectiveAI;
-          if (oai is null) return false;
+          if (ally.Controller is not ObjectiveAI oai) return false;
 //          InfoPopup(ally.Name+" : "+ ally.CountFollowers.ToString());
           if (ally.CountFollowers >= ally.MaxFollowers) return false;
 //          InfoPopup((!ally.IsPlayer && ally.Controller.InCombat).ToString());
@@ -15220,7 +15219,7 @@ retry:
         return;
 
       bool sees(Actor a) {
-        if (!(a.Controller is OrderableAI ordai)) return false; // PlayerController would respond only on autopilot; that would require ObjectiveAI here
+        if (!(a.Controller is OrderableAI ordai)) return false; // PlayerController would respond only on autopilot
         if (!a.Controller.CanSee(defender.Location)) return false;
         if (a.Controller.CanSee(attacker.Location)) return false;
         if (Rules.StdDistance(a.Location, attacker.Location) > a.AudioRange) return false;
