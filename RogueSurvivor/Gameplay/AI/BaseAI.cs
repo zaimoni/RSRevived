@@ -1068,7 +1068,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return a is ActionMoveStep || a is ActionOpenDoor || a is ActionSwitchPlace;
     }
 
-    protected bool IsValidWanderAction(ActorAction a)
+    protected bool IsValidWanderAction(ActorAction? a)
     {
       if (a is null) return false;
       if (a is ActionMoveStep) return true;

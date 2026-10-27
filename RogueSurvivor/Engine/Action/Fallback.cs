@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine._Action
             m_Options = options;
         }
 
-        public ActorAction ConcreteAction => _result ?? (0 >= m_Options.Count ? m_Options[0] : null);
+        public ActorAction? ConcreteAction => _result ?? (0 < m_Options.Count ? m_Options[0] : null);
 
         public override bool IsLegal()
         {

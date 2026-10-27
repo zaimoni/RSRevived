@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Engine._Action
         }
         public override void Perform() { _action?.Perform(); }
 
-        public ActorAction ConcreteAction { get {
+        public ActorAction? ConcreteAction { get {
           resolve();
           return _action;
         } }

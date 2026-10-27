@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
   internal interface Resolvable
   {
-    ActorAction ConcreteAction { get; }
+    ActorAction? ConcreteAction { get; }   // null: does not resolve here (consumers treat this as an illegal action)
   }
 
   [Serializable]
@@ -34,7 +34,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public Location dest { get { return m_NewLocation; } }  // of m_Actor
     public Location origin { get { return m_Origin; } }
-    public ActorAction ConcreteAction { get { return _result ?? _resolve(); } }
+    public ActorAction? ConcreteAction { get { return _result ?? _resolve(); } }
 
     #region JSON save/load
     private ActionMoveDelta(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
 
     // works like pathing rather than bumping
-    private ActorAction _resolve()
+    private ActorAction? _resolve()
     {
       ActorAction? working = null;
       bool see_dest = m_Actor.Controller.CanSee(in m_NewLocation);

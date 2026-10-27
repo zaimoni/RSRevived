@@ -2590,7 +2590,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 #endif
       }
-      if (x is Resolvable res) return VetoAction(res.ConcreteAction);   // resolvable actions should use the actual action to execute
+      if (x is Resolvable res) return res.ConcreteAction is not { } real || VetoAction(real);   // resolvable actions should use the actual action to execute
       if (x is ActionCloseDoor close) {
         var door = close.Door;
         foreach(var pt in door.Location.Position.Adjacent()) {
@@ -2834,7 +2834,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public void ScheduleFollowup(ActorAction x)
     {
       // recursions
-      if (x is Resolvable resolve) { ScheduleFollowup(resolve.ConcreteAction); return; }
+      if (x is Resolvable resolve) { if (resolve.ConcreteAction is { } real) ScheduleFollowup(real); return; }
       // inline ClearGoals body here -- this is called at the right place
       if (x is ActorDest && !_used_advanced_pathing) _sparse.Unset(SparseData.PathingTo);
       // proper handling
@@ -3411,7 +3411,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public void ExecuteActionChain(List<ActorAction> actions)
     {
       var act = actions[0];
-      if (act is Resolvable resolve) act = resolve.ConcreteAction;
+      if (act is Resolvable resolve) act = resolve.ConcreteAction ?? throw new InvalidOperationException("chain head does not resolve: " + act);
       if (act is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
       act.Perform();
       if (!(actions[0] is ActorDest) || !actions[0].IsPerformable()) actions.RemoveAt(0);
