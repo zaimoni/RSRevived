@@ -6919,9 +6919,12 @@ namespace djack.RogueSurvivor.Engine
 #endif
       var aiActor = ai.ControlledActor; // backward compatibility
 
+      const bool tracing = false;
+      if (aiActor.IsDebuggingTarget || tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "HandleAiActor: " + aiActor.Name);
+
 #if DEBUG
       if (aiActor.IsSleeping) throw new ArgumentOutOfRangeException(nameof(aiActor),"cannot act while sleeping");
-      if (aiActor.IsDebuggingTarget) World.Get.DaimonMap(); // so we have a completely correct map when things go wrong
+      if (aiActor.IsDebuggingTarget || tracing) World.Get.DaimonMap(); // so we have a completely correct map when things go wrong
       if (aiActor!=aiActor.Location.Map.NextActorToAct) throw new InvalidProgramException("trying to process the wrong actor");
 
       int AP_checkpoint = aiActor.ActionPoints;
@@ -6936,14 +6939,14 @@ namespace djack.RogueSurvivor.Engine
       }
       // we need to know if this got past internal testing.
 #if DEBUG
-      if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+actorAction.ToString()+"; starting AP "+aiActor.ActionPoints);
+      if (aiActor.IsDebuggingTarget || tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+actorAction.ToString()+"; starting AP "+aiActor.ActionPoints);
 #endif
       actorAction.Perform();
 #if DEBUG
       if (AP_checkpoint == aiActor.ActionPoints && loc_checkpoint == aiActor.Location && !(actorAction is ActionCloseDoor || actorAction is ActionSay)) {
         throw new InvalidOperationException(aiActor.Name+" got a free action "+actorAction.ToString());
       }
-      if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ending AP "+aiActor.ActionPoints);
+      if (aiActor.IsDebuggingTarget || tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ending AP "+aiActor.ActionPoints);
 #endif
       if (actorAction is ActorTake || actorAction is ActorGive || actorAction is Use<Item>) {
         var errors = new List<string>();

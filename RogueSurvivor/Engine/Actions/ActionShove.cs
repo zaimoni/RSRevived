@@ -39,5 +39,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       RogueGame.Game.DoShove(m_Actor, m_Target, a_dest);
     }
+
+    public override string? ToString() {
+      return m_Actor.Name+" shoves "+m_Target.Name;
+    }
   }
 }

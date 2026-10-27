@@ -347,6 +347,8 @@ namespace djack.RogueSurvivor.Engine
       if (loc.Map is null) throw new ArgumentNullException(nameof(loc)+".Map");
       if (actor is null) throw new ArgumentNullException(nameof(actor));
 #endif
+      const bool tracing = false;
+
       var oai = actor.Controller as Gameplay.AI.ObjectiveAI;
 #if DEBUG
       if (oai is null) throw new InvalidOperationException("!(actor.Controller is Gameplay.AI.ObjectiveAI)");
@@ -439,6 +441,9 @@ namespace djack.RogueSurvivor.Engine
              if (candidates is null && test.Key.Any()) candidates = test.Key.ToList();
              // end function target
 
+             if (tracing) {
+                if (candidates is not null) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "Rules::IsPathableFor: ActionShove: "+actor.Name);
+             }
              if (candidates is not null) return new ActionShove(actor,actorAt, Get.DiceRoller.Choose(candidates).Value);
            }
         }

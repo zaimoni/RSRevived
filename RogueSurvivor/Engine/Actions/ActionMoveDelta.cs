@@ -96,6 +96,8 @@ namespace djack.RogueSurvivor.Engine.Actions
       var obj = see_dest ? m_NewLocation.MapObject : null;
       var actorAt = see_dest ? m_NewLocation.Actor : null;
 
+      const bool tracing = false;
+
       { // deal with exits first; cf BaseAI::BehaviorUseExit
       var exit = m_Origin.Exit;
       if (exit is not null && exit.Location == m_NewLocation) {
@@ -159,6 +161,9 @@ namespace djack.RogueSurvivor.Engine.Actions
              if (candidates is null && candidates_2.Any()) candidates = candidates_2.ToList();
              if (candidates is null && candidates_1.Any()) candidates = candidates_1.ToList();
              // end function target
+             if (tracing) {
+                if (candidates is not null) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "ActionMoveDelta::_resolve ActionShove: " + m_Actor.Name);
+             }
 
              if (candidates is not null) return new ActionShove(m_Actor,actorAt, rules.DiceRoller.Choose(candidates).Value);
            }
