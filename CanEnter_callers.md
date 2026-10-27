@@ -25,10 +25,10 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | Location.ForEachAdjacent | Data/Location.cs:70 | ok | filters the neighbours handed to the callback |
 | Op.PushOnto.schedule | Engine/Action/PushOnto.cs:184 | ok | origin |
 | Op.PushOnto.schedule | Engine/Action/PushOnto.cs:185 | ok | destination |
-| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:298 | ok | throws on the origin |
-| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:299 | ok | throws on the destination |
-| UpdateMoveDelta.toDest | Engine/Actions/ActionMoveDelta.cs:328 | ok | |
-| UpdateMoveDelta.fromOrigin | Engine/Actions/ActionMoveDelta.cs:335 | ok | |
+| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:303 | ok | throws on the origin |
+| UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:304 | ok | throws on the destination |
+| UpdateMoveDelta.toDest | Engine/Actions/ActionMoveDelta.cs:333 | ok | |
+| UpdateMoveDelta.fromOrigin | Engine/Actions/ActionMoveDelta.cs:340 | ok | |
 | PathToTarget.Unstage | Gameplay/AI/Goals/Objective.cs:215 | ok | |
 
 ## ActorModel.CanEnter
@@ -47,9 +47,9 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:315 | ok | a shelf: any neighbour |
 | ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:321 | ok | a ground stack: the tile itself |
 | ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:326 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
-| Map.WouldBlacklistFor | Data/Map.cs:1176 | ok | receiver is the actor parameter |
-| Map.PathfindLocSteps | Data/Map.cs:1190 | ok | StrictCanEnter, in the flood-fill's lambda; receiver is actor.Model |
-| Map.TrapWouldSealBuilding | Data/Map.cs:2164 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
+| Map.WouldBlacklistFor | Data/Map.cs:1183 | ok | receiver is the actor parameter |
+| Map.PathfindLocSteps | Data/Map.cs:1197 | ok | StrictCanEnter, in the flood-fill's lambda; receiver is actor.Model |
+| Map.TrapWouldSealBuilding | Data/Map.cs:2171 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | ok | origin; was Actor.CanEnter until 81a9544a |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
 | _Action.MoveStep.schedule | Engine/Action/MoveStep.cs:173 | ok | destination; was Actor.CanEnter until 81a9544a |
@@ -58,22 +58,22 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:211 | ok | each candidate destination, by ref |
 | _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:280 | ok | origin |
 | _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:281 | ok | destination |
-| ActionMoveDelta.schedule(Actor, Location, Location) | Engine/Actions/ActionMoveDelta.cs:236 | ok | destination |
-| ActionMoveDelta.schedule(Actor, Location, Location) | Engine/Actions/ActionMoveDelta.cs:237 | ok | origin |
-| ActionMoveDelta.schedule(Actor, Location) | Engine/Actions/ActionMoveDelta.cs:255 | ok | destination; the overload without an origin |
+| ActionMoveDelta.schedule(Actor, Location, Location) | Engine/Actions/ActionMoveDelta.cs:241 | ok | destination |
+| ActionMoveDelta.schedule(Actor, Location, Location) | Engine/Actions/ActionMoveDelta.cs:242 | ok | origin |
+| ActionMoveDelta.schedule(Actor, Location) | Engine/Actions/ActionMoveDelta.cs:260 | ok | destination; the overload without an origin |
 | ActionMoveStep.schedule(Actor, Location) | Engine/Actions/ActionMoveStep.cs:52 | ok | |
 | ActionMoveStep.schedule(Actor, Point) | Engine/Actions/ActionMoveStep.cs:58 | ok | |
 | RogueGame.HandleItemInfo | Engine/RogueGame.cs:4092 | ok | local function `details`; receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13355 | ok | receiver a follower, chosen by index |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13380 | ok | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13388 | ok | receiver Player |
-| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13410 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13357 | ok | receiver a follower, chosen by index |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13382 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13390 | ok | receiver Player |
+| RogueGame.DoPlayerFarLook | Engine/RogueGame.cs:13412 | ok | receiver Player |
 | AcquireLineOfSight..ctor(Actor, in Location) | Gameplay/AI/Goals/AcquireLineOfSight.cs:44 | ok | throws via Spotlight: "unpathable"; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, IEnumerable) | Gameplay/AI/Goals/AcquireLineOfSight.cs:52 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:61 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4818 | ok | two calls: N and S of the trap |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4821 | ok | two calls: E and W of the trap |
-| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4861 | ok | by ref |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4821 | ok | two calls: N and S of the trap |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4824 | ok | two calls: E and W of the trap |
+| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4864 | ok | by ref |
 
 ## Actor.CanEnter
 
@@ -84,8 +84,8 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | _Action.MoveStep._runFrom | Engine/Action/MoveStep.cs:192 | ok | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:249 | ok | |
 | Rules.IsBumpableFor | Engine/Rules.cs:218 | ok | by ref |
-| ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:1106 | ok | comment: generators are pathable but not enterable |
-| ObjectiveAI.UsePreexistingPath(List<List<Location>>, ...) | Gameplay/AI/ObjectiveAI.cs:1163 | ok | comment: generators are pathable but not enterable |
+| ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:1105 | ok | comment: generators are pathable but not enterable |
+| ObjectiveAI.UsePreexistingPath(List<List<Location>>, ...) | Gameplay/AI/ObjectiveAI.cs:1162 | ok | comment: generators are pathable but not enterable |
 | OrderableAI._closeIn | Gameplay/AI/OrderableAI.cs:2822 | ok | Adjacent lambda |
 | OrderableAI._chargeTowards | Gameplay/AI/OrderableAI.cs:2870 | ok | Adjacent lambda |
 
@@ -94,11 +94,11 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | caller | site | status | note |
 |---|---|---|---|
 | SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:102 | ok | RemoveWhere lambda; comment says it matters for burning cars |
-| ObjectiveAI.WantToGoHere | Gameplay/AI/ObjectiveAI.cs:1397 | ok | by ref |
-| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3255 | ok | local function destination_melee_safe |
-| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3310 | ok | local function install_moves; its row had gone missing |
-| ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4215 | ok | by ref |
-| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4562 | ok | |
+| ObjectiveAI.WantToGoHere | Gameplay/AI/ObjectiveAI.cs:1396 | ok | by ref |
+| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3254 | ok | local function destination_melee_safe |
+| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3309 | ok | local function install_moves; its row had gone missing |
+| ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4218 | ok | by ref |
+| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4565 | ok | |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:143 | ok | throws via Spotlight on the origin |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:144 | ok | throws via Spotlight on the destination |
 
