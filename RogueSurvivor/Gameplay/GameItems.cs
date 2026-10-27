@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Gameplay
     private static readonly Data.Model.Item[] m_Models = new Data.Model.Item[(int) Item_IDs._COUNT];
 
     private static readonly List<(Item_IDs, ItemAmmoModel)> _ammo = new();
-    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs, ItemAmmoModel)> ammo = new(_ammo);
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemAmmoModel model)> ammo = new(_ammo);
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<Item_IDs> ranged
     = new(new List<Item_IDs>{ Item_IDs.RANGED_ARMY_PISTOL,
         Item_IDs.RANGED_ARMY_RIFLE,
