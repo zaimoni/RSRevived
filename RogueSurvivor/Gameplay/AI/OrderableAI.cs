@@ -4369,6 +4369,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (x.AmmoModel() is { } model) {
                   if (a.Inventory.GetReloadableRangedWeapon(model) is not null) (precious ??= new()).Add(x);
                 }
+
+                (precious ??= new()).Add(x);
             }
           }
           if (precious is not null) foreach(var it in precious) {
