@@ -4263,7 +4263,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                     bool found = false;
                     foreach(var (id, model) in GameItems.ammo) {
                       if (id == x) {
-                        var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(model);
+                        var rw = a.Inventory.GetCompatibleRangedWeapon(model);
                         if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) found = true;
                         break;
                       }
@@ -4281,7 +4281,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                     bool found = false;
                     foreach(var (id, model) in GameItems.ammo) {
                       if (id == x) {
-                        var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(model);
+                        var rw = a.Inventory.GetCompatibleRangedWeapon(model);
                         if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) found = true;
                         break;
                       }
@@ -4369,13 +4369,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (have.Key is not null) {
             foreach (var x in have.Key) {
                 if (!critical.Contains(x)) continue;
+                bool found = false;
                 foreach(var (id, model) in GameItems.ammo) {
                   if (id == x) {
-                    var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(model);
+                    found = true;
+                    var rw = a.Inventory.GetCompatibleRangedWeapon(model);
                     if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) (precious ??= new()).Add(x);
                     break;
                   }
                 }
+                if (!found) (precious ??= new()).Add(x);
             }
           }
           if (have.Value is not null) {
@@ -4383,7 +4386,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (!critical.Contains(x)) continue;
                 foreach(var (id, model) in GameItems.ammo) {
                   if (id == x) {
-                    var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(model);
+                    var rw = a.Inventory.GetCompatibleRangedWeapon(model);
                     if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) (precious ??= new()).Add(x);
                     break;
                   }

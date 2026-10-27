@@ -189,6 +189,7 @@ namespace djack.RogueSurvivor.Data.Model
             foreach(var id in src) if (IsCarrying(id)) return true;
             return false;
         }
+
         public void Remove(Data.Item it, bool canMessage = true)
         {
             var iinv = IInv;

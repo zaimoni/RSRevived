@@ -5520,8 +5520,9 @@ restart_chokepoints:
     /// <summary>
     /// Strongly prefer to not directly create ActionUseItem for ammo; use this wrapper to bypass a player UI check.
     /// </summary>
-    protected ActionUseItem? UseAmmo(ItemAmmo ammo, ItemRangedWeapon rw)
+    protected ActionUseItem? UseAmmo(ItemAmmo? ammo, ItemRangedWeapon rw)
     {
+      if (ammo is null) return null;
 #if DEBUG
       if (rw.AmmoType != ammo.AmmoType) throw new InvalidOperationException("ammunition types must agree");
 #endif
