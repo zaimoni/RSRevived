@@ -6548,20 +6548,7 @@ restart_chokepoints:
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
       if (it is ItemMeleeWeapon || it is ItemFood) {
-        foreach(var (_, model) in GameItems.ammo) {
-          if (2<=who.Count(model)) {
-            ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
-            return _BehaviorDropOrExchange(ammo, it, in stack, use_ok);
-          }
-        }
-        // if we have two clips of any type, trading the smaller one for a melee weapon or food is ok
-        ItemAmmo? test = null;
-        foreach(var (_, model) in GameItems.ammo) {
-          if (inv.GetBestDestackable(model) is ItemAmmo ammo) {
-             if (test is null || test.Quantity>ammo.Quantity) test = ammo;
-          }
-        }
-        if (test is not null) return _BehaviorDropOrExchange(test, it, in stack, use_ok);
+        if (who.SurplusAmmo() is { } ammo) return _BehaviorDropOrExchange(ammo, it, in stack, use_ok);
       }
 
       // if inventory is full and the problem is ammo at this point, ignore if we already have a full clip
@@ -6948,22 +6935,7 @@ restart_chokepoints:
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
       if (it is ItemMeleeWeapon || it is ItemFood) {
-        foreach(var (_, model) in GameItems.ammo) {
-          if (2<=who.Count(model)) {
-            ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
-            return _BehaviorDropOrExchange(ammo, it, position, use_ok);
-          }
-        }
-
-        // if we have two clips of any type, trading the smaller one for a melee weapon or food is ok
-        ItemAmmo? test = null;
-        foreach(var (_, model) in GameItems.ammo) {
-            if (inv.GetBestDestackable(model) is ItemAmmo ammo) {
-              if (test is null || test.Quantity>ammo.Quantity) test = ammo;
-            }
-        }
-
-        if (test is not null) return _BehaviorDropOrExchange(test, it, position, use_ok);
+        if (who.SurplusAmmo() is { } ammo) return _BehaviorDropOrExchange(ammo, it, position, use_ok);
       }
 
       // if inventory is full and the problem is ammo at this point, ignore if we already have a full clip

@@ -161,6 +161,19 @@ namespace djack.RogueSurvivor.Data
       return m_Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo);
     }
 
+    public ItemAmmo? SurplusAmmo() {
+      foreach (var (_, model) in GameItems.ammo) {
+        if (2 <= Count(model) && m_Inventory.GetBestDestackable(model) is ItemAmmo ammo) return ammo;
+      }
+
+      ItemAmmo? smallest = null;
+      foreach (var (_, model) in GameItems.ammo) {
+        if (    m_Inventory.GetBestDestackable(model) is ItemAmmo ammo
+            && (smallest is null || smallest.Quantity > ammo.Quantity)) smallest = ammo;
+      }
+      return smallest;
+    }
+
     // equipped items
     public override Item? GetEquippedItem(DollPart part)
     {
