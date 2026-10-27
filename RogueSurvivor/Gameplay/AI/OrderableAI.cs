@@ -4238,12 +4238,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var critical = WhatDoINeedNow();
         if (0 >= critical.Count) return null;
         critical.RemoveWhere(it => {
-          foreach(var (id, model) in GameItems.ammo) {
-            if (id == it) {
-              var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(model);
-              if (rw is null || rw.Ammo == rw.Model.MaxAmmo) return true;  // not needed
-              break;
-            }
+          if (it.AmmoModel() is { } model) {
+            if (m_Actor.Inventory.GetReloadableRangedWeapon(model) is null) return true;  // not needed
           }
           return false;
         });
@@ -4260,15 +4256,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 foreach (var x in have.Key) {
                     if (!critical.Contains(x)) continue;
 
-                    bool found = false;
-                    foreach(var (id, model) in GameItems.ammo) {
-                      if (id == x) {
-                        var rw = a.Inventory.GetCompatibleRangedWeapon(model);
-                        if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) found = true;
-                        break;
-                      }
+                    if (x.AmmoModel() is { } model) {
+                      if (a.Inventory.GetReloadableRangedWeapon(model) is not null) continue;
                     }
-                    if (found) continue;
 
                     insurance[a] = x;
                     break;
@@ -4278,15 +4268,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (have.Value is not null) {
                 foreach (var x in have.Value) {
                     if (!critical.Contains(x)) continue;
-                    bool found = false;
-                    foreach(var (id, model) in GameItems.ammo) {
-                      if (id == x) {
-                        var rw = a.Inventory.GetCompatibleRangedWeapon(model);
-                        if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) found = true;
-                        break;
-                      }
+
+                    if (x.AmmoModel() is { } model) {
+                      if (a.Inventory.GetReloadableRangedWeapon(model) is not null) continue;
                     }
-                    if (found) continue;
 
                     want[a] = x;
                     break;
@@ -4369,27 +4354,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (have.Key is not null) {
             foreach (var x in have.Key) {
                 if (!critical.Contains(x)) continue;
-                bool found = false;
-                foreach(var (id, model) in GameItems.ammo) {
-                  if (id == x) {
-                    found = true;
-                    var rw = a.Inventory.GetCompatibleRangedWeapon(model);
-                    if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) (precious ??= new()).Add(x);
-                    break;
-                  }
+
+                if (x.AmmoModel() is { } model) {
+                  if (a.Inventory.GetReloadableRangedWeapon(model) is not null) (precious ??= new()).Add(x);
+                  continue;
                 }
-                if (!found) (precious ??= new()).Add(x);
+
+                (precious ??= new()).Add(x);
             }
           }
           if (have.Value is not null) {
             foreach (var x in have.Value) {
                 if (!critical.Contains(x)) continue;
-                foreach(var (id, model) in GameItems.ammo) {
-                  if (id == x) {
-                    var rw = a.Inventory.GetCompatibleRangedWeapon(model);
-                    if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) (precious ??= new()).Add(x);
-                    break;
-                  }
+                if (x.AmmoModel() is { } model) {
+                  if (a.Inventory.GetReloadableRangedWeapon(model) is not null) (precious ??= new()).Add(x);
                 }
             }
           }
@@ -4397,16 +4375,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (GameItems.ranged.Contains(it)) continue;    // handled at NonCriticalInInventory stage
             if (GameItems.food.Contains(it)) continue;    // ally is hungry...ok
 
-            bool found = false;
-            foreach(var (id, model) in GameItems.ammo) {
-                if (id == it) {
-                  found = true;
-                  var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(model);
-                  if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) return UseAmmo(m_Actor.Inventory.GetCompatibleAmmoItem(rw), rw);
-                  break;
-                }
+            if (it.AmmoModel() is { } model) {
+              if (m_Actor.Inventory.GetReloadableRangedWeapon(model) is { } rw) return UseAmmo(m_Actor.Inventory.GetCompatibleAmmoItem(rw), rw);
+              continue;
             }
-            if (found) continue;
 
             // different medicines need different handling.  The immediate-use ones can be ceded immediately.
             if (Item_IDs.MEDICINE_MEDIKIT==it || Item_IDs.MEDICINE_BANDAGES==it || Item_IDs.MEDICINE_PILLS_ANTIVIRAL==it) continue;

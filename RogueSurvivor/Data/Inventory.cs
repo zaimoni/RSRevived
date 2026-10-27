@@ -4,6 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -338,16 +339,13 @@ namespace djack.RogueSurvivor.Data
       return GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType && it.Ammo < it.Model.MaxAmmo)
           ?? GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType);
     }
+    public ItemRangedWeapon? GetCompatibleRangedWeapon(ItemAmmo am) => GetCompatibleRangedWeapon(am.Model);
 
-    public ItemRangedWeapon? GetCompatibleRangedWeapon(ItemAmmo am)
+    public ItemRangedWeapon? GetReloadableRangedWeapon(ItemAmmoModel am)
     {
-      return GetCompatibleRangedWeapon(am.Model);
+      return GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType && it.Ammo < it.Model.MaxAmmo);
     }
-
-    public ItemRangedWeapon? GetCompatibleRangedWeapon(Gameplay.Item_IDs am)
-    {
-      return GetCompatibleRangedWeapon(Gameplay.GameItems.From(am) as ItemAmmoModel);
-    }
+    public ItemRangedWeapon? GetReloadableRangedWeapon(ItemAmmo am) => GetReloadableRangedWeapon(am.Model);
 
     public void UntriggerAllTraps() {
       foreach (Item obj in m_Items) {

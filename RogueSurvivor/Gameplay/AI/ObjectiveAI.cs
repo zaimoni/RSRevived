@@ -5754,8 +5754,7 @@ restart_chokepoints:
       Inventory inv = who.Inventory;
       bool is_in_inventory = inv.Contains(am);
 
-      var rw = inv.GetCompatibleRangedWeapon(am);
-      if (rw is null) {
+      if (inv.GetCompatibleRangedWeapon(am) is not { } rw) {
         int potential_importance = KnowRelevantInventory(am) ? 2 : 1;
         if (is_in_inventory) return potential_importance;
         if (0 < inv.Count(am.Model)) return 0;
@@ -5961,8 +5960,7 @@ restart_chokepoints:
       { // similar to IsInterestingItem(ItemAmmo)
       if (it is ItemAmmoModel am) {
         Inventory inv = who.Inventory;
-        ItemRangedWeapon? rw = inv.GetCompatibleRangedWeapon(am);
-        if (rw is null) return 0 < who.Inventory.Count(am) ? 0 : 1;
+        if (inv.GetCompatibleRangedWeapon(am) is not { } rw) return 0 < who.Inventory.Count(am) ? 0 : 1;
 
         if (inv.GetCompatibleAmmoItem(rw) is null && !AmmoAtLimit) return 3;
 
@@ -6293,8 +6291,7 @@ restart_chokepoints:
       }
 
       if (it is ItemAmmo am) {
-        var rw = who.Inventory.GetCompatibleRangedWeapon(am);
-        if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) {
+        if (who.Inventory.GetReloadableRangedWeapon(am) is { } rw) {
           // we really do need to reload this.
           if (stack.IsAccessible(m_Actor.Location) && use_ok) { // only do this when right on top of the inventory containing the ammo
             if (inv.GetBestDestackable(am) is ItemAmmo already) return new ActionUseItem(who, already);
@@ -6693,8 +6690,7 @@ restart_chokepoints:
       }
 
       if (it is ItemAmmo am) {
-        var rw = who.Inventory.GetCompatibleRangedWeapon(am);
-        if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) {
+        if (who.Inventory.GetReloadableRangedWeapon(am) is { } rw) {
           // we really do need to reload this.
           if (position is not null && use_ok) { // only do this when right on top of the inventory containing the ammo
             if (inv.GetBestDestackable(am) is ItemAmmo already) return new ActionUseItem(who, already);
@@ -7085,8 +7081,7 @@ restart_chokepoints:
     {
       if (m_Living is not { } who) return false;
       Inventory inv = who.Inventory;
-      var rw = inv.GetCompatibleRangedWeapon(am);
-      if (rw is null) {
+      if (inv.GetCompatibleRangedWeapon(am) is not { } rw) {
         if (0 < inv.Count(am.Model)) return false;    // only need one clip to prime AI to look for empty ranged weapons
         if (KnowRelevantInventory(am) && !AmmoAtLimit) return true;
         if (0 < inv.CountType<ItemRangedWeapon>()) return false;  // XXX

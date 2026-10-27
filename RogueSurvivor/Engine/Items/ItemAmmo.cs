@@ -20,8 +20,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public AmmoType AmmoType { get { return Model.AmmoType; } }
     public ItemRangedWeapon rw { get { return _rw!; } }
     private ItemRangedWeapon? test_rw(LivingActor a) {
-      var rw = a.Inventory.GetCompatibleRangedWeapon(this);
-      if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) {
+      if (a.Inventory.GetReloadableRangedWeapon(this) is { } rw) {
         _rw = rw;
         return _rw;
       }
