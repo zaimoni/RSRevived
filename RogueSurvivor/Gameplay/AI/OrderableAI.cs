@@ -4238,9 +4238,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var critical = WhatDoINeedNow();
         if (0 >= critical.Count) return null;
         critical.RemoveWhere(it => {
-          if (GameItems.ammo.Contains(it)) {
-            var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(it);
-            if (rw is null || rw.Ammo == rw.Model.MaxAmmo) return true;  // not needed
+          foreach(var (id, model) in GameItems.ammo) {
+            if (id == it) {
+              var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(model);
+              if (rw is null || rw.Ammo == rw.Model.MaxAmmo) return true;  // not needed
+              break;
+            }
           }
           return false;
         });
@@ -4256,15 +4259,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (have.Key is not null) {
                 foreach (var x in have.Key) {
                     if (!critical.Contains(x)) continue;
-                    if (GameItems.ammo.Contains(x)) {
-                      var rw2 = a.Inventory.GetCompatibleRangedWeapon(x);
-                      if (rw2 is not null && rw2.Ammo < rw2.Model.MaxAmmo) continue;    // allow defensive behavior
+
+                    bool found = false;
+                    foreach(var (id, model) in GameItems.ammo) {
+                      if (id == x) {
+                        var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(model);
+                        if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) found = true;
+                        break;
+                      }
                     }
-#if REDUNDANT
-                    if (GameItems.restoreSAN.Contains(x)) {
-                      if (3 <= ai.WantRestoreSAN && ai.BehaviorUseEntertainment() is not null) continue;  // allow defensive behavior
-                    }
-#endif
+                    if (found) continue;
+
                     insurance[a] = x;
                     break;
                 }
@@ -4273,15 +4278,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (have.Value is not null) {
                 foreach (var x in have.Value) {
                     if (!critical.Contains(x)) continue;
-                    if (GameItems.ammo.Contains(x)) {
-                      var rw2 = a.Inventory.GetCompatibleRangedWeapon(x);
-                      if (rw2 is not null && rw2.Ammo < rw2.Model.MaxAmmo) continue;    // allow defensive behavior
+                    bool found = false;
+                    foreach(var (id, model) in GameItems.ammo) {
+                      if (id == x) {
+                        var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(model);
+                        if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) found = true;
+                        break;
+                      }
                     }
-#if REDUNDANT
-                    if (GameItems.restoreSAN.Contains(x)) {
-                      if (3 <= ai.WantRestoreSAN && ai.BehaviorUseEntertainment() is not null) continue;  // allow defensive behavior
-                    }
-#endif
+                    if (found) continue;
+
                     want[a] = x;
                     break;
                 }
@@ -4362,40 +4368,46 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!InCommunicationWith(a)) continue;
           if (have.Key is not null) {
             foreach (var x in have.Key) {
-                if (GameItems.ammo.Contains(x)) {
-                  var rw = a.Inventory.GetCompatibleRangedWeapon(x);
-                  if (rw is null || rw.Ammo == rw.Model.MaxAmmo) continue;
+                if (!critical.Contains(x)) continue;
+                foreach(var (id, model) in GameItems.ammo) {
+                  if (id == x) {
+                    var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(model);
+                    if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) (precious ??= new()).Add(x);
+                    break;
+                  }
                 }
-                if (critical.Contains(x)) (precious ??= new()).Add(x);
             }
           }
           if (have.Value is not null) {
             foreach (var x in have.Value) {
-                if (GameItems.ammo.Contains(x)) {
-                  var rw = a.Inventory.GetCompatibleRangedWeapon(x);
-                  if (rw is null || rw.Ammo == rw.Model.MaxAmmo) continue;
+                if (!critical.Contains(x)) continue;
+                foreach(var (id, model) in GameItems.ammo) {
+                  if (id == x) {
+                    var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(model);
+                    if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) (precious ??= new()).Add(x);
+                    break;
+                  }
                 }
-                if (critical.Contains(x)) (precious ??= new()).Add(x);
             }
           }
           if (precious is not null) foreach(var it in precious) {
             if (GameItems.ranged.Contains(it)) continue;    // handled at NonCriticalInInventory stage
             if (GameItems.food.Contains(it)) continue;    // ally is hungry...ok
-            if (GameItems.ammo.Contains(it)) {  // reload ASAP
-              var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(it);
-              if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) return UseAmmo(m_Actor.Inventory.GetCompatibleAmmoItem(rw), rw);
-              continue;
+
+            bool found = false;
+            foreach(var (id, model) in GameItems.ammo) {
+                if (id == it) {
+                  found = true;
+                  var rw = m_Actor.Inventory.GetCompatibleRangedWeapon(model);
+                  if (rw is not null && rw.Ammo < rw.Model.MaxAmmo) return UseAmmo(m_Actor.Inventory.GetCompatibleAmmoItem(rw), rw);
+                  break;
+                }
             }
+            if (found) continue;
+
             // different medicines need different handling.  The immediate-use ones can be ceded immediately.
             if (Item_IDs.MEDICINE_MEDIKIT==it || Item_IDs.MEDICINE_BANDAGES==it || Item_IDs.MEDICINE_PILLS_ANTIVIRAL==it) continue;
-            if (GameItems.restoreSAN.Contains(it)) {    // only have to defend if we ourselves are critical
-#if REDUNDANT
-              if (3 > WantRestoreSAN) continue; // only have to consider action loops
-              var act = BehaviorUseEntertainment();
-              if (act is not null) return act;
-#endif
-              continue;
-            }
+            if (GameItems.restoreSAN.Contains(it)) continue; // only have to defend if we ourselves are critical
 #if DEBUG
             throw new InvalidOperationException("unhandled precious item: "+it+"; "+m_Actor.Name+" defending from "+a.Name);
 #endif

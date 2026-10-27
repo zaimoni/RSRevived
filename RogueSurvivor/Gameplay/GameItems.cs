@@ -115,14 +115,9 @@ namespace djack.RogueSurvivor.Gameplay
     private static readonly Verb STRIKE = new Verb("strike");
 
     private static readonly Data.Model.Item[] m_Models = new Data.Model.Item[(int) Item_IDs._COUNT];
-    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<Item_IDs> ammo
-    = new(new List<Item_IDs>{ Item_IDs.AMMO_LIGHT_PISTOL,
-            Item_IDs.AMMO_HEAVY_PISTOL,
-            Item_IDs.AMMO_SHOTGUN,
-            Item_IDs.AMMO_LIGHT_RIFLE,
-            Item_IDs.AMMO_HEAVY_RIFLE,
-            Item_IDs.AMMO_BOLTS
-    });
+
+    private static readonly List<(Item_IDs, ItemAmmoModel)> _ammo = new();
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs, ItemAmmoModel)> ammo = new(_ammo);
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<Item_IDs> ranged
     = new(new List<Item_IDs>{ Item_IDs.RANGED_ARMY_PISTOL,
         Item_IDs.RANGED_ARMY_RIFLE,
@@ -181,8 +176,8 @@ namespace djack.RogueSurvivor.Gameplay
         Item_IDs.ENT_MAGAZINE,
         Item_IDs.ENT_CHAR_GUARD_MANUAL});
 
-    public static Data.Model.Item From(int id) { return m_Models[id];  }
-    public static Data.Model.Item From(Item_IDs id) { return m_Models[(int)id];  }
+    public static Data.Model.Item From(int id) => m_Models[id];
+    public static Data.Model.Item From(Item_IDs id) => m_Models[(int)id];
     public static Item? From(Item_s src) {
         int id = (int)src.ModelID;
         if (m_Models.Length <= id) return null;
@@ -204,16 +199,16 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
-        private static void _setModel(Data.Model.Item model) {
+    private static void _setModel(Data.Model.Item model) {
 #if DEBUG
       if (m_Models[(int) model.ID] is not null) throw new InvalidOperationException("can only set item model once");
 #endif
       m_Models[(int) model.ID] = model;
     }
 
-    public static _T_ Cast<_T_>(int id) where _T_:Data.Model.Item
-    {
-      return m_Models[id] as _T_;
+    private static void _setModel(ItemAmmoModel model) {
+      _setModel((Data.Model.Item)model);
+      _ammo.Add((model.ID, model));
     }
 
     static public ItemMedicineModel BANDAGE {
@@ -811,12 +806,12 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(new ItemRangedWeaponModel(Item_IDs.UNIQUE_SANTAMAN_SHOTGUN, DATA_UNIQUE_SANTAMAN_SHOTGUN.NAME, DATA_UNIQUE_SANTAMAN_SHOTGUN.FLAVOR, GameImages.ITEM_SANTAMAN_SHOTGUN, new Attack(AttackKind.FIREARM, SHOOT, DATA_UNIQUE_SANTAMAN_SHOTGUN.ATK, DATA_UNIQUE_SANTAMAN_SHOTGUN.DMG, 0, DATA_UNIQUE_SANTAMAN_SHOTGUN.RANGE, DATA_UNIQUE_SANTAMAN_SHOTGUN.RAPID1, DATA_UNIQUE_SANTAMAN_SHOTGUN.RAPID2), DATA_UNIQUE_SANTAMAN_SHOTGUN.MAXAMMO, AmmoType.SHOTGUN, DATA_UNIQUE_SANTAMAN_SHOTGUN.FLAVOR, true));
       _setModel(new ItemRangedWeaponModel(Item_IDs.UNIQUE_HANS_VON_HANZ_PISTOL, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.NAME, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.FLAVOR, GameImages.ITEM_HANS_VON_HANZ_PISTOL, new Attack(AttackKind.FIREARM, SHOOT, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.ATK, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.DMG, 0, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.RANGE, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.RAPID1, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.RAPID2), DATA_UNIQUE_HANS_VON_HANZ_PISTOL.MAXAMMO, AmmoType.LIGHT_PISTOL, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.FLAVOR, true));
 
-      // Ammunition
+      // Ammunition; controls order of readonly collection ammo
       _setModel(new ItemAmmoModel(Item_IDs.AMMO_LIGHT_PISTOL, GameImages.ITEM_AMMO_LIGHT_PISTOL, AmmoType.LIGHT_PISTOL, 20));
       _setModel(new ItemAmmoModel(Item_IDs.AMMO_HEAVY_PISTOL, GameImages.ITEM_AMMO_HEAVY_PISTOL, AmmoType.HEAVY_PISTOL, 12));
+      _setModel(new ItemAmmoModel(Item_IDs.AMMO_SHOTGUN, GameImages.ITEM_AMMO_SHOTGUN, AmmoType.SHOTGUN, 10));
       _setModel(new ItemAmmoModel(Item_IDs.AMMO_LIGHT_RIFLE, GameImages.ITEM_AMMO_LIGHT_RIFLE, AmmoType.LIGHT_RIFLE, 14));
       _setModel(new ItemAmmoModel(Item_IDs.AMMO_HEAVY_RIFLE, GameImages.ITEM_AMMO_HEAVY_RIFLE, AmmoType.HEAVY_RIFLE, 20));
-      _setModel(new ItemAmmoModel(Item_IDs.AMMO_SHOTGUN, GameImages.ITEM_AMMO_SHOTGUN, AmmoType.SHOTGUN, 10));
       _setModel(new ItemAmmoModel(Item_IDs.AMMO_BOLTS, GameImages.ITEM_AMMO_BOLTS, AmmoType.BOLT, 30));
 
       // grenade, in its various states

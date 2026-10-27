@@ -6546,8 +6546,7 @@ restart_chokepoints:
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
       if (it is ItemMeleeWeapon || it is ItemFood) {
-        foreach(var x in GameItems.ammo) {
-          var model = GameItems.From(x);
+        foreach(var (_, model) in GameItems.ammo) {
           if (2<=who.Count(model)) {
             ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
             return _BehaviorDropOrExchange(ammo, it, in stack, use_ok);
@@ -6555,8 +6554,8 @@ restart_chokepoints:
         }
         // if we have two clips of any type, trading the smaller one for a melee weapon or food is ok
         ItemAmmo? test = null;
-        foreach(var x in GameItems.ammo) {
-          if (inv.GetBestDestackable(GameItems.From(x)) is ItemAmmo ammo) {
+        foreach(var (_, model) in GameItems.ammo) {
+          if (inv.GetBestDestackable(model) is ItemAmmo ammo) {
              if (test is null || test.Quantity>ammo.Quantity) test = ammo;
           }
         }
@@ -6948,20 +6947,21 @@ restart_chokepoints:
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
       if (it is ItemMeleeWeapon || it is ItemFood) {
-        foreach(var x in GameItems.ammo) {
-          var model = GameItems.From(x);
+        foreach(var (_, model) in GameItems.ammo) {
           if (2<=who.Count(model)) {
             ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
             return _BehaviorDropOrExchange(ammo, it, position, use_ok);
           }
         }
+
         // if we have two clips of any type, trading the smaller one for a melee weapon or food is ok
         ItemAmmo? test = null;
-        foreach(var x in GameItems.ammo) {
-          if (inv.GetBestDestackable(GameItems.From(x)) is ItemAmmo ammo) {
-             if (test is null || test.Quantity>ammo.Quantity) test = ammo;
-          }
+        foreach(var (_, model) in GameItems.ammo) {
+            if (inv.GetBestDestackable(model) is ItemAmmo ammo) {
+              if (test is null || test.Quantity>ammo.Quantity) test = ammo;
+            }
         }
+
         if (test is not null) return _BehaviorDropOrExchange(test, it, position, use_ok);
       }
 
