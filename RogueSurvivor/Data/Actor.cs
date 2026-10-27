@@ -12,6 +12,7 @@ using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -24,7 +25,6 @@ using Point = Zaimoni.Data.Vector2D<short>;
 using Color = System.Drawing.Color;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using PowerGenerator = djack.RogueSurvivor.Engine.MapObjects.PowerGenerator;
-using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -3121,6 +3121,11 @@ namespace djack.RogueSurvivor.Data
       if (0 >= src.Count) return null;
       src.TrimExcess();
       return src;
+    }
+
+    [Conditional("DEBUG")]
+    public static void RejectEmptyActions(this IEnumerable<ActorAction> src) {
+      if (src is null || !src.Any()) throw new ArgumentException(nameof(src));
     }
   }
 }

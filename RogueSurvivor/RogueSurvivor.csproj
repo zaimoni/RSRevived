@@ -92,6 +92,7 @@
     <Compile Include="Engine\Action\BehavioristABC.cs" />
     <Compile Include="Engine\Action\Chain.cs" />
     <Compile Include="Engine\Action\Choice.cs" />
+    <Compile Include="Engine\Action\Fallback.cs" />
     <Compile Include="Engine\Action\MeleeAttack.cs" />
     <Compile Include="Engine\Action\RangedAttack.cs" />
     <Compile Include="Engine\Action\TakeItem.cs" />

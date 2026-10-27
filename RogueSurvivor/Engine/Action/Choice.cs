@@ -12,18 +12,13 @@ namespace djack.RogueSurvivor.Engine._Action
     {
         private readonly List<ActorAction> m_Options;
 
-        [Conditional("DEBUG")]
-        private void _RejectEmptyActions(IEnumerable<ActorAction> src) {
-            if (src is null || 0 >= src.Count()) throw new ArgumentNullException(nameof(src));
-        }
-
         public Choice(Actor actor, IEnumerable<ActorAction> src) : base(actor) {
-            _RejectEmptyActions(src);
+            src.RejectEmptyActions();
             m_Options = src.ToList();
         }
 
         public Choice(Actor actor, List<ActorAction> src) : base(actor) {
-            _RejectEmptyActions(src);
+            src.RejectEmptyActions();
             m_Options = src;
         }
 
