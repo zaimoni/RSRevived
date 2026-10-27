@@ -1204,7 +1204,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction? UsePreexistingLambdaPath() => GetLambdaPath()?.WalkPath(this);
 
-    private ActorAction _pathNear(Location loc)
+    private ActorAction? _pathNear(Location loc)
     {
         if (_legal_path is not null) {
             var candidates = new List<ActorAction>(_legal_path.Count);
@@ -4147,8 +4147,10 @@ retry:
               if (!_legal_path.TryGetValue(loc,out var alt_act)) continue;
               if (1 >= FastestTrapKill(in loc)) continue;
               act = alt_act;
+#if DETECT_PERIOD_2_MOVE_LOOP
               test = alt_act as ActorDest;
               altered = true;
+#endif
               break;
             }
             if (altered) break;
@@ -4157,8 +4159,10 @@ retry:
             var alt_act = _pathNear(test.dest);
             if (alt_act is not null) {
               act = alt_act;
+#if DETECT_PERIOD_2_MOVE_LOOP
               test = act as ActorDest;
               altered = true;
+#endif
             }
           }
 #if DETECT_PERIOD_2_MOVE_LOOP
