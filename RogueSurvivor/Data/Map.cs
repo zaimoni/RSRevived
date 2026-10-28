@@ -1114,11 +1114,7 @@ namespace djack.RogueSurvivor.Data
         if (act is RecursivePathfinderMoveCost recurse) return recurse.PathfinderMoveCost();
         if (act is Engine.Actions.Resolvable delta) {
             if (delta.ConcreteAction is { } real) return PathfinderMoveCosts(real);
-#if DEBUG
-            throw new InvalidOperationException("costing an action that does not resolve: " + act);
-#else
-            return 1;
-#endif
+            return 1;   // a delta scheduled from a far origin (Actor::OnePath) may not resolve yet; legacy costed that as the normal case
         }
         if (act is Engine.Actions.ActionShove) return 4;    // impolite so penalize just more than walking around
         if (   act is Engine.Actions.ActionOpenDoor  // extra turn

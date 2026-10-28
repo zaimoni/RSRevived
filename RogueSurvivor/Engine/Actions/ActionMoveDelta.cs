@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
   internal interface Resolvable
   {
-    ActorAction? ConcreteAction { get; }   // null: does not resolve here (consumers treat this as an illegal action)
+    ActorAction? ConcreteAction { get; }   // null: does not resolve here (not performable; pathfinder costs it as a normal step)
   }
 
   [Serializable]
