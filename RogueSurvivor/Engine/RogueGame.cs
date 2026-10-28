@@ -5900,14 +5900,12 @@ namespace djack.RogueSurvivor.Engine
     {
       var player = pc.ControlledActor;
 
-      List<KeyValuePair<SwitchPlace, Actor>> candidates = new();
+      List<(SwitchPlace act, Actor who)> candidates = new();
       foreach(var dir in Direction.COMPASS) {
         Location loc = player.Location + dir;
-        if (!Map.Canonical(ref loc)) continue;
-        var a = loc.Actor;
-        if (a is null) continue;
-        var test = SwitchPlace.create(player, a);
-        if (test is not null) candidates.Add(new(test, a));
+        if (!Map.Canonical(ref loc) || loc.Actor is not Actor who) continue;
+        var act = SwitchPlace.create(player, who);
+        if (act is not null) candidates.Add((act, who));
       }
 
       if (0 >= candidates.Count) {
@@ -5917,14 +5915,16 @@ namespace djack.RogueSurvivor.Engine
 
       string label(int index)
       {
-        return string.Format("{0} @ {1}", candidates[index].Value.Name, candidates[index].Key.dest.ToString());
+        var (act, who) = candidates[index];
+        return string.Format("{0} @ {1}", who.Name, act.dest);
       }
 
       bool details(int index)
       {
-        candidates[index].Key.EnableUI();
-        if (!candidates[index].Key.IsPerformable()) return false;
-        candidates[index].Key.Perform();
+        var act = candidates[index].act;
+        act.EnableUI();   // a PC target gets the yes/no prompt; see SwitchPlace.IsPerformable
+        if (!act.IsPerformable()) return false;
+        act.Perform();
         return true;
       }
 
