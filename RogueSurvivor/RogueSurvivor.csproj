@@ -271,7 +271,6 @@
     <Compile Include="Engine\Actions\ActionRechargeItemBattery.cs" />
     <Compile Include="Engine\Actions\ActionPush.cs" />
     <Compile Include="Engine\Actions\ActionBuildFortification.cs" />
-    <Compile Include="Engine\Actions\ActionSwitchPlace.cs" />
     <Compile Include="Engine\Actions\ActionLeaveMap.cs" />
     <Compile Include="Engine\Actions\ActionTrade.cs" />
     <Compile Include="Engine\Actions\ActionSwitchPowerGenerator.cs" />

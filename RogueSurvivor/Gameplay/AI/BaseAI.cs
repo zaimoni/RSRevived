@@ -1066,14 +1066,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a is null) return false;
       if (a is Resolvable res) return IsValidFleeingAction(res.ConcreteAction);
       if (a is Engine._Action.SwitchPlace swap) return swap.LeaderSwitchPlace;
-      return a is ActionMoveStep || a is ActionOpenDoor || a is ActionSwitchPlace;
+      return a is ActionMoveStep || a is ActionOpenDoor;
     }
 
     protected bool IsValidWanderAction(ActorAction? a)
     {
       if (a is null) return false;
       if (a is ActionMoveStep) return true;
-      if (a is ActionSwitchPlace) return true;
       if (a is Engine._Action.SwitchPlace swap) return swap.LeaderSwitchPlace;
 //    if (a is ActionPush) return true; // wasn't being generated in RS alpha 9...results do not look good
       if (a is ActionOpenDoor) return true;
@@ -1095,7 +1094,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a is ActionChat) return false;
       if (a is PlayerTakeFrom) return false;
       if (a is ActionRechargeItemBattery) return false;
-      if (a is ActionSwitchPlaceEmergency) return false;
       if (a is Engine._Action.SwitchPlace swap) return swap.LeaderSwitchPlace;
       if (a is ActionSwitchPowerGenerator) return false;
       return true;

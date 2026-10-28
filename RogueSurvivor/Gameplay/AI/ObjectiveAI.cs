@@ -2777,17 +2777,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (x is ActionBreak) return null;
       if (x is ActionSay) return null;
       if (x is ActionShout) return null;
-      if (x is ActionSwitchPlace) return null;
-      if (x is ActionSwitchPlaceEmergency) return null;
-      if (x is Engine._Action.SwitchPlace) return null;
+      if (x is SwitchPlace) return null;
       if (x is ActionSwitchPowerGenerator) return null;
       if (x is ActionBuildFortification) return null; // \todo derive this from Use<Item>
       if (x is ActionEatCorpse) return null;
-      if (x is Engine._Action.PushOnto) return null;
-      if (x is Engine._Action.Fork) return null; // these likely need some sort of recursive approach, or de facto resolution first
-      if (x is Engine._Action.Join) return null;
-      if (x is Engine._Action.Fallback) return null;
-      if (x is Engine._Action.MoveStep) return null; // these are from new-AI
+      if (x is PushOnto) return null;
+      if (x is Fork) return null; // these likely need some sort of recursive approach, or de facto resolution first
+      if (x is Join) return null;
+      if (x is Fallback) return null;
+      if (x is MoveStep) return null; // these are from new-AI
 
       const bool tracing = false;
 
