@@ -95,6 +95,7 @@
     <Compile Include="Engine\Action\Fallback.cs" />
     <Compile Include="Engine\Action\MeleeAttack.cs" />
     <Compile Include="Engine\Action\RangedAttack.cs" />
+    <Compile Include="Engine\Action\SwitchPlace.cs" />
     <Compile Include="Engine\Action\TakeItem.cs" />
     <Compile Include="Engine\Action\TradeItem.cs" />
     <Compile Include="Engine\Action\TransferFollower.cs" />

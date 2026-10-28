@@ -1125,7 +1125,8 @@ namespace djack.RogueSurvivor.Data
             || act is Engine.Actions.ActionPush  // assume non-moving i.e. extra turn; also costs stamina
             || act is Engine.Actions.ActionPull  // extra turn; also costs stamina
             || act is Engine.Actions.ActionSwitchPlace // yes, this is hard-coded as 2 standard actions
-            || act is Engine.Actions.ActionSwitchPlaceEmergency)
+            || act is Engine.Actions.ActionSwitchPlaceEmergency
+            || act is Engine._Action.SwitchPlace)
             return 2;
         if (act is Engine.Actions.ActionBashDoor bash) return teardown_turns(bash.Target);
         if (act is Engine.Actions.ActionBreak act_break) return teardown_turns(act_break.Target);
