@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Engine._Action
 {
-    internal class Fallback : ActorAction, Resolvable, CanTakeLive
+    internal class Fallback : ActorAction, Resolvable, IsPerformableUsesUI
     {
         private readonly List<ActorAction> m_Options;
         [NonSerialized] private int t0 = -1;
@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Engine._Action
         {
             options.RejectEmptyActions();
 #if DEBUG
-            if (options[^-1] is CanTakeLive test && test.RequireLive()) throw new InvalidOperationException("last option of Fallback: RequireLive()");
+            if (options[^-1] is IsPerformableUsesUI test && test.RequiresUI()) throw new InvalidOperationException("last option of Fallback: RequireLive()");
 #endif
             m_Options = options;
         }
@@ -71,17 +71,17 @@ namespace djack.RogueSurvivor.Engine._Action
             _result?.Perform();
         }
 
-        public void TakeLive()
+        public void EnableUI()
         {
-            foreach (var act in m_Options) (act as CanTakeLive)?.TakeLive();
+            foreach (var act in m_Options) (act as IsPerformableUsesUI)?.EnableUI();
             t0 = -1;
             _result = null;
         }
 
-        public bool RequireLive()
+        public bool RequiresUI()
         {
             foreach (var act in m_Options) {
-                if (act is CanTakeLive test && test.RequireLive()) return true;
+                if (act is IsPerformableUsesUI test && test.RequiresUI()) return true;
             }
             return false;
         }

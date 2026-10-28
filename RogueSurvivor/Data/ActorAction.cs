@@ -37,9 +37,9 @@ namespace djack.RogueSurvivor.Data
 
     internal interface NotSchedulable { }
 
-    internal interface CanTakeLive {
-        public void TakeLive();
-        public bool RequireLive();
+    internal interface IsPerformableUsesUI {
+        public void EnableUI();
+        public bool RequiresUI();
     }
 
     [Serializable]

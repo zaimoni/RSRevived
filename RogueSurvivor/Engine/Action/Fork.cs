@@ -48,7 +48,7 @@ namespace djack.RogueSurvivor.Engine._Action
       {
         foreach (var act in legal_path) {
 #if DEBUG
-          if (act is CanTakeLive) throw new InvalidOperationException("Fork not allowed to hold CanTakeLive interface");
+          if (act is IsPerformableUsesUI) throw new InvalidOperationException("Fork not allowed to hold CanTakeLive interface");
 #endif
           Add(act);
         }

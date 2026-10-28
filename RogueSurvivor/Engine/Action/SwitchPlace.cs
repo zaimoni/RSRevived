@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Engine._Action
 {
-    internal class SwitchPlace : ActorAction, ActorDest, ActorOrigin, CanTakeLive
+    internal class SwitchPlace : ActorAction, ActorDest, ActorOrigin, IsPerformableUsesUI
     {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
@@ -71,14 +71,14 @@ namespace djack.RogueSurvivor.Engine._Action
         public override void Perform()
         {
 #if DEBUG
-            if (!m_Live && !RequireLive()) throw new InvalidOperationException("only planning-mode performability checks");
+            if (!m_Live && !RequiresUI()) throw new InvalidOperationException("only planning-mode performability checks");
 #endif
             RogueGame.Game.DoSwitchPlace(m_Actor, m_NewLocation.Actor ?? throw new ArgumentNullException("m_NewLocation.Actor"));
         }
 
-        public void TakeLive() => m_Live = true;
+        public void EnableUI() => m_Live = true;
 
-        public bool RequireLive()
+        public bool RequiresUI()
         {
             var who = m_NewLocation.Actor;
             return who is not null && who.IsPlayer;
