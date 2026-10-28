@@ -236,13 +236,19 @@ namespace djack.RogueSurvivor.Engine
       if (actors_in_way.TryGetValue(point,out var actorAt)) {
         // player as leader should be able to switch with player as follower
         // NPCs shouldn't be leading players anyway
-        if ((pc is not null || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))
-          return new ActionSwitchPlace(actor, actorAt);
+        var switch_place = SwitchPlace.create(actor, actorAt);
+        if (actor.Controller is Gameplay.AI.OrderableAI ordai) {
+            if (!ordai.ProposeSwitchPlaces(actorAt.Location)) switch_place = null;
+        }
+        // historically, legacy ai bump-movement did not switch places with the player
+        if (pc is null && actorAt.IsPlayer) switch_place = null;
+
+        // check leader-switch to follower before chat
+        if (switch_place is not null && actor.CanSwitchPlaceWith(actorAt, out reason)) return switch_place;
+
         if (!actor.CanChatWith(actorAt, out reason)) return null;
         if (actor.Controller is Gameplay.AI.OrderableAI myai && myai.ProposeSwitchPlaces(actorAt.Location)) {
-          if (actorAt.Controller is Gameplay.AI.OrderableAI oai && !oai.RejectSwitchPlaces(actor.Location)) {
-            return new ActionSwitchPlaceEmergency(actor,actorAt);    // this is an AI cheat so shouldn't be happening that much
-          }
+          if (switch_place is not null) return switch_place;
         }
         return new ActionChat(actor, actorAt);
       }

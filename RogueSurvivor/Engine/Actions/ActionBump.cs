@@ -9,7 +9,7 @@ using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionBump : ActorAction, Resolvable, ActorDest
+  internal class ActionBump : ActorAction, Resolvable, ActorDest, IsPerformableUsesUI
     {
     private readonly Direction m_Direction;
     private readonly Location m_NewLocation;
@@ -46,6 +46,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
 
     public override void Perform() => m_ConcreteAction.Perform();
+    public void EnableUI() => (m_ConcreteAction as IsPerformableUsesUI)?.EnableUI();
+    public bool RequiresUI() => (m_ConcreteAction as IsPerformableUsesUI)?.RequiresUI() ?? false;
 
     static public ActionBump? create(Actor actor, Direction direction, out string? reason) {
         var denorm_loc = actor.Location + direction;
@@ -56,5 +58,5 @@ namespace djack.RogueSurvivor.Engine.Actions
     static public ActionBump? create(Actor actor, Direction direction) => create(actor, direction, out var _);
 
     public override string ToString() { return m_ConcreteAction.ToString(); }
-  }
+    }
 }

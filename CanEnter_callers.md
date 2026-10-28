@@ -58,6 +58,10 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | _Action.MoveStep.RunFrom | Engine/Action/MoveStep.cs:211 | ok | each candidate destination, by ref |
 | _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:280 | ok | origin |
 | _Action.PushOnto.schedule | Engine/Action/PushOnto.cs:281 | ok | destination |
+| _Action.SwitchPlace.IsPerformable | Engine/Action/SwitchPlace.cs:45 | ok |  |
+| _Action.SwitchPlace.schedule(,,) | Engine/Action/SwitchPlace.cs:94 | ok |  |
+| _Action.SwitchPlace.schedule(,,) | Engine/Action/SwitchPlace.cs:95 | ok |  |
+| _Action.SwitchPlace.schedule(,) | Engine/Action/SwitchPlace.cs:103 | ok |  |
 | ActionMoveDelta.schedule(Actor, Location, Location) | Engine/Actions/ActionMoveDelta.cs:245 | ok | destination |
 | ActionMoveDelta.schedule(Actor, Location, Location) | Engine/Actions/ActionMoveDelta.cs:246 | ok | origin |
 | ActionMoveDelta.schedule(Actor, Location) | Engine/Actions/ActionMoveDelta.cs:264 | ok | destination; the overload without an origin |

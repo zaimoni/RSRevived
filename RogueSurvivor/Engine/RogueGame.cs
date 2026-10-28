@@ -8967,6 +8967,11 @@ namespace djack.RogueSurvivor.Engine
     {
       ActionBump? actionBump = ActionBump.create(player, direction, out var reason);
       if (actionBump is not null) {
+#if DEBUG
+         if (!actionBump.PerformedBy(player)) throw new InvalidOperationException(actionBump.ToString() + " not performed by " + player.Name);
+#endif
+        (actionBump as IsPerformableUsesUI)?.EnableUI();
+        if (!actionBump.IsPerformable()) return false;
         actionBump.Perform();
         return true;
       }

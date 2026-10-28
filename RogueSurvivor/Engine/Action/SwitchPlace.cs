@@ -50,7 +50,7 @@ namespace djack.RogueSurvivor.Engine._Action
                 m_FailReason = "not cooperative enough to switch";
                 return false;
             }
-            if (target.Controller is PlayerController pc) {
+            if (target.Controller is PlayerController pc && !m_Actor.IsPlayer) {
                 if (!m_Live) return true;
                 if (RogueGame.Game.YesNoPopup("Switch places with " + m_Actor.Name)) return true;
                 m_FailReason = "declined by target";
@@ -80,6 +80,7 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public bool RequiresUI()
         {
+            if (m_Actor.IsPlayer) return false;
             var who = m_NewLocation.Actor;
             return who is not null && who.IsPlayer;
         }
