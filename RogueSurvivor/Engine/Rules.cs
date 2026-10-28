@@ -390,11 +390,14 @@ namespace djack.RogueSurvivor.Engine
         if (actor.IsEnemyOf(actorAt)) {
           return (ActionMeleeAttack.Can(actor, actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
         }
-        // player as leader should be able to switch with player as follower
-        // NPCs shouldn't be leading players anyway
-        if (actor.IsPlayer || !actorAt.IsPlayer) {
-          if (actor.CanSwitchPlaceWith(actorAt, out reason)) return new ActionSwitchPlace(actor, actorAt);
+
+        var switch_place = _Action.SwitchPlace.create(actor, actorAt);
+        if (switch_place is not null) {
+          if (actor.Controller is Gameplay.AI.OrderableAI myai) {
+            if (!myai.ProposeSwitchPlaces(actorAt.Location)) switch_place = null;
+          }
         }
+        if (switch_place is not null && !switch_place.RequiresUI()) return switch_place;
 
         // no chat when pathfinding
         // but it is ok to shove other actors
@@ -441,18 +444,21 @@ namespace djack.RogueSurvivor.Engine
              if (candidates is null && test.Key.Any()) candidates = test.Key.ToList();
              // end function target
 
+             if (candidates is not null && switch_place is not null) {
+                List<ActorAction> acts_failover = [switch_place];
+
+                List<ActorAction> acts_fork = new();
+                foreach(var x in candidates) acts_fork.Add(new ActionShove(actor, actorAt, x.Value));
+                acts_failover.Add(1 == acts_fork.Count ? acts_fork[0] : new _Action.Fork(actor, acts_fork));
+
+                return new _Action.Fallback(actor, acts_failover);
+             }
+
              if (tracing) {
                 if (candidates is not null) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "Rules::IsPathableFor: ActionShove: "+actor.Name);
              }
              if (candidates is not null) return new ActionShove(actor,actorAt, Get.DiceRoller.Choose(candidates).Value);
            }
-        }
-
-        // check for mutual-advantage switching place between ais
-        if (actor.Controller is Gameplay.AI.OrderableAI myai && myai.ProposeSwitchPlaces(actorAt.Location)) {
-          if (actorAt.Controller is Gameplay.AI.OrderableAI other_ai && !other_ai.RejectSwitchPlaces(actor.Location)) {
-            return new ActionSwitchPlaceEmergency(actor,actorAt);    // this is an AI cheat so shouldn't be happening that much
-          }
         }
 
         // consider re-legalizing chat here

@@ -52,7 +52,7 @@ namespace djack.RogueSurvivor.Engine._Action
             }
             if (target.Controller is PlayerController pc) {
                 if (!m_Live) return true;
-                if (RogueGame.Game.YesNoPopup("Switch places with " + target.Name)) return true;
+                if (RogueGame.Game.YesNoPopup("Switch places with " + m_Actor.Name)) return true;
                 m_FailReason = "declined by target";
                 return false;
             }

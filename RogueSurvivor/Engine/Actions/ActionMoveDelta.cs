@@ -111,11 +111,9 @@ namespace djack.RogueSurvivor.Engine.Actions
 
       if (actorAt is not null) {
         if (m_Actor.IsEnemyOf(actorAt)) return null; // should be in combat processing
-        // player as leader should be able to switch with player as follower
-        // NPCs shouldn't be leading players anyway
-        if (m_Actor.IsPlayer || !actorAt.IsPlayer) {
-          if (m_Actor.CanSwitchPlaceWith(actorAt, out m_FailReason)) return new ActionSwitchPlace(m_Actor, actorAt);
-        }
+        var switch_place = _Action.SwitchPlace.create(m_Actor, actorAt);
+        // Proposing a switch place always succeeds here, unlike pathfinding
+        if (switch_place is not null && !switch_place.RequiresUI()) return switch_place;
 
         if (m_Actor.AbleToPush && m_Actor.CanShove(actorAt)) {
            // at least 2 destinations: ok (1 ok if adjacent)
@@ -165,12 +163,18 @@ namespace djack.RogueSurvivor.Engine.Actions
                 if (candidates is not null) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "ActionMoveDelta::_resolve ActionShove: " + m_Actor.Name);
              }
 
+             if (candidates is not null && switch_place is not null) {
+                List<ActorAction> acts_failover = [switch_place];
+
+                List<ActorAction> acts_fork = new();
+                foreach(var x in candidates) acts_fork.Add(new ActionShove(m_Actor, actorAt, x.Value));
+                acts_failover.Add(1 == acts_fork.Count ? acts_fork[0] : new _Action.Fork(m_Actor, acts_fork));
+
+                return new _Action.Fallback(m_Actor, acts_failover);
+             }
+
              if (candidates is not null) return new ActionShove(m_Actor,actorAt, rules.DiceRoller.Choose(candidates).Value);
            }
-        }
-        // check for mutual-advantage switching place between ais.  Proposing always succeeds, here (unlike pathfinding)
-        if (actorAt.Controller is Gameplay.AI.OrderableAI oai && !oai.RejectSwitchPlaces(m_Actor.Location)) {
-          return new ActionSwitchPlaceEmergency(m_Actor,actorAt);    // this is an AI cheat so shouldn't be happening that much
         }
       } else if (obj is not null) {
            if (obj is DoorWindow door) {
