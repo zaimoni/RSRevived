@@ -3403,7 +3403,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryInsanity(pc) && !HandlePlayerSleep(player);
                 break;
               case PlayerCommand.SWITCH_PLACE:
-                flag1 = !TryInsanity(pc) && !HandlePlayerSwitchPlace(player);
+                flag1 = !TryInsanity(pc) && !HandlePlayerSwitchPlace(pc);
                 break;
               case PlayerCommand.UNLOAD:
                 flag1 = !TryInsanity(pc) && !HandlePlayerUnloadItem(pc, point);
@@ -5896,39 +5896,39 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private bool HandlePlayerSwitchPlace(Actor player)
+    private bool HandlePlayerSwitchPlace(PlayerController pc)
     {
-      const string SWITCH_PLACE_MODE_TEXT = "SWITCH PLACE MODE - directions to switch place with a follower, ESC cancels";
+      var player = pc.ControlledActor;
 
-      ClearOverlays();
-      AddOverlay(new UI.OverlayPopup(SWITCH_PLACE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
-
-      Actor? swap_whom(Direction dir) {
-        if (dir == Direction.NEUTRAL) return null;
-        var loc = player.Location + dir;
-        if (!Map.Canonical(ref loc)) return null;
-        return loc.Actor;
+      List<KeyValuePair<SwitchPlace, Actor>> candidates = new();
+      foreach(var dir in Direction.COMPASS) {
+        Location loc = player.Location + dir;
+        if (!Map.Canonical(ref loc)) continue;
+        var a = loc.Actor;
+        if (a is null) continue;
+        var test = SwitchPlace.create(player, a);
+        if (test is not null) candidates.Add(new(test, a));
       }
 
-      bool swap(Actor? actorAt) {
-        if (actorAt is not null) {
-          if (player.CanSwitchPlaceWith(actorAt, out string reason)) {
-            DoSwitchPlace(player, actorAt);
-            return true;
-          } else {
-            ErrorPopup(string.Format("Can't switch place : {0}", reason));
-            return false;
-          }
-        } else {
-          ErrorPopup("Noone there.");
-          return false;
-        }
+      if (0 >= candidates.Count) {
+        ErrorPopup("No one to switch places with.");
+        return false;
       }
 
-      bool actionDone = DirectionCommand(swap_whom, swap);
+      string label(int index)
+      {
+        return string.Format("{0} @ {1}", candidates[index].Value.Name, candidates[index].Key.dest.ToString());
+      }
 
-      ClearOverlays();
-      return actionDone;
+      bool details(int index)
+      {
+        candidates[index].Key.EnableUI();
+        if (!candidates[index].Key.IsPerformable()) return false;
+        candidates[index].Key.Perform();
+        return true;
+      }
+
+      return PagedPopup("Switching places with:", candidates.Count, label, details, false);
     }
 
     private bool HandlePlayerTakeLead(LivingActor player)

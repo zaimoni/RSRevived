@@ -71,7 +71,7 @@ namespace djack.RogueSurvivor.Engine._Action
         public override void Perform()
         {
 #if DEBUG
-            if (!m_Live && !RequiresUI()) throw new InvalidOperationException("only planning-mode performability checks");
+            if (!m_Live && RequiresUI()) throw new InvalidOperationException("only planning-mode performability checks");
 #endif
             RogueGame.Game.DoSwitchPlace(m_Actor, m_NewLocation.Actor ?? throw new ArgumentNullException("m_NewLocation.Actor"));
         }
