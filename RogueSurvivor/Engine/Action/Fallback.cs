@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Engine._Action
 {
-    internal class Fallback : ActorAction, Resolvable
+    internal class Fallback : ActorAction, Resolvable, CanTakeLive
     {
         private readonly List<ActorAction> m_Options;
         [NonSerialized] private int t0 = -1;
@@ -14,6 +14,9 @@ namespace djack.RogueSurvivor.Engine._Action
         public Fallback(Actor actor, List<ActorAction> options) : base(actor)
         {
             options.RejectEmptyActions();
+#if DEBUG
+            if (options[^-1] is CanTakeLive test && test.RequireLive()) throw new InvalidOperationException("last option of Fallback: RequireLive()");
+#endif
             m_Options = options;
         }
 
@@ -67,5 +70,21 @@ namespace djack.RogueSurvivor.Engine._Action
 #endif
             _result?.Perform();
         }
+
+        public void TakeLive()
+        {
+            foreach (var act in m_Options) (act as CanTakeLive)?.TakeLive();
+            t0 = -1;
+            _result = null;
+        }
+
+        public bool RequireLive()
+        {
+            foreach (var act in m_Options) {
+                if (act is CanTakeLive test && test.RequireLive()) return true;
+            }
+            return false;
+        }
+
     }
 }

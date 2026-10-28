@@ -46,7 +46,12 @@ namespace djack.RogueSurvivor.Engine._Action
 
       public Fork(Actor actor, List<ActorAction> legal_path) : base(actor.ControlledBy<ObjectiveAI>())
       {
-        foreach (var act in legal_path) Add(act);
+        foreach (var act in legal_path) {
+#if DEBUG
+          if (act is CanTakeLive) throw new InvalidOperationException("Fork not allowed to hold CanTakeLive interface");
+#endif
+          Add(act);
+        }
       }
 
       public override bool IsLegal()

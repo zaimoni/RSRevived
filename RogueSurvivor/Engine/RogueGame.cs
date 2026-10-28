@@ -6932,6 +6932,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       var actorAction = ai.GetAction();
       if (actorAction is null) throw new InvalidOperationException("AI returned null action.");
+      (actorAction as CanTakeLive)?.TakeLive();
       if (!actorAction.IsPerformable()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), ai.GetType().ToString(), actorAction.FailReason));
       if (aiActor.IsInsane && Rules.Get.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         var insaneAction = GenerateInsaneAction(aiActor);

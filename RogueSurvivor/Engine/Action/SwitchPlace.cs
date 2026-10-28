@@ -5,11 +5,11 @@ using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Engine._Action
 {
-    internal class SwitchPlace : ActorAction, ActorDest, ActorOrigin
+    internal class SwitchPlace : ActorAction, ActorDest, ActorOrigin, CanTakeLive
     {
         private readonly Location m_NewLocation;
         private readonly Location m_Origin;
-
+        [NonSerialized] private bool m_Live = false;
 
         private SwitchPlace(Actor actor, Location newLocation, Location origin) : base(actor)
         {
@@ -46,13 +46,14 @@ namespace djack.RogueSurvivor.Engine._Action
                 m_FailReason = "does not fit";
                 return false;
             }
-            if (target.Controller is PlayerController pc) {
-                if (RogueGame.Game.YesNoPopup("Switch places with " + target.Name)) return true;
-                m_FailReason = "declined by target";
-                return false;
-            }
             if (target.Controller is not Gameplay.AI.ObjectiveAI) {
                 m_FailReason = "not cooperative enough to switch";
+                return false;
+            }
+            if (target.Controller is PlayerController pc) {
+                if (!m_Live) return true;
+                if (RogueGame.Game.YesNoPopup("Switch places with " + target.Name)) return true;
+                m_FailReason = "declined by target";
                 return false;
             }
             var who = target as LivingActor;
@@ -69,7 +70,18 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public override void Perform()
         {
+#if DEBUG
+            if (!m_Live && !RequireLive()) throw new InvalidOperationException("only planning-mode performability checks");
+#endif
             RogueGame.Game.DoSwitchPlace(m_Actor, m_NewLocation.Actor ?? throw new ArgumentNullException("m_NewLocation.Actor"));
+        }
+
+        public void TakeLive() => m_Live = true;
+
+        public bool RequireLive()
+        {
+            var who = m_NewLocation.Actor;
+            return who is not null && who.IsPlayer;
         }
 
         public bool LeaderSwitchPlace { get {
@@ -89,6 +101,7 @@ namespace djack.RogueSurvivor.Engine._Action
             if (actor.IsEnemyOf(target)) return null;
             if (target.IsSleeping) return null;
             if (!target.Model.CanEnter(actor.Location)) return null;
+            if (target.Controller is not Gameplay.AI.ObjectiveAI) return null;
             return schedule(actor, target.Location, actor.Location);
         }
 

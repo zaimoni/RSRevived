@@ -37,6 +37,11 @@ namespace djack.RogueSurvivor.Data
 
     internal interface NotSchedulable { }
 
+    internal interface CanTakeLive {
+        public void TakeLive();
+        public bool RequireLive();
+    }
+
     [Serializable]
   public abstract class ActorAction
   {
