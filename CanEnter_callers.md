@@ -47,9 +47,9 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:315 | ok | a shelf: any neighbour |
 | ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:321 | ok | a ground stack: the tile itself |
 | ActorModel.HasAnyInventoryAccessibleDestinations | Data/ActorModel.cs:326 | ok | a ground stack: any neighbour, when reaching in is possible; row added 2026-10-14 |
-| Map.WouldBlacklistFor | Data/Map.cs:1183 | ok | receiver is the actor parameter |
-| Map.PathfindLocSteps | Data/Map.cs:1197 | ok | StrictCanEnter, in the flood-fill's lambda; receiver is actor.Model |
-| Map.TrapWouldSealBuilding | Data/Map.cs:2171 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
+| Map.WouldBlacklistFor | Data/Map.cs:1180 | ok | receiver is the actor parameter |
+| Map.PathfindLocSteps | Data/Map.cs:1194 | ok | StrictCanEnter, in the flood-fill's lambda; receiver is actor.Model |
+| Map.TrapWouldSealBuilding | Data/Map.cs:2168 | ok | asks GameActors.MaleCivilian on behalf of no one (2026-10-11) |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:93 | ok | origin; was Actor.CanEnter until 81a9544a |
 | Op.MoveStep.ScheduleCast | Engine/Action/MoveStep.cs:94 | ok | destination; was Actor.CanEnter until 81a9544a |
 | _Action.MoveStep.schedule | Engine/Action/MoveStep.cs:173 | ok | destination; was Actor.CanEnter until 81a9544a |
@@ -71,9 +71,9 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | AcquireLineOfSight..ctor(Actor, in Location) | Gameplay/AI/Goals/AcquireLineOfSight.cs:44 | ok | throws via Spotlight: "unpathable"; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, IEnumerable) | Gameplay/AI/Goals/AcquireLineOfSight.cs:52 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:61 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4821 | ok | two calls: N and S of the trap |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4824 | ok | two calls: E and W of the trap |
-| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4864 | ok | by ref |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4822 | ok | two calls: N and S of the trap |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4825 | ok | two calls: E and W of the trap |
+| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4865 | ok | by ref |
 
 ## Actor.CanEnter
 
@@ -95,10 +95,10 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 |---|---|---|---|
 | SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:102 | ok | RemoveWhere lambda; comment says it matters for burning cars |
 | ObjectiveAI.WantToGoHere | Gameplay/AI/ObjectiveAI.cs:1396 | ok | by ref |
-| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3254 | ok | local function destination_melee_safe |
-| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3309 | ok | local function install_moves; its row had gone missing |
-| ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4218 | ok | by ref |
-| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4565 | ok | |
+| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3255 | ok | local function destination_melee_safe |
+| ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3310 | ok | local function install_moves; its row had gone missing |
+| ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4219 | ok | by ref |
+| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4566 | ok | |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:143 | ok | throws via Spotlight on the origin |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:144 | ok | throws via Spotlight on the destination |
 
