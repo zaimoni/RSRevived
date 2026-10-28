@@ -15,7 +15,10 @@ namespace djack.RogueSurvivor.Engine._Action
         {
             options.RejectEmptyActions();
 #if DEBUG
-            if (options[^-1] is IsPerformableUsesUI test && test.RequiresUI()) throw new InvalidOperationException("last option of Fallback: RequireLive()");
+            if (options[^1] is IsPerformableUsesUI test && test.RequiresUI()) throw new InvalidOperationException("last option of Fallback: RequireUI()");
+            foreach (var act in options) {
+                if (!act.PerformedBy(actor)) throw new InvalidOperationException(act.ToString()+" not performed by "+actor.ToString());
+            }
 #endif
             m_Options = options;
         }

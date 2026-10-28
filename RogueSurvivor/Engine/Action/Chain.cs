@@ -130,9 +130,9 @@ restart:
 
       public void Append(WorldUpdate next)
       {
-         if (m_Actions[^-1] is Fork final_fork) {
+         if (m_Actions[^1] is Fork final_fork) {
             var join = final_fork.Append(next);
-            m_Actions[^-1] = join;
+            m_Actions[^1] = join;
          } else if (next is Chain chain) {
             m_Actions.AddRange(chain.m_Actions);
          }
