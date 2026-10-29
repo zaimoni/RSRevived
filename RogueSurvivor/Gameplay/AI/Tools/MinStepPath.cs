@@ -125,6 +125,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
                         xy = [Direction.SW, Direction.S, Direction.SE];
                         return;
                     }
+                default: throw new InvalidOperationException("unhandled case");
              }
         }
     }
@@ -133,10 +134,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
     {
         public MinStepPathStats stats;
         private Actor m_Actor;
-
-        private readonly Dictionary<KeyValuePair<Point, Point>, ActionMoveDelta> _moves;
-        private readonly HashSet<Point> _impassible;
-        private readonly HashSet<Point> _clear;
 
         public MinStepPath(Actor a, in Location src, in Location dest) {
 #if DEBUG
