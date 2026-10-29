@@ -424,27 +424,6 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
-    private string ReasonCantSwitchPlaceWith(Actor target)
-    {
-#if DEBUG
-      if (target is null) throw new ArgumentNullException(nameof(target));
-#endif
-      if ((target as LivingActor)?.Leader != this) return "not your follower";
-      if (target.IsSleeping) return "sleeping";
-      return "";
-    }
-
-    public bool CanSwitchPlaceWith(Actor target, out string reason)
-    {
-      reason = ReasonCantSwitchPlaceWith(target);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanSwitchPlaceWith(Actor target)
-    {
-      return string.IsNullOrEmpty(ReasonCantSwitchPlaceWith(target));
-    }
-
     // aggression statistics, etc.
     public int KillsCount { get { return ActorScoring.KillsCount; } }
 

@@ -8,6 +8,7 @@
 #define B_MOVIE_MARTIAL_ARTS
 
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine._Action;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
@@ -17,10 +18,9 @@ using System.Linq;
 using System.Text.Json;
 using Zaimoni.Data;
 
-using Rectangle = Zaimoni.Data.Box2D<short>;
 using Point = Zaimoni.Data.Vector2D<short>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 using Size = Zaimoni.Data.Vector2D<short>;   // likely to go obsolete with transition to a true vector type
-using djack.RogueSurvivor.Engine._Action;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -244,7 +244,7 @@ namespace djack.RogueSurvivor.Engine
         if (pc is null && actorAt.IsPlayer) switch_place = null;
 
         // check leader-switch to follower before chat
-        if (switch_place is not null && actor.CanSwitchPlaceWith(actorAt, out reason)) return switch_place;
+        if (switch_place is not null && (actorAt as LivingActor)?.Leader == actor) return switch_place;
 
         if (!actor.CanChatWith(actorAt, out reason)) return null;
         if (actor.Controller is Gameplay.AI.OrderableAI myai && myai.ProposeSwitchPlaces(actorAt.Location)) {

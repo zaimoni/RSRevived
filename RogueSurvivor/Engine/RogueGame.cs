@@ -7137,7 +7137,7 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, pt =>
          {
              var actorAt = map.GetActorAt(pt);
-             return (actorAt is not null && Player.CanSwitchPlaceWith(actorAt));
+             return (actorAt is not null && SwitchPlace.create(Player, actorAt) is not null);
          });
         case AdvisorHint.GAME_SAVE_LOAD:
           return map.LocalTime.Hour >= 7;
@@ -8915,8 +8915,16 @@ namespace djack.RogueSurvivor.Engine
       other.RemoveFromMap();
       o_loc.Place(actor);
       a_loc.Place(other);
-      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(other))
-        AddMessage(MakeMessage(actor, VERB_SWITCH_PLACE_WITH.Conjugate(actor), other));
+
+      UI_SwitchPlace(actor, other);
+    }
+
+    public void UI_SwitchPlace(Actor actor, Actor other)
+    {
+      var a_witness = actor.PlayersInLOS();
+      var o_witness = other.PlayersInLOS();
+      var witness = a_witness.Union(o_witness);
+      witness?.AddMessage(MakePanopticMessage(actor, VERB_SWITCH_PLACE_WITH.Conjugate(actor), other));
     }
 
     public void DoTakeLead(LivingActor actor, LivingActor other)
@@ -15092,6 +15100,16 @@ retry:
         if (0 < lhs.Count) {
             foreach(var actor in rhs) if (lhs.Contains(actor)) ret.Add(actor);
         }
+        return 0 < ret.Count ? ret : null;
+    }
+
+    static public List<PlayerController>? Union(this List<PlayerController>? lhs, List<PlayerController>? rhs) {
+        if (rhs is null) return lhs;
+        if (lhs is null) return rhs;
+
+        List<PlayerController> ret = new(lhs);
+        foreach(var actor in rhs) if (!lhs.Contains(actor)) ret.Add(actor);
+
         return 0 < ret.Count ? ret : null;
     }
 
