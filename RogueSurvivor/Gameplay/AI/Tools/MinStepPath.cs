@@ -130,18 +130,25 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         }
     }
 
-    class MinStepPath
+    class MinStepPath : ActorOrigin
     {
-        public MinStepPathStats stats;
         private Actor m_Actor;
+        private Location m_Origin;
+        private List<Location> m_Dest;
+        private HashSet<Location> m_Seen = new();
+        private HashSet<Location> m_Blacklist = new();
 
-        public MinStepPath(Actor a, in Location src, in Location dest) {
+        public Location origin => m_Origin;
+
+        public MinStepPath(Actor a, in Location src, List<Location> dest) {
 #if DEBUG
            if (!a.MayEnter(src)) throw a.Spotlight(new InvalidOperationException("must be able to exist at the origin"));
-           if (!a.MayEnter(dest)) throw a.Spotlight(new InvalidOperationException("must be able to exist at the destination"));
+           foreach(var loc in dest) if (!a.MayEnter(loc)) throw a.Spotlight(new InvalidOperationException("must be able to exist at all destinations"));
 #endif
             m_Actor = a;
-            stats = new MinStepPathStats(in src, in dest);
+            m_Origin = src;
+            m_Dest = dest;
+            m_Seen.Add(origin);
         }
     }
 }
