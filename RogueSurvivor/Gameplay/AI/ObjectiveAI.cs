@@ -4599,6 +4599,25 @@ restart_chokepoints:
       }
 
       if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("main exit: " + goal_costs.to_s() + ", " + excluded.to_s());
+
+      { // straight-line fast path: a goal reachable in exactly its grid distance; otherwise fall through to the floodfill
+      var direct = new Tools.MinStepPath(m_Actor, m_Actor.Location, goal_costs, loc => excluded.Contains(loc.Map) || excluded_zones.Any(zone => zone.Contains(loc)));
+      var layers = direct.Find();
+      if (layers is not null) {
+        var costs = new Dictionary<Location, int>();
+        if (_legal_path is not null) {
+          foreach (var loc in layers[0]) {
+            if (_legal_path.TryGetValue(loc, out var act)) costs[loc] = Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor);
+          }
+        }
+        var ret = DecideMove(costs);
+        if (ret is not null) {
+          _current_goals = goals;
+          return _recordPathfinding(RecordMinStepPath(layers, ret), goals);
+        }
+      }
+      }
+
       _current_goals = goals;
       return _recordPathfinding(BehaviorPathTo(PathfinderFor(goal_costs, excluded, excluded_zones)),goals);
     }
