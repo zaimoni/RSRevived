@@ -4139,8 +4139,8 @@ retry:
           foreach(var target in goals) {
             var denorm = m_Actor.Location.Map.Denormalize(in target);
             if (denorm is null) continue;
-            var stats = new Tools.MinStepPath(m_Actor, m_Actor.Location, in target);
-            foreach(var dir in stats.stats.advancing) {
+            var stats = new Tools.MinStepPathStats(m_Actor.Location, in target);
+            foreach(var dir in stats.advancing) {
               var loc = m_Actor.Location+dir;
               if (!Map.Canonical(ref loc)) continue;
               if (loc == test.dest) continue;
