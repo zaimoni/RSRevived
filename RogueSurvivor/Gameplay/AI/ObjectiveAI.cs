@@ -4137,9 +4137,7 @@ retry:
         if (goals.ValueEqual(GetPreviousGoals()) && act is ActorDest test && _last_move is not null && test.dest == _last_move.origin) {
           bool altered = false;
           foreach(var target in goals) {
-            var denorm = m_Actor.Location.Map.Denormalize(in target);
-            if (denorm is null) continue;
-            var stats = new Tools.MinStepPathStats(m_Actor.Location, in target);
+            if (Tools.MinStepPathStats.create(m_Actor.Location, in target) is not { } stats) continue;
             foreach(var dir in stats.advancing) {
               var loc = m_Actor.Location+dir;
               if (!Map.Canonical(ref loc)) continue;
@@ -4601,8 +4599,8 @@ restart_chokepoints:
       if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("main exit: " + goal_costs.to_s() + ", " + excluded.to_s());
 
       { // straight-line fast path: a goal reachable in exactly its grid distance; otherwise fall through to the floodfill
-      var direct = new Tools.MinStepPath(m_Actor, m_Actor.Location, goal_costs, loc => excluded.Contains(loc.Map) || excluded_zones.Any(zone => zone.Contains(loc)));
-      var layers = direct.Find();
+      var direct = Tools.MinStepPath.create(m_Actor, m_Actor.Location, goal_costs, loc => excluded.Contains(loc.Map) || excluded_zones.Any(zone => zone.Contains(loc)));
+      var layers = direct?.Find();
       if (layers is not null) {
         var costs = new Dictionary<Location, int>();
         if (_legal_path is not null) {

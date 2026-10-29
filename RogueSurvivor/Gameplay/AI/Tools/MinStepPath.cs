@@ -22,13 +22,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         public int span { get { return span_spread.Key; } }
         public int spread { get { return span_spread.Value; } }
 
-        public MinStepPathStats(in Location src, in Location dest)
+        private MinStepPathStats(in Location src, in Location denorm)
         {
             origin = src;
-            var denorm = src.Map.Denormalize(in dest);
-            if (denorm is null) throw new ArgumentNullException(nameof(denorm));
-            if (src == denorm) throw new InvalidOperationException("self-pathing");
-            target = denorm.Value.Position;
+            target = denorm.Position;
             delta = target - origin.Position;
 
             (var dominant, var absDelta) = delta.DominantDir();
@@ -130,6 +127,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
                 default: throw new InvalidOperationException("unhandled case");
              }
         }
+
+        public static MinStepPathStats? create(in Location src, in Location dest) {
+            if (src.Map.Denormalize(in dest) is not Location denorm) return null;
+            if (src == denorm) throw new InvalidOperationException("self-pathing");
+            return new MinStepPathStats(src, denorm);
+        }
     }
 
     /// <summary>
@@ -216,6 +219,15 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
                 if (next.Any(loc => targets.ContainsKey(loc))) return ret;
                 frontier = next;
             }
+        }
+
+        public static MinStepPath? create(Actor a, in Location src, Dictionary<Location, int> dest, Predicate<Location>? veto = null)
+        {
+            foreach (var loc_dist in dest) {
+                if (src.Map.Denormalize(loc_dist.Key) is not Location denorm) return null;
+                if (src == denorm) throw new InvalidOperationException("self-pathing");
+            }
+            return new MinStepPath(a, in src, dest, veto);
         }
     }
 }
