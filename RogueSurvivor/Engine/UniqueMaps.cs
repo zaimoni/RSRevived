@@ -148,7 +148,7 @@ namespace djack.RogueSurvivor.Engine
       return 0;
     }
 
-    public Map? PoliceStationMap(int code)
+    public Map PoliceStationMap(int code)
     {
       switch(code)
       {
@@ -168,7 +168,7 @@ namespace djack.RogueSurvivor.Engine
       return 0;
     }
 
-    public Map? HospitalMap(int code)
+    public Map HospitalMap(int code)
     {
       switch(code)
       {

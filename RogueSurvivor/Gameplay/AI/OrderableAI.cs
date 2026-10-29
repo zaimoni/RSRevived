@@ -3129,8 +3129,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    public ActorAction? BehaviorUseAdjacentStack() { return WouldUseAccessibleStack(m_Actor.Location, true); }
-    protected ActorAction BehaviorPathTo(in Location dest) { return BehaviorPathTo(new HashSet<Location> { dest }); }
+    public ActorAction? BehaviorUseAdjacentStack() => WouldUseAccessibleStack(m_Actor.Location, true);
+    protected ActorAction? BehaviorPathTo(in Location dest) => BehaviorPathTo(new HashSet<Location> { dest });
 
     protected ActorAction? BehaviorPathToAdjacent(Location dest)
     {

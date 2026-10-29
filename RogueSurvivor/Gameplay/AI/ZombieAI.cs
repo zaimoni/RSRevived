@@ -90,7 +90,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override Dictionary<Location, Actor>? friends_in_FOV { get { return m_MemLOSSensor.Sensor.friends; } }
     public override Dictionary<Location, Actor>? enemies_in_FOV { get { return m_MemLOSSensor.Sensor.enemies; } }
 
-    protected override ActorAction SelectAction()
+    protected override ActorAction? SelectAction()
     {
       var tmp_abilities = m_Actor.Model.Abilities;
       if (m_Exploration is not null && m_Actor.Location != PrevLocation) m_Exploration.Update(m_Actor.Location);

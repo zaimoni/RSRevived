@@ -116,7 +116,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else return "Where the hell is {0}?";
     }
 
-    protected override ActorAction SelectAction()
+    protected override ActorAction? SelectAction()
     {
       var game = RogueGame.Game;
 

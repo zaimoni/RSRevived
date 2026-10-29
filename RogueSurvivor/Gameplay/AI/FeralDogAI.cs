@@ -77,7 +77,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_LOSSensor.Sense();
     }
 
-    protected override ActorAction SelectAction()
+    protected override ActorAction? SelectAction()
     {
       var game = RogueGame.Game;
 

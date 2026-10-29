@@ -98,7 +98,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else return "Where is that {0} retard?";
     }
 
-    protected override ActorAction SelectAction()
+    protected override ActorAction? SelectAction()
     {
       var game = RogueGame.Game;
 

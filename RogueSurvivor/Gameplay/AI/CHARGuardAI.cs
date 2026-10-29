@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return base.AggressedBy(aggressor);
     }
 
-    protected override ActorAction SelectAction()
+    protected override ActorAction? SelectAction()
     {
       ClearMovePlan();
 
