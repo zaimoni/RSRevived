@@ -35,6 +35,18 @@ namespace djack.RogueSurvivor.Data
         public T What { get; }
     }
 
+    public interface ActorDest {
+        Location dest { get; }  // of m_Actor
+    }
+
+    internal interface ActorOrigin {
+        Location origin { get; }  // of m_Actor
+    }
+
+    internal interface Resolvable {
+        ActorAction? ConcreteAction { get; }   // null: does not resolve here (not performable; pathfinder costs it as a normal step)
+    }
+
     internal interface NotSchedulable { }
 
     internal interface IsPerformableUsesUI {

@@ -207,7 +207,7 @@ retry:
         bool all_there = true;
         foreach(var x in m_Options) {
           foreach (var act in x.Value) {
-            if (act is Actions.ActorDest a_dest) {
+            if (act is ActorDest a_dest) {
               if (a_dest.dest == origin) {
                 all_there = false;
                 continue;

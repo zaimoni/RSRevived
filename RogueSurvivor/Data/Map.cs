@@ -1112,7 +1112,7 @@ namespace djack.RogueSurvivor.Data
         }
 
         if (act is RecursivePathfinderMoveCost recurse) return recurse.PathfinderMoveCost();
-        if (act is Engine.Actions.Resolvable delta) {
+        if (act is Resolvable delta) {
             if (delta.ConcreteAction is { } real) return PathfinderMoveCosts(real);
             return 1;   // a delta scheduled from a far origin (Actor::OnePath) may not resolve yet; legacy costed that as the normal case
         }
@@ -1134,7 +1134,7 @@ namespace djack.RogueSurvivor.Data
 
     public static int TrapMoveCostFor(ActorAction act, Actor a)
     {
-      if (act is Engine.Actions.ActorDest move) return move.dest.Map.TrapTurnsFor(move.dest.Position, a);
+      if (act is ActorDest move) return move.dest.Map.TrapTurnsFor(move.dest.Position, a);
       return 0;
     }
 

@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Engine._Action
     // monolith code...not ideal, but trying to manage save/load issues
     // competes with class ActionSequence
     [Serializable]
-    internal class BehavioristABC : ActorAction, Actions.Resolvable, IJsonStaged<BehavioristABC>
+    internal class BehavioristABC : ActorAction, Resolvable, IJsonStaged<BehavioristABC>
     {
         private readonly ReflexCode _reflexCode;
         [NonSerialized] private bool _resolved = false;

@@ -10,21 +10,6 @@ using Zaimoni.JSON;
 namespace djack.RogueSurvivor.Engine.Actions
 {
   // relevant interfaces
-  public interface ActorDest
-  {
-    Location dest { get; }  // of m_Actor
-  }
-
-  internal interface ActorOrigin
-  {
-    Location origin { get; }  // of m_Actor
-  }
-
-  internal interface Resolvable
-  {
-    ActorAction? ConcreteAction { get; }   // null: does not resolve here (not performable; pathfinder costs it as a normal step)
-  }
-
   [Serializable]
   public sealed class ActionMoveDelta : ActorAction,ActorDest,ActorOrigin,Resolvable, IJsonStaged<ActionMoveDelta>
   {
