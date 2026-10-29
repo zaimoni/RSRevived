@@ -585,15 +585,6 @@ namespace djack.RogueSurvivor.Engine
 
     private static void ClearMessages() { Messages.Clear(); }
 
-    static public List<PlayerController>? Union(List<PlayerController>? lhs, List<PlayerController>? rhs) {
-        if (lhs is null) return rhs;
-        if (rhs is null) return lhs;
-        List<PlayerController> ret = new(lhs);
-        foreach(var pc in rhs) if (!lhs.Contains(pc)) ret.Add(pc);
-        return ret;
-    }
-
-
     static private string Truncate(string s, int maxLength)
     {
       return (s.Length > maxLength) ? s.Substring(0, maxLength) : s;
@@ -7546,7 +7537,7 @@ namespace djack.RogueSurvivor.Engine
           title = "LEADING - SWITCHING PLACE";
           body = new string[2]
           {
-            "You can switch place with followers next to you.",
+            "You can switch place with followers next to you, or NPCs that want to be where you are.",
             string.Format("To SWITCH PLACE : <{0}>.",  s_KeyBindings.AsString(PlayerCommand.SWITCH_PLACE))
           };
           break;
