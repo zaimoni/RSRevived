@@ -8898,18 +8898,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public void DoSwitchPlace(Actor actor, Actor other)
-    {
-      actor.SpendActionPoints(2*Actor.BASE_ACTION_COST);
-      Location a_loc = actor.Location;
-      Location o_loc = other.Location;
-      other.RemoveFromMap();
-      o_loc.Place(actor);
-      a_loc.Place(other);
-
-      UI_SwitchPlace(actor, other);
-    }
-
     public void UI_SwitchPlace(Actor actor, Actor other)
     {
       var a_witness = actor.PlayersInLOS();

@@ -70,10 +70,17 @@ namespace djack.RogueSurvivor.Engine._Action
 
         public override void Perform()
         {
+            var other = m_NewLocation.Actor ?? throw new InvalidOperationException("no one to switch places with");
 #if DEBUG
             if (!m_Live && RequiresUI()) throw new InvalidOperationException("only planning-mode performability checks");
+            if (m_Actor.Location != m_Origin) throw new InvalidOperationException("not at origin");
 #endif
-            RogueGame.Game.DoSwitchPlace(m_Actor, m_NewLocation.Actor ?? throw new ArgumentNullException("m_NewLocation.Actor"));
+            m_Actor.SpendActionPoints(2 * Actor.BASE_ACTION_COST);
+            other.RemoveFromMap();
+            m_NewLocation.Place(m_Actor);
+            m_Origin.Place(other);
+
+            RogueGame.Game.UI_SwitchPlace(m_Actor, other);
         }
 
         public void EnableUI() => m_Live = true;
