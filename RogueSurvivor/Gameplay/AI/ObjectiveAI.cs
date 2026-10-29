@@ -1434,7 +1434,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     /// <remark>This executes before the main lambda pathing block, so its use of the lambda pathing cache does not conflict with that.</remark>
-    protected ActorAction BehaviorResupply(HashSet<Item_IDs> critical)
+    protected ActorAction? BehaviorResupply(HashSet<Item_IDs> critical)
     {
       var act = UsePreexistingLambdaPath();
       if (act is not null) return act;
@@ -4296,7 +4296,6 @@ restart:
       }
 
       // if we couldn't path to an adjacent goal, wait
-#if true
       if (0 < distance_1.Count) {
         Dictionary<Location, ActorAction> failover = new();
         bool actor_saturated = true;
@@ -4337,36 +4336,6 @@ restart:
         return null;
 #endif
       }
-#else
-      if (goals.Any(loc => Rules.IsAdjacent(m_Actor.Location, in loc))) {
-        var e = m_Actor.Location.Exit;
-        if (e is not null && goals.Contains(e.Location)) {
-          // copied from BaseAI::BehaviorUseExit
-          var actorAt = e.Location.Actor;
-          if (actorAt is null) {
-              var act_break = ActionBreak.create(m_Actor, e.Location.MapObject);
-              if (act_break is not null) return act_break;
-          } else if (!m_Actor.IsEnemyOf(actorAt)) {
-              var act = BehaviorMakeTime();
-              if (act is not null) return act;
-#if DEBUG
-              throw m_Actor.Spotlight(new InvalidProgramException("need to handle friend blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s()));
-#endif
-          } else {
-#if DEBUG
-              throw m_Actor.Spotlight(new InvalidProgramException("need to handle enemy blocking exit: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s()));
-#endif
-          }
-          // \todo should try to get guidance from allies
-          return new ActionWait(m_Actor);
-        }
-#if DEBUG
-        throw m_Actor.Spotlight(new InvalidProgramException("non-pathing to adjacent location: " + goals.Where(loc => Rules.IsAdjacent(m_Actor.Location, in loc)).ToList().to_s()));
-#else
-        return new ActionWait(m_Actor); // completely inappropriate for a z on the other side of an exit
-#endif
-      }
-#endif
 
       // check for pre-existing relevant path (approaching dead code)
       {
@@ -4436,14 +4405,6 @@ restart:
          }
        }
       if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: past single map pathfinder reduction");
-
-#if PROTOTYPE
-      if (   1==m_Actor.Location.Map.destination_maps.Get.Count
-          && !goals.Any(loc => loc.Map == m_Actor.Location.Map))
-            {
-            throw m_Actor.Spotlight(new InvalidProgramException("need to handle single-map escape case"));
-            }
-#endif
 
       var goal_costs = new Dictionary<Location,int>();
       foreach(var goal in goals) goal_costs[goal] = 0;
