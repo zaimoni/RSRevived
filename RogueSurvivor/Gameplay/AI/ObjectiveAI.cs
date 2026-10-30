@@ -4251,6 +4251,7 @@ restart:
       var distance_1 = goals.Where(loc => 1 == Rules.InteractionDistance(m_Actor.Location, in loc)).ToList();
 
       const bool tracing = false;
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: "+m_Actor.Name);
 
       {
       var moves = m_Actor.OnePath(m_Actor.Location);    // this usage needs to know about invalid moves
@@ -4338,7 +4339,7 @@ restart:
       // check for pre-existing relevant path (approaching dead code)
       {
       var path_pt = GetMinStepPath<Point>();
-      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: pre-existing point path: " + (path_pt?.to_s() ?? "null"));
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: pre-existing point path: " + (path_pt?.to_s() ?? "null"));
       if (path_pt is not null) {
         var this_map_goals = goals.Where(loc => loc.Map == m_Actor.Location.Map).Select(Location.pos);
         int path_contains_our_goals_pt(List<List<Point>> path) {
@@ -4377,7 +4378,7 @@ restart:
       }
 
       if (0<near_tainted.Count) {
-        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: near goals: " + near_tainted.to_s());
+        if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: near goals: " + near_tainted.to_s());
         var candidates = new List<Location>(moves.Count + 1) { m_Actor.Location };
         candidates.AddRange(moves.Keys);
         var goals_in_sight = DestsinLoS(candidates, near_tainted);
@@ -4387,7 +4388,30 @@ restart:
       }
       }
       }
-      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: past GreedyStep check");
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: past GreedyStep check");
+
+      { // straight-line fast path: a goal reachable in exactly its grid distance; otherwise fall through to the floodfill
+      var direct = Tools.MinStepPath.create(m_Actor, m_Actor.Location, goals);
+      var layers = direct?.Find();
+      if (layers is not null) {
+        if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: MinStapPath: " + layers.to_s() + " to adjacent goals " + goals.to_s());
+
+        var costs = new Dictionary<Location, int>();
+        if (_legal_path is not null) {
+          foreach (var loc in layers[0]) {
+            if (_legal_path.TryGetValue(loc, out var act)) costs[loc] = Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor);
+          }
+        }
+        var ret = DecideMove(costs);
+        if (ret is not null) {
+          _current_goals = goals;
+          if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
+          if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: RecordMinStepPath");
+          return _recordPathfinding(RecordMinStepPath(layers, ret), goals);
+        }
+      }
+      }
+
 
        // remove a degenerate case from consideration
        if (   !District.IsSewersMap(m_Actor.Location.Map)
@@ -4581,7 +4605,7 @@ restart_chokepoints:
 
       {
       var path_pt = GetMinStepPath<Location>();
-      if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("BehaviorPathTo: pre-existing location path: " + (path_pt?.to_s() ?? "null"));
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: pre-existing location path: " + (path_pt?.to_s() ?? "null"));
       if (path_pt is not null) {
         if (GetPreviousGoals().ValueEqual(goals) || 0< path_contains_our_goals_loc(path_pt)) {
               var alt_act = UsePreexistingPath(goals);
@@ -4610,6 +4634,7 @@ restart_chokepoints:
         }
         var ret = DecideMove(costs);
         if (ret is not null) {
+          if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
           _current_goals = goals;
           return _recordPathfinding(RecordMinStepPath(layers, ret), goals);
         }

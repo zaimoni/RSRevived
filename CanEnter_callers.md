@@ -102,9 +102,10 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3254 | ok | local function destination_melee_safe |
 | ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3309 | ok | local function install_moves; its row had gone missing |
 | ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4218 | ok | by ref |
-| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4526 | ok | |
-| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:143 | ok | throws via Spotlight on the origin |
-| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:144 | ok | throws via Spotlight on the destination |
+| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4548 | ok | |
+| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:154 | ok | throws via Spotlight on the origin |
+| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:155 | ok | throws via Spotlight on the destination |
+| MinStepPath.Find | Gameplay/AI/Tools/MinStepPath.cs:216 | ok | by ref |
 
 # cleanup tasks
 

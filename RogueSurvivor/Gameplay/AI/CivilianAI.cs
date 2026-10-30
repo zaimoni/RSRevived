@@ -133,7 +133,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       const bool tracing = false;
 
-      if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "CivilianAI::SelectAction: " + m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
       m_Actor.Walk();    // alpha 10: don't run by default
 
       // OrderableAI specific: respond to orders
@@ -185,14 +185,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // New objectives system
-      if (tracing) {
-        if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(Objectives.Count.ToString() + " objectives");
-      }
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, Objectives.Count.ToString() + " objectives");
       if (0<Objectives.Count) {
         foreach(Objective o in new List<Objective>(Objectives)) {
-          if (tracing) {
-            if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(o.ToString()+(o.IsExpired ? " : expired" : ""));
-          }
+          if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, o.ToString()+(o.IsExpired ? " : expired" : ""));
           if (o.IsExpired) Remove(o);
           else if (o.UrgentAction(out var goal_action)) {
             if (tracing) {
@@ -210,9 +206,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               }
               return goal_action;
             }
-          } else if (tracing) {
-            if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("deferred goal");
-          }
+          } else if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "deferred goal " + o.ToString());
         }
       }
 
