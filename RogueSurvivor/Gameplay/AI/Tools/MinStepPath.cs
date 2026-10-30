@@ -222,7 +222,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
 
                 if (next.Any(loc => targets.ContainsKey(loc))) {
                     if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "before cleanup: " + ret.to_s());
-                    RequireEndsInGoal(ret, targets);
+                    if (!RequireEndsInGoal(ret, targets)) {
+#if DEBUG
+                        throw new InvalidOperationException("the chain that reached the goal was pruned");
+#else
+                        return null;
+#endif
+                    }
 
                     int n = -2;
                     while (ret.Count - 3 >= ++n) {
@@ -230,9 +236,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
                         uint code = FavorClearTwoStepRoutes(ret, n);
                         if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "ok: FavorClearTwoStepRoutes(ret, " + n.ToString() + ", "+(1 >= n ? "true" : "false") +")");
                         if (8 == code) return null;
-                        if (0 != (1 & code) && 0 < n) n -= 2;   // the layer before was pruned: revisit it
+                        if (0 != (1 & code) && 0 < n) n -= 2;   // this window's first layer shrank: the layer before may have dead ends, revisit it
                     }
 
+#if DEBUG
+                    CheckConnected(ret);
+#endif
                     if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "after cleanup: " + ret.to_s());
                     return ret;
                 }
@@ -241,14 +250,37 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
             }
         }
 
-        private void RequireEndsInGoal(List<List<Location>> ret, Dictionary<Location, int> targets) {
+        /// <summary>The final layer keeps only goals; each earlier layer keeps only what still has a successor.</summary>
+        /// <returns>false if a layer emptied.  Find's layers always retain the chain that reached the goal, so that is a consistency failure.</returns>
+        private static bool RequireEndsInGoal(List<List<Location>> ret, Dictionary<Location, int> targets) {
             int ub = ret.Count - 1;
-            int tail_count = ret[ub].Count;
             ret[ub].OnlyIf(loc => targets.ContainsKey(loc));
-#if DEBUG
-            if (ret[ub].Count < tail_count) throw new InvalidOperationException("MinStepPath::RequireEndsInGoal: should implement prunedown");
-#endif
+            while (0 < ret[ub].Count) {
+                if (0 >= ub) return true;
+                var next = ret[ub];
+                ret[--ub].OnlyIf(loc => next.Any(loc2 => 1 == Rules.GridDistance(in loc, in loc2)));
+            }
+            return false;
         }
+
+#if DEBUG
+        /// <summary>every layer is non-empty, and every location has a neighbor in each adjacent layer</summary>
+        private static void CheckConnected(List<List<Location>> ret) {
+            int ub = ret.Count;
+            while (0 <= --ub) {
+                var layer = ret[ub];
+                if (0 >= layer.Count) throw new InvalidOperationException("empty layer " + ub);
+                if (0 < ub) {
+                    var prior = ret[ub - 1];
+                    if (!layer.All(loc => prior.Any(loc2 => 1 == Rules.GridDistance(in loc, in loc2)))) throw new InvalidOperationException("orphan in layer " + ub);
+                }
+                if (ret.Count - 1 > ub) {
+                    var next = ret[ub + 1];
+                    if (!layer.All(loc => next.Any(loc2 => 1 == Rules.GridDistance(in loc, in loc2)))) throw new InvalidOperationException("dead end in layer " + ub);
+                }
+            }
+        }
+#endif
 
         private (Dictionary<Location, List<Location>>, HashSet<Location>, uint) CatalogStep(List<Location> start, List<Location> end) {
             Dictionary<Location, List<Location>> forward = new();
@@ -278,107 +310,80 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
             return (forward, range, code);
         }
 
-        private List<Location[]>? EnumerateTwoStepRoutes(List<Location> start, List<Location> mid, List<Location> end) {
-            const bool tracing = false;
-            if (tracing) Logger.Trace(m_Actor.Name);
-            if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "(" + start.Count.ToString()+", " + mid.Count.ToString() + ", " + end.Count.ToString() + ")");
-
-            var (dict, _, code) = CatalogStep(start, mid);
-            var (dict2, _, code2) = CatalogStep(mid, end);
-            if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "(" + start.Count.ToString() + ", " + mid.Count.ToString() + ", " + end.Count.ToString() + ") " + code.ToString() + " " + code2.ToString());
-            if (0 != (code2 & 1)) {
-                (dict, _, _) = CatalogStep(start, mid);
-                if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "(" + start.Count.ToString() + ", " + mid.Count.ToString() + ", " + end.Count.ToString() + ")" + code.ToString() + " " + code2.ToString());
-            }
-
-            List<Location[]> ret = new();
-            foreach (var x in dict) {
-                foreach(var x2 in x.Value) {
-                    if (!dict2.TryGetValue(x2, out var range)) continue;
-                    foreach (var x3 in range) {
-                        Location[] stage = [x.Key, x2, x3];
-                        ret.Add(stage);
-                    }
-                }
-            }
-            if (tracing) Logger.Trace("returning");
-            return 0 < ret.Count ? ret : null;
-        }
-
+        /// <summary>
+        /// Within the window of three layers starting at offset (-1: the actor's own location stands in for the first),
+        /// keep only the locations on some chain start-mid-end; then, if some chain avoids clutter wherever a clear
+        /// alternative exists, keep only those chains.
+        /// </summary>
+        /// <returns>8: no chain at all.  Otherwise bits 1, 2, 4 flag which of the three layers shrank, for either reason.</returns>
         private uint FavorClearTwoStepRoutes(List<List<Location>> ret, int offset) {
             if (ret.Count - 3 < offset) return 0; // not enough space
             bool respond_to_actor = -1 == offset;
             const bool tracing = false;
             if (tracing) Logger.Trace(m_Actor.Name);
 
-            var test = (-1 < offset) ? EnumerateTwoStepRoutes(ret[offset], ret[offset + 1], ret[offset + 2])
-                                     : EnumerateTwoStepRoutes([m_Actor.Location], ret[offset + 1], ret[offset + 2]);
-            if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "ok: EnumerateTwoStepRoutes");
-            if (test is null) return 8;
+            var start = (-1 < offset) ? ret[offset] : new List<Location> { m_Actor.Location };
+            var mid = ret[offset + 1];
+            var end = ret[offset + 2];
+            int count0 = start.Count;
+            int count1 = mid.Count;
+            int count2 = end.Count;
 
-            List<Location> clear0 = new();
-            List<Location> cluttered0 = new();
-            List<Location> clear1 = new();
-            List<Location> cluttered1 = new();
-            List<Location> clear2 = new();
-            List<Location> cluttered2 = new();
+            uint shrank() {
+                uint code = 0;
+                if (-1 < offset && ret[offset].Count < count0) code |= 1;
+                if (ret[offset + 1].Count < count1) code |= 2;
+                if (ret[offset + 2].Count < count2) code |= 4;
+                if (tracing) Logger.Trace("(" + count0 + ", " + count1 + ", " + count2 + ") -> " + code);
+                return code;
+            }
+
+            // connectivity: every location must lie on some chain
+            var (forward, _, _) = CatalogStep(start, mid);
+            var (forward2, _, code2) = CatalogStep(mid, end);
+            if (0 != (code2 & 1)) (forward, _, _) = CatalogStep(start, mid);
+            if (0 >= start.Count) return 8;
+
+            // clutter: a chain is cluttered if it passes through clutter where that layer has a clear alternative
+            var avoidable0 = (-1 < offset) ? Avoidable(start, respond_to_actor) : null;
+            var avoidable1 = Avoidable(mid, respond_to_actor);
+            var avoidable2 = Avoidable(end, respond_to_actor);
+            if (avoidable0 is null && avoidable1 is null && avoidable2 is null) return shrank();   // nothing to steer around
+
+            bool clear0(Location loc) => avoidable0 is null || !avoidable0.Contains(loc);
+            bool clear1(Location loc) => avoidable1 is null || !avoidable1.Contains(loc);
+            bool clear2(Location loc) => avoidable2 is null || !avoidable2.Contains(loc);
+
+            // a location survives if it lies on a clear chain: mid needs a clear predecessor and a clear successor,
+            // then start and end need a surviving mid neighbor
+            var keep1 = new HashSet<Location>();
+            foreach (var x in forward) {
+                if (clear0(x.Key)) foreach (var loc in x.Value) keep1.Add(loc);
+            }
+            keep1.RemoveWhere(loc => !clear1(loc) || !forward2.TryGetValue(loc, out var range) || !range.Any(clear2));
+            if (0 >= keep1.Count) return shrank();   // every chain is cluttered somewhere
+
+            var keep2 = new HashSet<Location>();
+            foreach (var loc in keep1) {
+                foreach (var loc2 in forward2[loc]) if (clear2(loc2)) keep2.Add(loc2);
+            }
 
             if (-1 < offset) {
-                foreach (var loc in ret[offset]) {
-                    if (Cluttered(loc, respond_to_actor)) cluttered0.Add(loc);
-                    else clear0.Add(loc);
-                }
-            } else cluttered0.Add(m_Actor.Location);
-            foreach (var loc in ret[offset + 1]) {
-                if (Cluttered(loc, respond_to_actor)) cluttered1.Add(loc);
-                else clear1.Add(loc);
+                var keep0 = start.FindAll(loc => clear0(loc) && forward[loc].Any(keep1.Contains));
+                if (keep0.Count < start.Count) ret[offset] = keep0;
             }
-            foreach (var loc in ret[offset + 2]) {
-                if (Cluttered(loc, respond_to_actor)) cluttered2.Add(loc);
-                else clear2.Add(loc);
-            }
+            if (keep1.Count < mid.Count) ret[offset + 1] = mid.FindAll(keep1.Contains);
+            if (keep2.Count < end.Count) ret[offset + 2] = end.FindAll(keep2.Contains);
+            return shrank();
+        }
 
-            if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "test: "+test.to_s());
-
-            List<Location[]> clear = new();
-            List<Location[]> cluttered = new();
-            foreach (var x in test) {
-                if (0 < clear0.Count && 0 < cluttered0.Count && cluttered0.Contains(x[0])) cluttered.Add(x);
-                else if (0 < clear1.Count && 0 < cluttered1.Count && cluttered1.Contains(x[1])) cluttered.Add(x);
-                else if (0 < clear2.Count && 0 < cluttered2.Count && cluttered2.Contains(x[2])) cluttered.Add(x);
-                else clear.Add(x);
+        /// <returns>the cluttered locations of a layer that is neither clear nor cluttered throughout; null if there is nothing to steer around</returns>
+        private static HashSet<Location>? Avoidable(List<Location> layer, bool respond_to_actor) {
+            HashSet<Location>? ret = null;
+            foreach (var loc in layer) {
+                if (Cluttered(loc, respond_to_actor)) (ret ??= new()).Add(loc);
             }
-            if (0 >= clear.Count) return 0;
-            if (0 >= cluttered.Count) return 0;
-            foreach (var x in cluttered) test.Remove(x);
-
-            uint code = 0;
-            if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "have_pruned: "+test.to_s());
-
-            // trading CPU for reduced GC loading
-            List<Location> image0 = new();
-            List<Location> image1 = new();
-            List<Location> image2 = new();
-
-            foreach (var x in test) {
-                if (!image0.Contains(x[0])) image0.Add(x[0]);
-                if (!image1.Contains(x[1])) image1.Add(x[1]);
-                if (!image2.Contains(x[2])) image2.Add(x[2]);
-            }
-
-            if (-1 < offset && image0.Count < ret[offset].Count) {
-                ret[offset] = image0;
-                code |= 1;
-            }
-            if (image1.Count < ret[offset + 1].Count) {
-                ret[offset + 1] = image1;
-                code |= 2;
-            }
-            if (image2.Count < ret[offset + 2].Count) {
-                ret[offset + 2] = image2;
-                code |= 4;
-            }
-            return code;
+            return (ret is null || ret.Count == layer.Count) ? null : ret;
         }
 
         private static bool Cluttered(Location loc, bool respond_to_actor)
