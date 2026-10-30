@@ -230,10 +230,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
                         uint code = FavorClearTwoStepRoutes(ret, n);
                         if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "ok: FavorClearTwoStepRoutes(ret, " + n.ToString() + ", "+(1 >= n ? "true" : "false") +")");
                         if (8 == code) return null;
-                        if (0 != (1 & code) && 0 < n) {
-                            n -= 2;
-                            continue;
-                        }
+                        if (0 != (1 & code) && 0 < n) n -= 2;   // the layer before was pruned: revisit it
                     }
 
                     if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "after cleanup: " + ret.to_s());
@@ -308,7 +305,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
             return 0 < ret.Count ? ret : null;
         }
 
-        public uint FavorClearTwoStepRoutes(List<List<Location>> ret, int offset) {
+        private uint FavorClearTwoStepRoutes(List<List<Location>> ret, int offset) {
             if (ret.Count - 3 < offset) return 0; // not enough space
             bool respond_to_actor = -1 == offset;
             const bool tracing = false;
@@ -384,15 +381,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
             return code;
         }
 
-        private static bool Cluttered(Location loc, bool respond_to_actor) {
-            var mapobj = loc.MapObject;
-            if (mapobj is not null && !mapobj.IsWalkable) return true;
-            else if (respond_to_actor) {
-                var other = loc.Actor;
-                if (other is not null) return true;
-            }
-            return false;
-        }
+        private static bool Cluttered(Location loc, bool respond_to_actor)
+            => (loc.MapObject is { IsWalkable: false }) || (respond_to_actor && loc.Actor is not null);
 
         public static MinStepPath? create(Actor a, in Location src, Dictionary<Location, int> dest, Predicate<Location>? veto = null)
         {
@@ -406,14 +396,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         public static MinStepPath? create(Actor a, in Location src, IEnumerable<Location> dest, Predicate<Location>? veto = null)
         {
             var goal_costs = new Dictionary<Location, int>();
-
-            foreach (var loc in dest) {
-                if (src.Map.Denormalize(loc) is not Location denorm) return null;
-                if (src == denorm) throw new InvalidOperationException("self-pathing");
-                goal_costs.Add(loc, 0);
-            }
-
-            return new MinStepPath(a, in src, goal_costs, veto);
+            foreach (var loc in dest) goal_costs.Add(loc, 0);
+            return create(a, in src, goal_costs, veto);
         }
     }
 }

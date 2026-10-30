@@ -4391,25 +4391,8 @@ restart:
       if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: past GreedyStep check");
 
       { // straight-line fast path: a goal reachable in exactly its grid distance; otherwise fall through to the floodfill
-      var direct = Tools.MinStepPath.create(m_Actor, m_Actor.Location, goals);
-      var layers = direct?.Find();
-      if (layers is not null) {
-        if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: MinStapPath: " + layers.to_s() + " to adjacent goals " + goals.to_s());
-
-        var costs = new Dictionary<Location, int>();
-        if (_legal_path is not null) {
-          foreach (var loc in layers[0]) {
-            if (_legal_path.TryGetValue(loc, out var act)) costs[loc] = Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor);
-          }
-        }
-        var ret = DecideMove(costs);
-        if (ret is not null) {
-          _current_goals = goals;
-          if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
-          if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: RecordMinStepPath");
-          return _recordPathfinding(RecordMinStepPath(layers, ret), goals);
-        }
-      }
+      var direct = UseMinStepPath(Tools.MinStepPath.create(m_Actor, m_Actor.Location, goals), goals);
+      if (direct is not null) return direct;
       }
 
 
@@ -4623,26 +4606,36 @@ restart_chokepoints:
       if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("main exit: " + goal_costs.to_s() + ", " + excluded.to_s());
 
       { // straight-line fast path: a goal reachable in exactly its grid distance; otherwise fall through to the floodfill
-      var direct = Tools.MinStepPath.create(m_Actor, m_Actor.Location, goal_costs, loc => excluded.Contains(loc.Map) || excluded_zones.Any(zone => zone.Contains(loc)));
-      var layers = direct?.Find();
-      if (layers is not null) {
-        var costs = new Dictionary<Location, int>();
-        if (_legal_path is not null) {
-          foreach (var loc in layers[0]) {
-            if (_legal_path.TryGetValue(loc, out var act)) costs[loc] = Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor);
-          }
-        }
-        var ret = DecideMove(costs);
-        if (ret is not null) {
-          if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
-          _current_goals = goals;
-          return _recordPathfinding(RecordMinStepPath(layers, ret), goals);
-        }
-      }
+      var direct = UseMinStepPath(Tools.MinStepPath.create(m_Actor, m_Actor.Location, goal_costs, loc => excluded.Contains(loc.Map) || excluded_zones.Any(zone => zone.Contains(loc))), goals);
+      if (direct is not null) return direct;
       }
 
       _current_goals = goals;
       return _recordPathfinding(BehaviorPathTo(PathfinderFor(goal_costs, excluded, excluded_zones)),goals);
+    }
+
+    /// <summary>The first step of a straight-line path, costed from _legal_path and recorded as a floodfill result would be.</summary>
+    /// <returns>null when there is no straight line, or no performable first step on it</returns>
+    private ActorAction? UseMinStepPath(Tools.MinStepPath? direct, HashSet<Location> goals)
+    {
+      const bool tracing = false;
+
+      var layers = direct?.Find();
+      if (layers is null) return null;
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: MinStepPath: " + layers.to_s() + " to goals " + goals.to_s());
+
+      var costs = new Dictionary<Location, int>();
+      if (_legal_path is not null) {
+        foreach (var loc in layers[0]) {
+          if (_legal_path.TryGetValue(loc, out var act)) costs[loc] = Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor);
+        }
+      }
+      var ret = DecideMove(costs);
+      if (ret is null) return null;
+      _current_goals = goals;
+      if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
+      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: RecordMinStepPath");
+      return _recordPathfinding(RecordMinStepPath(layers, ret), goals);
     }
 
     public void GoalHeadFor(Map m, HashSet<Point> dest)
