@@ -801,7 +801,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _inventory_actions = null;
 
         const bool tracing = false;
-        if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "in Goal_PathToStack::_removeInvalidStacks: " + m_Actor.Name + " " + _stacks.Count);
+        if (tracing) Logger.Trace(m_Actor.Name + " " + _stacks.Count);
 
         // 2026-10-16: OrderableAI::BehaviorWouldGrabFrom's call graph includes our Inventories due to evaluating
         // whether ammo is interesting.  This prevents unexpected altering of _stacks during our countdown loops.

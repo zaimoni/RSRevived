@@ -6911,7 +6911,7 @@ namespace djack.RogueSurvivor.Engine
       var aiActor = ai.ControlledActor; // backward compatibility
 
       const bool tracing = false;
-      if (aiActor.IsDebuggingTarget || tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "HandleAiActor: " + aiActor.Name);
+      if (aiActor.IsDebuggingTarget || tracing) Logger.Trace(aiActor.Name);
 
 #if DEBUG
       if (aiActor.IsSleeping) throw new ArgumentOutOfRangeException(nameof(aiActor),"cannot act while sleeping");

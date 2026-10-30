@@ -460,7 +460,7 @@ namespace djack.RogueSurvivor.Engine
              }
 
              if (tracing) {
-                if (candidates is not null) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "Rules::IsPathableFor: ActionShove: "+actor.Name);
+                if (candidates is not null) Logger.Trace("ActionShove: "+actor.Name);
              }
              if (candidates is not null) return new ActionShove(actor,actorAt, Get.DiceRoller.Choose(candidates).Value);
            }

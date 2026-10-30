@@ -42,7 +42,9 @@ namespace Zaimoni.Data
             }
         }
 
-        public static void Trace(string msg, [CallerMemberName] string who = "") => WriteLine(Stage.RUN_DEBUG, who + ": " + msg);
+        // the caller's own name prefixes the message, so extracting or renaming the caller keeps the log honest
+        public static void Trace(Stage stage, string msg, [CallerMemberName] string who = "") => WriteLine(stage, string.IsNullOrEmpty(msg) ? who : who + ": " + msg);
+        public static void Trace(string msg, [CallerMemberName] string who = "") => Trace(Stage.RUN_DEBUG, msg, who);
 
         public static List<string> Lines { get {
             var ret = new List<string>();

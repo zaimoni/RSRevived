@@ -825,7 +825,7 @@ namespace djack.RogueSurvivor.Data
 
       // note that the turn counter goes up at the *start* of the next turn
 #if AUDIT
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::ScheduleAdjacentForAdvancePlay");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "");
       Logger.WriteLine(Logger.Stage.RUN_MAIN, d.Name + ": " + d.LocalTime.TurnCounter.ToString());
       Logger.WriteLine(Logger.Stage.RUN_MAIN, At(Point.Empty)!.Name + ": " + At(Point.Empty)!.LocalTime.TurnCounter.ToString());
       Logger.WriteLine(Logger.Stage.RUN_MAIN, Last.Name + ": " + Last.LocalTime.TurnCounter.ToString());
@@ -907,7 +907,7 @@ namespace djack.RogueSurvivor.Data
           return;
         }
 #if DEBUG
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::bootstrap_districts");
+        Logger.Trace(Logger.Stage.RUN_MAIN, "");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "past: " + past.Count.ToString()+" "+past.to_s());
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "now: " + now.Count.ToString()+" "+now.to_s());
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "future: " + future.Count.ToString()+" "+future.to_s());
@@ -929,7 +929,7 @@ namespace djack.RogueSurvivor.Data
 #if AUDIT
       var t1 = At(Point.Empty)!.LocalTime.TurnCounter;
       var t0 = Last.LocalTime.TurnCounter;
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::CurrentPlayerDistrict");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "");
 #endif
       lock (m_Ready) {
         if (m_SimDistrict is null) bootstrap_districts();
@@ -959,7 +959,7 @@ restart:
 #if AUDIT
       var t1 = At(Point.Empty)!.LocalTime.TurnCounter;
       var t0 = Last.LocalTime.TurnCounter;
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "World::CurrentSimulationDistrict");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "");
 #endif
       lock (m_Ready) {
         if (0 >= m_Ready.Count) return null;

@@ -367,7 +367,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private List<Block> NewSurfaceBlocks(Map map) {
       // tiles already defaulted to grass
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "NewSurfaceBlocks: started");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "started");
 #endif
 
       var world_pos = map.DistrictPos;
@@ -491,7 +491,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
 #if DEBUG
       if (0 >= ret.Count) throw new InvalidOperationException("should have scheduled at least one block");
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "NewSurfaceBlocks: complete");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "complete");
 #endif
       return ret;
     }
@@ -667,7 +667,7 @@ restart:
     public virtual Map GenerateSewersMap(int seed, District district)
     {
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: started");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "started");
 #endif
       m_DiceRoller = new DiceRoller(seed);
 restart:
@@ -691,7 +691,7 @@ restart:
       if (0 != edge_code) TileFill(sewers, GameTiles.FLOOR_SEWER_WATER, true);
       TileFill(sewers, GameTiles.WALL_SEWER, dev_rect, true);
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: baseline");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "baseline");
 #endif
 
       ///////////////////////////////////////////////////
@@ -711,7 +711,7 @@ restart:
       // 1. Make blocks.
       List<Block> list = MakeBlocks(sewers, false, dev_rect);
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #1 ok");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "#1 ok");
 #endif
 
 #region 2. Make tunnels.
@@ -741,7 +741,7 @@ restart:
       }
 #endregion
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #2 ok");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "#2 ok");
 #endif
 
 #region 3. Link with surface.
@@ -775,7 +775,7 @@ restart:
       }
 #endregion
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #3 ok");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "#3 ok");
 #endif
 
 #region 5. Sewers Maintenance Room & Building(surface).
@@ -800,7 +800,7 @@ restart:
       }
 #endregion
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #5 ok");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "#5 ok");
 #endif
 
 #region 6. Some rooms.
@@ -815,7 +815,7 @@ restart:
       }
 #endregion
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #6 ok");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "#6 ok");
 #endif
 
 #region 7. Objects.
@@ -827,7 +827,7 @@ restart:
       }));
 #endregion
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #7 ok");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "#7 ok");
 #endif
 
 #region 8. Items.
@@ -837,7 +837,7 @@ restart:
       foreach (var pt in sewers.Rect) if (sewers.IsWalkable(pt) && m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE)) sewers.DropItemAt(sewers_stock(), in pt);
 #endregion
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: #8 ok");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "#8 ok");
 #endif
 
 #region 9. Tags.
@@ -859,7 +859,7 @@ restart:
       }
 
 #if DEBUG
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "GenerateSewersMap: complete");
+      Logger.Trace(Logger.Stage.RUN_MAIN, "complete");
 #endif
       return sewers;
     }

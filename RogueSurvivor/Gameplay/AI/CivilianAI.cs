@@ -133,7 +133,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       const bool tracing = false;
 
-      if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "CivilianAI::SelectAction: " + m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
+      if (tracing) Logger.Trace(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
       m_Actor.Walk();    // alpha 10: don't run by default
 
       // OrderableAI specific: respond to orders

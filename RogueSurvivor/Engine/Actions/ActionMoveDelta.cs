@@ -145,7 +145,7 @@ namespace djack.RogueSurvivor.Engine.Actions
              if (candidates is null && candidates_1.Any()) candidates = candidates_1.ToList();
              // end function target
              if (tracing) {
-                if (candidates is not null) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "ActionMoveDelta::_resolve ActionShove: " + m_Actor.Name);
+                if (candidates is not null) Logger.Trace("ActionShove: " + m_Actor.Name);
              }
 
              if (candidates is not null && switch_place is not null) {

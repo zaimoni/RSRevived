@@ -3433,7 +3433,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private HashSet<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, Predicate<Map> preblacklist)
     {
 #if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ObjectiveAI::Goals (depth 1) @ "+m_Actor.Location);
+      if (m_Actor.IsDebuggingTarget) Logger.Trace(Logger.Stage.RUN_MAIN, m_Actor.Name + " (depth 1) @ " + m_Actor.Location);
 #endif
       var dest_hospital = Session.Get.UniqueMaps.HospitalDepth(dest);
       var dest_police = Session.Get.UniqueMaps.PoliceStationDepth(dest);
@@ -4251,11 +4251,11 @@ restart:
       var distance_1 = goals.Where(loc => 1 == Rules.InteractionDistance(m_Actor.Location, in loc)).ToList();
 
       const bool tracing = false;
-      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: "+m_Actor.Name);
+      if (tracing) Logger.Trace(m_Actor.Name);
 
       {
       var moves = m_Actor.OnePath(m_Actor.Location);    // this usage needs to know about invalid moves
-      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: checking for moves " + (moves?.to_s() ?? "null") + " to adjacent goals " + goals.to_s());
+      if (tracing) Logger.Trace("checking for moves " + (moves?.to_s() ?? "null") + " to adjacent goals " + goals.to_s());
       {
       bool null_return = false;
       ActorAction? movelooping = null;
@@ -4339,7 +4339,7 @@ restart:
       // check for pre-existing relevant path (approaching dead code)
       {
       var path_pt = GetMinStepPath<Point>();
-      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: pre-existing point path: " + (path_pt?.to_s() ?? "null"));
+      if (tracing) Logger.Trace("pre-existing point path: " + (path_pt?.to_s() ?? "null"));
       if (path_pt is not null) {
         var this_map_goals = goals.Where(loc => loc.Map == m_Actor.Location.Map).Select(Location.pos);
         int path_contains_our_goals_pt(List<List<Point>> path) {
@@ -4378,7 +4378,7 @@ restart:
       }
 
       if (0<near_tainted.Count) {
-        if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: near goals: " + near_tainted.to_s());
+        if (tracing) Logger.Trace("near goals: " + near_tainted.to_s());
         var candidates = new List<Location>(moves.Count + 1) { m_Actor.Location };
         candidates.AddRange(moves.Keys);
         var goals_in_sight = DestsinLoS(candidates, near_tainted);
@@ -4388,7 +4388,7 @@ restart:
       }
       }
       }
-      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: past GreedyStep check");
+      if (tracing) Logger.Trace("past GreedyStep check");
 
       { // straight-line fast path: a goal reachable in exactly its grid distance; otherwise fall through to the floodfill
       var direct = UseMinStepPath(Tools.MinStepPath.create(m_Actor, m_Actor.Location, goals), goals);
@@ -4588,7 +4588,7 @@ restart_chokepoints:
 
       {
       var path_pt = GetMinStepPath<Location>();
-      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: pre-existing location path: " + (path_pt?.to_s() ?? "null"));
+      if (tracing) Logger.Trace("pre-existing location path: " + (path_pt?.to_s() ?? "null"));
       if (path_pt is not null) {
         if (GetPreviousGoals().ValueEqual(goals) || 0< path_contains_our_goals_loc(path_pt)) {
               var alt_act = UsePreexistingPath(goals);

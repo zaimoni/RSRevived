@@ -168,7 +168,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         public List<List<Location>>? Find()
         {
             const bool tracing = false;
-            if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "MinStepPath::Find: " + m_Actor.Name);
+            if (tracing) Logger.Trace(m_Actor.Name);
 
             // start reference implementation by Claude
             // The endpoints are the goals that tie for least (grid distance, plus the goal's own cost).
@@ -280,7 +280,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
 
         private List<Location[]>? EnumerateTwoStepRoutes(List<Location> start, List<Location> mid, List<Location> end) {
             const bool tracing = false;
-            if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "MinStepPath::EnumerateTwoStepRoutes: " + m_Actor.Name);
+            if (tracing) Logger.Trace(m_Actor.Name);
             if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "(" + start.Count.ToString()+", " + mid.Count.ToString() + ", " + end.Count.ToString() + ")");
 
             var (dict, _, code) = CatalogStep(start, mid);
@@ -301,7 +301,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
                     }
                 }
             }
-            if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "returning: MinStepPath::EnumerateTwoStepRoutes");
+            if (tracing) Logger.Trace("returning");
             return 0 < ret.Count ? ret : null;
         }
 
@@ -309,7 +309,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
             if (ret.Count - 3 < offset) return 0; // not enough space
             bool respond_to_actor = -1 == offset;
             const bool tracing = false;
-            if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "MinStepPath::FavorClearTwoStepRoutes: " + m_Actor.Name);
+            if (tracing) Logger.Trace(m_Actor.Name);
 
             var test = (-1 < offset) ? EnumerateTwoStepRoutes(ret[offset], ret[offset + 1], ret[offset + 2])
                                      : EnumerateTwoStepRoutes([m_Actor.Location], ret[offset + 1], ret[offset + 2]);
