@@ -4622,7 +4622,7 @@ restart_chokepoints:
 
       var layers = direct?.Find();
       if (layers is null) return null;
-      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: MinStepPath: " + layers.to_s() + " to goals " + goals.to_s());
+      if (tracing) Logger.Trace("MinStepPath: " + layers.to_s() + " to goals " + goals.to_s());
 
       var costs = new Dictionary<Location, int>();
       if (_legal_path is not null) {
@@ -4634,7 +4634,7 @@ restart_chokepoints:
       if (ret is null) return null;
       _current_goals = goals;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest); // XXX should be more tactically aware
-      if (tracing) Logger.WriteLine(Logger.Stage.RUN_DEBUG, "BehaviorPathTo: RecordMinStepPath");
+      if (tracing) Logger.Trace("RecordMinStepPath");
       return _recordPathfinding(RecordMinStepPath(layers, ret), goals);
     }
 

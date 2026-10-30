@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Zaimoni.Data
 {
@@ -40,6 +41,8 @@ namespace Zaimoni.Data
                 streamWriter.Flush();
             }
         }
+
+        public static void Trace(string msg, [CallerMemberName] string who = "") => WriteLine(Stage.RUN_DEBUG, who + ": " + msg);
 
         public static List<string> Lines { get {
             var ret = new List<string>();
