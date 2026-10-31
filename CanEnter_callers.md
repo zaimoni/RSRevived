@@ -75,6 +75,8 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | AcquireLineOfSight..ctor(Actor, in Location) | Gameplay/AI/Goals/AcquireLineOfSight.cs:44 | ok | throws via Spotlight: "unpathable"; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, IEnumerable) | Gameplay/AI/Goals/AcquireLineOfSight.cs:52 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:61 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
+| PathTo..ctor | Gameplay/AI/Goals/PathTo.cs:59 | ok | #if DEBUG |
+| PathTo..ctor | Gameplay/AI/Goals/PathTo.cs:70 | ok | #if DEBUG |
 | ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4817 | ok | two calls: N and S of the trap |
 | ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4820 | ok | two calls: E and W of the trap |
 | ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4860 | ok | by ref |
@@ -98,11 +100,13 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | caller | site | status | note |
 |---|---|---|---|
 | SharedPlan.Goals | Gameplay/AI/Goals/Cooperate.cs:102 | ok | RemoveWhere lambda; comment says it matters for burning cars |
+| PathTo.Pathing | Gameplay/AI/Goals/PathTo.cs:94 | ok | MinStapPath precondition |
 | ObjectiveAI.WantToGoHere | Gameplay/AI/ObjectiveAI.cs:1396 | ok | by ref |
 | ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3254 | ok | local function destination_melee_safe |
 | ObjectiveAI.PlanWalkAwayFrom | Gameplay/AI/ObjectiveAI.cs:3309 | ok | local function install_moves; its row had gone missing |
 | ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4216 | ok | by ref |
-| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4531 | ok | |
+| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4249 | ok | #if DEBUG |
+| ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4532 | ok | |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:154 | ok | throws via Spotlight on the origin |
 | MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:155 | ok | throws via Spotlight on the destination |
 | MinStepPath.Find | Gameplay/AI/Tools/MinStepPath.cs:216 | ok | by ref |

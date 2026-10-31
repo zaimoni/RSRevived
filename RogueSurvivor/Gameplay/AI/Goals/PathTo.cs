@@ -55,6 +55,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
       public PathTo(Actor who, in Location loc, bool walk=false,int n=int.MaxValue)
       : base(who.Location.Map.LocalTime.TurnCounter, who)
       {
+#if DEBUG
+        if (!who.Model.CanEnter(loc)) throw who.Spotlight(new InvalidOperationException("must be able to exist at all destinations"));
+#endif
         _locs = new HashSet<Location>{loc};
         walking = walk;
         turns = n;
@@ -63,7 +66,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
       public PathTo(Actor who, IEnumerable<Location> locs, bool walk = false, int n = int.MaxValue)
       : base(who.Location.Map.LocalTime.TurnCounter, who)
       {
-        _locs = new HashSet<Location>(locs);
+#if DEBUG
+        foreach(var loc in locs) if (!who.Model.CanEnter(loc)) throw who.Spotlight(new InvalidOperationException("must be able to exist at all destinations"));
+#endif
+        _locs = new(locs);
         walking = walk;
         turns = n;
       }
@@ -85,12 +91,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
 
       public ActorAction? Pathing()
       {
-        var dests = _locs.Where(loc => !loc.StrictHasActorAt);
+        var dests = _locs.Where(loc => loc != m_Actor.Location && m_Actor.MayEnter(loc));
         if (!dests.Any()) return null;
 
         var oai = Controller;
-        var ret = oai.BehaviorPathTo(new HashSet<Location>(_locs));
-        if (!(ret?.IsPerformable() ?? false)) {
+        var ret = oai.BehaviorPathTo([.. dests]);
+        if (ret is null || !ret.IsPerformable()) {
           _isExpired = true;    // cancel: buggy
           return null;
         }

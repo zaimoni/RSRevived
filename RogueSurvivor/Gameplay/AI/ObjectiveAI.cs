@@ -4246,6 +4246,7 @@ restart:
       if (goals is null || 0 >= goals.Count) return null;
 #if DEBUG
       if (goals.Contains(m_Actor.Location)) throw m_Actor.Spotlight(new InvalidOperationException(m_Actor.Name+" self-pathing? "+m_Actor.Location+"; "+goals.to_s()));
+      foreach (var loc in goals) if (!m_Actor.MayEnter(loc)) throw m_Actor.Spotlight(new InvalidOperationException("must be able to exist at all destinations"));
 #endif
       bool moveloop_risk = (_last_move is not null && goals.Contains(_last_move.origin));
       var distance_1 = goals.Where(loc => 1 == Rules.InteractionDistance(m_Actor.Location, in loc)).ToList();
