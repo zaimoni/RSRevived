@@ -3221,8 +3221,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       while(!loc.IsWalkableFor(m_Actor) || Rules.GridDistance(in loc,other.Location) < minDist);
       _last_move = null;    // very random if we reach this point, expected to false-positive
 
-      ActorAction actorAction = BehaviorPathTo(in loc);
-      if (!actorAction?.IsPerformable() ?? true) return null;   // direct-returned from SelectAction only
+      ActorAction? actorAction = BehaviorPathTo(in loc);
+      if (actorAction is null || !actorAction.IsPerformable()) return null;   // direct-returned from SelectAction only
       if (actorAction is ActionMoveStep tmp) {
         if (Rules.GridDistance(m_Actor.Location, tmp.dest) > maxDist)   // no-op by construction; retaining this as placeholder for run logic refinement
            m_Actor.IsRunning = RunIfAdvisable(tmp.dest);

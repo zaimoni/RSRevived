@@ -880,8 +880,8 @@ final_exit:
 
       if (buyer.IsPlayer && IsPlayer) return m_Inventory.ToList();
 
-      var buyer_ai = buyer.Controller as Gameplay.AI.ObjectiveAI;
-      var ai = Controller as Gameplay.AI.ObjectiveAI;
+      var buyer_ai = buyer.RunBy<Gameplay.AI.ObjectiveAI>();
+      var ai = this.RunBy<Gameplay.AI.ObjectiveAI>();
 
       // IsInterestingTradeItem includes a charisma check i.e. RNG invocation, so cannot use .Any() prescreen safely
       var objList = m_Inventory.Where(it=> buyer_ai.IsInterestingTradeItem(this, it) && ai.IsTradeableItem(it)).ToList();  // \todo upgrade ObjectiveAI::IsTradeableItem to virtual with a PlayerController override
