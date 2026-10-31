@@ -32,37 +32,34 @@ namespace djack.RogueSurvivor.Engine._Action
         }
         #endregion
 
-        public TakeItem(LivingActor actor, in Location loc, Item it) : base(actor)
+        public TakeItem(LivingActor actor, in Location loc, Item it) : base(actor.ControlledBy<Gameplay.AI.ObjectiveAI>())
         {
             m_Actor = actor;
 #if DEBUG
-            if (actor.Controller is not Gameplay.AI.ObjectiveAI ai) throw new ArgumentNullException(nameof(ai));  // not for a trained dog fetching something
             if (!m_Actor.CanGetItems()) throw new InvalidOperationException("!m_Actor.CanGetItems()");
-            if (!m_Actor.IsPlayer && !ai.IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
+            if (!m_Actor.IsPlayer && !actor.RunBy<Gameplay.AI.ObjectiveAI>().IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
 #endif
             m_src = new(loc);
             m_Item = it;
         }
 
-        public TakeItem(LivingActor actor, ShelfLike shelf, Item it) : base(actor)
+        public TakeItem(LivingActor actor, ShelfLike shelf, Item it) : base(actor.ControlledBy<Gameplay.AI.ObjectiveAI>())
         {
             m_Actor = actor;
 #if DEBUG
-            if (actor.Controller is not Gameplay.AI.ObjectiveAI ai) throw new ArgumentNullException(nameof(ai));  // not for a trained dog fetching something
             if (!m_Actor.CanGetItems()) throw new InvalidOperationException("!m_Actor.CanGetItems()");
-            if (!ai.IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
+            if (!actor.RunBy<Gameplay.AI.ObjectiveAI>().IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
 #endif
             m_src = new(shelf);
             m_Item = it;
         }
 
-        public TakeItem(LivingActor actor, in Data.Model.InvOrigin stack, Item it) : base(actor)
+        public TakeItem(LivingActor actor, in Data.Model.InvOrigin stack, Item it) : base(actor.ControlledBy<Gameplay.AI.ObjectiveAI>())
         {
             m_Actor = actor;
 #if DEBUG
-            if (actor.Controller is not Gameplay.AI.ObjectiveAI ai) throw new ArgumentNullException(nameof(ai));  // not for a trained dog fetching something
             if (!m_Actor.CanGetItems()) throw new InvalidOperationException("!m_Actor.CanGetItems()");
-            if (!actor.IsPlayer && !ai.IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
+            if (!actor.IsPlayer && !actor.RunBy<Gameplay.AI.ObjectiveAI>().IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
             if (stack.loc is null && stack.obj_owner is null) throw new InvalidOperationException("trying to take from actor");
 #endif
             m_src = stack;

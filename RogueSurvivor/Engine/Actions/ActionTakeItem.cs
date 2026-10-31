@@ -34,7 +34,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
     #endregion
 
-    public ActionTake(LivingActor actor, Gameplay.Item_IDs it) : base(actor)
+    public ActionTake(LivingActor actor, Gameplay.Item_IDs it) : base(actor.ControlledBy<Gameplay.AI.ObjectiveAI>())
     {
       m_Actor = actor;
       m_ID = it;
@@ -65,11 +65,12 @@ namespace djack.RogueSurvivor.Engine.Actions
       if (stacks is null) return;
 
       var model = Gameplay.GameItems.From(m_ID);
+      var oai = m_Actor.RunBy<Gameplay.AI.ObjectiveAI>();
 
       foreach(var stack in stacks) {
         var obj = stack.Inventory!.GetFirstByModel(model);
         if (obj is null) continue;
-        if (!m_Actor.IsPlayer && !(m_Actor.Controller as Gameplay.AI.ObjectiveAI).IsInterestingItem(obj)) continue; // XXX temporary, not valid once safehouses are landing
+        if (!m_Actor.IsPlayer && oai.IsInterestingItem(obj)) continue; // XXX temporary, not valid once safehouses are landing
         var act = new _Action.TakeItem(m_Actor, in stack, obj);
         if (!act.IsPerformable()) continue;
         _resolved = act;
