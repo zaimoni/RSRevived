@@ -6421,12 +6421,11 @@ restart_chokepoints:
       }
 
       // medicine glut ... drop it
-      foreach(var x in GameItems.medicine) {
-        if (it.ModelID == x) continue;
-        var model = GameItems.From(x);
-        if (2>who.Count(model)) continue;
-        Item? tmp = inv.GetBestDestackable(model);
-        if (tmp is not null) return _BehaviorDropOrExchange(tmp, it, stack, use_ok);
+      if (it.ModelID.MedicineModel() is { } model) {
+        if (2 <= who.Count(model)) {
+          Item? tmp = inv.GetBestDestackable(model);
+          if (tmp is not null) return _BehaviorDropOrExchange(tmp, it, stack, use_ok);
+        }
       }
 
       // trackers (mainly because AI can't use properly), but cell phones are trackers
@@ -6808,12 +6807,11 @@ restart_chokepoints:
       }
 
       // medicine glut ... drop it
-      foreach(var x in GameItems.medicine) {
-        if (it.ModelID == x) continue;
-        var model = GameItems.From(x);
-        if (2>who.Count(model)) continue;
-        Item? tmp = who.Inventory.GetBestDestackable(model);
-        if (tmp is not null) return _BehaviorDropOrExchange(tmp, it, position, use_ok);
+      if (it.ModelID.MedicineModel() is { } model) {
+        if (2 <= who.Count(model)) {
+          Item? tmp = who.Inventory.GetBestDestackable(model);
+          if (tmp is not null) return _BehaviorDropOrExchange(tmp, it, position, use_ok);
+        }
       }
 
       // trackers (mainly because AI can't use properly), but cell phones are trackers

@@ -152,13 +152,8 @@ namespace djack.RogueSurvivor.Gameplay
         Item_IDs.UNIQUE_ROGUEDJACK_KEYBOARD,
         Item_IDs.UNIQUE_FATHER_TIME_SCYTHE
     });
-    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<Item_IDs> medicine
-    = new(new List<Item_IDs> { Item_IDs.MEDICINE_BANDAGES,
-        Item_IDs.MEDICINE_MEDIKIT,
-        Item_IDs.MEDICINE_PILLS_STA,
-        Item_IDs.MEDICINE_PILLS_SLP,
-        Item_IDs.MEDICINE_PILLS_SAN,
-        Item_IDs.MEDICINE_PILLS_ANTIVIRAL});
+    private static readonly List<(Item_IDs id, ItemMedicineModel model)> _medicine = new();
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemMedicineModel model)> medicine = new(_medicine);
 
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<Item_IDs> restoreSAN
     = new(new List<Item_IDs> { Item_IDs.MEDICINE_PILLS_SAN,
@@ -201,46 +196,22 @@ namespace djack.RogueSurvivor.Gameplay
       _ammo.Add((model.ID, model));
     }
 
+    private static void _setModel(ItemMedicineModel model) {
+      _setModel((Data.Model.Item)model);
+      _medicine.Add((model.ID, model));
+    }
+
     private static void _setModel(ItemRangedWeaponModel model) {
       _setModel((Data.Model.Item)model);
       _ranged.Add((model.ID, model));
     }
 
-    public static ItemMedicineModel BANDAGE {
-      get {
-        return m_Models[(int)Item_IDs.MEDICINE_BANDAGES] as ItemMedicineModel;
-      }
-    }
-
-    public static ItemMedicineModel MEDIKIT {
-      get {
-        return m_Models[(int)Item_IDs.MEDICINE_MEDIKIT] as ItemMedicineModel;
-      }
-    }
-
-    public static ItemMedicineModel PILLS_STA {
-      get {
-        return m_Models[(int)Item_IDs.MEDICINE_PILLS_STA] as ItemMedicineModel;
-      }
-    }
-
-    public static ItemMedicineModel PILLS_SLP {
-      get {
-        return m_Models[(int)Item_IDs.MEDICINE_PILLS_SLP] as ItemMedicineModel;
-      }
-    }
-
-    public static ItemMedicineModel PILLS_SAN {
-      get {
-        return m_Models[(int)Item_IDs.MEDICINE_PILLS_SAN] as ItemMedicineModel;
-      }
-    }
-
-    public static ItemMedicineModel PILLS_ANTIVIRAL {
-      get {
-        return m_Models[(int)Item_IDs.MEDICINE_PILLS_ANTIVIRAL] as ItemMedicineModel;
-      }
-    }
+    public static ItemMedicineModel BANDAGE => _medicine[0].model;
+    public static ItemMedicineModel MEDIKIT => _medicine[(int)Item_IDs.MEDICINE_MEDIKIT - (int)Item_IDs.MEDICINE_BANDAGES].model;
+    public static ItemMedicineModel PILLS_STA => _medicine[(int)Item_IDs.MEDICINE_PILLS_STA - (int)Item_IDs.MEDICINE_BANDAGES].model;
+    public static ItemMedicineModel PILLS_SLP => _medicine[(int)Item_IDs.MEDICINE_PILLS_SLP - (int)Item_IDs.MEDICINE_BANDAGES].model;
+    public static ItemMedicineModel PILLS_SAN => _medicine[(int)Item_IDs.MEDICINE_PILLS_SAN - (int)Item_IDs.MEDICINE_BANDAGES].model;
+    public static ItemMedicineModel PILLS_ANTIVIRAL => _medicine[(int)Item_IDs.MEDICINE_PILLS_ANTIVIRAL - (int)Item_IDs.MEDICINE_BANDAGES].model;
 
     public static ItemFoodModel ARMY_RATION {
       get {
@@ -686,6 +657,14 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(new ItemMedicineModel(Item_IDs.MEDICINE_PILLS_SLP, DATA_MEDICINE_PILLS_SLP.NAME, DATA_MEDICINE_PILLS_SLP.PLURAL, GameImages.ITEM_PILLS_BLUE, DATA_MEDICINE_PILLS_SLP.HEALING, DATA_MEDICINE_PILLS_SLP.STAMINABOOST, DATA_MEDICINE_PILLS_SLP.SLEEPBOOST, DATA_MEDICINE_PILLS_SLP.INFECTIONCURE, DATA_MEDICINE_PILLS_SLP.SANITYCURE, DATA_MEDICINE_PILLS_SLP.FLAVOR, DATA_MEDICINE_PILLS_SLP.STACKINGLIMIT));
       _setModel(new ItemMedicineModel(Item_IDs.MEDICINE_PILLS_SAN, DATA_MEDICINE_PILLS_SAN.NAME, DATA_MEDICINE_PILLS_SAN.PLURAL, GameImages.ITEM_PILLS_SAN, DATA_MEDICINE_PILLS_SAN.HEALING, DATA_MEDICINE_PILLS_SAN.STAMINABOOST, DATA_MEDICINE_PILLS_SAN.SLEEPBOOST, DATA_MEDICINE_PILLS_SAN.INFECTIONCURE, DATA_MEDICINE_PILLS_SAN.SANITYCURE, DATA_MEDICINE_PILLS_SAN.FLAVOR, DATA_MEDICINE_PILLS_SAN.STACKINGLIMIT));
       _setModel(new ItemMedicineModel(Item_IDs.MEDICINE_PILLS_ANTIVIRAL, DATA_MEDICINE_PILLS_ANTIVIRAL.NAME, DATA_MEDICINE_PILLS_ANTIVIRAL.PLURAL, GameImages.ITEM_PILLS_ANTIVIRAL, DATA_MEDICINE_PILLS_ANTIVIRAL.HEALING, DATA_MEDICINE_PILLS_ANTIVIRAL.STAMINABOOST, DATA_MEDICINE_PILLS_ANTIVIRAL.SLEEPBOOST, DATA_MEDICINE_PILLS_ANTIVIRAL.INFECTIONCURE, DATA_MEDICINE_PILLS_ANTIVIRAL.SANITYCURE, DATA_MEDICINE_PILLS_ANTIVIRAL.FLAVOR, DATA_MEDICINE_PILLS_ANTIVIRAL.STACKINGLIMIT));
+#if DEBUG
+      if (Item_IDs.MEDICINE_BANDAGES != _medicine[0].id) throw new InvalidOperationException("Reasonable C-style indexing for medicines invalid");
+      if (Item_IDs.MEDICINE_MEDIKIT != _medicine[(int)Item_IDs.MEDICINE_MEDIKIT - (int)Item_IDs.MEDICINE_BANDAGES].id) throw new InvalidOperationException("Reasonable C-style indexing for medicines invalid");
+      if (Item_IDs.MEDICINE_PILLS_STA != _medicine[(int)Item_IDs.MEDICINE_PILLS_STA - (int)Item_IDs.MEDICINE_BANDAGES].id) throw new InvalidOperationException("Reasonable C-style indexing for medicines invalid");
+      if (Item_IDs.MEDICINE_PILLS_SLP != _medicine[(int)Item_IDs.MEDICINE_PILLS_SLP - (int)Item_IDs.MEDICINE_BANDAGES].id) throw new InvalidOperationException("Reasonable C-style indexing for medicines invalid");
+      if (Item_IDs.MEDICINE_PILLS_SAN != _medicine[(int)Item_IDs.MEDICINE_PILLS_SAN - (int)Item_IDs.MEDICINE_BANDAGES].id) throw new InvalidOperationException("Reasonable C-style indexing for medicines invalid");
+      if (Item_IDs.MEDICINE_PILLS_ANTIVIRAL != _medicine[(int)Item_IDs.MEDICINE_PILLS_ANTIVIRAL - (int)Item_IDs.MEDICINE_BANDAGES].id) throw new InvalidOperationException("Reasonable C-style indexing for medicines invalid");
+#endif
 
       // Food
       _setModel(new ItemFoodModel(Item_IDs.FOOD_ARMY_RATION, DATA_FOOD_ARMY_RATION.NAME, DATA_FOOD_ARMY_RATION.PLURAL, GameImages.ITEM_ARMY_RATION, DATA_FOOD_ARMY_RATION.NUTRITION, DATA_FOOD_ARMY_RATION.BESTBEFORE, DATA_FOOD_ARMY_RATION.STACKINGLIMIT, DATA_FOOD_ARMY_RATION.FLAVOR));
@@ -1384,6 +1363,11 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static ItemAmmoModel? AmmoModel(this Item_IDs id) {
       foreach (var (x, model) in GameItems.ammo) if (x == id) return model;
+      return null;
+    }
+
+    public static ItemMedicineModel? MedicineModel(this Item_IDs id) {
+      foreach (var (x, model) in GameItems.medicine) if (x == id) return model;
       return null;
     }
 
