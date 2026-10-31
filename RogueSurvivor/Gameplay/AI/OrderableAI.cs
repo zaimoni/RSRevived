@@ -4374,7 +4374,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           }
           if (precious is not null) foreach(var it in precious) {
-            if (GameItems.ranged.Contains(it)) continue;    // handled at NonCriticalInInventory stage
+            if (it.RangedWeaponModel() is not null) continue;    // handled at NonCriticalInInventory stage
             if (GameItems.food.Contains(it)) continue;    // ally is hungry...ok
 
             if (it.AmmoModel() is { } model) {

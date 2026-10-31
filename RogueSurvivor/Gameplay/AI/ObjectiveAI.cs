@@ -7417,8 +7417,7 @@ restart_chokepoints:
 
     private void retrofitWant(Item_IDs src, HashSet<Item_IDs> dest)
     {
-        if (GameItems.ranged.Contains(src)) {
-            var model = (GameItems.From(src) as ItemRangedWeaponModel)!;
+        if (src.RangedWeaponModel() is { } model) {
             var ammo_type = (Item_IDs)((int)model.AmmoType + (int)Item_IDs.AMMO_LIGHT_PISTOL);
             if (m_Living?.Inventory.Has(ammo_type) ?? false) dest.Add(src.UnloadedVersion());
         }
@@ -7470,9 +7469,9 @@ restart_chokepoints:
         var code = ItemRatingCode(i);
         if (3 <= code) continue;
         // ranged weapons are problematic
-        if (GameItems.ranged.Contains(i)) {
+        if (i.RangedWeaponModel() is { } rw_model) {
           if (1 >= inv.CountType(ItemRangedWeapon.is_not_empty)) continue;    // really critical
-          if (inv.GetCompatibleAmmoItem(model as ItemRangedWeaponModel) is not null) continue;
+          if (inv.GetCompatibleAmmoItem(rw_model) is not null) continue;
         }
         if (2 == code) want.Add(i);
         else insurance.Add(i);

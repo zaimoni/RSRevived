@@ -48,6 +48,8 @@ namespace djack.RogueSurvivor.Gameplay
       RANGED_KOLT_REVOLVER,
       RANGED_PRECISION_RIFLE,
       RANGED_SHOTGUN,
+      UNIQUE_SANTAMAN_SHOTGUN,
+      UNIQUE_HANS_VON_HANZ_PISTOL,
       EXPLOSIVE_GRENADE,
       EXPLOSIVE_GRENADE_PRIMED,
       BAR_WOODEN_PLANK,
@@ -86,8 +88,6 @@ namespace djack.RogueSurvivor.Gameplay
       UNIQUE_BIGBEAR_BAT,
       UNIQUE_ROGUEDJACK_KEYBOARD,
       UNIQUE_FATHER_TIME_SCYTHE,
-      UNIQUE_SANTAMAN_SHOTGUN,
-      UNIQUE_HANS_VON_HANZ_PISTOL,
       ENT_CHAR_GUARD_MANUAL, // synthetic data, does not need to be with other Entertainment
       _COUNT,    // default this to guarantee correct value
       // for inventory memory only
@@ -118,18 +118,8 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static readonly List<(Item_IDs id, ItemAmmoModel model)> _ammo = new();
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemAmmoModel model)> ammo = new(_ammo);
-    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<Item_IDs> ranged
-    = new(new List<Item_IDs>{ Item_IDs.RANGED_ARMY_PISTOL,
-        Item_IDs.RANGED_ARMY_RIFLE,
-        Item_IDs.RANGED_HUNTING_CROSSBOW,
-        Item_IDs.RANGED_HUNTING_RIFLE,
-        Item_IDs.RANGED_KOLT_REVOLVER,
-        Item_IDs.RANGED_PISTOL,
-        Item_IDs.RANGED_PRECISION_RIFLE,
-        Item_IDs.RANGED_SHOTGUN,
-        Item_IDs.UNIQUE_SANTAMAN_SHOTGUN,
-        Item_IDs.UNIQUE_HANS_VON_HANZ_PISTOL
-    });
+    private static readonly List<(Item_IDs id, ItemRangedWeaponModel model)> _ranged = new();
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemRangedWeaponModel model)> ranged = new(_ranged);
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<Item_IDs> armor
     = new(new List<Item_IDs> { Item_IDs.ARMOR_ARMY_BODYARMOR,
             Item_IDs.ARMOR_CHAR_LIGHT_BODYARMOR,
@@ -209,6 +199,11 @@ namespace djack.RogueSurvivor.Gameplay
     private static void _setModel(ItemAmmoModel model) {
       _setModel((Data.Model.Item)model);
       _ammo.Add((model.ID, model));
+    }
+
+    private static void _setModel(ItemRangedWeaponModel model) {
+      _setModel((Data.Model.Item)model);
+      _ranged.Add((model.ID, model));
     }
 
     public static ItemMedicineModel BANDAGE {
@@ -367,65 +362,16 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
-    public static ItemRangedWeaponModel ARMY_PISTOL {
-      get {
-        return m_Models[(int)Item_IDs.RANGED_ARMY_PISTOL] as ItemRangedWeaponModel;
-      }
-    }
-
-    public static ItemRangedWeaponModel ARMY_RIFLE {
-      get {
-        return m_Models[(int)Item_IDs.RANGED_ARMY_RIFLE] as ItemRangedWeaponModel;
-      }
-    }
-
-    public static ItemRangedWeaponModel HUNTING_CROSSBOW {
-      get {
-        return m_Models[(int)Item_IDs.RANGED_HUNTING_CROSSBOW] as ItemRangedWeaponModel;
-      }
-    }
-
-    public static ItemRangedWeaponModel HUNTING_RIFLE {
-      get {
-        return m_Models[(int)Item_IDs.RANGED_HUNTING_RIFLE] as ItemRangedWeaponModel;
-      }
-    }
-
-    public static ItemRangedWeaponModel KOLT_REVOLVER {
-      get {
-        return m_Models[(int)Item_IDs.RANGED_KOLT_REVOLVER] as ItemRangedWeaponModel;
-      }
-    }
-
-    public static ItemRangedWeaponModel PISTOL {
-      get {
-        return m_Models[(int)Item_IDs.RANGED_PISTOL] as ItemRangedWeaponModel;
-      }
-    }
-
-    public static ItemRangedWeaponModel PRECISION_RIFLE {
-      get {
-        return m_Models[(int)Item_IDs.RANGED_PRECISION_RIFLE] as ItemRangedWeaponModel;
-      }
-    }
-
-    public static ItemRangedWeaponModel SHOTGUN {
-      get {
-        return m_Models[(int)Item_IDs.RANGED_SHOTGUN] as ItemRangedWeaponModel;
-      }
-    }
-
-    public static ItemRangedWeaponModel UNIQUE_SANTAMAN_SHOTGUN {
-      get {
-        return m_Models[(int)Item_IDs.UNIQUE_SANTAMAN_SHOTGUN] as ItemRangedWeaponModel;
-      }
-    }
-
-    public static ItemRangedWeaponModel UNIQUE_HANS_VON_HANZ_PISTOL {
-      get {
-        return m_Models[(int)Item_IDs.UNIQUE_HANS_VON_HANZ_PISTOL] as ItemRangedWeaponModel;
-      }
-    }
+    public static ItemRangedWeaponModel ARMY_PISTOL => _ranged[0].model;
+    public static ItemRangedWeaponModel ARMY_RIFLE => _ranged[(int)Item_IDs.RANGED_ARMY_RIFLE - (int)Item_IDs.RANGED_ARMY_PISTOL].model;
+    public static ItemRangedWeaponModel HUNTING_CROSSBOW => _ranged[(int)Item_IDs.RANGED_HUNTING_CROSSBOW - (int)Item_IDs.RANGED_ARMY_PISTOL].model;
+    public static ItemRangedWeaponModel HUNTING_RIFLE => _ranged[(int)Item_IDs.RANGED_HUNTING_RIFLE - (int)Item_IDs.RANGED_ARMY_PISTOL].model;
+    public static ItemRangedWeaponModel KOLT_REVOLVER => _ranged[(int)Item_IDs.RANGED_KOLT_REVOLVER - (int)Item_IDs.RANGED_ARMY_PISTOL].model;
+    public static ItemRangedWeaponModel PISTOL => _ranged[(int)Item_IDs.RANGED_PISTOL - (int)Item_IDs.RANGED_ARMY_PISTOL].model;
+    public static ItemRangedWeaponModel PRECISION_RIFLE => _ranged[(int)Item_IDs.RANGED_PRECISION_RIFLE - (int)Item_IDs.RANGED_ARMY_PISTOL].model;
+    public static ItemRangedWeaponModel SHOTGUN => _ranged[(int)Item_IDs.RANGED_SHOTGUN - (int)Item_IDs.RANGED_ARMY_PISTOL].model;
+    public static ItemRangedWeaponModel UNIQUE_SANTAMAN_SHOTGUN => _ranged[(int)Item_IDs.UNIQUE_SANTAMAN_SHOTGUN - (int)Item_IDs.RANGED_ARMY_PISTOL].model;
+    public static ItemRangedWeaponModel UNIQUE_HANS_VON_HANZ_PISTOL => _ranged[(int)Item_IDs.UNIQUE_HANS_VON_HANZ_PISTOL - (int)Item_IDs.RANGED_ARMY_PISTOL].model;
 
     public static ItemAmmoModel AMMO_LIGHT_PISTOL => _ammo[0].model;
     public static ItemAmmoModel AMMO_HEAVY_PISTOL => _ammo[(int)Item_IDs.AMMO_HEAVY_PISTOL - (int)Item_IDs.AMMO_LIGHT_PISTOL].model;
@@ -776,6 +722,18 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(new ItemRangedWeaponModel(Item_IDs.RANGED_SHOTGUN, DATA_RANGED_SHOTGUN.NAME, DATA_RANGED_SHOTGUN.FLAVOR, GameImages.ITEM_SHOTGUN, new Attack(AttackKind.FIREARM, SHOOT, DATA_RANGED_SHOTGUN.ATK, DATA_RANGED_SHOTGUN.DMG, 0, DATA_RANGED_SHOTGUN.RANGE, DATA_RANGED_SHOTGUN.RAPID1, DATA_RANGED_SHOTGUN.RAPID2), DATA_RANGED_SHOTGUN.MAXAMMO, AmmoType.SHOTGUN, DATA_RANGED_SHOTGUN.FLAVOR));
       _setModel(new ItemRangedWeaponModel(Item_IDs.UNIQUE_SANTAMAN_SHOTGUN, DATA_UNIQUE_SANTAMAN_SHOTGUN.NAME, DATA_UNIQUE_SANTAMAN_SHOTGUN.FLAVOR, GameImages.ITEM_SANTAMAN_SHOTGUN, new Attack(AttackKind.FIREARM, SHOOT, DATA_UNIQUE_SANTAMAN_SHOTGUN.ATK, DATA_UNIQUE_SANTAMAN_SHOTGUN.DMG, 0, DATA_UNIQUE_SANTAMAN_SHOTGUN.RANGE, DATA_UNIQUE_SANTAMAN_SHOTGUN.RAPID1, DATA_UNIQUE_SANTAMAN_SHOTGUN.RAPID2), DATA_UNIQUE_SANTAMAN_SHOTGUN.MAXAMMO, AmmoType.SHOTGUN, DATA_UNIQUE_SANTAMAN_SHOTGUN.FLAVOR, true));
       _setModel(new ItemRangedWeaponModel(Item_IDs.UNIQUE_HANS_VON_HANZ_PISTOL, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.NAME, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.FLAVOR, GameImages.ITEM_HANS_VON_HANZ_PISTOL, new Attack(AttackKind.FIREARM, SHOOT, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.ATK, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.DMG, 0, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.RANGE, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.RAPID1, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.RAPID2), DATA_UNIQUE_HANS_VON_HANZ_PISTOL.MAXAMMO, AmmoType.LIGHT_PISTOL, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.FLAVOR, true));
+#if DEBUG
+      if (Item_IDs.RANGED_ARMY_PISTOL != _ranged[0].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
+      if (Item_IDs.RANGED_ARMY_RIFLE != _ranged[(int)Item_IDs.RANGED_ARMY_RIFLE - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
+      if (Item_IDs.RANGED_HUNTING_CROSSBOW != _ranged[(int)Item_IDs.RANGED_HUNTING_CROSSBOW - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
+      if (Item_IDs.RANGED_HUNTING_RIFLE != _ranged[(int)Item_IDs.RANGED_HUNTING_RIFLE - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
+      if (Item_IDs.RANGED_PISTOL != _ranged[(int)Item_IDs.RANGED_PISTOL - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
+      if (Item_IDs.RANGED_KOLT_REVOLVER != _ranged[(int)Item_IDs.RANGED_KOLT_REVOLVER - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
+      if (Item_IDs.RANGED_PRECISION_RIFLE != _ranged[(int)Item_IDs.RANGED_PRECISION_RIFLE - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
+      if (Item_IDs.RANGED_SHOTGUN != _ranged[(int)Item_IDs.RANGED_SHOTGUN - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
+      if (Item_IDs.UNIQUE_SANTAMAN_SHOTGUN != _ranged[(int)Item_IDs.UNIQUE_SANTAMAN_SHOTGUN - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
+      if (Item_IDs.UNIQUE_HANS_VON_HANZ_PISTOL != _ranged[(int)Item_IDs.UNIQUE_HANS_VON_HANZ_PISTOL - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
+#endif
 
       // Ammunition; controls order of readonly collection ammo
       _setModel(new ItemAmmoModel(Item_IDs.AMMO_LIGHT_PISTOL, GameImages.ITEM_AMMO_LIGHT_PISTOL, AmmoType.LIGHT_PISTOL, 20));
@@ -1428,5 +1386,11 @@ namespace djack.RogueSurvivor.Gameplay
       foreach (var (x, model) in GameItems.ammo) if (x == id) return model;
       return null;
     }
+
+    public static ItemRangedWeaponModel? RangedWeaponModel(this Item_IDs id) {
+      foreach (var (x, model) in GameItems.ranged) if (x == id) return model;
+      return null;
+    }
+
   }
 }
