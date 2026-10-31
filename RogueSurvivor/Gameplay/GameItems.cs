@@ -206,6 +206,14 @@ namespace djack.RogueSurvivor.Gameplay
       _ranged.Add((model.ID, model));
     }
 
+#if DEBUG
+    /// <summary>the entries are in enum order from first, so (int)id - (int)first indexes the collection</summary>
+    private static void _requireContiguous<T>(List<(Item_IDs id, T model)> src, Item_IDs first, string what) {
+      int i = src.Count;
+      while (0 <= --i) if ((int)first + i != (int)src[i].id) throw new InvalidOperationException("Reasonable C-style indexing for " + what + " invalid");
+    }
+#endif
+
     public static ItemMedicineModel BANDAGE => _medicine[0].model;
     public static ItemMedicineModel MEDIKIT => _medicine[(int)Item_IDs.MEDICINE_MEDIKIT - (int)Item_IDs.MEDICINE_BANDAGES].model;
     public static ItemMedicineModel PILLS_STA => _medicine[(int)Item_IDs.MEDICINE_PILLS_STA - (int)Item_IDs.MEDICINE_BANDAGES].model;
@@ -650,7 +658,7 @@ namespace djack.RogueSurvivor.Gameplay
       EntData DATA_ENT_BOOK = ent_data[(int)Item_IDs.ENT_BOOK - (int)Item_IDs.ENT_BOOK];
       EntData DATA_ENT_MAGAZINE = ent_data[(int)Item_IDs.ENT_MAGAZINE - (int)Item_IDs.ENT_BOOK];
 
-      // Medicine
+      // Medicine; controls order of readonly collection medicine
       _setModel(new ItemMedicineModel(Item_IDs.MEDICINE_BANDAGES, DATA_MEDICINE_BANDAGE.NAME, DATA_MEDICINE_BANDAGE.PLURAL, GameImages.ITEM_BANDAGES, DATA_MEDICINE_BANDAGE.HEALING, DATA_MEDICINE_BANDAGE.STAMINABOOST, DATA_MEDICINE_BANDAGE.SLEEPBOOST, DATA_MEDICINE_BANDAGE.INFECTIONCURE, DATA_MEDICINE_BANDAGE.SANITYCURE, DATA_MEDICINE_BANDAGE.FLAVOR, DATA_MEDICINE_BANDAGE.STACKINGLIMIT));
       _setModel(new ItemMedicineModel(Item_IDs.MEDICINE_MEDIKIT, DATA_MEDICINE_MEDIKIT.NAME, DATA_MEDICINE_MEDIKIT.PLURAL, GameImages.ITEM_MEDIKIT, DATA_MEDICINE_MEDIKIT.HEALING, DATA_MEDICINE_MEDIKIT.STAMINABOOST, DATA_MEDICINE_MEDIKIT.SLEEPBOOST, DATA_MEDICINE_MEDIKIT.INFECTIONCURE, DATA_MEDICINE_MEDIKIT.SANITYCURE, DATA_MEDICINE_MEDIKIT.FLAVOR));
       _setModel(new ItemMedicineModel(Item_IDs.MEDICINE_PILLS_STA, DATA_MEDICINE_PILLS_STA.NAME, DATA_MEDICINE_PILLS_STA.PLURAL, GameImages.ITEM_PILLS_GREEN, DATA_MEDICINE_PILLS_STA.HEALING, DATA_MEDICINE_PILLS_STA.STAMINABOOST, DATA_MEDICINE_PILLS_STA.SLEEPBOOST, DATA_MEDICINE_PILLS_STA.INFECTIONCURE, DATA_MEDICINE_PILLS_STA.SANITYCURE, DATA_MEDICINE_PILLS_STA.FLAVOR, DATA_MEDICINE_PILLS_STA.STACKINGLIMIT));
@@ -658,12 +666,7 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(new ItemMedicineModel(Item_IDs.MEDICINE_PILLS_SAN, DATA_MEDICINE_PILLS_SAN.NAME, DATA_MEDICINE_PILLS_SAN.PLURAL, GameImages.ITEM_PILLS_SAN, DATA_MEDICINE_PILLS_SAN.HEALING, DATA_MEDICINE_PILLS_SAN.STAMINABOOST, DATA_MEDICINE_PILLS_SAN.SLEEPBOOST, DATA_MEDICINE_PILLS_SAN.INFECTIONCURE, DATA_MEDICINE_PILLS_SAN.SANITYCURE, DATA_MEDICINE_PILLS_SAN.FLAVOR, DATA_MEDICINE_PILLS_SAN.STACKINGLIMIT));
       _setModel(new ItemMedicineModel(Item_IDs.MEDICINE_PILLS_ANTIVIRAL, DATA_MEDICINE_PILLS_ANTIVIRAL.NAME, DATA_MEDICINE_PILLS_ANTIVIRAL.PLURAL, GameImages.ITEM_PILLS_ANTIVIRAL, DATA_MEDICINE_PILLS_ANTIVIRAL.HEALING, DATA_MEDICINE_PILLS_ANTIVIRAL.STAMINABOOST, DATA_MEDICINE_PILLS_ANTIVIRAL.SLEEPBOOST, DATA_MEDICINE_PILLS_ANTIVIRAL.INFECTIONCURE, DATA_MEDICINE_PILLS_ANTIVIRAL.SANITYCURE, DATA_MEDICINE_PILLS_ANTIVIRAL.FLAVOR, DATA_MEDICINE_PILLS_ANTIVIRAL.STACKINGLIMIT));
 #if DEBUG
-      if (Item_IDs.MEDICINE_BANDAGES != _medicine[0].id) throw new InvalidOperationException("Reasonable C-style indexing for medicines invalid");
-      if (Item_IDs.MEDICINE_MEDIKIT != _medicine[(int)Item_IDs.MEDICINE_MEDIKIT - (int)Item_IDs.MEDICINE_BANDAGES].id) throw new InvalidOperationException("Reasonable C-style indexing for medicines invalid");
-      if (Item_IDs.MEDICINE_PILLS_STA != _medicine[(int)Item_IDs.MEDICINE_PILLS_STA - (int)Item_IDs.MEDICINE_BANDAGES].id) throw new InvalidOperationException("Reasonable C-style indexing for medicines invalid");
-      if (Item_IDs.MEDICINE_PILLS_SLP != _medicine[(int)Item_IDs.MEDICINE_PILLS_SLP - (int)Item_IDs.MEDICINE_BANDAGES].id) throw new InvalidOperationException("Reasonable C-style indexing for medicines invalid");
-      if (Item_IDs.MEDICINE_PILLS_SAN != _medicine[(int)Item_IDs.MEDICINE_PILLS_SAN - (int)Item_IDs.MEDICINE_BANDAGES].id) throw new InvalidOperationException("Reasonable C-style indexing for medicines invalid");
-      if (Item_IDs.MEDICINE_PILLS_ANTIVIRAL != _medicine[(int)Item_IDs.MEDICINE_PILLS_ANTIVIRAL - (int)Item_IDs.MEDICINE_BANDAGES].id) throw new InvalidOperationException("Reasonable C-style indexing for medicines invalid");
+      _requireContiguous(_medicine, Item_IDs.MEDICINE_BANDAGES, "medicines");
 #endif
 
       // Food
@@ -690,7 +693,7 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(new ItemMeleeWeaponModel(Item_IDs.UNIQUE_ROGUEDJACK_KEYBOARD, DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.NAME, GameImages.ITEM_ROGUEDJACK_KEYBOARD, new Attack(AttackKind.PHYSICAL, RogueGame.VERB_BASH, DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.ATK, DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.DMG, DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.STA), DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.FLAVOR, DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.TOOLBASHDMGBONUS, DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.TOOLBUILDBONUS, true));
       _setModel(new ItemMeleeWeaponModel(Item_IDs.UNIQUE_FATHER_TIME_SCYTHE, DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.NAME, GameImages.ITEM_FATHER_TIME_SCYTHE, new Attack(AttackKind.PHYSICAL, SLASH, DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.ATK, DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.DMG, DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.STA), DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.FLAVOR, DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.TOOLBASHDMGBONUS, DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.TOOLBUILDBONUS, true));
 
-      // ranged weapons
+      // ranged weapons; controls order of readonly collection ranged
       _setModel(new ItemRangedWeaponModel(Item_IDs.RANGED_ARMY_PISTOL, DATA_RANGED_ARMY_PISTOL.NAME, DATA_RANGED_ARMY_PISTOL.FLAVOR, GameImages.ITEM_ARMY_PISTOL, new Attack(AttackKind.FIREARM, SHOOT, DATA_RANGED_ARMY_PISTOL.ATK, DATA_RANGED_ARMY_PISTOL.DMG, 0, DATA_RANGED_ARMY_PISTOL.RANGE, DATA_RANGED_ARMY_PISTOL.RAPID1, DATA_RANGED_ARMY_PISTOL.RAPID2), DATA_RANGED_ARMY_PISTOL.MAXAMMO, AmmoType.HEAVY_PISTOL, DATA_RANGED_ARMY_PISTOL.FLAVOR));
       _setModel(new ItemRangedWeaponModel(Item_IDs.RANGED_ARMY_RIFLE, DATA_RANGED_ARMY_RIFLE.NAME, DATA_RANGED_ARMY_RIFLE.FLAVOR, GameImages.ITEM_ARMY_RIFLE, new Attack(AttackKind.FIREARM, FIRE_SALVO_AT, DATA_RANGED_ARMY_RIFLE.ATK, DATA_RANGED_ARMY_RIFLE.DMG, 0, DATA_RANGED_ARMY_RIFLE.RANGE, DATA_RANGED_ARMY_RIFLE.RAPID1, DATA_RANGED_ARMY_RIFLE.RAPID2), DATA_RANGED_ARMY_RIFLE.MAXAMMO, AmmoType.HEAVY_RIFLE, DATA_RANGED_ARMY_RIFLE.FLAVOR));
       _setModel(new ItemRangedWeaponModel(Item_IDs.RANGED_HUNTING_CROSSBOW, DATA_RANGED_HUNTING_CROSSBOW.NAME, DATA_RANGED_HUNTING_CROSSBOW.FLAVOR, GameImages.ITEM_HUNTING_CROSSBOW, new Attack(AttackKind.BOW, SHOOT, DATA_RANGED_HUNTING_CROSSBOW.ATK, DATA_RANGED_HUNTING_CROSSBOW.DMG, 0, DATA_RANGED_HUNTING_CROSSBOW.RANGE, DATA_RANGED_HUNTING_CROSSBOW.RAPID1, DATA_RANGED_HUNTING_CROSSBOW.RAPID2), DATA_RANGED_HUNTING_CROSSBOW.MAXAMMO, AmmoType.BOLT, DATA_RANGED_HUNTING_CROSSBOW.FLAVOR));
@@ -702,16 +705,7 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(new ItemRangedWeaponModel(Item_IDs.UNIQUE_SANTAMAN_SHOTGUN, DATA_UNIQUE_SANTAMAN_SHOTGUN.NAME, DATA_UNIQUE_SANTAMAN_SHOTGUN.FLAVOR, GameImages.ITEM_SANTAMAN_SHOTGUN, new Attack(AttackKind.FIREARM, SHOOT, DATA_UNIQUE_SANTAMAN_SHOTGUN.ATK, DATA_UNIQUE_SANTAMAN_SHOTGUN.DMG, 0, DATA_UNIQUE_SANTAMAN_SHOTGUN.RANGE, DATA_UNIQUE_SANTAMAN_SHOTGUN.RAPID1, DATA_UNIQUE_SANTAMAN_SHOTGUN.RAPID2), DATA_UNIQUE_SANTAMAN_SHOTGUN.MAXAMMO, AmmoType.SHOTGUN, DATA_UNIQUE_SANTAMAN_SHOTGUN.FLAVOR, true));
       _setModel(new ItemRangedWeaponModel(Item_IDs.UNIQUE_HANS_VON_HANZ_PISTOL, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.NAME, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.FLAVOR, GameImages.ITEM_HANS_VON_HANZ_PISTOL, new Attack(AttackKind.FIREARM, SHOOT, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.ATK, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.DMG, 0, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.RANGE, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.RAPID1, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.RAPID2), DATA_UNIQUE_HANS_VON_HANZ_PISTOL.MAXAMMO, AmmoType.LIGHT_PISTOL, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.FLAVOR, true));
 #if DEBUG
-      if (Item_IDs.RANGED_ARMY_PISTOL != _ranged[0].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
-      if (Item_IDs.RANGED_ARMY_RIFLE != _ranged[(int)Item_IDs.RANGED_ARMY_RIFLE - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
-      if (Item_IDs.RANGED_HUNTING_CROSSBOW != _ranged[(int)Item_IDs.RANGED_HUNTING_CROSSBOW - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
-      if (Item_IDs.RANGED_HUNTING_RIFLE != _ranged[(int)Item_IDs.RANGED_HUNTING_RIFLE - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
-      if (Item_IDs.RANGED_PISTOL != _ranged[(int)Item_IDs.RANGED_PISTOL - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
-      if (Item_IDs.RANGED_KOLT_REVOLVER != _ranged[(int)Item_IDs.RANGED_KOLT_REVOLVER - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
-      if (Item_IDs.RANGED_PRECISION_RIFLE != _ranged[(int)Item_IDs.RANGED_PRECISION_RIFLE - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
-      if (Item_IDs.RANGED_SHOTGUN != _ranged[(int)Item_IDs.RANGED_SHOTGUN - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
-      if (Item_IDs.UNIQUE_SANTAMAN_SHOTGUN != _ranged[(int)Item_IDs.UNIQUE_SANTAMAN_SHOTGUN - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
-      if (Item_IDs.UNIQUE_HANS_VON_HANZ_PISTOL != _ranged[(int)Item_IDs.UNIQUE_HANS_VON_HANZ_PISTOL - (int)Item_IDs.RANGED_ARMY_PISTOL].id) throw new InvalidOperationException("Reasonable C-style indexing for ranged weapons invalid");
+      _requireContiguous(_ranged, Item_IDs.RANGED_ARMY_PISTOL, "ranged weapons");
 #endif
 
       // Ammunition; controls order of readonly collection ammo
@@ -723,12 +717,7 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(new ItemAmmoModel(Item_IDs.AMMO_BOLTS, GameImages.ITEM_AMMO_BOLTS, AmmoType.BOLT, 30));
 #if DEBUG
       if (0 != (int)AmmoType.LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
-      if (Item_IDs.AMMO_LIGHT_PISTOL != _ammo[0].id) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
-      if (Item_IDs.AMMO_HEAVY_PISTOL != _ammo[(int)Item_IDs.AMMO_HEAVY_PISTOL - (int)Item_IDs.AMMO_LIGHT_PISTOL].id) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
-      if (Item_IDs.AMMO_LIGHT_RIFLE != _ammo[(int)Item_IDs.AMMO_LIGHT_RIFLE - (int)Item_IDs.AMMO_LIGHT_PISTOL].id) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
-      if (Item_IDs.AMMO_HEAVY_RIFLE != _ammo[(int)Item_IDs.AMMO_HEAVY_RIFLE - (int)Item_IDs.AMMO_LIGHT_PISTOL].id) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
-      if (Item_IDs.AMMO_SHOTGUN != _ammo[(int)Item_IDs.AMMO_SHOTGUN - (int)Item_IDs.AMMO_LIGHT_PISTOL].id) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
-      if (Item_IDs.AMMO_BOLTS != _ammo[(int)Item_IDs.AMMO_BOLTS - (int)Item_IDs.AMMO_LIGHT_PISTOL].id) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
+      _requireContiguous(_ammo, Item_IDs.AMMO_LIGHT_PISTOL, "ammo");
 #endif
 
       // grenade, in its various states

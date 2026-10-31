@@ -7461,9 +7461,8 @@ restart_chokepoints:
       List<Item_IDs> want = new((int)Item_IDs._COUNT);
       var i = Item_IDs._COUNT;
       Inventory inv = who.Inventory;
-      Data.Model.Item model;
       while(0 < i--) {
-        if (inv.GetBestDestackable((model = GameItems.From(i))) is null) continue;   // not really in inventory
+        if (inv.GetBestDestackable(GameItems.From(i)) is null) continue;   // not really in inventory
         var code = ItemRatingCode(i);
         if (3 <= code) continue;
         // ranged weapons are problematic
