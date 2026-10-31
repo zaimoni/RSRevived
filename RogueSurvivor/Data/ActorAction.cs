@@ -104,6 +104,8 @@ namespace djack.RogueSurvivor.Data
 
     public static bool Is<T,U>(KeyValuePair<U,ActorAction> src) where T:ActorAction { return src.Value is T; }
     public static bool IsNot<T, U>(KeyValuePair<U,ActorAction> src) where T:ActorAction { return !(src.Value is T); }
+
+    public override string ToString() => GetType().Name;
   }
 
     [Serializable]

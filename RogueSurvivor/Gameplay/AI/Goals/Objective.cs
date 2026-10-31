@@ -92,6 +92,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       /// <param name="ret">null triggers deletion.  non-null ret.IsPerformable() must be true</param>
       /// <returns>true to take action</returns>
       public abstract bool UrgentAction(out ActorAction? ret);
+
+      public override string ToString() => GetType().Name;
     }
 
     public interface Pathable
