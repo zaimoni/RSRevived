@@ -29,7 +29,7 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | UpdateMoveDelta..ctor | Engine/Actions/ActionMoveDelta.cs:293 | ok | throws on the destination |
 | UpdateMoveDelta.toDest | Engine/Actions/ActionMoveDelta.cs:322 | ok | |
 | UpdateMoveDelta.fromOrigin | Engine/Actions/ActionMoveDelta.cs:329 | ok | |
-| PathToTarget.Unstage | Gameplay/AI/Goals/Objective.cs:215 | ok | |
+| PathToTarget.Unstage | Gameplay/AI/Goals/Objective.cs:217 | ok | |
 
 ## ActorModel.CanEnter
 
@@ -77,9 +77,9 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | AcquireLineOfSight..ctor(Actor, HashSet) | Gameplay/AI/Goals/AcquireLineOfSight.cs:61 | ok | RemoveWhere lambda; was Actor.CanEnter until c94620ce |
 | PathTo..ctor | Gameplay/AI/Goals/PathTo.cs:59 | ok | #if DEBUG |
 | PathTo..ctor | Gameplay/AI/Goals/PathTo.cs:70 | ok | #if DEBUG |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4817 | ok | two calls: N and S of the trap |
-| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4820 | ok | two calls: E and W of the trap |
-| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4860 | ok | by ref |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4818 | ok | two calls: N and S of the trap |
+| ObjectiveAI.DeathTrapsInSight | Gameplay/AI/ObjectiveAI.cs:4821 | ok | two calls: E and W of the trap |
+| ObjectiveAI.CanDisarmDeathtrap | Gameplay/AI/ObjectiveAI.cs:4861 | ok | by ref |
 
 ## Actor.CanEnter
 
