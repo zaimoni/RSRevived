@@ -16,8 +16,7 @@ namespace djack.RogueSurvivor.Engine.Items
     LIGHT_RIFLE = 2,
     HEAVY_RIFLE = 3,
     SHOTGUN = 4,
-    BOLT = 5,
-    _COUNT
+    BOLT = 5
   }
 
   internal static partial class ext_RSRevived

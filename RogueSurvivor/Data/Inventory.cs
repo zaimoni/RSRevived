@@ -300,7 +300,7 @@ namespace djack.RogueSurvivor.Data
       return smallest;
     }
 
-    public Item? GetBestDestackable(Data.Model.Item it)    // alpha10 equivalent: GetSmallestStackByModel.  XXX \todo rename for legibility?
+    public Item? GetBestDestackable(Model.Item it)    // alpha10 equivalent: GetSmallestStackByModel.  XXX \todo rename for legibility?
     {
       Item? obj = null;
       foreach (Item mItem in m_Items) {
@@ -310,7 +310,17 @@ namespace djack.RogueSurvivor.Data
       return obj;
     }
 
-    public Item? GetWorstDestackable(Data.Model.Item it)
+    public ItemAmmo? GetBestDestackable(ItemAmmoModel it)    // alpha10 equivalent: GetSmallestStackByModel.  XXX \todo rename for legibility?
+    {
+      Item? obj = null;
+      foreach (Item mItem in m_Items) {
+        if (mItem.Model == it && (obj is null || mItem.Quantity < obj.Quantity))
+          obj = mItem;
+      }
+      return obj as ItemAmmo;
+    }
+
+    public Item? GetWorstDestackable(Model.Item it)
     {
       Item? obj = null;
       foreach (Item mItem in m_Items) {
@@ -322,16 +332,8 @@ namespace djack.RogueSurvivor.Data
 
     // XXX thin forwarder
     public Item? GetBestDestackable(Item it) { return GetBestDestackable(it.Model); }
-
-    public ItemAmmo? GetCompatibleAmmoItem(ItemRangedWeaponModel rw)  // XXX layering violation
-    {
-      return GetBestDestackable(Gameplay.GameItems.From((int)rw.AmmoType + (int)(Gameplay.Item_IDs.AMMO_LIGHT_PISTOL))) as ItemAmmo;
-    }
-
-    public ItemAmmo? GetCompatibleAmmoItem(ItemRangedWeapon rw)  // XXX layering violation
-    {
-      return GetBestDestackable(Gameplay.GameItems.From((int)rw.AmmoType + (int)(Gameplay.Item_IDs.AMMO_LIGHT_PISTOL))) as ItemAmmo;
-    }
+    public ItemAmmo? GetCompatibleAmmoItem(ItemRangedWeaponModel rw) => GetBestDestackable(rw.AmmoType.AmmoModel());
+    public ItemAmmo? GetCompatibleAmmoItem(ItemRangedWeapon rw) => GetBestDestackable(rw.AmmoType.AmmoModel());
 
     // we prefer to return weapons that need reloading.
     public ItemRangedWeapon? GetCompatibleRangedWeapon(ItemAmmoModel am)

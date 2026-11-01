@@ -161,7 +161,6 @@ namespace djack.RogueSurvivor.Gameplay
         Item_IDs.ENT_MAGAZINE,
         Item_IDs.ENT_CHAR_GUARD_MANUAL});
 
-    public static Data.Model.Item From(int id) => m_Models[id];
     public static Data.Model.Item From(Item_IDs id) => m_Models[(int)id];
     public static Item? From(Item_s src) {
         int id = (int)src.ModelID;
@@ -718,6 +717,7 @@ namespace djack.RogueSurvivor.Gameplay
 #if DEBUG
       if (0 != (int)AmmoType.LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
       _requireContiguous(_ammo, Item_IDs.AMMO_LIGHT_PISTOL, "ammo");
+      if (ItemAmmoModel.AmmoType_COUNT != _ammo.Count) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
 #endif
 
       // grenade, in its various states
@@ -1354,6 +1354,7 @@ namespace djack.RogueSurvivor.Gameplay
       foreach (var (x, model) in GameItems.ammo) if (x == id) return model;
       return null;
     }
+    public static ItemAmmoModel AmmoModel(this AmmoType id) => GameItems.ammo[(int)id].model;
 
     public static ItemMedicineModel? MedicineModel(this Item_IDs id) {
       foreach (var (x, model) in GameItems.medicine) if (x == id) return model;

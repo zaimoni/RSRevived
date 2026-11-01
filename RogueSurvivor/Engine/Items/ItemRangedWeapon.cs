@@ -8,6 +8,7 @@ using System;
 using Item_s = djack.RogueSurvivor.Data.Item_s;
 using System.Text.Json;
 using Zaimoni.JSON;
+using djack.RogueSurvivor.Gameplay;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -51,10 +52,10 @@ namespace djack.RogueSurvivor.Engine.Items
     static public Predicate<ItemRangedWeapon> is_empty = rw => 0 >= rw.Ammo;
     static public Predicate<ItemRangedWeapon> is_not_empty = rw => 0 < rw.Ammo;
 
-    static public ItemRangedWeapon make(Gameplay.Item_IDs x)
-    {
-      if (Gameplay.GameItems.From(x) is ItemRangedWeaponModel rw_model) return new ItemRangedWeapon(rw_model);
-      throw new ArgumentOutOfRangeException(nameof(x), x, "not a ranged weapon");
+    static public ItemRangedWeapon make(Item_IDs x)
+    { // .NET 10 / C# 14 release-mode IL prefers this to one-liner
+      var rw_model = x.RangedWeaponModel() ?? throw new ArgumentOutOfRangeException(nameof(x), x, "not a ranged weapon");
+      return new ItemRangedWeapon(rw_model);
     }
 
     public override string ToString()

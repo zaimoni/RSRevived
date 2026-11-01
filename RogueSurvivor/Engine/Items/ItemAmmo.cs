@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Text.Json;
 using Zaimoni.JSON;
@@ -78,9 +79,9 @@ namespace djack.RogueSurvivor.Engine.Items
 
     static public ItemAmmo make(Gameplay.Item_IDs x)
     {
-      var tmp = Gameplay.GameItems.From(x);
-      if (tmp is ItemRangedWeaponModel rw_model) tmp = Gameplay.GameItems.From((int)(rw_model.AmmoType)+(int)(Gameplay.Item_IDs.AMMO_LIGHT_PISTOL));    // use the ammo of the ranged weapon instead
-      if (tmp is ItemAmmoModel am_model) return new ItemAmmo(am_model);
+      var tmp = GameItems.From(x);
+      if (tmp is ItemRangedWeaponModel rw_model) return new(rw_model.AmmoType.AmmoModel());    // use the ammo of the ranged weapon instead
+      if (tmp is ItemAmmoModel am_model) return new(am_model);
       throw new ArgumentOutOfRangeException(nameof(x), x, "not ammunition or ranged weapon");
     }
   }

@@ -11,6 +11,7 @@ namespace djack.RogueSurvivor.Engine.Items
   public sealed class ItemAmmoModel : Data.Model.Item
   {
     public readonly AmmoType AmmoType;
+    public const int AmmoType_COUNT = (int)AmmoType.BOLT + 1;
 
     public int MaxQuantity { get { return StackingLimit; } }
 

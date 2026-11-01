@@ -7202,10 +7202,10 @@ restart_chokepoints:
     {
         if (rws is null || !rws.Any()) return;
 
-        best_rw[pt] = new ItemRangedWeapon[(int)AmmoType._COUNT];
-        reload_empty_rw[pt] = new ItemRangedWeapon[(int)AmmoType._COUNT];
-        discard_empty_rw[pt] = new ItemRangedWeapon[(int)AmmoType._COUNT];
-        reload_rw[pt] = new ItemRangedWeapon[(int)AmmoType._COUNT];
+        best_rw[pt] = new ItemRangedWeapon[ItemAmmoModel.AmmoType_COUNT];
+        reload_empty_rw[pt] = new ItemRangedWeapon[ItemAmmoModel.AmmoType_COUNT];
+        discard_empty_rw[pt] = new ItemRangedWeapon[ItemAmmoModel.AmmoType_COUNT];
+        reload_rw[pt] = new ItemRangedWeapon[ItemAmmoModel.AmmoType_COUNT];
         bool keep_empty = false;
         bool keep_reload = false;
 
@@ -7283,7 +7283,7 @@ restart_chokepoints:
       if (reload_rw.ContainsKey(viewpoint_inventory)) {
         ItemRangedWeapon? local_rw;
         { // historically, we preferred handling this reload-get combination elsewhere
-          int i = (int)AmmoType._COUNT;
+          int i = ItemAmmoModel.AmmoType_COUNT;
           while(0 <= --i) {
             if ((local_rw = reload_rw[viewpoint_inventory][i]) is null) continue;
             var local_ammo = inv.GetCompatibleAmmoItem(local_rw);
@@ -7309,7 +7309,7 @@ restart_chokepoints:
           Data.Model.InvOrigin? dest = null;
           ItemRangedWeapon? test = null;
           ItemRangedWeapon? src = null;
-          int i = (int)AmmoType._COUNT;
+          int i = ItemAmmoModel.AmmoType_COUNT;
           while(0 <= --i) {
             if ((local_rw = discard_empty_rw[viewpoint_inventory][i]) is null) continue;
             foreach(var where_inv in best_rw) {
@@ -7333,7 +7333,7 @@ restart_chokepoints:
           Data.Model.InvOrigin? dest = null;
           ItemRangedWeapon? test = null;
           ItemRangedWeapon? src = null;
-          int i = (int)AmmoType._COUNT;
+          int i = ItemAmmoModel.AmmoType_COUNT;
           while(0 <= --i) {
             if ((local_rw = reload_rw[viewpoint_inventory][i]) is null) continue;
             foreach(var where_inv in best_rw) {
