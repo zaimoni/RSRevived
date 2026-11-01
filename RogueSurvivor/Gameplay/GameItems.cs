@@ -1349,21 +1349,22 @@ namespace djack.RogueSurvivor.Gameplay
   }
 
   internal static partial class ext_RSRevived {
+    // the model collections are indexed by enum offset from their first entry (verified in DEBUG by the GameItems constructor)
 
     public static ItemAmmoModel? AmmoModel(this Item_IDs id) {
-      foreach (var (x, model) in GameItems.ammo) if (x == id) return model;
-      return null;
+      int i = (int)id - (int)Item_IDs.AMMO_LIGHT_PISTOL;
+      return (0 <= i && GameItems.ammo.Count > i) ? GameItems.ammo[i].model : null;
     }
     public static ItemAmmoModel AmmoModel(this AmmoType id) => GameItems.ammo[(int)id].model;
 
     public static ItemMedicineModel? MedicineModel(this Item_IDs id) {
-      foreach (var (x, model) in GameItems.medicine) if (x == id) return model;
-      return null;
+      int i = (int)id - (int)Item_IDs.MEDICINE_BANDAGES;
+      return (0 <= i && GameItems.medicine.Count > i) ? GameItems.medicine[i].model : null;
     }
 
     public static ItemRangedWeaponModel? RangedWeaponModel(this Item_IDs id) {
-      foreach (var (x, model) in GameItems.ranged) if (x == id) return model;
-      return null;
+      int i = (int)id - (int)Item_IDs.RANGED_ARMY_PISTOL;
+      return (0 <= i && GameItems.ranged.Count > i) ? GameItems.ranged[i].model : null;
     }
 
   }
