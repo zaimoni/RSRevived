@@ -4629,7 +4629,7 @@ namespace djack.RogueSurvivor.Engine
       if (a.Controller.friends_in_FOV is not null) return false;
 
       foreach(var x in a.Controller.items_in_FOV) {
-        if (x.Value.IsCarrying(GameItems.melee)) return true;
+        if (x.Value.IsCarrying(GameItems.melee.Select(mw => mw.id))) return true;
         if (x.Value.IsCarrying(GameItems.ranged.Select(rw => rw.id))) return true;
         if (x.Value.IsCarrying(GameItems.ammo.Select(am => am.id))) return true;
       }
