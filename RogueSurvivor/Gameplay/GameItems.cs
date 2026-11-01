@@ -128,10 +128,8 @@ namespace djack.RogueSurvivor.Gameplay
             Item_IDs.ARMOR_POLICE_JACKET,
             Item_IDs.ARMOR_POLICE_RIOT,
             Item_IDs.ARMOR_HUNTER_VEST});
-    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<Item_IDs> food
-    = new(new List<Item_IDs> { Item_IDs.FOOD_ARMY_RATION,
-            Item_IDs.FOOD_GROCERIES,
-            Item_IDs.FOOD_CANNED_FOOD});
+    private static readonly List<(Item_IDs id, ItemFoodModel model)> _food = new();
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemFoodModel model)> food = new(_food);
     private static readonly List<(Item_IDs id, ItemMeleeWeaponModel model)> _melee = new();
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemMeleeWeaponModel model)> melee = new(_melee);
     private static readonly List<(Item_IDs id, ItemMedicineModel model)> _medicine = new();
@@ -177,6 +175,11 @@ namespace djack.RogueSurvivor.Gameplay
       _ammo.Add((model.ID, model));
     }
 
+    private static void _setModel(ItemFoodModel model) {
+      _setModel((Data.Model.Item)model);
+      _food.Add((model.ID, model));
+    }
+
     private static void _setModel(ItemMedicineModel model) {
       _setModel((Data.Model.Item)model);
       _medicine.Add((model.ID, model));
@@ -207,23 +210,9 @@ namespace djack.RogueSurvivor.Gameplay
     public static ItemMedicineModel PILLS_SAN => _medicine[(int)Item_IDs.MEDICINE_PILLS_SAN - (int)Item_IDs.MEDICINE_BANDAGES].model;
     public static ItemMedicineModel PILLS_ANTIVIRAL => _medicine[(int)Item_IDs.MEDICINE_PILLS_ANTIVIRAL - (int)Item_IDs.MEDICINE_BANDAGES].model;
 
-    public static ItemFoodModel ARMY_RATION {
-      get {
-        return m_Models[(int)Item_IDs.FOOD_ARMY_RATION] as ItemFoodModel;
-      }
-    }
-
-    public static ItemFoodModel GROCERIES {
-      get {
-        return m_Models[(int)Item_IDs.FOOD_GROCERIES] as ItemFoodModel;
-      }
-    }
-
-    public static ItemFoodModel CANNED_FOOD {
-      get {
-        return m_Models[(int)Item_IDs.FOOD_CANNED_FOOD] as ItemFoodModel;
-      }
-    }
+    public static ItemFoodModel ARMY_RATION => _food[0].model;
+    public static ItemFoodModel GROCERIES => _food[(int)Item_IDs.FOOD_GROCERIES - (int)Item_IDs.FOOD_ARMY_RATION].model;
+    public static ItemFoodModel CANNED_FOOD => _food[(int)Item_IDs.FOOD_CANNED_FOOD - (int)Item_IDs.FOOD_ARMY_RATION].model;
 
     public static ItemMeleeWeaponModel CROWBAR => _melee[(int)Item_IDs.MELEE_CROWBAR - (int)Item_IDs.MELEE_BASEBALLBAT].model;
     public static ItemMeleeWeaponModel BASEBALLBAT => _melee[0].model;
@@ -575,6 +564,9 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(new ItemFoodModel(Item_IDs.FOOD_ARMY_RATION, DATA_FOOD_ARMY_RATION.NAME, DATA_FOOD_ARMY_RATION.PLURAL, GameImages.ITEM_ARMY_RATION, DATA_FOOD_ARMY_RATION.NUTRITION, DATA_FOOD_ARMY_RATION.BESTBEFORE, DATA_FOOD_ARMY_RATION.STACKINGLIMIT, DATA_FOOD_ARMY_RATION.FLAVOR));
       _setModel(new ItemFoodModel(Item_IDs.FOOD_GROCERIES, DATA_FOOD_GROCERIES.NAME, DATA_FOOD_GROCERIES.PLURAL, GameImages.ITEM_GROCERIES, DATA_FOOD_GROCERIES.NUTRITION, DATA_FOOD_GROCERIES.BESTBEFORE, DATA_FOOD_GROCERIES.STACKINGLIMIT, DATA_FOOD_GROCERIES.FLAVOR));
       _setModel(new ItemFoodModel(Item_IDs.FOOD_CANNED_FOOD, DATA_FOOD_CANNED_FOOD.NAME, DATA_FOOD_CANNED_FOOD.PLURAL, GameImages.ITEM_CANNED_FOOD, DATA_FOOD_CANNED_FOOD.NUTRITION, DATA_FOOD_CANNED_FOOD.BESTBEFORE, DATA_FOOD_CANNED_FOOD.STACKINGLIMIT, DATA_FOOD_CANNED_FOOD.FLAVOR));
+#if DEBUG
+      _requireContiguous(_food, Item_IDs.FOOD_ARMY_RATION, "food");
+#endif
 
       // melee weapons
       _setModel(new ItemMeleeWeaponModel(Item_IDs.MELEE_BASEBALLBAT, DATA_MELEE_BASEBALLBAT.NAME, GameImages.ITEM_BASEBALL_BAT, new Attack(AttackKind.PHYSICAL, SMASH, DATA_MELEE_BASEBALLBAT.ATK, DATA_MELEE_BASEBALLBAT.DMG, DATA_MELEE_BASEBALLBAT.STA), DATA_MELEE_BASEBALLBAT.FLAVOR, DATA_MELEE_BASEBALLBAT.TOOLBASHDMGBONUS, DATA_MELEE_BASEBALLBAT.TOOLBUILDBONUS, DATA_MELEE_BASEBALLBAT.STACKINGLIMIT, DATA_MELEE_BASEBALLBAT.ISFRAGILE));
@@ -1262,6 +1254,11 @@ namespace djack.RogueSurvivor.Gameplay
       return (0 <= i && GameItems.ammo.Count > i) ? GameItems.ammo[i].model : null;
     }
     public static ItemAmmoModel AmmoModel(this AmmoType id) => GameItems.ammo[(int)id].model;
+
+    public static ItemFoodModel? FoodModel(this Item_IDs id) {
+      int i = (int)id - (int)Item_IDs.FOOD_ARMY_RATION;
+      return (0 <= i && GameItems.food.Count > i) ? GameItems.food[i].model : null;
+    }
 
     public static ItemMeleeWeaponModel? MeleeWeaponModel(this Item_IDs id) {
       int i = (int)id - (int)Item_IDs.MELEE_BASEBALLBAT;

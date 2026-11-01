@@ -4375,7 +4375,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           if (precious is not null) foreach(var it in precious) {
             if (it.RangedWeaponModel() is not null) continue;    // handled at NonCriticalInInventory stage
-            if (GameItems.food.Contains(it)) continue;    // ally is hungry...ok
+            if (it.FoodModel() is not null) continue;    // ally is hungry...ok
 
             if (it.AmmoModel() is { } model) {
               if (m_Actor.Inventory.GetReloadableRangedWeapon(model) is { } rw) return UseAmmo(m_Actor.Inventory.GetCompatibleAmmoItem(rw), rw);
