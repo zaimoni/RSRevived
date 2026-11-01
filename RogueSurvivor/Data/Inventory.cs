@@ -310,15 +310,7 @@ namespace djack.RogueSurvivor.Data
       return obj;
     }
 
-    public ItemAmmo? GetBestDestackable(ItemAmmoModel it)    // alpha10 equivalent: GetSmallestStackByModel.  XXX \todo rename for legibility?
-    {
-      Item? obj = null;
-      foreach (Item mItem in m_Items) {
-        if (mItem.Model == it && (obj is null || mItem.Quantity < obj.Quantity))
-          obj = mItem;
-      }
-      return obj as ItemAmmo;
-    }
+    public ItemAmmo? GetBestDestackable(ItemAmmoModel it) => GetBestDestackable((Model.Item)it) as ItemAmmo;
 
     public Item? GetWorstDestackable(Model.Item it)
     {

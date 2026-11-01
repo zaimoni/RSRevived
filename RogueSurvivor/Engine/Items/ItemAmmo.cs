@@ -77,12 +77,10 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool FreeSlotByUse(LivingActor a) { return false; } // handled by other behaviors
 #endregion
 
-    static public ItemAmmo make(Gameplay.Item_IDs x)
-    {
-      var tmp = GameItems.From(x);
-      if (tmp is ItemRangedWeaponModel rw_model) return new(rw_model.AmmoType.AmmoModel());    // use the ammo of the ranged weapon instead
-      if (tmp is ItemAmmoModel am_model) return new(am_model);
-      throw new ArgumentOutOfRangeException(nameof(x), x, "not ammunition or ranged weapon");
-    }
+    static public ItemAmmo make(Item_IDs x) => GameItems.From(x) switch {
+      ItemRangedWeaponModel rw_model => new(rw_model.AmmoType.AmmoModel()),    // use the ammo of the ranged weapon instead
+      ItemAmmoModel am_model => new(am_model),
+      _ => throw new ArgumentOutOfRangeException(nameof(x), x, "not ammunition or ranged weapon")
+    };
   }
 }
