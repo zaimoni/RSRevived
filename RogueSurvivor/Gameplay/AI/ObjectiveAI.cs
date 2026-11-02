@@ -7291,7 +7291,7 @@ restart_chokepoints:
             foreach(var stack in ground_inv) {
              var remote_ammo = stack.Inventory!.GetCompatibleAmmoItem(local_rw);
              if (remote_ammo is null) continue;
-             SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(who, (Item_IDs)(i + (int)Item_IDs.AMMO_LIGHT_PISTOL))));
+             SetObjective(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter + 1, m_Actor, new ActionTake(who, ((AmmoType)(i)).AmmoID())));
              return UseAmmo(local_ammo, local_rw);
             }
           }
@@ -7377,7 +7377,7 @@ restart_chokepoints:
       }
 
       // do not trade away weapon for own ammo
-      if (rw_model is not null && (Item_IDs)((int)rw_model.AmmoType+(int)Item_IDs.AMMO_LIGHT_PISTOL) == theirs.ModelID) return true;
+      if (rw_model is not null && rw_model.AmmoType.AmmoID() == theirs.ModelID) return true;
 
       switch(mine.Model.ID)
       {
@@ -7398,8 +7398,7 @@ restart_chokepoints:
     {
       if (m_Living is not { } who) return false;
       // do not trade away weapon for own ammo
-      if (    mine.Model is ItemRangedWeaponModel rw_model
-          && (Item_IDs)((int)rw_model.AmmoType + (int)Item_IDs.AMMO_LIGHT_PISTOL) == theirs.ModelID) return true;
+      if (mine.Model is ItemRangedWeaponModel rw_model && rw_model.AmmoType.AmmoID() == theirs.ModelID) return true;
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok (don't reverse this)
       // InventoryTradeVeto: reject sole melee for 2nd ammo [has no other uses so easier to manipulate]
@@ -7418,7 +7417,7 @@ restart_chokepoints:
     {
         if (src.RangedWeaponModel() is { } model) {
             var ammo_type = (Item_IDs)((int)model.AmmoType + (int)Item_IDs.AMMO_LIGHT_PISTOL);
-            if (m_Living?.Inventory.Has(ammo_type) ?? false) dest.Add(src.UnloadedVersion());
+            if (m_Living?.Inventory.GetFirst(model.AmmoType.AmmoID()) is not null) dest.Add(src.UnloadedVersion());
         }
     }
 

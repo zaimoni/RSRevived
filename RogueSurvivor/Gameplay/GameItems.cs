@@ -325,7 +325,7 @@ namespace djack.RogueSurvivor.Gameplay
     public static ItemTrackerModel POLICE_RADIO => _trackers[(int)Item_IDs.TRACKER_POLICE_RADIO - (int)Item_IDs.TRACKER_BLACKOPS].model;
 
     public static ItemLightModel FLASHLIGHT => _lights[0].model;
-    public static ItemLightModel BIG_FLASHLIGHT => _lights[(int)Item_IDs.LIGHT_BIG_FLASHLIGHT - (int)Item_IDs.LIcGHT_FLASHLIGHT].model;
+    public static ItemLightModel BIG_FLASHLIGHT => _lights[(int)Item_IDs.LIGHT_BIG_FLASHLIGHT - (int)Item_IDs.LIGHT_FLASHLIGHT].model;
 
     public static ItemSprayScentModel STENCH_KILLER => (ItemSprayScentModel)m_Models[(int)Item_IDs.SCENT_SPRAY_STENCH_KILLER];
 
@@ -1229,6 +1229,7 @@ namespace djack.RogueSurvivor.Gameplay
       return (0 <= i && GameItems.ammo.Count > i) ? GameItems.ammo[i].model : null;
     }
     public static ItemAmmoModel AmmoModel(this AmmoType id) => GameItems.ammo[(int)id].model;
+    public static Item_IDs AmmoID(this AmmoType id) => (Item_IDs)((int)id + (int)Item_IDs.AMMO_LIGHT_PISTOL);
 
     public static Data.Model.BodyArmor? BodyArmorModel(this Item_IDs id) {
       int i = (int)id - (int)Item_IDs.ARMOR_HUNTER_VEST;
