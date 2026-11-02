@@ -170,6 +170,8 @@ namespace djack.RogueSurvivor.Gameplay
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemMeleeWeaponModel model)> melee = new(_melee);
     private static readonly List<(Item_IDs id, ItemMedicineModel model)> _medicine = new();
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemMedicineModel model)> medicine = new(_medicine);
+    private static readonly List<(Item_IDs id, ItemTrackerModel model)> _trackers = new();
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemTrackerModel model)> trackers = new(_trackers);
 
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<Item_IDs> restoreSAN
     = new(new List<Item_IDs> { Item_IDs.MEDICINE_PILLS_SAN,
@@ -234,6 +236,11 @@ namespace djack.RogueSurvivor.Gameplay
     private static void _setModel(ItemRangedWeaponModel model) {
       _setModel((Data.Model.Item)model);
       _ranged.Add((model.ID, model));
+    }
+
+    private static void _setModel(ItemTrackerModel model) {
+      _setModel((Data.Model.Item)model);
+      _trackers.Add((model.ID, model));
     }
 
 #if DEBUG
@@ -305,53 +312,10 @@ namespace djack.RogueSurvivor.Gameplay
     public static Data.Model.BodyArmor POLICE_RIOT => _armor[(int)Item_IDs.ARMOR_POLICE_RIOT - (int)Item_IDs.ARMOR_HUNTER_VEST].model;
     public static Data.Model.BodyArmor HUNTER_VEST => _armor[0].model;
 
-    public static ItemTrackerModel BLACKOPS_GPS {
-      get {
-        return m_Models[(int)Item_IDs.TRACKER_BLACKOPS] as ItemTrackerModel;
-      }
-    }
-
-    public static ItemTrackerModel CELL_PHONE {
-      get {
-        return m_Models[(int)Item_IDs.TRACKER_CELL_PHONE] as ItemTrackerModel;
-      }
-    }
-
-    public static ItemTrackerModel ZTRACKER {
-      get {
-        return m_Models[(int)Item_IDs.TRACKER_ZTRACKER] as ItemTrackerModel;
-      }
-    }
-
-    public static ItemTrackerModel POLICE_RADIO {
-      get {
-        return m_Models[(int)Item_IDs.TRACKER_POLICE_RADIO] as ItemTrackerModel;
-      }
-    }
-
-    public static ItemSprayPaintModel SPRAY_PAINT1 {
-      get{
-        return m_Models[(int)Item_IDs.SPRAY_PAINT1] as ItemSprayPaintModel;
-      }
-    }
-
-    public static ItemSprayPaintModel SPRAY_PAINT2 {
-      get {
-        return m_Models[(int)Item_IDs.SPRAY_PAINT2] as ItemSprayPaintModel;
-      }
-    }
-
-    public static ItemSprayPaintModel SPRAY_PAINT3 {
-      get {
-        return m_Models[(int)Item_IDs.SPRAY_PAINT3] as ItemSprayPaintModel;
-      }
-    }
-
-    public static ItemSprayPaintModel SPRAY_PAINT4 {
-      get {
-        return m_Models[(int)Item_IDs.SPRAY_PAINT4] as ItemSprayPaintModel;
-      }
-    }
+    public static ItemTrackerModel BLACKOPS_GPS => _trackers[0].model;
+    public static ItemTrackerModel CELL_PHONE => _trackers[(int)Item_IDs.TRACKER_CELL_PHONE - (int)Item_IDs.TRACKER_BLACKOPS].model;
+    public static ItemTrackerModel ZTRACKER => _trackers[(int)Item_IDs.TRACKER_ZTRACKER - (int)Item_IDs.TRACKER_BLACKOPS].model;
+    public static ItemTrackerModel POLICE_RADIO => _trackers[(int)Item_IDs.TRACKER_POLICE_RADIO - (int)Item_IDs.TRACKER_BLACKOPS].model;
 
     public static ItemLightModel FLASHLIGHT {
       get {
@@ -648,10 +612,13 @@ namespace djack.RogueSurvivor.Gameplay
 #endif
 
       // trackers
+      _setModel(new ItemTrackerModel(Item_IDs.TRACKER_BLACKOPS, DATA_TRACKER_BLACKOPS_GPS.NAME, DATA_TRACKER_BLACKOPS_GPS.PLURAL, GameImages.ITEM_BLACKOPS_GPS, ItemTrackerModel.TrackingFlags.BLACKOPS_FACTION, DATA_TRACKER_BLACKOPS_GPS.BATTERIES * WorldTime.TURNS_PER_HOUR, DollPart.LEFT_HAND, DATA_TRACKER_BLACKOPS_GPS.FLAVOR));
       _setModel(new ItemTrackerModel(Item_IDs.TRACKER_CELL_PHONE, DATA_TRACKER_CELL_PHONE.NAME, DATA_TRACKER_CELL_PHONE.PLURAL, GameImages.ITEM_CELL_PHONE, ItemTrackerModel.TrackingFlags.FOLLOWER_AND_LEADER, DATA_TRACKER_CELL_PHONE.BATTERIES * WorldTime.TURNS_PER_HOUR, DollPart.LEFT_HAND, DATA_TRACKER_CELL_PHONE.FLAVOR));
       _setModel(new ItemTrackerModel(Item_IDs.TRACKER_ZTRACKER, DATA_TRACKER_ZTRACKER.NAME, DATA_TRACKER_ZTRACKER.PLURAL, GameImages.ITEM_ZTRACKER, ItemTrackerModel.TrackingFlags.UNDEADS, DATA_TRACKER_ZTRACKER.BATTERIES * WorldTime.TURNS_PER_HOUR, DollPart.LEFT_HAND, DATA_TRACKER_ZTRACKER.FLAVOR));
-      _setModel(new ItemTrackerModel(Item_IDs.TRACKER_BLACKOPS, DATA_TRACKER_BLACKOPS_GPS.NAME, DATA_TRACKER_BLACKOPS_GPS.PLURAL, GameImages.ITEM_BLACKOPS_GPS, ItemTrackerModel.TrackingFlags.BLACKOPS_FACTION, DATA_TRACKER_BLACKOPS_GPS.BATTERIES * WorldTime.TURNS_PER_HOUR, DollPart.LEFT_HAND, DATA_TRACKER_BLACKOPS_GPS.FLAVOR));
       _setModel(new ItemTrackerModel(Item_IDs.TRACKER_POLICE_RADIO, DATA_TRACKER_POLICE_RADIO.NAME, DATA_TRACKER_POLICE_RADIO.PLURAL, GameImages.ITEM_POLICE_RADIO, ItemTrackerModel.TrackingFlags.POLICE_FACTION, DATA_TRACKER_POLICE_RADIO.BATTERIES * WorldTime.TURNS_PER_HOUR, DollPart.HIP_HOLSTER, DATA_TRACKER_POLICE_RADIO.FLAVOR));
+#if DEBUG
+      _requireContiguous(_trackers, Item_IDs.TRACKER_BLACKOPS, "trackers");
+#endif
 
       // spray paint
       _setModel(new ItemSprayPaintModel(Item_IDs.SPRAY_PAINT1, DATA_SPRAY_PAINT1.NAME, DATA_SPRAY_PAINT1.PLURAL, GameImages.ITEM_SPRAYPAINT, DATA_SPRAY_PAINT1.QUANTITY, GameImages.DECO_PLAYER_TAG1, DATA_SPRAY_PAINT1.FLAVOR));
@@ -1287,5 +1254,9 @@ namespace djack.RogueSurvivor.Gameplay
       return (0 <= i && GameItems.ranged.Count > i) ? GameItems.ranged[i].model : null;
     }
 
+    public static ItemTrackerModel? TrackerModel(this Item_IDs id) {
+      int i = (int)id - (int)Item_IDs.TRACKER_BLACKOPS;
+      return (0 <= i && GameItems.trackers.Count > i) ? GameItems.trackers[i].model : null;
+    }
   }
 }
