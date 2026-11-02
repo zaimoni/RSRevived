@@ -116,18 +116,54 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static readonly Data.Model.Item[] m_Models = new Data.Model.Item[(int) Item_IDs._COUNT];
 
+/* 2026-11-01, Claude
+   The overview leans toward the collection approach for the multi-member categories and against it for the singletons.
+   The deciding point is that the approach is not really warning suppression. The as cast in a legacy accessor turns
+   a type mismatch into a null that surfaces later as a null dereference somewhere in the AI. The typed _setModel overload
+   moves that check to registration, where the DEBUG contiguity test fails the constructor instead. That is the correct fix
+   for what CS8603 is complaining about, so where the boilerplate is amortized over several members it is worth paying.
+
+   Pros
+
+   * Checked at registration, not at every retrieval. The accessor’s return is statically non-null, no !, no cast per call.
+   * The hand-maintained Item_IDs lists go away. The old melee list was in a different order from the enum and from
+     the constructor, and armor has the same shape. A collection filled by the constructor cannot drift from it.
+   * The typed enumeration comes free. Anything that reasons about a whole class, such as the food and ranged tests the AI
+     already makes, gets an O(1) membership test from the extension instead of a list scan.
+   * Formally safe by construction, as you found: the public surface is a read-only view, the mutable list stays private,
+     and the top-level extension class needs nothing more.
+
+   Cons
+
+   * Boilerplate per category. A list, a read-only wrapper, an overload, a DEBUG check and an extension method,
+     roughly fifteen lines, to retire one warning for the wooden plank or the stench killer.
+   * Enum order becomes load-bearing. Armor and trackers are registered in a different order from the enum today,
+     and entertainment is not even contiguous because the subway badge sits inside it. Each needs an enum or constructor reorder first. Those reorders are save-safe since model IDs serialize by name, but they are a second change in the commit.
+   * Overload resolution needs distinct model classes. Grenade and primed grenade are two classes, so that pair would be
+     two one-element collections, which is the singleton case twice.
+   * Mixed lists stay lists. The restoreSAN list spans medicine and entertainment, so it gains nothing from this
+     and keeps its own maintenance.
+
+   Where the line falls (commit 370ca859a8d5a0fa0e10fa024a52aa6d0db345f1)
+
+   Category	Members	Enum already in order	Lean
+   armor	7	no	collection, after a reorder
+   trackers	4	no	collection, after a reorder
+   traps	4	yes	collection
+   spray paint	4	yes	collection only if an accessor is ever wanted; it has none and no warnings today
+   entertainment	3	no, badge interleaved	collection, after moving the badge
+   lights	2	yes	marginal either way
+   grenade pair, plank, stench killer	1 each	n/a	direct cast
+
+   For the singletons the minimal honest fix is an explicit cast, (ItemTrapModel)m_Models[...], which fails loudly on a mismatch instead of returning null and carries no nullability warning. If you want those to look like the rest without the collections, a one-line private generic helper that does that cast gives every leftover accessor the same one-liner shape as the collection-backed ones.
+ */
+
     private static readonly List<(Item_IDs id, ItemAmmoModel model)> _ammo = new();
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemAmmoModel model)> ammo = new(_ammo);
     private static readonly List<(Item_IDs id, ItemRangedWeaponModel model)> _ranged = new();
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemRangedWeaponModel model)> ranged = new(_ranged);
-    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<Item_IDs> armor
-    = new(new List<Item_IDs> { Item_IDs.ARMOR_ARMY_BODYARMOR,
-            Item_IDs.ARMOR_CHAR_LIGHT_BODYARMOR,
-            Item_IDs.ARMOR_HELLS_SOULS_JACKET,
-            Item_IDs.ARMOR_FREE_ANGELS_JACKET,
-            Item_IDs.ARMOR_POLICE_JACKET,
-            Item_IDs.ARMOR_POLICE_RIOT,
-            Item_IDs.ARMOR_HUNTER_VEST});
+    private static readonly List<(Item_IDs id, Data.Model.BodyArmor model)> _armor = new();
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, Data.Model.BodyArmor model)> armor = new(_armor);
     private static readonly List<(Item_IDs id, ItemFoodModel model)> _food = new();
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemFoodModel model)> food = new(_food);
     private static readonly List<(Item_IDs id, ItemMeleeWeaponModel model)> _melee = new();
@@ -168,6 +204,11 @@ namespace djack.RogueSurvivor.Gameplay
       if (m_Models[(int) model.ID] is not null) throw new InvalidOperationException("can only set item model once");
 #endif
       m_Models[(int) model.ID] = model;
+    }
+
+    private static void _setModel(Data.Model.BodyArmor model) {
+      _setModel((Data.Model.Item)model);
+      _armor.Add((model.ID, model));
     }
 
     private static void _setModel(ItemAmmoModel model) {
@@ -250,52 +291,19 @@ namespace djack.RogueSurvivor.Gameplay
     public static ItemAmmoModel AMMO_SHOTGUN => _ammo[(int)Item_IDs.AMMO_SHOTGUN - (int)Item_IDs.AMMO_LIGHT_PISTOL].model;
     public static ItemAmmoModel AMMO_BOLTS => _ammo[(int)Item_IDs.AMMO_BOLTS - (int)Item_IDs.AMMO_LIGHT_PISTOL].model;
 
-    public static Data.Model.Explosive GRENADE {
-      get {
-        return m_Models[(int)Item_IDs.EXPLOSIVE_GRENADE] as Data.Model.Explosive;
-      }
-    }
+    public static Data.Model.Explosive GRENADE => (Data.Model.Explosive)m_Models[(int)Item_IDs.EXPLOSIVE_GRENADE];
 
-    public static Data.Model.PrimedExplosive GRENADE_PRIMED {
-      get {
-        return m_Models[(int)Item_IDs.EXPLOSIVE_GRENADE_PRIMED] as Data.Model.PrimedExplosive;
-      }
-    }
+    public static Data.Model.PrimedExplosive GRENADE_PRIMED => (Data.Model.PrimedExplosive)m_Models[(int)Item_IDs.EXPLOSIVE_GRENADE_PRIMED];
 
-    public static ItemBarricadeMaterialModel WOODENPLANK {
-      get {
-        return m_Models[(int)Item_IDs.BAR_WOODEN_PLANK] as ItemBarricadeMaterialModel;
-      }
-    }
+    public static ItemBarricadeMaterialModel WOODENPLANK => (ItemBarricadeMaterialModel)m_Models[(int)Item_IDs.BAR_WOODEN_PLANK];
 
-    public static Data.Model.BodyArmor ARMY_BODYARMOR {
-      get => m_Models[(int)Item_IDs.ARMOR_ARMY_BODYARMOR] as Data.Model.BodyArmor;
-    }
-
-    public static Data.Model.BodyArmor CHAR_LT_BODYARMOR
-    {
-      get => m_Models[(int)Item_IDs.ARMOR_CHAR_LIGHT_BODYARMOR] as Data.Model.BodyArmor;
-    }
-
-    public static Data.Model.BodyArmor HELLS_SOULS_JACKET {
-      get => m_Models[(int)Item_IDs.ARMOR_HELLS_SOULS_JACKET] as Data.Model.BodyArmor;
-    }
-
-    public static Data.Model.BodyArmor FREE_ANGELS_JACKET {
-      get => m_Models[(int)Item_IDs.ARMOR_FREE_ANGELS_JACKET] as Data.Model.BodyArmor;
-    }
-
-    public static Data.Model.BodyArmor POLICE_JACKET {
-      get => m_Models[(int)Item_IDs.ARMOR_POLICE_JACKET] as Data.Model.BodyArmor;
-    }
-
-    public static Data.Model.BodyArmor POLICE_RIOT {
-      get => m_Models[(int)Item_IDs.ARMOR_POLICE_RIOT] as Data.Model.BodyArmor;
-    }
-
-    public static Data.Model.BodyArmor HUNTER_VEST {
-      get => m_Models[(int)Item_IDs.ARMOR_HUNTER_VEST] as Data.Model.BodyArmor;
-    }
+    public static Data.Model.BodyArmor ARMY_BODYARMOR => _armor[(int)Item_IDs.ARMOR_ARMY_BODYARMOR - (int)Item_IDs.ARMOR_HUNTER_VEST].model;
+    public static Data.Model.BodyArmor CHAR_LT_BODYARMOR => _armor[(int)Item_IDs.ARMOR_CHAR_LIGHT_BODYARMOR - (int)Item_IDs.ARMOR_HUNTER_VEST].model;
+    public static Data.Model.BodyArmor HELLS_SOULS_JACKET => _armor[(int)Item_IDs.ARMOR_HELLS_SOULS_JACKET - (int)Item_IDs.ARMOR_HUNTER_VEST].model;
+    public static Data.Model.BodyArmor FREE_ANGELS_JACKET => _armor[(int)Item_IDs.ARMOR_FREE_ANGELS_JACKET - (int)Item_IDs.ARMOR_HUNTER_VEST].model;
+    public static Data.Model.BodyArmor POLICE_JACKET => _armor[(int)Item_IDs.ARMOR_POLICE_JACKET - (int)Item_IDs.ARMOR_HUNTER_VEST].model;
+    public static Data.Model.BodyArmor POLICE_RIOT => _armor[(int)Item_IDs.ARMOR_POLICE_RIOT - (int)Item_IDs.ARMOR_HUNTER_VEST].model;
+    public static Data.Model.BodyArmor HUNTER_VEST => _armor[0].model;
 
     public static ItemTrackerModel BLACKOPS_GPS {
       get {
@@ -357,11 +365,7 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
-    public static ItemSprayScentModel STENCH_KILLER {
-      get {
-        return m_Models[(int)Item_IDs.SCENT_SPRAY_STENCH_KILLER] as ItemSprayScentModel;
-      }
-    }
+    public static ItemSprayScentModel STENCH_KILLER => (ItemSprayScentModel)m_Models[(int)Item_IDs.SCENT_SPRAY_STENCH_KILLER];
 
     public static ItemTrapModel EMPTY_CAN {
       get {
@@ -632,13 +636,16 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(new ItemBarricadeMaterialModel(Item_IDs.BAR_WOODEN_PLANK, DATA_BAR_WOODEN_PLANK.NAME, DATA_BAR_WOODEN_PLANK.PLURAL, GameImages.ITEM_WOODEN_PLANK, DATA_BAR_WOODEN_PLANK.VALUE, DATA_BAR_WOODEN_PLANK.STACKINGLIMIT, DATA_BAR_WOODEN_PLANK.FLAVOR));
 
       // body armor
-      _setModel(new Data.Model.BodyArmor(Item_IDs.ARMOR_ARMY_BODYARMOR, DATA_ARMOR_ARMY.NAME, DATA_ARMOR_ARMY.PLURAL, GameImages.ITEM_ARMY_BODYARMOR, DATA_ARMOR_ARMY.PRO_HIT, DATA_ARMOR_ARMY.PRO_SHOT, DATA_ARMOR_ARMY.ENC, DATA_ARMOR_ARMY.WEIGHT, DATA_ARMOR_ARMY.FLAVOR));
+      _setModel(new Data.Model.BodyArmor(Item_IDs.ARMOR_HUNTER_VEST, DATA_ARMOR_HUNTER_VEST.NAME, DATA_ARMOR_HUNTER_VEST.PLURAL, GameImages.ITEM_HUNTER_VEST, DATA_ARMOR_HUNTER_VEST.PRO_HIT, DATA_ARMOR_HUNTER_VEST.PRO_SHOT, DATA_ARMOR_HUNTER_VEST.ENC, DATA_ARMOR_HUNTER_VEST.WEIGHT, DATA_ARMOR_HUNTER_VEST.FLAVOR));
       _setModel(new Data.Model.BodyArmor(Item_IDs.ARMOR_CHAR_LIGHT_BODYARMOR, DATA_ARMOR_CHAR.NAME, DATA_ARMOR_CHAR.PLURAL, GameImages.ITEM_CHAR_LIGHT_BODYARMOR, DATA_ARMOR_CHAR.PRO_HIT, DATA_ARMOR_CHAR.PRO_SHOT, DATA_ARMOR_CHAR.ENC, DATA_ARMOR_CHAR.WEIGHT, DATA_ARMOR_CHAR.FLAVOR));
-      _setModel(new Data.Model.BodyArmor(Item_IDs.ARMOR_HELLS_SOULS_JACKET, DATA_ARMOR_HELLS_SOULS_JACKET.NAME, DATA_ARMOR_HELLS_SOULS_JACKET.PLURAL, GameImages.ITEM_HELLS_SOULS_JACKET, DATA_ARMOR_HELLS_SOULS_JACKET.PRO_HIT, DATA_ARMOR_HELLS_SOULS_JACKET.PRO_SHOT, DATA_ARMOR_HELLS_SOULS_JACKET.ENC, DATA_ARMOR_HELLS_SOULS_JACKET.WEIGHT, DATA_ARMOR_HELLS_SOULS_JACKET.FLAVOR));
-      _setModel(new Data.Model.BodyArmor(Item_IDs.ARMOR_FREE_ANGELS_JACKET, DATA_ARMOR_FREE_ANGELS_JACKET.NAME, DATA_ARMOR_FREE_ANGELS_JACKET.PLURAL, GameImages.ITEM_FREE_ANGELS_JACKET, DATA_ARMOR_FREE_ANGELS_JACKET.PRO_HIT, DATA_ARMOR_FREE_ANGELS_JACKET.PRO_SHOT, DATA_ARMOR_FREE_ANGELS_JACKET.ENC, DATA_ARMOR_FREE_ANGELS_JACKET.WEIGHT, DATA_ARMOR_FREE_ANGELS_JACKET.FLAVOR));
+      _setModel(new Data.Model.BodyArmor(Item_IDs.ARMOR_ARMY_BODYARMOR, DATA_ARMOR_ARMY.NAME, DATA_ARMOR_ARMY.PLURAL, GameImages.ITEM_ARMY_BODYARMOR, DATA_ARMOR_ARMY.PRO_HIT, DATA_ARMOR_ARMY.PRO_SHOT, DATA_ARMOR_ARMY.ENC, DATA_ARMOR_ARMY.WEIGHT, DATA_ARMOR_ARMY.FLAVOR));
       _setModel(new Data.Model.BodyArmor(Item_IDs.ARMOR_POLICE_JACKET, DATA_ARMOR_POLICE_JACKET.NAME, DATA_ARMOR_POLICE_JACKET.PLURAL, GameImages.ITEM_POLICE_JACKET, DATA_ARMOR_POLICE_JACKET.PRO_HIT, DATA_ARMOR_POLICE_JACKET.PRO_SHOT, DATA_ARMOR_POLICE_JACKET.ENC, DATA_ARMOR_POLICE_JACKET.WEIGHT, DATA_ARMOR_POLICE_JACKET.FLAVOR));
       _setModel(new Data.Model.BodyArmor(Item_IDs.ARMOR_POLICE_RIOT, DATA_ARMOR_POLICE_RIOT.NAME, DATA_ARMOR_POLICE_RIOT.PLURAL, GameImages.ITEM_POLICE_RIOT_ARMOR, DATA_ARMOR_POLICE_RIOT.PRO_HIT, DATA_ARMOR_POLICE_RIOT.PRO_SHOT, DATA_ARMOR_POLICE_RIOT.ENC, DATA_ARMOR_POLICE_RIOT.WEIGHT, DATA_ARMOR_POLICE_RIOT.FLAVOR));
-      _setModel(new Data.Model.BodyArmor(Item_IDs.ARMOR_HUNTER_VEST, DATA_ARMOR_HUNTER_VEST.NAME, DATA_ARMOR_HUNTER_VEST.PLURAL, GameImages.ITEM_HUNTER_VEST, DATA_ARMOR_HUNTER_VEST.PRO_HIT, DATA_ARMOR_HUNTER_VEST.PRO_SHOT, DATA_ARMOR_HUNTER_VEST.ENC, DATA_ARMOR_HUNTER_VEST.WEIGHT, DATA_ARMOR_HUNTER_VEST.FLAVOR));
+      _setModel(new Data.Model.BodyArmor(Item_IDs.ARMOR_HELLS_SOULS_JACKET, DATA_ARMOR_HELLS_SOULS_JACKET.NAME, DATA_ARMOR_HELLS_SOULS_JACKET.PLURAL, GameImages.ITEM_HELLS_SOULS_JACKET, DATA_ARMOR_HELLS_SOULS_JACKET.PRO_HIT, DATA_ARMOR_HELLS_SOULS_JACKET.PRO_SHOT, DATA_ARMOR_HELLS_SOULS_JACKET.ENC, DATA_ARMOR_HELLS_SOULS_JACKET.WEIGHT, DATA_ARMOR_HELLS_SOULS_JACKET.FLAVOR));
+      _setModel(new Data.Model.BodyArmor(Item_IDs.ARMOR_FREE_ANGELS_JACKET, DATA_ARMOR_FREE_ANGELS_JACKET.NAME, DATA_ARMOR_FREE_ANGELS_JACKET.PLURAL, GameImages.ITEM_FREE_ANGELS_JACKET, DATA_ARMOR_FREE_ANGELS_JACKET.PRO_HIT, DATA_ARMOR_FREE_ANGELS_JACKET.PRO_SHOT, DATA_ARMOR_FREE_ANGELS_JACKET.ENC, DATA_ARMOR_FREE_ANGELS_JACKET.WEIGHT, DATA_ARMOR_FREE_ANGELS_JACKET.FLAVOR));
+#if DEBUG
+      _requireContiguous(_armor, Item_IDs.ARMOR_HUNTER_VEST, "armors");
+#endif
 
       // trackers
       _setModel(new ItemTrackerModel(Item_IDs.TRACKER_CELL_PHONE, DATA_TRACKER_CELL_PHONE.NAME, DATA_TRACKER_CELL_PHONE.PLURAL, GameImages.ITEM_CELL_PHONE, ItemTrackerModel.TrackingFlags.FOLLOWER_AND_LEADER, DATA_TRACKER_CELL_PHONE.BATTERIES * WorldTime.TURNS_PER_HOUR, DollPart.LEFT_HAND, DATA_TRACKER_CELL_PHONE.FLAVOR));
@@ -1254,6 +1261,11 @@ namespace djack.RogueSurvivor.Gameplay
       return (0 <= i && GameItems.ammo.Count > i) ? GameItems.ammo[i].model : null;
     }
     public static ItemAmmoModel AmmoModel(this AmmoType id) => GameItems.ammo[(int)id].model;
+
+    public static Data.Model.BodyArmor? BodyArmorModel(this Item_IDs id) {
+      int i = (int)id - (int)Item_IDs.ARMOR_HUNTER_VEST;
+      return (0 <= i && GameItems.armor.Count > i) ? GameItems.armor[i].model : null;
+    }
 
     public static ItemFoodModel? FoodModel(this Item_IDs id) {
       int i = (int)id - (int)Item_IDs.FOOD_ARMY_RATION;
