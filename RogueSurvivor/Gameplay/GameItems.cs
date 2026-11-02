@@ -717,7 +717,6 @@ namespace djack.RogueSurvivor.Gameplay
         Item_IDs.MELEE_BASEBALLBAT,
         Item_IDs.MELEE_COMBAT_KNIFE,
         Item_IDs.MELEE_CROWBAR,
-        Item_IDs.UNIQUE_JASON_MYERS_AXE,
         Item_IDs.MELEE_HUGE_HAMMER,
         Item_IDs.MELEE_SMALL_HAMMER,
         Item_IDs.MELEE_GOLFCLUB,
@@ -727,10 +726,11 @@ namespace djack.RogueSurvivor.Gameplay
         Item_IDs.MELEE_TRUNCHEON,
         Item_IDs.MELEE_IMPROVISED_CLUB,
         Item_IDs.MELEE_IMPROVISED_SPEAR,
-        Item_IDs.UNIQUE_FAMU_FATARU_KATANA,
         Item_IDs.UNIQUE_BIGBEAR_BAT,
+        Item_IDs.UNIQUE_FATHER_TIME_SCYTHE,
+        Item_IDs.UNIQUE_FAMU_FATARU_KATANA,
+        Item_IDs.UNIQUE_JASON_MYERS_AXE,
         Item_IDs.UNIQUE_ROGUEDJACK_KEYBOARD,
-        Item_IDs.UNIQUE_FATHER_TIME_SCYTHE
       }, out MeleeWeaponData[] data);
       return data;
     }

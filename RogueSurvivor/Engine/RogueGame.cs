@@ -10221,49 +10221,19 @@ namespace djack.RogueSurvivor.Engine
       if (objList is null || 0>=objList.Count) return null;
       // following is AI-only
       IEnumerable<Item> tmp = (speaker.IsPlayer ? objList : objList.Where(it=>itSpeaker.ModelID != it.ModelID));
+
       // XXX disallow clearly non-mutual advantage trades
+      // do not trade ranged weapons for own ammo
+      if (itSpeaker.Model is ItemRangedWeaponModel rw_model) {
+        Item_IDs am_id = rw_model.AmmoType.AmmoID();
+        tmp = tmp.Where(it=> it.ModelID != am_id);
+      }
+      if (itSpeaker.Model is ItemAmmoModel am_model) {
+        tmp = tmp.Where(it=> it.ModelID.RangedWeaponModel() is { } rw_model2 && rw_model2.AmmoType != am_model.AmmoType);
+      }
+
       switch(itSpeaker.ModelID)
       {
-      // two weapons for the ammo
-      case Item_IDs.RANGED_PRECISION_RIFLE:
-      case Item_IDs.RANGED_ARMY_RIFLE:
-        tmp = tmp.Where(it=> it.ModelID != Item_IDs.AMMO_HEAVY_RIFLE);
-        break;
-      case Item_IDs.AMMO_HEAVY_RIFLE:
-        tmp = tmp.Where(it=> it.ModelID != Item_IDs.RANGED_PRECISION_RIFLE && it.Model.ID != Item_IDs.RANGED_ARMY_RIFLE);
-        break;
-      case Item_IDs.RANGED_PISTOL:
-      case Item_IDs.RANGED_KOLT_REVOLVER:
-        tmp = tmp.Where(it=> it.ModelID != Item_IDs.AMMO_LIGHT_PISTOL);
-        break;
-      case Item_IDs.AMMO_LIGHT_PISTOL:
-        tmp = tmp.Where(it=> it.ModelID != Item_IDs.RANGED_PISTOL && it.Model.ID != Item_IDs.RANGED_KOLT_REVOLVER);
-        break;
-      // one weapon for the ammo
-      case Item_IDs.RANGED_ARMY_PISTOL:
-        tmp = tmp.Where(it=> it.ModelID != Item_IDs.AMMO_HEAVY_PISTOL);
-        break;
-      case Item_IDs.AMMO_HEAVY_PISTOL:
-        tmp = tmp.Where(it=> it.ModelID != Item_IDs.RANGED_ARMY_PISTOL);
-        break;
-      case Item_IDs.RANGED_HUNTING_CROSSBOW:
-        tmp = tmp.Where(it=> it.ModelID != Item_IDs.AMMO_BOLTS);
-        break;
-      case Item_IDs.AMMO_BOLTS:
-        tmp = tmp.Where(it=> it.ModelID != Item_IDs.RANGED_HUNTING_CROSSBOW);
-        break;
-      case Item_IDs.RANGED_HUNTING_RIFLE:
-        tmp = tmp.Where(it=> it.ModelID != Item_IDs.AMMO_LIGHT_RIFLE);
-        break;
-      case Item_IDs.AMMO_LIGHT_RIFLE:
-        tmp = tmp.Where(it=> it.ModelID != Item_IDs.RANGED_HUNTING_RIFLE);
-        break;
-      case Item_IDs.RANGED_SHOTGUN:
-        tmp = tmp.Where(it=> it.ModelID != Item_IDs.AMMO_SHOTGUN);
-        break;
-      case Item_IDs.AMMO_SHOTGUN:
-        tmp = tmp.Where(it=> it.ModelID != Item_IDs.RANGED_SHOTGUN);
-        break;
       // flashlights.  larger radius and longer duration are independently better...do not trade if both are worse
       case Item_IDs.LIGHT_FLASHLIGHT:
         tmp = tmp.Where(it=> it.ModelID != Item_IDs.LIGHT_BIG_FLASHLIGHT || (itSpeaker as BatteryPowered).Batteries<=(it as BatteryPowered).Batteries);
