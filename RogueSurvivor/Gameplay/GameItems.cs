@@ -174,6 +174,8 @@ namespace djack.RogueSurvivor.Gameplay
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemMedicineModel model)> medicine = new(_medicine);
     private static readonly List<(Item_IDs id, ItemTrackerModel model)> _trackers = new();
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemTrackerModel model)> trackers = new(_trackers);
+    private static readonly List<(Item_IDs id, ItemTrapModel model)> _traps = new();
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemTrapModel model)> traps = new(_traps);
 
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<Item_IDs> restoreSAN
     = new(new List<Item_IDs> { Item_IDs.MEDICINE_PILLS_SAN,
@@ -248,6 +250,11 @@ namespace djack.RogueSurvivor.Gameplay
     private static void _setModel(ItemTrackerModel model) {
       _setModel((Data.Model.Item)model);
       _trackers.Add((model.ID, model));
+    }
+
+    private static void _setModel(ItemTrapModel model) {
+      _setModel((Data.Model.Item)model);
+      _traps.Add((model.ID, model));
     }
 
 #if DEBUG
@@ -329,29 +336,10 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static ItemSprayScentModel STENCH_KILLER => (ItemSprayScentModel)m_Models[(int)Item_IDs.SCENT_SPRAY_STENCH_KILLER];
 
-    public static ItemTrapModel EMPTY_CAN {
-      get {
-        return m_Models[(int)Item_IDs.TRAP_EMPTY_CAN] as ItemTrapModel;
-      }
-    }
-
-    public static ItemTrapModel BEAR_TRAP {
-      get {
-        return m_Models[(int)Item_IDs.TRAP_BEAR_TRAP] as ItemTrapModel;
-      }
-    }
-
-    public static ItemTrapModel SPIKES {
-      get {
-        return m_Models[(int)Item_IDs.TRAP_SPIKES] as ItemTrapModel;
-      }
-    }
-
-    public static ItemTrapModel BARBED_WIRE {
-      get {
-        return m_Models[(int)Item_IDs.TRAP_BARBED_WIRE] as ItemTrapModel;
-      }
-    }
+    public static ItemTrapModel EMPTY_CAN => _traps[0].model;
+    public static ItemTrapModel BEAR_TRAP => _traps[(int)Item_IDs.TRAP_BEAR_TRAP - (int)Item_IDs.TRAP_EMPTY_CAN].model;
+    public static ItemTrapModel SPIKES => _traps[(int)Item_IDs.TRAP_SPIKES - (int)Item_IDs.TRAP_EMPTY_CAN].model;
+    public static ItemTrapModel BARBED_WIRE => _traps[(int)Item_IDs.TRAP_BARBED_WIRE - (int)Item_IDs.TRAP_EMPTY_CAN].model;
 
     public static ItemEntertainmentModel BOOK {
       get {
@@ -639,6 +627,9 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(new ItemTrapModel(Item_IDs.TRAP_BEAR_TRAP, DATA_TRAP_BEAR_TRAP.NAME, DATA_TRAP_BEAR_TRAP.PLURAL, GameImages.ITEM_BEAR_TRAP, DATA_TRAP_BEAR_TRAP.STACKING, DATA_TRAP_BEAR_TRAP.CHANCE, DATA_TRAP_BEAR_TRAP.DAMAGE, DATA_TRAP_BEAR_TRAP.DROP_ACTIVATE, DATA_TRAP_BEAR_TRAP.USE_ACTIVATE, DATA_TRAP_BEAR_TRAP.IS_ONE_TIME, DATA_TRAP_BEAR_TRAP.BREAK_CHANCE, DATA_TRAP_BEAR_TRAP.BLOCK_CHANCE, DATA_TRAP_BEAR_TRAP.BREAK_CHANCE_ESCAPE, DATA_TRAP_BEAR_TRAP.IS_NOISY, DATA_TRAP_BEAR_TRAP.NOISE_NAME, DATA_TRAP_BEAR_TRAP.IS_FLAMMABLE, DATA_TRAP_BEAR_TRAP.FLAVOR));
       _setModel(new ItemTrapModel(Item_IDs.TRAP_SPIKES, DATA_TRAP_SPIKES.NAME, DATA_TRAP_SPIKES.PLURAL, GameImages.ITEM_SPIKES, DATA_TRAP_SPIKES.STACKING, DATA_TRAP_SPIKES.CHANCE, DATA_TRAP_SPIKES.DAMAGE, DATA_TRAP_SPIKES.DROP_ACTIVATE, DATA_TRAP_SPIKES.USE_ACTIVATE, DATA_TRAP_SPIKES.IS_ONE_TIME, DATA_TRAP_SPIKES.BREAK_CHANCE, DATA_TRAP_SPIKES.BLOCK_CHANCE, DATA_TRAP_SPIKES.BREAK_CHANCE_ESCAPE, DATA_TRAP_SPIKES.IS_NOISY, DATA_TRAP_SPIKES.NOISE_NAME, DATA_TRAP_SPIKES.IS_FLAMMABLE, DATA_TRAP_SPIKES.FLAVOR));
       _setModel(new ItemTrapModel(Item_IDs.TRAP_BARBED_WIRE, DATA_TRAP_BARBED_WIRE.NAME, DATA_TRAP_BARBED_WIRE.PLURAL, GameImages.ITEM_BARBED_WIRE, DATA_TRAP_BARBED_WIRE.STACKING, DATA_TRAP_BARBED_WIRE.CHANCE, DATA_TRAP_BARBED_WIRE.DAMAGE, DATA_TRAP_BARBED_WIRE.DROP_ACTIVATE, DATA_TRAP_BARBED_WIRE.USE_ACTIVATE, DATA_TRAP_BARBED_WIRE.IS_ONE_TIME, DATA_TRAP_BARBED_WIRE.BREAK_CHANCE, DATA_TRAP_BARBED_WIRE.BLOCK_CHANCE, DATA_TRAP_BARBED_WIRE.BREAK_CHANCE_ESCAPE, DATA_TRAP_BARBED_WIRE.IS_NOISY, DATA_TRAP_BARBED_WIRE.NOISE_NAME, DATA_TRAP_BARBED_WIRE.IS_FLAMMABLE, DATA_TRAP_BARBED_WIRE.FLAVOR));
+#if DEBUG
+      _requireContiguous(_traps, Item_IDs.TRAP_EMPTY_CAN, "traps");
+#endif
 
       // entertainment
       _setModel(new ItemEntertainmentModel(Item_IDs.ENT_BOOK, DATA_ENT_BOOK.NAME, DATA_ENT_BOOK.PLURAL, GameImages.ITEM_BOOK, DATA_ENT_BOOK.VALUE, DATA_ENT_BOOK.BORECHANCE, DATA_ENT_BOOK.STACKING, DATA_ENT_BOOK.FLAVOR));
@@ -1264,6 +1255,11 @@ namespace djack.RogueSurvivor.Gameplay
     public static ItemTrackerModel? TrackerModel(this Item_IDs id) {
       int i = (int)id - (int)Item_IDs.TRACKER_BLACKOPS;
       return (0 <= i && GameItems.trackers.Count > i) ? GameItems.trackers[i].model : null;
+    }
+
+    public static ItemTrapModel? TrapModel(this Item_IDs id) {
+      int i = (int)id - (int)Item_IDs.TRAP_EMPTY_CAN;
+      return (0 <= i && GameItems.traps.Count > i) ? GameItems.traps[i].model : null;
     }
   }
 }
