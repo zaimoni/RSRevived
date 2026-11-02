@@ -705,7 +705,7 @@ namespace Zaimoni.Data
       return true;
     }
 
-    public static bool ValueEqual<T>(this HashSet<T> lhs, HashSet<T>? rhs)
+    public static bool ValueEqual<T>(this HashSet<T>? lhs, HashSet<T>? rhs)
     {
       if (lhs is null) return rhs is null;
       if (rhs is null) return false;
