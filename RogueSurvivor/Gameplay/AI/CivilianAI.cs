@@ -559,7 +559,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             update_path.UnStageView(m,reject);
           }
         }
-        if (allies is not null) pathing_targets.Postfilter(already_handled);
+        if (allies is not null) pathing_targets = pathing_targets.Postfilter(already_handled);
 
         HashSet<Point> generators(Map m) {
           var gens = Generators(m);
