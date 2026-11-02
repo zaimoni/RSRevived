@@ -7416,7 +7416,6 @@ restart_chokepoints:
     private void retrofitWant(Item_IDs src, HashSet<Item_IDs> dest)
     {
         if (src.RangedWeaponModel() is { } model) {
-            var ammo_type = (Item_IDs)((int)model.AmmoType + (int)Item_IDs.AMMO_LIGHT_PISTOL);
             if (m_Living?.Inventory.GetFirst(model.AmmoType.AmmoID()) is not null) dest.Add(src.UnloadedVersion());
         }
     }
