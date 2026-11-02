@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 
@@ -715,30 +716,33 @@ namespace Zaimoni.Data
     }
 
     // logic operations
-    public static Predicate<T> And<T>(this Predicate<T> lhs, Predicate<T> rhs) {
+    [return: NotNullIfNotNull(nameof(lhs))] [return: NotNullIfNotNull(nameof(rhs))]
+    public static Predicate<T>? And<T>(this Predicate<T>? lhs, Predicate<T>? rhs) {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (lhs is null) return r;
-      if (rhs is null) return l;
+      if (l is null) return r;
+      if (r is null) return l;
       bool and(T src) { return l(src) && r(src); };
       return and;
     }
 
-    public static Predicate<T> Or<T>(this Predicate<T> lhs, Predicate<T> rhs) {
+    [return: NotNullIfNotNull(nameof(lhs))] [return: NotNullIfNotNull(nameof(rhs))]
+    public static Predicate<T>? Or<T>(this Predicate<T>? lhs, Predicate<T>? rhs) {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (lhs is null) return r;
-      if (rhs is null) return l;
+      if (l is null) return r;
+      if (r is null) return l;
       bool or(T src) { return l(src) || r(src); };
       return or;
     }
 
     // C-ish.
-    public static Func<T,int> Or<T>(this Func<T, int> lhs, Func<T, int> rhs) {
+    [return: NotNullIfNotNull(nameof(lhs))] [return: NotNullIfNotNull(nameof(rhs))]
+    public static Func<T,int>? Or<T>(this Func<T, int>? lhs, Func<T, int>? rhs) {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (lhs is null) return r;
-      if (rhs is null) return l;
+      if (l is null) return r;
+      if (r is null) return l;
       int or(T src) {
         var test = l(src);
         if (0 != test) return test;
@@ -747,23 +751,25 @@ namespace Zaimoni.Data
       return or;
     }
 
-    public static Func<T,bool> Or<T>(this Func<T, bool> lhs, Func<T, bool> rhs) {
+    [return: NotNullIfNotNull(nameof(lhs))] [return: NotNullIfNotNull(nameof(rhs))]
+    public static Func<T,bool>? Or<T>(this Func<T, bool>? lhs, Func<T, bool>? rhs) {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (lhs is null) return r;
-      if (rhs is null) return l;
+      if (l is null) return r;
+      if (r is null) return l;
       bool or(T src) { return l(src) || r(src); };
       return or;
     }
 
     // set theory operations
     // we accept null as a shorthand for the function on domain T that returns constant empty set HashSet<U>
-    public static Func<T, HashSet<U>> Union<T,U>(this Func<T, HashSet<U>> lhs, Func<T, HashSet<U>> rhs)
+    [return: NotNullIfNotNull(nameof(lhs))] [return: NotNullIfNotNull(nameof(rhs))]
+    public static Func<T, HashSet<U>>? Union<T,U>(this Func<T, HashSet<U>>? lhs, Func<T, HashSet<U>>? rhs)
     {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (lhs is null) return r;
-      if (rhs is null) return l;
+      if (l is null) return r;
+      if (r is null) return l;
       HashSet<U> ret(T src) {
         var x = l(src);
         var y = r(src);
@@ -775,12 +781,13 @@ namespace Zaimoni.Data
     }
 
     // logic operation ... want to use rhs only if lhs has no targets
-    public static Func<T, HashSet<U>> Otherwise<T,U>(this Func<T, HashSet<U>> lhs, Func<T, HashSet<U>> rhs)
+    [return: NotNullIfNotNull(nameof(lhs))] [return: NotNullIfNotNull(nameof(rhs))]
+    public static Func<T, HashSet<U>>? Otherwise<T,U>(this Func<T, HashSet<U>>? lhs, Func<T, HashSet<U>>? rhs)
     {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (lhs is null) return r;
-      if (rhs is null) return l;
+      if (l is null) return r;
+      if (r is null) return l;
       HashSet<U> ret(T src) {
         var x = l(src);
         if (x is not null && 0<x.Count) return x;
@@ -789,12 +796,13 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static Func<T, HashSet<U>> Postfilter<T,U>(this Func<T, HashSet<U>> lhs, Action<T, HashSet<U>> rhs)
+    [return: NotNullIfNotNull(nameof(lhs))]
+    public static Func<T, HashSet<U>>? Postfilter<T,U>(this Func<T, HashSet<U>>? lhs, Action<T, HashSet<U>>? rhs)
     {
       var l = lhs;  // local copies needed to get true lambda calculus
       var r = rhs;
-      if (lhs is null) return null;
-      if (rhs is null) return l;
+      if (l is null) return null;
+      if (r is null) return l;
       HashSet<U> ret(T src) {
         var x = l(src);
         if (x is not null && 0 < x.Count) r(src,x);
