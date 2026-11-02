@@ -10226,7 +10226,7 @@ namespace djack.RogueSurvivor.Engine
         tmp = tmp.Where(it=> it.ModelID != am_id);
       }
       if (itSpeaker.Model is ItemAmmoModel am_model) {
-        tmp = tmp.Where(it=> it.ModelID.RangedWeaponModel() is { } rw_model2 && rw_model2.AmmoType != am_model.AmmoType);
+        tmp = tmp.Where(it=> it.ModelID.RangedWeaponModel() is not { } rw_model2 || rw_model2.AmmoType != am_model.AmmoType);
       }
 
       switch(itSpeaker.ModelID)
