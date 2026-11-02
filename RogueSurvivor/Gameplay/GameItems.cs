@@ -87,8 +87,8 @@ namespace djack.RogueSurvivor.Gameplay
       TRAP_BARBED_WIRE,
       ENT_BOOK,
       ENT_MAGAZINE,
-      UNIQUE_SUBWAY_BADGE,
       ENT_CHAR_GUARD_MANUAL, // synthetic data, does not need to be with other Entertainment
+      UNIQUE_SUBWAY_BADGE,
       _COUNT,    // default this to guarantee correct value
       // for inventory memory only
       UNLOADED_ARMY_PISTOL = (RANGED_ARMY_PISTOL - 1) - RANGED_ARMY_PISTOL,
@@ -164,6 +164,8 @@ namespace djack.RogueSurvivor.Gameplay
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemRangedWeaponModel model)> ranged = new(_ranged);
     private static readonly List<(Item_IDs id, Data.Model.BodyArmor model)> _armor = new();
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, Data.Model.BodyArmor model)> armor = new(_armor);
+    private static readonly List<(Item_IDs id, ItemEntertainmentModel model)> _entertainment = new();
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemEntertainmentModel model)> entertainment = new(_entertainment);
     private static readonly List<(Item_IDs id, ItemFoodModel model)> _food = new();
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemFoodModel model)> food = new(_food);
     private static readonly List<(Item_IDs id, ItemLightModel model)> _lights = new();
@@ -220,6 +222,11 @@ namespace djack.RogueSurvivor.Gameplay
     private static void _setModel(ItemAmmoModel model) {
       _setModel((Data.Model.Item)model);
       _ammo.Add((model.ID, model));
+    }
+
+    private static void _setModel(ItemEntertainmentModel model) {
+      _setModel((Data.Model.Item)model);
+      _entertainment.Add((model.ID, model));
     }
 
     private static void _setModel(ItemFoodModel model) {
@@ -341,29 +348,11 @@ namespace djack.RogueSurvivor.Gameplay
     public static ItemTrapModel SPIKES => _traps[(int)Item_IDs.TRAP_SPIKES - (int)Item_IDs.TRAP_EMPTY_CAN].model;
     public static ItemTrapModel BARBED_WIRE => _traps[(int)Item_IDs.TRAP_BARBED_WIRE - (int)Item_IDs.TRAP_EMPTY_CAN].model;
 
-    public static ItemEntertainmentModel BOOK {
-      get {
-        return m_Models[(int)Item_IDs.ENT_BOOK] as ItemEntertainmentModel;
-      }
-    }
+    public static ItemEntertainmentModel BOOK => _entertainment[0].model;
+    public static ItemEntertainmentModel MAGAZINE => _entertainment[(int)Item_IDs.ENT_MAGAZINE - (int)Item_IDs.ENT_BOOK].model;
+    public static ItemEntertainmentModel CHAR_GUARD_MANUAL => _entertainment[(int)Item_IDs.ENT_CHAR_GUARD_MANUAL - (int)Item_IDs.ENT_BOOK].model;
 
-    public static ItemEntertainmentModel MAGAZINE {
-      get {
-        return m_Models[(int)Item_IDs.ENT_MAGAZINE] as ItemEntertainmentModel;
-      }
-    }
-
-    public static ItemEntertainmentModel CHAR_GUARD_MANUAL {
-      get {
-        return m_Models[(int)Item_IDs.ENT_CHAR_GUARD_MANUAL] as ItemEntertainmentModel;
-      }
-    }
-
-    public static Data.Model.Item UNIQUE_SUBWAY_BADGE {
-      get {
-        return m_Models[(int)Item_IDs.UNIQUE_SUBWAY_BADGE];
-      }
-    }
+    public static Data.Model.Item UNIQUE_SUBWAY_BADGE => m_Models[(int)Item_IDs.UNIQUE_SUBWAY_BADGE];
 
     public static void Init(IRogueUI ui)
     {
@@ -577,10 +566,8 @@ namespace djack.RogueSurvivor.Gameplay
       for (int index = 0; index < DATA_EXPLOSIVE_GRENADE.RADIUS + 1; ++index)
         damage[index] = DATA_EXPLOSIVE_GRENADE.DMG[index];   // XXX explosiveData.DMG is returned with a mismatched length
 
-//    _setModel(new ItemGrenadeModel(Item_IDs.EXPLOSIVE_GRENADE, DATA_EXPLOSIVE_GRENADE.NAME, DATA_EXPLOSIVE_GRENADE.PLURAL, GameImages.ITEM_GRENADE, DATA_EXPLOSIVE_GRENADE.FUSE, new BlastAttack(DATA_EXPLOSIVE_GRENADE.RADIUS, damage, true, false), GameImages.ICON_BLAST, DATA_EXPLOSIVE_GRENADE.MAXTHROW, DATA_EXPLOSIVE_GRENADE.STACKLINGLIMIT, DATA_EXPLOSIVE_GRENADE.FLAVOR));
       _setModel(new Data.Model.PrimedExplosive(Item_IDs.EXPLOSIVE_GRENADE_PRIMED, "primed " + DATA_EXPLOSIVE_GRENADE.NAME, "primed " + DATA_EXPLOSIVE_GRENADE.PLURAL, GameImages.ITEM_GRENADE_PRIMED, DATA_EXPLOSIVE_GRENADE.FUSE, new BlastAttack(DATA_EXPLOSIVE_GRENADE.RADIUS, damage, true, false), DATA_EXPLOSIVE_GRENADE.FLAVOR));
       _setModel(new Data.Model.Explosive(Item_IDs.EXPLOSIVE_GRENADE, DATA_EXPLOSIVE_GRENADE.NAME, DATA_EXPLOSIVE_GRENADE.PLURAL, GameImages.ITEM_GRENADE, DATA_EXPLOSIVE_GRENADE.FUSE, new BlastAttack(DATA_EXPLOSIVE_GRENADE.RADIUS, damage, true, false), DATA_EXPLOSIVE_GRENADE.FLAVOR, GRENADE_PRIMED, DATA_EXPLOSIVE_GRENADE.MAXTHROW, DATA_EXPLOSIVE_GRENADE.STACKLINGLIMIT));
-//    _setModel(new ItemGrenadePrimedModel(Item_IDs.EXPLOSIVE_GRENADE_PRIMED, "primed " + DATA_EXPLOSIVE_GRENADE.NAME, "primed " + DATA_EXPLOSIVE_GRENADE.PLURAL, GameImages.ITEM_GRENADE_PRIMED, From(Item_IDs.EXPLOSIVE_GRENADE) as ItemGrenadeModel));
 
       // carpentry
       _setModel(new ItemBarricadeMaterialModel(Item_IDs.BAR_WOODEN_PLANK, DATA_BAR_WOODEN_PLANK.NAME, DATA_BAR_WOODEN_PLANK.PLURAL, GameImages.ITEM_WOODEN_PLANK, DATA_BAR_WOODEN_PLANK.VALUE, DATA_BAR_WOODEN_PLANK.STACKINGLIMIT, DATA_BAR_WOODEN_PLANK.FLAVOR));
@@ -636,6 +623,9 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(new ItemEntertainmentModel(Item_IDs.ENT_MAGAZINE, DATA_ENT_MAGAZINE.NAME, DATA_ENT_MAGAZINE.PLURAL, GameImages.ITEM_MAGAZINE, DATA_ENT_MAGAZINE.VALUE, DATA_ENT_MAGAZINE.BORECHANCE, DATA_ENT_MAGAZINE.STACKING, DATA_ENT_MAGAZINE.FLAVOR));
       // this manual is *very* relevant, but dry reading.
       _setModel(new ItemEntertainmentModel(Item_IDs.ENT_CHAR_GUARD_MANUAL, "CHAR Guard Manual","CHAR Guard Manuals", GameImages.ITEM_BOOK, DATA_ENT_MAGAZINE.VALUE, 0, DATA_ENT_BOOK.STACKING, DATA_ENT_BOOK.FLAVOR));
+#if DEBUG
+      _requireContiguous(_entertainment, Item_IDs.ENT_BOOK, "entertainment");
+#endif
 
       _setModel(new Data.Model.Item(Item_IDs.UNIQUE_SUBWAY_BADGE, "Subway Worker Badge", "Subways Worker Badges", GameImages.ITEM_SUBWAY_BADGE, "You got yourself a new job!", DollPart.LEFT_HAND, true)
       {
@@ -719,9 +709,7 @@ namespace djack.RogueSurvivor.Gameplay
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "explosives items", ExplosiveData.COUNT_FIELDS, new Func<CSVLine, ExplosiveData>(ExplosiveData.FromCSVLine), new[] {
-        Item_IDs.EXPLOSIVE_GRENADE
-      }, out ExplosiveData[] data);
+      LoadDataFromCSV(ui, path, "explosives items", ExplosiveData.COUNT_FIELDS, new Func<CSVLine, ExplosiveData>(ExplosiveData.FromCSVLine), _enumRange(Item_IDs.EXPLOSIVE_GRENADE, Item_IDs.EXPLOSIVE_GRENADE), out ExplosiveData[] data);
       return data;
     }
 
@@ -730,9 +718,7 @@ namespace djack.RogueSurvivor.Gameplay
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "barricading items", BarricadingMaterialData.COUNT_FIELDS, new Func<CSVLine, BarricadingMaterialData>(BarricadingMaterialData.FromCSVLine), new[] {
-        Item_IDs.BAR_WOODEN_PLANK
-      }, out BarricadingMaterialData[] data);
+      LoadDataFromCSV(ui, path, "barricading items", BarricadingMaterialData.COUNT_FIELDS, new Func<CSVLine, BarricadingMaterialData>(BarricadingMaterialData.FromCSVLine), _enumRange(Item_IDs.BAR_WOODEN_PLANK, Item_IDs.BAR_WOODEN_PLANK), out BarricadingMaterialData[] data);
       return data;
     }
 
@@ -777,9 +763,7 @@ namespace djack.RogueSurvivor.Gameplay
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "scentsprays items", ScentSprayData.COUNT_FIELDS, new Func<CSVLine, ScentSprayData>(ScentSprayData.FromCSVLine), new[] {
-        Item_IDs.SCENT_SPRAY_STENCH_KILLER
-      }, out ScentSprayData[] data);
+      LoadDataFromCSV(ui, path, "scentsprays items", ScentSprayData.COUNT_FIELDS, new Func<CSVLine, ScentSprayData>(ScentSprayData.FromCSVLine), _enumRange(Item_IDs.SCENT_SPRAY_STENCH_KILLER, Item_IDs.SCENT_SPRAY_STENCH_KILLER), out ScentSprayData[] data);
       return data;
     }
 
@@ -797,10 +781,7 @@ namespace djack.RogueSurvivor.Gameplay
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "entertainment items", EntData.COUNT_FIELDS, new Func<CSVLine, EntData>(EntData.FromCSVLine), new[] {
-        Item_IDs.ENT_BOOK,
-        Item_IDs.ENT_MAGAZINE
-      }, out EntData[] data);
+      LoadDataFromCSV(ui, path, "entertainment items", EntData.COUNT_FIELDS, new Func<CSVLine, EntData>(EntData.FromCSVLine), _enumRange(Item_IDs.ENT_BOOK, Item_IDs.ENT_MAGAZINE), out EntData[] data);
       return data;
     }
 
@@ -1167,6 +1148,11 @@ namespace djack.RogueSurvivor.Gameplay
     public static Data.Model.BodyArmor? BodyArmorModel(this Item_IDs id) {
       int i = (int)id - (int)Item_IDs.ARMOR_HUNTER_VEST;
       return (0 <= i && GameItems.armor.Count > i) ? GameItems.armor[i].model : null;
+    }
+
+    public static ItemEntertainmentModel? EntertainmentModel(this Item_IDs id) {
+      int i = (int)id - (int)Item_IDs.ENT_BOOK;
+      return (0 <= i && GameItems.entertainment.Count > i) ? GameItems.entertainment[i].model : null;
     }
 
     public static ItemFoodModel? FoodModel(this Item_IDs id) {
