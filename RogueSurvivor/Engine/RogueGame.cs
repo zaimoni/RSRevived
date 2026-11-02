@@ -657,12 +657,6 @@ namespace djack.RogueSurvivor.Engine
     // called from before game loop starts, so don't need to be too concerned about efficiency
     private void _bootstrap_computable(World world) {
       if (s_RefugeeSpawnZones is null) {
-         HashSet<Point> arrival(Rectangle arrived) {
-           HashSet<Point> ret = new();
-           foreach (var pt in arrived) ret.Add(pt);
-           return ret;
-         }
-
          const int zone_length = 6;
          const int highway_width = 6;   // synchronize w/map generation
          const int C_assert_survivor_spawn = 1/(SURVIVORS_BAND_SIZE + 1 <= highway_width ? 1 : 0);
@@ -681,16 +675,18 @@ namespace djack.RogueSurvivor.Engine
          var m = world.At(world_bounds.Anchor(Compass.XCOMlike.N))!.EntryMap;
          var pt = m.Rect.Anchor(Compass.XCOMlike.N);
          var highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.W);
+         Rectangle ns_ew_highway = new(m.Rect.Anchor(Compass.XCOMlike.W) + Direction.N, new Point(m.Width, 2));
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-n-w", new Rectangle(highway_origin.Position + zone_length * Direction.W, ns_arrival_zone_dim))));
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-n-e", new Rectangle(highway_origin.Position + highway_width * Direction.E, ns_arrival_zone_dim))));
-         stage_arrivals[0] = new(m, new(new ZoneLoc(m, new Zone("highway-spawn-n", new Rectangle(highway_origin.Position, ns_arrival_zone_dim))), arrival(new(m.Rect.Anchor(Compass.XCOMlike.W) + Direction.N, new Point(m.Width, 2)))));
+         stage_arrivals[0] = new(m, new(new ZoneLoc(m, new Zone("highway-spawn-n", new Rectangle(highway_origin.Position, ns_arrival_zone_dim))), new(ns_ew_highway)));
 
          m = world.At(world_bounds.Anchor(Compass.XCOMlike.E))!.EntryMap;
          pt = m.Rect.Anchor(Compass.XCOMlike.E);
          highway_origin = new Location(m, pt + (highway_width / 2 + 1) * Direction.N);
+         Rectangle ew_ns_highway = new(m.Rect.Anchor(Compass.XCOMlike.N) + Direction.W, new Point(2, m.Height));
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-e-n", new Rectangle(highway_origin.Position + zone_length * Direction.N, ew_arrival_zone_dim))));
          stage.Add(new ZoneLoc(m, new Zone("refugee-spawn-e-s", new Rectangle(highway_origin.Position + highway_width * Direction.S, ew_arrival_zone_dim))));
-         stage_arrivals[1] = new(m, new(new ZoneLoc(m, new Zone("highway-spawn-e", new Rectangle(highway_origin.Position, ew_arrival_zone_dim))), arrival(new(m.Rect.Anchor(Compass.XCOMlike.N) + Direction.W, new Point(2, m.Height)))));
+         stage_arrivals[1] = new(m, new(new ZoneLoc(m, new Zone("highway-spawn-e", new Rectangle(highway_origin.Position, ew_arrival_zone_dim))), new(ew_ns_highway)));
 
          m = world.At(world_bounds.Anchor(Compass.XCOMlike.S))!.EntryMap;
          pt = m.Rect.Anchor(Compass.XCOMlike.S);
@@ -2432,10 +2428,11 @@ namespace djack.RogueSurvivor.Engine
       arrived.Add(leader);
 
       // If the leader does not use advanced pathing (e.g., police), point him at the city
+      // use male civilian as the mobility proxy
       if (leader.Threats is null) {
         var dir = entering_from(dest.Rect, dest.m);
         if (dir is not null) {
-          var escape = new Tasks.TaskEscapeNanny(leader, s_Arrival![(int)(dir.Value) /2].Value.Value);
+          var escape = new Tasks.TaskEscapeNanny(leader, new(s_Arrival![(int)(dir.Value) /2].Value.Value.Where(pt => GameActors.MaleCivilian.CanEnter(new(dest.m, pt)))));
           escape.Trigger(dest.m);
           dest.m.AddTimer(escape);
         }
