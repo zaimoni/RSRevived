@@ -166,6 +166,8 @@ namespace djack.RogueSurvivor.Gameplay
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, Data.Model.BodyArmor model)> armor = new(_armor);
     private static readonly List<(Item_IDs id, ItemFoodModel model)> _food = new();
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemFoodModel model)> food = new(_food);
+    private static readonly List<(Item_IDs id, ItemLightModel model)> _lights = new();
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemLightModel model)> lights = new(_lights);
     private static readonly List<(Item_IDs id, ItemMeleeWeaponModel model)> _melee = new();
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<(Item_IDs id, ItemMeleeWeaponModel model)> melee = new(_melee);
     private static readonly List<(Item_IDs id, ItemMedicineModel model)> _medicine = new();
@@ -221,6 +223,11 @@ namespace djack.RogueSurvivor.Gameplay
     private static void _setModel(ItemFoodModel model) {
       _setModel((Data.Model.Item)model);
       _food.Add((model.ID, model));
+    }
+
+    private static void _setModel(ItemLightModel model) {
+      _setModel((Data.Model.Item)model);
+      _lights.Add((model.ID, model));
     }
 
     private static void _setModel(ItemMedicineModel model) {
@@ -317,17 +324,8 @@ namespace djack.RogueSurvivor.Gameplay
     public static ItemTrackerModel ZTRACKER => _trackers[(int)Item_IDs.TRACKER_ZTRACKER - (int)Item_IDs.TRACKER_BLACKOPS].model;
     public static ItemTrackerModel POLICE_RADIO => _trackers[(int)Item_IDs.TRACKER_POLICE_RADIO - (int)Item_IDs.TRACKER_BLACKOPS].model;
 
-    public static ItemLightModel FLASHLIGHT {
-      get {
-        return m_Models[(int)Item_IDs.LIGHT_FLASHLIGHT] as ItemLightModel;
-      }
-    }
-
-    public static ItemLightModel BIG_FLASHLIGHT {
-      get {
-        return m_Models[(int)Item_IDs.LIGHT_BIG_FLASHLIGHT] as ItemLightModel;
-      }
-    }
+    public static ItemLightModel FLASHLIGHT => _lights[0].model;
+    public static ItemLightModel BIG_FLASHLIGHT => _lights[(int)Item_IDs.LIGHT_BIG_FLASHLIGHT - (int)Item_IDs.LIcGHT_FLASHLIGHT].model;
 
     public static ItemSprayScentModel STENCH_KILLER => (ItemSprayScentModel)m_Models[(int)Item_IDs.SCENT_SPRAY_STENCH_KILLER];
 
@@ -629,6 +627,9 @@ namespace djack.RogueSurvivor.Gameplay
       // Flashlights
       _setModel(new ItemLightModel(Item_IDs.LIGHT_FLASHLIGHT, DATA_LIGHT_FLASHLIGHT.NAME, DATA_LIGHT_FLASHLIGHT.PLURAL, GameImages.ITEM_FLASHLIGHT, DATA_LIGHT_FLASHLIGHT.FOV, DATA_LIGHT_FLASHLIGHT.BATTERIES * WorldTime.TURNS_PER_HOUR, GameImages.ITEM_FLASHLIGHT_OUT, DATA_LIGHT_FLASHLIGHT.FLAVOR));
       _setModel(new ItemLightModel(Item_IDs.LIGHT_BIG_FLASHLIGHT, DATA_LIGHT_BIG_FLASHLIGHT.NAME, DATA_LIGHT_BIG_FLASHLIGHT.PLURAL, GameImages.ITEM_BIG_FLASHLIGHT, DATA_LIGHT_BIG_FLASHLIGHT.FOV, DATA_LIGHT_BIG_FLASHLIGHT.BATTERIES * WorldTime.TURNS_PER_HOUR, GameImages.ITEM_BIG_FLASHLIGHT_OUT, DATA_LIGHT_BIG_FLASHLIGHT.FLAVOR));
+#if DEBUG
+      _requireContiguous(_lights, Item_IDs.LIGHT_FLASHLIGHT, "trackers");
+#endif
 
       // stench killer
       _setModel(new ItemSprayScentModel(Item_IDs.SCENT_SPRAY_STENCH_KILLER, DATA_SCENT_SPRAY_STENCH_KILLER.NAME, DATA_SCENT_SPRAY_STENCH_KILLER.PLURAL, GameImages.ITEM_STENCH_KILLER, DATA_SCENT_SPRAY_STENCH_KILLER.QUANTITY, Odor.SUPPRESSOR, DATA_SCENT_SPRAY_STENCH_KILLER.STRENGTH * 30, DATA_SCENT_SPRAY_STENCH_KILLER.FLAVOR));
@@ -1237,6 +1238,11 @@ namespace djack.RogueSurvivor.Gameplay
     public static ItemFoodModel? FoodModel(this Item_IDs id) {
       int i = (int)id - (int)Item_IDs.FOOD_ARMY_RATION;
       return (0 <= i && GameItems.food.Count > i) ? GameItems.food[i].model : null;
+    }
+
+    public static ItemLightModel? LightModel(this Item_IDs id) {
+      int i = (int)id - (int)Item_IDs.LIGHT_FLASHLIGHT;
+      return (0 <= i && GameItems.lights.Count > i) ? GameItems.lights[i].model : null;
     }
 
     public static ItemMeleeWeaponModel? MeleeWeaponModel(this Item_IDs id) {
