@@ -13,6 +13,8 @@ namespace djack.RogueSurvivor.Engine.Actions
   [Serializable]
   public sealed class ActionMoveDelta : ActorAction,ActorDest,ActorOrigin,Resolvable, IJsonStaged<ActionMoveDelta>
   {
+    public const bool CheckPostconditions = false;
+
     private readonly Location m_NewLocation;
     private readonly Location m_Origin;
     [NonSerialized] private ActorAction? _result;    // make this non-serialized if we need to serialize this
@@ -82,6 +84,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       var actorAt = see_dest ? m_NewLocation.Actor : null;
 
       const bool tracing = false;
+      if (tracing) Logger.Trace(m_Actor.Name);
 
       { // deal with exits first; cf BaseAI::BehaviorUseExit
       var exit = m_Origin.Exit;
@@ -93,6 +96,12 @@ namespace djack.RogueSurvivor.Engine.Actions
       }
 
       if (m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model, out m_FailReason)) working = ActionMoveStep.schedule(m_Actor, m_NewLocation);
+      if (tracing) {
+        Logger.Trace("m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model, out m_FailReason) : " + (m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model) ? "true" : "false"));
+        Logger.Trace("working : " + (working?.ToString() ?? "null"));
+        Logger.Trace("actorAt : " + (actorAt?.ToString() ?? "null"));
+        Logger.Trace("obj : " + (obj?.ToString() ?? "null"));
+      }
 
       if (actorAt is not null) {
         if (m_Actor.IsEnemyOf(actorAt)) return null; // should be in combat processing
@@ -162,6 +171,8 @@ namespace djack.RogueSurvivor.Engine.Actions
            }
         }
       } else if (obj is not null) {
+           // technically we would be ahead pushing a weight-1 map object, but this can mask another crash bug
+           if (working is not null) return working;
            if (obj is DoorWindow door) {
              if (door.BarricadePoints > 0) {
                // pathfinding livings will break barricaded doors (they'll prefer to go around it)
@@ -241,15 +252,35 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     static public ActionMoveDelta? schedule(Actor actor, Location to)
     {
+      const bool tracing = false;
+      if (tracing) Logger.Trace(actor.Name);
+
       var from = actor.Location;  // backward compatibility
       var exit = from.Exit;
       if (exit is not null && exit.Location == to) { // may want to cache this: non-null if needed
-        if (!actor.Model.Abilities.AI_CanUseAIExits) return null;
+        if (!actor.Model.Abilities.AI_CanUseAIExits) {
+          if (tracing) Logger.Trace("return null : !actor.Model.Abilities.AI_CanUseAIExits");
+          return null;
+        }
       }
-      if (!actor.Model.CanEnter(ref to)) return null;
-      if (1!=Rules.InteractionDistance(from, in to)) return null;
+      if (!actor.Model.CanEnter(ref to)) {
+        if (tracing) Logger.Trace("return null : !actor.Model.CanEnter(ref to)");
+        return null;
+      }
+      if (1 != Rules.InteractionDistance(from, in to)) {
+        if (tracing) Logger.Trace("return null : 1 != Rules.InteractionDistance(from, in to)");
+        return null;
+      }
 
       ActionMoveDelta ret = new(actor, to, from);
+      if (tracing) {
+        if (!ret.IsLegal()) {
+          Logger.Trace("return null : !ret.IsLegal()");
+          var act = ret.ConcreteAction;
+          if (act is null) Logger.Trace("null");
+          else Logger.Trace((act.ToString() + " : " + (act.FailReason ?? "null")));
+        }
+      }
       return ret.IsLegal() ? ret : null;
     }
 

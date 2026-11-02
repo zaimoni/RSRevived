@@ -1577,6 +1577,17 @@ namespace djack.RogueSurvivor.Data
           }
         }
       }
+
+      if (ActionMoveDelta.CheckPostconditions) {
+        foreach(var loc2 in ret) {
+          var test = ActionMoveDelta.create(this, loc2);
+          if (test is null) {
+            Logger.Trace("postcondition failed: ActionMoveDelta to "+loc2.ToString()+" is not perfrormable");
+            throw Spotlight(new InvalidOperationException("tracing"));
+          }
+        }
+      }
+
       return 0 < ret.Count ? ret : null;
     }
 
