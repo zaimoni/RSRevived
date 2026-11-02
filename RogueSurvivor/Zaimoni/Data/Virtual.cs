@@ -62,7 +62,7 @@ namespace Zaimoni.Data
             return string.Join(",\n", tmp);
         }
 
-        public static string to_s<T>(this List<T> x)
+        public static string to_s<T>(this List<T>? x)
         {
             if (x is null) return "null";
             var ub = x.Count;

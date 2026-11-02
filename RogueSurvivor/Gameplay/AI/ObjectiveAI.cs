@@ -519,9 +519,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [NonSerialized] protected CallChain _caller = CallChain.NONE;
     [NonSerialized] protected ActorAction? _staged_action = null;   // should be a free action
     [NonSerialized] protected FleeExplosive[]? _blast_zones = null;   // should be a free action
-#if USING_ESCAPE_MOVES
-    [NonSerialized] protected Dictionary<Location,ActorAction> _escape_moves = null;
-#endif
 
     // cached functions of m_Actor would go here, but that can easily be profile-negative
 
@@ -734,9 +731,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _used_advanced_pathing = false;
       _rejected_backtrack = false;
       _current_goals = null;
-#if USING_ESCAPE_MOVES
-      _escape_moves = null;
-#endif
     }
 
     public void OnRaid(RaidType raid, in Location loc)
@@ -791,180 +785,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-#if USING_ESCAPE_MOVES
-      var enemies = enemies_in_FOV;
-      if (enemies is null) return;
-
-      // \todo augment above.  We actually want to:
-      // * respond to all slow threat, not just immediate slow melee threat
-      // * declare retreat destinations so allies/friends don't zugzwang us
-      // * declare "good ambush positions" for melee/ranged combat based on predicted enemy positions
-      // * internally record escape action sequences (door opening is 2-moves and if we lose a move after step/jump that needs accounting for as well
-      int escape_cost(ActorAction escape) {
-        if (escape is ActionOpenDoor) return 2;
-        if (escape is ActionMoveStep && m_Actor.RunIsFreeMove && m_Actor.CanRun()) return 0;
-        if (escape is ActorDest) return 1;  // backstop, need to account for fatigue and/or running
-        return int.MaxValue;    // doesn't work in time
-      }
-
-      var escape_actions = m_Actor.OnePath(m_Actor.Location);
-      var escape_costs = new Dictionary<Location,int>();
-      var escape_damage = new Dictionary<Location,int>();
-      escape_actions.OnlyIf(act => act.IsPerformable() && !VetoAction(act));
-      {
-      var secondary_escape_actions = new Dictionary<Location,ActorAction>();
-      int damage_relay = 0;
-      _damage_field?.TryGetValue(m_Actor.Location.Position, out damage_relay);
-      foreach(var x in escape_actions) {
-        int cost = escape_cost(x.Value);
-        if (2 < cost) continue;    // not fast enough
-        escape_costs[x.Key] = cost;
-        if (0==cost) {
-          var extra_actions = m_Actor.OnePath(x.Key);
-          extra_actions.OnlyIf((Predicate<Location>)(loc => 2==Rules.InteractionDistance(m_Actor.Location,x.Key)));
-          foreach(var y in extra_actions) {
-            int alt_cost = escape_cost(y.Value);
-            if (1<alt_cost) continue;
-            if (0 == alt_cost) alt_cost = 1;
-            escape_costs[y.Key] = alt_cost;
-            secondary_escape_actions[y.Key] = y.Value;
-          }
-        }
-      }
-      foreach(var x in secondary_escape_actions) escape_actions[x.Key] = x.Value;
-      {
-      var remove = new List<Location>(escape_actions.Count);
-      foreach(var x in escape_actions) if (!escape_costs.ContainsKey(x.Key)) remove.Add(x.Key);
-      if (0<remove.Count) foreach(var loc in remove) escape_actions.Remove(loc);
-      }
-
-      var backup = new Dictionary<Location,ActorAction>(escape_actions);
-      var ok = new Dictionary<Location, ActorAction>(escape_actions);
-      foreach(var x in escape_actions) {
-        int cost = escape_costs[x.Key];
-        int damage = 0;
-        if (x.Key.Map==m_Actor.Location.Map && (_damage_field?.TryGetValue(x.Key.Position,out damage) ?? false)) {
-          if (2 <= cost) damage += damage_relay;    // <= in case of specification change
-          escape_damage[x.Key] = damage;
-        } else if (2 <= cost && 0 < damage_relay) escape_damage[x.Key] = damage_relay;
-        backup[x.Key] = x.Value;    // works but may harm others
-        if (VetoAction(x.Value)) continue;  // does harm others
-        ok[x.Key] = x.Value;
-      }
-      escape_actions = (0 < ok.Count) ? ok : backup;
-      }
-      if (0 >= escape_actions.Count) return;    // might want to record this fact to trigger sheer panic messaging
-      // \todo identify which escape actions are actually needed, based on where enemies are predicted to be
-      var compromised = new Dictionary<Location,int>();
-      foreach(var x in escape_actions) compromised[x.Key] = 0;
-      compromised[m_Actor.Location] = 0;
-      var double_compromised = new Dictionary<Location,int>(compromised); 
-
-      foreach(var x in enemies) {
-        var rws = m_Living is { } who ? who.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || who.Inventory.GetCompatibleAmmoItem(rw) is not null) : null;
-        if (rws is not null) continue;  // bail for now on ranged weapons
-        int e_moves = m_Actor.HowManyTimesOtherActs(1,x.Value);
-        if (0 < e_moves) {
-          var now = new HashSet<Location> { x.Key };
-          var ever = new HashSet<Location>();
-          var next = new HashSet<Location>();
-          int n = e_moves;
-          do {
-            foreach(var src in now) {
-              var danger = new ZoneLoc(src.Map,new Rectangle(src.Position.X-1,src.Position.Y-1,3,3));
-              danger.DoForEach(loc => {
-                if (ever.Contains(loc)) return;
-                ever.Add(loc);
-                if (!loc.Map.IsWalkableFor(loc.Position,x.Value)) return;
-                compromised.TryGetValue(loc, out var targeted);
-                compromised[loc] = targeted + 1;
-                double_compromised[loc] = targeted + 1;
-                next.Add(loc);
-              });
-            }
-            var swap = now;
-            next = now;
-            swap.Clear();
-            next = swap;
-          } while (0 < --n);
-          int e_moves2 = m_Actor.HowManyTimesOtherActs(2,x.Value);
-          if (e_moves < e_moves2) {
-            n = e_moves2 - e_moves;
-            e_moves = e_moves2;
-            do {
-              foreach(var src in now) {
-               var danger = new ZoneLoc(src.Map,new Rectangle(src.Position.X-1,src.Position.Y-1,3,3));
-                 danger.DoForEach(loc => {
-                  if (ever.Contains(loc)) return;
-                  ever.Add(loc);
-                  if (!loc.Map.IsWalkableFor(loc.Position,x.Value)) return;
-                  double_compromised.TryGetValue(loc, out var targeted);
-                  double_compromised[loc] = targeted + 1;
-                  next.Add(loc);
-                });
-              }
-              var swap = now;
-              next = now;
-              swap.Clear();
-              next = swap;
-            } while (0 < --n);
-          }
-          e_moves2 = (0==double_compromised[m_Actor.Location] ? m_Actor.HowManyTimesOtherActs(3,x.Value) : 0);
-          if (e_moves < e_moves2) {
-            n = e_moves2 - e_moves;
-            e_moves = e_moves2;
-            do {
-              foreach(var src in now) {
-               var danger = new ZoneLoc(src.Map,new Rectangle(src.Position.X-1,src.Position.Y-1,3,3));
-                 danger.DoForEach(loc => {
-                  if (ever.Contains(loc)) return;
-                  ever.Add(loc);
-                  if (!loc.Map.IsWalkableFor(loc.Position,x.Value)) return;
-                  double_compromised.TryGetValue(loc, out var targeted);
-                  double_compromised[loc] = targeted + 1;
-                  next.Add(loc);
-                });
-              }
-              var swap = now;
-              next = now;
-              swap.Clear();
-              next = swap;
-            } while (0 < --n);
-          }
-        }
-      }
-
-      if (0 >= double_compromised[m_Actor.Location]) return;    // may need to do a strategic retreat but not our immediate issue
-      // prefer uncompromised escapes
-      var threshold = escape_actions.Min(x => double_compromised[x.Key]);
-      escape_actions.OnlyIf(loc => threshold==double_compromised[loc]);
-      // if we have any escapes with a time cost of 1, ignore those with a time cost of 2
-      bool have_fast_escape = escape_actions.Any(x => 1 == escape_costs[x.Key]);
-      if (have_fast_escape) escape_actions.OnlyIf(loc => 1>=escape_costs[loc]);
-      // prefer not being cornered
-      {
-      var remove = new List<Location>(escape_actions.Count);
-      foreach(var x in escape_actions) {
-        int dist = Rules.InteractionDistance(m_Actor.Location,x.Key);
-        bool ok = false;
-        foreach(var dir in Direction.COMPASS) {
-          Location test = x.Key+dir;
-          if (!test.ForceCanonical()) continue;
-          if (dist > Rules.GridDistance(m_Actor.Location,test)) continue;  // yes, int.MaxValue for a different map is ok here
-          if (!test.Map.IsWalkableFor(test.Position,m_Actor)) continue;
-          ok = true;
-          break;
-        }
-        if (!ok) remove.Add(x.Key);
-      }
-      if (0<remove.Count && escape_actions.Any(x => !remove.Contains(x.Key))) foreach(var loc in remove) escape_actions.Remove(loc);
-      }
-
-      // prefer closer escapes
-      if (escape_actions.Any(x => 1==Rules.InteractionDistance(x.Key,m_Actor.Location))) escape_actions.OnlyIf(loc => 1==Rules.InteractionDistance(loc,m_Actor.Location));
-      RecordWantToEscapeTo(escape_actions.Keys.ToList());   // \todo declare ambush points as well
-      if (!have_fast_escape || 0< compromised[m_Actor.Location]) _escape_moves = escape_actions;
-#endif
     }
 
     // morally a constructor-type function
@@ -1352,12 +1172,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return prior;
     }
 
-#if USING_ESCAPE_MOVES
-    protected void RecordWantToEscapeTo(List<Location> src) { _sparse.Set(SparseData.EscapingTo, src); }
-    public List<Location> WantToEscapeTo() { return _sparse.Get<List<Location>>(SparseData.EscapingTo); }
-#endif
-
-    public ZoneLoc ClearingThisZone() {
+    public ZoneLoc? ClearingThisZone() {
       var ret = _sparse.Get<ZoneLoc>(SparseData.ClearingZone);
       if (ret is not null) return ret;
       if (m_Actor.Location.IsInside) {
@@ -2565,30 +2380,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           return true;   // death-trapped
         }
-#if PROTOTYPE
-        if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
-          if (x is ActionUseExit) {
-            var leader = m_Actor.LiveLeader;
-            if (leader is not null && leader.ClanIsDisrupted(2).Key) return true;    // civilian AI value; others don't use exits
-          } else {
-            var e = a_dest.dest.Exit;
-            if (e is not null) {
-              if (NeedsAir(e.Location, m_Actor) is not null) return true;    // too crowded?
-              var leader = m_Actor.LiveLeader;
-              if (leader is not null && leader.ClanIsDisrupted(2).Key) return true;    // civilian AI value; others don't use exits
-            }
-          }
-        }
-#endif
-#if USING_ESCAPE_MOVES
-        var friends = friends_in_FOV;
-        if (friends_in_FOV is not null) {
-          foreach(var fr in friends_in_FOV) {
-            var escaping_to = (fr.Value.Controller as ObjectiveAI)?.WantToEscapeTo();   // seems hard to trigger
-            if (escaping_to?.Contains(a_dest.dest) ?? false) return true;
-          }
-        }
-#endif
       }
       if (x is Resolvable res) return res.ConcreteAction is not { } real || VetoAction(real);   // resolvable actions should use the actual action to execute
       if (x is ActionCloseDoor close) {

@@ -1761,7 +1761,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction? ManageMeleeRisk(List<ItemRangedWeapon> available_ranged_weapons)
+    protected ActorAction? ManageMeleeRisk(List<ItemRangedWeapon>? available_ranged_weapons)
     {
         const bool tracing = false; // debugging hook
 
@@ -1928,7 +1928,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // forked from BaseAI::BehaviorEquipWeapon
-    protected ActorAction? BehaviorEquipWeapon(List<ItemRangedWeapon> available_ranged_weapons)
+    protected ActorAction? BehaviorEquipWeapon(List<ItemRangedWeapon>? available_ranged_weapons)
     {
 #if DEBUG
       if ((available_ranged_weapons is null) != (GetBestRangedWeaponWithAmmo() is null)) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
