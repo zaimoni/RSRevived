@@ -19,9 +19,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Location m_Origin;
     [NonSerialized] private ActorAction? _result;    // make this non-serialized if we need to serialize this
 
-    public Location dest { get { return m_NewLocation; } }  // of m_Actor
-    public Location origin { get { return m_Origin; } }
-    public ActorAction? ConcreteAction { get { return _result ?? _resolve(); } }
+    public Location dest => m_NewLocation;   // of m_Actor
+    public Location origin => m_Origin;
+    public ActorAction? ConcreteAction => _result ?? _resolve();   // failure to resolve is stack overflow
 
     #region JSON save/load
     private ActionMoveDelta(Actor actor, JsonElement src, JsonSerializerOptions options) : base(actor)
@@ -215,8 +215,10 @@ namespace djack.RogueSurvivor.Engine.Actions
                }
            }
            // proceed with pull if we can't push safely
-           var pull_dests = obj.Location.Adjacent(loc => 1 == Rules.GridDistance(m_Actor.Location, loc));
-           if (pull_dests is not null) return new ActionPull(m_Actor,obj, rules.DiceRoller.Choose(pull_dests));
+           if (m_Actor.Location.MapObject is null) {
+             var pull_dests = obj.Location.Adjacent(loc => 1 == Rules.GridDistance(m_Actor.Location, loc));
+             if (pull_dests is not null) return new ActionPull(m_Actor,obj, rules.DiceRoller.Choose(pull_dests));
+           }
          }
          return null;
         }
