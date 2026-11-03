@@ -95,15 +95,16 @@ namespace djack.RogueSurvivor.Engine.Actions
       }
       }
 
-      if (m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model, out m_FailReason)) working = ActionMoveStep.schedule(m_Actor, m_NewLocation);
+      (int dist, working) = m_NewLocation.StepInto(m_Actor);
       if (tracing) {
-        Logger.Trace("m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model, out m_FailReason) : " + (m_NewLocation.Map.IsWalkableFor(m_NewLocation.Position, m_Actor.Model) ? "true" : "false"));
+        Logger.Trace("dist : " + dist.ToString());
         Logger.Trace("working : " + (working?.ToString() ?? "null"));
         Logger.Trace("actorAt : " + (actorAt?.ToString() ?? "null"));
         Logger.Trace("obj : " + (obj?.ToString() ?? "null"));
       }
 
       if (actorAt is not null) {
+        if (1 < dist && working is not null) return working;
         if (m_Actor.IsEnemyOf(actorAt)) return null; // should be in combat processing
         var switch_place = _Action.SwitchPlace.create(m_Actor, actorAt);
         // Proposing a switch place always succeeds here, unlike pathfinding
@@ -145,7 +146,7 @@ namespace djack.RogueSurvivor.Engine.Actions
                var considering = m_Actor.MutuallyAdjacentFor(actorAt.Location);
                if (considering is not null) {
                  considering = considering.FindAll(pt => pt.IsWalkableFor(m_Actor));
-                 if (0 < considering.Count) return ActionMoveStep.schedule(m_Actor, rules.DiceRoller.Choose(considering));
+                 if (0 < considering.Count) return ActionMoveStep.create(m_Actor, rules.DiceRoller.Choose(considering));
                }
              }
 

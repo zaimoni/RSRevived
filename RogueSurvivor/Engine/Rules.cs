@@ -375,8 +375,11 @@ namespace djack.RogueSurvivor.Engine
       if (!map.IsInBounds(point)) {
         return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, in point) : null);
       }
+
+      (int dist, ActionMoveStep? step) = loc.StepInto(actor);
+      if (step is not null) return step;
+
       if (loc.IsWalkableFor(actor, out reason)) {
-        var actionMoveStep = ActionMoveStep.schedule(actor, loc);
         if (map!=actor.Location.Map) {
           // check for exit leading here and substitute if so.  Cf. BaseAI::BehaviorUseExit
           var exit = actor.Model.Abilities.AI_CanUseAIExits ? actor.Location.Exit : null;
@@ -386,7 +389,7 @@ namespace djack.RogueSurvivor.Engine
            return ActionBreak.schedule(actor, obj);
           }
         }
-        return actionMoveStep;
+        return null;
       }
 
       // respec of IsWalkableFor guarantees that any actor will be adjacent
@@ -440,7 +443,7 @@ namespace djack.RogueSurvivor.Engine
                var considering = actor.MutuallyAdjacentFor(actorAt.Location);
                if (considering is not null) {
                  considering = considering.FindAll(pt => pt.IsWalkableFor(actor));
-                 if (0 < considering.Count) return ActionMoveStep.schedule(actor, Get.DiceRoller.Choose(considering));
+                 if (0 < considering.Count) return ActionMoveStep.create(actor, Get.DiceRoller.Choose(considering));
                }
              }
 

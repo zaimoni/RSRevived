@@ -4,7 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine;
+using djack.RogueSurvivor.Engine.Actions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +37,7 @@ namespace djack.RogueSurvivor.Data
 
     public static Location operator +(Location lhs, Direction rhs) => new(lhs.Map, lhs.Position+rhs);
 
-    // thin wrappers
+#region thin wrappers
     public MapObject? MapObject { get => Map.GetMapObjectAt(Position); }
     public bool HasMapObject { get => Map.HasMapObjectAt(Position); }
     public Actor? Actor { get => Map.GetActorAt(Position); }
@@ -55,11 +56,18 @@ namespace djack.RogueSurvivor.Data
     public bool IsInside => Map.IsInsideAt(Position);
     public int IsBlockedForPathing { get => Map.IsBlockedForPathing(Position); }
     public void AddDecoration(string imageID) => Map.AddDecorationAt(imageID, Position);
+#endregion
 
     static public bool IsInBounds(in Location loc) => loc.Map.IsInBounds(loc.Position);
     static public bool RequiresJump(in Location loc) => loc.MapObject?.IsJumpable ?? false;
     static public bool NoJump(Location loc) => !loc.MapObject?.IsJumpable ?? true;
     static public bool NoJump<T>(KeyValuePair<Location,T> loc_x) => !loc_x.Key.MapObject?.IsJumpable ?? true;
+
+    public (int dist, ActionMoveStep? step) StepInto(Actor actor) {
+        int dist = Rules.InteractionDistance(actor.Location, in this);
+        if (1 == dist) return (dist, ActionMoveStep.create(actor, this));
+        else return (dist, ActionMoveStep.schedule(actor, this));
+    }
 
     // Map version is not cross-district
     public void ForEachAdjacent(Action<Location> op)
