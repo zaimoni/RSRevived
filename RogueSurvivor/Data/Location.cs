@@ -66,7 +66,14 @@ namespace djack.RogueSurvivor.Data
     public (int dist, ActionMoveStep? step) StepInto(Actor actor) {
         int dist = Rules.InteractionDistance(actor.Location, in this);
         if (1 == dist) return (dist, ActionMoveStep.create(actor, this));
-        else return (dist, ActionMoveStep.schedule(actor, this));
+        if (!actor.Model.CanEnter(this)) return (dist, null);
+        var other = Actor;
+        if (other is not null) return (dist, null);
+        var obj = MapObject;
+        if (obj is not null) {
+            if (!obj.IsWalkable && !obj.IsJumpable) return (dist, null);
+        }
+        return (dist, ActionMoveStep.schedule(actor, this));
     }
 
     // Map version is not cross-district
