@@ -283,7 +283,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 }
 
                 // actions that always consume sta or may take more than one turn
-                if (action is ActionBashDoor || action is ActionBreak || action is ActionPush) cost = MOVE_DISTANCE_PENALTY;
+                if (action is ActionBreak || action is ActionPush) cost = MOVE_DISTANCE_PENALTY;
             }
 
             return cost;
@@ -1076,7 +1076,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a is Engine._Action.SwitchPlace swap) return swap.LeaderSwitchPlace;
 //    if (a is ActionPush) return true; // wasn't being generated in RS alpha 9...results do not look good
       if (a is ActionOpenDoor) return true;
-      if (a is ActionBashDoor) return true;
+      // historically, zombies were allowed to bash doors, but livings were not allowed to break barricades or doors as wandering actions
+      if (a is ActionBreak act_break && act_break.What is DoorWindow && a.Actor.str_CannotBash is null) return true;
       if (a is ActionBarricadeDoor) return true;
       if (this is OrderableAI ordai) {
         if (a is ActionChat chat) {

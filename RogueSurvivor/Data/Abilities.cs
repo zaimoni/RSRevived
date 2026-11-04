@@ -47,6 +47,7 @@ namespace djack.RogueSurvivor.Data
       if ((default == (in_flags & Flags.UNDEAD)) && (default != (in_flags & Flags.UNDEAD_MASTER))) throw new InvalidOperationException("undead master is undead");
       if ((default == (in_flags & Flags.CAN_JUMP)) && (default != (in_flags & Flags.CAN_JUMP_STUMBLE))) throw new InvalidOperationException("can only clumsily jump if can jump");
       if ((default == (in_flags & Flags.CAN_USE_MAP_OBJECTS)) && (default != (in_flags & Flags.CAN_BARRICADE))) throw new InvalidOperationException("hard to barricade without using map objects");
+      if ((default == (in_flags & Flags.CAN_BREAK_OBJECTS)) && (default != (in_flags & Flags.CAN_BASH_DOORS))) throw new InvalidOperationException("hard to bash doors without breaking objects");
 #endif
       m_Flags = in_flags;
     }

@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
@@ -18,7 +19,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      m_FailReason = m_Actor.str_CannotBreak ?? m_Obj.ReasonCannotBreak();
+      m_FailReason = m_Obj.ReasonCannotBreak() ?? m_Actor.str_CannotBreak;
       return string.IsNullOrEmpty(m_FailReason);
     }
 
@@ -52,6 +53,11 @@ namespace djack.RogueSurvivor.Engine.Actions
       var ret = schedule(actor, obj);
       if (ret is not null && !ret.IsPerformable()) return null;
       return ret;
+    }
+
+    public override string ToString() {
+      if (m_Obj is DoorWindow && m_Actor.str_CannotBash is null) return m_Actor.Name + " bashes " + m_Obj;
+      return m_Actor.Name + " breaks " + m_Obj;
     }
   }
 }

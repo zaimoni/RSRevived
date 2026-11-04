@@ -266,7 +266,6 @@
     <Compile Include="Engine\Actions\ActionBreak.cs" />
     <Compile Include="Engine\Actions\ActionMeleeAttack.cs" />
     <Compile Include="Engine\Actions\ActionEquipItem.cs" />
-    <Compile Include="Engine\Actions\ActionBashDoor.cs" />
     <Compile Include="Engine\Actions\ActionBarricadeDoor.cs" />
     <Compile Include="Engine\Actions\ActionRechargeItemBattery.cs" />
     <Compile Include="Engine\Actions\ActionPush.cs" />

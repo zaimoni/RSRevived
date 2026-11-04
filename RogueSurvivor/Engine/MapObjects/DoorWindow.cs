@@ -148,8 +148,6 @@ namespace djack.RogueSurvivor.Engine.MapObjects
         reason = null;
         if (IsBarricaded) {
             // pathfinding livings will break barricaded doors (they'll prefer to go around it)
-           var act_bash = ActionBashDoor.schedule(actor, this);
-           if (act_bash is not null) return act_bash;
            var act_break = ActionBreak.schedule(actor, this);
            if (act_break is not null) return act_break;
            reason = "cannot bash the barricade";
@@ -159,16 +157,19 @@ namespace djack.RogueSurvivor.Engine.MapObjects
            // DoorWindow::CannotOpen returns null by construction
            reason = actor.str_CannotOpen;
            if (reason is null) return new ActionOpenDoor(actor, this);
-           return ActionBashDoor.schedule(actor, this);
+           reason = actor.str_CannotBash;
+           if (reason is null) return ActionBreak.schedule(actor, this);
         }
         return null;
     }
 
     public ActorAction? OpenBump(Actor actor, out string? reason) {
         reason = null;
+        // historically, bump movement was ok with zombie bashing doors, but disallowed breaking doors
         if (IsBarricaded) {
             // pathfinding livings will break barricaded doors (they'll prefer to go around it)
-           var act_bash = ActionBashDoor.schedule(actor, this);
+           reason = actor.str_CannotBash;
+           var act_bash = reason is null ? ActionBreak.schedule(actor, this) : null;
            if (act_bash is not null) return act_bash;
            reason = "cannot bash the barricade";
            return null;
@@ -177,7 +178,8 @@ namespace djack.RogueSurvivor.Engine.MapObjects
            // DoorWindow::CannotOpen returns null by construction
            reason = actor.str_CannotOpen;
            if (reason is null) return new ActionOpenDoor(actor, this);
-           return ActionBashDoor.schedule(actor, this);
+           reason = actor.str_CannotBash;
+           if (reason is null) return ActionBreak.schedule(actor, this);
         }
         return null;
     }
