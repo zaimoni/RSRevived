@@ -5,15 +5,14 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionBreak : ActorAction
-  {
+  internal class ActionBreak : ActorAction, Target<MapObject>
+    {
     private readonly MapObject m_Obj;
-    public MapObject Target { get { return m_Obj; } }
+    public MapObject What => m_Obj;
 
     private ActionBreak(Actor actor, MapObject obj) : base(actor) { m_Obj = obj; }
 

@@ -10,10 +10,10 @@ using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionBashDoor : ActorAction
+  internal class ActionBashDoor : ActorAction, Target<DoorWindow>
   {
     private readonly DoorWindow m_Door;
-    public DoorWindow Target { get { return m_Door; } }
+    public DoorWindow What { get { return m_Door; } }
 
     private ActionBashDoor(Actor actor, DoorWindow door) : base(actor) { m_Door = door; }
 
