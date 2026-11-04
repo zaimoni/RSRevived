@@ -69,7 +69,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public List<Point>? FilterLegalSteps(Location origin, List<Point>? steps) {
             if (steps is null) return null;
             bool starting_in = m_Fear.ContainsExt(origin);
-            Location center = new(m_Fear.m, m_Fear.Rect.Location + m_Fear.Rect.Size / 2);
+            Location center = m_Fear.Center;
             var radius = Rules.GridDistance(center, new Location(m_Fear.m, m_Fear.Rect.Location));
             var start_radius = Rules.GridDistance(center, origin);
             if (radius + 2 <= start_radius) return steps;
@@ -104,7 +104,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         {
             if (path is null) return null;
             bool starting_in = m_Fear.ContainsExt(origin);
-            Location center = new(m_Fear.m, m_Fear.Rect.Location + m_Fear.Rect.Size/2);
+            Location center = m_Fear.Center;
             var radius = Rules.GridDistance(center, new Location(m_Fear.m, m_Fear.Rect.Location));
             var start_radius = Rules.GridDistance(center, origin);
             if (radius + 2 <= start_radius) return path;
