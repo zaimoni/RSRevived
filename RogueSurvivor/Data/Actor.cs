@@ -1749,19 +1749,14 @@ namespace djack.RogueSurvivor.Data
       return (0<ret.Count ? ret : null);
     }
 
-    public string? ReasonCouldNotBreak() => IsTired ? "tired" : null;
+    public string? ReasonCouldNotBreak() => str_Tired;
 
-    private string ReasonCantBreak(MapObject mapObj)
+    private string? ReasonCantBreak(MapObject mapObj)
     {
-      if (CannotBreak is string msg_break) return msg_break;
-      if (IsTired) return "tired";
-      var err = mapObj.ReasonCannotBreak();
-      if (!string.IsNullOrEmpty(err)) return err;
-      if (mapObj.Location.StrictHasActorAt) return "someone is there";
-      return "";
+      return CannotBreak ?? ReasonCouldNotBreak() ?? mapObj.ReasonCannotBreak() ?? mapObj.SomeoneIsThere;
     }
 
-    public bool CanBreak(MapObject mapObj, out string reason)
+    public bool CanBreak(MapObject mapObj, out string? reason)
     {
       reason = ReasonCantBreak(mapObj);
       return string.IsNullOrEmpty(reason);
@@ -1782,7 +1777,7 @@ namespace djack.RogueSurvivor.Data
       if (!AbleToPush) return "cannot push objects";
       if (IsTired) return "tired";
       if (!mapObj.IsMovable) return "cannot be moved";
-      if (mapObj.Location.StrictHasActorAt) return "someone is there";
+      if (mapObj.SomeoneIsThere is string msg) return msg;
       if (mapObj.IsOnFire) return "on fire";
       if (m_DraggedCorpse is not null) return "dragging a corpse";
       var code = District.UsesCrossDistrictView(Location.Map);
@@ -1930,15 +1925,14 @@ namespace djack.RogueSurvivor.Data
     }
     // alpha10: end pull support
 
-    private string ReasonCantClose(DoorWindow door)
+    private string? ReasonCantClose(DoorWindow door)
     {
-      if (!Model.Abilities.CanUseMapObjects) return "can't use objects";
+      if (!Model.Abilities.CanUseMapObjects) return "cannot close";
       if (!door.IsOpen) return "not open";
-      if (door.Location.StrictHasActorAt) return "someone is there";
-      return "";
+      return door.SomeoneIsThere;
     }
 
-    public bool CanClose(DoorWindow door, out string reason)
+    public bool CanClose(DoorWindow door, out string? reason)
     {
       reason = ReasonCantClose(door);
       return string.IsNullOrEmpty(reason);
@@ -1958,17 +1952,18 @@ namespace djack.RogueSurvivor.Data
       return baseBarricadingPoints + barBonus;
     }
 
+#region phrases
     public string? CannotBash => Model.CannotBash;
     public string? CannotBreak => Model.CannotBreak;
     public string? CannotOpen => Model.Abilities.CanUseMapObjects ? null : "cannot open";
     public string? CannotUseMapObjects => Model.Abilities.CanUseMapObjects ? null : "cannot use map objects";
-
+    public string? str_Tired => IsTired ? "tired" : null;
+#endregion
 
     private string? ReasonCantBash(DoorWindow door)
     {
       if (CannotBash is string msg) return msg;
-      if (IsTired) return "tired";
-      return door.ReasonCannotBreak();
+      return CannotBash ?? str_Tired ?? door.ReasonCannotBreak();
     }
 
     public bool CanBash(DoorWindow door) => string.IsNullOrEmpty(ReasonCantBash(door));

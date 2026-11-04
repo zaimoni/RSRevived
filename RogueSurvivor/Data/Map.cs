@@ -1902,7 +1902,7 @@ retry:
 #endif
 
     // 2019-01-24: profiling indicates this is a cache target, but CPU cost of using cache ~25% greater than not having one
-    private string ReasonNotWalkableFor(Point pt, ActorModel model)
+    private string? ReasonNotWalkableFor(Point pt, ActorModel model)
     {
       var tile_loc = GetTileModelLocation(pt);
       if (tile_loc.Key is null) return "out of map";
@@ -1915,8 +1915,7 @@ retry:
           if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsClosed) return "cannot slip through closed door";
         } else return "blocked by object";
       }
-      if (tile_loc.Value.StrictHasActorAt) return "someone is there";  // XXX includes actor himself
-      return "";
+      return tile_loc.Value.SomeoneIsThere;  // XXX includes actor himself
     }
 
     public bool IsWalkableFor(Point p, ActorModel model)

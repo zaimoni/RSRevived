@@ -23,9 +23,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     }
 
     public static string? ReasonCant(Actor a, Corpse c) {
-      if (a.IsTired) return "tired";
       if (c.Location != a.Location || !a.Location.Map.Has(c)) return "not in same location";
-      return null;
+      return a.str_Tired;
     }
   }
 }

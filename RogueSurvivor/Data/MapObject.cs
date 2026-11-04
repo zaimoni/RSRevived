@@ -243,8 +243,12 @@ namespace djack.RogueSurvivor.Data
       if (m_Location.Map is not null) Engine.LOS.Validate(m_Location.Map,los => !los.Contains(m_Location.Position));
     }
 
+#region phrases
+    public string? SomeoneIsThere => m_Location.SomeoneIsThere;
+#endregion
+
     public virtual string? ReasonCannotBreak() => IsBreakable ? null : "can't break this object";
-    public string? ReasonCouldNotBreak() => m_Location.StrictHasActorAt ? "someone is there" : null;
+    public string? ReasonCouldNotBreak() => m_Location.SomeoneIsThere;
 
     private string ReasonCantPushTo(Point toPos)
     {

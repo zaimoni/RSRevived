@@ -6945,7 +6945,7 @@ restart_chokepoints:
 #if DEBUG
       if (it is null) throw new ArgumentNullException(nameof(it));
       if (!m_Actor.Model.Abilities.HasInventory) throw new InvalidOperationException("inventory required");   // CHAR guards: wander action can get item from containers
-      if (!m_Actor.Model.Abilities.CanUseMapObjects) throw new InvalidOperationException("using map objects required");
+      if (m_Actor.CannotUseMapObjects is string msg_no_use) throw new InvalidOperationException(m_Actor.Name+" "+msg_no_use);
 #endif
       if (ItemIsUseless(it)) return false;
 

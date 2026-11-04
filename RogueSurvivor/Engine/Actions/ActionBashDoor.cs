@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Engine.Actions
         m_FailReason = "not adjacent to";
         return false;
       }
-      m_FailReason = m_Actor.ReasonCouldNotBreak() ?? m_Door.ReasonCouldNotBreak() ?? "";
+      m_FailReason = m_Actor.ReasonCouldNotBreak() ?? m_Door.ReasonCouldNotBreak();
       return string.IsNullOrEmpty(m_FailReason);
     }
 

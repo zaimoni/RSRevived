@@ -116,12 +116,11 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       }
     }
 
-    private string ReasonCantBarricade()
+    private string? ReasonCantBarricade()
     {
       if (!IsClosed && !IsBroken) return "not closed or broken";
       if (BarricadePoints >= Rules.BARRICADING_MAX) return "barricade limit reached";
-      if (Location.StrictHasActorAt) return "someone is there";
-      return "";
+      return Location.SomeoneIsThere;
     }
 
     public bool CanBarricade(out string reason)

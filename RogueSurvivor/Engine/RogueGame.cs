@@ -5458,7 +5458,7 @@ namespace djack.RogueSurvivor.Engine
 
       Point break_where(Direction dir) { return player.Location.Position + dir; }
       bool _break(Point pos) {
-        string reason;
+        string? reason;
         MapObject? obj;
         if (pos == player.Location.Position) {
           var exitAt = player.Location.Exit;
