@@ -22,10 +22,16 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return m_Actor.CanOpen(m_Door, out m_FailReason);
+      m_FailReason = ReasonIllegal(m_Actor) ?? ReasonIllegal(m_Door);
+      return string.IsNullOrEmpty(m_FailReason);
     }
 
-    // would need IsPerformable if could be saved to hard drive
+    public override bool IsPerformable()
+    {
+      if (!IsLegal()) return false;
+      m_FailReason = ReasonCant(m_Actor, m_Door);
+      return string.IsNullOrEmpty(m_FailReason);
+    }
 
     public override void Perform()
     {
@@ -34,6 +40,25 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Actor.SpendActionPoints();
       if (was_opaque) m_Actor.Controller.UpdateSensors();
       RogueGame.Game.UI_OpenDoor(m_Actor, m_Door);
+    }
+
+    public static string? ReasonIllegal(Actor actor)
+    {
+      if (!actor.Model.Abilities.CanUseMapObjects) return "no ability to open";
+      return null;
+    }
+
+    private static string? ReasonIllegal(DoorWindow door)
+    {
+      if (door.BarricadePoints > 0) return "is barricaded";
+      if (!door.IsClosed) return "not closed";
+      return null;
+    }
+
+    private static string? ReasonCant(Actor actor, DoorWindow door)
+    {
+      if (1 != Rules.InteractionDistance(actor.Location, door.Location)) return "not adjacent to door/window";
+      return null;
     }
   }
 }

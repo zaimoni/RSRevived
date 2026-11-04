@@ -19,18 +19,18 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      m_FailReason = CannotBreak(m_Actor) ?? CannotBreak(m_Obj) ?? "";
+      m_FailReason = CannotBreak(m_Actor) ?? m_Obj.ReasonCannotBreak();
       return string.IsNullOrEmpty(m_FailReason);
     }
 
     public override bool IsPerformable()
     {
-      if (!base.IsPerformable()) return false;
+      if (!IsLegal()) return false;
       if (!Rules.IsAdjacent(m_Actor.Location, m_Obj.Location)) {
         m_FailReason = "not adjacent to";
         return false;
       }
-      m_FailReason = CouldNotBreak(m_Actor) ?? CouldNotBreak(m_Obj) ?? "";
+      m_FailReason = m_Actor.ReasonCouldNotBreak() ?? m_Obj.ReasonCouldNotBreak() ?? "";
       return string.IsNullOrEmpty(m_FailReason);
     }
 
@@ -46,38 +46,19 @@ namespace djack.RogueSurvivor.Engine.Actions
       return null;
     }
 
-    private static string? CannotBreak(MapObject mapObj) {
-      if (MapObject.Break.BREAKABLE == mapObj.BreakState) return null;
-      if (mapObj is DoorWindow dw && dw.IsBarricaded) return null;
-      return "can't break this object";
-    }
-
-    private static string? CouldNotBreak(Actor a) {
-      if (a.IsTired) return "tired";
-      return null;
-    }
-
-    private static string? CouldNotBreak(MapObject mapObj) {
-      if (mapObj.Location.StrictHasActorAt) return "someone is there";
-      return null;
-    }
-
-    static public ActionBreak? create(Actor actor, MapObject? obj)
-    {
-      if (obj is null) return null;
-      if (CannotBreak(actor) is not null) return null;
-      if (CannotBreak(obj) is not null) return null;
-      var stage = new ActionBreak(actor, obj);
-      if (!stage.IsPerformable()) return null;
-      return stage;
-    }
-
     static public ActionBreak? schedule(Actor actor, MapObject? obj)
     { // inline the IsLegal test so we can avoid vacuous construction
       if (obj is null) return null;
       if (CannotBreak(actor) is not null) return null;
-      if (CannotBreak(obj) is not null) return null;
+      if (obj.ReasonCannotBreak() is not null) return null;
       return new ActionBreak(actor, obj);
+    }
+
+    static public ActionBreak? create(Actor actor, MapObject? obj)
+    {
+      var ret = schedule(actor, obj);
+      if (ret is not null && !ret.IsPerformable()) return null;
+      return ret;
     }
   }
 }

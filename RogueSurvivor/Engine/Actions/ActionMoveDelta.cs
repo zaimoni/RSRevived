@@ -179,26 +179,10 @@ namespace djack.RogueSurvivor.Engine.Actions
            }
         }
       } else if (obj is not null) {
-           // technically we would be ahead pushing a weight-1 map object, but this can mask another crash bug
-           if (working is not null) return working;
-           if (obj is DoorWindow door) {
-             if (door.BarricadePoints > 0) {
-               // pathfinding livings will break barricaded doors (they'll prefer to go around it)
-               var act_bash = ActionBashDoor.schedule(m_Actor, door);
-               if (act_bash is not null) return act_bash;
-               var act_break = ActionBreak.schedule(m_Actor, door);
-               if (act_break is not null) {
-                 if (act_break.IsPerformable()) return act_break;
-                 if ("tired" == act_break.FailReason) return new ActionWait(m_Actor);
-               }
-               m_FailReason = "cannot bash the barricade";
-               return null;
-             }
-             if (door.IsClosed) {
-               if (m_Actor.CanOpen(door, out m_FailReason)) return new ActionOpenDoor(m_Actor, door);
-               return ActionBashDoor.schedule(m_Actor, door);
-             }
-           }
+        // technically we would be ahead pushing a weight-1 map object, but this can mask another crash bug
+        if (working is not null) return working;
+        if (obj is DoorWindow door) return door.OpenPathfinding(m_Actor, out m_FailReason);
+
         // pushing is very bad for bumping, but ok for pathing
         if (m_Actor.AbleToPush && m_Actor.CanPush(obj)) {
            // at least 2 destinations: ok (1 ok if adjacent)
@@ -229,7 +213,7 @@ namespace djack.RogueSurvivor.Engine.Actions
            }
          }
          return null;
-        }
+      }
       // \todo: handle pulling allies instead of just move-stepping, or pulling pushable objects
       return working;
     }

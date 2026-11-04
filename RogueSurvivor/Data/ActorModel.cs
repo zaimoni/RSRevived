@@ -192,29 +192,18 @@ namespace djack.RogueSurvivor.Data
       return actor;
     }
 
-    private string ReasonCantBreak(MapObject mapObj)
+    private string? ReasonCantBreak(MapObject mapObj)
     {
       if (!Abilities.CanBreakObjects) return "cannot break objects";
-      bool flag = (mapObj as DoorWindow)?.IsBarricaded ?? false;
-      if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag) return "can't break this object";
-      return "";
+      return mapObj.ReasonCannotBreak();
     }
 
-    public bool CanBreak(MapObject mapObj, out string reason)
-    {
-      reason = ReasonCantBreak(mapObj);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanBreak(MapObject mapObj)
-    {
-      return string.IsNullOrEmpty(ReasonCantBreak(mapObj));
-    }
+    public bool CanBreak(MapObject mapObj) => string.IsNullOrEmpty(ReasonCantBreak(mapObj));
 
 #region CanEnter
     // The Actor::CanEnter family for the model alone: abilities, but no skills, stamina or tiredness.  Answers whether an actor of
     // this model could ever enter, for a geometry question asked on behalf of no one in particular (Map.TrapWouldSealBuilding).
-    private bool CanBash(DoorWindow door) => Abilities.CanBashDoors && (door.BreakState == MapObject.Break.BREAKABLE || door.IsBarricaded);   // Cf. Actor::ReasonCantBash
+    private bool CanBash(DoorWindow door) => Abilities.CanBashDoors && (door.IsBreakable || door.IsBarricaded);   // Cf. Actor::ReasonCantBash
     private bool CanOpen(DoorWindow door) => Abilities.CanUseMapObjects && 0 >= door.BarricadePoints && door.IsClosed;   // Cf. Actor::ReasonCantOpen
 
     /// <param name="loc">precondition: IsInBounds</param>

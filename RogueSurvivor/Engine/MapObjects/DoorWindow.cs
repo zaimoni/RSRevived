@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine.Actions;
 using System;
 using System.Threading;
 using System.Text.Json;
@@ -81,6 +82,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     static private readonly string[] state_names = new string[MAX_STATE] { "CLOSED", "OPEN", "BROKEN" };
 
+#region JSON save/load
     private DoorWindow(JsonElement src, JsonSerializerOptions options) : base(src, options) {
         // our type is not saved: it is a function of our ID
         int relay_type = 0;
@@ -101,7 +103,9 @@ namespace djack.RogueSurvivor.Engine.MapObjects
         writer.WriteString("State", state_names[State]);
         if (0 != m_BarricadePoints) writer.WriteNumber("Barricade", m_BarricadePoints);
     }
+#endregion
 
+#region barricading
     public void Barricade(int delta)
     {
       int old = m_BarricadePoints;
@@ -127,7 +131,54 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     }
 
     public bool CanBarricade() => string.IsNullOrEmpty(ReasonCantBarricade());
-    override protected string StateToID(int x) => images[m_type][x];
+#endregion
+
+    public override string? ReasonCannotBreak()
+    {
+      if (IsBarricaded) return null;
+      return base.ReasonCannotBreak();
+    }
+
+    public ActorAction? OpenPathfinding(Actor actor, out string? reason) {
+        reason = null;
+        if (IsBarricaded) {
+            // pathfinding livings will break barricaded doors (they'll prefer to go around it)
+           var act_bash = ActionBashDoor.schedule(actor, this);
+           if (act_bash is not null) return act_bash;
+           var act_break = ActionBreak.schedule(actor, this);
+           if (act_break is not null) return act_break;
+           reason = "cannot bash the barricade";
+           return null;
+        }
+        if (IsClosed) {
+           // ActionOpenDoor.ReasonIllegal(this) returns null by construction
+           reason = ActionOpenDoor.ReasonIllegal(actor);
+           if (reason is null) return new ActionOpenDoor(actor, this);
+           return ActionBashDoor.schedule(actor, this);
+        }
+        return null;
+    }
+
+    public ActorAction? OpenBump(Actor actor, out string? reason) {
+        reason = null;
+        if (IsBarricaded) {
+            // pathfinding livings will break barricaded doors (they'll prefer to go around it)
+           var act_bash = ActionBashDoor.schedule(actor, this);
+           if (act_bash is not null) return act_bash;
+           reason = "cannot bash the barricade";
+           return null;
+        }
+        if (IsClosed) {
+           // ActionOpenDoor.ReasonIllegal(this) returns null by construction
+           reason = ActionOpenDoor.ReasonIllegal(actor);
+           if (reason is null) return new ActionOpenDoor(actor, this);
+           return ActionBashDoor.schedule(actor, this);
+        }
+        return null;
+    }
+
+
+    protected override string StateToID(int x) => images[m_type][x];
 
     public override void SetState(int newState)
     { // cf IsTransparent

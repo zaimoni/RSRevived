@@ -472,21 +472,8 @@ namespace djack.RogueSurvivor.Engine
         return null;
       }
       if (mapObjectAt is not null) {
-        if (mapObjectAt is DoorWindow door) {
-          if (door.BarricadePoints > 0) {
-            // pathfinding livings will break barricaded doors (they'll prefer to go around it)
-            var act_bash = ActionBashDoor.schedule(actor, door);
-            if (act_bash is not null) return act_bash;
-            var act_break = ActionBreak.schedule(actor, mapObjectAt);
-            if (act_break is not null) return act_break;
-            reason = "cannot bash the barricade";
-            return null;
-          }
-          if (door.IsClosed) {
-            if (actor.CanOpen(door, out reason)) return new ActionOpenDoor(actor, door);
-            return ActionBashDoor.schedule(actor, door);
-          }
-        }
+        if (mapObjectAt is DoorWindow door) return door.OpenPathfinding(actor, out reason);
+
         var act = oai?.WouldGetFrom(mapObjectAt as ShelfLike);
         if (act is not null) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)
@@ -798,16 +785,8 @@ retry:
 
     public static ActorAction? IsBumpableFor(this MapObject mapObjectAt, Actor actor,  out string? reason) {
       reason = null;
-      if (mapObjectAt is DoorWindow door) {
-          if (door.IsClosed) {
-            if (actor.CanOpen(door, out reason)) return new ActionOpenDoor(actor, door);
-          }
-          // covers barricaded broken windows...otherwise redundant.
-          var act_bash = ActionBashDoor.create(actor, door);
-          if (act_bash is not null) return act_bash;
-          reason = "cannot bash the barricade";
-          return null;
-      }
+      if (mapObjectAt is DoorWindow door) return door.OpenBump(actor, out reason);
+
       var act = (actor.Controller as Gameplay.AI.ObjectiveAI)?.WouldGetFrom(mapObjectAt as ShelfLike);
       if (act is not null) return act;
         // release block: \todo would like to restore inventory-grab capability for InsaneHumanAI (and feral dogs, when bringing them up)

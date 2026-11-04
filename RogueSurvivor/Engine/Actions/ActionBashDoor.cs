@@ -19,18 +19,18 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      m_FailReason = CannotBash(m_Actor) ?? CannotBash(m_Door) ?? "";
+      m_FailReason = CannotBash(m_Actor) ?? m_Door.ReasonCannotBreak() ?? "";
       return string.IsNullOrEmpty(m_FailReason);
     }
 
     public override bool IsPerformable()
     {
-      if (!base.IsPerformable()) return false;
+      if (!IsLegal()) return false;
       if (!Rules.IsAdjacent(m_Actor.Location, m_Door.Location)) {
         m_FailReason = "not adjacent to";
         return false;
       }
-      m_FailReason = CouldNotBash(m_Actor) ?? CouldNotBash(m_Door) ?? "";
+      m_FailReason = m_Actor.ReasonCouldNotBreak() ?? m_Door.ReasonCouldNotBreak() ?? "";
       return string.IsNullOrEmpty(m_FailReason);
     }
 
@@ -46,41 +46,19 @@ namespace djack.RogueSurvivor.Engine.Actions
       return null;
     }
 
-    private static string? CannotBash(DoorWindow dw)
-    {
-      if (MapObject.Break.BREAKABLE == dw.BreakState) return null;
-      if (dw.IsBarricaded) return null;
-      return "can't break this object";
-    }
-
-    private static string? CouldNotBash(Actor a)
-    {
-      if (a.IsTired) return "tired";
-      return null;
-    }
-
-    private static string? CouldNotBash(MapObject mapObj)
-    {
-      if (mapObj.Location.StrictHasActorAt) return "someone is there";
-      return null;
-    }
-
-    static public ActionBashDoor? create(Actor actor, DoorWindow? dw)
-    {
-      if (dw is null) return null;
-      if (CannotBash(actor) is not null) return null;
-      if (CannotBash(dw) is not null) return null;
-      var stage = new ActionBashDoor(actor, dw);
-      if (!stage.IsPerformable()) return null;
-      return stage;
-    }
-
     static public ActionBashDoor? schedule(Actor actor, DoorWindow? dw)
     { // inline the IsLegal test so we can avoid vacuous construction
       if (dw is null) return null;
       if (CannotBash(actor) is not null) return null;
-      if (CannotBash(dw) is not null) return null;
+      if (dw.ReasonCannotBreak() is not null) return null;
       return new ActionBashDoor(actor, dw);
+    }
+
+    static public ActionBashDoor? create(Actor actor, DoorWindow? dw)
+    {
+      var ret = schedule(actor, dw);
+      if (ret is not null && !ret.IsPerformable()) return null;
+      return ret;
     }
   }
 }

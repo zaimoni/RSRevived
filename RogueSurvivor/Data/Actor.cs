@@ -1749,11 +1749,14 @@ namespace djack.RogueSurvivor.Data
       return (0<ret.Count ? ret : null);
     }
 
+    public string? ReasonCouldNotBreak() => IsTired ? "tired" : null;
+
     private string ReasonCantBreak(MapObject mapObj)
     {
       if (!Model.Abilities.CanBreakObjects) return "cannot break objects";
       if (IsTired) return "tired";
-      if (mapObj.BreakState != MapObject.Break.BREAKABLE && !((mapObj as DoorWindow)?.IsBarricaded ?? false)) return "can't break this object";
+      var err = mapObj.ReasonCannotBreak();
+      if (!string.IsNullOrEmpty(err)) return err;
       if (mapObj.Location.StrictHasActorAt) return "someone is there";
       return "";
     }
@@ -1963,21 +1966,13 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
-    private string ReasonCantBash(DoorWindow door)
+    private string? ReasonCantBash(DoorWindow door)
     {
       if (!Model.Abilities.CanBashDoors) return "can't bash doors";
       if (IsTired) return "tired";
-      if (door.BreakState != MapObject.Break.BREAKABLE && !door.IsBarricaded) return "can't break this object";
-      return "";
+      return door.ReasonCannotBreak();
     }
 
-#if DEAD_FUNC
-    public bool CanBash(DoorWindow door, out string reason)
-    {
-      reason = ReasonCantBash(door);
-      return string.IsNullOrEmpty(reason);
-    }
-#endif
     public bool CanBash(DoorWindow door) => string.IsNullOrEmpty(ReasonCantBash(door));
 
     private string ReasonCantOpen(DoorWindow door)

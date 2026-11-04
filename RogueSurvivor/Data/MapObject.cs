@@ -243,6 +243,9 @@ namespace djack.RogueSurvivor.Data
       if (m_Location.Map is not null) Engine.LOS.Validate(m_Location.Map,los => !los.Contains(m_Location.Position));
     }
 
+    public virtual string? ReasonCannotBreak() => IsBreakable ? null : "can't break this object";
+    public string? ReasonCouldNotBreak() => m_Location.StrictHasActorAt ? "someone is there" : null;
+
     private string ReasonCantPushTo(Point toPos)
     {
       var tile_loc = Location.Map.GetTileModelLocation(toPos);
