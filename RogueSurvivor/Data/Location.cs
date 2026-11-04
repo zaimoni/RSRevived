@@ -63,17 +63,17 @@ namespace djack.RogueSurvivor.Data
     static public bool NoJump(Location loc) => !loc.MapObject?.IsJumpable ?? true;
     static public bool NoJump<T>(KeyValuePair<Location,T> loc_x) => !loc_x.Key.MapObject?.IsJumpable ?? true;
 
-    public (int dist, ActionMoveStep? step) StepInto(Actor actor) {
+    public (int dist, ActionMoveStep? step, Actor? other, MapObject? obj) StepInto(Actor actor) {
+        Actor? other = Actor;
+        MapObject? obj = MapObject;
         int dist = Rules.InteractionDistance(actor.Location, in this);
-        if (1 == dist) return (dist, ActionMoveStep.create(actor, this));
-        if (!actor.Model.CanEnter(this)) return (dist, null);
-        var other = Actor;
-        if (other is not null) return (dist, null);
-        var obj = MapObject;
+        if (1 == dist) return (dist, ActionMoveStep.create(actor, this), other, obj);
+        if (!actor.Model.CanEnter(this)) return (dist, null, other, obj);
+        if (other is not null) return (dist, null, other, obj);
         if (obj is not null) {
-            if (!obj.IsWalkable && !obj.IsJumpable) return (dist, null);
+            if (!obj.IsWalkable && !obj.IsJumpable) return (dist, null, other, obj);
         }
-        return (dist, ActionMoveStep.schedule(actor, this));
+        return (dist, ActionMoveStep.schedule(actor, this), other, obj);
     }
 
     // Map version is not cross-district

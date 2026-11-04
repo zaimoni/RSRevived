@@ -376,7 +376,7 @@ namespace djack.RogueSurvivor.Engine
         return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, in point) : null);
       }
 
-      (int dist, ActionMoveStep? step) = loc.StepInto(actor);
+      (int dist, ActionMoveStep? step, Actor? actorAt, MapObject? mapObjectAt) = loc.StepInto(actor);
       if (step is not null) return step;
 
       if (loc.IsWalkableFor(actor, out reason)) {
@@ -393,7 +393,6 @@ namespace djack.RogueSurvivor.Engine
       }
 
       // respec of IsWalkableFor guarantees that any actor will be adjacent
-      var actorAt = map.GetActorAt(point);
       if (actorAt is not null) {
         if (actor.IsEnemyOf(actorAt)) {
           return (ActionMeleeAttack.Can(actor, actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
@@ -472,7 +471,6 @@ namespace djack.RogueSurvivor.Engine
         // consider re-legalizing chat here
         return null;
       }
-      var mapObjectAt = map.GetMapObjectAt(point);
       if (mapObjectAt is not null) {
         if (mapObjectAt is DoorWindow door) {
           if (door.BarricadePoints > 0) {
@@ -548,7 +546,7 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
-    public static ActorAction IsPathableFor(Actor actor, in Location location)
+    public static ActorAction? IsPathableFor(Actor actor, in Location location)
     {
       return IsPathableFor(actor, location, out string reason);
     }

@@ -80,8 +80,16 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       ActorAction? working = null;
       bool see_dest = m_Actor.Controller.CanSee(in m_NewLocation);
-      var obj = see_dest ? m_NewLocation.MapObject : null;
-      var actorAt = see_dest ? m_NewLocation.Actor : null;
+      (int dist, working, Actor? actorAt, MapObject? obj) = m_NewLocation.StepInto(m_Actor);
+
+      if (!see_dest) {
+        obj = null;
+        actorAt = null;
+        if (working is not ActionMoveStep) {
+          ActionMoveStep? step = ActionMoveStep.schedule(m_Actor, m_NewLocation);
+          if (step is not null) working = step;
+        }
+      }
 
       const bool tracing = false;
       if (tracing) Logger.Trace(m_Actor.Name);
@@ -95,7 +103,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       }
       }
 
-      (int dist, working) = m_NewLocation.StepInto(m_Actor);
       if (tracing) {
         Logger.Trace("dist : " + dist.ToString());
         Logger.Trace("working : " + (working?.ToString() ?? "null"));
