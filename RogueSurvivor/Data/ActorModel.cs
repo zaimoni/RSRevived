@@ -192,13 +192,11 @@ namespace djack.RogueSurvivor.Data
       return actor;
     }
 
-    private string? ReasonCantBreak(MapObject mapObj)
-    {
-      if (!Abilities.CanBreakObjects) return "cannot break objects";
-      return mapObj.ReasonCannotBreak();
-    }
-
+    private string? ReasonCantBreak(MapObject mapObj) => CannotBreak ?? mapObj.ReasonCannotBreak();
     public bool CanBreak(MapObject mapObj) => string.IsNullOrEmpty(ReasonCantBreak(mapObj));
+
+    public string? CannotBash => Abilities.CanBashDoors ? null : "cannot bash doors";
+    public string? CannotBreak => Abilities.CanBreakObjects ? null : "cannot break objects";
 
 #region CanEnter
     // The Actor::CanEnter family for the model alone: abilities, but no skills, stamina or tiredness.  Answers whether an actor of

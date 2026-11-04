@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      m_FailReason = CannotBash(m_Actor) ?? m_Door.ReasonCannotBreak() ?? "";
+      m_FailReason = m_Actor.CannotBash ?? m_Door.ReasonCannotBreak();
       return string.IsNullOrEmpty(m_FailReason);
     }
 
@@ -39,16 +39,9 @@ namespace djack.RogueSurvivor.Engine.Actions
       RogueGame.Game.DoBreak(m_Actor, m_Door);
     }
 
-    // these four are modeled on Actor::ReasonCantBash
-    private static string? CannotBash(Actor a)
-    {
-      if (!a.Model.Abilities.CanBashDoors) return "can't bash doors";
-      return null;
-    }
-
     static public ActionBashDoor? schedule(Actor actor, DoorWindow dw)
     { // inline the IsLegal test so we can avoid vacuous construction
-      if (CannotBash(actor) is not null) return null;
+      if (actor.CannotBash is not null) return null;
       if (dw.ReasonCannotBreak() is not null) return null;
       return new ActionBashDoor(actor, dw);
     }

@@ -7951,8 +7951,8 @@ namespace djack.RogueSurvivor.Engine
 
         // things some of them cannot do
         if (!a_model.Abilities.IsRotting) lines.Add("- This undead will not rot.");
-        if (!a_model.Abilities.CanBashDoors) lines.Add("- This undead cannot bash doors.");
-        if (!a_model.Abilities.CanBreakObjects) lines.Add("- This undead cannot break objects.");
+        if ( a_model.CannotBash is string msg_bash) lines.Add("- This undead " + msg_bash + ".");
+        if ( a_model.CannotBreak is string msg_break) lines.Add("- This undead " + msg_break + ".");
         if (!a_model.Abilities.CanZombifyKilled) lines.Add("- This undead cannot infect livings.");
         if (!a_model.Abilities.AI_CanUseAIExits) lines.Add("- This undead live in this map.");
       }

@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      m_FailReason = CannotBreak(m_Actor) ?? m_Obj.ReasonCannotBreak();
+      m_FailReason = m_Actor.CannotBreak ?? m_Obj.ReasonCannotBreak();
       return string.IsNullOrEmpty(m_FailReason);
     }
 
@@ -40,16 +40,10 @@ namespace djack.RogueSurvivor.Engine.Actions
       RogueGame.Game.DoBreak(m_Actor, m_Obj);
     }
 
-    // these four are modeled on Actor::ReasonCantBreak
-    private static string? CannotBreak(Actor a) {
-      if (!a.Model.Abilities.CanBreakObjects) return "cannot break objects";
-      return null;
-    }
-
     static public ActionBreak? schedule(Actor actor, MapObject? obj)
     { // inline the IsLegal test so we can avoid vacuous construction
       if (obj is null) return null;
-      if (CannotBreak(actor) is not null) return null;
+      if (actor.CannotBreak is not null) return null;
       if (obj.ReasonCannotBreak() is not null) return null;
       return new ActionBreak(actor, obj);
     }

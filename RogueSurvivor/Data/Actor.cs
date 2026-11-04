@@ -1753,7 +1753,7 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantBreak(MapObject mapObj)
     {
-      if (!Model.Abilities.CanBreakObjects) return "cannot break objects";
+      if (CannotBreak is string msg_break) return msg_break;
       if (IsTired) return "tired";
       var err = mapObj.ReasonCannotBreak();
       if (!string.IsNullOrEmpty(err)) return err;
@@ -1958,17 +1958,12 @@ namespace djack.RogueSurvivor.Data
       return baseBarricadingPoints + barBonus;
     }
 
-#if DEAD_FUNC
-    public bool CouldBarricade(out string reason)
-    {
-      reason = ReasonCouldntBarricade();
-      return string.IsNullOrEmpty(reason);
-    }
-#endif
+    public string? CannotBash => Model.CannotBash;
+    public string? CannotBreak => Model.CannotBreak;
 
     private string? ReasonCantBash(DoorWindow door)
     {
-      if (!Model.Abilities.CanBashDoors) return "can't bash doors";
+      if (CannotBash is string msg) return msg;
       if (IsTired) return "tired";
       return door.ReasonCannotBreak();
     }
