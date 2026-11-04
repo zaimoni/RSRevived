@@ -60,7 +60,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Goals
         public override bool UrgentAction(out ActorAction? ret)
         {
             ret = null;
-            return 0 >= m_Explosive.FuseTimeLeft; // has already exploded
+            if (0 >= m_Explosive.FuseTimeLeft) return true; // has already exploded
+            // destroyed without exploding (e.g. crushed by a drop onto a full ground stack), or carried off: the fuse no longer
+            // runs down, and a save would reference an item that nothing defines
+            return !(m_Fear.Center.Items?.Contains(m_Explosive) ?? false);
         }
 
         public List<Point>? FilterLegalSteps(Location origin, List<Point>? steps) {
