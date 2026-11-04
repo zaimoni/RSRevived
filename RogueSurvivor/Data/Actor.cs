@@ -1622,7 +1622,7 @@ namespace djack.RogueSurvivor.Data
       var ret = new Dictionary<Location,ActorAction>();
       foreach(Direction dir in Direction.COMPASS) {
         Location test = loc+dir;
-        ActorAction tmp = Rules.IsPathableFor(this, in test);
+        ActorAction? tmp = Rules.IsPathableFor(this, in test);
         if (tmp is null) continue;
         if (!Map.Canonical(ref test)) continue;
         if (no_path is not null && no_path.IsBanned(test)) continue;

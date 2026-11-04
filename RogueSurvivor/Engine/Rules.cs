@@ -346,7 +346,7 @@ namespace djack.RogueSurvivor.Engine
     // * only valid for subclasses of ObjectiveAI/OrderableAI (which can pathfind in the first place).
     // * ok to push objects aside
     // * not ok to chat as a time-cost action (could be re-implemented)
-    private static ActorAction? IsPathableFor(Actor actor, Location loc, out string reason)
+    private static ActorAction? IsPathableFor(Actor actor, Location loc, out string? reason)
     {
 #if DEBUG
       if (loc.Map is null) throw new ArgumentNullException(nameof(loc)+".Map");
@@ -359,7 +359,7 @@ namespace djack.RogueSurvivor.Engine
       if (oai is null) throw new InvalidOperationException("!(actor.Controller is Gameplay.AI.ObjectiveAI)");
 #endif
 
-      reason = "";
+      reason = null;
 
       if (1 >= actor.Controller.FastestTrapKill(in loc)) {
         reason = "deathtrapped";
@@ -533,10 +533,7 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
-    public static ActorAction? IsPathableFor(Actor actor, in Location location)
-    {
-      return IsPathableFor(actor, location, out string reason);
-    }
+    public static ActorAction? IsPathableFor(Actor actor, in Location location) => IsPathableFor(actor, location, out _);
 
     // These two somewhat counter-intuitively consider "same location" as adjacent
     public static bool IsAdjacent(in Location a, in Location b)

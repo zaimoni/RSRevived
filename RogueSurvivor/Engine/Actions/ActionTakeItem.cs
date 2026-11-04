@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Zaimoni.JSON;
 
@@ -166,6 +167,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     } }
 
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
+    [MemberNotNullWhen(true, nameof(gift))]
     public override bool IsLegal()
     {
       // can happen if double-executing
