@@ -1915,7 +1915,7 @@ retry:
           if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsClosed) return "cannot slip through closed door";
         } else return "blocked by object";
       }
-      return tile_loc.Value.SomeoneIsThere;  // XXX includes actor himself
+      return tile_loc.Value.str_SomeoneIsThere;  // XXX includes actor himself
     }
 
     public bool IsWalkableFor(Point p, ActorModel model)

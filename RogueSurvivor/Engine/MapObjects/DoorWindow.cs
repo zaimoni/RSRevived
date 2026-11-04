@@ -120,7 +120,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     {
       if (!IsClosed && !IsBroken) return "not closed or broken";
       if (BarricadePoints >= Rules.BARRICADING_MAX) return "barricade limit reached";
-      return Location.SomeoneIsThere;
+      return Location.str_SomeoneIsThere;
     }
 
     public bool CanBarricade(out string reason)
@@ -157,7 +157,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
         }
         if (IsClosed) {
            // DoorWindow::CannotOpen returns null by construction
-           reason = actor.CannotOpen;
+           reason = actor.str_CannotOpen;
            if (reason is null) return new ActionOpenDoor(actor, this);
            return ActionBashDoor.schedule(actor, this);
         }
@@ -175,7 +175,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
         }
         if (IsClosed) {
            // DoorWindow::CannotOpen returns null by construction
-           reason = actor.CannotOpen;
+           reason = actor.str_CannotOpen;
            if (reason is null) return new ActionOpenDoor(actor, this);
            return ActionBashDoor.schedule(actor, this);
         }

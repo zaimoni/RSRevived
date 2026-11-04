@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      m_FailReason = m_Actor.CannotOpen ?? m_Door.CannotOpen;
+      m_FailReason = m_Actor.str_CannotOpen ?? m_Door.CannotOpen;
       return string.IsNullOrEmpty(m_FailReason);
     }
 

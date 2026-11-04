@@ -64,7 +64,7 @@ namespace djack.RogueSurvivor.Data
     static public bool NoJump<T>(KeyValuePair<Location,T> loc_x) => !loc_x.Key.MapObject?.IsJumpable ?? true;
 
 #region phrases
-    public string? SomeoneIsThere => StrictHasActorAt ? "someone is there" : null;
+    public string? str_SomeoneIsThere => StrictHasActorAt ? "someone is there" : null;
 #endregion
 
     public (int dist, ActionMoveStep? step, Actor? other, MapObject? obj) StepInto(Actor actor) {

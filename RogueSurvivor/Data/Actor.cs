@@ -1753,7 +1753,7 @@ namespace djack.RogueSurvivor.Data
 
     private string? ReasonCantBreak(MapObject mapObj)
     {
-      return CannotBreak ?? ReasonCouldNotBreak() ?? mapObj.ReasonCannotBreak() ?? mapObj.SomeoneIsThere;
+      return str_CannotBreak ?? ReasonCouldNotBreak() ?? mapObj.ReasonCannotBreak() ?? mapObj.str_SomeoneIsThere;
     }
 
     public bool CanBreak(MapObject mapObj, out string? reason)
@@ -1777,7 +1777,7 @@ namespace djack.RogueSurvivor.Data
       if (!AbleToPush) return "cannot push objects";
       if (IsTired) return "tired";
       if (!mapObj.IsMovable) return "cannot be moved";
-      if (mapObj.SomeoneIsThere is string msg) return msg;
+      if (mapObj.str_SomeoneIsThere is string msg) return msg;
       if (mapObj.IsOnFire) return "on fire";
       if (m_DraggedCorpse is not null) return "dragging a corpse";
       var code = District.UsesCrossDistrictView(Location.Map);
@@ -1929,7 +1929,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (!Model.Abilities.CanUseMapObjects) return "cannot close";
       if (!door.IsOpen) return "not open";
-      return door.SomeoneIsThere;
+      return door.str_SomeoneIsThere;
     }
 
     public bool CanClose(DoorWindow door, out string? reason)
@@ -1953,21 +1953,21 @@ namespace djack.RogueSurvivor.Data
     }
 
 #region phrases
-    public string? CannotBash => Model.CannotBash;
-    public string? CannotBreak => Model.CannotBreak;
-    public string? CannotOpen => Model.Abilities.CanUseMapObjects ? null : "cannot open";
-    public string? CannotUseMapObjects => Model.Abilities.CanUseMapObjects ? null : "cannot use map objects";
+    public string? str_CannotBash => Model.str_CannotBash;
+    public string? str_CannotBreak => Model.str_CannotBreak;
+    public string? str_CannotOpen => Model.Abilities.CanUseMapObjects ? null : "cannot open";
+    public string? str_CannotUseMapObjects => Model.Abilities.CanUseMapObjects ? null : "cannot use map objects";
     public string? str_Tired => IsTired ? "tired" : null;
 #endregion
 
     private string? ReasonCantBash(DoorWindow door)
     {
-      if (CannotBash is string msg) return msg;
-      return CannotBash ?? str_Tired ?? door.ReasonCannotBreak();
+      if (str_CannotBash is string msg) return msg;
+      return str_CannotBash ?? str_Tired ?? door.ReasonCannotBreak();
     }
 
     public bool CanBash(DoorWindow door) => string.IsNullOrEmpty(ReasonCantBash(door));
-    public bool CanOpen(DoorWindow door) => string.IsNullOrEmpty(CannotOpen ?? door.CannotOpen);
+    public bool CanOpen(DoorWindow door) => string.IsNullOrEmpty(str_CannotOpen ?? door.CannotOpen);
 
     public int BarricadingMaterialNeedForFortification(bool isLarge)
     {
@@ -1976,7 +1976,7 @@ namespace djack.RogueSurvivor.Data
 
     // leave the dead parameter in there, for now.
     // E.g., non-CHAR power generators might actually *need fuel*
-    private string? ReasonCantSwitch(PowerGenerator powGen) => CannotUseMapObjects;
+    private string? ReasonCantSwitch(PowerGenerator powGen) => str_CannotUseMapObjects;
 
     public bool CanSwitch(PowerGenerator powGen, out string? reason)
     {

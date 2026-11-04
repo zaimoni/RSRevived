@@ -244,11 +244,11 @@ namespace djack.RogueSurvivor.Data
     }
 
 #region phrases
-    public string? SomeoneIsThere => m_Location.SomeoneIsThere;
+    public string? str_SomeoneIsThere => m_Location.str_SomeoneIsThere;
 #endregion
 
     public virtual string? ReasonCannotBreak() => IsBreakable ? null : "can't break this object";
-    public string? ReasonCouldNotBreak() => m_Location.SomeoneIsThere;
+    public string? ReasonCouldNotBreak() => m_Location.str_SomeoneIsThere;
 
     private string ReasonCantPushTo(Point toPos)
     {
