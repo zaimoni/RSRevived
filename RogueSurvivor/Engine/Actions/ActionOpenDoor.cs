@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      m_FailReason = ReasonIllegal(m_Actor) ?? ReasonIllegal(m_Door);
+      m_FailReason = m_Actor.CannotOpen ?? m_Door.CannotOpen;
       return string.IsNullOrEmpty(m_FailReason);
     }
 
@@ -40,19 +40,6 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Actor.SpendActionPoints();
       if (was_opaque) m_Actor.Controller.UpdateSensors();
       RogueGame.Game.UI_OpenDoor(m_Actor, m_Door);
-    }
-
-    public static string? ReasonIllegal(Actor actor)
-    {
-      if (!actor.Model.Abilities.CanUseMapObjects) return "no ability to open";
-      return null;
-    }
-
-    private static string? ReasonIllegal(DoorWindow door)
-    {
-      if (door.IsBarricaded) return "is barricaded";
-      if (!door.IsClosed) return "not closed";
-      return null;
     }
 
     private static string? ReasonCant(Actor actor, DoorWindow door)

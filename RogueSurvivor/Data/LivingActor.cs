@@ -760,7 +760,7 @@ final_exit:
     // keep the unused parameter -- would need it if alternate materials possible
     private string ReasonCantRepairFortification(Fortification fort)
     {
-      if (!Model.Abilities.CanUseMapObjects) return "cannot use map objects";
+      if (CannotUseMapObjects is string msg) return msg;
       if (0 >= CountItems<ItemBarricadeMaterial>()) return "no barricading material";
       return "";
     }

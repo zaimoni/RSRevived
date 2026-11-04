@@ -1960,6 +1960,9 @@ namespace djack.RogueSurvivor.Data
 
     public string? CannotBash => Model.CannotBash;
     public string? CannotBreak => Model.CannotBreak;
+    public string? CannotOpen => Model.Abilities.CanUseMapObjects ? null : "cannot open";
+    public string? CannotUseMapObjects => Model.Abilities.CanUseMapObjects ? null : "cannot use map objects";
+
 
     private string? ReasonCantBash(DoorWindow door)
     {
@@ -1969,22 +1972,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool CanBash(DoorWindow door) => string.IsNullOrEmpty(ReasonCantBash(door));
-
-    private string ReasonCantOpen(DoorWindow door)
-    {
-      if (!Model.Abilities.CanUseMapObjects) return "no ability to open";
-      if (door.IsBarricaded) return "is barricaded";
-      if (!door.IsClosed) return "not closed";
-      return "";
-    }
-
-    public bool CanOpen(DoorWindow door, out string reason)
-    {
-      reason = ReasonCantOpen(door);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanOpen(DoorWindow door) => string.IsNullOrEmpty(ReasonCantOpen(door));
+    public bool CanOpen(DoorWindow door) => string.IsNullOrEmpty(CannotOpen ?? door.CannotOpen);
 
     public int BarricadingMaterialNeedForFortification(bool isLarge)
     {
@@ -1993,24 +1981,13 @@ namespace djack.RogueSurvivor.Data
 
     // leave the dead parameter in there, for now.
     // E.g., non-CHAR power generators might actually *need fuel*
-    private string ReasonCantSwitch(PowerGenerator powGen)
-    {
-      if (!Model.Abilities.CanUseMapObjects) return "cannot use map objects";
-      return "";
-    }
+    private string? ReasonCantSwitch(PowerGenerator powGen) => CannotUseMapObjects;
 
-    public bool CanSwitch(PowerGenerator powGen, out string reason)
+    public bool CanSwitch(PowerGenerator powGen, out string? reason)
     {
       reason = ReasonCantSwitch(powGen);
       return string.IsNullOrEmpty(reason);
     }
-
-#if DEAD_FUNC
-    public bool CanSwitch(PowerGenerator powGen)
-    {
-      return string.IsNullOrEmpty(ReasonCantSwitch(powGen));
-    }
-#endif
 
     // event timing
     public void SpendActionPoints(int actionCost = BASE_ACTION_COST)

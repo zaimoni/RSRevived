@@ -139,6 +139,12 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       return base.ReasonCannotBreak();
     }
 
+    public string? CannotOpen { get {
+      if (IsBarricaded) return "is barricaded";
+      if (!IsClosed) return "not closed";
+      return null;
+    } }
+
     public ActorAction? OpenPathfinding(Actor actor, out string? reason) {
         reason = null;
         if (IsBarricaded) {
@@ -151,8 +157,8 @@ namespace djack.RogueSurvivor.Engine.MapObjects
            return null;
         }
         if (IsClosed) {
-           // ActionOpenDoor.ReasonIllegal(this) returns null by construction
-           reason = ActionOpenDoor.ReasonIllegal(actor);
+           // DoorWindow::CannotOpen returns null by construction
+           reason = actor.CannotOpen;
            if (reason is null) return new ActionOpenDoor(actor, this);
            return ActionBashDoor.schedule(actor, this);
         }
@@ -169,8 +175,8 @@ namespace djack.RogueSurvivor.Engine.MapObjects
            return null;
         }
         if (IsClosed) {
-           // ActionOpenDoor.ReasonIllegal(this) returns null by construction
-           reason = ActionOpenDoor.ReasonIllegal(actor);
+           // DoorWindow::CannotOpen returns null by construction
+           reason = actor.CannotOpen;
            if (reason is null) return new ActionOpenDoor(actor, this);
            return ActionBashDoor.schedule(actor, this);
         }
