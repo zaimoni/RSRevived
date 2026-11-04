@@ -46,15 +46,14 @@ namespace djack.RogueSurvivor.Engine.Actions
       return null;
     }
 
-    static public ActionBashDoor? schedule(Actor actor, DoorWindow? dw)
+    static public ActionBashDoor? schedule(Actor actor, DoorWindow dw)
     { // inline the IsLegal test so we can avoid vacuous construction
-      if (dw is null) return null;
       if (CannotBash(actor) is not null) return null;
       if (dw.ReasonCannotBreak() is not null) return null;
       return new ActionBashDoor(actor, dw);
     }
 
-    static public ActionBashDoor? create(Actor actor, DoorWindow? dw)
+    static public ActionBashDoor? create(Actor actor, DoorWindow dw)
     {
       var ret = schedule(actor, dw);
       if (ret is not null && !ret.IsPerformable()) return null;

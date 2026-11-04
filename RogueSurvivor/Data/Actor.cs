@@ -1978,7 +1978,7 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCantOpen(DoorWindow door)
     {
       if (!Model.Abilities.CanUseMapObjects) return "no ability to open";
-      if (door.BarricadePoints > 0) return "is barricaded";
+      if (door.IsBarricaded) return "is barricaded";
       if (!door.IsClosed) return "not closed";
       return "";
     }
@@ -2288,7 +2288,7 @@ namespace djack.RogueSurvivor.Data
         // Cf. Actor::ReasonNotWalkableFor.  Yes, rats *can* go through barricaded windows/doors
         if (Model.Abilities.IsSmall) return !door.IsClosed;
         // pathfinding livings will break barricaded doors (they'll prefer to go around it)
-        if (door.BarricadePoints > 0) return CanBash(door) || Model.CanBreak(door);
+        if (door.IsBarricaded) return CanBash(door) || Model.CanBreak(door);
         if (door.IsClosed) return CanOpen(door) || CanBash(door);
       } else if (Model.Abilities.IsSmall) return true;
       // have to inline relevant parts of Actor::CanPush

@@ -204,7 +204,7 @@ namespace djack.RogueSurvivor.Data
     // The Actor::CanEnter family for the model alone: abilities, but no skills, stamina or tiredness.  Answers whether an actor of
     // this model could ever enter, for a geometry question asked on behalf of no one in particular (Map.TrapWouldSealBuilding).
     private bool CanBash(DoorWindow door) => Abilities.CanBashDoors && (door.IsBreakable || door.IsBarricaded);   // Cf. Actor::ReasonCantBash
-    private bool CanOpen(DoorWindow door) => Abilities.CanUseMapObjects && 0 >= door.BarricadePoints && door.IsClosed;   // Cf. Actor::ReasonCantOpen
+    private bool CanOpen(DoorWindow door) => Abilities.CanUseMapObjects && !door.IsBarricaded && door.IsClosed;   // Cf. Actor::ReasonCantOpen
 
     /// <param name="loc">precondition: IsInBounds</param>
     private bool _CanEnter(in Location loc)
@@ -215,7 +215,7 @@ namespace djack.RogueSurvivor.Data
       if (mapObjectAt.IsJumpable) return Abilities.CanJump;
       if (mapObjectAt is DoorWindow door) {
         if (Abilities.IsSmall) return !door.IsClosed;
-        if (door.BarricadePoints > 0) return CanBash(door) || CanBreak(door);
+        if (door.IsBarricaded) return CanBash(door) || CanBreak(door);
         if (door.IsClosed) return CanOpen(door) || CanBash(door);
       } else if (Abilities.IsSmall) return true;
       if (mapObjectAt.IsMovable && !mapObjectAt.IsOnFire && Abilities.CanPush) return true;

@@ -12342,11 +12342,11 @@ restart:
 
       if (tile.IsInView) {
         draw(mapObj, screen, mapObj.ImageID, (imageID, gx, gy) => m_UI.UI_DrawImage(imageID, gx, gy, tint));
-        if (mapObj.HitPoints < mapObj.MaxHitPoints && mapObj.HitPoints > 0)
-          DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, screen.X, screen.Y);
-        if (!(mapObj is DoorWindow doorWindow) || 0 >= doorWindow.BarricadePoints) return;
-        DrawMapHealthBar(doorWindow.BarricadePoints, Rules.BARRICADING_MAX, screen.X, screen.Y, Color.Green);
-        m_UI.UI_DrawImage(GameImages.EFFECT_BARRICADED, screen.X, screen.Y, tint);
+        if (mapObj.HitPoints < mapObj.MaxHitPoints)
+          DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, in screen);
+        if (mapObj is not DoorWindow dw) return;
+        if (DrawMapHealthBar(dw.BarricadePoints, Rules.BARRICADING_MAX, in screen, Color.Green))
+          m_UI.UI_DrawImage(GameImages.EFFECT_BARRICADED, screen.X, screen.Y, tint);
       } else if (tile.IsVisited && !Player.IsSleeping) {
         draw(mapObj, screen, mapObj.HiddenImageID, (imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy));
         if (!string.IsNullOrEmpty(overlay)) m_UI.UI_DrawImage(overlay, screen.X, screen.Y, tint);
@@ -12441,7 +12441,7 @@ restart:
       switch (actor.Activity) {
         case Data.Activity.IDLE:
           int maxHitPoints = actor.MaxHPs;
-          if (actor.HitPoints < maxHitPoints) DrawMapHealthBar(actor.HitPoints, maxHitPoints, gx2, gy2);
+          if (actor.HitPoints < maxHitPoints) DrawMapHealthBar(actor.HitPoints, maxHitPoints, in screen);
           RunIcon(actor)?.DrawIcon(screen, tint);
           SleepIcon(actor)?.DrawIcon(screen, tint);
           HungerIcon(actor)?.DrawIcon(screen, tint);
@@ -12626,19 +12626,22 @@ restart:
       foreach (Item it in inv) DrawItem(it, screen, tint);
     }
 
-    public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy)
-    {
-      DrawMapHealthBar(hitPoints, maxHitPoints, gx, gy, Color.Red);
-    }
+    public bool DrawMapHealthBar(int hitPoints, int maxHitPoints, in GDI_Point pt) => DrawMapHealthBar(hitPoints, maxHitPoints, in pt, Color.Red);
 
-    public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy, Color barColor)
+    public bool DrawMapHealthBar(int hitPoints, int maxHitPoints, in GDI_Point pt, Color barColor)
     {
+      if (0 >= hitPoints) return false;
+
+      int gx = pt.X;  // backward compatibility
+      int gy = pt.Y;
+
       int x = gx + 4;
       int y = gy + TILE_SIZE - 4;
       int width = (int) (20.0 * hitPoints / maxHitPoints);
       m_UI.UI_FillRect(Color.Black, new GDI_Rectangle(x, y, 20, 4));
-      if (width <= 0) return;
+      if (width <= 0) return true;
       m_UI.UI_FillRect(barColor, new GDI_Rectangle(x + 1, y + 1, width, 2));
+      return true;
     }
 
     public void DrawBar(int value, int previousValue, int maxValue, int refValue, int maxWidth, int height, int gx, int gy, Color fillColor, Color lossFillColor, Color gainFillColor, Color emptyColor)

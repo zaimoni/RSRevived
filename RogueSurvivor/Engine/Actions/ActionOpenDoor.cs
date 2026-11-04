@@ -50,7 +50,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     private static string? ReasonIllegal(DoorWindow door)
     {
-      if (door.BarricadePoints > 0) return "is barricaded";
+      if (door.IsBarricaded) return "is barricaded";
       if (!door.IsClosed) return "not closed";
       return null;
     }
