@@ -2734,7 +2734,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return _finalDecideMove(tmp,legal_steps);
     }
 
-    protected ActorAction DecideMove(Dictionary<Location,ActorAction> src)
+    protected ActorAction? DecideMove(Dictionary<Location,ActorAction> src)
     {
       if (src is null) return null; // does happen
       src.OnlyIf(loc => 1==Rules.InteractionDistance(m_Actor.Location,in loc));
@@ -2920,7 +2920,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // src_r2 is the desired destination list
     // src are legal steps
-    protected ActionMoveStep DecideMove(IEnumerable<Point> src, IEnumerable<Point> src_r2)
+    protected ActionMoveStep? DecideMove(IEnumerable<Point> src, IEnumerable<Point> src_r2)
     {
 #if DEBUG
       if (src is null) throw new ArgumentNullException(nameof(src));
@@ -3633,7 +3633,7 @@ restart:
       return ret;
     }
 
-    protected FloodfillPathfinder<Location> PathfinderFor(Dictionary<Location, int> goal_costs, HashSet<Map> excluded, List<ZoneLoc> excluded_zones)
+    protected FloodfillPathfinder<Location>? PathfinderFor(Dictionary<Location, int> goal_costs, HashSet<Map> excluded, List<ZoneLoc> excluded_zones)
     {
 #if DEBUG
       if (0 >= (goal_costs?.Count ?? 0)) throw new ArgumentNullException(nameof(goal_costs));
@@ -3725,7 +3725,7 @@ retry:
       return ret;
     }
 
-    protected ActorAction? BehaviorPathTo(FloodfillPathfinder<Location> navigate)
+    protected ActorAction? BehaviorPathTo(FloodfillPathfinder<Location>? navigate)
     {
       if (navigate is null) return null;
       if (!navigate.Domain.Contains(m_Actor.Location)) return null;
@@ -3866,7 +3866,7 @@ retry:
       }
     }
 
-    protected ActorAction GreedyStep(Dictionary<Location, int> move_scores, Func<Location, double> minimize)
+    protected ActorAction? GreedyStep(Dictionary<Location, int> move_scores, Func<Location, double> minimize)
     {
 #if DEBUG
       if (0 >= (move_scores?.Count ?? 0)) throw new ArgumentNullException(nameof(move_scores));
@@ -3881,7 +3881,7 @@ retry:
 
       legal_steps = legal_steps.CloneOnlyMinimal(act => Map.PathfinderMoveCosts(act) + Map.TrapMoveCostFor(act, m_Actor));
 
-      ActorAction tmp = DecideMove(legal_steps.CloneOnlyMinimal(minimize));
+      ActorAction? tmp = DecideMove(legal_steps.CloneOnlyMinimal(minimize));
 #if FALSE_POSITIVE
       if (tmp is null) throw new ArgumentNullException(nameof(tmp));
 #endif
@@ -5103,7 +5103,7 @@ restart_chokepoints:
 
     public ActorAction? WouldGetFrom(in Location loc) => loc.Items.IsEmpty() ? null : BehaviorWouldGrabFrom(loc);
 
-    protected List<Data.Model.InvOrigin> GetInterestingInventoryStacks(Predicate<Inventory> want_now)   // technically could be ActorController
+    protected List<Data.Model.InvOrigin>? GetInterestingInventoryStacks(Predicate<Inventory> want_now)   // technically could be ActorController
     {
       var items = items_in_FOV;
       if (items is null) return null;

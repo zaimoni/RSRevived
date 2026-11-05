@@ -10,7 +10,7 @@ using Point = Zaimoni.Data.Vector2D<short>;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionBuildFortification : ActorAction, NotSchedulable
+  public class ActionBuildFortification : ActorAction, NotSchedulable
   {
     private readonly Location m_Dest;
     private readonly bool m_IsLarge;

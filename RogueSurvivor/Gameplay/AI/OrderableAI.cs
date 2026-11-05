@@ -919,7 +919,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         _stacks.Add(src);
       }
 
-      public ActorAction Pathing()
+      public ActorAction? Pathing()
       {
         if (_removeInvalidStacks()) return null;
         var _locs = _stacks.Select(p => p.Location).Where(loc => !loc.StrictHasActorAt);
@@ -1543,7 +1543,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         SetOrder(null);
         return new ActionShout(m_Actor, string.Format("{0} sighted!!", FilterNearest(enemies).Percepted.Name));
       }
-      string text;
+      string? text;
       switch (m_ReportStage)
       {
         case 0:
@@ -2439,7 +2439,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return it is not null && !(it is ItemBarricadeMaterial) && !m_Actor.IsCarrying(it);
     }
 
-    protected string DescribePercept(Percept percept, Actor audience)
+    protected string? DescribePercept(Percept? percept, Actor audience)
     {
       if (percept is null) return null;
       string str1 = MakeCentricLocationDirection(m_Actor.Location, percept.Location);
@@ -2457,7 +2457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else throw new InvalidOperationException("unhandled percept.Percepted type");
     }
 
-    protected string DescribePercept(Percept_<Actor> percept, Actor audience)
+    protected string? DescribePercept(Percept_<Actor>? percept, Actor audience)
     {
       if (percept is null) return null;
       string str1 = MakeCentricLocationDirection(m_Actor.Location, percept.Location);
@@ -2465,7 +2465,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return string.Format("I saw {0} {1} {2}.", percept.Percepted.Name, str1, str2);
     }
 
-    protected string DescribePercept(Percept_<ActorTag> percept, Actor audience)
+    protected string? DescribePercept(Percept_<ActorTag>? percept, Actor audience)
     {
       if (percept is null) return null;
       string str1 = MakeCentricLocationDirection(m_Actor.Location, percept.Location);
@@ -2481,7 +2481,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!rules.RollChance(chance)) return null;
       Actor actorAt1 = rules.DiceRoller.Choose(friends);
       if (actorAt1.IsPlayer) RogueGame.Game.PanViewportTo(actorAt1);
-      string text = DescribePercept(percept, actorAt1);
+      string? text = DescribePercept(percept, actorAt1);
       return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, default);
     }
 
@@ -2493,7 +2493,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!rules.RollChance(chance)) return null;
       Actor actorAt1 = rules.DiceRoller.Choose(friends);
       if (actorAt1.IsPlayer) RogueGame.Game.PanViewportTo(actorAt1);
-      string text = DescribePercept(percept, actorAt1);
+      string? text = DescribePercept(percept, actorAt1);
       return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, default);
     }
 
@@ -2505,7 +2505,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!rules.RollChance(chance)) return null;
       Actor actorAt1 = rules.DiceRoller.Choose(friends);
       if (actorAt1.IsPlayer) RogueGame.Game.PanViewportTo(actorAt1);
-      string text = DescribePercept(percept, actorAt1);
+      string? text = DescribePercept(percept, actorAt1);
       return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, default);
     }
 
@@ -3174,10 +3174,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorPathTo(new HashSet<Location>(range.Keys));
     }
 
-    protected ActorAction BehaviorHangAroundActor(Actor other, int minDist, int maxDist)
+    protected ActorAction? BehaviorHangAroundActor(Actor other, int minDist, int maxDist)
     {
-      if (other?.IsDead ?? true) return null;
-
       var clan = m_Actor.ChainOfCommand;
 
       // Historically, this has been a repeated hot-spot for period-2 move loops, and also has had other unwanted behaviors.
@@ -3294,7 +3292,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorBuildLargeFortification(int startLineChance)
+    protected ActionBuildFortification? BehaviorBuildLargeFortification(int startLineChance)
     {
       if (!string.IsNullOrEmpty(ActionBuildFortification.ReasonCant(m_Actor, true))) return null;
 
@@ -3314,9 +3312,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (num1 == 3 && num2 == 0 && Rules.Get.RollChance(startLineChance)) || (num1 == 0 && num2 == 1);
       }, dir => Rules.Get.Roll(0, 666), (a, b) => a > b);
       if (choiceEval is null) return null;
-      var ret = new ActionBuildFortification(m_Actor, choiceEval.Choice, true);
-      if (ret.IsLegal()) return ret;
-      return null;
+      ActionBuildFortification ret = new(m_Actor, choiceEval.Choice, true);
+      return ret.IsPerformable() ? ret : null;
     }
 
     protected static bool IsDoorwayOrCorridor(Map map, in Point pos)
@@ -3344,7 +3341,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (flag_n && flag_s && !flag_e && !flag_w) || (flag_e && flag_w && !flag_n && !flag_s);
     }
 
-    protected ActorAction BehaviorBuildSmallFortification()
+    protected ActionBuildFortification? BehaviorBuildSmallFortification()
     {
       if (!string.IsNullOrEmpty(ActionBuildFortification.ReasonCant(m_Actor, false))) return null;
       Map map = m_Actor.Location.Map;
@@ -3359,9 +3356,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return IsDoorwayOrCorridor(map, in pt); // this allows using IsInBounds rather than IsValid
       }, dir => Rules.Get.Roll(0, 666), (a, b) => a > b);
       if (choiceEval is null) return null;
-      var ret = new ActionBuildFortification(m_Actor, choiceEval.Choice, false);
-      if (ret.IsLegal()) return ret;
-      return null;
+      ActionBuildFortification ret = new(m_Actor, choiceEval.Choice, false);
+      return ret.IsPerformable() ? ret : null;
     }
 
     /// <returns>0 for disallowed, 1 for allowed, 2+ for "better".</returns>
@@ -3449,7 +3445,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-    private ActorAction BehaviorSleep(Dictionary<Point,int> sleep_locs, Dictionary<Point,int> couches)
+    private ActorAction? BehaviorSleep(Dictionary<Point,int> sleep_locs, Dictionary<Point,int> couches)
     {
 #if DEBUG
       if (0 >= (sleep_locs?.Count ?? 0)) throw new ArgumentNullException(nameof(sleep_locs));
@@ -3503,7 +3499,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return act;
     }
 
-    protected ActorAction BehaviorNavigateToSleep()
+    protected ActorAction? BehaviorNavigateToSleep()
     {
       // \todo precalculate sleep-relevant medicines at game start
       // use SLP-relevant medicines from inventory (2019-07-29: caught by BehaviorUseMedecine, but we want to be more precise)
@@ -4053,7 +4049,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorPathTo(m_Actor.Model.CastToInventoryAccessibleDestinations(origin));
     }
 
-    protected ActorAction BehaviorHeadForBestStack(List<Data.Model.InvOrigin> stacks)
+    protected ActorAction? BehaviorHeadForBestStack(List<Data.Model.InvOrigin> stacks)
     {
 #if DEBUG
         if (stacks is null) throw new ArgumentNullException(nameof(stacks));
@@ -4226,8 +4222,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup(act is null ? "null" : act.ToString());
           return act;
         } else {
-          if (stacks is not null) return BehaviorHeadForBestStack(stacks);
-          return null;
+          return (stacks is not null) ? BehaviorHeadForBestStack(stacks) : null;
         }
     }
 
