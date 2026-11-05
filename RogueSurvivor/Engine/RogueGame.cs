@@ -27,8 +27,6 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Zaimoni.Data;
-using Zaimoni.Lazy;
-using static System.Collections.Specialized.BitVector32;
 using static Zaimoni.Data.Functor;
 // GDI+ types
 using Color = System.Drawing.Color;
@@ -152,8 +150,6 @@ namespace djack.RogueSurvivor.Engine
     private bool m_IsGameRunning = true;
     private readonly List<UI.Overlay> m_Overlays = new();
     private readonly object m_SimMutex = new object();  // 2018-08-20: almost dead
-    private readonly object m_SimStateLock = new object(); // alpha10 lock when reading sim thread state flags
-    private CancellationTokenSource? m_CancelSource = null; // migration of alpha10 sim thread state to .NET 5.0
 
     public const int MAP_MAX_HEIGHT = 100;
     public const int MAP_MAX_WIDTH = 100;
@@ -320,7 +316,7 @@ namespace djack.RogueSurvivor.Engine
     private CharGen m_CharGen;
     private readonly TextFile? m_Manual;
     private int m_ManualLine = 0;
-    private Thread? m_SimThread;
+    private ThreadWrap m_SimThread = new("Simulation Thread");
 
     public static Actor Player { get { return m_Player!; } }
     public static bool IsPlayer(Actor? a) { return a == m_Player; }
@@ -337,7 +333,7 @@ namespace djack.RogueSurvivor.Engine
     public static GameOptions Options { get { return s_Options; } }
     public static Keybindings KeyBindings { get { return s_KeyBindings; } }
 
-    static public bool IsSimulating { get { return "Simulation Thread" == Thread.CurrentThread.Name; } }
+    static public bool IsSimulating => ThreadWrap.IsSimulating;
 
 #region Session save/load assistants
     /// <summary>For a JSON-loaded session going live.  The message log comes with the player's controller (setPlayer);
@@ -1810,7 +1806,7 @@ namespace djack.RogueSurvivor.Engine
         Actor? next;
         while((next = current.NextActorToAct) is not null) {
           if (IsSimulating) {
-            lock (m_SimStateLock) { if (m_CancelSource.IsCancellationRequested) return; } // .NET 5.0 conversion
+            if (ThreadWrap.IsCancelled) return;
           }
 #if DEBUG
           // following is a check for a problem in RS Alpha where the AI gets many turns before the player gets one.
@@ -14150,66 +14146,25 @@ restart:
       var t0 = d1.LocalTime.TurnCounter;
       AdvancePlay(d1, ComputeSimFlagsForTurn(d.EntryMap.LocalTime.TurnCounter));    // void SimulateDistrict(d1) if becomes complicated again
       if (t0 == d1.LocalTime.TurnCounter) {   // StopSimThread cut the turn short: d1 stays the current simulation district and resumes with the thread
-        lock (m_SimStateLock) { if (m_CancelSource.IsCancellationRequested) return false; }
+        if (ThreadWrap.IsCancelled) return false;
       }
       World.Get.ScheduleAdjacentForAdvancePlay(d1);
       return true;
     }
 
-#if OBSOLETE
-    private void RestartSimThread()
-    {
-      StopSimThread();
-      StartSimThread();
-    }
-#endif
-
-    private void StartSimThread()
-    {
-      if (m_SimThread is null) {
-        m_SimThread = new Thread(new ThreadStart(SimThreadProc)) {
-          Name = "Simulation Thread",
-          IsBackground = true
-        };
-      }
-      lock (m_SimStateLock) { m_CancelSource = new(); } // alpha10
-      m_SimThread.Start();
-    }
+    private void StartSimThread() => m_SimThread.Start(SimThreadProc);
 
     // alpha10 StopSimThread is now blocking until the sim thread has actually stopped
     // allowed to abort when ending a game or dying because of weird bug in release build where the sim thread 
     // doesnt want to stop when dying as undead and we have to abort it(!)
-    /// <param name="abort">true to stop the thread by aborting, false to stop it cleanly (recommended)</param>
-    private void StopSimThread(bool abort=true)
-    {
-      if (m_SimThread is null) return;
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "stopping & clearing sim thread...");
-
-      // .NET 5.0: Thread::Abort() is unsupported
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "...telling sim thread to stop");
-      lock (m_SimStateLock) { m_CancelSource.Cancel(); }
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread told to stop");
-
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "...waiting for sim thread to stop");
-retry:
-      bool _stopped = m_SimThread.Join(300); // outlast the Sleep call
-      if (_stopped) Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread has stopped");
-      else if (!m_SimThread.IsAlive) Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread is not alive and did not stop properly, consider it stopped");
-      else if (!abort) goto retry;
-      else Logger.WriteLine(Logger.Stage.RUN_MAIN, "...aborting sim thread"); // not really
-
-      m_SimThread = null;
-      m_CancelSource.Dispose();
-      m_CancelSource = null;
-
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "stopping & clearing sim thread done!");
-    }
+    // <param name="abort">true to stop the thread by aborting, false to stop it cleanly (recommended)</param>
+    private void StopSimThread(bool abort=true) => m_SimThread.Stop();
 
     private void SimThreadProc()
     {
        bool have_simulated = false;
        while (m_SimThread.IsAlive) {
-         lock (m_SimStateLock) { if (m_CancelSource.IsCancellationRequested) return; } // alpha10
+         if (ThreadWrap.IsCancelled) return; // alpha10
 
          lock (m_SimMutex) {
 #if DEBUG
@@ -14226,7 +14181,7 @@ retry:
            }
 #endif
          }
-         lock (m_SimStateLock) { if (m_CancelSource.IsCancellationRequested) return; } // .NET 5.0 conversion
+         if (ThreadWrap.IsCancelled) return; // .NET 5.0 conversion
          if (!have_simulated) Thread.Sleep(200);
        }
     }
