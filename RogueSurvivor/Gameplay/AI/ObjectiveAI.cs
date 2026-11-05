@@ -502,10 +502,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // cache variables
     [NonSerialized] protected List<Point>? _legal_steps = null;
     [NonSerialized] protected Dictionary<Location,ActorAction>? _legal_path = null;
-    [NonSerialized] protected Dictionary<Point, int>? _damage_field = null; // denormalized
+    [NonSerialized] protected Dictionary<Location, int>? _damage_field = null; // canonical
     [NonSerialized] protected List<Actor>? _slow_melee_threat = null;
     [NonSerialized] protected HashSet<Actor>? _immediate_threat = null;
-    [NonSerialized] protected HashSet<Point>? _blast_field = null;
+    [NonSerialized] protected HashSet<Location>? _blast_field = null; // canonical
     [NonSerialized] protected List<Point>? _retreat = null;
     [NonSerialized] protected List<Point>? _run_retreat = null;
     [NonSerialized] protected bool _safe_retreat = false;
@@ -771,17 +771,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private void UpdateRetreatDestinations()
     {
       // calculate retreat destinations if possibly needed
-      if (_damage_field is not null && _legal_steps is not null && _damage_field.ContainsKey(m_Actor.Location.Position)) {
+      if (_damage_field is not null && _legal_steps is not null && _damage_field.ContainsKey(m_Actor.Location)) {
         _retreat = FindRetreat();
         if (_retreat is not null) {
           AvoidBeingCornered();
-          _safe_retreat = !_damage_field.ContainsKey(_retreat[0]);
+          _safe_retreat = !_damage_field.ContainsKey(Canonical(_retreat[0]));
         }
         if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !_safe_retreat) {
           _run_retreat = FindRunRetreat();
           if (_run_retreat is not null) {
             AvoidBeingRunCornered();
-            _safe_run_retreat = !_damage_field.ContainsKey(_run_retreat[0]);
+            _safe_run_retreat = !_damage_field.ContainsKey(Canonical(_run_retreat[0]));
           }
         }
       }
@@ -805,7 +805,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (UsesExplosives) {   // only civilians and soldiers respect explosives; CHAR and gang don't
         _blast_zones = AllGoals<FleeExplosive>();
         _blast_field = new();  // thrashes GC for GangAI/CHARGuardAI
-        AddExplosivesToDamageField(all_time);
+        AddExplosivesToDamageField(_damage_field, _blast_field, all_time);
         if (0>= _blast_field.Count) _blast_field = null;
         if (_blast_zones is not null) {
             foreach(var zone in _blast_zones) _legal_steps = zone.FilterLegalSteps(m_Actor.Location, _legal_steps);
@@ -875,9 +875,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public int RiskAt(in Location loc) {
       if (_damage_field is not null) {
-        var denorm = m_Actor.Location.Map.Denormalize(in loc);
-        if (denorm is not null) {
-          _damage_field.TryGetValue(loc.Position,out var damage);
+        var key = loc;
+        if (Map.Canonical(ref key) && m_Actor.Location.Map.Denormalize(in key) is not null) {   // in our view: the field is authoritative
+          _damage_field.TryGetValue(key, out var damage);
           return damage;
         }
       }
@@ -1344,7 +1344,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction? BehaviorFleeExplosives()
     {
-      if (!(_blast_field?.Contains(m_Actor.Location.Position) ?? false)) return null;
+      if (!(_blast_field?.Contains(m_Actor.Location) ?? false)) return null;
       ActorAction? ret = (_safe_run_retreat ? DecideMove(_legal_steps, _run_retreat) : ((_retreat is not null) ? DecideMove(_retreat) : null));
       if (ret is not null) {
         if (ret is ActionMoveStep) m_Actor.Run();
@@ -1440,7 +1440,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if (!ActionRangedAttack.Can(m_Actor,target)) return null;
 
-//    var test = _damage_field.ContainsKey(m_Actor.Location.Position);
+//    var test = _damage_field.ContainsKey(m_Actor.Location);
 
       // alpha10
       // select rapid fire if one shot is not enough to kill target, has more than one ammo loaded and chances to hit good enough.
@@ -1448,7 +1448,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((m_Actor.GetEquippedWeapon() as ItemRangedWeapon).Ammo >= 2) {
         Attack rangedAttack = m_Actor.RangedAttack(Rules.InteractionDistance(m_Actor.Location, target.Location), target);
 
-        if (rangedAttack.DamageValue < target.HitPoints || (_damage_field is not null && _damage_field.ContainsKey(m_Actor.Location.Position))) {
+        if (rangedAttack.DamageValue < target.HitPoints || (_damage_field is not null && _damage_field.ContainsKey(m_Actor.Location))) {
           // either we don't have enough DPS, or we are in danger of return fire
           var damage_dist = Rules.DamageProbabilityDistribution(rangedAttack.DamageValue);
           var working = new Dictionary<int, float>();
@@ -1478,7 +1478,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var normal_single_kill = threshold_kill.LessThan(normalDam);
           var rapid_double_kill = threshold_kill.LessThan(bothRapidDam);
           if (normal_single_kill < rapid_double_kill) {
-             if (_damage_field is not null && _damage_field.ContainsKey(m_Actor.Location.Position)) {
+             if (_damage_field is not null && _damage_field.ContainsKey(m_Actor.Location)) {
                fireMode = FireMode.RAPID;
              } else {
                var bothNormalDam = DenormalizedProbability<int>.Apply(normalDam * normalDam, _Add);  // XXX \todo cache this
@@ -1602,7 +1602,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction? WaitIfSafe()
     {
-      return (_damage_field?.ContainsKey(m_Actor.Location.Position) ?? false) ? null : new ActionWait(m_Actor);
+      return (_damage_field?.ContainsKey(m_Actor.Location) ?? false) ? null : new ActionWait(m_Actor);
     }
 
     public ActionSwitchPowerGenerator? TurnOnAdjacentGenerators()
@@ -1775,11 +1775,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (_damage_field is null) throw new ArgumentNullException(nameof(_damage_field));
       if (_legal_steps is null) throw new ArgumentNullException(nameof(_legal_steps));
-      if (!_damage_field.ContainsKey(m_Actor.Location.Position)) throw m_Actor.Spotlight(new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)"));
+      if (!_damage_field.ContainsKey(m_Actor.Location)) throw m_Actor.Spotlight(new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)"));
 #endif
-      IEnumerable<Point> tmp_point = _legal_steps.Where(pt=>!_damage_field.ContainsKey(pt));
+      IEnumerable<Point> tmp_point = _legal_steps.Where(pt=>!_damage_field.ContainsKey(Canonical(pt)));
       if (tmp_point.Any()) return tmp_point.ToList();
-      tmp_point = _legal_steps.Where(p=> _damage_field[p] < _damage_field[m_Actor.Location.Position]);
+      tmp_point = _legal_steps.Where(p=> _damage_field[Canonical(p)] < _damage_field[m_Actor.Location]);
       return (tmp_point.Any() ? tmp_point.ToList() : null);
     }
 
@@ -1788,14 +1788,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (_damage_field is null) throw new ArgumentNullException(nameof(_damage_field));
       if (_legal_steps is null) throw new ArgumentNullException(nameof(_legal_steps));
-      if (!_damage_field.ContainsKey(m_Actor.Location.Position)) throw m_Actor.Spotlight(new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)"));
+      if (!_damage_field.ContainsKey(m_Actor.Location)) throw m_Actor.Spotlight(new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)"));
 #endif
       var ret = new HashSet<Point>(Enumerable.Range(0, 16).Select(i => m_Actor.Location.Position.RadarSweep(2, i)).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor) && !m_Actor.Location.Map.HasActorAt(in pt)));
       ret.RemoveWhere(pt => !_legal_steps.Any(pt2 => Rules.IsAdjacent(in pt,in pt2)));
 
-      IEnumerable<Point> tmp_point = ret.Where(pt=>!_damage_field.ContainsKey(pt));
+      IEnumerable<Point> tmp_point = ret.Where(pt=>!_damage_field.ContainsKey(Canonical(pt)));
       if (tmp_point.Any()) return tmp_point.ToList();
-      tmp_point = ret.Where(pt=> _damage_field[pt] < _damage_field[m_Actor.Location.Position]);
+      tmp_point = ret.Where(pt=> _damage_field[Canonical(pt)] < _damage_field[m_Actor.Location]);
       return (tmp_point.Any() ? tmp_point.ToList() : null);
     }
 
@@ -2395,8 +2395,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (x is ActionShove shove) {
-        if (_blast_field?.Contains(shove.To) ?? false) return true;   // exceptionally hostile to shove into an explosion
-        if (_damage_field?.ContainsKey(shove.To) ?? false) return true;   // hostile to shove into a damage field
+        var shove_to = Canonical(shove.Target.Location.Map, shove.To);
+        if (_blast_field?.Contains(shove_to) ?? false) return true;   // exceptionally hostile to shove into an explosion
+        if (_damage_field?.ContainsKey(shove_to) ?? false) return true;   // hostile to shove into a damage field
 
         var target = shove.Target;
         if (target.Controller is ObjectiveAI ai) {
@@ -4436,15 +4437,39 @@ restart_chokepoints:
     }
 
 #region damage field
-    private void VisibleMaximumDamage(Dictionary<Point, int> damage_field,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
+    // The damage and blast fields are keyed by canonical locations.  The step lists are points in our actor's map frame, and the
+    // builders flood in some other actor's frame: these canonicalize.  A point not on any map keeps a non-canonical location,
+    // which no field holds, so a lookup correctly fails and an insertion is declined.
+    protected Location Canonical(Point pt) => Canonical(m_Actor.Location.Map, pt);
+    static protected Location Canonical(Map m, Point pt)
+    {
+      var loc = new Location(m, pt);
+      Map.Canonical(ref loc);
+      return loc;
+    }
+
+    static private void AddDamage(Dictionary<Location, int> damage_field, in Location loc, int damage)
+    {
+      if (damage_field.ContainsKey(loc)) damage_field[loc] += damage;
+      else damage_field[loc] = damage;
+    }
+
+    static private void AddDamage(Dictionary<Location, int> damage_field, Map m, Point pt, int damage)
+    {
+      var loc = new Location(m, pt);
+      if (Map.Canonical(ref loc)) AddDamage(damage_field, in loc, damage);
+    }
+
+    private void VisibleMaximumDamage(Dictionary<Location, int> damage_field,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
     {
       if (m_Actor is null) return;
       if (m_Actor.Location.Map is null) return;    // Duckman
       var enemies = m_Actor.Controller.enemies_in_FOV;
       if (enemies is null) return;
-      Map map = m_Actor.Location.Map;
       foreach(var where_enemy in enemies) {
         Actor a = where_enemy.Value;
+        Map map = a.Location.Map;   // the flood is in the enemy's frame
+        var me = map.Denormalize(m_Actor.Location);  // our position in that frame; null when the enemy's map cannot see ours
         int a_turns = m_Actor.HowManyTimesOtherActs(1,a);
         if (a.CanRun() && a.RunIsFreeMove) a_turns++;
         int a_turns_bak = a_turns;
@@ -4471,7 +4496,7 @@ restart_chokepoints:
               }
             }
           }
-          if (melee_damage_field.ContainsKey(m_Actor.Location.Position)) immediate_threat.Add(a);
+          if (me is not null && melee_damage_field.ContainsKey(me.Value.Position)) immediate_threat.Add(a);
         }
 
         // next test game \todo unclear whether only bikers, or those w/o ranged weapons in general,
@@ -4483,10 +4508,7 @@ restart_chokepoints:
         var ranged_attacks = (a.Controller as ObjectiveAI)?.GetBestRangedAttacks(m_Actor);
 
         if (ranged_attacks is null) {
-          foreach(var pt_dam in melee_damage_field) {
-            if (damage_field.ContainsKey(pt_dam.Key)) damage_field[pt_dam.Key] += pt_dam.Value;
-            else damage_field[pt_dam.Key] = pt_dam.Value;
-          }
+          foreach(var pt_dam in melee_damage_field) AddDamage(damage_field, map, pt_dam.Key, pt_dam.Value);
           continue;
         }
 
@@ -4526,64 +4548,56 @@ restart_chokepoints:
             now = tmp2;
           } while(1<a_turns);
         }
-        if (ranged_damage_field.ContainsKey(m_Actor.Location.Position)) immediate_threat.Add(a);
+        if (me is not null && ranged_damage_field.ContainsKey(me.Value.Position)) immediate_threat.Add(a);
         // ranged damage field should be a strict superset of melee in typical cases (exception: basement without flashlight)
         foreach(var pt_dam in ranged_damage_field) {
-          if (melee_damage_field.TryGetValue(pt_dam.Key,out int prior_dam)) {
-            if (damage_field.ContainsKey(pt_dam.Key)) damage_field[pt_dam.Key] += Math.Max(pt_dam.Value, prior_dam);
-            else damage_field[pt_dam.Key] = Math.Max(pt_dam.Value, prior_dam);
-          } else {
-            if (damage_field.ContainsKey(pt_dam.Key)) damage_field[pt_dam.Key] += pt_dam.Value;
-            else damage_field[pt_dam.Key] = pt_dam.Value;
-          }
+          AddDamage(damage_field, map, pt_dam.Key, melee_damage_field.TryGetValue(pt_dam.Key,out int prior_dam) ? Math.Max(pt_dam.Value, prior_dam) : pt_dam.Value);
         }
       }
     }
 
-    private void AddExplosivesToDamageField(List<Percept_<Inventory>>? goals)
+    static private void AddExplosivesToDamageField(Dictionary<Location, int> damage_field, HashSet<Location> blast_field, List<Percept_<Inventory>>? goals)
     {
       if (goals is null) return;
       IEnumerable<Percept_<Data._Item.PrimedExplosive>> explosives = goals.Select(p => new Percept_<Data._Item.PrimedExplosive>((p.Percepted as Inventory).GetFirst<Data._Item.PrimedExplosive>(), p.Turn, p.Location));
       foreach (var exp in explosives) {
         ref readonly var tmp_blast = ref exp.Percepted.Model.BlastAttack;
-        Point pt = exp.Location.Position;
-        if (_damage_field.ContainsKey(pt)) _damage_field[pt] += tmp_blast.Damage[0];
-        else _damage_field[pt] = tmp_blast.Damage[0];
-        _blast_field.Add(pt);
+        var origin = exp.Location;
+        if (!Map.Canonical(ref origin)) continue;
+        AddDamage(damage_field, in origin, tmp_blast.Damage[0]);
+        blast_field.Add(origin);
         // We would need a very different implementation for large blast radii.
         short r = 0;
         while (++r <= tmp_blast.Radius) {
-          foreach (Point p in Enumerable.Range(0, 8 * r).Select(i => exp.Location.Position.RadarSweep(r, i))) {
-            if (!exp.Location.Map.IsValid(p)) continue;
-            if (!LOS.CanTraceFireLine(exp.Location, p, tmp_blast.Radius)) continue;
-            _blast_field.Add(p);
-            if (_damage_field.ContainsKey(p)) _damage_field[p] += tmp_blast.Damage[r];
-            else _damage_field[p] = tmp_blast.Damage[r];
+          foreach (Point p in Enumerable.Range(0, 8 * r).Select(i => origin.Position.RadarSweep(r, i))) {
+            var loc = new Location(origin.Map, p);
+            if (!Map.Canonical(ref loc)) continue;
+            if (!LOS.CanTraceFireLine(origin, p, tmp_blast.Radius)) continue;
+            blast_field.Add(loc);
+            AddDamage(damage_field, in loc, tmp_blast.Damage[r]);
           }
         }
       }
     }
 
-    private void AddExplosivesToDamageField(List<Percept>? percepts)
+    static private void AddExplosivesToDamageField(Dictionary<Location, int> damage_field, HashSet<Location> blast_field, List<Percept>? percepts)
     {
-      AddExplosivesToDamageField(percepts?.FilterCast<Inventory>(inv => inv.Has<Data._Item.PrimedExplosive>()));
+      AddExplosivesToDamageField(damage_field, blast_field, percepts?.FilterCast<Inventory>(inv => inv.Has<Data._Item.PrimedExplosive>()));
     }
 
-    private void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept>? percepts)
+    private void AddTrapsToDamageField(Dictionary<Location,int> damage_field, List<Percept>? percepts)
     {
       var goals = percepts?.FilterCast<Inventory>(inv => inv.Has<ItemTrap>());
       if (goals is null) return;
       foreach(var p in goals) {
         if (p.Location==m_Actor.Location) continue; // trap has already triggered, or not: safe
-        if (p.Location.Map!=m_Actor.Location.Map) continue; // XXX will be misrecorded
         var tmp = p.Percepted.GetItemsByType<ItemTrap>();
 #if DEBUG
         if (tmp is null) throw new InvalidProgramException("inventory thought to have trap, didn't");
 #endif
         int damage = tmp.Sum(trap => ((trap.IsActivated && !trap.IsSafeFor(m_Actor)) ? trap.Model.Damage : 0));   // XXX wrong for barbed wire
         if (0 >= damage) continue;
-        if (damage_field.ContainsKey(p.Location.Position)) damage_field[p.Location.Position] += damage;
-        else damage_field[p.Location.Position] = damage;
+        AddDamage(damage_field, p.Location.Map, p.Location.Position, damage);
       }
     }
 #endregion

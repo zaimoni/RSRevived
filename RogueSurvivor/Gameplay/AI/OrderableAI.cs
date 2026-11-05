@@ -1807,7 +1807,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (tracing && !RogueGame.IsSimulating) {
           if (WillTireAfterAttack(m_Actor)) RogueGame.Game.InfoPopup("will tire after attack");
           if (_slow_melee_threat is not null) RogueGame.Game.InfoPopup(_slow_melee_threat.to_s());
-          if (_damage_field.ContainsKey(m_Actor.Location.Position)) RogueGame.Game.InfoPopup(_damage_field.to_s());
+          if (_damage_field.ContainsKey(m_Actor.Location)) RogueGame.Game.InfoPopup(_damage_field.to_s());
         }
 
         if (   WillTireAfterAttack(m_Actor) // need stamina to melee: slow retreat ok
@@ -2397,7 +2397,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (maxRange < my_dist) continue;
         if (!a_map.GetTileModelAtExt(view).IsWalkable) continue;
         if (!LOS.CanTraceThrowLine(m_Actor.Location, in view, maxRange)) continue;
-        if (_blast_field?.Contains(view) ?? false) continue;
+        if (_blast_field?.Contains(Canonical(view)) ?? false) continue;
         int score = 0;
         Rectangle blast_zone = new Rectangle(view - (Point)blast_radius, (Point)(2 * blast_radius + 1));
         // XXX \todo we want to evaluate the damage for where threat is *when the grenade explodes*
@@ -2782,7 +2782,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // XXX we should run for the exit here ...
-        if (_damage_field is null || !_damage_field.ContainsKey(m_Actor.Location.Position)) {
+        if (_damage_field is null || !_damage_field.ContainsKey(m_Actor.Location)) {
           tmpAction = BehaviorUseMedecine(2, 2, 1, 0, 0);
           if (tmpAction is not null) {
             m_Actor.Activity = Activity.FLEEING;
@@ -2912,7 +2912,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // sunk from BaseAI
     protected ActorAction? BehaviorFightOrFlee(ActorCourage courage, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
-      if (_blast_field?.Contains(m_Actor.Location.Position) ?? false) {
+      if (_blast_field?.Contains(m_Actor.Location) ?? false) {
         // oops.  Panic.  Wasn't able to flee explosives and will likely die, either immediately or by sudden vulnerability.
         return new ActionWait(m_Actor);
       }
@@ -2922,7 +2922,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       var legal_steps = _legal_steps; // XXX working reference due to following postprocessing
       if (_blast_field is not null && legal_steps is not null) {
-        IEnumerable<Point> test = legal_steps.Where(pt => !_blast_field.Contains(pt));
+        IEnumerable<Point> test = legal_steps.Where(pt => !_blast_field.Contains(Canonical(pt)));
         legal_steps = (test.Any() ? test.ToList() : null);
       }
 
@@ -2957,7 +2957,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("will tire after attack: " + WillTireAfterAttack(m_Actor).ToString());
 
         if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
-            if (  (_damage_field is not null && _damage_field.ContainsKey(m_Actor.Location.Position))
+            if (  (_damage_field is not null && _damage_field.ContainsKey(m_Actor.Location))
                 || (Rules.IsAdjacent(m_Actor.Location, in e_loc) && 0 >= enemy.CannotMeleeForThisLong()))
             decideToFlee = true;    // but do not run as otherwise we won't build up stamina
         }
@@ -3072,8 +3072,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       } else if (2 == en_dist) {
         // no dash-attack at range 2, have not decided to flee
-        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("plan to wait rather than dash-attack: "+ (_damage_field is null || !_damage_field.ContainsKey(m_Actor.Location.Position)).ToString());
-        if (_damage_field is null || !_damage_field.ContainsKey(m_Actor.Location.Position)) return new ActionWait(m_Actor); // XXX \todo should be a tactical wait that's rewrite-proof
+        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("plan to wait rather than dash-attack: "+ (_damage_field is null || !_damage_field.ContainsKey(m_Actor.Location)).ToString());
+        if (_damage_field is null || !_damage_field.ContainsKey(m_Actor.Location)) return new ActionWait(m_Actor); // XXX \todo should be a tactical wait that's rewrite-proof
         if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("declining wait w/o dash-attack: "+ _damage_field.to_s());
       }
 
@@ -3657,8 +3657,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (m_Actor.StaminaPoints >= Actor.STAMINA_MIN_FOR_ACTIVITY) return null;
       // ok to walk to a lower damage field
-      if (_damage_field is not null && _damage_field.ContainsKey(m_Actor.Location.Position)) {
-        var steps = Engine.Op.MoveStep.outbound(m_Actor.Location, m_Actor, loc => !_damage_field.ContainsKey(loc.Position), false);
+      if (_damage_field is not null && _damage_field.ContainsKey(m_Actor.Location)) {
+        var steps = Engine.Op.MoveStep.outbound(m_Actor.Location, m_Actor, loc => !_damage_field.ContainsKey(loc), false);
         if (steps is not null) {
             while(0<steps.Count) {
               var stage = Rules.Get.DiceRoller.ChooseWithoutReplacement(steps);
