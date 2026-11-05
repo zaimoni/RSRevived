@@ -2027,23 +2027,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0>=goals.Count) return null;
       if (_legal_steps is null) return null;
 
-#if DEBUG
       var cardinal = new Dictionary<Compass.XCOMlike, HashSet<Point>>();
-#if PROTOTYPE
-      var staging = new Dictionary<Compass.XCOMlike, HashSet<Point>>();
-
-      void install(Compass.XCOMlike dir, Point pt) {
-        if (staging.TryGetValue(dir, out var cache)) cache.Add(pt);
-        else staging.Add(dir, new HashSet<Point> {pt});
-      }
-#endif
 
       void primary_install(Compass.XCOMlike dir, Point pt) {
         if (cardinal.TryGetValue(dir, out var cache)) cache.Add(pt);
         else cardinal.Add(dir, new HashSet<Point> {pt});
-#if PROTOTYPE
-        install(dir, pt);
-#endif
       }
 
       static Compass.XCOMlike routing_code(Point delta) {
@@ -2075,133 +2063,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         var delta = x.Key - m_Actor.Location.Position;
         var code = routing_code(delta);
         primary_install(code, x.Key);
-#if PROTOTYPE
-        switch(routing_code(delta))
-        {
-        case Compass.XCOMlike.NE:
-          install(Compass.XCOMlike.N, x.Key);
-          install(Compass.XCOMlike.E, x.Key);
-          break;
-        case Compass.XCOMlike.NW:
-          install(Compass.XCOMlike.N, x.Key);
-          install(Compass.XCOMlike.W, x.Key);
-          break;
-        case Compass.XCOMlike.W:
-          install(Compass.XCOMlike.NW, x.Key);
-          install(Compass.XCOMlike.SW, x.Key);
-          break;
-        case Compass.XCOMlike.N:
-          install(Compass.XCOMlike.NE, x.Key);
-          install(Compass.XCOMlike.NW, x.Key);
-          break;
-        case Compass.XCOMlike.S:
-          install(Compass.XCOMlike.SE, x.Key);
-          install(Compass.XCOMlike.SW, x.Key);
-          break;
-        case Compass.XCOMlike.E:
-          install(Compass.XCOMlike.NE, x.Key);
-          install(Compass.XCOMlike.SE, x.Key);
-          break;
-        case Compass.XCOMlike.SE:
-          install(Compass.XCOMlike.S, x.Key);
-          install(Compass.XCOMlike.E, x.Key);
-          break;
-        case Compass.XCOMlike.SW:
-          install(Compass.XCOMlike.S, x.Key);
-          install(Compass.XCOMlike.W, x.Key);
-          break;
-        default: throw new InvalidProgramException("unexpected routing code");
-        }
-#endif
       }
-
-#if PROTOTYPE
-      // Veto
-      var keep_dirs = new Zaimoni.Data.Stack<Compass.XCOMlike>(stackalloc Compass.XCOMlike[(int)Compass.reference.XCOM_STRICT_UB]);
-      foreach(var pt in _legal_steps) {
-        var dir = Direction.FromVector(pt-m_Actor.Location.Position);
-        if (dir is not null) keep_dirs.push((Compass.XCOMlike)(dir.Index));
-      }
-      var flush_dirs = new Zaimoni.Data.Stack<Compass.XCOMlike>(stackalloc Compass.XCOMlike[(int)Compass.reference.XCOM_STRICT_UB]);
-      var ok_steps = new List<Point>();
-      foreach(var x in staging) {
-        if (!keep_dirs.Contains(x.Key)) flush_dirs.push(x.Key);
-        else ok_steps.Add(m_Actor.Location.Position + Direction.COMPASS[(int)x.Key]);
-      }
-      if (0 >= ok_steps.Count) return null;
-      if (1 == ok_steps.Count) {
-          var act = DecideMove(ok_steps);
-        if (act is not null) {
-          if (act is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
-          m_Actor.Activity = Activity.IDLE;
-          return act;
-        }
-        return null;
-      } 
-
-      int i = flush_dirs.Count;
-      while(0 <= --i) staging.Remove(flush_dirs[i]);
-      if (0 >= staging.Count) return null;
-
-      // ignore goals we cannot approach
-      var working = new Zaimoni.Data.Stack<Point>(stackalloc Point[goals.Count]);
-      foreach(var x in goals) {
-        bool discard = true;
-        foreach(var y in staging) {
-          if (y.Value.Contains(x.Key)) {
-            discard = false;
-            break;
-          }
-        }
-        if (discard) working.push(x.Key);
-      }
-      i = working.Count;
-      while(0 <= --i) goals.Remove(working[i]);
-      if (0 >= goals.Count) return null;
-
-      // must be approaching a nearest goal
-      if (1 < ok_steps.Count && 1 < goals.Count) {
-        int min_dist = int.MaxValue;
-        working.Clear();
-        foreach(var x in goals) {
-          if (x.Value > min_dist) continue;
-          if (x.Value < min_dist) {
-            min_dist = x.Value;
-            working.Clear();
-          }
-          working.push(x.Key);
-        }
-        flush_dirs.Clear();
-        foreach(var x in staging) {
-          bool discard = true;
-          i = working.Count;
-          while(0 <= --i) if (x.Value.Contains(working[i])) {
-            discard = false;
-            break;
-          }
-          if (discard) flush_dirs.push(x.Key);
-        }
-        i = flush_dirs.Count;
-        while(0 <= --i) staging.Remove(flush_dirs[i]);
-        if (0 >= staging.Count) return null;
-        ok_steps.Clear();
-        foreach(var x in staging) ok_steps.Add(m_Actor.Location.Position + Direction.COMPASS[(int)x.Key]);
-        if (1 == ok_steps.Count) {
-          var act = DecideMove(ok_steps);
-          if (act is not null) {
-            if (act is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest);
-            m_Actor.Activity = Activity.IDLE;
-            return act;
-          }
-          return null;
-        } 
-      }
-
-#if DEBUG
-      if (ok_steps.Count < _legal_steps.Count) throw new InvalidOperationException("tracing");
-#endif
-#endif
-#endif
 
       // Following is not safe to call from within item evaluation -- stack overflow
       List<Point> legal_steps = (2 <= _legal_steps.Count) ? DecideMove_WaryOfTraps(_legal_steps) : _legal_steps;    // need working copy here
@@ -2239,10 +2101,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         legal_steps = new List<Point>(efficiency.Keys);
       }
 
-#if DEBUG
       IEnumerable<Point> only_cardinal = legal_steps.Where(pt => cardinal.ContainsKey((Compass.XCOMlike)(Direction.FromVector(pt - m_Actor.Location.Position).Index)));
       if (only_cardinal.Any() && only_cardinal.Count()<legal_steps.Count) legal_steps = only_cardinal.ToList();
-#endif
 
       var tmpAction = DecideMove(legal_steps);
       if (tmpAction is not null) {
