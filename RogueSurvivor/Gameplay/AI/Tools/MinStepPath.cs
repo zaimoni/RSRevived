@@ -2,6 +2,7 @@
 using djack.RogueSurvivor.Engine;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Zaimoni.Data;
 
@@ -149,11 +150,21 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
 
         public Location origin => m_Origin;
 
+        [Conditional("DEBUG")]
+        public static void Ok(Actor a, IEnumerable<Location> src) {
+            foreach (var loc in src) if (!a.MayEnter(loc)) {
+                string err = a.Name + " must be able to exist at all destinations";
+                Logger.Trace(err);
+                Logger.Trace(src.to_s());
+                throw a.Spotlight(new InvalidOperationException(err));
+            }
+        }
+
         public MinStepPath(Actor a, in Location src, Dictionary<Location, int> dest, Predicate<Location>? veto = null) {
 #if DEBUG
-           if (!a.MayEnter(src)) throw a.Spotlight(new InvalidOperationException("must be able to exist at the origin"));
-           foreach(var loc in dest.Keys) if (!a.MayEnter(loc)) throw a.Spotlight(new InvalidOperationException("must be able to exist at all destinations"));
+            if (!a.MayEnter(src)) throw a.Spotlight(new InvalidOperationException("must be able to exist at the origin"));
 #endif
+            Ok(a, dest.Keys);
             m_Actor = a;
             m_Origin = src;
             m_Dest = dest;
