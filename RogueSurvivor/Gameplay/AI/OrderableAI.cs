@@ -1043,7 +1043,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           var goals = new Dictionary<Point, int>{
             [test.Value.Position] = Rules.GridDistance(test.Value, m_Actor.Location)
           };
-          ActorAction head_for = OrderableController.BehaviorEfficientlyHeadFor(goals);
+          ActorAction? head_for = OrderableController.BehaviorEfficientlyHeadFor(goals);
           if (head_for is null || !head_for.IsLegal()) {
            _isExpired = true;
             return null;
@@ -2509,7 +2509,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return string.IsNullOrEmpty(text) ? null : new ActionSay(m_Actor, actorAt1, text, default);
     }
 
-    private ActorAction BehaviorSecurePerimeter()
+    private ActorAction? BehaviorSecurePerimeter()
     {
       Map map = m_Actor.Location.Map;
       var want_to_resolve = new Dictionary<Point,int>();
@@ -3457,7 +3457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return BehaviorEfficientlyHeadFor(0<couches.Count ? couches : sleep_locs);  // null return ok here?
       }
       if (!m_Actor.IsOnCouch) { // head for a couch if in plain sight
-        ActorAction tmpAction = BehaviorEfficientlyHeadFor(couches);
+        ActorAction? tmpAction = BehaviorEfficientlyHeadFor(couches);
         if (tmpAction is not null) return tmpAction;
       }
 

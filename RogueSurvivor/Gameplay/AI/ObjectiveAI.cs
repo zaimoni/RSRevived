@@ -528,12 +528,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public void AddFOVevent(Observer<Location[]> src) { FOVevents.Add(src); }
     public void ClearLastMove() { _last_move = null; }
     public virtual bool UsesExplosives { get { return true; } } // default to what PC does
-    public T Goal<T>(Func<T,bool> test) where T:Objective { return Objectives.Find(o => o is T goal && test(goal)) as T;}
-    public T Goal<T>() where T:Objective { return Objectives.Find(o => o is T) as T;}
+    public T? Goal<T>(Func<T, bool> test) where T : Objective => Objectives.Find(o => o is T goal && test(goal)) as T;
+    public T? Goal<T>() where T : Objective => Objectives.Find(o => o is T) as T;
 
     public T[]? AllGoals<T>() where T:Objective {
-      var ret = Objectives.Where(o => o is T).Select(o => o as T).ToArray();
-      return 0<ret.Length ? ret : null;
+      List<T> ret = new();
+      foreach(var o in Objectives) {
+        if (o is not T t) continue;
+        ret.Add(t);
+      }
+      return 0<ret.Count ? ret.ToArray() : null;
     }
 
     private int InsertObjectiveAt(Objective src) {
@@ -582,7 +586,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (o is Observer<Location[]> fov_ev) FOVevents.Remove(fov_ev);
     }
 
-    public ActorAction Pathing<T>() where T:Objective,Pathable
+    public ActorAction? Pathing<T>() where T:Objective,Pathable
     {
         var remote = Goal<T>();
         if (remote is not null) {
@@ -1188,7 +1192,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endregion
 
-    public List<Location> WantToGoHere(Location loc) {
+    public List<Location>? WantToGoHere(Location loc) {
       var ret = PathToTarget.WantToGoHere(GetMinStepPath<Location>(), loc);
       if (ret is not null) return ret;
       var path = GetLambdaPath();
@@ -1256,7 +1260,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var act = UsePreexistingLambdaPath();
       if (act is not null) return act;
       var update_path = ForceLambdaPath();
-      HashSet<Point> inv_dests(Map m) {
+      HashSet<Point>? inv_dests(Map m) {
         if (Session.Get.HasZombiesInSewers && CombatUnready() && m == m.District.SewersMap) return null;
         var ret = WhereIs(critical, m);
         if (ret is null || 0 >= ret.Count) return null;
@@ -1727,7 +1731,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // these two return a value copy for correctness
-    protected Dictionary<Point, int> PlanApproach(Zaimoni.Data.FloodfillPathfinder<Point> navigate)
+    protected Dictionary<Point, int>? PlanApproach(Zaimoni.Data.FloodfillPathfinder<Point> navigate)
     {
       PlannedMoves.Clear();
       if (navigate.Approach(m_Actor.Location.Position) is not { } dest) return null;
@@ -1802,7 +1806,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 #region DecideMove
-    static private List<Point> DecideMove_Avoid(List<Point> src, IEnumerable<Point> avoid)
+    static private List<Point> DecideMove_Avoid(List<Point> src, IEnumerable<Point>? avoid)
     {
       if (avoid is null) return src;
       IEnumerable<Point> ok = src.Except(avoid);
@@ -1997,7 +2001,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0 < secondary.Count ? Rules.Get.DiceRoller.Choose(secondary) : null;
     }
 
-    protected HashSet<Point> FriendsLoF()
+    protected HashSet<Point>? FriendsLoF()
     {
       var enemies = enemies_in_FOV;
       if (enemies is null) return null;
@@ -2022,7 +2026,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // this assumes conditions like "everything is in FOV" so that a floodfill pathfinding is not needed.
     // we also assume no enemies in sight.
     // XXX as a de-facto leaf function, we can get away with destructive modifications to goals
-    public ActorAction BehaviorEfficientlyHeadFor(Dictionary<Point,int> goals)
+    public ActorAction? BehaviorEfficientlyHeadFor(Dictionary<Point,int> goals)
     {
       if (0>=goals.Count) return null;
       if (_legal_steps is null) return null;
