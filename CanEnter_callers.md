@@ -107,9 +107,9 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 | ObjectiveAI.BehaviorPathTo(Func, ...) | Gameplay/AI/ObjectiveAI.cs:4008 | ok | by ref |
 | ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4041 | ok | #if DEBUG |
 | ObjectiveAI.BehaviorPathTo(HashSet<Location>) | Gameplay/AI/ObjectiveAI.cs:4324 | ok | |
-| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:154 | ok | throws via Spotlight on the origin |
-| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:155 | ok | throws via Spotlight on the destination |
-| MinStepPath.Find | Gameplay/AI/Tools/MinStepPath.cs:216 | ok | by ref |
+| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:155 | ok | throws via Spotlight on the origin |
+| MinStepPath..ctor | Gameplay/AI/Tools/MinStepPath.cs:165 | ok | throws via Spotlight on the destination |
+| MinStepPath.Find | Gameplay/AI/Tools/MinStepPath.cs:227 | ok | by ref |
 
 # cleanup tasks
 
