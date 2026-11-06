@@ -270,16 +270,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       HospitalWorldPos = dr.ChooseWithoutReplacement(essential_services_acceptable);
     }
 
-    static public District GetCHARbaseDistrict()
+    static public (District d, List<Zone> zl) GetCHARbaseDistrict()
     {
-      var districtList = new List<KeyValuePair<District, int>>();
+      var districtList = new List<KeyValuePair<(District d, List<Zone> zl), int>>();
+
       World.Get.DoForAllDistricts(d=>{
         if (DistrictKind.BUSINESS != d.Kind) return;
-
-        if (d.EntryMap.GetZoneByPartialName("CHAR Office@") is not null) {
-          districtList.Add(new KeyValuePair<District,int>(d, Rules.GridDistance(d.WorldPosition, PoliceStationWorldPos)));
-          return;
-        }
+        if (d.EntryMap.GetZonesByPartialName("CHAR Office@") is not { } zoneList) return;
+        districtList.Add(new((d, zoneList), Rules.GridDistance(d.WorldPosition, PoliceStationWorldPos)));
       });
       int ub = districtList.Count;
       if (0 >= ub) throw new InvalidOperationException("world has no business districts with offices");
@@ -305,7 +303,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       // as far away from the hospital as possible
       if (2 <= ub) {
-        while (0 <= --ub) districtList[ub] = new KeyValuePair<District, int>(districtList[ub].Key, Rules.GridDistance(districtList[ub].Key.WorldPosition, HospitalWorldPos));
+        while (0 <= --ub) districtList[ub] = new(districtList[ub].Key, Rules.GridDistance(districtList[ub].Key.d.WorldPosition, HospitalWorldPos));
         var bounds = districtList.MinMax();
         while (bounds.Key < bounds.Value) {
           ub = districtList.Count;

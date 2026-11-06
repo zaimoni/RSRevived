@@ -21,6 +21,7 @@ using Rectangle = Zaimoni.Data.Box2D<int>;
 using GDI_Size = Zaimoni.Data.Vector2D<int>;
 
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
+using System.Diagnostics.CodeAnalysis;
 
 namespace djack.RogueSurvivor
 {
@@ -90,6 +91,7 @@ namespace djack.RogueSurvivor
       Logger.WriteLine(Logger.Stage.INIT_GFX, "loading images done");
     }
 
+    [MemberNotNull("m_GameCanvas")]
     private void InitializeComponent()
     {
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "new ComponentResourceManager...");

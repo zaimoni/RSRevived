@@ -14038,8 +14038,7 @@ restart:
 
     private UniqueMap CreateUniqueMap_CHARUndegroundFacility(World world)
     {
-      District district = BaseTownGenerator.GetCHARbaseDistrict();
-      var zoneList = district.EntryMap.GetZonesByPartialName("CHAR Office@");
+      var (district, zoneList) = BaseTownGenerator.GetCHARbaseDistrict();
       Zone officeZone = Rules.Get.DiceRoller.Choose(zoneList);
       Map mapCharUnderground = m_TownGenerator.GenerateUniqueMap_CHARUnderground(district.EntryMap, officeZone);
       district.AddUniqueMap(mapCharUnderground);
@@ -14374,7 +14373,7 @@ restart:
         player.ActorScoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Visited {0}.", p_map.Name));
       }
       // XXX \todo should be for all actors
-      void update_sightings(Dictionary<Location,Actor> src) {
+      void update_sightings(Dictionary<Location,Actor>? src) {
         if (src is not null) foreach (var x in src.Values) player.ActorScoring.AddSighting(x.Model.ID);
       }
       update_sightings(player.Controller.friends_in_FOV);
