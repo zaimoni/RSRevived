@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Data.Model
 #endif
 
         public sbyte Recoil { get => _recoil; }
-        public IEnumerable<Engine._Action.MoveStep> RunSteps => run_steps;
+        public IEnumerable<Engine._Action.MoveStep>? RunSteps => run_steps;
 
         public CombatActor(Actor src) {
             who = src;

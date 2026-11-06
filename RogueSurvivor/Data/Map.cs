@@ -1974,7 +1974,7 @@ retry:
       foreach(Point pt2 in dest.Adjacent()) {
         if (actor.Location.Map==this && actor.Location.Position==pt2) continue;
         if (IsWalkableFor(pt2,actor.Model)) continue;   // not interested in stamina for this
-        no_go[dir = Direction.FromVector(pt2 - dest).Index] = true;    // non-null by construction
+        no_go[dir = Direction.FromVector(pt2 - dest)!.Index] = true;    // non-null by construction
         (TileIsWalkable(pt2) ? blocked : is_wall)[dir] = true;
       }
       // corners and walls are generally ok.  2019-01-04: preliminary tests suggest this is not a micro-optimization target
@@ -2400,7 +2400,7 @@ retry:
         // Cf. Actor::MeleeWeaponsAndWorst
         {
         var melee = itemsAt.GetItemsByType<ItemMeleeWeapon>()?.Where(m => !m.Model.IsUnbreakable && !m.IsUnique);
-        if (2 <= (melee?.Count() ?? 0)) crushed = melee.Minimize(w => w.Model.Attack.Rating);
+        if (2 <= (melee?.Count() ?? 0)) crushed = melee!.Minimize(w => w.Model.Attack.Rating)!;
         }
 
         // other (un)reality checks go here

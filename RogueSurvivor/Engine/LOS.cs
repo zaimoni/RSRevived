@@ -105,7 +105,7 @@ namespace djack.RogueSurvivor.Engine
             while (++i < actualRange);
             return start == to;
             }
-        Direction alt_step = Direction.FromVector(tmp.Vector + offset.Vector);
+        Direction alt_step = Direction.FromVector(tmp.Vector + offset.Vector)!;
         var err = to - end;
         int alt_count = (0 == err.X ? err.Y : err.X);
         if (0 > alt_count) alt_count = -alt_count;
@@ -204,7 +204,7 @@ namespace djack.RogueSurvivor.Engine
             while (++i < actualRange);
             return start == to;
             }
-        Direction alt_step = Direction.FromVector(tmp.Vector + offset.Vector);
+        Direction alt_step = Direction.FromVector(tmp.Vector + offset.Vector)!;
         var err = to - end;
         int alt_count = (0 == err.X ? err.Y : err.X);
         if (0 > alt_count) alt_count = -alt_count;
@@ -279,7 +279,7 @@ namespace djack.RogueSurvivor.Engine
       return CanTraceViewLine(in from, test.Value.Position, maxRange, line);
     }
 
-    public static Location[] IdealFireLine(in Location fromLocation, Point toPosition, int maxRange)
+    public static Location[]? IdealFireLine(in Location fromLocation, Point toPosition, int maxRange)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
@@ -297,7 +297,7 @@ namespace djack.RogueSurvivor.Engine
       return ret;
     }
 
-    public static Location[] IdealFireLine(Location from, Location to, int maxRange)
+    public static Location[]? IdealFireLine(Location from, Location to, int maxRange)
     {
       Location? test = from.Map.Denormalize(in to);
       if (test is null) return null;

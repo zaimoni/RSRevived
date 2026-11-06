@@ -483,7 +483,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorBuildTrap()
+    protected ActorAction? BehaviorBuildTrap()
     {
       if (m_Actor is not LivingActor living) return null;
       var trap = living.Inventory.GetFirst<ItemTrap>();
@@ -566,7 +566,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ActionPush.Random(m_Actor, Rules.Get.DiceRoller.Choose(objs).Value);
     }
 
-    protected ActionPush BehaviorPushNonWalkableObjectForFood()
+    protected ActionPush? BehaviorPushNonWalkableObjectForFood()
     {
       if (!m_Actor.AbleToPush) return null;
       // Substantial re-implementation.  Historical one can make the police offices very hard to write a correct pathing for.
@@ -676,7 +676,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction? BehaviorTrackScent(List<Percept_s<AIScent>> scents)
     {
       if (0 >= scents.Count) return null;
-      var percept = scents.Maximize(scent => scent.Percepted.Strength);
+      var percept = scents.Maximize(scent => scent.Percepted.Strength)!;
       if (m_Actor.Location != percept.Location) {
         var tmpAction = BehaviorIntelligentBumpToward(percept.Location, false, false);
         if (tmpAction is not null) return tmpAction;
@@ -712,7 +712,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected virtual ActorAction BehaviorChargeEnemy(Percept_<Actor> target, bool canCheckBreak, bool canCheckPush)
+    protected virtual ActorAction? BehaviorChargeEnemy(Percept_<Actor> target, bool canCheckBreak, bool canCheckPush)
     {
       Actor actor = target.Percepted;
       ActorAction? tmpAction = BehaviorMeleeAttack(actor);
@@ -811,7 +811,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // the intelligent callers are using the override at OrderableAI
     protected virtual ActorAction? BehaviorExplore(ExplorationData exploration)
     {
-      Direction prevDirection = Direction.FromVector(m_Actor.Location.Position - m_prevLocation.Position);
+      Direction? prevDirection = Direction.FromVector(m_Actor.Location.Position - m_prevLocation.Position);
 
       int ranking(Direction dir, Location loc) {
         const int EXPLORE_ZONES = 1000;

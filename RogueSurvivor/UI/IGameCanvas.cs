@@ -60,7 +60,7 @@ namespace djack.RogueSurvivor.UI
     void DrawMinimap(int gx, int gy);
 
     // screenshot
-    string SaveScreenShot(string filePath);
+    string? SaveScreenShot(string filePath);
     string ScreenshotExtension();
 
     void DisposeUnmanagedResources();

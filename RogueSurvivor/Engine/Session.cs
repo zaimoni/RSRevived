@@ -57,7 +57,7 @@ namespace djack.RogueSurvivor.Engine
         public WorldTime WorldTime { get { return new WorldTime(World.Get.Last?.EntryMap?.LocalTime ?? new WorldTime(0)); } }
 
         public Scoring Scoring { get { return m_Scoring; } }
-        public Scoring_fatality Scoring_fatality { get { return m_Scoring_fatality; } }
+        public Scoring_fatality? Scoring_fatality { get { return m_Scoring_fatality; } }
 
         public static RadioFaction? FromID(GameFactions.IDs id) {
             var police = Get.Police;

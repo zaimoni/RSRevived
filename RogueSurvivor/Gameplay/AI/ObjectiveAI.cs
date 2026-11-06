@@ -2105,7 +2105,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         legal_steps = new List<Point>(efficiency.Keys);
       }
 
-      IEnumerable<Point> only_cardinal = legal_steps.Where(pt => cardinal.ContainsKey((Compass.XCOMlike)(Direction.FromVector(pt - m_Actor.Location.Position).Index)));
+      IEnumerable<Point> only_cardinal = legal_steps.Where(pt => cardinal.ContainsKey((Compass.XCOMlike)(Direction.FromVector(pt - m_Actor.Location.Position)!.Index)));
       if (only_cardinal.Any() && only_cardinal.Count()<legal_steps.Count) legal_steps = only_cardinal.ToList();
 
       var tmpAction = DecideMove(legal_steps);
@@ -2871,7 +2871,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var friends = friends_in_FOV;
       if (friends is not null) {
          ItemRangedWeapon? rw;
-         Location[] line;
+         Location[]? line;
          foreach(var ally in friends.Values) {
            if ((rw = (ally.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo()) is null) continue;
            foreach(var en in fear.Values) {
@@ -6148,7 +6148,7 @@ restart_chokepoints:
               }
             }
             if (drop is not null) return _BehaviorDropOrExchange(drop, it, in stack, use_ok);
-            drop = no_ammo_rws.Minimize(rw => rw.Ammo*rw.Model.Attack.DamageValue*3/4); // \todo do this right (expected damage from ammo)
+            drop = no_ammo_rws.Minimize(rw => rw.Ammo*rw.Model.Attack.DamageValue*3/4)!; // \todo do this right (expected damage from ammo)
             return _BehaviorDropOrExchange(drop, it, in stack, use_ok);
           }
         }
@@ -6534,7 +6534,7 @@ restart_chokepoints:
               }
             }
             if (drop is not null) return _BehaviorDropOrExchange(drop, it, position, use_ok);
-            drop = no_ammo_rws.Minimize(rw => rw.Ammo*rw.Model.Attack.DamageValue*3/4); // \todo do this right (expected damage from ammo)
+            drop = no_ammo_rws.Minimize(rw => rw.Ammo*rw.Model.Attack.DamageValue*3/4)!; // \todo do this right (expected damage from ammo)
             return _BehaviorDropOrExchange(drop, it, position, use_ok);
           }
         }

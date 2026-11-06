@@ -2031,7 +2031,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (targets is null) tmpAction = null;  // shove is tactically contra-indicated
                 else {
                   var choice = Rules.Get.DiceRoller.Choose(targets);
-                  return new ActionShove(m_Actor,shove.Target,Direction.FromVector(choice.Key-shove.Target.Location.Position));
+                  return new ActionShove(m_Actor,shove.Target,Direction.FromVector(choice.Key-shove.Target.Location.Position)!);
                 }
               } else tmpAction = null;  // shove is tactically contra-indicated
             } else tmpAction = null;  // shove is tactically contra-indicated
@@ -3670,7 +3670,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction? BehaviorExplore(ExplorationData exploration)
     {
       ActorCourage courage = Directives_nocreate?.Courage ?? ActorDirective.Courage_default;
-      Direction prevDirection = Direction.FromVector(m_Actor.Location.Position - PrevLocation.Position);
+      Direction? prevDirection = Direction.FromVector(m_Actor.Location.Position - PrevLocation.Position);
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
 
       int ranking(Direction dir, Location loc) {

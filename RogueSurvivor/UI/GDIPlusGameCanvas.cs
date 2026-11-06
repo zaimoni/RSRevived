@@ -340,7 +340,7 @@ namespace djack.RogueSurvivor.UI
       NeedRedraw = true;
     }
 
-    public string SaveScreenShot(string filePath)
+    public string? SaveScreenShot(string filePath)
     {
       Logger.WriteLine(Logger.Stage.RUN_GFX, "taking screenshot...");
       try

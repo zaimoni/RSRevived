@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Data
     public static Direction operator -(Direction rhs) { return COMPASS[(rhs.Index + 4) % 8]; }
     public static Size operator *(short lhs, Direction rhs) { return lhs * rhs.Vector; }
 
-    public static Direction FromVector(Point v)
+    public static Direction? FromVector(Point v)
     {
       foreach (Direction direction in COMPASS) if (direction.Vector == v) return direction;
       return null;
@@ -179,7 +179,7 @@ diagonalExit:
       PointF pointF = new(v.X, v.Y);
       pointF.Normalize();
       if (PointF.Empty == pointF) return N;
-      Direction dir = COMPASS.Minimize(d=> Math.Abs(pointF.X - d.NormalizedVector.X) + Math.Abs(pointF.Y - d.NormalizedVector.Y));
+      Direction? dir = COMPASS.Minimize(d=> Math.Abs(pointF.X - d.NormalizedVector.X) + Math.Abs(pointF.Y - d.NormalizedVector.Y));
       return dir ?? N;
     }
 

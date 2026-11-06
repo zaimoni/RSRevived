@@ -202,7 +202,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    protected static void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject> createFn)
+    protected static void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject?> createFn)
     {
 #if DEBUG
       if (createFn is null) throw new ArgumentNullException(nameof(createFn));
@@ -213,7 +213,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public static void MapObjectPlaceInGoodPosition(Map map, Rectangle rect, Func<Point, bool> isGoodPosFn, DiceRoller roller, Func<Point, MapObject> createFn)
+    public static void MapObjectPlaceInGoodPosition(Map map, Rectangle rect, Func<Point, bool> isGoodPosFn, DiceRoller roller, Func<Point, MapObject?> createFn)
     {
 #if DEBUG
       if (createFn is null) throw new ArgumentNullException(nameof(createFn));
@@ -226,7 +226,7 @@ namespace djack.RogueSurvivor.Engine
     }
 #endregion
 
-    protected static void ItemsDrop(Map map, Rectangle rect, Predicate<Point> isGoodPositionFn, Func<Point, Item> createFn)
+    protected static void ItemsDrop(Map map, Rectangle rect, Predicate<Point> isGoodPositionFn, Func<Point, Item?> createFn)
     {
 #if DEBUG
       if (createFn is null) throw new ArgumentNullException(nameof(createFn));
@@ -260,14 +260,14 @@ namespace djack.RogueSurvivor.Engine
       return map.CountAdjacentTo(p, pt => map.GetTileModelAt(pt).IsWalkable);
     }
 
-    protected static void PlaceIf(Map map, Point pt, TileModel floor, Func<Point, bool> predicateFn, Func<Point, MapObject> createFn)
+    protected static void PlaceIf(Map map, Point pt, TileModel floor, Func<Point, bool> predicateFn, Func<Point, MapObject?> createFn)
     {
 #if DEBUG
       if (predicateFn is null) throw new ArgumentNullException(nameof(predicateFn));
       if (createFn is null) throw new ArgumentNullException(nameof(createFn));
 #endif
       if (!predicateFn(pt)) return;
-      MapObject mapObj = createFn(pt);
+      MapObject? mapObj = createFn(pt);
       if (mapObj is null) return;
       map.SetTileModelAt(pt, floor);
       MapObjectPlace(map, pt, mapObj);

@@ -1172,11 +1172,11 @@ retry:
                 get {
                     if (index == 0 || (index == dictionary.count + 1)) throw new InvalidOperationException("enumeration can't happen");
 
-                    return current.Key;
+                    return current.Key!;
                 }
             }
 
-            object IDictionaryEnumerator.Value {
+            object? IDictionaryEnumerator.Value {
                 get {
                     if (index == 0 || (index == dictionary.count + 1)) throw new InvalidOperationException("enumeration can't happen");
 

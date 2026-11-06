@@ -19,7 +19,7 @@ namespace Zaimoni.Data
             if (x is null) return "null";
             var ub = x.Count;
             if (0 >= ub) return "{}";
-            var tmp = new List<string>(ub);
+            var tmp = new List<string?>(ub);
             foreach (T iter in x)
             {
                 tmp.Add(iter.to_s());
@@ -35,7 +35,7 @@ namespace Zaimoni.Data
             if (x is null) return "null";
             var ub = x.Count;
             if (0 >= ub) return "[]";
-            var tmp = new List<string>(ub);
+            var tmp = new List<string?>(ub);
             foreach (var iter in x)
             {
                 tmp.Add(iter.to_s());
@@ -51,7 +51,7 @@ namespace Zaimoni.Data
             if (x is null) return "null";
             var ub = x.Length;
             if (0 >= ub) return "[]";
-            var tmp = new List<string>(ub);
+            var tmp = new List<string?>(ub);
             foreach (var iter in x)
             {
                 tmp.Add(iter.to_s());
@@ -67,7 +67,7 @@ namespace Zaimoni.Data
             if (x is null) return "null";
             var ub = x.Count;
             if (0 >= ub) return "[]";
-            var tmp = new List<string>(ub);
+            var tmp = new List<string?>(ub);
             foreach (var iter in x)
             {
                 tmp.Add(iter.to_s());
@@ -114,7 +114,7 @@ namespace Zaimoni.Data
             if (x is null) return "null";
             var ub = x.Count();
             if (0 >= ub) return "[]";
-            var tmp = new List<string>(ub);
+            var tmp = new List<string?>(ub);
             foreach (T iter in x)
             {
                 tmp.Add(iter.to_s());
@@ -126,7 +126,7 @@ namespace Zaimoni.Data
         }
 
         // ultimate fallback
-        public static string to_s<T>(this T x)
+        public static string? to_s<T>(this T x)
         {
             if (x is null) return "null";
             var t_info = typeof(T);

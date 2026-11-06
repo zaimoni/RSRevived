@@ -411,7 +411,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static protected PowerGenerator MakeObjPowerGenerator() => new PowerGenerator();
     static public MapObject MakeObjBoard(string imageID, string[] text) => new Board(imageID, text);
 
-    static protected void DecorateOutsideWalls(Map map, Rectangle rect, Func<Point, string> decoFn)
+    static protected void DecorateOutsideWalls(Map map, Rectangle rect, Func<Point, string?> decoFn)
     {
 #if DEBUG
       if (decoFn is null) throw new ArgumentNullException(nameof(decoFn));
@@ -419,7 +419,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       foreach (var pt in rect) {
         Tile tileAt = map.GetTileAt(pt);
         if (!tileAt.Model.IsWalkable && !tileAt.IsInside) {
-          string imageID = decoFn(pt);
+          string? imageID = decoFn(pt);
           if (imageID is not null)
             tileAt.AddDecoration(imageID);
         }

@@ -506,14 +506,14 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static T Minimize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>, IMinMaxValue<R>
+    public static T? Minimize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>, IMinMaxValue<R>
     {
 #if DEBUG
       if (metric is null) throw new ArgumentNullException(nameof(metric));
       if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
       R num1 = R.MaxValue;
-      T ret = default;
+      T? ret = default;
       foreach(T test in src) {
          R num2 = metric(test);
          if (0>num2.CompareTo(num1)) {
@@ -524,14 +524,14 @@ namespace Zaimoni.Data
       return ret;
     }
 
-    public static T Maximize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>, IMinMaxValue<R>
+    public static T? Maximize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable<R>, IMinMaxValue<R>
     {
 #if DEBUG
       if (metric is null) throw new ArgumentNullException(nameof(metric));
       if (src is null) throw new ArgumentNullException(nameof(src));
 #endif
       R num1 = R.MinValue;
-      T ret = default;
+      T? ret = default;
       foreach(T test in src) {
          R num2 = metric(test);
          if (0<num2.CompareTo(num1)) {
@@ -805,7 +805,7 @@ namespace Zaimoni.Data
       if (r is null) return l;
       HashSet<U> ret(T src) {
         var x = l(src);
-        if (x is not null && 0 < x.Count) r(src,x);
+        if (0 < x.Count) r(src,x);
         return x;
       }
       return ret;
@@ -1071,7 +1071,7 @@ namespace Zaimoni.Data
     public static bool TRUE<T1,T2>(T1 x1, T2 x2) { return true; }
     public static bool FALSE<T>(T x) { return false; }
     public static T IDENTITY<T>(T x) { return x; }
-    public static T DEFAULT<T>(T x) { return default; }
+    public static T? DEFAULT<T>(T x) { return default; }
     public static int ZERO<T>(T x) { return 0; }
   }
 

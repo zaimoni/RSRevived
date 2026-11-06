@@ -1435,21 +1435,21 @@ namespace djack.RogueSurvivor.Engine
     private void LoadHiScoreTable()
     {
       m_UI.DrawHeadNote("Loading hiscores table...");
-      m_HiScoreTable = HiScoreTable.Load(GetUserHiScoreFilePath());
-      bool regen_table = (m_HiScoreTable is null);
-      if (m_HiScoreTable is not null) {
-        for (int index = 0; index < m_HiScoreTable.Count; ++index) {
-          HiScore hiScore = m_HiScoreTable[index];
+      var table = HiScoreTable.Load(GetUserHiScoreFilePath());
+      if (table is not null) {
+        for (int index = 0; index < table.Count; ++index) {
+          HiScore hiScore = table[index];
           if (!hiScore.is_valid()) {
-            regen_table = true;
+            table = null;   // regenerate
             break;
           }
         }
       }
-      if (regen_table) {
-        m_HiScoreTable = new();
-        m_HiScoreTable.Clear();
+      if (table is null) {
+        table = new();
+        table.Clear();
       }
+      m_HiScoreTable = table;
 
       m_UI.DrawHeadNote("Loading hiscores table... done!");
     }
@@ -4647,7 +4647,7 @@ namespace djack.RogueSurvivor.Engine
       if (loc == m_LiveLook) return;
       if (IsVisibleToPlayer(in loc)) {
         List<UI.Overlay> overlays = new();
-        string[] lines = DescribeStuffAt(loc);
+        string[]? lines = DescribeStuffAt(loc);
         if (lines is not null) {
           var screen = MapToScreen(loc);
           overlays.Add(SetInfoOverlay(new UI.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(screen.X + TILE_SIZE, screen.Y))));
@@ -7757,7 +7757,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    static private string[] DescribeStuffAt(Location examine)
+    static private string[]? DescribeStuffAt(Location examine)
     {
 #if DEBUG
       if (!Map.Canonical(ref examine)) throw new InvalidOperationException("tracing unvisualizable");
@@ -11518,7 +11518,7 @@ restart:
       }
       textFile.Append(" ");
       textFile.Append("> DEATH");
-      textFile.Append(string.Format("{0} in {1}.", p_scoring.DeathReason, Session.Get.Scoring_fatality.DeathPlace));
+      textFile.Append(string.Format("{0} in {1}.", p_scoring.DeathReason, Session.Get.Scoring_fatality!.DeathPlace));
       textFile.Append(" ");
       textFile.Append("> KILLS");
       p_scoring.DescribeKills(textFile, str1);
@@ -11552,7 +11552,7 @@ restart:
       textFile.Append(" ");
       textFile.Append("> FOLLOWERS");
       { // scoping brace
-      var followers = Session.Get.Scoring_fatality.FollowersWhenDied;
+      var followers = Session.Get.Scoring_fatality!.FollowersWhenDied;
       if (followers is null) {
         textFile.Append(string.Format("{0} was doing fine alone. Or everyone else was dead.", str1));
       } else {
@@ -12892,7 +12892,7 @@ restart:
             : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5}/{6} Fol {7}/{8}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, (actor.Speed / BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, World.Get.Weather), actor.Model.BaseViewRange, (actor as LivingActor)?.CountFollowers ?? 0, (actor as LivingActor)?.MaxFollowers ?? 0));
     }
 
-    static private string _gameStatus(Actor a) {
+    static private string? _gameStatus(Actor a) {
       if (a != m_PlayerInTurn) return "SIMULATING";
       if (!string.IsNullOrEmpty(m_Status)) return m_Status;
       var ai = a.Controller as ObjectiveAI;
@@ -12913,7 +12913,7 @@ restart:
       return null;
     }
 
-    static private string _gameStatusAlt(Actor a) {
+    static private string? _gameStatusAlt(Actor a) {
       if (a != m_PlayerInTurn) return null;
       if (!string.IsNullOrEmpty(m_Status2)) return m_Status2;
       return null;
@@ -13413,7 +13413,7 @@ restart:
           viewpoint = tmp.Value;
           // from Staying Alive: inspect mode within far-look
           if (IsVisibleToPlayer(in viewpoint)) {
-            string[] lines = DescribeStuffAt(viewpoint);
+            string[]? lines = DescribeStuffAt(viewpoint);
             if (lines is not null) inspect = new(lines, Color.White, Color.White, POPUP_FILLCOLOR, overlay_anchor);
           } else {
             List<string>? lines = null;
@@ -14513,7 +14513,7 @@ restart:
       switch (reincMode) {
         case GameOptions.ReincMode.RANDOM_FOLLOWER:
           { // scoping brace
-          var followers = Session.Get.Scoring_fatality.FollowersWhenDied;
+          var followers = Session.Get.Scoring_fatality!.FollowersWhenDied;
           if (followers is null) {
             matchingActors = 0;
             return null;
@@ -14531,7 +14531,7 @@ restart:
           return 0 >= matchingActors ? null : Rules.Get.DiceRoller.Choose(actorList1);
           } // scoping brace
         case GameOptions.ReincMode.KILLER:
-          Actor killer = Session.Get.Scoring_fatality.Killer;
+          Actor killer = Session.Get.Scoring_fatality!.Killer;
           if (IsSuitableReincarnation(killer, true) || IsSuitableReincarnation(killer, false)) {
             matchingActors = 1;
             return killer;
@@ -14539,7 +14539,7 @@ restart:
           matchingActors = 0;
           return null;
         case GameOptions.ReincMode.ZOMBIFIED:
-          var zombifiedPlayer = Session.Get.Scoring_fatality.ZombifiedPlayer;
+          var zombifiedPlayer = Session.Get.Scoring_fatality!.ZombifiedPlayer;
           if (zombifiedPlayer is not null && IsSuitableReincarnation(zombifiedPlayer, false)) {
             matchingActors = 1;
             return zombifiedPlayer;

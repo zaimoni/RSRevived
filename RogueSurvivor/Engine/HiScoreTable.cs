@@ -82,7 +82,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table... done!");
     }
 
-    public static HiScoreTable Load(string filepath)
+    public static HiScoreTable? Load(string filepath)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));

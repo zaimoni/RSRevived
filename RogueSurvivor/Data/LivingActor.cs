@@ -137,11 +137,11 @@ namespace djack.RogueSurvivor.Data
 
     private ItemMeleeWeapon _chooseWorst(List<ItemMeleeWeapon> all) {
       int rate(ItemMeleeWeapon w) => MeleeWeaponAttack(w.Model).Rating;
-      return all.Where(Item.notEquipped).Minimize(rate) ?? all.Minimize(rate);
+      return all.Where(Item.notEquipped).Minimize(rate) ?? all.Minimize(rate)!; // ItemsAndChoice: two or more items
     }
     public (List<ItemMeleeWeapon> all, ItemMeleeWeapon worst)? MeleeWeaponsAndWorst() => ItemsAndChoice<ItemMeleeWeapon>(_chooseWorst);
 
-    private static ItemLight _chooseWorst(List<ItemLight> all) => all.Minimize(static obj => obj.Batteries);
+    private static ItemLight _chooseWorst(List<ItemLight> all) => all.Minimize(static obj => obj.Batteries)!; // ItemsAndChoice: two or more items
     public (List<ItemLight> all, ItemLight worst)? LightsAndWorst() => ItemsAndChoice<ItemLight>(_chooseWorst);
 
     // the best body armor should be in the inventory slot

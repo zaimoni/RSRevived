@@ -819,7 +819,7 @@ restart:
 #endif
 
 #region 7. Objects.
-      MapObjectFill(sewers, sewers.Rect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(sewers, sewers.Rect, (Func<Point, MapObject?>) (pt =>
       {
         if (!m_DiceRoller.RollChance(SEWERS_JUNK_CHANCE)) return null;
         if (!sewers.IsWalkable(pt)) return null;
@@ -1470,7 +1470,7 @@ restart:
         if (map.HasMapObjectAt(pt) || !map.AnyAdjacent<DoorWindow>(pt)) return null;
         return GameImages.DECO_CHAR_OFFICE;
       });
-      MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(map, b.InsideRect, (Func<Point, MapObject?>) (pt =>
       {
         if (CountAdjWalls(map, pt) < 3) return null;
         return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
@@ -1665,7 +1665,7 @@ restart:
       if (b.InsideRect.Width < 3 || b.InsideRect.Height < 3) return false;
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileFill(map, GameTiles.FLOOR_GRASS, b.InsideRect);
-      MapObjectFill(map, b.BuildingRect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(map, b.BuildingRect, (Func<Point, MapObject?>) (pt =>
       {
         if (pt.X == b.BuildingRect.Left || pt.X == b.BuildingRect.Right - 1 || pt.Y == b.BuildingRect.Top || pt.Y == b.BuildingRect.Bottom - 1)
           return MakeObjFence();
@@ -2793,7 +2793,7 @@ restart:
         new(Item_IDs.TRACKER_BLACKOPS,25)
     };
 
-    public Item MakeRandomCHAROfficeItem()
+    public Item? MakeRandomCHAROfficeItem()
     {
       int choice = m_DiceRoller.Roll(0, CHAR_office_checksum/45*100);   // historically 45% chance of an item
       if (CHAR_office_checksum <= choice) return null;
@@ -3000,7 +3000,7 @@ restart:
           Session.Get.Police.Investigate.Record(basement, in pt);
           Session.Get.Police.ItemMemory.Set(new Location(basement,pt), basement_items, 0);   // basements generally are low-risk Day 0 for police so coming here when looking for huge hammers is sensible
       }
-      MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(basement, basement.Rect, (Func<Point, MapObject?>) (pt =>
       {
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_OBJECT_CHANCE_PER_TILE)) return null;
         if (basement.HasExitAt(in pt)) return null;
@@ -3225,7 +3225,7 @@ restart:
 
     private void MakeCHARArmoryRoom(Map map, Rectangle roomRect)
     {
-      MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(map, roomRect, (Func<Point, MapObject?>) (pt =>
       {
         if (CountAdjWalls(map, pt) < 3) return null;
         if (map.HasExitAt(in pt)) return null;
@@ -3240,7 +3240,7 @@ restart:
     private void MakeCHARStorageRoom(Map map, Rectangle roomRect)
     {
       TileFill(map, GameTiles.FLOOR_CONCRETE, roomRect);
-      MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(map, roomRect, (Func<Point, MapObject?>) (pt =>
       {
         if (CountAdjWalls(map, pt) > 0) return null;
         if (map.HasExitAt(in pt)) return null;
@@ -3276,7 +3276,7 @@ restart:
 
     private void MakeCHARPharmacyRoom(Map map, Rectangle roomRect)
     {
-      MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(map, roomRect, (Func<Point, MapObject?>) (pt =>
       {
         if (CountAdjWalls(map, pt) < 3) return null;
         if (map.HasExitAt(in pt)) return null;
@@ -3467,7 +3467,7 @@ restart:
       List<LivingActor> followers = new();
       var typical = map.Police.Get.ToList();
 
-      static LivingActor DraftLeader(List<LivingActor> pool) {
+      static LivingActor? DraftLeader(List<LivingActor> pool) {
         // first: leadership + backup weapons
         LivingActor? awesome = pool.Find(a => a.Inventory.Has(Item_IDs.RANGED_PISTOL) && a.Inventory.Has(Item_IDs.RANGED_SHOTGUN) && 2 <= a.MySkills.GetSkillLevel(Skills.IDs.LEADERSHIP));
         if (awesome is not null) return awesome;
@@ -3493,7 +3493,7 @@ restart:
       }
 
       static void Draft(List<LivingActor> dest, List<LivingActor> pool) {
-        var leader = DraftLeader(pool);
+        var leader = DraftLeader(pool)!;    // the offices level spawns exactly five officers, one per draft
         dest.Add(leader);
         pool.Remove(leader);
       }

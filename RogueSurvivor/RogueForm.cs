@@ -669,7 +669,7 @@ namespace djack.RogueSurvivor
       return m_GameCanvas.ScaleY;
     }
 
-    public string UI_SaveScreenshot(string filePath)
+    public string? UI_SaveScreenshot(string filePath)
     {
       return m_GameCanvas.SaveScreenShot(filePath);
     }

@@ -260,7 +260,7 @@ namespace djack.RogueSurvivor.Data.Model
         [Conditional("DEBUG")]
         public void RejectCrossLink(InvOrigin other) => RejectCrossLink(other.Inventory);
 
-        public override string ToString()
+        public override string? ToString()
         {
             if (obj_owner is not null) return obj_owner.ToString();
             if (loc is not null) return loc.Value.ToString();

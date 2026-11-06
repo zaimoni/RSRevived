@@ -124,7 +124,7 @@ namespace djack.RogueSurvivor.UI
 
 #region Screenshots
     /// <param name="filePath">file path without the extension, eg: c:\screenshot100</param>
-    string UI_SaveScreenshot(string filePath);
+    string? UI_SaveScreenshot(string filePath);
 
     /// <summary>
     /// Extension without the point eg: "png".
