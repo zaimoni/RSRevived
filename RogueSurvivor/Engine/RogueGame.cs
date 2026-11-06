@@ -189,6 +189,7 @@ namespace djack.RogueSurvivor.Engine
     private const int INVENTORYPANEL_X = RIGHTPANEL_X+4;
     // DrawActorStatus uses 11 bold lines: 154 before vertical margins
     private const int INVENTORYPANEL_Y = RIGHTPANEL_TEXT_Y + 170; // alpha10; formerly +156; formerly +142 (responds to maximum bold lines needed, etc.)
+    private const int INVENTORYSLOTSPANEL_Y = INVENTORYPANEL_Y - TILE_SIZE - BOLD_LINE_SPACING;
 
     private const int GROUNDINVENTORYPANEL_Y = INVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
     private const int CORPSESPANEL_Y = GROUNDINVENTORYPANEL_Y + TILE_SIZE + LINE_SPACING + BOLD_LINE_SPACING;
@@ -394,6 +395,7 @@ namespace djack.RogueSurvivor.Engine
       m_Manual = LoadManual();
       m_UI.Add(HandleMouseLookAuto);
       m_UI.Add(HandleMouseInventoryAuto);
+      m_UI.Add(HandleMouseInventorySlotsAuto);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
 
@@ -4682,49 +4684,59 @@ namespace djack.RogueSurvivor.Engine
     }
 
     private static Rectangle? s_LiveRect = null;
+
+    // cyan frame and long description for the item under the mouse; they stay up while the mouse is within the item's tile
+    private void ShowItemHover(Item it, GDI_Point itemPos, bool isPlayerInventory)
+    {
+      Rectangle bbox = new(new((short)itemPos.X, (short)itemPos.Y), new(TILE_SIZE, TILE_SIZE));
+      if (bbox == s_LiveRect) return;
+
+      List<Overlay> overlays = new() {
+        new UI.OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos, (GDI_Point)TILE_SIZE)),
+        new UI.OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos + (GDI_Point)1, (GDI_Point)(TILE_SIZE - 2))),
+        SetInfoOverlay(new UI.OverlayPopup(DescribeItemLong(it, isPlayerInventory), Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(itemPos.X, itemPos.Y + TILE_SIZE)))
+      };
+
+      s_LiveRect = bbox;
+      foreach(var o in overlays) AddOverlay(o);
+      bool remove(int x, int y) {
+        var pixel = LogicalPixel(new(x, y));
+        bool ok_to_null = bbox == s_LiveRect;
+        if (ok_to_null && bbox.Contains(new Point((short)pixel.X, (short)pixel.Y))) return false;
+        Logger.Trace("remove: "+x.ToString()+", "+y.ToString()+"; "+bbox.to_s()+"; "+IRogueUI.UI.UI_GetCanvasScaleX().ToString()+", "+IRogueUI.UI.UI_GetCanvasScaleY().ToString());
+        bool need_redraw = false;
+        foreach(var o in overlays) {
+          if (RemoveOverlay(o)) need_redraw = true;
+        }
+        if (ok_to_null) s_LiveRect = null;
+        if (need_redraw) RedrawPlayScreen();
+        return true;
+      }
+      IRogueUI.UI.Add(remove);
+      RedrawPlayScreen();
+    }
+
     private void HandleMouseInventoryAuto(int x, int y)
     {
-      GDI_Point mousePos = new(x, y);
-      var invSpec = MouseToInventoryItem(mousePos);
-      if (invSpec is null) return; // this command can work against ground inventory
-      var itemPos = invSpec.Value.Value; // backward compatibility
-      Rectangle bbox = new(new((short)itemPos.X, (short)itemPos.Y), new(TILE_SIZE, TILE_SIZE));
-       if (bbox == s_LiveRect) return;
+      if (MouseToInventoryItem(new(x, y)) is not { } invSpec) return; // this command can work against ground inventory
+      var (source, itemPos) = invSpec;
+      ShowItemHover(source.it, itemPos, source.Origin.a_owner == Player && Player == m_PlayerInTurn);
+    }
 
-      List<Overlay> overlays = new();
-      bool isPlayerInventory = invSpec.Value.Key.Origin.a_owner == Player && Player == m_PlayerInTurn;
-
-      overlays.Add(new UI.OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos, (GDI_Point)TILE_SIZE)));
-      overlays.Add(new UI.OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos + (GDI_Point)1, (GDI_Point)(TILE_SIZE - 2))));
-      var inventoryItem = invSpec.Value.Key.it!;
-      overlays.Add(SetInfoOverlay(new UI.OverlayPopup(DescribeItemLong(inventoryItem, isPlayerInventory), Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(itemPos.X, itemPos.Y + TILE_SIZE))));
-
-      if (0 < overlays.Count) {
-          s_LiveRect = bbox;
-          foreach(var o in overlays) AddOverlay(o);
-          bool remove(int x, int y) {
-            var pixel = LogicalPixel(new(x, y));
-            bool ok_to_null = bbox == s_LiveRect;
-            if (ok_to_null && bbox.Contains(new Point((short)pixel.X, (short)pixel.Y))) return false;
-            Logger.Trace("remove: "+x.ToString()+", "+y.ToString()+"; "+bbox.to_s()+"; "+IRogueUI.UI.UI_GetCanvasScaleX().ToString()+", "+IRogueUI.UI.UI_GetCanvasScaleY().ToString());
-            bool need_redraw = false;
-            foreach(var o in overlays) {
-              if (RemoveOverlay(o)) need_redraw = true;
-            }
-            if (ok_to_null) s_LiveRect = null;
-            if (need_redraw) RedrawPlayScreen();
-            return true;
-          }
-          IRogueUI.UI.Add(remove);
-          RedrawPlayScreen();
-      }
+    // description only: equipped armor has no context-sensitive commands by design (zero-turn re-equipping would let the
+    // player dodge the heavy armor turn cost)
+    private void HandleMouseInventorySlotsAuto(int x, int y)
+    {
+      var hit = MouseToInventorySlotItem(new(x, y));
+      if (hit is null) return;
+      ShowItemHover(hit.Value.it, hit.Value.pos, false);
     }
 
     private bool _HandlePlayerInventory(LivingActor player, Item it)
     {
       if (it.IsEquipped) {
         if (player.CanUnequip(it, out string reason)) {
-          it.UnequippedBy(Player);
+          it.UnequippedBy(player);
           return false;
         }
         ErrorPopup(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason));
@@ -4761,36 +4773,18 @@ namespace djack.RogueSurvivor.Engine
     {
       hasDoneAction = false;
 
-      var invSpec = MouseToInventoryItem(mousePos);
-      if (invSpec is null) return false; // this command can work against ground inventory
-      var inventoryItem = invSpec.Value.Key.it!;
+      if (MouseToInventoryItem(mousePos) is not { } invSpec) return false; // this command can work against ground inventory
+      if (!mouseButtons.HasValue || Player != m_PlayerInTurn || Player is not LivingActor living) return true;
+      var it = invSpec.Key.it;
+      bool isPlayerInventory = invSpec.Key.Origin.a_owner == Player;
 
-      bool isPlayerInventory = invSpec.Value.Key.Origin.a_owner == Player;
-
-      bool OnRMBItem(Item it)
-      {
-        if (Player != m_PlayerInTurn) return false;
-        if (!isPlayerInventory || Player is not LivingActor living) return false;
+      if (MouseButtons.Left == mouseButtons.Value) {
+        hasDoneAction = isPlayerInventory ? _HandlePlayerInventory(living, it) : Interpret(new TakeItem(living, living.Location, it));
+      } else if (MouseButtons.Right == mouseButtons.Value && isPlayerInventory) {
         if (living.CanDrop(it, out string reason)) {
           DoDropItem(living, it);
-          return true;
-        }
-        ErrorPopup(string.Format("Cannot drop {0} : {1}.", it.TheName, reason));
-        return false;
-      }
-
-      bool OnLMBItem(Item it)
-      {
-        if (Player != m_PlayerInTurn) return false;
-        if (Player is not LivingActor living) return false;
-        if (isPlayerInventory) return _HandlePlayerInventory(living, it);
-
-        return Interpret(new TakeItem(living, living.Location, it));
-      }
-
-      if (mouseButtons.HasValue) {
-          if (MouseButtons.Left == mouseButtons.Value) hasDoneAction = OnLMBItem(inventoryItem);
-          else if (MouseButtons.Right == mouseButtons.Value) hasDoneAction = OnRMBItem(inventoryItem);
+          hasDoneAction = true;
+        } else ErrorPopup(string.Format("Cannot drop {0} : {1}.", it.TheName, reason));
       }
       return true;
     }
@@ -4799,23 +4793,32 @@ namespace djack.RogueSurvivor.Engine
     {
       if (Player is not LivingActor living) return null;
       var inventory = living.Inventory;
-      var inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen);
-      int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
-      if (index1 >= 0 && index1 < inventory.MaxCapacity) {
-        if (inventory[index1] is null) return null;
-        return new(new(new Data.Model.InvOrigin(living), inventory[index1]), InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1));
+      int index1 = MouseToInventoryIndex(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen, out var itemPos1);
+      if (0 <= index1 && index1 < inventory.MaxCapacity) {
+        if (inventory[index1] is not { } it1) return null;
+        return new(new(new Data.Model.InvOrigin(living), it1), itemPos1);
       }
 
       if (Player.Location.InventoryAtFeet()?.NullIfEmpty() is not Data.Model.InvOrigin invspec) return null;
 
       var itemsAt = invspec.Inventory!;
-      var inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen);
-      int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
-      if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
-      var it = itemsAt[index2];
-      if (it is null) return null;
+      int index2 = MouseToInventoryIndex(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen, out var itemPos2);
+      if (0 > index2 || index2 >= itemsAt.MaxCapacity) return null;
+      if (itemsAt[index2] is not { } it2) return null;
       // hard crash if this inventory is flagged as seen by player
-      return new(new(invspec, it), InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2));
+      return new(new(invspec, it2), itemPos2);
+    }
+
+    private (Item it, GDI_Point pos)? MouseToInventorySlotItem(GDI_Point screen)
+    {
+      if (Player is not LivingActor living) return null;
+      var slots = living.InventorySlots;
+      int index = MouseToInventoryIndex(INVENTORYPANEL_X, INVENTORYSLOTSPANEL_Y, screen, out var itemPos);
+      if (0 > index || index >= slots.MaxCapacity) return null;
+      foreach (var it in slots) {  // DrawInventory packs the occupied slots from the left
+        if (0 == index--) return (it, itemPos);
+      }
+      return null;
     }
 
     private bool HandleMouseOverCorpses(GDI_Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
@@ -4878,11 +4881,8 @@ namespace djack.RogueSurvivor.Engine
       if (Player is null) return null;
       var corpsesAt = Player.Location.Corpses;
       if (corpsesAt is null) return null;
-      var inventorySlot = MouseToInventorySlot(INVENTORYPANEL_X, CORPSESPANEL_Y, screen);
-      corpsePos = InventorySlotToScreen(INVENTORYPANEL_X, CORPSESPANEL_Y, inventorySlot);
-      int index = inventorySlot.X + inventorySlot.Y * 10;
-      if (index >= 0 && index < corpsesAt.Count) return corpsesAt[index];
-      return null;
+      int index = MouseToInventoryIndex(INVENTORYPANEL_X, CORPSESPANEL_Y, screen, out corpsePos);
+      return (0 <= index && index < corpsesAt.Count) ? corpsesAt[index] : null;
     }
 
     private Corpse? MouseToCorpse(GDI_Point screen) { return MouseToCorpse(screen, out _); }
@@ -12093,7 +12093,7 @@ restart:
                   DrawActorStatus(Player, RIGHTPANEL_TEXT_X, RIGHTPANEL_TEXT_Y);
                   if (Player is LivingActor pc_living) {
                     var slots = pc_living.InventorySlots;
-                    DrawInventory(slots, null, false, slots.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y - TILE_SIZE - BOLD_LINE_SPACING);
+                    DrawInventory(slots, null, false, slots.MaxCapacity, INVENTORYPANEL_X, INVENTORYSLOTSPANEL_Y);
                     DrawInventory(pc_living.Inventory, "Inventory", true, pc_living.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
                   }
                   var invspec = Player.Location.InventoryAtFeet();
@@ -13256,16 +13256,17 @@ restart:
       return null;
     }
 
-    private Vector2D_stack<int> MouseToInventorySlot(int invX, int invY, GDI_Point mouse)
+    // slot index under the mouse for a panel drawn at (invX, invY), or -1; slotScreen is that slot's top-left corner
+    private int MouseToInventoryIndex(int invX, int invY, GDI_Point mouse, out GDI_Point slotScreen)
     {
+      slotScreen = GDI_Point.Empty;
       var logical = LogicalPixel(mouse);
-      logical -= new Vector2D_stack<int>(invX,invY);
-      return logical/ TILE_SIZE;
-    }
-
-    static private GDI_Point InventorySlotToScreen(int invX, int invY, Vector2D_stack<int> slot)
-    {
-      return new GDI_Point(invX + slot.X * TILE_SIZE, invY + slot.Y * TILE_SIZE);
+      logical -= new Vector2D_stack<int>(invX, invY);
+      if (0 > logical.X || 0 > logical.Y) return -1;   // integer division would put the band just outside the panel on its first row or column
+      logical /= TILE_SIZE;
+      if (INVENTORY_SLOTS_PER_LINE <= logical.X) return -1;
+      slotScreen = new GDI_Point(invX + logical.X * TILE_SIZE, invY + logical.Y * TILE_SIZE);
+      return logical.X + logical.Y * INVENTORY_SLOTS_PER_LINE;
     }
 
     private static bool IsVisibleToPlayer(in Location location)
