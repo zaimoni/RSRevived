@@ -3504,7 +3504,7 @@ namespace djack.RogueSurvivor.Engine
               default: throw new ArgumentException("command unhandled");
             }  // end indentation failure
             if (0<pc.Recoil && PlayerCommand.FIRE_MODE != command && !s_ReadonlyCommands.Contains(command)) pc.ResetRecoil();
-        } else if (!HandleMouseLook(point)) {
+        } else if (!HandleMouseLook(point) && !HandleMouseInventorySlots(point)) {
           if (HandleMouseInventory(point, mouseButtons, out bool hasDoneAction)) {
             if (!hasDoneAction) continue;
             pc.ResetRecoil();
@@ -4731,6 +4731,9 @@ namespace djack.RogueSurvivor.Engine
       if (hit is null) return;
       ShowItemHover(hit.Value.it, hit.Value.pos, false);
     }
+
+    // no commands, but the input loop clears the overlays on any mouse event nothing claims: this keeps the hover help up
+    private bool HandleMouseInventorySlots(GDI_Point mousePos) => MouseToInventorySlotItem(mousePos) is not null;
 
     private bool _HandlePlayerInventory(LivingActor player, Item it)
     {
