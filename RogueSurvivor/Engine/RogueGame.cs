@@ -3378,7 +3378,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryInsanity(pc) && !(player is LivingActor medic && HandlePlayerReviveCorpse(medic, point));
                 break;
               case PlayerCommand.SET_WAYPOINT:
-                HandlePlayerSetWaypoint(player);
+                HandlePlayerSetWaypoint(pc);
                 break;
               case PlayerCommand.SHOUT: 
                 flag1 = !TryInsanity(pc) && !HandlePlayerShout(player, null);
@@ -3411,7 +3411,7 @@ namespace djack.RogueSurvivor.Engine
                 HandleCityInfo(pc);
                 break;
               case PlayerCommand.ITEM_INFO:
-                HandleItemInfo();
+                HandleItemInfo(pc);
                 break;
               case PlayerCommand.ALLIES_INFO:
                 HandleAlliesInfo();
@@ -4004,8 +4004,14 @@ namespace djack.RogueSurvivor.Engine
       return ret;
     }
 
-    private void HandleItemInfo()
+    private void HandleItemInfo(PlayerController pc)
     {
+#if DEBUG
+      if (!IsPlayer(pc.ControlledActor)) {
+        Logger.Trace(pc.ControlledActor.Name+" is not "+Player.Name);
+        throw new InvalidOperationException("!IsPlayer(pc.ControlledActor)");
+      }
+#endif 
       var player_backup = Player;
       var item_classes = Player.Controller.WhatHaveISeen();
       if (item_classes is null || 0>=item_classes.Count) {
@@ -4088,7 +4094,7 @@ namespace djack.RogueSurvivor.Engine
         var available_followers = pc.AvailableFollowers;
 
         string label_follower(int index) {
-            return available_followers[index].Name;
+            return available_followers[index].fo.Name;
         };
 
         string label2(int index) {
@@ -4102,7 +4108,7 @@ namespace djack.RogueSurvivor.Engine
 
           bool details_follower(int index) {
             var src = x.Key.Inv(item_type).Value;
-            (available_followers[index].Controller as ObjectiveAI).Track(src, item_type);
+             available_followers[index].oai.Track(src, item_type);
             return true;
           };
 
@@ -13296,25 +13302,29 @@ restart:
     }
 
     /// <returns>The final location looked at if confirmed; null if cancelled</returns>
-    private Location? DoPlayerFarLook()
+    private Location? DoPlayerFarLook(PlayerController pc)
     {
+#if DEBUG
+      if (!IsPlayer(pc.ControlledActor)) {
+        Logger.Trace(pc.ControlledActor.Name+" is not "+Player.Name);
+        throw new InvalidOperationException("!IsPlayer(pc.ControlledActor)");
+      }
+#endif
       Location origin = Player.Location;
       Location viewpoint = origin;
       UI.OverlayPopup? inspect = null;
       var overlay_anchor = MapToScreen(viewpoint);
       overlay_anchor.X += TILE_SIZE;
 
-      var pc = Player.Controller as PlayerController;
       var available_followers = pc.AvailableFollowers;
 
       string label_follower(int index) {
-        return available_followers[index].Name;
+        return available_followers[index].fo.Name;
       };
 
       bool details_follower(int index) {
-        var oai = available_followers[index].Controller as ObjectiveAI;
-        if (available_followers[index].Model.CanEnter(viewpoint)) {
-          oai.WalkTo(in viewpoint);
+        if (available_followers[index].fo.Model.CanEnter(viewpoint)) {
+          available_followers[index].oai.WalkTo(in viewpoint);
           ClearOverlays();
           PanViewportTo(Player.Location);
           return true;
@@ -13355,7 +13365,7 @@ restart:
             break;  // XXX \todo be somewhat more informative
           case Keys.O:  // walk to ...
               // other commands possible
-              if (available_followers is not null && viewpoint != Player.Location && !available_followers.Any(fo => viewpoint == fo.Location)) {
+              if (available_followers is not null && viewpoint != Player.Location && !available_followers.Any(fo => viewpoint == fo.fo.Location)) {
                 if (PagedPopup("Who stops by there?", available_followers.Count, label_follower, details_follower)) return null;
               }
             break;
@@ -13450,9 +13460,9 @@ restart:
       } while(true);
     }
 
-    private void HandlePlayerSetWaypoint(Actor player)
+    private void HandlePlayerSetWaypoint(PlayerController pc)
     {
-      Location? target = DoPlayerFarLook();
+      Location? target = DoPlayerFarLook(pc);
       if (target is null) return;
       // build out implementation here -- minimap and viewport have to respond appropriately
       // try a green tint

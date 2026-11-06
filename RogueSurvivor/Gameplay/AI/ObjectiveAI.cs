@@ -4674,13 +4674,13 @@ restart_chokepoints:
       return false;
     }
 
-    public List<LivingActor>? AvailableFollowers
+    public List<(LivingActor fo, ObjectiveAI oai)>? AvailableFollowers
     { get {
-        List<LivingActor> ret = new();
+        List<(LivingActor, ObjectiveAI)> ret = new();
         var p_fos = m_Living?.Followers;
         if (p_fos is not null) {
           foreach(var fo in p_fos) {
-            if (InCommunicationWith(fo)) ret.Add(fo);
+            if (InCommunicationWith(fo)) ret.Add((fo, fo.RunBy<ObjectiveAI>()));
           }
         }
         return 0<ret.Count ? ret : null;
