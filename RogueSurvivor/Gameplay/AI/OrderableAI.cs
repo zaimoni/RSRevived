@@ -4232,101 +4232,72 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (clan is null) return null;
         var critical = WhatDoINeedNow();
         if (0 >= critical.Count) return null;
-        critical.RemoveWhere(it => {
-          if (it.AmmoModel() is { } model) {
-            if (m_Actor.Inventory.GetReloadableRangedWeapon(model) is null) return true;  // not needed
-          }
-          return false;
-        });
+        // ammo is only critical for a weapon we can reload with it
+        critical.RemoveWhere(it => it.AmmoModel() is { } model && m_Actor.Inventory.GetReloadableRangedWeapon(model) is null);
         if (0 >= critical.Count) return null;
-        Dictionary<(LivingActor actor, OrderableAI ordai), Item_IDs> insurance = new();   // trading CPU for lower GC might be empirically ok here (null with alloc on first use)
-        Dictionary<(LivingActor actor, OrderableAI ordai), Item_IDs> want = new();
+
+        // first item in src that we need and the holder does not (ammo for a weapon the holder can reload stays theirs)
+        Item_IDs? first_wanted(List<Item_IDs> src, LivingActor holder) {
+            foreach (var x in src) {
+                if (!critical.Contains(x)) continue;
+                if (x.AmmoModel() is { } model && holder.Inventory.GetReloadableRangedWeapon(model) is not null) continue;
+                return x;
+            }
+            return null;
+        }
+
+        // each clan member contributes at most one entry, to insurance ahead of want
+        List<(LivingActor actor, OrderableAI ordai, Item_IDs what)>? insurance = null;
+        List<(LivingActor actor, OrderableAI ordai, Item_IDs what)>? want = null;
         foreach (var a in clan) {
             if (!CanSee(a.Location)) continue;  // don't want to mention this sort of thing over radio
             if (!InCommunicationWith(a)) continue;
             if (a.Controller is not OrderableAI ai) continue; // \todo self-order for PlayerController
             var have = ai.NonCriticalInInventory();
-            if (have.Key is not null) {
-                foreach (var x in have.Key) {
-                    if (!critical.Contains(x)) continue;
-
-                    if (x.AmmoModel() is { } model) {
-                      if (a.Inventory.GetReloadableRangedWeapon(model) is not null) continue;
-                    }
-
-                    insurance[(a, ai)] = x;
-                    break;
-                }
-                if (insurance.ContainsKey((a, ai))) continue; // possible MSIL compaction here (local bool vs. member function call); may not be a real micro-optimization
+            if (have.Key is not null && first_wanted(have.Key, a) is { } spare) {
+                (insurance ??= new()).Add((a, ai, spare));
+                continue;
             }
-            if (have.Value is not null) {
-                foreach (var x in have.Value) {
-                    if (!critical.Contains(x)) continue;
-
-                    if (x.AmmoModel() is { } model) {
-                      if (a.Inventory.GetReloadableRangedWeapon(model) is not null) continue;
-                    }
-
-                    want[(a, ai)] = x;
-                    break;
-                }
+            if (have.Value is not null && first_wanted(have.Value, a) is { } wanted) {
+                (want ??= new()).Add((a, ai, wanted));
             }
         }
-        ActorAction? tmpAction = null;
-        int min_dist = int.MaxValue;
-        (LivingActor, OrderableAI, ActionGiveTo)? donor = null;
-        if (0 < insurance.Count) {
-            foreach (var x in insurance) {
-                int dist = Rules.InteractionDistance(m_Actor.Location, x.Key.actor.Location);
+
+        // ask the nearest legal donor: directly when adjacent, otherwise by pathing to each other.  true when a donor was chosen
+        // (ret is the action, or null when we cannot path to the donor)
+        bool request_from(List<(LivingActor actor, OrderableAI ordai, Item_IDs what)> donors, out ActorAction? ret) {
+            ret = null;
+            int min_dist = int.MaxValue;
+            (LivingActor actor, OrderableAI ordai, ActionGiveTo donate)? donor = null;
+            foreach (var x in donors) {
+                int dist = Rules.InteractionDistance(m_Actor.Location, x.actor.Location);
                 if (dist >= min_dist) continue;
-                ActionGiveTo request = new(x.Key.actor, this, x.Value);
+                ActionGiveTo request = new(x.actor, this, x.what);
                 if (!request.IsLegal()) continue;
-                if (1 >= dist) return request;
-                if (x.Key.ordai.IsFocused) continue; // stacking this can backfire badly
-                min_dist = dist;
-                donor = (x.Key.actor, x.Key.ordai, request);
-            }
-            if (donor is (var actor, var ordai, var donate)) {
-                // we are assuming we can path to the target, but we were able to recruit/be recruited earlier
-                int t0 = Session.Get.WorldTime.TurnCounter + min_dist;    // overestimate
-                var my_plan = new Goal_HintPathToActor(t0, m_Actor, actor, donate);    // XXX \todo any reasonable action that stays in range 1 of the donor is fine
-                tmpAction = my_plan.Pathing();
-                if (tmpAction is not null) {
-                    // could lift this test up to the previous loop but unlikely to have player-visible consequences i.e. not worth CPU
-                    var your_plan = new Goal_HintPathToActor(t0, actor, m_Actor, donate);
-                    ordai.SetObjective(your_plan);
-                    SetObjective(my_plan);
-                    return tmpAction;
+                if (1 >= dist) {
+                    ret = request;
+                    return true;
                 }
-                return null;
-            }
-        }
-        if (0 < want.Count) {
-            foreach (var x in want) {
-                int dist = Rules.InteractionDistance(m_Actor.Location, x.Key.actor.Location);
-                if (dist >= min_dist) continue;
-                var request = new ActionGiveTo(x.Key.actor, this, x.Value);
-                if (!request.IsLegal()) continue;
-                if (1 >= dist) return request;
-                if (x.Key.ordai.IsFocused) continue; // stacking this can backfire badly
+                if (x.ordai.IsFocused) continue; // stacking this can backfire badly
                 min_dist = dist;
-                donor = (x.Key.actor, x.Key.ordai, request);
+                donor = (x.actor, x.ordai, request);
             }
-            if (donor is (var actor, var ordai, var donate)) {
-                // we are assuming we can path to the target, but we were able to recruit/be recruited earlier
-                int t0 = Session.Get.WorldTime.TurnCounter + min_dist;    // overestimate
+            if (donor is null) return false;
+            var (actor, ordai, donate) = donor.Value;
+            // we are assuming we can path to the target, but we were able to recruit/be recruited earlier
+            int t0 = Session.Get.WorldTime.TurnCounter + min_dist;    // overestimate
+            var my_plan = new Goal_HintPathToActor(t0, m_Actor, actor, donate);    // XXX \todo any reasonable action that stays in range 1 of the donor is fine
+            ret = my_plan.Pathing();
+            if (ret is not null) {
+                // could lift this test up to the previous loop but unlikely to have player-visible consequences i.e. not worth CPU
+                ordai.SetObjective(new Goal_HintPathToActor(t0, actor, m_Actor, donate));
+                SetObjective(my_plan);
+            }
+            return true;
+        }
 
-                var my_plan = new Goal_HintPathToActor(t0, m_Actor, actor, donate);    // XXX \todo any reasonable action that stays in range 1 of the donor is fine
-                tmpAction = my_plan.Pathing();
-                if (tmpAction is not null) {    // could lift this test up to the previous loop but unlikely to have player-visible consequences i.e. not worth CPU
-                    var your_plan = new Goal_HintPathToActor(t0, actor, m_Actor, donate);
-                    ordai.SetObjective(your_plan);
-                    SetObjective(my_plan);
-                    return tmpAction;
-                }
-                return null;
-            }
-        }
+        if (insurance is not null && request_from(insurance, out var ret)) return ret;
+        if (want is not null && request_from(want, out ret)) return ret;
         return null;
     }
 
