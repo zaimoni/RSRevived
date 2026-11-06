@@ -12545,21 +12545,22 @@ restart:
       m_UI.UI_DrawImage(imageID, gx + num3, gy + num4);
     }
 
-    public void DrawCorpsesList(List<Corpse> list, string title, int gx, int gy)
+    public void DrawCorpsesList(List<Corpse>? list, string title, int gx, int gy)
     {
       var is_dragging = Player.DraggedCorpse;
-      int num2 = list?.Count ?? 0;
-      if (num2 > 0) title += " : " + num2;
-      m_UI.UI_DrawStringBold(Color.White, title, gx, gy - BOLD_LINE_SPACING);
-      int gx1 = gx;
-      for (int index = 0; index < INVENTORY_SLOTS_PER_LINE; ++index) {
-        m_UI.UI_DrawImage(GameImages.ITEM_SLOT, gx1, gy);
-        if (index < num2) {
-          var c = list[index];
-          if (is_dragging == c) m_UI.UI_DrawImage(GameImages.CORPSE_DRAGGED, gx1, gy);
-          DrawCorpse(c, gx1, gy, Color.White);
-        }
-        gx1 += TILE_SIZE;
+      if (list is not null) {
+        int num2 = list.Count;
+        if (0 < num2) title += " : " + num2;
+      }
+
+      var slotPositions = DrawSlots(title, in gx, in gy, INVENTORY_SLOTS_PER_LINE, false);
+      if (list is null) return;
+
+      var slot = -1;
+      foreach(var c in list) {
+        var pixel_pos = slotPositions[++slot];
+        if (is_dragging == c) m_UI.UI_DrawImage(GameImages.CORPSE_DRAGGED, pixel_pos.X, pixel_pos.Y);
+        DrawCorpse(c, pixel_pos.X, pixel_pos.Y, Color.White);
       }
     }
 
@@ -13006,27 +13007,40 @@ restart:
       }
     }
 
-    private void DrawInventory(IEnumerable<Item>? inventory, string? title, bool drawSlotsNumbers, int maxSlots, int gx, int gy)
+    private List<GDI_Point> DrawSlots(string? title, in int gx, in int gy, int maxSlots, bool drawSlotsNumbers)
     {
-      if (!string.IsNullOrEmpty(title)) m_UI.UI_DrawStringBold(Color.White, title, gx, gy-BOLD_LINE_SPACING);
-      Vector2D_stack<int> pixel_pos = new(gx, gy);
-      int slot = 0;
+      if (!string.IsNullOrEmpty(title)) m_UI.UI_DrawStringBold(Color.White, title, gx, gy - BOLD_LINE_SPACING);
 
+      List<GDI_Point> ret = new();
+
+      int gx2 = gx;
+      int gy2 = gy;
+
+      int slot = 0;
       for (int index = 0; index < maxSlots; ++index) {
-        m_UI.UI_DrawImage(GameImages.ITEM_SLOT, pixel_pos.X, pixel_pos.Y);
+        m_UI.UI_DrawImage(GameImages.ITEM_SLOT, gx2, gy2);
+        ret.Add(new(gx2, gy2));
+        if (drawSlotsNumbers) {
+          m_UI.UI_DrawString(Color.White, (index + 1).ToString(), gx2 + 4, gy2 + TILE_SIZE);
+        }
         if (++slot >= INVENTORY_SLOTS_PER_LINE) {
           slot = 0;
-          pixel_pos.Y += TILE_SIZE;
-          pixel_pos.X = gx;
+          gy2 += TILE_SIZE;
+          gx2 = gx;
         } else
-          pixel_pos.X += TILE_SIZE;
+          gx2 += TILE_SIZE;
       }
+      return ret;
+    }
+
+    private void DrawInventory(IEnumerable<Item>? inventory, string? title, bool drawSlotsNumbers, int maxSlots, int gx, int gy)
+    {
+      var slotPositions = DrawSlots(title, gx, gy, maxSlots, drawSlotsNumbers);
       if (inventory is null) return;
 
-      pixel_pos = new(gx, gy);
-      slot = 0;
-
+      int slot = -1;
       foreach (Item it in inventory) {
+        var pixel_pos = slotPositions[++slot];
         if (it.IsEquipped)
           m_UI.UI_DrawImage(GameImages.ITEM_EQUIPPED, pixel_pos.X, pixel_pos.Y);
         if (it is ItemRangedWeapon rw) {
@@ -13045,26 +13059,11 @@ restart:
         else if (it is ItemTrap trap) trap.StatusIcon()?.DrawIcon(pixel_pos.X, pixel_pos.Y);
         else if (it is ItemEntertainment ent && ent.IsBoringFor(Player))
           m_UI.UI_DrawImage(GameImages.ICON_BORING_ITEM, pixel_pos.X, pixel_pos.Y);
-        DrawItem(it, in pixel_pos);
-        if (++slot >= INVENTORY_SLOTS_PER_LINE) {
-          slot = 0;
-          pixel_pos.Y += TILE_SIZE;
-          pixel_pos.X = gx;
-        } else
-          pixel_pos.X += TILE_SIZE;
-      }
-      if (!drawSlotsNumbers) return;
-
-      pixel_pos = new(gx + 4, gy + TILE_SIZE);
-
-      // XXX assumes maxSlots <= INVENTORY_SLOTS_PER_LINE
-      for (int index = 0; index < maxSlots; ++index) {
-        m_UI.UI_DrawString(Color.White, (index + 1).ToString(), pixel_pos.X, pixel_pos.Y);
-        pixel_pos.X += TILE_SIZE;
+        DrawItem(it, pixel_pos);
       }
     }
 
-    private void DrawItem(Item it, in Vector2D_stack<int> pos, Color tint)
+    private void DrawItem(Item it, in GDI_Point pos, Color tint)
     {
       m_UI.UI_DrawImage(it.ImageID, pos.X, pos.Y, tint);
       if (it.Model.IsStackable) {
@@ -13077,8 +13076,7 @@ restart:
       }
       (it as ItemTrap)?.StatusIcon()?.DrawIcon(pos.X, pos.Y);
     }
-    private void DrawItem(Item it, in Vector2D_stack<int> pos) => DrawItem(it, in pos, Color.White);
-    private void DrawItem(Item it, GDI_Point pos, Color tint) => DrawItem(it, new Vector2D_stack<int>(pos.X, pos.Y), tint);
+    private void DrawItem(Item it, in GDI_Point pos) => DrawItem(it, pos, Color.White);
 
     public void DrawActorSkillTable(Actor actor, int gx, int gy)
     {
