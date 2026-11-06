@@ -393,6 +393,7 @@ namespace djack.RogueSurvivor.Engine
       GameItems.Init(m_UI);
       m_Manual = LoadManual();
       m_UI.Add(HandleMouseLookAuto);
+      m_UI.Add(HandleMouseInventoryAuto);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
 
@@ -4647,9 +4648,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandleMouseLookAuto(int x, int y)
     {
       if (m_MapView is null) return;
-      var examine = MouseToLoc(x, y);
-      if (examine is null) return;
-      var loc = examine.Value; // backward compatibility
+      if (MouseToLoc(x, y) is not Location loc) return;
       if (loc == m_LiveLook) return;
       if (IsVisibleToPlayer(in loc)) {
         List<UI.Overlay> overlays = new();
@@ -4682,6 +4681,44 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    private static Rectangle? s_LiveRect = null;
+    private void HandleMouseInventoryAuto(int x, int y)
+    {
+      GDI_Point mousePos = new(x, y);
+      var invSpec = MouseToInventoryItem(mousePos);
+      if (invSpec is null) return; // this command can work against ground inventory
+      var itemPos = invSpec.Value.Value; // backward compatibility
+      Rectangle bbox = new(new((short)itemPos.X, (short)itemPos.Y), new(TILE_SIZE, TILE_SIZE));
+       if (bbox == s_LiveRect) return;
+
+      List<Overlay> overlays = new();
+      bool isPlayerInventory = invSpec.Value.Key.Origin.a_owner == Player && Player == m_PlayerInTurn;
+
+      overlays.Add(new UI.OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos, (GDI_Point)TILE_SIZE)));
+      overlays.Add(new UI.OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos + (GDI_Point)1, (GDI_Point)(TILE_SIZE - 2))));
+      var inventoryItem = invSpec.Value.Key.it!;
+      overlays.Add(SetInfoOverlay(new UI.OverlayPopup(DescribeItemLong(inventoryItem, isPlayerInventory), Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(itemPos.X, itemPos.Y + TILE_SIZE))));
+
+      if (0 < overlays.Count) {
+          s_LiveRect = bbox;
+          foreach(var o in overlays) AddOverlay(o);
+          bool remove(int x, int y) {
+            var pixel = LogicalPixel(new(x, y));
+            bool ok_to_null = bbox == s_LiveRect;
+            if (ok_to_null && bbox.Contains(new Point((short)pixel.X, (short)pixel.Y))) return false;
+            Logger.Trace("remove: "+x.ToString()+", "+y.ToString()+"; "+bbox.to_s()+"; "+IRogueUI.UI.UI_GetCanvasScaleX().ToString()+", "+IRogueUI.UI.UI_GetCanvasScaleY().ToString());
+            bool need_redraw = false;
+            foreach(var o in overlays) {
+              if (RemoveOverlay(o)) need_redraw = true;
+            }
+            if (ok_to_null) s_LiveRect = null;
+            if (need_redraw) RedrawPlayScreen();
+            return true;
+          }
+          IRogueUI.UI.Add(remove);
+          RedrawPlayScreen();
+      }
+    }
 
     private bool _HandlePlayerInventory(LivingActor player, Item it)
     {
@@ -4726,11 +4763,13 @@ namespace djack.RogueSurvivor.Engine
 
       var invSpec = MouseToInventoryItem(mousePos);
       if (invSpec is null) return false; // this command can work against ground inventory
+      var inventoryItem = invSpec.Value.Key.it!;
 
       bool isPlayerInventory = invSpec.Value.Key.Origin.a_owner == Player;
 
       bool OnRMBItem(Item it)
       {
+        if (Player != m_PlayerInTurn) return false;
         if (!isPlayerInventory || Player is not LivingActor living) return false;
         if (living.CanDrop(it, out string reason)) {
           DoDropItem(living, it);
@@ -4742,18 +4781,13 @@ namespace djack.RogueSurvivor.Engine
 
       bool OnLMBItem(Item it)
       {
-        if (isPlayerInventory) return Player is LivingActor me && _HandlePlayerInventory(me, it);
+        if (Player != m_PlayerInTurn) return false;
+        if (Player is not LivingActor living) return false;
+        if (isPlayerInventory) return _HandlePlayerInventory(living, it);
 
-//      var fetch_from = Player.Location.InventoryAtFeet(); // want this, but compile error
-        return Player is LivingActor living && Interpret(new _Action.TakeItem(living, living.Location, it));
+        return Interpret(new TakeItem(living, living.Location, it));
       }
 
-      ClearOverlays();
-      var itemPos = invSpec.Value.Value; // backward compatibility
-      AddOverlay(new UI.OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos, (GDI_Point)TILE_SIZE)));
-      AddOverlay(new UI.OverlayRect(Color.Cyan, new GDI_Rectangle(itemPos + (GDI_Point)1, (GDI_Point)(TILE_SIZE - 2))));
-      var inventoryItem = invSpec.Value.Key.it!;
-      AddOverlay(SetInfoOverlay(new UI.OverlayPopup(DescribeItemLong(inventoryItem, isPlayerInventory), Color.White, Color.White, POPUP_FILLCOLOR, new GDI_Point(itemPos.X, itemPos.Y + TILE_SIZE))));
       if (mouseButtons.HasValue) {
           if (MouseButtons.Left == mouseButtons.Value) hasDoneAction = OnLMBItem(inventoryItem);
           else if (MouseButtons.Right == mouseButtons.Value) hasDoneAction = OnRMBItem(inventoryItem);
@@ -8237,8 +8271,11 @@ namespace djack.RogueSurvivor.Engine
         lines.AddRange(DescribeItemTrap(trap));
         inInvAdditionalDesc = (trap.Model.ActivatesWhenDropped ? "to activate trap : drop it" : "to activate trap : use it");   // alpha10
       } else if (it is ItemEntertainment ent) lines.AddRange(DescribeItemEntertainment(ent));
-      lines.Add(" ");
-      lines.Add(model.FlavorDescription);
+
+      if (!string.IsNullOrEmpty(model.FlavorDescription)) {
+        lines.Add(" ");
+        lines.Add(model.FlavorDescription);
+      }
       if (isPlayerInventory) {
         lines.Add(" ");
         lines.Add("----");
@@ -8246,10 +8283,6 @@ namespace djack.RogueSurvivor.Engine
         lines.Add(string.Format("to trade : <{0}>.", s_KeyBindings.AsString(PlayerCommand.INITIATE_TRADE)));
         if (inInvAdditionalDesc is not null) lines.Add(inInvAdditionalDesc);
         if (0 < command_lines.Count) lines.AddRange(command_lines);
-      } else if (0 < command_lines.Count) {
-        lines.Add(" ");
-        lines.Add("----");
-        lines.AddRange(command_lines);
       }
       return lines.ToArray();
     }
