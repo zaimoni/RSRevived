@@ -1,6 +1,4 @@
 ﻿#define INTEGRITY_CHECK_ITEM_RETURN_CODE
-#define PATHFIND_IMPLEMENTATION_GAPS
-// #define TRACE_GOALS
 // #define DIAGNOSE_SELF_PATHING
 
 using System;
@@ -3090,9 +3088,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private HashSet<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, Predicate<Map> preblacklist)
     {
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.Trace(Logger.Stage.RUN_MAIN, m_Actor.Name + " (depth 1) @ " + m_Actor.Location);
-#endif
       var dest_hospital = Session.Get.UniqueMaps.HospitalDepth(dest);
       var dest_police = Session.Get.UniqueMaps.PoliceStationDepth(dest);
 
@@ -3201,14 +3196,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
           return cache;
         }
-#if TRACE_GOALS
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": obtaining goals for " + m +"\nalready seen: "+already_seen.to_s()+"\nscheduled: "+ scheduled.to_s()+ "\nwaypoint_dist: "+waypoint_dist.to_s());
-#endif
 Restart:
         var dests = targets_at(m);
-#if TRACE_GOALS
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, dests.Count.to_s()+" for "+m);
-#endif
         if (m != m_Actor.Location.Map) {
           // do not cache if this triggers -- don't have enough information to prune
           int m_code = District.UsesCrossDistrictView(m);
@@ -3231,9 +3220,6 @@ Restart:
               foreach(var x in min_dist) {
                 if (ub < x.Value) {
                   (remove ??= new List<Location>(min_dist.Count)).Add(x.Key);
-#if TRACE_GOALS
-                  if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "removing " + x.Key + " in favor of "+loc+"; "+x.Value+", "+ dist.to_s());
-#endif
                 }
               }
               if (remove is not null) foreach(var x in remove) {
@@ -3243,9 +3229,6 @@ Restart:
               }
             }
             if (lb > dist.X) lb = dist.X;
-#if TRACE_GOALS
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "min dist: "+loc.ToString()+": "+ dist.to_s());
-#endif
             if (!min_dist.TryGetValue(loc,out var old_min) || old_min>dist.X) min_dist[loc] = dist.X;
             if (loc != m_Actor.Location) goals.Add(loc);
           }
@@ -3255,9 +3238,6 @@ Restart:
           }
         }
         already_seen.Add(m);
-#if TRACE_GOALS
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": min_dist " + min_dist.to_s()+"\nwaypoint_for_dist "+waypoint_for_dist.to_s());
-#endif
         return obtain_goals_cache[m] = dests;
       }
 
@@ -3284,9 +3264,6 @@ Restart:
       }
 
       var where_to_go = obtain_goals(dest);
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s()+" for "+dest);
-#endif
 
       // upper/lower bounds; using X as lower, Y as upper bound
       // The SWAT team can have a fairly impressive pathing degeneration at game start (they want their heavy hammers, etc.)
@@ -3295,27 +3272,18 @@ Restart:
         if (preblacklist is not null) maps.RemoveWhere(preblacklist);
         if (1<maps.Count) {
           foreach(Map m in maps.ToList()) if (veto_map(m,dest)) maps.Remove(m);
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s() + " for exit short-circuit  of " + dest);
-#endif
         }
         if (1==maps.Count && 0==goals.Count) {
           var exits = dest.GetExits(e => maps.Contains(e.ToMap));
           foreach(var loc_exit in exits) {
             goals.Add(loc_exit.Key==m_Actor.Location ? loc_exit.Value.Location : loc_exit.Key);
           }
-#if TRACE_GOALS
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": short-circuit exit " + goals.to_s());
-#endif
           return goals;
         }
         // if that isn't enough, we could also use the police and hospital geometries
       }
 
       void schedule_maps(Map m2) {
-#if TRACE_GOALS
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": scheduling " + m2 +"\nalready seen: "+already_seen.to_s()+"\nscheduled: "+ scheduled.to_s());
-#endif
         var ok_maps = new HashSet<Map>();
         m2.ForEachExit((pt,e) => {
           if (already_seen.Contains(e.ToMap)) return;
@@ -3357,16 +3325,10 @@ Restart:
         var m = scheduled[0];
 
         obtain_goals(m);
-#if TRACE_GOALS
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "goal iteration: " + goals.to_s() + " for " + m);
-#endif
         schedule_maps(m);
 
         scheduled.RemoveAt(0);
       }
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "final goals: " + goals.to_s() + "\nwaypoints: " + waypoint_for_dist.to_s());
-#endif
       var replace_goals = new List<Location>();
       var replace_with = new HashSet<Location>();
       var backup_replace_with = new HashSet<Location>();
@@ -3378,9 +3340,6 @@ Restart:
       goals.ExceptWith(replace_goals);
       goals.UnionWith(replace_with);
       if (0 >= goals.Count) goals.UnionWith(backup_replace_with);
-#if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returned goals: " + goals.to_s());
-#endif
       return goals;
     }
 

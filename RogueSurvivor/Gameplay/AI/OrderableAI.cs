@@ -4170,7 +4170,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             get_item.OnlyIf(loc => considering.Contains(loc));
           }
 #if FALSE_POSITIVE
-          if (/* m_Actor.IsDebuggingTarget && */ 1<get_item.Count && !m_Actor.Inventory.IsEmpty) throw new InvalidOperationException(m_Actor.Name+", stack choosing: "+get_item.to_s());
+          if (1<get_item.Count && !m_Actor.Inventory.IsEmpty) throw new InvalidOperationException(m_Actor.Name+", stack choosing: "+get_item.to_s());
 #endif
           if (0<get_item.Count) {
             var take = get_item.FirstOrDefault();

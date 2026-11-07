@@ -548,26 +548,8 @@ namespace djack.RogueSurvivor.Data
     private const bool WantPConTop = false;
 #endif
 
-    // has to be accessor, due to usage outside of Actor
-    public bool IsDebuggingTarget {
-      get {
-#if TRACER
-        if (   Controller is Gameplay.AI.CivilianAI
-            && !IsSleeping
-            && Controller.InCombat) return true;
-/*      if (Controller is Gameplay.AI.CivilianAI && Location.Map == Location.Map.District.EntryMap && new Rectangle(new Point(0,0),new Point(3,3)).Contains(Location.Map.District.WorldPosition)) return true;
-        var denorm = RogueGame.Player.Location.Map.Denormalize(Location);
-        if (   Controller is Gameplay.AI.CivilianAI
-            && denorm is not null
-            && RogueGame.Player.Location.LocalView.Contains(denorm.Value.Position)) return true;
-*/
-#endif
-        return false;
-      }
-    }
-
     // 2024-11-01: NPC viewpoint support removed as obsolescent for debugging
-    public bool IsViewpoint { get => IsPlayer /* || IsDebuggingTarget */; } // i.e., is camera viewpoint
+    public bool IsViewpoint { get => IsPlayer; } // i.e., is camera viewpoint
 
     /// <summary>DEBUG report for an invariant failure about this actor: pans the viewport to it (making it the player, as
     /// RogueGame.PanViewportTo(Actor) does) and writes the daimon cheat map, then hands back the exception to throw:
@@ -581,7 +563,6 @@ namespace djack.RogueSurvivor.Data
 #endif
       return e;
     }
-//  public bool IsNPCviewpoint { get { return IsDebuggingTarget; } }
 
     [NonSerialized] private string[]? _force_PC_names = null; // only used below
     public void CommandLinePlayer() // would prefer private
