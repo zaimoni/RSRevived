@@ -140,13 +140,14 @@ namespace djack.RogueSurvivor.Data
        }
     }
 
-    public bool LastSeen(Location x, out int turn) {
+    private bool LastSeen(ref Location x, out int turn) {
       turn = 0;
       var memory = ItemMemory;
       return memory is not null && Map.Canonical(ref x) && memory.HaveEverSeen(x, out turn);
     }
-
-    public bool IsKnown(Location x) { return LastSeen(x, out _); }
+    private bool LastSeen(Location x, out int turn) => LastSeen(ref x, out turn);
+    public bool IsKnown(ref Location x) => LastSeen(ref x, out _);
+    public bool IsKnown(Location x) => LastSeen(x, out _);
 
     public void ForceKnown(Point x) {   // for world creation
       var map = m_Actor.Location.Map;

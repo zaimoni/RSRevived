@@ -4703,7 +4703,6 @@ namespace djack.RogueSurvivor.Engine
         var pixel = LogicalPixel(new(x, y));
         bool ok_to_null = bbox == s_LiveRect;
         if (ok_to_null && bbox.Contains(new Point((short)pixel.X, (short)pixel.Y))) return false;
-        Logger.Trace("remove: "+x.ToString()+", "+y.ToString()+"; "+bbox.to_s()+"; "+IRogueUI.UI.UI_GetCanvasScaleX().ToString()+", "+IRogueUI.UI.UI_GetCanvasScaleY().ToString());
         bool need_redraw = false;
         foreach(var o in overlays) {
           if (RemoveOverlay(o)) need_redraw = true;
@@ -12238,7 +12237,7 @@ restart:
           bool flag2 = false;
           var tile = loc.Tile;
           tile.IsInView = player;
-          tile.IsVisited = Player.Controller.IsKnown(new Location(map,point));
+          tile.IsVisited = Player.Controller.IsKnown(loc);
           DrawTile(tile, screen, tint);
           if (!string.IsNullOrEmpty(overlays[working])) m_UI.UI_DrawImage(overlays[working], screen.X, screen.Y, tint);
 
@@ -12755,7 +12754,10 @@ restart:
         m_UI.UI_ClearMinimap(Color.Black);
 #region set visited tiles color.
         if (threats is null) {
-          foreach (var pt in view) if (Player.Controller.IsKnown(new Location(map, pt))) m_UI.UI_SetMinimapColor(pt.X - view.Left, pt.Y - view.Top, (map.HasExitAtExt(pt) ? Color.HotPink : map.GetTileModelAtExt(pt).MinimapColor));
+          foreach (var pt in view) {
+            Location loc = new(map, pt);
+            if (Player.Controller.IsKnown(ref loc)) m_UI.UI_SetMinimapColor(pt.X - view.Left, pt.Y - view.Top, (loc.HasExit ? Color.HotPink : loc.TileModel.MinimapColor));
+          }
         } else {
           HashSet<Point> tainted = threats.ThreatWhere(map, view);
           HashSet<Point> tourism = sights_to_see.In(map, view);
@@ -12768,8 +12770,9 @@ restart:
                 m_UI.UI_SetMinimapColor(pos.X - view.Left, pos.Y - view.Top, Color.Magenta);
                 continue;
               }
-              if (!Player.Controller.IsKnown(new Location(map, pos))) continue;
-              m_UI.UI_SetMinimapColor(pos.X - view.Left, pos.Y - view.Top, (map.HasExitAtExt(pos) ? Color.HotPink : map.GetTileModelAtExt(pos).MinimapColor));
+              Location loc = new(map, pos);
+              if (!Player.Controller.IsKnown(ref loc)) continue;
+              m_UI.UI_SetMinimapColor(pos.X - view.Left, pos.Y - view.Top, (loc.HasExit ? Color.HotPink : loc.TileModel.MinimapColor));
           }
         }
 #endregion
@@ -13447,15 +13450,15 @@ restart:
               break;
             default: break; // intentionally do not handle all commands
           }
-          if (tmp is null) continue;
-          if (    !Player.Controller.IsKnown(tmp.Value)                             // disallow not-known
-              && (viewpoint.Map==tmp.Value.Map || viewpoint.Map.DistrictPos!=tmp.Value.Map.DistrictPos))    // but ok if same-district different map i.e. stairway
+          if (tmp is not Location loc) continue;
+          if (    !Player.Controller.IsKnown(loc)                             // disallow not-known
+              && (viewpoint.Map == loc.Map || viewpoint.Map.DistrictPos != loc.Map.DistrictPos)) // but ok if same-district different map i.e. stairway
               continue;    // XXX probably should have some feedback here
           if (inspect is not null) {
             RemoveOverlay(inspect);
             inspect = null;
           }
-          viewpoint = tmp.Value;
+          viewpoint = loc;
           // from Staying Alive: inspect mode within far-look
           if (IsVisibleToPlayer(in viewpoint)) {
             string[]? lines = DescribeStuffAt(viewpoint);
