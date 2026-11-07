@@ -3038,6 +3038,7 @@ namespace djack.RogueSurvivor.Engine
     // Don't want this in PlayerController; the required public accessors are unacceptable.
     static private List<KeyValuePair<PlayerController, KeyValuePair<int, PlayerCommand> > >? s_CountedCommands = null;
 
+#region json save/load
     // The JSON save keeps a controller's counted command with that controller: one entry out, one entry in.
     static internal KeyValuePair<int, PlayerCommand>? CountedCommand(PlayerController pc)
     {
@@ -3049,6 +3050,33 @@ namespace djack.RogueSurvivor.Engine
     }
 
     static internal void CountedCommand(PlayerController pc, KeyValuePair<int, PlayerCommand> src) => (s_CountedCommands ??= new()).Add(new(pc, src));
+#endregion
+
+    private static (PlayerCommand command, int index)? GetPlayerCountedCommand(PlayerController pc) {
+        if (s_CountedCommands is null) return null;
+
+        var ub = s_CountedCommands.Count;
+        while(0 <= --ub) {
+            if (s_CountedCommands[ub].Key != pc) continue;
+            if (pc.enemies_in_FOV is not null) {
+                // enemies in sight: abort.  Don't use the more general "in combat" notion.
+                // \todo We actually should abort if we think we could be imminently attacked by an unseen enemy
+                s_CountedCommands.RemoveAt(ub);
+                return null;
+            }
+
+            var count = s_CountedCommands[ub].Value.Key;
+            if (1 >= count) {
+                if (1 >= s_CountedCommands.Count) s_CountedCommands = null;
+                else s_CountedCommands.RemoveAt(ub);
+                return null;
+            }
+            var pc_command = s_CountedCommands[ub].Value.Value;
+            s_CountedCommands[ub] = new(pc,new(count-1, pc_command));
+            return (pc_command, ub);
+        }
+        return null;
+    }
 
     // These don't alter game state
     static private readonly PlayerCommand[] s_ReadonlyCommands = new PlayerCommand[]{
@@ -3145,36 +3173,10 @@ namespace djack.RogueSurvivor.Engine
           return;
         }
 
-        PlayerCommand? pc_command = null;
-        int? index = null;
-        if (s_CountedCommands is not null) {
-            var ub = s_CountedCommands.Count;
-            while(0 <= --ub) {
-              if (s_CountedCommands[ub].Key == pc) {
-                if (pc.enemies_in_FOV is not null) {
-                  // enemies in sight: abort.  Don't use the more general "in combat" notion.
-                  // \todo We actually should abort if we think we could be imminently attacked by an unseen enemy
-                  s_CountedCommands.RemoveAt(ub);
-                  break;
-                }
-
-                pc_command = s_CountedCommands[ub].Value.Value;
-                var count = s_CountedCommands[ub].Value.Key;
-                if (1 >= count) {
-                  if (1 >= s_CountedCommands.Count) s_CountedCommands = null;
-                  else s_CountedCommands.RemoveAt(ub);
-                } else {
-                  s_CountedCommands[ub] = new(pc,new(count-1, pc_command.Value));
-                  index = ub;
-                }
-                break;
-              }
-            }
-        }
-
-        if (pc_command is not null) {
+        var counted_command = GetPlayerCountedCommand(pc);
+        if (counted_command is (var pc_command, var index)) {
           play_timer.Start();
-          switch (pc_command.Value)
+          switch (pc_command)
           {
           case PlayerCommand.MOVE_N:
           case PlayerCommand.MOVE_NE:
@@ -3184,19 +3186,19 @@ namespace djack.RogueSurvivor.Engine
           case PlayerCommand.MOVE_SW:
           case PlayerCommand.MOVE_W:
           case PlayerCommand.MOVE_NW:
-            if (TryInsanity(pc) || !DoPlayerBump(player, Direction.COMPASS[(int)(pc_command.Value) - (int)(PlayerCommand.MOVE_N)])) {
-              if (index is not null) s_CountedCommands.RemoveAt(index.Value);
+            if (TryInsanity(pc) || !DoPlayerBump(player, Direction.COMPASS[(int)(pc_command) - (int)(PlayerCommand.MOVE_N)])) {
+              s_CountedCommands.RemoveAt(index);
             };
             break;
           case PlayerCommand.WAIT_OR_SELF:
             if (TryInsanity(pc)) {
-              if (index is not null) s_CountedCommands.RemoveAt(index.Value);
+              s_CountedCommands.RemoveAt(index);
             };
             DoWait(player);
             break;
           case PlayerCommand.USE_SPRAY:
             if (TryInsanity(pc) || !HandlePlayerUseSpray(player)) {
-              if (index is not null) s_CountedCommands.RemoveAt(index.Value);
+              s_CountedCommands.RemoveAt(index);
             };
             break;
           }
