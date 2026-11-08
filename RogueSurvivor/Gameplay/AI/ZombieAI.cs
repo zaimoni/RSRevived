@@ -15,6 +15,7 @@ using Zaimoni.JSON;
 
 using Point = Zaimoni.Data.Vector2D<short>;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+using Rectangle = Zaimoni.Data.Box2D<short>;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -150,6 +151,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       return BehaviorWander();  // alpha 10.1: do not use exploration data even though we have it
+    }
+
+    protected Engine.Actions.ActionPush? BehaviorPushNonWalkableObject()
+    {
+      if (!m_Actor.AbleToPush) return null;
+      Map map = m_Actor.Location.Map;
+      Dictionary<Point,MapObject> objs = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
+        var o = m.GetMapObjectAtExt(pt);
+        if (o is null || o.IsWalkable) return null;
+        return (m_Actor.CanPush(o) ? o : null);
+      });
+      if (0 >= objs.Count) return null;
+      return Engine.Actions.ActionPush.Random(m_Actor, Rules.Get.DiceRoller.Choose(objs).Value);
+    }
+
+    protected static Location RandomPositionNear(Rules rules, Location goal, int range)
+    { // XXX \todo see if it's practical to be more efficient
+      Rectangle _range = new((Point)(-range),(Point)(2*range+1));
+      Location ret = new(goal.Map, rules.DiceRoller.Choose(_range));
+      while(!Map.Canonical(ref ret)) ret = new(goal.Map, rules.DiceRoller.Choose(_range));
+      return ret;
     }
   }
 }

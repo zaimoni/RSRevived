@@ -1317,6 +1317,7 @@ namespace djack.RogueSurvivor.Data
       if (ArePersonalEnemies(target)) return true;
       return checkGroups && AreIndirectEnemies(target);
     }
+    public bool IsFriendOf(Actor other) => !IsEnemyOf(other) && IsFaction(other);
 
     private bool ArePersonalEnemies(Actor other) // RS alpha 10 had better name
     {
@@ -2093,6 +2094,10 @@ namespace djack.RogueSurvivor.Data
       if (IsExhausted) staminaCost *= 2;
       return STAMINA_MIN_FOR_ACTIVITY > m_StaminaPoints-staminaCost;
     }
+    // XXX doesn't work in the presence of jumping
+    public bool WillTireAfterRunning() => WillTireAfter(Rules.STAMINA_COST_RUNNING);
+    public bool WillTireAfterRunning(in Location dest) => WillTireAfter(RunningStaminaCost(in dest));
+    public bool WillTireAfterAttack() => WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + CurrentMeleeAttack.StaminaPenalty);
 
     public int RunningStaminaCost(in Location dest)
     {
@@ -2104,6 +2109,13 @@ namespace djack.RogueSurvivor.Data
     {
       if (Location.RequiresJump(in dest)) return Rules.STAMINA_COST_JUMP+NightSTApenalty;
       return 0;
+    }
+
+    public bool HasSpeedAdvantage(Actor target)
+    {
+      int num1 = Speed;
+      int num2 = target.Speed;
+      return (num1 > num2) || (CanRun() && !target.CanRun() && !WillTireAfterRunning() && num1 * 2 > num2);
     }
 
     public int MaxSTA {

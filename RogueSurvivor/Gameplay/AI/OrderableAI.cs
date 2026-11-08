@@ -1805,12 +1805,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (_retreat is not null) {
         if (tracing && !RogueGame.IsSimulating) {
-          if (WillTireAfterAttack(m_Actor)) RogueGame.Game.InfoPopup("will tire after attack");
+          if (m_Actor.WillTireAfterAttack()) RogueGame.Game.InfoPopup("will tire after attack");
           if (_slow_melee_threat is not null) RogueGame.Game.InfoPopup(_slow_melee_threat.to_s());
           if (_damage_field.ContainsKey(m_Actor.Location)) RogueGame.Game.InfoPopup(_damage_field.to_s());
         }
 
-        if (   WillTireAfterAttack(m_Actor) // need stamina to melee: slow retreat ok
+        if (   m_Actor.WillTireAfterAttack() // need stamina to melee: slow retreat ok
             || _slow_melee_threat is not null) {    // have slow enemies nearby
           _caller = CallChain.ManageMeleeRisk;
           tmpAction = DecideMove(_retreat);
@@ -2790,6 +2790,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return choiceEval is not null ? cache[choiceEval.Choice] : null;
     }
 
+    protected static bool IsBetween(Point A, in Point between, Point B)
+    {
+      return Rules.StdDistance(in A, in between) + Rules.StdDistance(in B, in between) <= Rules.StdDistance(in A, in B) + 0.25;
+    }
+
     private ActorAction? BehaviorFlee(Actor enemy, HashSet<Point>? LoF_reserve, bool doRun, string[] emotes)
     {
       var game = RogueGame.Game;
@@ -3013,12 +3018,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         } else {
           if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("evading melee: "+WantToEvadeMelee(m_Actor, courage, enemy).ToString());
           decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
-          doRun = !HasSpeedAdvantage(m_Actor, enemy);
+          doRun = !m_Actor.HasSpeedAdvantage(enemy);
         }
         if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("initial decision to flee: " + decideToFlee.ToString());
-        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("will tire after attack: " + WillTireAfterAttack(m_Actor).ToString());
+        if (tracing && !RogueGame.IsSimulating) RogueGame.Game.InfoPopup("will tire after attack: " + m_Actor.WillTireAfterAttack().ToString());
 
-        if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
+        if (!decideToFlee && m_Actor.WillTireAfterAttack()) {
             if (  (_damage_field is not null && _damage_field.ContainsKey(m_Actor.Location))
                 || (Rules.IsAdjacent(m_Actor.Location, in e_loc) && 0 >= enemy.CannotMeleeForThisLong()))
             decideToFlee = true;    // but do not run as otherwise we won't build up stamina
@@ -3028,7 +3033,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // alpha10
       // Improve STA management a bit.
       // Cancel running if this would make us tired and is not a free move
-      if (doRun && WillTireAfterRunning(m_Actor) && !m_Actor.RunIsFreeMove) doRun = false;
+      if (doRun && m_Actor.WillTireAfterRunning() && !m_Actor.RunIsFreeMove) doRun = false;
 
       // alpha10 
       // If we have no ranged weapon and target is unreachable, no point charging him as we can't get into

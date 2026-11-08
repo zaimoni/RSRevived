@@ -22,7 +22,6 @@ using Zaimoni.JSON;
 using static Zaimoni.Data.Functor;
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using Point = Zaimoni.Data.Vector2D<short>;
-using Rectangle = Zaimoni.Data.Box2D<short>;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -400,25 +399,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction? BehaviorWalkAwayFrom(IEnumerable<Point> goals)
-    {
-      var leader = (m_Actor as LivingActor)?.LiveLeader;
-      Dictionary<Direction, ActionBump> cache = new();
-      var choiceEval = Choose(Direction.COMPASS, dir => {
-        var bump = ActionBump.create(m_Actor, dir);
-        if (bump is null) return float.NaN;
-        if (!IsValidFleeingAction(bump)) return float.NaN;
-        Location location = m_Actor.Location + dir;
-        float num = SafetyFrom(location.Position, goals);
-        if (leader is not null) {
-          num -= (float)Rules.StdDistance(in location, leader.Location);
-        }
-        cache.Add(dir, bump);
-        return num;
-      }, (a, b) => a > b);
-      return ((choiceEval is not null) ? cache[choiceEval.Choice] : null);
-    }
-
     protected ActionMeleeAttack? BehaviorMeleeAttack(Actor target)
     {
       return (ActionMeleeAttack.Can(m_Actor, target) ? new ActionMeleeAttack(m_Actor, target) : null);
@@ -441,19 +421,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (equippedWeapon != bestMeleeWeapon) bestMeleeWeapon.EquippedBy(tmp_a);
       return null;
-    }
-
-    protected ActionPush? BehaviorPushNonWalkableObject()
-    {
-      if (!m_Actor.AbleToPush) return null;
-      Map map = m_Actor.Location.Map;
-      Dictionary<Point,MapObject> objs = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
-        var o = m.GetMapObjectAtExt(pt);
-        if (o is null || o.IsWalkable) return null;
-        return (m_Actor.CanPush(o) ? o : null);
-      });
-      if (0 >= objs.Count) return null;
-      return ActionPush.Random(m_Actor, Rules.Get.DiceRoller.Choose(objs).Value);
     }
 
     protected virtual ActorAction? BehaviorFollowActor(Actor? other, int maxDist)
@@ -788,31 +755,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected static bool WillTireAfterAttack(Actor actor)
-    {
-      return actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK+ actor.CurrentMeleeAttack.StaminaPenalty);
-    }
-
-    // XXX doesn't work in the presence of jumping
-    protected static bool WillTireAfterRunning(Actor actor)
-    {
-      return actor.WillTireAfter(Rules.STAMINA_COST_RUNNING);
-    }
-
-    static protected bool HasSpeedAdvantage(Actor actor, Actor target)
-    {
-      int num1 = actor.Speed;
-      int num2 = target.Speed;
-      return (num1 > num2) || (actor.CanRun() && !target.CanRun() && !WillTireAfterRunning(actor) && num1 * 2 > num2);
-    }
-
-    protected static bool IsBetween(Point A, in Point between, Point B)
-    {
-      return Rules.StdDistance(in A, in between) + Rules.StdDistance(in B, in between) <= Rules.StdDistance(in A, in B) + 0.25;
-    }
-
-    protected bool IsFriendOf(Actor other) { return !m_Actor.IsEnemyOf(other) && m_Actor.IsFaction(other); }
-
     // XXX these two break down cross-map
     protected bool CanReachSimple(in Location dest, RouteFinder.SpecialActions allowedActions)
     {
@@ -823,17 +765,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected void FilterOutUnreachable<_T_>(ref List<_T_> percepts, RouteFinder.SpecialActions allowedActions) where _T_:ILocation
     {
       percepts?.OnlyIf(p => CanReachSimple(p.Location, allowedActions));
-    }
-
-    protected static Location RandomPositionNear(Rules rules, Location goal, int range)
-    { // XXX \todo see if it's practical to be more efficient
-      Rectangle _range = new Rectangle((Point)(-range),(Point)(2*range+1));
-      Map m = goal.Map;
-      Point pt;
-      do {
-        pt = goal.Position + rules.DiceRoller.Choose(_range);
-      } while(!m.IsValid(pt));
-      return new Location(m, pt);
     }
 
     protected class ChoiceEval<_T_>

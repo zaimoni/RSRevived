@@ -154,8 +154,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorStupidBumpToward(percept.Location, false, false);
     }
 
+    private ActorAction? BehaviorWalkAwayFrom(IEnumerable<Point> goals)
+    {
+      var leader = (m_Actor as LivingActor)?.LiveLeader;
+      Dictionary<Direction, ActionBump> cache = new();
+      var choiceEval = Choose(Direction.COMPASS, dir => {
+        var bump = ActionBump.create(m_Actor, dir);
+        if (bump is null) return float.NaN;
+        if (!IsValidFleeingAction(bump)) return float.NaN;
+        Location location = m_Actor.Location + dir;
+        float num = SafetyFrom(location.Position, goals);
+        if (leader is not null) {
+          num -= (float)Rules.StdDistance(in location, leader.Location);
+        }
+        cache.Add(dir, bump);
+        return num;
+      }, (a, b) => a > b);
+      return ((choiceEval is not null) ? cache[choiceEval.Choice] : null);
+    }
+
     // Feral dogs use BehaviorFightOrFlee; simplified version of what OrderableAI uses
-    protected ActorAction? BehaviorFightOrFlee(string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
+    private ActorAction? BehaviorFightOrFlee(string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
       const ActorCourage courage = ActorCourage.CAUTIOUS;
       var game = RogueGame.Game;
@@ -168,9 +187,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         decideToFlee = true;
       else {
         decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
-        doRun = !HasSpeedAdvantage(m_Actor, enemy);
+        doRun = !m_Actor.HasSpeedAdvantage(enemy);
       }
-      if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
+      if (!decideToFlee && m_Actor.WillTireAfterAttack()) {
         decideToFlee = true;    // but do not run as otherwise we won't build up stamina
       }
 
