@@ -35,8 +35,8 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MovesTo | Data/Actor.cs:1602 | ok | the destination itself |
-| Actor.MayEnter(ref Location) | Data/Actor.cs:2282 | ok | beyond adjacency |
+| Actor.MovesTo | Data/Actor.cs:1584 | ok | the destination itself |
+| Actor.MayEnter(ref Location) | Data/Actor.cs:2275 | ok | beyond adjacency |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:244 | ok | |
 | ActorModel.CastToBumpableDestinations | Data/ActorModel.cs:246 | ok | |
 | ActorModel.CastToInventoryAccessibleDestinations(,) | Data/ActorModel.cs:263 | ok | excludes shelf-like objects separately |
@@ -85,15 +85,15 @@ Three predicates share the name, and a fourth chooses between two of them. Each 
 
 | caller | site | status | note |
 |---|---|---|---|
-| Actor.MutuallyAdjacentFor | Data/Actor.cs:2294 | ok | by ref |
+| Actor.MutuallyAdjacentFor | Data/Actor.cs:2287 | ok | by ref |
 | _Action.MoveStep._Ok | Engine/Action/MoveStep.cs:118 | ok | throws on the destination |
 | _Action.MoveStep._runFrom | Engine/Action/MoveStep.cs:192 | ok | each candidate destination, by ref |
 | _Action.PushOnto.IsPerformable | Engine/Action/PushOnto.cs:249 | ok | |
 | Rules.IsBumpableFor | Engine/Rules.cs:218 | ok | by ref |
 | ObjectiveAI.UsePreexistingPath(List<List<Point>>, ...) | Gameplay/AI/ObjectiveAI.cs:925 | ok | comment: generators are pathable but not enterable |
 | ObjectiveAI.UsePreexistingPath(List<List<Location>>, ...) | Gameplay/AI/ObjectiveAI.cs:982 | ok | comment: generators are pathable but not enterable |
-| OrderableAI._closeIn | Gameplay/AI/OrderableAI.cs:2822 | ok | Adjacent lambda |
-| OrderableAI._chargeTowards | Gameplay/AI/OrderableAI.cs:2870 | ok | Adjacent lambda |
+| OrderableAI._closeIn | Gameplay/AI/OrderableAI.cs:2889 | ok | Adjacent lambda |
+| OrderableAI._chargeTowards | Gameplay/AI/OrderableAI.cs:2937 | ok | Adjacent lambda |
 
 ## Actor.MayEnter
 
