@@ -19,7 +19,7 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal class SkeletonAI : BaseAI, IJsonStaged<SkeletonAI>
+  internal class SkeletonAI : ActorController, IJsonStaged<SkeletonAI>
   {
     // JSON: saves $type only so far (the AI reloads with amnesia)
     static SkeletonAI IJsonStaged<SkeletonAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new SkeletonAI(JsonOwner));

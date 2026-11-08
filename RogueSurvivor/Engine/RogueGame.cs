@@ -5422,7 +5422,7 @@ namespace djack.RogueSurvivor.Engine
         var door = player.Location.Map.GetMapObjectAt(pos) as DoorWindow;
         if (door is null) return null;
         if (door.IsClosed) return null;
-        return new ActionCloseDoor(player, door, player.Location == (player.Controller as BaseAI).PrevLocation);
+        return new ActionCloseDoor(player, door, player.Location == player.Controller.PrevLocation);
       }
 
       bool actionDone = DirectionCommandFiltered(close_where, InterpretForPC, "Nothing to close here.");

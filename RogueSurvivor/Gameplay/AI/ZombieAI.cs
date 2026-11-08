@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   /// <summary>
   /// Zombie AI : used by Zombie, Zombie Master and Zombified branches.
   /// </summary>
-  internal class ZombieAI : BaseAI, IJsonStaged<ZombieAI>
+  internal class ZombieAI : ActorController, IJsonStaged<ZombieAI>
   {
     // JSON: saves $type only so far (the AI reloads with amnesia)
     static ZombieAI IJsonStaged<ZombieAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new ZombieAI(JsonOwner));

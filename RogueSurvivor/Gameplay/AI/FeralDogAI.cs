@@ -22,7 +22,7 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal sealed class FeralDogAI : BaseAI, IJsonStaged<FeralDogAI>
+  internal sealed class FeralDogAI : ActorController, IJsonStaged<FeralDogAI>
   {
     // JSON: saves $type only so far (the AI reloads with amnesia)
     static FeralDogAI IJsonStaged<FeralDogAI>.fromJson(JsonElement src, JsonSerializerOptions options) => JsonLoaded(src, new FeralDogAI(JsonOwner));
@@ -201,7 +201,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // using map objects goes here
         // barricading goes here
         if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || Rules.Get.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
-          tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
+          tmpAction = BehaviorUseExit(UseExitFlags.NONE);
           if (tmpAction is not null) {
             bool flag3 = true;
             var leader = (m_Actor as LivingActor)?.LiveLeader;

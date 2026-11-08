@@ -378,7 +378,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (loc.IsWalkableFor(actor, out reason)) {
         if (map!=actor.Location.Map) {
-          // check for exit leading here and substitute if so.  Cf. BaseAI::BehaviorUseExit
+          // check for exit leading here and substitute if so.  Cf. ActorController::BehaviorUseExit
           var exit = actor.Model.Abilities.AI_CanUseAIExits ? actor.Location.Exit : null;
           if (exit is not null && exit.Location==loc) {
            if (exit.IsNotBlocked(out var a, out var obj, actor)) return new ActionUseExit(actor, actor.Location);

@@ -14,14 +14,14 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
     /// Only explore tiles that are closer to the goal (mimicking baseai move routine BehaviorBumpToward)
     /// and within a max distance from start.
     ///
-    /// Each BaseAI can should use an instance and allocate on demand.
+    /// Each ActorController can should use an instance and allocate on demand.
     ///
     /// Not serializable as it is not meant to be persistent!
     ///
     /// Not a static tool class as it would be a nightmare to manage due threads (ais living in the sim thread).
     /// </summary>
-    /// <see cref="BaseAI.CanReachSimple(RogueGame, Point, RouteFinder.SpecialActions)"/>
-    /// <see cref="BaseAI.BehaviorBumpToward(RogueGame, Point, Func{Point, Point, float})"/>
+    /// <see cref="ActorController.CanReachSimple(RogueGame, Point, RouteFinder.SpecialActions)"/>
+    /// <see cref="ActorController.BehaviorBumpToward(RogueGame, Point, Func{Point, Point, float})"/>
     public sealed class RouteFinder
     {
         #region Types
@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         #endregion
 
         #region Fields
-        readonly BaseAI m_AI;
+        readonly ActorController m_AI;
         #endregion
 
         #region Properties
@@ -85,7 +85,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         #endregion
 
         #region Init
-        public RouteFinder(BaseAI ai)
+        public RouteFinder(ActorController ai)
         {
             m_AI = ai;
         }
@@ -93,7 +93,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
 
         #region Checking reachability
         /// <summary>
-        /// Can the BaseAI expect to reach this destination by using its simple movement logic BehaviorBumpToward.
+        /// Can the ActorController expect to reach this destination by using its simple movement logic BehaviorBumpToward.
         ///
         /// Will explore only tiles :
         /// - within maxDist distance of actor current position.
@@ -108,7 +108,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         /// <param name="maxDist"></param>
         /// <param name="distanceFn"></param>
         /// <returns></returns>
-        /// <see cref="BaseAI.BehaviorBumpToward(RogueGame, Point, Func{Point, Point, float})"/>
+        /// <see cref="ActorController.BehaviorBumpToward(RogueGame, Point, Func{Point, Point, float})"/>
         public bool CanReachSimple(in Location dest, Func<Location, Location, int> distanceFn)
         {
             Actor a = m_AI.ControlledActor;

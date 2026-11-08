@@ -94,7 +94,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       const bool tracing = false;
       if (tracing) Logger.Trace(m_Actor.Name);
 
-      { // deal with exits first; cf BaseAI::BehaviorUseExit
+      { // deal with exits first; cf ActorController::BehaviorUseExit
       var exit = m_Origin.Exit;
       if (exit is not null && exit.Location == m_NewLocation) {
         if (!see_dest || exit.IsNotBlocked(m_Actor)) return new ActionUseExit(m_Actor, in m_Origin);  // all failures of this test require sight information

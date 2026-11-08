@@ -176,7 +176,6 @@
     <Compile Include="Gameplay\GameTiles.cs" />
     <Compile Include="Gameplay\GameActors.cs" />
     <Compile Include="Gameplay\GameGangs.cs" />
-    <Compile Include="Gameplay\AI\BaseAI.cs" />
     <Compile Include="Gameplay\AI\OrderableAI.cs" />
     <Compile Include="Gameplay\AI\SoldierAI.cs" />
     <Compile Include="Gameplay\AI\SewersThingAI.cs" />

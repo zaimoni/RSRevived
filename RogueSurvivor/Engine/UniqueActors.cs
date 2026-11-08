@@ -144,7 +144,7 @@ namespace djack.RogueSurvivor.Engine
       TheSewersThing = named;
     }
 
-    private static readonly string[] BIG_BEAR_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
+    private static readonly string[] BIG_BEAR_EMOTES = new string[Data.ActorController.MAX_EMOTES] {
       "You fool",
       "I'm fooled!",
       "Be a man"
@@ -172,7 +172,7 @@ namespace djack.RogueSurvivor.Engine
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(BIG_BEAR_EMOTES);
     }
 
-    private static readonly string[] FAMU_FATARU_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
+    private static readonly string[] FAMU_FATARU_EMOTES = new string[Data.ActorController.MAX_EMOTES] {
       "Bakemono",
       "Nani!?",
       "Kawaii"
@@ -201,7 +201,7 @@ namespace djack.RogueSurvivor.Engine
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(FAMU_FATARU_EMOTES);
     }
 
-    private static readonly string[] SANTAMAN_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
+    private static readonly string[] SANTAMAN_EMOTES = new string[Data.ActorController.MAX_EMOTES] {
       "DEM BLOODY KIDS!",
       "LEAVE ME ALONE I AIN'T HAVE NO PRESENTS!",
       "MERRY FUCKIN' CHRISTMAS"
@@ -228,7 +228,7 @@ namespace djack.RogueSurvivor.Engine
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(SANTAMAN_EMOTES);
     }
 
-    private static readonly string[] ROGUEDJACK_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
+    private static readonly string[] ROGUEDJACK_EMOTES = new string[Data.ActorController.MAX_EMOTES] {
       "Sorry but I am le busy,",
       "I should have redone ze AI rootines!",
       "Let me test le something on you"
@@ -256,7 +256,7 @@ namespace djack.RogueSurvivor.Engine
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(ROGUEDJACK_EMOTES);
     }
 
-    private static readonly string[] DUCKMAN_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
+    private static readonly string[] DUCKMAN_EMOTES = new string[Data.ActorController.MAX_EMOTES] {
       "I'LL QUACK YOU BACK",
       "THIS IS MY FINAL QUACK",
       "I'M GONNA QUACK YOU"
@@ -285,7 +285,7 @@ namespace djack.RogueSurvivor.Engine
       (named.Controller as Gameplay.AI.CivilianAI)?.InstallUniqueEmotes(DUCKMAN_EMOTES);
     }
 
-    private static readonly string[] HANS_VON_HANZ_EMOTES = new string[Gameplay.AI.BaseAI.MAX_EMOTES] {
+    private static readonly string[] HANS_VON_HANZ_EMOTES = new string[Data.ActorController.MAX_EMOTES] {
       "RAUS",
       "MEIN FUHRER!",
       "KOMM HIER BITE"

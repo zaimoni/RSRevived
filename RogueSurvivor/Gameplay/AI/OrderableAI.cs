@@ -1912,7 +1912,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((available_ranged_weapons is null) != (GetBestRangedWeaponWithAmmo() is null)) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
 #endif
 
-      // if no ranged weapons, use BaseAI
+      // if no ranged weapons, use ActorController
       // OrderableAI::GetAvailableRangedWeapons knows about AI disabling of ranged weapons
       if (available_ranged_weapons is null) return base.BehaviorEquipWeapon();
 
@@ -1937,7 +1937,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percepts.Any(target => m_Actor.CanContrafactualFireAt(target,p));
     }
 
-    // forked from BaseAI::BehaviorEquipWeapon
+    // forked from ActorController::BehaviorEquipWeapon
     protected ActorAction? BehaviorEquipWeapon(List<ItemRangedWeapon>? available_ranged_weapons)
     {
 #if DEBUG
@@ -1953,7 +1953,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (tmpAction is not null) return tmpAction;
       }
 
-      // if no ranged weapons, use BaseAI
+      // if no ranged weapons, use ActorController
       // OrderableAI::GetAvailableRangedWeapons knows about AI disabling of ranged weapons
       if (available_ranged_weapons is null) return base.BehaviorEquipWeapon();
 
@@ -2976,7 +2976,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return 0<routes.Count ? routes : null;
     }
 
-    // sunk from BaseAI
+    // sunk from BaseAI (since merged into ActorController)
     protected ActorAction? BehaviorFightOrFlee(ActorCourage courage, string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
     {
       if (_blast_field?.Contains(m_Actor.Location) ?? false) {

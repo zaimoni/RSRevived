@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
     private const int EXPLORATION_ZONES = 3;    // unsure whether this space-time scales or not; WorldTime.TURNS_PER_HOUR/10 if it scales
 
-    // for BaseAI/OrderableAI::BehaviorExplore
+    // for ActorController/OrderableAI::BehaviorExplore
     private const int SCORE_LOCS = 500;
     public const int SCORE_BARRICADES = 100;
     public const int SCORE_INOUT = 50;

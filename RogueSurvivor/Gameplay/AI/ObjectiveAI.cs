@@ -248,7 +248,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   }
 
   [Serializable]
-  public abstract class ObjectiveAI : BaseAI
+  public abstract class ObjectiveAI : ActorController
   {
     /// <summary>Our actor, when it has an inventory.  Null for a zombie PC: PlayerController derives from us and a Faust PC can be a zombie.</summary>
     protected readonly LivingActor? m_Living;
@@ -1297,7 +1297,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     };
 
     // XXX return-code so we know what kind of heuristics are dominating.  Should be an enumeration or bitflag return
-    // Should not need to be an override of a reduced-functionality BaseAI version
+    // Should not need to be an override of a reduced-functionality ActorController version
     public ReactionCode InterruptLongActivity()
     {
         ReactionCode ret = ReactionCode.NONE;

@@ -584,7 +584,7 @@ namespace djack.RogueSurvivor.Data
           else if (!goal_action.IsPerformable()) Objectives.Remove(o);
 #endif
           else {
-            ScheduleFollowup(goal_action);  // OrderableAI subclasses have this handled by BaseAI::GetAction so don't need it "here"
+            ScheduleFollowup(goal_action);  // OrderableAI subclasses have this handled by ActorController::GetAction so don't need it "here"
             ResetAICache();
             return goal_action;
           }
