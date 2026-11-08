@@ -3062,14 +3062,12 @@ namespace djack.RogueSurvivor.Engine
                 return null;
             }
 
+            var pc_command = s_CountedCommands[ub].Value.Value;
             var count = s_CountedCommands[ub].Value.Key;
             if (1 >= count) {
                 if (1 >= s_CountedCommands.Count) s_CountedCommands = null;
                 else s_CountedCommands.RemoveAt(ub);
-                return null;
-            }
-            var pc_command = s_CountedCommands[ub].Value.Value;
-            s_CountedCommands[ub] = new(pc,new(count-1, pc_command));
+            } else s_CountedCommands[ub] = new(pc,new(count-1, pc_command));
             return (pc_command, ub);
         }
         return null;
