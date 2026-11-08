@@ -1525,6 +1525,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
        return new ActionRangedAttack(m_Actor, target, fireMode);
     }
 
+    protected List<Percept_<Actor>>? FilterFireTargets(List<Percept_<Actor>>? percepts, int range)
+    {
+      return percepts?.Filter(target => m_Actor.CanFireAt(target,range) && m_Actor.Controller.CanSee(target.Location));
+    }
+
     // forked from OrderableAI::BehaviorEquipWeapon
     private ActorAction? AttackWithoutMoving()
     {
@@ -4925,6 +4930,12 @@ restart_chokepoints:
     }
 
     public ActorAction? WouldGetFrom(in Location loc) => loc.Items.IsEmpty() ? null : BehaviorWouldGrabFrom(loc);
+
+    protected bool IsOccupiedByOther(Location loc)  // percept locations are normalized
+    {
+      var actorAt = loc.Actor;
+      return actorAt is not null && actorAt != m_Actor;
+    }
 
     protected List<Data.Model.InvOrigin>? GetInterestingInventoryStacks(Predicate<Inventory> want_now)   // technically could be ActorController
     {

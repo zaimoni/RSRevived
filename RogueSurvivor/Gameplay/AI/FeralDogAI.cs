@@ -12,6 +12,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Zaimoni.JSON;
 
@@ -151,6 +152,83 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (firstByType is not null) return new ActionEatFoodOnGround(m_Actor, firstByType);
       var percept = FilterNearest(stacksPercepts);
       return BehaviorStupidBumpToward(percept.Location, false, false);
+    }
+
+    // Feral dogs use BehaviorFightOrFlee; simplified version of what OrderableAI uses
+    protected ActorAction? BehaviorFightOrFlee(string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
+    {
+      const ActorCourage courage = ActorCourage.CAUTIOUS;
+      var game = RogueGame.Game;
+      var target = FilterNearest(_enemies);
+      bool doRun = false;	// only matters when fleeing
+      Actor enemy = target.Percepted;
+      bool decideToFlee;
+      if (enemy.HasEquipedRangedWeapon()) decideToFlee = false;
+      else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
+        decideToFlee = true;
+      else {
+        decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
+        doRun = !HasSpeedAdvantage(m_Actor, enemy);
+      }
+      if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
+        decideToFlee = true;    // but do not run as otherwise we won't build up stamina
+      }
+
+      ActorAction? tmpAction = null;
+
+      if (decideToFlee) {
+        if (m_Actor.Model.Abilities.CanTalk && Rules.Get.RollChance(EMOTE_FLEE_CHANCE))
+          game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[0], enemy.Name));
+        // using map objects goes here
+        // barricading goes here
+        if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || Rules.Get.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
+          tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
+          if (tmpAction is not null) {
+            bool flag3 = true;
+            var leader = (m_Actor as LivingActor)?.LiveLeader;
+            if (leader is not null) {
+              var exitAt = m_Actor.Location.Exit;
+              if (exitAt is not null) flag3 = leader.Location.Map == exitAt.ToMap;
+            }
+            if (flag3) {
+              m_Actor.Activity = Activity.FLEEING;
+              return tmpAction;
+            }
+          }
+        }
+        // XXX we should run for the exit here
+        tmpAction = BehaviorWalkAwayFrom(_enemies.Select(p => p.Location.Position));
+        if (tmpAction is not null) {
+          if (doRun) m_Actor.Run();
+          m_Actor.Activity = Activity.FLEEING;
+          return tmpAction;
+        }
+        if (enemy.IsAdjacentToEnemy) {  // yes, any enemy...not just me
+          if (m_Actor.Model.Abilities.CanTalk && Rules.Get.RollChance(EMOTE_FLEE_TRAPPED_CHANCE))
+            game.DoEmote(m_Actor, emotes[1], true);
+          return BehaviorMeleeAttack(target.Percepted as Actor);
+        }
+        return null;
+      } // if (decldeToFlee)
+
+      // redo the pause check
+      if (m_Actor.Speed > enemy.Speed) {
+        int dist = Rules.GridDistance(m_Actor.Location,target.Location);
+        if (2==dist) {
+          if (!m_Actor.WillActAgainBefore(enemy)) return new ActionWait(m_Actor);
+          // cannot close at normal speed safely; run-hit ok but requires situational analysis
+          return new ActionWait(m_Actor);
+        }
+      }
+
+      // charge
+      tmpAction = BehaviorChargeEnemy(target, true, true);
+      if (tmpAction is not null) {
+        if (m_Actor.Model.Abilities.CanTalk && Rules.Get.RollChance(EMOTE_CHARGE_CHANCE))
+          game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name), true);
+        return tmpAction;
+      }
+      return null;
     }
   }
 }

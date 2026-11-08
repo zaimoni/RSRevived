@@ -34,7 +34,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected const int EMOTE_FLEE_TRAPPED_CHANCE = 50;
     protected const int EMOTE_CHARGE_CHANCE = 30;
     private const float MOVE_DISTANCE_PENALTY = 0.42f;
-    private const float MOVE_INTO_TRAPS_PENALTY = 1;  // alpha10
     public const int MAX_EMOTES = 3;    // 0: flee; 1: last stand; 2:charge
 
     private Location m_prevLocation;
@@ -176,21 +175,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public KeyValuePair<Location, T> FilterNearest<T>(Dictionary<Location,T>? src)
     {
       return src?.Minimize(x => Rules.InteractionDistance(m_Actor.Location, x.Key)) ?? default;
-    }
-
-    protected List<Percept_<Actor>>? FilterFireTargets(List<Percept_<Actor>>? percepts, int range)
-    {
-      return percepts?.Filter(target => m_Actor.CanFireAt(target,range) && m_Actor.Controller.CanSee(target.Location));
-    }
-
-    protected List<Percept_<Actor>>? FilterPossibleFireTargets(List<Percept_<Actor>>? percepts)
-    {
-      return percepts?.Filter(target => m_Actor.CouldFireAt(target));
-    }
-
-    protected bool AnyContrafactualFireTargets(List<Percept_<Actor>> percepts, Point p)
-    {
-      return percepts.Any(target => m_Actor.CanContrafactualFireAt(target,p));
     }
 
     // firearms use grid i.e. L-infinity distance
@@ -341,15 +325,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction? BehaviorBumpToward(Location goal, bool canCheckBreak, bool canCheckPush, Func<Point, Point, float> distanceFn)
-    {
-      var map = m_Actor.Location.Map;
-      if (map == goal.Map) return BehaviorBumpToward(goal.Position, canCheckBreak, canCheckPush, distanceFn);
-      Location? test = map.Denormalize(in goal);
-      if (test is null) return null;
-      return BehaviorBumpToward(test.Value.Position, canCheckBreak, canCheckPush, distanceFn);
-    }
-
     protected ActorAction? BehaviorStupidBumpToward(Point goal, bool canCheckBreak, bool canCheckPush)
     {
       return BehaviorBumpToward(goal, canCheckBreak, canCheckPush, (ptA, ptB) => {
@@ -371,6 +346,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction? BehaviorIntelligentBumpToward(Point goal, bool canCheckBreak, bool canCheckPush)
     {
+      const float MOVE_INTO_TRAPS_PENALTY = 1;  // alpha10
+
       float currentDistance = (float)Rules.StdDistance(m_Actor.Location.Position, in goal);
       Func<Point,Point,float> close_in = (ptA,ptB) => {
         if (ptA == ptB) return 0.0f;
@@ -405,23 +382,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (m_Actor.Model.Abilities.IsIntelligent) return BehaviorIntelligentBumpToward(in goal, canCheckBreak, canCheckPush);
       return BehaviorStupidBumpToward(in goal, canCheckBreak, canCheckPush);
-    }
-
-    public ActorAction? BehaviorHeadFor(IEnumerable<Location>? goals, bool canCheckBreak, bool canCheckPush)
-    {
-      if (goals is null || !goals.Any()) return null;
-      ActorAction? tmp;
-      int dist = int.MaxValue;
-      ActorAction? ret = null;
-      foreach(Location goal in goals) {
-        int new_dist = Rules.GridDistance(m_Actor.Location, in goal);
-        if (dist <= new_dist) continue;
-        tmp = BehaviorHeadFor(in goal, canCheckBreak, canCheckPush);
-        if (tmp is null) continue;
-        dist = new_dist;
-        ret = tmp;
-      }
-      return ret;
     }
 
     // A number of the melee enemy targeting sequences not only work on grid distance,
@@ -483,76 +443,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction? BehaviorBuildTrap()
-    {
-      if (m_Actor is not LivingActor living) return null;
-      var trap = living.Inventory.GetFirst<ItemTrap>();
-      if (trap is null) return null;
-
-      if (!IsGoodTrapSpot(m_Actor.Location, out string reason)) return null;
-
-      if (!trap.IsActivated && !trap.Model.ActivatesWhenDropped) return new ActionUseItem(living, trap);
-      RogueGame.Game.DoEmote(m_Actor, string.Format("{0} {1}!", reason, trap.AName), true);
-      return new ActionDropItem(living, trap);
-    }
-
-    private bool IsGoodTrapSpot(Location loc, out string reason)
-    {
-      reason = "";
-
-      // backward compatibility
-      var map = loc.Map;
-      var pos = loc.Position;
-
-      if (map.IsTrapCoveringMapObjectAt(pos)) return false; // if it won't trigger, waste of a trap.
-      bool isInside = loc.IsInside;
-      // not really ... z just heals up on the corpse
-      if (!isInside && map.HasCorpsesAt(pos)) reason = "that corpse will serve as a bait for";
-      // These all have the same problem: z will wander right over the trap no matter what when scent-tracking.
-      // What is important is ability of livings to avoid the trap.
-      // single spikes are ok as proporty markers, but the more damaging traps are all problematic.
-      else if (m_prevLocation.IsInside != isInside) reason = "protecting the building with";
-      else {
-        if (loc.MapObject is DoorWindow) reason = "protecting the doorway with";
-        else if (map.HasExitAt(in pos)) reason = "protecting the exit with";
-      }
-      if (string.IsNullOrEmpty(reason)) return false;
-      if (map.TrapWouldSealBuilding(pos)) return false;   // not the last way in, or out: pathing could not cope
-      var itemsAt = loc.Items;
-      if (itemsAt is null) return true;
-      return 3 >= itemsAt.Count(it => it is ItemTrap trap && trap.IsActivated);
-    }
-
-    protected ActorAction? BehaviorAttackBarricade()
-    {
-      Map map = m_Actor.Location.Map;
-      Dictionary<Point,DoorWindow> doors = map.FindAdjacent(m_Actor.Location.Position, (m,pt) => {
-        return (m.GetMapObjectAtExt(pt) is DoorWindow dw && dw.IsBarricaded) ? dw : null;
-      });
-      if (0 >= doors.Count) return null;
-      return ActionBreak.create(m_Actor, Rules.Get.DiceRoller.Choose(doors).Value);
-    }
-
-#if DEAD_FUNC
-    // intentionally disabled in alpha 9; for ZM AI
-    protected ActorAction BehaviorAssaultBreakables(HashSet<Point> fov)
-    {
-      Map map = m_Actor.Location.Map;
-      List<Percept> percepts = null;
-      foreach (Point position in fov) {
-        MapObject mapObjectAt = map.GetMapObjectAt(position);
-        if (mapObjectAt is not null && mapObjectAt.IsBreakable) {
-          (percepts ?? (percepts = new List<Percept>())).Add(new Percept(mapObjectAt, map.LocalTime.TurnCounter, new Location(map, position)));
-        }
-      }
-      if (percepts is null) return null;
-      Percept percept = FilterNearest(percepts);
-      if (!Rules.IsAdjacent(m_Actor.Location.Position, percept.Location.Position))
-        return BehaviorIntelligentBumpToward(percept.Location.Position, true, true);
-      return (m_Actor.CanBreak(percept.Percepted as MapObject) ? new ActionBreak(m_Actor, percept.Percepted as MapObject) : null);
-    }
-#endif
-
     protected ActionPush? BehaviorPushNonWalkableObject()
     {
       if (!m_Actor.AbleToPush) return null;
@@ -564,97 +454,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
       if (0 >= objs.Count) return null;
       return ActionPush.Random(m_Actor, Rules.Get.DiceRoller.Choose(objs).Value);
-    }
-
-    protected ActionPush? BehaviorPushNonWalkableObjectForFood()
-    {
-      if (!m_Actor.AbleToPush) return null;
-      // Substantial re-implementation.  Historical one can make the police offices very hard to write a correct pathing for.
-      // Some of these reality checks can be weakened for mentally disturbed livings
-      Dictionary<Location,MapObject> food_blockers = new();
-      Map map = m_Actor.Location.Map;
-      // do not worry about inside vs. outside here
-      foreach(var loc in FOVloc) {
-        var o = loc.MapObject;
-        if (o is not null && !o.IsWalkable && !o.IsJumpable && m_Actor.CanPush(o)) food_blockers.Add(loc, o);
-      }
-      if (0 >= food_blockers.Count) return null;
-
-      // 1) object on exit is bad (blocks access to basement stash).
-      // 2) ### map geometry
-      //    #..
-      //    #..
-      // 3) ### map geometry
-      //    ...
-      //    ...
-
-      var verified = new Dictionary<Point,MapObject>();
-      var unclear = new Dictionary<Point,MapObject>();
-      foreach(var x in food_blockers) {
-        var loc = x.Key;
-        if (loc.Exit is not null) { // on same-district exit is clearly bad
-          verified.Add(loc.Position, x.Value);
-          continue;
-        }
-        // flush against a wall, or in a corner, is fine
-        if (loc.Map.IsFlushNWall(loc.Position)) continue;
-        if (loc.Map.IsFlushSWall(loc.Position)) continue;
-        if (loc.Map.IsFlushWWall(loc.Position)) continue;
-        if (loc.Map.IsFlushEWall(loc.Position)) continue;
-        if (loc.Map.IsNWCorner(loc.Position)) continue;
-        if (loc.Map.IsNECorner(loc.Position)) continue;
-        if (loc.Map.IsSWCorner(loc.Position)) continue;
-        if (loc.Map.IsSECorner(loc.Position)) continue;
-        unclear.Add(x.Key.Position, x.Value);
-      }
-      if (0 >= verified.Count && 0 >=unclear.Count) return null;
-
-      bool adjacent(Point pt) { return 1 == Rules.GridDistance(m_Actor.Location.Position, in pt); }
-
-      // fail over to legacy code here
-      // \todo also evaluate pulls (return type weakening)
-      unclear.OnlyIf(adjacent);
-      verified.OnlyIf(adjacent);
-      if (0 >= verified.Count && 0 >=unclear.Count) return null;
-
-      static bool safe_push(ActionPush act) {
-        var loc = act.obj_dest;
-        if (loc.Map.IsFlushNWall(loc.Position)) return true;
-        if (loc.Map.IsFlushSWall(loc.Position)) return true;
-        if (loc.Map.IsFlushWWall(loc.Position)) return true;
-        if (loc.Map.IsFlushEWall(loc.Position)) return true;
-        if (loc.Map.IsNWCorner(loc.Position)) return true;
-        if (loc.Map.IsNECorner(loc.Position)) return true;
-        if (loc.Map.IsSWCorner(loc.Position)) return true;
-        if (loc.Map.IsSECorner(loc.Position)) return true;
-        return false;
-      }
-
-      var pushes = new List<ActionPush>();
-      foreach(var x in verified) {
-        foreach(var dir in Direction.COMPASS) {
-          var dest = x.Key+dir;
-          if (map.IsInBounds(dest) && map.HasExitAt(in dest)) continue; // constructor crash; don't want to do this even when tactical pushing implemented
-          var act = new ActionPush(m_Actor, x.Value, dir);
-          if (act.IsPerformable()) pushes.Add(act);
-        }
-      }
-      if (pushes.NontrivialFilter(safe_push)) pushes = pushes.FindAll(safe_push);
-      if (0 < pushes.Count) return Rules.Get.DiceRoller.Choose(pushes);
-
-      foreach(var x in unclear) {
-        foreach(var dir in Direction.COMPASS) {
-          var dest = x.Key+dir;
-          if (map.IsInBounds(dest) && map.HasExitAt(in dest)) continue; // constructor crash; don't want to do this even when tactical pushing implemented
-          if (!ActionPush.CanConstruct(x.Value, dir)) continue;
-          var act = new ActionPush(m_Actor, x.Value, dir);
-          if (act.IsPerformable()) pushes.Add(act);
-        }
-      }
-      if (pushes.NontrivialFilter(safe_push)) pushes = pushes.FindAll(safe_push);
-      if (0 < pushes.Count) return Rules.Get.DiceRoller.Choose(pushes);
-
-      return null;
     }
 
     protected virtual ActorAction? BehaviorFollowActor(Actor? other, int maxDist)
@@ -729,83 +528,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       } finally {
         if (tmpAction is not null) m_Actor.TargetedActivity(Activity.FIGHTING, actor);
       }
-    }
-
-    // Feral dogs use BehaviorFightOrFlee; simplified version of what OrderableAI uses
-    protected ActorAction? BehaviorFightOrFlee(string[] emotes, RouteFinder.SpecialActions allowedChargeActions)
-    {
-      const ActorCourage courage = ActorCourage.CAUTIOUS;
-      var game = RogueGame.Game;
-      var target = FilterNearest(_enemies);
-      bool doRun = false;	// only matters when fleeing
-      Actor enemy = target.Percepted;
-      bool decideToFlee;
-      if (enemy.HasEquipedRangedWeapon()) decideToFlee = false;
-      else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
-        decideToFlee = true;
-      else {
-        decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
-        doRun = !HasSpeedAdvantage(m_Actor, enemy);
-      }
-      if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
-        decideToFlee = true;    // but do not run as otherwise we won't build up stamina
-      }
-
-      ActorAction? tmpAction = null;
-
-      if (decideToFlee) {
-        if (m_Actor.Model.Abilities.CanTalk && Rules.Get.RollChance(EMOTE_FLEE_CHANCE))
-          game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[0], enemy.Name));
-        // using map objects goes here
-        // barricading goes here
-        if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || Rules.Get.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
-          tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
-          if (tmpAction is not null) {
-            bool flag3 = true;
-            var leader = (m_Actor as LivingActor)?.LiveLeader;
-            if (leader is not null) {
-              var exitAt = m_Actor.Location.Exit;
-              if (exitAt is not null) flag3 = leader.Location.Map == exitAt.ToMap;
-            }
-            if (flag3) {
-              m_Actor.Activity = Activity.FLEEING;
-              return tmpAction;
-            }
-          }
-        }
-        // XXX we should run for the exit here
-        tmpAction = BehaviorWalkAwayFrom(_enemies.Select(p => p.Location.Position));
-        if (tmpAction is not null) {
-          if (doRun) m_Actor.Run();
-          m_Actor.Activity = Activity.FLEEING;
-          return tmpAction;
-        }
-        if (enemy.IsAdjacentToEnemy) {  // yes, any enemy...not just me
-          if (m_Actor.Model.Abilities.CanTalk && Rules.Get.RollChance(EMOTE_FLEE_TRAPPED_CHANCE))
-            game.DoEmote(m_Actor, emotes[1], true);
-          return BehaviorMeleeAttack(target.Percepted as Actor);
-        }
-        return null;
-      } // if (decldeToFlee)
-
-      // redo the pause check
-      if (m_Actor.Speed > enemy.Speed) {
-        int dist = Rules.GridDistance(m_Actor.Location,target.Location);
-        if (2==dist) {
-          if (!m_Actor.WillActAgainBefore(enemy)) return new ActionWait(m_Actor);
-          // cannot close at normal speed safely; run-hit ok but requires situational analysis
-          return new ActionWait(m_Actor);
-        }
-      }
-
-      // charge
-      tmpAction = BehaviorChargeEnemy(target, true, true);
-      if (tmpAction is not null) {
-        if (m_Actor.Model.Abilities.CanTalk && Rules.Get.RollChance(EMOTE_CHARGE_CHANCE))
-          game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name), true);
-        return tmpAction;
-      }
-      return null;
     }
 
     // the intelligent callers are using the override at OrderableAI
@@ -943,77 +665,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return avgDistance * heuristicFactorBonus;
     }
 
-    // as above, but location-based
-    protected float SafetyFrom(in Location from, IEnumerable<Location> dangers)
-    {
-      Map map = m_Actor.Location.Map;
-
-      // Heuristics:
-      // Primary: Get away from dangers.
-      // Weighting factors:
-      // 1 Avoid getting in corners.
-      // 2 Prefer going outside/inside if majority of dangers are inside/outside.
-      // 3 If can tire, prefer not jumping.
-#region Primary: Get away from dangers.
-      double avgDistance = 0.0;
-      int count_plus_1 = 1;
-      foreach(var pt in dangers) {
-        count_plus_1++;
-        avgDistance += Rules.InteractionDistance(in from, in pt);
-      }
-      avgDistance /= count_plus_1;
-#endregion
-#region 1 Avoid getting in corners.
-      int countFreeSquares = map.CountAdjacentTo(from.Position,pt => pt == m_Actor.Location.Position || map.IsWalkableFor(pt, m_Actor));
-      float avoidCornerBonus = countFreeSquares * 0.1f;
-#endregion
-#region 2 Prefer going outside/inside if majority of dangers are inside/outside.
-      bool isFromInside = from.Map.IsInsideAtExt(from.Position);
-      int majorityDangersInside = dangers.ExcessTrue(loc => loc.Map.IsInsideAtExt(loc.Position));
-      const float inOutFactor = 1.25f;
-      float inOutBonus = 0.0f;
-      if (isFromInside) {
-        if (majorityDangersInside < 0) inOutBonus = inOutFactor;
-      }
-      else if (majorityDangersInside > 0) inOutBonus = inOutFactor;
-#endregion
-#region 3 If can tire, prefer not jumping.
-      float jumpPenalty = 0.0f;
-      if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump) {
-        if (Location.RequiresJump(in from)) jumpPenalty = 0.1f;
-      }
-#endregion
-      float heuristicFactorBonus = 1f + avoidCornerBonus + inOutBonus - jumpPenalty;
-      return (float)(avgDistance * heuristicFactorBonus);
-    }
-
-    // isBetterThanEvalFn will never see NaN
-    static protected ChoiceEval<_T_>? Choose<_T_>(IEnumerable<_T_>? listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
-    {
-      if (listOfChoices is null || !listOfChoices.Any()) return null;
-
-      Dictionary<float, List<ChoiceEval<_T_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_T_>>>();
-
-      float num = float.NaN;
-      foreach(_T_ tmp in listOfChoices) {
-        if (!isChoiceValidFn(tmp)) continue;
-        float f = evalChoiceFn(tmp);
-        if (float.IsNaN(f)) continue;
-        if (float.IsNaN(num) || isBetterEvalThanFn(f, num)) {
-          num = f;
-          // XXX at our scale we shouldn't need to early-enable garbage collection here
-        } else if (num != f) continue;
-
-        ChoiceEval< _T_ > tmp2 = new ChoiceEval<_T_>(tmp, f);
-        if (choiceEvalDict.TryGetValue(f,out var dest)) dest.Add(tmp2);
-        else choiceEvalDict.Add(f, new List<ChoiceEval<_T_>>{ tmp2 });
-      }
-
-      if (!choiceEvalDict.TryGetValue(num, out var ret_from)) return null;
-      if (1 == ret_from.Count) return ret_from[0];
-      return Rules.Get.DiceRoller.Choose(ret_from);
-    }
-
     static protected ChoiceEval<_T_>? Choose<_T_>(IEnumerable<_T_>? listOfChoices, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
       if (listOfChoices is null || !listOfChoices.Any()) return null;
@@ -1098,12 +749,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a is Engine._Action.SwitchPlace swap) return swap.LeaderSwitchPlace;
       if (a is ActionSwitchPowerGenerator) return false;
       return true;
-    }
-
-    protected bool IsOccupiedByOther(Location loc)  // percept locations are normalized
-    {
-      var actorAt = loc.Actor;
-      return actorAt is not null && actorAt != m_Actor;
     }
 
     protected bool WantToEvadeMelee(Actor actor, ActorCourage courage, Actor target)

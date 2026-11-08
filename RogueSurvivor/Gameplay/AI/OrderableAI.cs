@@ -1927,6 +1927,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return Equip(GetBestRangedWeaponWithAmmo());
     }
 
+    private List<Percept_<Actor>>? FilterPossibleFireTargets(List<Percept_<Actor>>? percepts)
+    {
+      return percepts?.Filter(target => m_Actor.CouldFireAt(target));
+    }
+
+    private bool AnyContrafactualFireTargets(List<Percept_<Actor>> percepts, Point p)
+    {
+      return percepts.Any(target => m_Actor.CanContrafactualFireAt(target,p));
+    }
+
     // forked from BaseAI::BehaviorEquipWeapon
     protected ActorAction? BehaviorEquipWeapon(List<ItemRangedWeapon>? available_ranged_weapons)
     {
@@ -2613,6 +2623,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionUseItem(m_Actor, choiceEval.Choice); // legal only for OrderableAI
     }
 
+    private ActorAction? BehaviorBumpToward(Location goal, bool canCheckBreak, bool canCheckPush, Func<Point, Point, float> distanceFn)
+    {
+      var map = m_Actor.Location.Map;
+      if (map == goal.Map) return BehaviorBumpToward(goal.Position, canCheckBreak, canCheckPush, distanceFn);
+      if (map.Denormalize(in goal) is not Location test) return null;
+      return BehaviorBumpToward(test.Position, canCheckBreak, canCheckPush, distanceFn);
+    }
+
     protected override ActorAction? BehaviorChargeEnemy(Percept_<Actor> target, bool canCheckBreak, bool canCheckPush)
     {
       Actor actor = target.Percepted;
@@ -2696,6 +2714,50 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       return (0 < ret.Count ? ret : null);
+    }
+
+    // as above, but location-based
+    protected float SafetyFrom(in Location from, IEnumerable<Location> dangers)
+    {
+      Map map = m_Actor.Location.Map;
+
+      // Heuristics:
+      // Primary: Get away from dangers.
+      // Weighting factors:
+      // 1 Avoid getting in corners.
+      // 2 Prefer going outside/inside if majority of dangers are inside/outside.
+      // 3 If can tire, prefer not jumping.
+#region Primary: Get away from dangers.
+      double avgDistance = 0.0;
+      int count_plus_1 = 1;
+      foreach(var pt in dangers) {
+        count_plus_1++;
+        avgDistance += Rules.InteractionDistance(in from, in pt);
+      }
+      avgDistance /= count_plus_1;
+#endregion
+#region 1 Avoid getting in corners.
+      int countFreeSquares = map.CountAdjacentTo(from.Position,pt => pt == m_Actor.Location.Position || map.IsWalkableFor(pt, m_Actor));
+      float avoidCornerBonus = countFreeSquares * 0.1f;
+#endregion
+#region 2 Prefer going outside/inside if majority of dangers are inside/outside.
+      bool isFromInside = from.Map.IsInsideAtExt(from.Position);
+      int majorityDangersInside = dangers.ExcessTrue(loc => loc.Map.IsInsideAtExt(loc.Position));
+      const float inOutFactor = 1.25f;
+      float inOutBonus = 0.0f;
+      if (isFromInside) {
+        if (majorityDangersInside < 0) inOutBonus = inOutFactor;
+      }
+      else if (majorityDangersInside > 0) inOutBonus = inOutFactor;
+#endregion
+#region 3 If can tire, prefer not jumping.
+      float jumpPenalty = 0.0f;
+      if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump) {
+        if (Location.RequiresJump(in from)) jumpPenalty = 0.1f;
+      }
+#endregion
+      float heuristicFactorBonus = 1f + avoidCornerBonus + inOutBonus - jumpPenalty;
+      return (float)(avgDistance * heuristicFactorBonus);
     }
 
     public ActorAction? BehaviorWalkAwayFrom(IEnumerable<Location> goals, HashSet<Point>? LoF_reserve)
@@ -3292,6 +3354,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
+    // isBetterThanEvalFn will never see NaN
+    static protected ChoiceEval<_T_>? Choose<_T_>(IEnumerable<_T_>? listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    {
+      if (listOfChoices is null || !listOfChoices.Any()) return null;
+
+      Dictionary<float, List<ChoiceEval<_T_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_T_>>>();
+
+      float num = float.NaN;
+      foreach(_T_ tmp in listOfChoices) {
+        if (!isChoiceValidFn(tmp)) continue;
+        float f = evalChoiceFn(tmp);
+        if (float.IsNaN(f)) continue;
+        if (float.IsNaN(num) || isBetterEvalThanFn(f, num)) {
+          num = f;
+          // XXX at our scale we shouldn't need to early-enable garbage collection here
+        } else if (num != f) continue;
+
+        ChoiceEval< _T_ > tmp2 = new ChoiceEval<_T_>(tmp, f);
+        if (choiceEvalDict.TryGetValue(f,out var dest)) dest.Add(tmp2);
+        else choiceEvalDict.Add(f, new List<ChoiceEval<_T_>>{ tmp2 });
+      }
+
+      if (!choiceEvalDict.TryGetValue(num, out var ret_from)) return null;
+      if (1 == ret_from.Count) return ret_from[0];
+      return Rules.Get.DiceRoller.Choose(ret_from);
+    }
+
     protected ActionBuildFortification? BehaviorBuildLargeFortification(int startLineChance)
     {
       if (!string.IsNullOrEmpty(ActionBuildFortification.ReasonCant(m_Actor, true))) return null;
@@ -3499,6 +3588,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return act;
     }
 
+    public ActorAction? BehaviorHeadFor(IEnumerable<Location>? goals, bool canCheckBreak, bool canCheckPush)
+    {
+      if (goals is null || !goals.Any()) return null;
+      ActorAction? tmp;
+      int dist = int.MaxValue;
+      ActorAction? ret = null;
+      foreach(Location goal in goals) {
+        int new_dist = Rules.GridDistance(m_Actor.Location, in goal);
+        if (dist <= new_dist) continue;
+        tmp = BehaviorHeadFor(in goal, canCheckBreak, canCheckPush);
+        if (tmp is null) continue;
+        dist = new_dist;
+        ret = tmp;
+      }
+      return ret;
+    }
+
     protected ActorAction? BehaviorNavigateToSleep()
     {
       // \todo precalculate sleep-relevant medicines at game start
@@ -3665,6 +3771,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       return new ActionWait(m_Actor);
+    }
+
+    protected ActorAction? BehaviorAttackBarricade()
+    {
+      Map map = m_Actor.Location.Map;
+      Dictionary<Point,DoorWindow> doors = map.FindAdjacent(m_Actor.Location.Position, (m,pt) => {
+        return (m.GetMapObjectAtExt(pt) is DoorWindow dw && dw.IsBarricaded) ? dw : null;
+      });
+      if (0 >= doors.Count) return null;
+      return ActionBreak.create(m_Actor, Rules.Get.DiceRoller.Choose(doors).Value);
     }
 
     protected override ActorAction? BehaviorExplore(ExplorationData exploration)

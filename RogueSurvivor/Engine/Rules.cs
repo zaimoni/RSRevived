@@ -354,14 +354,11 @@ namespace djack.RogueSurvivor.Engine
 #endif
       const bool tracing = false;
 
-      var oai = actor.Controller as Gameplay.AI.ObjectiveAI;
-#if DEBUG
-      if (oai is null) throw new InvalidOperationException("!(actor.Controller is Gameplay.AI.ObjectiveAI)");
-#endif
+      var oai = actor.RunBy<Gameplay.AI.ObjectiveAI>();
 
       reason = null;
 
-      if (1 >= actor.Controller.FastestTrapKill(in loc)) {
+      if (1 >= oai.FastestTrapKill(in loc)) {
         reason = "deathtrapped";
         return null;
       }

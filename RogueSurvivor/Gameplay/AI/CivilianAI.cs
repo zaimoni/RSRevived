@@ -799,5 +799,137 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (tracing) Logger.WriteLine(Logger.Stage.RUN_MAIN, "wandering");
       return BehaviorWander(m_Exploration);
     }
+
+    protected ActorAction? BehaviorBuildTrap()
+    {
+      if (m_Actor is not LivingActor living) return null;
+      var trap = living.Inventory.GetFirst<ItemTrap>();
+      if (trap is null) return null;
+
+      if (!IsGoodTrapSpot(m_Actor.Location, out string reason)) return null;
+
+      if (!trap.IsActivated && !trap.Model.ActivatesWhenDropped) return new ActionUseItem(living, trap);
+      RogueGame.Game.DoEmote(m_Actor, string.Format("{0} {1}!", reason, trap.AName), true);
+      return new ActionDropItem(living, trap);
+    }
+
+    private bool IsGoodTrapSpot(Location loc, out string reason)
+    {
+      reason = "";
+
+      // backward compatibility
+      var map = loc.Map;
+      var pos = loc.Position;
+
+      if (map.IsTrapCoveringMapObjectAt(pos)) return false; // if it won't trigger, waste of a trap.
+      bool isInside = loc.IsInside;
+      // not really ... z just heals up on the corpse
+      if (!isInside && map.HasCorpsesAt(pos)) reason = "that corpse will serve as a bait for";
+      // These all have the same problem: z will wander right over the trap no matter what when scent-tracking.
+      // What is important is ability of livings to avoid the trap.
+      // single spikes are ok as proporty markers, but the more damaging traps are all problematic.
+      else if (PrevLocation.IsInside != isInside) reason = "protecting the building with";
+      else {
+        if (loc.MapObject is Engine.MapObjects.DoorWindow) reason = "protecting the doorway with";
+        else if (map.HasExitAt(in pos)) reason = "protecting the exit with";
+      }
+      if (string.IsNullOrEmpty(reason)) return false;
+      if (map.TrapWouldSealBuilding(pos)) return false;   // not the last way in, or out: pathing could not cope
+      var itemsAt = loc.Items;
+      if (itemsAt is null) return true;
+      return 3 >= itemsAt.Count(it => it is ItemTrap trap && trap.IsActivated);
+    }
+
+
+    protected ActionPush? BehaviorPushNonWalkableObjectForFood()
+    {
+      if (!m_Actor.AbleToPush) return null;
+      // Substantial re-implementation.  Historical one can make the police offices very hard to write a correct pathing for.
+      // Some of these reality checks can be weakened for mentally disturbed livings
+      Dictionary<Location,MapObject> food_blockers = new();
+      Map map = m_Actor.Location.Map;
+      // do not worry about inside vs. outside here
+      foreach(var loc in FOVloc) {
+        var o = loc.MapObject;
+        if (o is not null && !o.IsWalkable && !o.IsJumpable && m_Actor.CanPush(o)) food_blockers.Add(loc, o);
+      }
+      if (0 >= food_blockers.Count) return null;
+
+      // 1) object on exit is bad (blocks access to basement stash).
+      // 2) ### map geometry
+      //    #..
+      //    #..
+      // 3) ### map geometry
+      //    ...
+      //    ...
+
+      var verified = new Dictionary<Point,MapObject>();
+      var unclear = new Dictionary<Point,MapObject>();
+      foreach(var x in food_blockers) {
+        var loc = x.Key;
+        if (loc.Exit is not null) { // on same-district exit is clearly bad
+          verified.Add(loc.Position, x.Value);
+          continue;
+        }
+        // flush against a wall, or in a corner, is fine
+        if (loc.Map.IsFlushNWall(loc.Position)) continue;
+        if (loc.Map.IsFlushSWall(loc.Position)) continue;
+        if (loc.Map.IsFlushWWall(loc.Position)) continue;
+        if (loc.Map.IsFlushEWall(loc.Position)) continue;
+        if (loc.Map.IsNWCorner(loc.Position)) continue;
+        if (loc.Map.IsNECorner(loc.Position)) continue;
+        if (loc.Map.IsSWCorner(loc.Position)) continue;
+        if (loc.Map.IsSECorner(loc.Position)) continue;
+        unclear.Add(x.Key.Position, x.Value);
+      }
+      if (0 >= verified.Count && 0 >=unclear.Count) return null;
+
+      bool adjacent(Point pt) { return 1 == Rules.GridDistance(m_Actor.Location.Position, in pt); }
+
+      // fail over to legacy code here
+      // \todo also evaluate pulls (return type weakening)
+      unclear.OnlyIf(adjacent);
+      verified.OnlyIf(adjacent);
+      if (0 >= verified.Count && 0 >=unclear.Count) return null;
+
+      static bool safe_push(ActionPush act) {
+        var loc = act.obj_dest;
+        if (loc.Map.IsFlushNWall(loc.Position)) return true;
+        if (loc.Map.IsFlushSWall(loc.Position)) return true;
+        if (loc.Map.IsFlushWWall(loc.Position)) return true;
+        if (loc.Map.IsFlushEWall(loc.Position)) return true;
+        if (loc.Map.IsNWCorner(loc.Position)) return true;
+        if (loc.Map.IsNECorner(loc.Position)) return true;
+        if (loc.Map.IsSWCorner(loc.Position)) return true;
+        if (loc.Map.IsSECorner(loc.Position)) return true;
+        return false;
+      }
+
+      var pushes = new List<ActionPush>();
+      foreach(var x in verified) {
+        foreach(var dir in Direction.COMPASS) {
+          var dest = x.Key+dir;
+          if (map.IsInBounds(dest) && map.HasExitAt(in dest)) continue; // constructor crash; don't want to do this even when tactical pushing implemented
+          var act = new ActionPush(m_Actor, x.Value, dir);
+          if (act.IsPerformable()) pushes.Add(act);
+        }
+      }
+      if (pushes.NontrivialFilter(safe_push)) pushes = pushes.FindAll(safe_push);
+      if (0 < pushes.Count) return Rules.Get.DiceRoller.Choose(pushes);
+
+      foreach(var x in unclear) {
+        foreach(var dir in Direction.COMPASS) {
+          var dest = x.Key+dir;
+          if (map.IsInBounds(dest) && map.HasExitAt(in dest)) continue; // constructor crash; don't want to do this even when tactical pushing implemented
+          if (!ActionPush.CanConstruct(x.Value, dir)) continue;
+          var act = new ActionPush(m_Actor, x.Value, dir);
+          if (act.IsPerformable()) pushes.Add(act);
+        }
+      }
+      if (pushes.NontrivialFilter(safe_push)) pushes = pushes.FindAll(safe_push);
+      if (0 < pushes.Count) return Rules.Get.DiceRoller.Choose(pushes);
+
+      return null;
+    }
   }
 }
