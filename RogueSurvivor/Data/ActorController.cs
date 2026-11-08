@@ -9,6 +9,7 @@ using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
+using djack.RogueSurvivor.Gameplay;
 using djack.RogueSurvivor.Gameplay.AI;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
@@ -49,7 +50,7 @@ namespace djack.RogueSurvivor.Data
     public const int MAX_EMOTES = 3;    // 0: flee; 1: last stand; 2:charge
 
     private Location m_prevLocation;
-    [NonSerialized] protected RouteFinder m_RouteFinder;    // alpha10
+    [NonSerialized] private RouteFinder? m_RouteFinder = null;    // alpha10
     [NonSerialized] protected List<Percept>? _all;           // cache variables of use to all AI subclasses
     [NonSerialized] protected List<Percept_<Actor>>? _enemies;       // usage varies...Z don't care about "current", OrderableAI subclasses do
     [NonSerialized] private bool _processing;
@@ -205,16 +206,23 @@ namespace djack.RogueSurvivor.Data
         var ub = allItems.Count;
         var loc_ok = false;
         while (0 < ub) {
-          var itemsAt = allItems[--ub];
-          if (ok(itemsAt.Inventory)) loc_ok = true;
+          var itemsAt = allItems[--ub].Inventory;
+          if (itemsAt is not null && ok(itemsAt)) loc_ok = true;
         }
         if (loc_ok) ret.Add(x.Key, x.Value);
         else {
-          HashSet<Gameplay.Item_IDs> staging = new(allItems[0].Inventory.Select(x => x.InventoryMemoryID));
+          HashSet<Gameplay.Item_IDs> staging = new();
+
+          void was_memorized(Inventory? src) {
+            if (src is not null) staging.UnionWith(src.Select(x => x.InventoryMemoryID));
+          }
+
+          was_memorized(allItems[0].Inventory);
+
           ub = allItems.Count;
           while (1 < ub) {
             var itemsAt = allItems[--ub];
-            staging.UnionWith(itemsAt.Inventory.Select(x => x.InventoryMemoryID));
+            was_memorized(itemsAt.Inventory);
           }
           it_memory.Set(x.Key, staging, x.Key.Map.LocalTime.TurnCounter);   // extrasensory perception update
         }
@@ -342,7 +350,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsMyTurn() { return _processing; }
 
-    protected virtual void RecordLastAction(ActorAction act) { }    // no-op at this level
+    protected virtual void RecordLastAction(ActorAction? act) { }    // no-op at this level
 
     public virtual ActorAction? GetAction()
     {
@@ -515,7 +523,7 @@ namespace djack.RogueSurvivor.Data
         /// <param name="action"></param>
         /// <returns></returns>
         /// <see cref="BehaviorBumpToward(RogueGame, Point, bool, bool, Func{Point, Point, float})"/>
-        protected float EstimateBumpActionCost(in Location loc, ActorAction action)
+        protected float EstimateBumpActionCost(in Location loc, ActorAction? action)
         {
             float cost = 0;
 

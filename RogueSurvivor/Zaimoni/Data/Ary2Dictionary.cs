@@ -78,7 +78,7 @@ namespace Zaimoni.Data
         }
 
         public void Set(Key1 key, IEnumerable<Key2>? keys2, Range value) {
-            if (!keys2?.Any() ?? true) {
+            if (keys2 is null || !keys2.Any()) {
                 lock (_no_entries) {
                 lock (_first_second_dict) {
                 lock (_second_first_dict) {

@@ -24,6 +24,7 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using static djack.RogueSurvivor.Engine._Action.BehavioristABC;
 using djack.RogueSurvivor.Gameplay.AI.Tools;
+using System.Diagnostics.CodeAnalysis;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -852,7 +853,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected override void RecordLastAction(ActorAction act) {
+    protected override void RecordLastAction(ActorAction? act) {
       if (act is null || !act.PerformedBy(m_Actor)) return; // not ours, reject
       if (act is ActionRangedAttack ra && FireMode.RAPID == ra.FMode) {
         _recoil = 1;
@@ -2230,8 +2231,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // \todo timing test: handle Resolvable before or after ActorDest?
-    public bool VetoAction(ActorAction x)
+    public bool VetoAction([NotNullWhen(false)] ActorAction? x)
     {
+      if (x is null) return true;
       if (x is ActorDest a_dest) {
         if (a_dest.dest.ChokepointIsContested(m_Actor)) return true; // XXX telepathy; we don't want to enter a chokepoint with someone else in it that could be heading our way
         if (1>=FastestTrapKill(a_dest.dest)) {
