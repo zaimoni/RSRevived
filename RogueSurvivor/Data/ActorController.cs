@@ -352,6 +352,8 @@ namespace djack.RogueSurvivor.Data
 
     protected virtual void RecordLastAction(ActorAction? act) { }    // no-op at this level
 
+    protected virtual void Postprocess(ref ActorAction? act) { }
+
     public virtual ActorAction? GetAction()
     {
       if (m_prevLocation.Map is null) m_prevLocation = m_Actor.Location;
@@ -365,27 +367,7 @@ namespace djack.RogueSurvivor.Data
         RogueGame.Game.PanViewportTo(m_Actor);
         RogueGame.Game.InfoPopup(m_Actor.Name+": "+actorAction.ToString());
       }
-      if ((this is ObjectiveAI ai)) {
-        if (ai.VetoAction(actorAction)) actorAction = new ActionWait(m_Actor);
-#if DEBUG
-        bool is_rewritable = actorAction is ActionMoveStep || actorAction is ActionMoveDelta || actorAction is ActionWait
-                          || actorAction is ActionCloseDoor || actorAction is Resolvable || actorAction is ActionLeaveMap
-                          || actorAction is ActionSleep || actorAction is ActionChat || actorAction is ActionPush || actorAction is ActionPull
-                          || actorAction is ActionShove;
-        var backup = actorAction;
-#endif
-        var alt = ai.RewriteAction(actorAction);
-        if (alt is not null && alt.IsPerformable()) {
-#if DEBUG
-          if (!is_rewritable && (alt is ActionMoveStep || alt is ActionMoveDelta)) throw new InvalidOperationException("tracing");
-#endif
-          actorAction = alt;
-        }
-#if DEBUG
-        if (!is_rewritable && (actorAction is ActionMoveStep || actorAction is ActionMoveDelta)) throw new InvalidOperationException("tracing");
-#endif
-        ai.ScheduleFollowup(actorAction);
-      }
+      Postprocess(ref actorAction);
       ResetAICache();
       RecordLastAction(actorAction);
       if (!(actorAction is ActionCloseDoor)) m_prevLocation = m_Actor.Location;

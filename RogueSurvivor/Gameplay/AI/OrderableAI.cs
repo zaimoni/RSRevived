@@ -4714,7 +4714,96 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    // taboos
+    private ActorAction? RewriteAction(ActorAction x)
+    {
+      if (x is ActionChain chain) x = chain.ConcreteAction; // other Resolvable classes are also ActorDest
+      if (x is CombatAction) return null;   // do not second-guess combat actions
+      if (x is ActorGive) return null; // start (noncombat) inventory manipulation block
+      if (x is ActorTake) return null;
+      if (x is Use<Item>) return null; // end (noncombat) inventory manipulation block
+      if (x is ActionTrade) return null;
+      if (x is ActionSequence) return null;
+      if (x is ActionTakeLead) return null;
+      if (x is ActionBreak) return null;
+      if (x is ActionSay) return null;
+      if (x is ActionShout) return null;
+      if (x is SwitchPlace) return null;
+      if (x is ActionSwitchPowerGenerator) return null;
+      if (x is ActionBuildFortification) return null; // \todo derive this from Use<Item>
+      if (x is ActionEatCorpse) return null;
+      if (x is PushOnto) return null;
+      if (x is Fork) return null; // these likely need some sort of recursive approach, or de facto resolution first
+      if (x is Join) return null;
+      if (x is Fallback) return null;
+      if (x is MoveStep) return null; // these are from new-AI
+
+      const bool tracing = false;
+
+      // exit-related processing.
+      var e = m_Actor.Location.Exit;
+      if (x is ActorDest a_dest) {
+        if (e is null) {
+          // crowd control
+          var gasping = NeedsAir(a_dest.dest, m_Actor);
+          if (tracing && !RogueGame.IsSimulating && gasping is not null) RogueGame.Game.InfoPopup("gasping for air: "+gasping.ToString());
+          if (gasping is not null && x is ActionOpenDoor) return null;
+          var act = BehaviorTradeWithinClan();
+          if (tracing && !RogueGame.IsSimulating && act is not null) RogueGame.Game.InfoPopup("trade within clan: "+act.ToString());
+          if (act is not null) return act;
+          if (gasping is not null) {
+            act = BehaviorMakeTime();
+            if (act is not null) return act;
+          }
+        }
+        if (_staged_action is ActionCloseDoor close && a_dest.dest == close.Door.Location) _staged_action = null;   // 2020-03-29: do not self-block
+      } else if (ActorsNearby(m_Actor.Location, a => !a.IsSleeping)) {
+        if (e is null) {    // don't dawdle on the exit itself
+          if (x is ActionOpenDoor) return null;
+          var act = BehaviorMakeTime();
+          if (act is ActorDest a_dest2 && _damage_field is not null) act = null; // don't make time by moving when in combat
+          if (tracing && !RogueGame.IsSimulating && act is not null) RogueGame.Game.InfoPopup("making time: "+act.ToString());
+          if (act is not null) return act;
+        }
+      }
+      // clear staged actions here
+      if (_staged_action is not null) {
+        if (tracing && !RogueGame.IsSimulating && _staged_action is not null) RogueGame.Game.InfoPopup("staged action: "+_staged_action.ToString());
+        if (_staged_action.IsPerformable() && !VetoAction(_staged_action)) {
+          if (_staged_action is ActionCloseDoor close && x is ActionCloseDoor o_close && close.Door.Location==o_close.Door.Location) {
+            // double close.  Use ours (it's free)
+            _staged_action = null;
+            return close;
+          }
+          _staged_action.Perform();
+        }
+        _staged_action = null;
+      }
+      return null;
+    }
+
+    protected override void Postprocess(ref ActorAction? act) {
+        if (VetoAction(act)) act = new ActionWait(m_Actor);
+#if DEBUG
+        bool is_rewritable = act is ActionMoveStep || act is ActionMoveDelta || act is ActionWait
+                          || act is ActionCloseDoor || act is Resolvable || act is ActionLeaveMap
+                          || act is ActionSleep || act is ActionChat || act is ActionPush || act is ActionPull
+                          || act is ActionShove;
+        var backup = act;
+#endif
+        var alt = RewriteAction(act);
+        if (alt is not null && alt.IsPerformable()) {
+#if DEBUG
+          if (!is_rewritable && (alt is ActionMoveStep || alt is ActionMoveDelta)) throw new InvalidOperationException("tracing");
+#endif
+          act = alt;
+        }
+#if DEBUG
+        if (!is_rewritable && (act is ActionMoveStep || act is ActionMoveDelta)) throw new InvalidOperationException("tracing");
+#endif
+        ScheduleFollowup(act);
+    }
+
+#region taboos
     public void MarkActorAsRecentTrade(Actor other)
     {
       if (m_TabooTrades is null) m_TabooTrades = new(1);
@@ -4730,5 +4819,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // actors ok to clear at midnight
       if (m_Actor.Location.Map.LocalTime.IsStrikeOfMidnight) m_TabooTrades = null;
     }
+#endregion
   }
 }
