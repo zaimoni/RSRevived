@@ -941,9 +941,8 @@ namespace djack.RogueSurvivor.Data
       return a is ActionMoveStep || a is ActionOpenDoor;
     }
 
-    protected bool IsValidWanderAction(ActorAction? a)
+    protected bool _isValidWanderAction(ActorAction a)
     {
-      if (a is null) return false;
       if (a is ActionMoveStep) return true;
       if (a is Engine._Action.SwitchPlace swap) return swap.LeaderSwitchPlace;
 //    if (a is ActionPush) return true; // wasn't being generated in RS alpha 9...results do not look good
@@ -951,13 +950,10 @@ namespace djack.RogueSurvivor.Data
       // historically, zombies were allowed to bash doors, but livings were not allowed to break barricades or doors as wandering actions
       if (a is ActionBreak act_break && act_break.What is DoorWindow && a.Actor.str_CannotBash is null) return true;
       if (a is ActionBarricadeDoor) return true;
-      if (this is OrderableAI ordai) {
-        if (a is ActionChat chat) {
-          return (ordai.Directives_nocreate?.CanTrade ?? ActorDirective.CanTrade_default ) || chat.Target == (m_Actor as LivingActor)?.Leader;
-        }
-      }
       return false;
     }
+
+    protected virtual bool IsValidWanderAction(ActorAction? a) => a is not null && _isValidWanderAction(a);
 
     protected bool IsValidMoveTowardGoalAction(ActorAction? a)
     {

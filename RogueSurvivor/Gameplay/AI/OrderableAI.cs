@@ -4804,6 +4804,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ScheduleFollowup(act);
     }
 
+    protected override bool IsValidWanderAction(ActorAction? a)
+    {
+      if (a is null) return false;
+      if (_isValidWanderAction(a)) return true;
+      if (a is ActionChat chat) {
+          return (Directives_nocreate?.CanTrade ?? ActorDirective.CanTrade_default) || chat.Target == m_Actor.Leader;
+      }
+      return false;
+    }
+
 #region taboos
     public void MarkActorAsRecentTrade(Actor other)
     {
