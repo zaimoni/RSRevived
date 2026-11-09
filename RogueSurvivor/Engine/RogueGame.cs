@@ -4510,6 +4510,7 @@ namespace djack.RogueSurvivor.Engine
     public static void FaustClairvoyance(Actor a, IEnumerable<Location> locs) {
       foreach(var loc in locs) (s_FaustClairvoyance ?? (s_FaustClairvoyance = new())).Add(a, loc);
     }
+
     private static void CancelFaustClairvoyance(Actor a) {
       if (s_FaustClairvoyance is not null) {
         if (s_FaustClairvoyance.Remove(a) && s_FaustClairvoyance.EmptyDomain()) s_FaustClairvoyance = null;
@@ -4524,9 +4525,7 @@ namespace djack.RogueSurvivor.Engine
       List<KeyValuePair<string, Action>> orders = new();
       orders.Add(new(s_FaustPC ? "Ignore new livings" : "Examine new livings", ToggleFaust));
       orders.Add(new("Choose who the spirits ride", HandleFaustToggle));
-      orders.Add(new("Clairvoyance", () => {
-        Player.Location.View.DoForEach(loc => FaustClairvoyance(Player, new List<Location>() { loc }));
-      }));
+      orders.Add(new("Clairvoyance", () => FaustClairvoyance(Player, Player.Location.View)));
 
       string label(int index) { return orders[index].Key; }
       bool details(int index) { orders[index].Value(); return true; }
@@ -13365,33 +13364,24 @@ restart:
       AddOverlay(new UI.OverlayPopup(desc, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, GDI_Point.Empty));
       RedrawPlayScreen();
 
-      do {
-          var key = m_UI.UI_WaitKey();
+      bool? far_look(KeyEventArgs key) {
           switch(key.KeyCode) {
-          case Keys.Escape: // cancel
-            ClearOverlays();
-            PanViewportTo(Player.Location);
-            return null;
           case Keys.R:  // run to ...
             if (Player.Model.CanEnter(viewpoint)) {
               pc.RunTo(in viewpoint);
-              ClearOverlays();
-              PanViewportTo(Player.Location);
-              return null;
+              return false;
             }
             break;  // XXX \todo be somewhat more informative
           case Keys.W:  // walk to ...
             if (Player.Model.CanEnter(viewpoint)) {
               pc.WalkTo(in viewpoint);
-              ClearOverlays();
-              PanViewportTo(Player.Location);
-              return null;
+              return false;
             }
             break;  // XXX \todo be somewhat more informative
           case Keys.O:  // walk to ...
               // other commands possible
               if (available_followers is not null && viewpoint != Player.Location && !available_followers.Any(fo => viewpoint == fo.fo.Location)) {
-                if (PagedPopup("Who stops by there?", available_followers.Count, label_follower, details_follower)) return null;
+                if (PagedPopup("Who stops by there?", available_followers.Count, label_follower, details_follower)) return false;
               }
             break;
           case Keys.D1:
@@ -13406,15 +13396,10 @@ restart:
             if (Player.Model.CanEnter(viewpoint)) {
               pc.WalkTo(in viewpoint, (int)key.KeyCode - (int)Keys.D0);
               pc.AddWaypoint(viewpoint, "manual: T"+viewpoint.Map.LocalTime.TurnCounter.ToString());
-              ClearOverlays();
-              PanViewportTo(Player.Location);
-              return null;
+              return false;
             }
             break;  // XXX \todo be somewhat more informative
-          case Keys.Return: // set waypoint
-            ClearOverlays();
-            PanViewportTo(Player.Location);
-            return viewpoint;
+          case Keys.Return: return true; // set waypoint
           default: break;
           }
           PlayerCommand command = InputTranslator.KeyToCommand(key);
@@ -13437,10 +13422,10 @@ restart:
               break;
             default: break; // intentionally do not handle all commands
           }
-          if (tmp is not Location loc) continue;
+          if (tmp is not Location loc) return null;
           if (    !Player.Controller.IsKnown(loc)                             // disallow not-known
               && (viewpoint.Map == loc.Map || viewpoint.Map.DistrictPos != loc.Map.DistrictPos)) // but ok if same-district different map i.e. stairway
-              continue;    // XXX probably should have some feedback here
+              return null;    // XXX probably should have some feedback here
           if (inspect is not null) {
             RemoveOverlay(inspect);
             inspect = null;
@@ -13456,7 +13441,7 @@ restart:
             if (allies is not null) {
                 foreach(var a in allies) {
                     if (viewpoint != a.Location) continue;
-                    if (Player.Controller is ObjectiveAI p_oai && p_oai.InCommunicationWith(a)) {
+                    if (pc.InCommunicationWith(a)) {
                       (lines ??= new()).Add(a.Name);
                       break;
                     }
@@ -13482,7 +13467,13 @@ restart:
           }
           if (inspect is not null) AddOverlay(inspect);
           PanViewportTo(in viewpoint);
-      } while(true);
+          return null;
+      }
+
+      bool ret = m_UI.Modal(far_look);
+      ClearOverlays();
+      PanViewportTo(Player.Location);
+      return ret ? viewpoint : null;
     }
 
     private void HandlePlayerSetWaypoint(PlayerController pc)
@@ -13963,8 +13954,6 @@ restart:
       World world = World.Get;
       var zoning = world.PreliminaryZoning;
       BaseTownGenerator.WorldGenInit(zoning);
-
-//    HandleFaust(); // too early
 
       for (short index1 = 0; index1 < world.Size; ++index1) {
         for (short index2 = 0; index2 < world.Size; ++index2) {
