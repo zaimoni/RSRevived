@@ -1401,9 +1401,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0<_adjacent_friends.Count ? _adjacent_friends : null;
     }
 
+    public override ActorCourage Courage => Directives_nocreate?.Courage ?? ActorDirective.Courage_default;
+
     public override int FastestTrapKill(in Location loc)
     {
-      if (m_Actor.IsStarving || ActorCourage.COURAGEOUS == (Directives_nocreate?.Courage ?? ActorDirective.Courage_default)) return int.MaxValue;
+      if (m_Actor.IsStarving || ActorCourage.COURAGEOUS == Courage) return int.MaxValue;
       int trapsMaxDamage = loc.Map.TrapsUnavoidableMaxDamageAtFor(loc.Position,m_Actor);
       if (0 >= trapsMaxDamage) return int.MaxValue;
       return ((m_Actor.HitPoints-1)/ trapsMaxDamage)+1;
@@ -3790,9 +3792,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction? BehaviorExplore(ExplorationData exploration)
     {
-      ActorCourage courage = Directives_nocreate?.Courage ?? ActorDirective.Courage_default;
       Direction? prevDirection = Direction.FromVector(m_Actor.Location.Position - PrevLocation.Position);
-      bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
+      bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == Courage;
 
       int ranking(Direction dir, Location loc) {
         const int EXPLORE_ZONES = 1000;

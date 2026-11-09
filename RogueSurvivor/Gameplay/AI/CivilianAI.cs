@@ -275,7 +275,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
-        tmpAction = BehaviorFightOrFlee((Directives_nocreate?.Courage ?? ActorDirective.Courage_default), m_Emotes, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
+        tmpAction = BehaviorFightOrFlee(Courage, m_Emotes, RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS);
         if (tmpAction is not null) {
             if (tracing) {
                 if (!RogueGame.IsSimulating) RogueGame.Game.InfoPopup("fight-or-flee: "+tmpAction.ToString());

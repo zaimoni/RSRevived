@@ -596,6 +596,8 @@ namespace djack.RogueSurvivor.Data
       return BehaviorStupidBumpToward(test.Value.Position, canCheckBreak, canCheckPush);
     }
 
+    public virtual ActorCourage Courage => ActorDirective.Courage_default;
+
     protected ActorAction? BehaviorIntelligentBumpToward(Point goal, bool canCheckBreak, bool canCheckPush)
     {
       const float MOVE_INTO_TRAPS_PENALTY = 1;  // alpha10
@@ -607,8 +609,7 @@ namespace djack.RogueSurvivor.Data
         return (num >= currentDistance) ? float.NaN : num;
       };
 
-      ActorCourage courage = (this as OrderableAI)?.Directives_nocreate?.Courage ?? ActorDirective.Courage_default;
-      bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
+      bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == Courage;
       if (imStarvingOrCourageous) close_in = close_in.Postprocess((ptA,ptB,dist) => {
           var loc = new Location(m_Actor.Location.Map, ptA);
           if (!Map.Canonical(ref loc)) return float.NaN;

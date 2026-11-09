@@ -4912,7 +4912,7 @@ restart_chokepoints:
       if (0 >= examineStacks.Count) return null;
 
       bool imStarvingOrCourageous = m_Actor.IsStarving;
-      if ((this is OrderableAI ai) && ActorCourage.COURAGEOUS == (ai.Directives_nocreate?.Courage ?? ActorDirective.Courage_default)) imStarvingOrCourageous = true;
+      if (ActorCourage.COURAGEOUS == Courage) imStarvingOrCourageous = true;
       List<Data.Model.InvOrigin> ret = new(examineStacks.Count);
       foreach(var x in examineStacks) {
         var loc = x.Location;
