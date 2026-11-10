@@ -14474,6 +14474,7 @@ restart:
       if (!ChoiceMenu(choice_handler, setup_handler, entries.Length)) newPlayerAvatar = null;
       if (newPlayerAvatar is null) {
         m_MusicManager.Stop();
+        if (0 >= World.Get.PlayerCount) m_IsGameRunning = false;
         return;
       }
 
