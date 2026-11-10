@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
     // alpha10 new ai helper tool
     /// <summary>
     /// A very simple and restricted pathfinder that just checks if an actor ai can reach a tile.
-    /// Only explore tiles that are closer to the goal (mimicking baseai move routine BehaviorBumpToward)
+    /// Only explore tiles that are closer to the goal (mimicking ActorController::BehaviorBumpToward)
     /// and within a max distance from start.
     ///
     /// Each ActorController can should use an instance and allocate on demand.
@@ -20,8 +20,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
     ///
     /// Not a static tool class as it would be a nightmare to manage due threads (ais living in the sim thread).
     /// </summary>
-    /// <see cref="ActorController.CanReachSimple(RogueGame, Point, RouteFinder.SpecialActions)"/>
-    /// <see cref="ActorController.BehaviorBumpToward(RogueGame, Point, Func{Point, Point, float})"/>
+    /// <see cref="ActorController.CanReachSimple(in Location, SpecialActions)"/>
+    /// <see cref="ActorController.BehaviorBumpToward(Point, bool, bool, Func<Point, Point, float>})"/>
     public sealed class RouteFinder
     {
         #region Types
@@ -80,7 +80,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         /// - the ai or the model, eg: civilians can try to jump and open doors.
         /// - the intent, eg: gangs can try to break stuff to get to items while civilians should not.
         /// </summary>
-        /// <see cref="RouteFinder.CanReachSimple(in Location, Func{Location, Location, int})"/>
+        /// <see cref="CanReachSimple(in Location, Func{Location, Location, int})"/>
         public SpecialActions AllowedActions { get; set; }
         #endregion
 
@@ -108,7 +108,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Tools
         /// <param name="maxDist"></param>
         /// <param name="distanceFn"></param>
         /// <returns></returns>
-        /// <see cref="ActorController.BehaviorBumpToward(RogueGame, Point, Func{Point, Point, float})"/>
+        /// <see cref="ActorController.BehaviorBumpToward(Point, bool, bool, Func<Point, Point, float>})"/>
         public bool CanReachSimple(in Location dest, Func<Location, Location, int> distanceFn)
         {
             Actor a = m_AI.ControlledActor;

@@ -504,7 +504,7 @@ namespace djack.RogueSurvivor.Data
         /// <param name="loc"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        /// <see cref="BehaviorBumpToward(RogueGame, Point, bool, bool, Func{Point, Point, float})"/>
+        /// <see cref="BehaviorBumpToward(Point, bool, bool, Func<Point, Point, float>})"/>
         protected float EstimateBumpActionCost(in Location loc, ActorAction? action)
         {
             float cost = 0;

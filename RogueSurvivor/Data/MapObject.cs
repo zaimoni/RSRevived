@@ -366,6 +366,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public override string ToString() => AName;
+
     [Serializable]
     public enum Break : byte
     {

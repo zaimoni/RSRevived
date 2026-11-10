@@ -4643,7 +4643,7 @@ namespace djack.RogueSurvivor.Engine
       if (m_MapView is null) return;
       if (MouseToLoc(x, y) is not Location loc) return;
       if (loc == m_LiveLook) return;
-      if (IsVisibleToPlayer(in loc)) {
+      if (IsVisibleToPlayer(in loc) || (s_FaustClairvoyance is not null && s_FaustClairvoyance.Contains(Player, loc))) {
         List<UI.Overlay> overlays = new();
         string[]? lines = DescribeStuffAt(loc);
         if (lines is not null) {
@@ -7987,6 +7987,9 @@ namespace djack.RogueSurvivor.Engine
       // misc unusual abilities
       if (a_model.Abilities.IsLawEnforcer) lines.Add("- Is a law enforcer.");
       if (a_model.Abilities.IsSmall) lines.Add("- Is small and can sneak through things.");
+
+      var obj = actor.Location.MapObject;
+      if (obj is not null) lines.Add("is standing on "+obj.AName);
 
       // 9. Inventory.
       var inv = living?.Inventory;
@@ -13406,6 +13409,12 @@ restart:
           Location? tmp = null;
           switch (command) {
             // would be good if this enumeration value set was aligned [then Direction.COMPASS] makes sense]
+            case PlayerCommand.FAUST:
+              if (Session.Get.CMDoptionExists("faust")) {
+                FaustClairvoyance(Player, viewpoint.View);
+                RedrawPlayScreen();
+              };
+              return null;
             case PlayerCommand.MOVE_N:
             case PlayerCommand.MOVE_NE:
             case PlayerCommand.MOVE_E:
